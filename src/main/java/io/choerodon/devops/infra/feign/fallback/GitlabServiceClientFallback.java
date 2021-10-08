@@ -31,13 +31,28 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<RepositoryFileDTO> createExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO) {
         throw new CommonException("error.file.update");
     }
 
     @Override
+    public ResponseEntity<RepositoryFileDTO> updateExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity deleteFile(Integer projectId, FileCreationVO fileCreationVO) {
         throw new CommonException("error.file.delete");
+    }
+
+    @Override
+    public ResponseEntity deleteExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
     }
 
     @Override
@@ -136,12 +151,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabPipelineDTO> queryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<GitlabPipelineDTO> queryPipeline(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.pipelines.select");
     }
 
     @Override
-    public ResponseEntity<List<JobDTO>> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<List<JobDTO>> listJobs(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.job.select");
     }
 
@@ -205,6 +220,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<RepositoryFileDTO> getFile(Integer projectId, String commit, String filePath) {
         throw new CommonException("error.file.get");
+    }
+
+    @Override
+    public ResponseEntity<RepositoryFileDTO> getExternalFile(Integer projectId, String commit, String filePath, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
     }
 
 
@@ -437,7 +457,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity createPipeline(Integer projectId, Integer userId, String ref) {
+    public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password) {
         return null;
     }
 

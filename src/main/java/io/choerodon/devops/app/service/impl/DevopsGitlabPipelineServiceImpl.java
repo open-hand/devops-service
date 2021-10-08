@@ -33,9 +33,7 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.exception.GitlabAccessInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
@@ -76,6 +74,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private SendNotificationService sendNotificationService;
     @Autowired
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
 
     @Override
@@ -115,7 +115,10 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         //查询pipeline最新阶段信息
         List<Stage> stages = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
-        List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(pipelineWebHookVO.getObjectAttributes().getId()), gitlabUserId)
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+        List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(),
+                TypeUtil.objToInteger(pipelineWebHookVO.getObjectAttributes().getId()),
+                gitlabUserId, appExternalConfigDTO)
                 .stream()
                 .map(JobDTO::getId)
                 .collect(Collectors.toList());
