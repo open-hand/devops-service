@@ -33,10 +33,7 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.constant.PipelineConstants;
-import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.constant.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
@@ -159,6 +156,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     @Lazy
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    private DevopsPipelineBranchRelMapper devopsPipelineBranchRelMapper;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -247,12 +248,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     /**
      * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
-     *
-     * @param gitlabProjectId  gitlab项目id
+     *  @param gitlabProjectId  gitlab项目id
+     * @param branch
      * @param ciFileIncludeUrl include中的链接
      */
-    private void initGitlabCiFile(Integer gitlabProjectId, String ciFileIncludeUrl) {
-        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
+    private void initGitlabCiFile(Integer gitlabProjectId, String branch, String ciFileIncludeUrl) {
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME);
 
         if (repositoryFile == null) {
             // 说明项目下还没有CI文件
@@ -265,7 +266,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         buildIncludeYaml(ciFileIncludeUrl),
                         GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
                         GitUserNameUtil.getAdminId(),
-                        GitOpsConstants.MASTER);
+                        branch);
             } catch (Exception ex) {
                 throw new CommonException("error.create.or.update.gitlab.ci", ex);
             }
@@ -290,6 +291,54 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
+    /**
+     * 第一次创建CI流水线时初始化外部仓库下的.gitlab-ci.yml文件
+     *  @param gitlabProjectId  gitlab项目id
+     * @param branch
+     * @param ciFileIncludeUrl include中的链接
+     */
+    private void initExternalGitlabCiFile(Integer gitlabProjectId, String branch, String ciFileIncludeUrl, AppExternalConfigDTO appExternalConfigDTO) {
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getExternalWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME, appExternalConfigDTO);
+
+        if (repositoryFile == null) {
+            // 说明项目下还没有CI文件
+            // 创建文件
+            try {
+                LOGGER.info("initGitlabCiFile: create .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
+                gitlabServiceClientOperator.createExternalFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        buildIncludeYaml(ciFileIncludeUrl),
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId(),
+                        branch,
+                        appExternalConfigDTO);
+            } catch (Exception ex) {
+                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+            }
+
+        } else {
+            // 将原先的配置文件内容注释并放在原本文件中
+            String originFileContent = new String(Base64.getDecoder().decode(repositoryFile.getContent().getBytes()), StandardCharsets.UTF_8);
+            // 注释后的内容
+            String commentedLines = GitlabCiUtil.commentLines(originFileContent);
+            try {
+                // 更新文件
+                LOGGER.info("initGitlabCiFile: update .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
+                gitlabServiceClientOperator.updateExternalFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId(),
+                        appExternalConfigDTO);
+            } catch (Exception ex) {
+                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+            }
+        }
+    }
+
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO) {
@@ -310,7 +359,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (ciCdPipelineMapper.insertSelective(ciCdPipelineDTO) != 1) {
             throw new CommonException(CREATE_PIPELINE_FAILED);
         }
-
+        // 保存流水线分支关系
+        ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
+            DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
+            devopsPipelineBranchRelDTO.setBranch(branch);
+            devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
+            MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");
+        });
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         // 2.保存cd stage信息
@@ -363,8 +418,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
 
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+
             ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
-                initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+                if (appExternalConfigDTO == null) {
+                    initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl);
+                } else {
+                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, appExternalConfigDTO);
+                }
+
             });
 
         }
@@ -1087,6 +1149,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return params;
     }
 
+    @Override
+    public List<DevopsPipelineBranchRelDTO> listPipelineBranchRel(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+
+        DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
+        devopsPipelineBranchRelDTO.setPipelineId(pipelineId);
+        return devopsPipelineBranchRelMapper.select(devopsPipelineBranchRelDTO);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
@@ -1363,7 +1434,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (initCiFileFlag) {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
-            initGitlabCiFile(appServiceDTO.getGitlabProjectId(), ciFileIncludeUrl);
+            List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(ciCdPipelineDTO.getId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+
+            devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
+                if (appExternalConfigDTO == null) {
+                    initGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), ciFileIncludeUrl);
+                } else {
+                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), ciFileIncludeUrl, appExternalConfigDTO);
+                }
+            });
+
         }
     }
 

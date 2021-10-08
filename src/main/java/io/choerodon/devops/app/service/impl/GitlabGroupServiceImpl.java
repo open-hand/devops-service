@@ -75,6 +75,14 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         return groupDTO;
     }
 
+    @Override
+    public Boolean checkRepositoryAvailable(String groupName, String projectName, String token) {
+        // 1. 先判断租户是否有限制，没有限制则直接放行
+
+        // 2. 查询
+        return null;
+    }
+
     /**
      * create cluster env group
      *
