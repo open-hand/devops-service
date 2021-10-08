@@ -866,6 +866,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobService.deleteByPipelineId(pipelineId);
         devopsCdJobService.deleteByPipelineId(pipelineId);
 
+
+
         // 删除 ci job记录
         devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
 
@@ -877,7 +879,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiContentService.deleteByPipelineId(pipelineId);
 
         // 删除.gitlab-ci.yaml文件
-        deleteGitlabCiFile(appServiceDTO.getGitlabProjectId());
+        List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(pipelineId);
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+
+        devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
+            if (appExternalConfigDTO == null) {
+                deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
+            } else {
+                deleteExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
+            }
+        });
+
+
+        // 删除流水线分支关系
+        DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
+        devopsPipelineBranchRelDTO.setPipelineId(pipelineId);
+
+        devopsPipelineBranchRelMapper.delete(devopsPipelineBranchRelDTO);
     }
 
     @Override
@@ -900,7 +918,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
         //触发ci流水线
-        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+
+        Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                ref,
+                appExternalConfigDTO);
         // 保存执行记录
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(pipelineId, gitlabProjectId, pipeline);
@@ -912,7 +936,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 初始化cd流水线记录
             devopsCdPipelineService.initPipelineRecordWithStageAndJob(projectId, pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), pipeline.getId(), userAttrDTO.getGitlabUserId().intValue());
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
+                    pipeline.getId(),
+                    userAttrDTO.getGitlabUserId().intValue(),
+                    appExternalConfigDTO);
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("save pipeline Records failed， ciPipelineId {}.", pipelineId);
@@ -1296,8 +1323,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         pipelineFailFrequency.add(failCount[0]);
     }
 
-    private void deleteGitlabCiFile(Integer gitlabProjectId) {
-        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, GitOpsConstants.MASTER, GitOpsConstants.GITLAB_CI_FILE_NAME);
+    private void deleteGitlabCiFile(Integer gitlabProjectId, String branch, AppExternalConfigDTO appExternalConfigDTO) {
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME);
         if (repositoryFile != null) {
             try {
                 LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
@@ -1306,6 +1333,24 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
                         GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
                         GitUserNameUtil.getAdminId());
+            } catch (Exception e) {
+                throw new CommonException("error.delete.gitlab-ci.file", e);
+            }
+
+        }
+    }
+
+    private void deleteExternalGitlabCiFile(Integer gitlabProjectId, String branch, AppExternalConfigDTO appExternalConfigDTO) {
+        RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME);
+        if (repositoryFile != null) {
+            try {
+                LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
+                gitlabServiceClientOperator.deleteExternalFile(
+                        gitlabProjectId,
+                        GitOpsConstants.GITLAB_CI_FILE_NAME,
+                        GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
+                        GitUserNameUtil.getAdminId(),
+                        appExternalConfigDTO);
             } catch (Exception e) {
                 throw new CommonException("error.delete.gitlab-ci.file", e);
             }

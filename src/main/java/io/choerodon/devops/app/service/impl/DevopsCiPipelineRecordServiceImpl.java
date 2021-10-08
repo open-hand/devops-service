@@ -117,6 +117,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
 
     @Value("${services.gateway.url}")
@@ -391,11 +393,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(pipelineRecordId, "pipelineRecordId shouldn't be null");
 
         AppServiceDTO appServiceDTO = devopsCiPipelineRecordMapper.queryGitlabProjectIdByRecordId(pipelineRecordId);
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+
         Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
         GitlabPipelineDTO pipelineDTO = gitlabServiceClientOperator.queryPipeline(TypeUtil.objToInteger(gitlabProjectId),
                 TypeUtil.objToInteger(gitlabPipelineId),
-                GitUserNameUtil.getAdminId());
-        List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId, gitlabPipelineId, GitUserNameUtil.getAdminId());
+                GitUserNameUtil.getAdminId(),
+                appExternalConfigDTO);
+        List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId,
+                gitlabPipelineId,
+                GitUserNameUtil.getAdminId(),
+                appExternalConfigDTO);
 
         Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
         handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
@@ -824,7 +832,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 更新pipeline status
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus().toValue());
             // 更新job status
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
+                    gitlabPipelineId.intValue(),
+                    userAttrDTO.getGitlabUserId().intValue(),
+                    appExternalConfigDTO);
             updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
@@ -848,7 +860,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 更新pipeline status
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, PipelineStatus.CANCELED.toValue());
             // 更新job status
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
             updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
