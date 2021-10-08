@@ -34,15 +34,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.update");
     }
-
     @Override
-    public ResponseEntity deleteFile(Integer projectId, FileCreationVO fileCreationVO) {
+    public ResponseEntity deleteFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.delete");
-    }
-
-    @Override
-    public ResponseEntity deleteExternalFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
     }
 
     @Override
