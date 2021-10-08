@@ -357,12 +357,17 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Pipeline> retryPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<List<CommitDTO>> listExternalCommits(Integer projectId, Integer page, Integer size, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Pipeline> retryPipeline(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.pipeline.retry");
     }
 
     @Override
-    public ResponseEntity<Pipeline> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+    public ResponseEntity<Pipeline> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.pipeline.cancel");
     }
 

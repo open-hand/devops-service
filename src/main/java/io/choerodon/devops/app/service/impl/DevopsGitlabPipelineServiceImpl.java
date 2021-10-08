@@ -83,6 +83,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        if (applicationDTO.getExternalConfigId() != null) {
+            return;
+        }
         String input = JsonHelper.marshalByJackson(pipelineWebHookVO);
         transactionalProducer.apply(
                 StartSagaBuilder.newBuilder()
