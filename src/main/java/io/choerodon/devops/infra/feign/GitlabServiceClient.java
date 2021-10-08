@@ -154,30 +154,21 @@ public interface GitlabServiceClient {
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
-                                                 @RequestBody FileCreationVO fileCreationVO);
-
-    @PostMapping(value = "/v1/external_projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFileDTO> createExternalFile(@PathVariable("projectId") Integer projectId,
-                                                         @RequestBody FileCreationVO fileCreationVO,
-                                                         @RequestParam(value = "gitlabUrl") String gitlabUrl,
-                                                         @RequestParam(value = "authType") String authType,
-                                                         @RequestParam(value = "accessToken") String accessToken,
-                                                         @RequestParam(value = "username") String username,
-                                                         @RequestParam(value = "password") String password);
-
+                                                 @RequestBody FileCreationVO fileCreationVO,
+                                                 @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                 @RequestParam(value = "authType") String authType,
+                                                 @RequestParam(value = "accessToken") String accessToken,
+                                                 @RequestParam(value = "username") String username,
+                                                 @RequestParam(value = "password") String password);
 
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> updateFile(@PathVariable("projectId") Integer projectId,
-                                                 @RequestBody FileCreationVO fileCreationVO);
-
-    @PutMapping(value = "/v1/external_projects/{projectId}/repository/file")
-    ResponseEntity<RepositoryFileDTO> updateExternalFile(@PathVariable("projectId") Integer projectId,
-                                                         @RequestBody FileCreationVO fileCreationVO,
-                                                         @RequestParam(value = "gitlabUrl") String gitlabUrl,
-                                                         @RequestParam(value = "authType") String authType,
-                                                         @RequestParam(value = "accessToken") String accessToken,
-                                                         @RequestParam(value = "username") String username,
-                                                         @RequestParam(value = "password") String password);
+                                                 @RequestBody FileCreationVO fileCreationVO,
+                                                 @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                 @RequestParam(value = "authType") String authType,
+                                                 @RequestParam(value = "accessToken") String accessToken,
+                                                 @RequestParam(value = "username") String username,
+                                                 @RequestParam(value = "password") String password);
 
     @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
