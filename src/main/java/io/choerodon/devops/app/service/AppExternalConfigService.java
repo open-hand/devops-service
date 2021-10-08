@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 
 /**
@@ -18,4 +20,6 @@ public interface AppExternalConfigService {
     void update(Long projectId, Long id, AppExternalConfigDTO appExternalConfigDTO);
 
     void baseDelete(Long externalConfigId);
+
+    List<AppExternalConfigDTO> queryByRepositoryUrl(String repositoryUrl);
 }

@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.open.OpenAppServiceReqVO;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
@@ -595,5 +596,9 @@ public interface AppServiceService {
     String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);
 
     AppServiceDTO createExternalApp(Long projectId, ExternalAppServiceVO externalAppServiceVO);
+
+    Boolean isExternalGitlabUrlUnique(String externalGitlabUrl);
+
+    Boolean testConnection(AppExternalConfigDTO appExternalConfigDTO);
 
 }
