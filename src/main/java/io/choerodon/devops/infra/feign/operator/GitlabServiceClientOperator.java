@@ -1046,6 +1046,23 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<CommitDTO> listExternalCommits(Integer projectId,Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            List<CommitDTO> commitDTOS = new LinkedList<>();
+            commitDTOS.addAll(gitlabServiceClient.listExternalCommits(projectId,
+                    page,
+                    size,
+                    appExternalConfigDTO.getRepositoryUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword()).getBody());
+            return commitDTOS;
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
     public List<CommitDTO> listCommits(Integer projectId, Integer mergeRequestId, Integer userId) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
