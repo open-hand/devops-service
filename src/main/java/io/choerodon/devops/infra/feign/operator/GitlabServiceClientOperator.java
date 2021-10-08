@@ -443,7 +443,13 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setPath(path);
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
-            gitlabServiceClient.deleteFile(projectId, fileCreationVO);
+            gitlabServiceClient.deleteFile(projectId,
+                    fileCreationVO,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
         } catch (Exception e) {
             throw new CommonException("error.file.delete", e, path);
         }
@@ -455,7 +461,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setPath(path);
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
-            gitlabServiceClient.deleteExternalFile(projectId,
+            gitlabServiceClient.deleteFile(projectId,
                     fileCreationVO,
                     appExternalConfigDTO.getRepositoryUrl(),
                     appExternalConfigDTO.getAuthType(),

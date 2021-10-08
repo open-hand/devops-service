@@ -172,16 +172,12 @@ public interface GitlabServiceClient {
 
     @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
-                              @RequestBody FileCreationVO fileCreationVO);
-
-    @DeleteMapping(value = "/v1/external_projects/{projectId}/repository/file")
-    ResponseEntity deleteExternalFile(@PathVariable("projectId") Integer projectId,
-                                      @RequestBody FileCreationVO fileCreationVO,
-                                      @RequestParam(value = "gitlabUrl") String gitlabUrl,
-                                      @RequestParam(value = "authType") String authType,
-                                      @RequestParam(value = "accessToken") String accessToken,
-                                      @RequestParam(value = "username") String username,
-                                      @RequestParam(value = "password") String password);
+                              @RequestBody FileCreationVO fileCreationVO,
+                              @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                              @RequestParam(value = "authType") String authType,
+                              @RequestParam(value = "accessToken") String accessToken,
+                              @RequestParam(value = "username") String username,
+                              @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
