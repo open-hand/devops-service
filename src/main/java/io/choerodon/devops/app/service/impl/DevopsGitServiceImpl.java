@@ -323,11 +323,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (branchDTOS == null) {
                 return new Page<>();
             }
+
+
             List<BranchVO> branchVOS = branchDTOS.stream().map(branchDTO -> {
                 BranchVO branchVO = new BranchVO();
                 branchVO.setBranchName(branchDTO.getName());
                 return branchVO;
             }).collect(Collectors.toList());
+            if (params != null) {
+                Map<String, Object> maps = TypeUtil.castMapParams(params);
+                Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+                Object branchName = searchParam.get("branchName");
+                branchVOS = branchVOS.stream().filter(branchVO -> branchVO.getBranchName().contains(branchName.toString())).collect(Collectors.toList());
+            }
             return PageUtils.createPageFromList(branchVOS, pageable);
         }
 
