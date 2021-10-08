@@ -247,6 +247,16 @@ public interface GitlabServiceClient {
                                                 @RequestParam("size") Integer size,
                                                 @RequestParam("userId") Integer userId);
 
+    @GetMapping(value = "/v1/external_projects/{projectId}/repository/commits/project")
+    ResponseEntity<List<CommitDTO>> listExternalCommits(@PathVariable("projectId") Integer projectId,
+                                                @RequestParam("page") Integer page,
+                                                @RequestParam("size") Integer size,
+                                                @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                @RequestParam(value = "authType") String authType,
+                                                @RequestParam(value = "accessToken") String accessToken,
+                                                @RequestParam(value = "username") String username,
+                                                @RequestParam(value = "password") String password);
+
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatusDTO>> listCommitStatus(@PathVariable("projectId") Integer projectId,
                                                            @RequestParam("sha") String sha,
