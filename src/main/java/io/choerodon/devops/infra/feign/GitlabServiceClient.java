@@ -286,7 +286,12 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{projectId}/repository/branches")
     ResponseEntity<List<BranchDTO>> listBranch(@PathVariable("projectId") Integer projectId,
-                                               @RequestParam(value = "userId") Integer userId);
+                                               @RequestParam(value = "userId") Integer userId,
+                                               @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                               @RequestParam(value = "authType") String authType,
+                                               @RequestParam(value = "accessToken") String accessToken,
+                                               @RequestParam(value = "username") String username,
+                                               @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
     ResponseEntity<Pipeline> retryPipeline(
