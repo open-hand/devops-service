@@ -1169,7 +1169,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, gitlabPipelineId, commitSha, ref);
 
                 // 保存流水线记录关系
-                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(gitlabPipelineId);
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), gitlabPipelineId);
                 DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByPipelineIdAndCiPipelineRecordId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getId());
                 devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
                 devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);
