@@ -427,7 +427,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 如果流水线状态更新为成功，则执行cd流水线触发逻辑
         if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getGitlabPipelineId());
             if (devopsCdPipelineRecordDTO != null) {
                 devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
             }
