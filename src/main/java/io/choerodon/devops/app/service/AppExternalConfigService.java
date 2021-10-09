@@ -21,5 +21,5 @@ public interface AppExternalConfigService {
 
     void baseDelete(Long externalConfigId);
 
-    List<AppExternalConfigDTO> queryByRepositoryUrl(String repositoryUrl);
+    int checkRepositoryUrlUnique(String repositoryUrl);
 }

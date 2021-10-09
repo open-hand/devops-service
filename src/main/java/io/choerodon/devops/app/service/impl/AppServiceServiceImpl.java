@@ -3627,13 +3627,19 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Boolean isExternalGitlabUrlUnique(String externalGitlabUrl) {
-        return CollectionUtils.isEmpty(appExternalConfigService.queryByRepositoryUrl(externalGitlabUrl));
+        return appExternalConfigService.checkRepositoryUrlUnique(externalGitlabUrl) < 1;
     }
 
     @Override
     public Boolean testConnection(AppExternalConfigDTO appExternalConfigDTO) {
-        // 校验账户权限
-        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
-        return !ObjectUtils.isEmpty(gitlabProjectDTO);
+        boolean flag;
+        try {
+            // 校验账户权限
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
+            flag = !ObjectUtils.isEmpty(gitlabProjectDTO);
+        } catch (Exception e) {
+            flag = false;
+        }
+        return flag;
     }
 }
