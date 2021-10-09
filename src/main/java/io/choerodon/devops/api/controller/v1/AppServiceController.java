@@ -18,6 +18,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
@@ -82,6 +83,39 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Validated ExternalAppServiceVO externalAppServiceVO) {
         return ResponseEntity.ok(applicationServiceService.createExternalApp(projectId, externalAppServiceVO));
+    }
+
+    /**
+     * 校验外部地址GITLAB仓库地址唯一性
+     *
+     * @param projectId         项目id
+     * @param externalGitlabUrl gitlab的url
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验外部地址GITLAB仓库地址唯一性")
+    @GetMapping(value = "/check_gitlab_url")
+    public ResponseEntity<Boolean> checkGitlabUrl(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "gitlab的url", required = true)
+            @RequestParam String externalGitlabUrl) {
+        return ResponseEntity.ok(applicationServiceService.isExternalGitlabUrlUnique(externalGitlabUrl));
+    }
+
+    /**
+     * 测试GITLAB是否联通
+     *
+     * @param projectId         项目id
+     * @param appExternalConfigDTO gitlab的url
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "测试GITLAB是否联通")
+    @PostMapping(value = "/test_connection")
+    public ResponseEntity<Boolean> testConnection(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody AppExternalConfigDTO appExternalConfigDTO) {
+        return Results.success(applicationServiceService.testConnection(appExternalConfigDTO));
     }
 
     /**

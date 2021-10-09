@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -59,6 +61,13 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Transactional
     public void baseDelete(Long externalConfigId) {
         appExternalConfigMapper.deleteByPrimaryKey(externalConfigId);
+    }
+
+    @Override
+    public boolean checkRepositoryUrlUnique(String repositoryUrl) {
+        AppExternalConfigDTO appExternalConfigDTO = new AppExternalConfigDTO();
+        appExternalConfigDTO.setRepositoryUrl(repositoryUrl);
+        return appExternalConfigMapper.selectCount(appExternalConfigDTO) < 1;
     }
 
     protected void handlerAppExternalConfigDTO (AppExternalConfigDTO appExternalConfigDTO) {
