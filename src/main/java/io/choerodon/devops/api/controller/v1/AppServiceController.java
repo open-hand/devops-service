@@ -98,7 +98,7 @@ public class AppServiceController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab的url", required = true)
-            @RequestParam String externalGitlabUrl) {
+            @RequestParam(value = "external_gitlab_url")  String externalGitlabUrl) {
         return ResponseEntity.ok(applicationServiceService.isExternalGitlabUrlUnique(externalGitlabUrl));
     }
 
