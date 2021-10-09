@@ -3100,6 +3100,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (appServiceDTO == null) {
             return null;
         }
+        if (appServiceDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            return appExternalConfigDTO.getRepositoryUrl();
+        }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
