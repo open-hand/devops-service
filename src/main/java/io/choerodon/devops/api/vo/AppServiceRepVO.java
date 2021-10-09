@@ -43,6 +43,10 @@ public class AppServiceRepVO {
     @ApiModelProperty("应用服务是否启用")
     private Boolean isActive;
 
+    @Encrypt
+    @ApiModelProperty("外部仓库配置id")
+    private Long externalConfigId;
+
     private String publishLevel;
     private String contributor;
 
@@ -137,6 +141,14 @@ public class AppServiceRepVO {
 
     @ApiModelProperty("外部应用仓库配置")
     private AppExternalConfigDTO appExternalConfigDTO;
+
+    public Long getExternalConfigId() {
+        return externalConfigId;
+    }
+
+    public void setExternalConfigId(Long externalConfigId) {
+        this.externalConfigId = externalConfigId;
+    }
 
     public AppExternalConfigDTO getAppExternalConfigDTO() {
         return appExternalConfigDTO;

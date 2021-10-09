@@ -68,7 +68,7 @@ public interface DevopsCiPipelineRecordService {
      */
     DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
 
-    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
+    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId);
 
     List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds);
 
