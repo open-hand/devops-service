@@ -64,10 +64,10 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     }
 
     @Override
-    public int checkRepositoryUrlUnique(String repositoryUrl) {
+    public boolean checkRepositoryUrlUnique(String repositoryUrl) {
         AppExternalConfigDTO appExternalConfigDTO = new AppExternalConfigDTO();
         appExternalConfigDTO.setRepositoryUrl(repositoryUrl);
-        return appExternalConfigMapper.selectCount(appExternalConfigDTO);
+        return appExternalConfigMapper.selectCount(appExternalConfigDTO) < 1;
     }
 
     protected void handlerAppExternalConfigDTO (AppExternalConfigDTO appExternalConfigDTO) {

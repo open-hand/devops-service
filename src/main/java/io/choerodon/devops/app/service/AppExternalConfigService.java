@@ -21,5 +21,5 @@ public interface AppExternalConfigService {
 
     void baseDelete(Long externalConfigId);
 
-    int checkRepositoryUrlUnique(String repositoryUrl);
+    boolean checkRepositoryUrlUnique(String repositoryUrl);
 }
