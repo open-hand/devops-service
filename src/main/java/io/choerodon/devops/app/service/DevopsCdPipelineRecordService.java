@@ -16,7 +16,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsCdPipelineRecordService {
 
-    DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
+    DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId);
 
     void save(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
 

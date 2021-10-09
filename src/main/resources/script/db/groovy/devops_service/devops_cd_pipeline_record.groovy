@@ -33,4 +33,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_pipeline_record.groovy') {
         }
     }
 
+    changeSet(author: 'wanghao', id: '2020-10-19-add-index') {
+
+        addUniqueConstraint(tableName: 'devops_cd_pipeline_record',
+                constraintName: 'uk_gitlab_devops_pipeline_id', columnNames: 'gitlab_pipeline_id, pipeline_id')
+    }
+
 }
