@@ -864,7 +864,25 @@ public class GitlabServiceClientOperator {
     public List<TagDTO> listTags(Integer projectId, Integer userId) {
         ResponseEntity<List<TagDTO>> tagResponseEntity;
         try {
-            tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+            tagResponseEntity = gitlabServiceClient.getTags(projectId, userId, null, null, null, null, null);
+        } catch (Exception e) {
+            throw new CommonException("error.tags.get", e);
+        }
+        return tagResponseEntity.getBody();
+    }
+
+    public List<TagDTO> listExternalTags(Integer projectId, AppExternalConfigDTO appExternalConfigDTO) {
+        ResponseEntity<List<TagDTO>> tagResponseEntity;
+        try {
+            GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
+
+            tagResponseEntity = gitlabServiceClient.getTags(projectId,
+                    null,
+                    gitlabRepositoryInfo.getGitlabUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword());
         } catch (Exception e) {
             throw new CommonException("error.tags.get", e);
         }

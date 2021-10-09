@@ -355,7 +355,12 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/repository/tags")
     ResponseEntity<List<TagDTO>> getTags(
             @PathVariable("projectId") Integer projectId,
-            @RequestParam(value = "userId", required = false) Integer userId);
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     /**
      * 创建tag
