@@ -317,14 +317,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+        // 外部应用服务直接从gitlab查询
         if (applicationDTO.getExternalConfigId() != null) {
             AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
             List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listExternalBranch(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
             if (branchDTOS == null) {
                 return new Page<>();
             }
-
-
             List<BranchVO> branchVOS = branchDTOS.stream().map(branchDTO -> {
                 BranchVO branchVO = new BranchVO();
                 branchVO.setBranchName(branchDTO.getName());
@@ -562,6 +561,24 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember) {
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
+        if (applicationDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+            List<TagDTO> tagDTOS = gitlabServiceClientOperator.listExternalTags(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
+            if (tagDTOS == null) {
+                return new Page<>();
+            }
+            List<TagVO> tagVOS = ConvertUtils.convertList(tagDTOS, TagVO.class);
+            if (params != null) {
+                Map<String, Object> maps = TypeUtil.castMapParams(params);
+                Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+                Object tagName = searchParam.get("tagName");
+                tagVOS = tagVOS.stream().filter(tag -> tag.getName().contains(tagName.toString())).collect(Collectors.toList());
+            }
+
+            return PageUtils.createPageFromList(tagVOS, new PageRequest(page, size));
+        }
+
         if (Boolean.TRUE.equals(checkMember)) {
             try {
                 checkGitlabAccessLevelService.checkGitlabPermission(projectId, applicationId, AppServiceEvent.TAG_LIST);
@@ -570,7 +587,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
+
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
