@@ -93,7 +93,7 @@ public class AppServiceController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验外部地址GITLAB仓库地址唯一性")
-    @GetMapping(value = "/check_gitlab_url")
+    @GetMapping(value = "/external/check_gitlab_url")
     public ResponseEntity<Boolean> checkGitlabUrl(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -110,7 +110,7 @@ public class AppServiceController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "测试GITLAB是否联通")
-    @PostMapping(value = "/test_connection")
+    @PostMapping(value = "/external/test_connection")
     public ResponseEntity<Boolean> testConnection(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
