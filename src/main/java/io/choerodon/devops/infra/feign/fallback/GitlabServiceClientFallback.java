@@ -230,6 +230,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<TagDTO>> getTags(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<List<TagDTO>> getTags(Integer projectId, Integer userId) {
         throw new CommonException("error.tags.get");
     }
