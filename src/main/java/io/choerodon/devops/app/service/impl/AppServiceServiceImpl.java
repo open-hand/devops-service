@@ -386,7 +386,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, null, null, null,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), includeExternal)),
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), true)),
                 this::dtoToRepVoWithoutIamUserFill);
     }
 
@@ -712,7 +712,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                Boolean checkMember,
                                                Boolean includeExternal) {
 
-        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember);
+        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember, includeExternal);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectId, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -2719,7 +2719,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
+                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", true);
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
                 return ArrayUtil.singleAsList(appServiceGroupVO);
