@@ -101,11 +101,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
         ExternalTenantVO externalTenantVO = baseServiceClientOperator.queryTenantByIdWithExternalInfo(projectDTO.getOrganizationId());
         // 平台组织直接跳过
-        if (externalTenantVO == null) {
-            return true;
-        }
         LOGGER.info(">>>>>>>>>>>>>>>>>externalTenantVO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(externalTenantVO));
-        if (externalTenantVO.getRegister()
+        if (Boolean.TRUE.equals(externalTenantVO.getRegister())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
             // 2. 查询gitlab已经使用了的大小
