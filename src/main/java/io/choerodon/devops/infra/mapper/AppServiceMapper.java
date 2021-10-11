@@ -96,7 +96,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds,
                                                    @Param("param") String param,
-                                                   @Param("projectId") Long projectId);
+                                                   @Param("projectId") Long projectId,
+                                                   @Param("includeExternal") Boolean includeExternal);
 
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,

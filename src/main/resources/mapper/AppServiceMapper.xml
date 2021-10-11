@@ -504,7 +504,9 @@
             and
             ((b.share_level = 'organization' and b.app_service_id IS NOT NULL) or
             (b.project_id = #{projectId} and b.share_level = 'project'))
-            AND das.external_config_id IS NULL
+            <if test="!includeExternal">
+                AND das.external_config_id IS NULL
+            </if>
             <if test="param != null and param != ''">
                 AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
                 OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
