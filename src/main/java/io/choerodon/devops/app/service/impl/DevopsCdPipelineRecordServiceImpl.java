@@ -178,7 +178,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsCdPipelineRecordDTO.setPipelineId(devopsPipelineId);
-        return devopsCdPipelineRecordMapper.selectOne(devopsCdPipelineRecordDTO);
+        return devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO).get(0);
     }
 
     @Override
