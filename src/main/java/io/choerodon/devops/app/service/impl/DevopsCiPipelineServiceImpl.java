@@ -255,7 +255,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void initGitlabCiFile(Integer gitlabProjectId, String branch, String ciFileIncludeUrl) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME);
 
-        if (repositoryFile == null) {
+        if (repositoryFile == null || repositoryFile.getContent() == null) {
             // 说明项目下还没有CI文件
             // 创建文件
             try {
@@ -394,26 +394,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void saveCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-            ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
-                DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
-                devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-                DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
-                // 保存ci job信息
-                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
-                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        // 不让数据库存加密的值
-                        decryptCiBuildMetadata(devopsCiJobVO);
-                        processCiJobVO(devopsCiJobVO);
-                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-                        devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
-                    });
-                }
-            });
+//            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//            ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
+//                DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
+//                devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
+//                DevopsCiStageDTO savedDevopsCiStageDTO = devopsCiStageService.create(devopsCiStageDTO);
+//                // 保存ci job信息
+//                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+//                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+//                        // 不让数据库存加密的值
+//                        decryptCiBuildMetadata(devopsCiJobVO);
+//                        processCiJobVO(devopsCiJobVO);
+//                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+//                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
+//                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
+//                        devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
+//                    });
+//                }
+//            });
             // 保存ci配置文件
-            saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
+//            saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
