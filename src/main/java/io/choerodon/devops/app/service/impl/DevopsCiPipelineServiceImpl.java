@@ -300,7 +300,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void initExternalGitlabCiFile(Integer gitlabProjectId, String branch, String ciFileIncludeUrl, AppExternalConfigDTO appExternalConfigDTO) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getExternalWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME, appExternalConfigDTO);
 
-        if (repositoryFile == null) {
+        if (repositoryFile == null  || repositoryFile.getContent() == null || repositoryFile.getFilePath() == null) {
             // 说明项目下还没有CI文件
             // 创建文件
             try {
