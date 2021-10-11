@@ -280,6 +280,6 @@ public interface BaseServiceClient {
     ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "user_id") Long userId);
 
-    @GetMapping("/v1/organizations/external/tenants")
+    @GetMapping("/choerodon/v1/organizations/external/tenants")
     ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId);
 }
