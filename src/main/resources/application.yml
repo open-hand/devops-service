@@ -89,8 +89,8 @@ choerodon:
   sass:
     resource-limit:
       gitlab:
-        standard: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_STANDARD:"2147483648"} # 1024 * 1024 * 1024 * 2  (2G)
-        senior: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_SENIOR:"10737418240"} # 1024 * 1024 * 1024 * 10 (10G)
+        standard: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_STANDARD:2147483648} # 1024 * 1024 * 1024 * 2  (2G)
+        senior: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_SENIOR:10737418240} # 1024 * 1024 * 1024 * 10 (10G)
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
