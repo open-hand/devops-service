@@ -504,7 +504,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                 Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
-                GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(tenant.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(), gitlabUserId);
+                GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(tenant.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(), gitlabUserId, false);
                 if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
                     // 一般情况下，这个关于count的if条件是true，不正常的数据才会false
                     if (selectCountByGitlabProjectId(gitlabProjectDO.getId()) == 0) {
@@ -895,7 +895,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
                 .queryProjectByName(organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(),
-                        devOpsAppServicePayload.getUserId());
+                        devOpsAppServicePayload.getUserId(), false);
         Integer gitlabProjectId = gitlabProjectDO.getId();
         if (gitlabProjectId == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServicePayload.getGroupId(),
@@ -976,7 +976,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 organizationDTO.getTenantNum() + "-" + projectDTO.getCode(),
                 appServiceDTO.getCode(),
-                devOpsAppServiceImportPayload.getUserId());
+                devOpsAppServiceImportPayload.getUserId(),
+                false);
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(devOpsAppServiceImportPayload.getGroupId(),
                     devOpsAppServiceImportPayload.getPath(),
@@ -2062,7 +2063,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 newGroupName,
                 appServiceDTO.getCode(),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                true);
         //创建gitlab 应用 一个空的库
         if (gitlabProjectDTO.getId() == null) {
             gitlabProjectDTO = gitlabServiceClientOperator.createProject(
@@ -2382,7 +2384,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 newGroupName,
                 appServiceDTO.getCode(),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
+                true);
         //创建gitlab 应用
         if (gitlabProjectDTO.getId() == null) {
             gitlabProjectDTO = gitlabServiceClientOperator.createProject(

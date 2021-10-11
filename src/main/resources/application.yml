@@ -86,6 +86,11 @@ choerodon:
   resource:
     jwt:
       ignore: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop, /websocket
+  sass:
+    resource-limit:
+      gitlab:
+        standard: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_STANDARD:1024 * 1024 * 1024 * 2}
+        senior: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_SENIOR:1024 * 1024 * 1024 * 10}
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址

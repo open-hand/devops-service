@@ -182,7 +182,8 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(
                 groupPath,
                 devopsAppTemplateDTO.getCode(),
-                gitlabAdminUserId);
+                gitlabAdminUserId,
+                false);
         if (gitlabProjectDTO.getId() == null) {
             gitlabProjectDTO = gitlabServiceClientOperator.createProject(
                     groupDTO.getId(),

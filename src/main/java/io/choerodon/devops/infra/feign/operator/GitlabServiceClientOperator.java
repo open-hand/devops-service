@@ -578,9 +578,9 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public GitlabProjectDTO queryProjectByName(String groupName, String projectName, Integer userId) {
+    public GitlabProjectDTO queryProjectByName(String groupName, String projectName, Integer userId, Boolean statistics) {
         try {
-            return gitlabServiceClient.queryProjectByName(userId, groupName, projectName).getBody();
+            return gitlabServiceClient.queryProjectByName(userId, groupName, projectName, statistics).getBody();
         } catch (Exception e) {
             throw new CommonException(e);
         }

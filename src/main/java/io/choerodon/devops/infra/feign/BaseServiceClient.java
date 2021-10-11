@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -278,4 +279,7 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询当前组织下用户的项目列表")
     ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "user_id") Long userId);
+
+    @GetMapping("/v1/organizations/external/tenants")
+    ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId);
 }

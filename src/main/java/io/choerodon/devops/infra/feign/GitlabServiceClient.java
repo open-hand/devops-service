@@ -112,7 +112,9 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/queryByName")
     ResponseEntity<GitlabProjectDTO> queryProjectByName(@RequestParam("userId") Integer userId,
                                                         @RequestParam("groupName") String groupName,
-                                                        @RequestParam("projectName") String projectName);
+                                                        @RequestParam("projectName") String projectName,
+                                                        @RequestParam(value = "statistics", defaultValue = "false") Boolean statistics);
+
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDTO> create(@PathVariable("userId") Integer userId);

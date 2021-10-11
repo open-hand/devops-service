@@ -6,13 +6,16 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.List;
 
 import feign.FeignException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.service.DevopsProjectService;
@@ -21,11 +24,13 @@ import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
+import io.choerodon.devops.infra.enums.SaasLevelEnum;
 import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -36,6 +41,12 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class GitlabGroupServiceImpl implements GitlabGroupService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
+
+    @Value(value = "${choerodon.sass.resource-limit.gitlab.standard}")
+    private long standardRepositoryStorageLimit;
+    @Value(value = "${choerodon.sass.resource-limit.gitlab.senior}")
+    private long seniorRepositoryStorageLimit;
+
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -78,9 +89,31 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     @Override
     public Boolean checkRepositoryAvailable(String groupName, String projectName, String token) {
         // 1. 先判断租户是否有限制，没有限制则直接放行
-
-        // 2. 查询
-        return null;
+        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(groupName, null);
+        if (groupDTO == null) {
+            return false;
+        }
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(groupDTO.getId());
+        if (devopsProjectDTO == null) {
+            return false;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
+        ExternalTenantVO externalTenantVO = baseServiceClientOperator.queryTenantByIdWithExternalInfo(projectDTO.getOrganizationId());
+        if (externalTenantVO.getRegister()
+                || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
+                || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
+            // 2. 查询gitlab已经使用了的大小
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(groupName, projectName, null, true);
+            // 3. 判断是否超过限制
+            return gitlabProjectDTO.getStatistics().getRepositorySize() < standardRepositoryStorageLimit;
+        } else if (StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.SENIOR.name())){
+            // 2. 查询gitlab已经使用了的大小
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(groupName, projectName, null, true);
+            // 3. 判断是否超过限制
+            return gitlabProjectDTO.getStatistics().getRepositorySize() < seniorRepositoryStorageLimit;
+        } else {
+            return true;
+        }
     }
 
     /**
