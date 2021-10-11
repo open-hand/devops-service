@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
@@ -103,6 +104,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (externalTenantVO == null) {
             return true;
         }
+        LOGGER.info(">>>>>>>>>>>>>>>>>externalTenantVO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(externalTenantVO));
         if (externalTenantVO.getRegister()
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
