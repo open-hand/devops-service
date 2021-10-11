@@ -105,14 +105,18 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (Boolean.TRUE.equals(externalTenantVO.getRegister())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>Limit tenant code repository to standard.group {}, project {}<<<<<<<<<<<<<<<<", groupName, projectName);
             // 2. 查询gitlab已经使用了的大小
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(groupName, projectName, null, true);
             // 3. 判断是否超过限制
+            LOGGER.info(">>>>>>>>>>>>>>>>>group {}, project {}. Used RepositorySize is {}, standardRepositoryStorageLimit is {}<<<<<<<<<<<<<<<<", groupName, projectName, gitlabProjectDTO.getStatistics().getRepositorySize(), standardRepositoryStorageLimit);
             return gitlabProjectDTO.getStatistics().getRepositorySize() < standardRepositoryStorageLimit;
         } else if (StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.SENIOR.name())){
+            LOGGER.info(">>>>>>>>>>>>>>>>>Limit tenant code repository to senior.group {}, project {}<<<<<<<<<<<<<<<<", groupName, projectName);
             // 2. 查询gitlab已经使用了的大小
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(groupName, projectName, null, true);
             // 3. 判断是否超过限制
+            LOGGER.info(">>>>>>>>>>>>>>>>>group {}, project {}. Used RepositorySize is {}, seniorRepositoryStorageLimit is {}<<<<<<<<<<<<<<<<", groupName, projectName, gitlabProjectDTO.getStatistics().getRepositorySize(), seniorRepositoryStorageLimit);
             return gitlabProjectDTO.getStatistics().getRepositorySize() < seniorRepositoryStorageLimit;
         } else {
             return true;
