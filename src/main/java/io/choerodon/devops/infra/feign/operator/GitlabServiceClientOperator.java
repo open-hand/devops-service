@@ -1436,12 +1436,44 @@ public class GitlabServiceClientOperator {
         return pipeline.getBody();
     }
 
-    public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid) {
-        return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid).getBody();
+    public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid, AppExternalConfigDTO appExternalConfigDTO) {
+        if (appExternalConfigDTO == null) {
+            return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null).getBody();
+        } else {
+            GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
+
+            return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
+                    gitlabRepositoryInfo.getGitlabUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword()).getBody();
+        }
     }
 
-    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId) {
-        return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId).getBody();
+    public JobDTO retryJob(int gitlabProjectId, int jobId, int gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
+        if (appExternalConfigDTO == null) {
+            return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null).getBody();
+        } else {
+            GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
+
+            return gitlabServiceClient.retryJob(gitlabProjectId, jobId, gitlabUserId,
+                    gitlabRepositoryInfo.getGitlabUrl(),
+                    appExternalConfigDTO.getAuthType(),
+                    appExternalConfigDTO.getAccessToken(),
+                    appExternalConfigDTO.getUsername(),
+                    appExternalConfigDTO.getPassword()).getBody();
+        }
     }
 
     public JobDTO playJob(int gitlabProjectId, int jobId, int gitlabUserId) {

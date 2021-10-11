@@ -452,12 +452,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<String> queryTrace(Integer projectId, Integer jobId, Integer userId) {
+    public ResponseEntity<String> queryTrace(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         return null;
     }
 
     @Override
-    public ResponseEntity<JobDTO> retryJob(Integer projectId, Integer jobId, Integer userId) {
+    public ResponseEntity<JobDTO> retryJob(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         return null;
     }
 
