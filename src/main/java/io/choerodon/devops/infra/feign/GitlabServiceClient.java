@@ -617,14 +617,24 @@ public interface GitlabServiceClient {
     ResponseEntity<String> queryTrace(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @ApiOperation(value = "重试job")
     @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
     ResponseEntity<JobDTO> retryJob(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @ApiOperation(value = "执行 manul job")
     @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/play")
