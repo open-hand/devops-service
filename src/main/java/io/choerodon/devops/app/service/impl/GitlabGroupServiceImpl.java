@@ -99,6 +99,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
         ExternalTenantVO externalTenantVO = baseServiceClientOperator.queryTenantByIdWithExternalInfo(projectDTO.getOrganizationId());
+        // 平台组织直接跳过
+        if (externalTenantVO == null) {
+            return true;
+        }
         if (externalTenantVO.getRegister()
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
