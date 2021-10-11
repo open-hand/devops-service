@@ -110,7 +110,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GitlabProjectDTO> queryProjectByName(Integer userId, String groupName, String projectName) {
+    public ResponseEntity<GitlabProjectDTO> queryProjectByName(Integer userId, String groupName, String projectName, Boolean statistics) {
         throw new CommonException("error.project.get");
     }
 

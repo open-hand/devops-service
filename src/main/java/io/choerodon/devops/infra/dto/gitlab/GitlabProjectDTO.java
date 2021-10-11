@@ -47,6 +47,15 @@ public class GitlabProjectDTO {
     private Boolean wallEnabled;
     private String webUrl;
     private Boolean wikiEnabled;
+    private ProjectStatistics statistics;
+
+    public ProjectStatistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(ProjectStatistics statistics) {
+        this.statistics = statistics;
+    }
 
     public Integer getApprovalsBeforeMerge() {
         return approvalsBeforeMerge;
