@@ -91,10 +91,14 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     public Boolean checkRepositoryAvailable(String groupName, String projectName, String token) {
         // 1. 先判断租户是否有限制，没有限制则直接放行
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(groupName, null);
+        LOGGER.info(">>>>>>>>>>>>>>>>>groupDTO {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(groupDTO));
+
         if (groupDTO == null) {
             return false;
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(groupDTO.getId());
+        LOGGER.info(">>>>>>>>>>>>>>>>>devopsProjectDTO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsProjectDTO));
+
         if (devopsProjectDTO == null) {
             return false;
         }
