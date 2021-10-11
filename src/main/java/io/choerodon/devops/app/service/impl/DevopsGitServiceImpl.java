@@ -332,7 +332,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (params != null) {
                 Map<String, Object> maps = TypeUtil.castMapParams(params);
                 Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-                if (CollectionUtils.isEmpty(searchParam)) {
+                if (!CollectionUtils.isEmpty(searchParam)) {
                     Object branchName = searchParam.get("branchName");
                     branchVOS = branchVOS.stream().filter(branchVO -> branchVO.getBranchName().contains(branchName.toString())).collect(Collectors.toList());
                 }
