@@ -1019,4 +1019,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
         return devopsCiPipelineRecordVO;
     }
+
+    @Override
+    public AppServiceDTO queryAppServiceByPipelineRecordId(Long pipelineRecordId) {
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+        return applicationService.baseQuery(ciCdPipelineVO.getAppServiceId());
+    }
 }

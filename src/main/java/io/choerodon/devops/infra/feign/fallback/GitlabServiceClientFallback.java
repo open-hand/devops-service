@@ -462,7 +462,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<JobDTO> playJob(Integer projectId, Integer jobId, Integer userId) {
+    public ResponseEntity<JobDTO> playJob(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         return null;
     }
 

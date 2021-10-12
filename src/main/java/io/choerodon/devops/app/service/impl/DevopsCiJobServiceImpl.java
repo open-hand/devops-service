@@ -58,6 +58,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
@@ -189,7 +192,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
-        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+
+        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
 
@@ -198,7 +203,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY_TASK);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
         devopsCiPipelineService.checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
 
@@ -282,12 +287,20 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+        }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
 
         devopsCiPipelineService.checkUserBranchMergePermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
 
 
-        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(),
+                jobId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                appExternalConfigDTO);
 
         devopsCiJobRecordDTO.setStatus(jobDTO.getStatus().toString());
 
