@@ -771,7 +771,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 return new Page<>();
             }
         }
-
+        // 添加外部应用服务
+        appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));
         // 查询流水线
         Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam));
 

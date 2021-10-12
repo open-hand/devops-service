@@ -603,4 +603,5 @@ public interface AppServiceService {
 
     Boolean testConnection(AppExternalConfigDTO appExternalConfigDTO);
 
+    Set<Long> listExternalAppIdByProjectId(Long projectId);
 }
