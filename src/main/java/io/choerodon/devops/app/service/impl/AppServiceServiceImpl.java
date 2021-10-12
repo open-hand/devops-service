@@ -3653,6 +3653,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Boolean isExternalGitlabUrlUnique(String externalGitlabUrl) {
+        if (externalGitlabUrl.endsWith(".git")) {
+            externalGitlabUrl = externalGitlabUrl.substring(0, externalGitlabUrl.indexOf(".git"));
+        }
+
         return appExternalConfigService.checkRepositoryUrlUnique(externalGitlabUrl);
     }
 
