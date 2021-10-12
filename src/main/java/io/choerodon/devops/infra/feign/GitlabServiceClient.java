@@ -641,7 +641,12 @@ public interface GitlabServiceClient {
     ResponseEntity<JobDTO> playJob(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
     ResponseEntity<BranchDTO> queryBranchByName(

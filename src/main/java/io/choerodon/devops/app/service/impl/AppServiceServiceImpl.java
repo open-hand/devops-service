@@ -3603,6 +3603,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         externalAppServiceVO.setProjectId(projectId);
         externalAppServiceVO.setType(ApplicationType.NORMAL.getType());
 
+        AppExternalConfigDTO externalConfigDTO = externalAppServiceVO.getAppExternalConfigDTO();
+        externalConfigDTO.setRepositoryUrl(externalConfigDTO.getRepositoryUrl().replace(".git", ""));
+
         ApplicationValidator.checkApplicationService(externalAppServiceVO.getCode());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
@@ -3610,17 +3613,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
 
         // 校验账户权限
-        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(externalAppServiceVO.getAppExternalConfigDTO());
+        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(externalConfigDTO);
 
         // 保存外部仓库配置
-        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalAppServiceVO.getAppExternalConfigDTO(), AppExternalConfigDTO.class);
+        AppExternalConfigDTO appExternalConfigDTO = ConvertUtils.convertObject(externalConfigDTO, AppExternalConfigDTO.class);
         appExternalConfigDTO.setProjectId(projectId);
         appExternalConfigService.baseSave(appExternalConfigDTO);
 
         AppServiceDTO appServiceDTO = getExternalApplicationServiceDTO(projectId,
                 gitlabProjectDTO.getId(),
                 externalAppServiceVO);
-        GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalAppServiceVO.getAppExternalConfigDTO().getRepositoryUrl());
+        GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(externalConfigDTO.getRepositoryUrl());
         appServiceDTO.setExternalGitlabUrl(gitlabRepositoryInfo.getGitlabUrl());
         appServiceDTO.setExternalConfigId(appExternalConfigDTO.getId());
         appServiceDTO = baseCreate(appServiceDTO);
@@ -3657,8 +3660,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             // 校验账户权限
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
             flag = !ObjectUtils.isEmpty(gitlabProjectDTO);
         } catch (Exception e) {
+            LOGGER.error("error.query.gitlab.group", e);
             flag = false;
         }
         return flag;
