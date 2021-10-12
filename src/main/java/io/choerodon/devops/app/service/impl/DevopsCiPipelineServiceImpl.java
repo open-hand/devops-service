@@ -767,12 +767,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } else {
             //如果是项目成员，需要developer及以上的权限
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            // 添加外部应用服务
+            appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new Page<>();
             }
         }
-        // 添加外部应用服务
-        appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));
+
         // 查询流水线
         Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam));
 

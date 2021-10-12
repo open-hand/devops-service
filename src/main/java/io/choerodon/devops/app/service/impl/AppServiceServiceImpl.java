@@ -2488,13 +2488,13 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (checkMember) {
                 Long tenantId = baseServiceClientOperator.queryImmutableProjectInfo(projectId).getTenantId();
                 appServiceIds = getMemberAppServiceIds(tenantId, projectId, userId);
+                appServiceIds.addAll(listExternalAppIdByProjectId(projectId));
                 if (CollectionUtils.isEmpty(appServiceIds)) {
                     return new Page<>();
                 }
             } else {
                 appServiceIds = null;
             }
-            appServiceIds.addAll(listExternalAppIdByProjectId(projectId));
             //是否需要分页
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
