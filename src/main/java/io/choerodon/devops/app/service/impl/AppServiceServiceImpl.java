@@ -143,6 +143,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final String SOURCE_CODE_BUCKET_NAME = "market-source-code-bucket";
     public static final String GITLAB_VARIABLE_TOKEN = "Token";
     public static final String GITLAB_VARIABLE_TRIVY_INSECURE = "TRIVY_INSECURE";
+    public static final String CHOERODON_URL = "CHOERODON_URL";
 
     /**
      * CI 文件模板
@@ -936,6 +937,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<CiVariableVO> variables = new ArrayList<>();
         variables.add(new CiVariableVO(GITLAB_VARIABLE_TOKEN, appServiceDTO.getToken()));
         variables.add(new CiVariableVO(GITLAB_VARIABLE_TRIVY_INSECURE, "true"));
+        variables.add(new CiVariableVO(CHOERODON_URL, gatewayUrl));
         gitlabServiceClientOperator.batchSaveExternalProjectVariable(appServiceDTO.getGitlabProjectId(), appExternalConfigDTO, variables);
 
         // 3. 添加webhook
