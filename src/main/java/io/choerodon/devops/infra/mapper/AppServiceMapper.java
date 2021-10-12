@@ -134,6 +134,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     List<Long> listAllAppServiceIds(@Param("projectId") Long projectId);
 
+    Set<Long> listAllExternalAppServiceIds(@Param("projectId") Long projectId);
+
     int updateIsActiveNullToTrue();
 
     List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("appServiceName") String appServiceName);

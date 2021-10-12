@@ -2494,6 +2494,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             } else {
                 appServiceIds = null;
             }
+            appServiceIds.addAll(listExternalAppIdByProjectId(projectId));
             //是否需要分页
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
@@ -3673,5 +3674,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             flag = false;
         }
         return flag;
+    }
+
+    @Override
+    public Set<Long> listExternalAppIdByProjectId(Long projectId) {
+        return appServiceMapper.listAllExternalAppServiceIds(projectId);
     }
 }

@@ -919,4 +919,10 @@
              temp.tempId DESC
 
     </select>
+    <select id="listAllExternalAppServiceIds" resultType="java.lang.Long">
+        SELECT DISTINCT da.id
+        FROM devops_app_service da
+        WHERE da.is_active
+        AND da.project_id=#{projectId,jdbcType=BIGINT} and da.external_config_id is not null
+    </select>
 </mapper>
