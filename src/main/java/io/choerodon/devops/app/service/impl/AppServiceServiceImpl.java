@@ -154,6 +154,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private final JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.gitlab.proxy-url}")
+    private String gitlabProxyUrl;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
     @Value("${services.sonarqube.url:}")
@@ -780,9 +782,17 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<Long> distinctIds = userIds.stream().distinct().collect(toList());
         Map<Long, IamUserDTO> users = baseServiceClientOperator.listUsersByIds(new ArrayList<>(distinctIds)).stream().collect(toMap(IamUserDTO::getId, u -> u));
 
-        initApplicationParams(projectId, applicationDTOServiceList, urlSlash);
+        initApplicationParamsWithProxyUrl(projectId, applicationDTOServiceList, urlSlash);
+
 
         return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
+    }
+
+    private void initApplicationParamsWithProxyUrl(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+        ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
+        for (AppServiceDTO t : applicationDTOS) {
+            initApplicationParamsWithProxyUrl(info, t, urlSlash);
+        }
     }
 
     @Override
@@ -3406,6 +3416,31 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appService.setRepoUrl(
                         gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
                                 + appService.getCode() + ".git");
+            } else {
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appService.getExternalConfigId());
+                appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());
+                appService.setAppExternalConfigDTO(appExternalConfigDTO);
+            }
+
+        }
+    }
+
+    private void initApplicationParamsWithProxyUrl(ImmutableProjectInfoVO info, AppServiceDTO appService, String urlSlash) {
+        if (appService.getGitlabProjectId() != null) {
+            String projectCode = info.getProjCode();
+            String tenantCode = info.getTenantNum();
+            if (appService.getExternalConfigId() == null) {
+                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
+                if (gitlabProxyUrl != null) {
+                    appService.setRepoUrl(
+                            gitlabProxyUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                                    + appService.getCode() + ".git");
+                } else {
+                    appService.setRepoUrl(
+                            gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                                    + appService.getCode() + ".git");
+                }
+
             } else {
                 AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appService.getExternalConfigId());
                 appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());

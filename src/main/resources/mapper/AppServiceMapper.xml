@@ -163,7 +163,8 @@
     </sql>
 
     <sql id="listProjectMembersAppServiceByActive">
-        SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
+        SELECT da.*,
+            (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
         FROM devops_app_service da
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
@@ -175,6 +176,7 @@
                 #{appServiceId}
             </foreach>
         </if>
+        order by da.external_config_id is not null
     </sql>
 
     <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
