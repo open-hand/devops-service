@@ -175,10 +175,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
-        devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        devopsCdPipelineRecordDTO.setPipelineId(devopsPipelineId);
-        return devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO).get(0);
+
+        return devopsCdPipelineRecordMapper.queryByPipelineIdAndGitlabPipelineId(devopsPipelineId, gitlabPipelineId);
     }
 
     @Override
