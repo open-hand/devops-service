@@ -3432,7 +3432,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             String tenantCode = info.getTenantNum();
             if (appService.getExternalConfigId() == null) {
                 appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
-                if (gitlabProxyUrl != null) {
+                if (org.apache.commons.lang3.StringUtils.isNoneBlank(gitlabProxyUrl)) {
                     appService.setRepoUrl(
                             gitlabProxyUrl + urlSlash + tenantCode + "-" + projectCode + "/"
                                     + appService.getCode() + ".git");
