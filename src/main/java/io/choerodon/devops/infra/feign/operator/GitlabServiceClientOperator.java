@@ -440,12 +440,13 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
+    public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId, String branch) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setPath(path);
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
+            fileCreationVO.setBranchName(branch);
             gitlabServiceClient.deleteFile(projectId,
                     fileCreationVO,
                     null,
@@ -458,12 +459,13 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public void deleteExternalFile(Integer projectId, String path, String commitMessage, Integer userId, AppExternalConfigDTO appExternalConfigDTO) {
+    public void deleteExternalFile(Integer projectId, String path, String commitMessage, Integer userId, String branch, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setPath(path);
             fileCreationVO.setCommitMessage(commitMessage);
             fileCreationVO.setUserId(userId);
+            fileCreationVO.setBranchName(branch);
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
             gitlabServiceClient.deleteFile(projectId,
