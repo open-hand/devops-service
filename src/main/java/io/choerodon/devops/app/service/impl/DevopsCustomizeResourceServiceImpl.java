@@ -240,7 +240,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsCustomizeResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             } else {
                 devopsCustomizeResourceMapper.deleteByPrimaryKey(resourceId);
                 devopsCustomizeResourceContentService.baseDelete(devopsCustomizeResourceDTO.getContentId());

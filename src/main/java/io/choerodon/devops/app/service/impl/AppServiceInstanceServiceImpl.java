@@ -1693,7 +1693,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
@@ -1719,7 +1719,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

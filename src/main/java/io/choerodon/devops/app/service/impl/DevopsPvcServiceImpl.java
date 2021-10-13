@@ -152,7 +152,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         PERSISTENTVOLUMECLAIM_PREFIX + devopsPvcDTO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return true;
         } else {
@@ -172,7 +172,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<V1PersistentVolumeClaim> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

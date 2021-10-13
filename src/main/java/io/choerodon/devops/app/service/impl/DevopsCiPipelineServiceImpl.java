@@ -887,7 +887,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
             if (appExternalConfigDTO == null) {
-                deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
+                deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch());
             } else {
                 deleteExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
             }
@@ -1326,16 +1326,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         pipelineFailFrequency.add(failCount[0]);
     }
 
-    private void deleteGitlabCiFile(Integer gitlabProjectId, String branch, AppExternalConfigDTO appExternalConfigDTO) {
+    private void deleteGitlabCiFile(Integer gitlabProjectId, String branch) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME);
-        if (repositoryFile != null) {
+        if (repositoryFile != null && repositoryFile.getFilePath() != null && repositoryFile.getContent() != null) {
             try {
                 LOGGER.info("deleteGitlabCiFile: delete .gitlab-ci.yaml for gitlab project with id {}", gitlabProjectId);
                 gitlabServiceClientOperator.deleteFile(
                         gitlabProjectId,
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
                         GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                        GitUserNameUtil.getAdminId());
+                        GitUserNameUtil.getAdminId(),
+                        branch);
             } catch (Exception e) {
                 throw new CommonException("error.delete.gitlab-ci.file", e);
             }
@@ -1353,6 +1354,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
                         GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
                         GitUserNameUtil.getAdminId(),
+                        branch,
                         appExternalConfigDTO);
             } catch (Exception e) {
                 throw new CommonException("error.delete.gitlab-ci.file", e);
