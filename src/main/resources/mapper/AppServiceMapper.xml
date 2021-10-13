@@ -160,6 +160,7 @@
         AND das.is_synchro IS TRUE
         AND das.gitlab_project_id IS NOT NULL
         AND das.project_id = #{projectId}
+        order by das.external_config_id is null
     </sql>
 
     <sql id="listProjectMembersAppServiceByActive">
@@ -176,7 +177,7 @@
                 #{appServiceId}
             </foreach>
         </if>
-        order by da.external_config_id is not null
+        order by da.external_config_id is null
     </sql>
 
     <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
