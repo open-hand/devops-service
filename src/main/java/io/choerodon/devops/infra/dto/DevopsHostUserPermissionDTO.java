@@ -26,6 +26,8 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
     private String loginName;
     @ApiModelProperty("用户id")
     private Long iamUserId;
+    @ApiModelProperty("主机角色")
+    private String role;
     @ApiModelProperty("用户真实名称")
     private String realName;
 
@@ -82,5 +84,13 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }

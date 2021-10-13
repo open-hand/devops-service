@@ -19,4 +19,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_host_user_permission',
                 constraintName: 'uk_iam_user_id_host_id', columnNames: 'iam_user_id,host_id')
     }
+
+    changeSet(author: 'lihao', id: '2021-10-13-add-column') {
+        addColumn(tableName: 'devops_host_user_permission') {
+            column(name: 'role', type: 'VARCHAR(16)', remarks: '角色类型 member:主机使用权限 administrator:主机管理和使用权限', afterColumn: 'iam_user_id')
+        }
+
+        sql("""
+        UPDATE devops_host_user_permission set role='member'
+               """)
+    }
 }

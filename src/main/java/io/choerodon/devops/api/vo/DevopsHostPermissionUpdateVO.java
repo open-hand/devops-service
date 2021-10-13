@@ -17,6 +17,12 @@ public class DevopsHostPermissionUpdateVO {
     @NotNull(message = "error.user.ids.null")
     private List<Long> userIds;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.DevopsHostRoleEnums}
+     */
+    @ApiModelProperty("用户在主机下的角色")
+    private String role;
+
     @ApiModelProperty("是否跳过权限校验 / 必需")
     @NotNull(message = "error.is.skip.permission.check.null")
     private Boolean skipCheckPermission;
