@@ -26,6 +26,7 @@ spring:
 
 services:
   gitlab:
+    proxy-url: ${SERVICES_GITLAB_PROXY_URL} # 代理服务地址, 可为空 (v1.1)
     url: "gitlab.example.com" # gitlab地址
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
