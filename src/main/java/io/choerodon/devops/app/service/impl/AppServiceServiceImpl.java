@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.ibatis.annotations.Param;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -2676,7 +2677,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageable) {
+    public Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, Boolean includeExternal, PageRequest pageable) {
 
         List<AppServiceGroupInfoVO> appServiceGroupInfoVOS = new ArrayList<>();
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
@@ -2699,7 +2700,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (projectIds.isEmpty()) {
                 return new Page<>();
             }
-            List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, param, projectId);
+            List<AppServiceDTO> organizationAppServices = appServiceMapper.queryOrganizationShareApps(projectIds, param, projectId, includeExternal);
             if (organizationAppServices.isEmpty()) return new Page<>();
 
             // 去重
@@ -2998,8 +2999,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<ProjectVO> listProjectByShare(Long projectId, Boolean share) {
-        Page<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, Boolean.TRUE, null, null, new PageRequest(0, 0));
+    public List<ProjectVO> listProjectByShare(Long projectId, Boolean share, Boolean includeExternal) {
+        Page<AppServiceGroupInfoVO> appServiceGroupInfoVOPageInfo = pageAppServiceByMode(projectId, Boolean.TRUE, null, null, includeExternal, new PageRequest(0, 0));
         List<AppServiceGroupInfoVO> list = appServiceGroupInfoVOPageInfo.getContent();
         List<ProjectVO> projectVOS = new ArrayList<>();
         if (CollectionUtils.isEmpty(list)) {

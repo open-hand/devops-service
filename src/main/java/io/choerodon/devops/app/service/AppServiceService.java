@@ -384,7 +384,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageable);
+    Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, Boolean includeExternal, PageRequest pageable);
 
     /**
      * 查询所有应用服务
@@ -450,7 +450,7 @@ public interface AppServiceService {
      * @param share
      * @return
      */
-    List<ProjectVO> listProjectByShare(Long projectId, Boolean share);
+    List<ProjectVO> listProjectByShare(Long projectId, Boolean share, Boolean includeExternal);
 
     /**
      * 根据版本Id集合查询应用服务

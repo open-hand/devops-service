@@ -664,6 +664,8 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "市场来源", required = true)
             @RequestParam(required = true) Boolean share,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询项目Id", required = false)
@@ -671,7 +673,7 @@ public class AppServiceController {
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, pageable))
+                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, includeExternal, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
@@ -763,8 +765,10 @@ public class AppServiceController {
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
-            @RequestParam(value = "share") Boolean share) {
-        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share), HttpStatus.OK);
+            @RequestParam(value = "share") Boolean share,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
+        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share, includeExternal), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
