@@ -898,15 +898,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String currentDateStr = sdf.format(new Date());
-        Date currentDate = null;
-        try {
-            currentDate = sdf.parse(currentDateStr);
-        } catch (ParseException e) {
-            LOGGER.error("parse failed", e);
-        }
-        return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds), currentDate);
+        return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds));
     }
 
     /**
