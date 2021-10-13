@@ -416,7 +416,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public void updateExternalFile(Integer projectId, String path, String content, String commitMessage, Integer userId, AppExternalConfigDTO appExternalConfigDTO) {
+    public void updateExternalFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branchName, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setUserId(userId);
