@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
  * @author wanghao
  * @since 2020/7/14 16:14
  */
-@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
+//@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Component
 @EnableScheduling
 public class PipelineStatusSyncSchedule {

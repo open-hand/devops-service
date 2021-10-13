@@ -399,11 +399,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
         GitlabPipelineDTO pipelineDTO = gitlabServiceClientOperator.queryPipeline(TypeUtil.objToInteger(gitlabProjectId),
                 TypeUtil.objToInteger(gitlabPipelineId),
-                GitUserNameUtil.getAdminId(),
+                null,
                 appExternalConfigDTO);
         List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId,
                 gitlabPipelineId,
-                GitUserNameUtil.getAdminId(),
+                null,
                 appExternalConfigDTO);
 
         Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
