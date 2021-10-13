@@ -155,7 +155,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private final JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
-    @Value("${services.gitlab.proxy-url}")
+    @Value("${services.gitlab.proxy-url:}")
     private String gitlabProxyUrl;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
