@@ -275,11 +275,6 @@ public interface DevopsHostService {
     void deletePermissionOfUser(Long projectId, Long hostId, Long userId);
 
     /**
-     * 获取环境下所有用户权限
-     */
-    List<DevopsUserVO> listAllUserPermission(Long hostId);
-
-    /**
      * 环境下为用户分配权限
      */
     void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO);

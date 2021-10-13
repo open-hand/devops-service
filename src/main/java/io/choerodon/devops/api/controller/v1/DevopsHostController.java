@@ -479,29 +479,6 @@ public class DevopsHostController {
         return ResponseEntity.noContent().build();
     }
 
-
-    /**
-     * 获取主机下所有用户权限（获取所有有主机权限的项目下项目成员）
-     *
-     * @param projectId 项目id
-     * @param hostId    主机id
-     * @return baseList
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "获取主机下所有用户权限")
-    @GetMapping(value = "/{host_id}/list_all")
-    public ResponseEntity<List<DevopsUserVO>> listAllUserPermission(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "主机id", required = true)
-            @PathVariable(value = "host_id") Long hostId) {
-        return Optional.ofNullable(devopsHostService.listAllUserPermission(hostId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.host.user.permission.get"));
-    }
-
     /**
      * 主机下为用户分配权限
      *

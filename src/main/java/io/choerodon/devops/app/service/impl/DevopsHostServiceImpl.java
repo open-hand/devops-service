@@ -706,15 +706,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
     }
 
-    @Override
-    public List<DevopsUserVO> listAllUserPermission(Long hostId) {
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        // 校验用户为项目所有者或者为主机创建者
-        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(devopsHostDTO.getProjectId()) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
-
-        return ConvertUtils.convertList(devopsHostUserPermissionService.baseListByHostId(hostId), DevopsUserVO.class);
-    }
-
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
