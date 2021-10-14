@@ -118,12 +118,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String groupId = null;
         String artifactId = null;
         String version = null;
-
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         // 校验主机权限
-        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, hostId, DetailsHelper.getUserDetails().getUserId());
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
@@ -499,12 +498,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Transactional
     public void deployCustomInstance(Long projectId, CustomDeployVO customDeployVO) {
         Long hostId = customDeployVO.getHostId();
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         // 校验主机权限
-        devopsHostUserPermissionService.checkUserPermissionAndThrow(projectId, hostId, DetailsHelper.getUserDetails().getUserId());
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(customDeployVO.getSourceType());
         deploySourceVO.setProjectName(projectDTO.getName());

@@ -411,7 +411,7 @@ public class DevopsHostController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询主机下用户权限")
     @PostMapping(value = "/{host_id}/permission/page_by_options")
-    public ResponseEntity<Page<DevopsUserPermissionVO>> pageHostUserPermissions(
+    public ResponseEntity<Page<DevopsHostUserPermissionVO>> pageHostUserPermissions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -451,7 +451,7 @@ public class DevopsHostController {
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsHostService.listNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
+        return Optional.ofNullable(devopsHostService.pageNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.host.non.related.users"));
     }
@@ -483,7 +483,7 @@ public class DevopsHostController {
      * 主机下为用户分配权限
      *
      * @param hostId                       主机id
-     * @param devopsHostPermissionUpdateVO 权限分配信息
+     * @param devopsHostUserPermissionUpdateVO 权限分配信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
@@ -496,8 +496,8 @@ public class DevopsHostController {
             @ApiParam(value = "主机id", required = true)
             @PathVariable(value = "host_id") Long hostId,
             @ApiParam(value = "有权限的用户ids")
-            @RequestBody @Valid DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
-        devopsHostService.updateHostUserPermission(projectId, devopsHostPermissionUpdateVO);
+            @RequestBody @Valid DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
+        devopsHostService.updateHostUserPermission(projectId, devopsHostUserPermissionUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

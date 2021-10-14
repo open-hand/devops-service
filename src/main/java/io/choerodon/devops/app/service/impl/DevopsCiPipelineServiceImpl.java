@@ -248,7 +248,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     /**
      * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
-     *  @param gitlabProjectId  gitlab项目id
+     *
+     * @param gitlabProjectId  gitlab项目id
      * @param branch
      * @param ciFileIncludeUrl include中的链接
      */
@@ -293,14 +294,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     /**
      * 第一次创建CI流水线时初始化外部仓库下的.gitlab-ci.yml文件
-     *  @param gitlabProjectId  gitlab项目id
+     *
+     * @param gitlabProjectId  gitlab项目id
      * @param branch
      * @param ciFileIncludeUrl include中的链接
      */
     private void initExternalGitlabCiFile(Integer gitlabProjectId, String branch, String ciFileIncludeUrl, AppExternalConfigDTO appExternalConfigDTO) {
         RepositoryFileDTO repositoryFile = gitlabServiceClientOperator.getExternalWholeFile(gitlabProjectId, branch, GitOpsConstants.GITLAB_CI_FILE_NAME, appExternalConfigDTO);
 
-        if (repositoryFile == null  || repositoryFile.getContent() == null || repositoryFile.getFilePath() == null) {
+        if (repositoryFile == null || repositoryFile.getContent() == null || repositoryFile.getFilePath() == null) {
             // 说明项目下还没有CI文件
             // 创建文件
             try {
@@ -596,7 +598,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
 
-        devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserPermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
+        devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
 
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
@@ -868,7 +870,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
         devopsCdJobService.deleteByPipelineId(pipelineId);
-
 
 
         // 删除 ci job记录

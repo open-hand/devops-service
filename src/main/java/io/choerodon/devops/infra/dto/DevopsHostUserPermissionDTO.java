@@ -26,8 +26,8 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
     private String loginName;
     @ApiModelProperty("用户id")
     private Long iamUserId;
-    @ApiModelProperty("主机角色")
-    private String role;
+    @ApiModelProperty("权限标签")
+    private String permissionLabel;
     @ApiModelProperty("用户真实名称")
     private String realName;
 
@@ -39,11 +39,12 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
         this.iamUserId = userId;
     }
 
-    public DevopsHostUserPermissionDTO(String loginName, Long iamUserId, String realName, Long hostId) {
+    public DevopsHostUserPermissionDTO(String loginName, Long iamUserId, Long hostId, String realName, String permissionLabel) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
         this.realName = realName;
         this.hostId = hostId;
+        this.permissionLabel = permissionLabel;
     }
 
     public Long getId() {
@@ -86,11 +87,11 @@ public class DevopsHostUserPermissionDTO extends AuditDomain {
         this.realName = realName;
     }
 
-    public String getRole() {
-        return role;
+    public String getPermissionLabel() {
+        return permissionLabel;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setPermissionLabel(String permissionLabel) {
+        this.permissionLabel = permissionLabel;
     }
 }

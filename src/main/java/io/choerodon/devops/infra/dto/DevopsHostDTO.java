@@ -80,10 +80,6 @@ public class DevopsHostDTO extends AuditDomain {
     @Transient
     private Integer privatePort;
 
-    @ApiModelProperty("是否跳过权限校验")
-    private Boolean skipCheckPermission;
-
-
     public String getToken() {
         return token;
     }
@@ -194,13 +190,5 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setPrivatePort(Integer privatePort) {
         this.privatePort = privatePort;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
     }
 }
