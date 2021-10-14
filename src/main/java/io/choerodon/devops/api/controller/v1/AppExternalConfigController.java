@@ -37,4 +37,13 @@ public class AppExternalConfigController {
         appExternalConfigService.update(projectId, id, appExternalConfigDTO);
         return ResponseEntity.noContent().build();
     }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询外部认证配置")
+    @GetMapping("/{id}")
+    public ResponseEntity<AppExternalConfigDTO> query(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(appExternalConfigService.baseQuery(id));
+    }
 }
