@@ -424,6 +424,7 @@ public class GitlabServiceClientOperator {
             fileCreationVO.setPath(path);
             fileCreationVO.setContent(content);
             fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setBranchName(branchName);
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId,
