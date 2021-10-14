@@ -44,4 +44,14 @@
         WHERE dhup.host_id=#{hostId}
         AND dhup.iam_user_id=#{userId}
     </select>
+
+    <select id="listUserHostPermissionByUserIdAndHostIds"
+            resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+        SELECT host_id ,permission_label FROM devops_host_user_permission dhup
+        WHERE dhup.iam_user_id=#{userId}
+        AND host_id IN
+        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
+            #{hostId}
+        </foreach>
+    </select>
 </mapper>

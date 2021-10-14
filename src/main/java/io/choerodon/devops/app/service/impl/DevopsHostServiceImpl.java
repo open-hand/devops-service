@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -304,23 +305,32 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         // 解析查询参数
         Page<DevopsHostVO> page;
         List<DevopsHostVO> devopsHostVOList;
+        Map<Long, DevopsHostUserPermissionDTO> hostPermissionMap = new HashMap<>();
         if (projectOwnerOrRoot) {
             devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
         } else {
             devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
+            if (CollectionUtils.isEmpty(devopsHostVOList)) {
+                return new Page<>();
+            }
+            hostPermissionMap = devopsHostUserPermissionService.listUserHostPermissionByUserIdAndHostIds(DetailsHelper.getUserDetails().getUserId(), devopsHostVOList.stream().map(DevopsHostVO::getId).collect(Collectors.toList()))
+                    .stream()
+                    .collect(Collectors.toMap(DevopsHostUserPermissionDTO::getHostId, Function.identity()));
         }
+
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        Map<Long, DevopsHostUserPermissionDTO> finalHostPermissionMap = hostPermissionMap;
         devopsHostVOList = devopsHostVOList.stream()
                 .peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue()))
                 .sorted(Comparator.comparing(DevopsHostVO::getHostStatus))
                 .peek(h -> {
-                    // 如果是项目所有者或者root，展示权限管理tab和按钮
-                    if (projectOwnerOrRoot) {
-                        h.setShowPermission(true);
+                    // 如果是项目所有者、root、创建者，设置administrator标签
+                    if (projectOwnerOrRoot || h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId())) {
+                        h.setPermissionLabel(DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue());
                     } else {
                         // 项目成员且为主机创建者，展示权限管理tab和按钮
                         // 仅仅是项目成员，不展示权限管理tab和按钮
-                        h.setShowPermission(h.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()));
+                        h.setPermissionLabel(finalHostPermissionMap.get(h.getId()).getPermissionLabel());
                     }
                 }).collect(Collectors.toList());
 
