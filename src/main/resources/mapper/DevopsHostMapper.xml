@@ -41,24 +41,7 @@
     </select>
 
     <select id="listMemberHostByOptions" resultType="io.choerodon.devops.api.vo.DevopsHostVO">
-        (SELECT dh.*
-         FROM devops_host dh
-        <where>
-            dh.skip_check_permission = true
-            <if test="projectId != null">
-                AND dh.project_id = #{projectId}
-            </if>
-            <if test="searchParam != null">
-                and (dh.name LIKE CONCAT(CONCAT('%', #{searchParam}), '%')
-                        OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}), '%'))
-            </if>
-            <if test='hostStatus != null'>
-                AND dh.host_status = #{hostStatus}
-            </if>
-        </where>
-        )
-                UNION
-                (
+        (
                 SELECT dh.*
                 FROM devops_host dh
                              INNER JOIN devops_host_user_permission dhup ON dhup.host_id = dh.id
