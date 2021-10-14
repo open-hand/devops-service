@@ -113,6 +113,11 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     }
 
     @Override
+    public List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostIds) {
+        return devopsHostUserPermissionMapper.listUserHostPermissionByUserIdAndHostIds(userId, hostIds);
+    }
+
+    @Override
     public Boolean checkUserOwnUsePermission(Long projectId, Long hostId, Long userId) {
         try {
             DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);

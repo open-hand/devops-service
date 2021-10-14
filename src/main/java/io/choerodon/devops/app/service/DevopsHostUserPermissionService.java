@@ -63,4 +63,12 @@ public interface DevopsHostUserPermissionService {
      * @param userId
      */
     void checkUserOwnManagePermissionOrThrow(Long projectId, DevopsHostDTO devopsHostDTO, Long userId);
+
+    /**
+     * 根据hostId以及用户id查出所有权限
+     * @param userId
+     * @param hostId
+     * @return
+     */
+    List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostId);
 }
