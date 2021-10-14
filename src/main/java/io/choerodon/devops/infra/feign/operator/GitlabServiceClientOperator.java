@@ -392,20 +392,21 @@ public class GitlabServiceClientOperator {
 
     /**
      * 这里是更新master分支上的文件内容
-     *
-     * @param projectId     项目id
+     *  @param projectId     项目id
      * @param path          文件路径
      * @param content       文件内容
      * @param commitMessage 提交信息
      * @param userId        gitlab用户id
+     * @param branch
      */
-    public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
         try {
             FileCreationVO fileCreationVO = new FileCreationVO();
             fileCreationVO.setUserId(userId);
             fileCreationVO.setPath(path);
             fileCreationVO.setContent(content);
             fileCreationVO.setCommitMessage(commitMessage);
+            fileCreationVO.setBranchName(branch);
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, fileCreationVO, null, null, null, null, null);
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
