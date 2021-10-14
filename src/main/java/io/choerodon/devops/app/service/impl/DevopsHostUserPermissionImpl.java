@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -114,6 +116,9 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
 
     @Override
     public List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostIds) {
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return new ArrayList<>();
+        }
         return devopsHostUserPermissionMapper.listUserHostPermissionByUserIdAndHostIds(userId, hostIds);
     }
 
