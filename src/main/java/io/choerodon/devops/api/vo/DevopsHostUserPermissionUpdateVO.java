@@ -6,7 +6,9 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-public class DevopsHostPermissionUpdateVO {
+import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
+
+public class DevopsHostUserPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("主机id / 必需")
     @NotNull(message = "error.env.id.null")
@@ -17,11 +19,14 @@ public class DevopsHostPermissionUpdateVO {
     @NotNull(message = "error.user.ids.null")
     private List<Long> userIds;
 
+    @ApiModelProperty("表示是否为项目下所有用户分配指定权限")
+    private Boolean updateAllUser;
+
     /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostRoleEnums}
+     * {@link DevopsHostUserPermissionLabelEnums}
      */
-    @ApiModelProperty("用户在主机下的角色")
-    private String role;
+    @ApiModelProperty("用户在主机下的权限标签")
+    private String permissionLabel;
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
     @NotNull(message = "error.is.skip.permission.check.null")
@@ -62,4 +67,19 @@ public class DevopsHostPermissionUpdateVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
+    public String getPermissionLabel() {
+        return permissionLabel;
+    }
+
+    public void setPermissionLabel(String permissionLabel) {
+        this.permissionLabel = permissionLabel;
+    }
+
+    public Boolean getUpdateAllUser() {
+        return updateAllUser;
+    }
+
+    public void setUpdateAllUser(Boolean updateAllUser) {
+        this.updateAllUser = updateAllUser;
+    }
 }

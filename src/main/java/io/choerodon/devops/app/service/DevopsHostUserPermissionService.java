@@ -3,26 +3,10 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
 
 public interface DevopsHostUserPermissionService {
-
-    /**
-     * 校验用户是否有主机权限，没有权限则抛出异常
-     * @param hostId 主机id
-     * @param userId 用户id
-     */
-    void checkUserPermissionAndThrow(Long projectId, Long hostId, Long userId);
-
-    /**
-     * 校验用户是否有主机权限，没有权限则抛出异常
-     * @param projectId
-     * @param hostId 主机id
-     * @param userId 用户id
-     * @return 有权限返回true,否则false
-     */
-    Boolean checkUserPermission(Long projectId, Long hostId, Long userId);
-
     /**
      * 插入关系
      */
@@ -39,11 +23,6 @@ public interface DevopsHostUserPermissionService {
     void deleteByHostId(Long hostId);
 
     /**
-     * 更新关系
-     */
-    void baseUpdate(Long hostId, List<Long> addIamUserIds);
-
-    /**
      * 删除关系
      */
     void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO);
@@ -57,4 +36,31 @@ public interface DevopsHostUserPermissionService {
      * 查询主机用户权限记录
      */
     List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(Long hostId, Map<String, Object> searchParamMap, List<String> paramList);
+
+    /**
+     * 检查用户拥有使用权限（包括部署、查看、删除、修改、停止、重启应用）,有 返回true，没有 返回false
+     *
+     * @param projectId
+     * @param hostId
+     * @param userId
+     */
+    Boolean checkUserOwnUsePermission(Long projectId, Long hostId, Long userId);
+
+    /**
+     * 检查用户拥有使用权限（包括部署、查看、删除、修改、停止、重启应用），没有则抛出异常
+     *
+     * @param projectId
+     * @param devopsHostDTO
+     * @param userId
+     */
+    void checkUserOwnUsePermissionOrThrow(Long projectId, DevopsHostDTO devopsHostDTO, Long userId);
+
+    /**
+     * 检查用户拥有管理权限（包括部署、查看、删除、修改、停止、重启应用、连接主机、断开连接、删除、修改），没有则抛出异常
+     *
+     * @param projectId
+     * @param devopsHostDTO
+     * @param userId
+     */
+    void checkUserOwnManagePermissionOrThrow(Long projectId, DevopsHostDTO devopsHostDTO, Long userId);
 }

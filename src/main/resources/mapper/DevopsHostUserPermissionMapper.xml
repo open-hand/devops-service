@@ -37,4 +37,11 @@
             </foreach>
         </if>
     </sql>
+
+    <select id="queryPermissionLabelByHostIdAndUserId"
+            resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+    SELECT permission_label FROM devops_host_user_permission dhup
+        WHERE dhup.host_id=#{hostId}
+        AND dhup.iam_user_id=#{userId}
+    </select>
 </mapper>

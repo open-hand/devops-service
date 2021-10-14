@@ -22,11 +22,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_user_permission.groovy') {
 
     changeSet(author: 'lihao', id: '2021-10-13-add-column') {
         addColumn(tableName: 'devops_host_user_permission') {
-            column(name: 'role', type: 'VARCHAR(16)', remarks: '角色类型 member:主机使用权限 administrator:主机管理和使用权限', afterColumn: 'iam_user_id')
+            column(name: 'permission_label', type: 'VARCHAR(16)', remarks: '权限标签 common:主机使用权限 administrator:主机管理和使用权限', afterColumn: 'iam_user_id')
         }
 
         sql("""
-        UPDATE devops_host_user_permission set role='member'
+        UPDATE devops_host_user_permission set permission_label='common'
                """)
     }
 }

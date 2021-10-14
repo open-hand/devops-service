@@ -50,9 +50,6 @@ public class DevopsHostVO {
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
 
-    @ApiModelProperty("是否跳过权限检验")
-    private Boolean skipCheckPermission;
-
     @ApiModelProperty("版本号")
     private Long objectVersionNumber;
 
@@ -150,14 +147,6 @@ public class DevopsHostVO {
 
     public void setSelected(Boolean selected) {
         this.selected = selected;
-    }
-
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
     }
 
     public Long getObjectVersionNumber() {
