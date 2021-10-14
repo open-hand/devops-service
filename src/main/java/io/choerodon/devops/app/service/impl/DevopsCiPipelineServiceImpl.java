@@ -285,7 +285,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitOpsConstants.GITLAB_CI_FILE_NAME,
                         buildIncludeYaml(ciFileIncludeUrl) + GitOpsConstants.NEW_LINE + commentedLines,
                         GitOpsConstants.CI_FILE_COMMIT_MESSAGE,
-                        GitUserNameUtil.getAdminId());
+                        GitUserNameUtil.getAdminId(),
+                        branch);
             } catch (Exception ex) {
                 throw new CommonException("error.create.or.update.gitlab.ci", ex);
             }
