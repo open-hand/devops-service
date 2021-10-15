@@ -33,7 +33,7 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     private PermissionHelper permissionHelper;
     @Autowired
     @Qualifier("devopsHostUserPermissionInsertHelper")
-    private BatchInsertHelper<DevopsHostUserPermissidevopsHostServiceImplonDTO> batchInsertHelper;
+    private BatchInsertHelper<DevopsHostUserPermissionDTO> batchInsertHelper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -123,7 +123,7 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     @Override
     public Boolean checkUserOwnUsePermission(Long projectId, Long hostId, Long userId) {
         try {
-            DevopsHostDTO devopsHostDTO = .baseQuery(hostId);
+            DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
             checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, userId);
         } catch (Exception e) {
             return false;
