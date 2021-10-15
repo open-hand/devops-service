@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -82,7 +81,6 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayloa
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -2669,6 +2667,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Set<Long> ids = baseServiceClientOperator.listProjectIdsInOrg(organizationId);
         // 移除当前项目
         ids.remove(projectId);
+        if (CollectionUtils.isEmpty(ids)){
+            return new ArrayList<>();
+        }
         List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params);
 
         // 将应用服务按照项目分组
