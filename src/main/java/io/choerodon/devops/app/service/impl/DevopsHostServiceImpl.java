@@ -124,6 +124,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
     @Autowired
+    @Lazy
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private UserAttrService userAttrService;
