@@ -1,19 +1,16 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.enums.ExternalAppAuthTypeEnum;
 import io.choerodon.devops.infra.mapper.AppExternalConfigMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.devops.infra.util.DESEncryptUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉
@@ -35,14 +32,15 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Override
     public AppExternalConfigDTO baseQueryWithPassword(Long id) {
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigMapper.selectByPrimaryKey(id);
-        appExternalConfigDTO.setPassword(null);
+        appExternalConfigDTO.setPassword(DESEncryptUtil.decode(appExternalConfigDTO.getPassword()));
         return appExternalConfigDTO;
     }
 
     @Override
-    public AppExternalConfigDTO baseQueryWithoutPassword(Long id) {
+    public AppExternalConfigDTO baseQueryWithoutPasswordAndToken(Long id) {
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigMapper.selectByPrimaryKey(id);
         appExternalConfigDTO.setPassword(null);
+        appExternalConfigDTO.setAccessToken(null);
         return appExternalConfigDTO;
     }
 
@@ -85,6 +83,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
             appExternalConfigDTO.setPassword(null);
         } else if (ExternalAppAuthTypeEnum.USERNAME_PASSWORD.getValue().equals(appExternalConfigDTO.getAuthType())) {
             appExternalConfigDTO.setAccessToken(null);
+            appExternalConfigDTO.setPassword(DESEncryptUtil.encode(appExternalConfigDTO.getPassword()));
         } else {
             throw new CommonException(ERROR_INVALID_APP_AUTH_TYPE);
         }

@@ -3417,7 +3417,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
                                 + appService.getCode() + ".git");
             } else {
-                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appService.getExternalConfigId());
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithoutPasswordAndToken(appService.getExternalConfigId());
                 appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());
                 appService.setAppExternalConfigDTO(appExternalConfigDTO);
             }
