@@ -115,8 +115,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
     }
 
     changeSet(author: 'lihao', id: '2021-10-13-drop-is-skip-check-permission') {
-        addColumn(tableName: 'devops_host') {
-            dropColumn(columnName: "skip_check_permission", tableName: "devops_host")
-        }
+        dropColumn(columnName: "skip_check_permission", tableName: "devops_host")
     }
 }
