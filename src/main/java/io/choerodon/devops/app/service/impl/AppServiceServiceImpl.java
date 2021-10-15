@@ -29,7 +29,6 @@ import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.ibatis.annotations.Param;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -942,7 +941,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         AppServiceDTO appServiceDTO = baseQuery(devOpsAppServicePayload.getAppServiceId());
 
-        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
         // 2. 设置token等变量（创建或更新）
         List<CiVariableVO> variables = new ArrayList<>();
@@ -3133,7 +3132,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return null;
         }
         if (appServiceDTO.getExternalConfigId() != null) {
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
             return appExternalConfigDTO.getRepositoryUrl();
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
@@ -3418,7 +3417,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
                                 + appService.getCode() + ".git");
             } else {
-                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appService.getExternalConfigId());
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appService.getExternalConfigId());
                 appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());
                 appService.setAppExternalConfigDTO(appExternalConfigDTO);
             }
@@ -3443,7 +3442,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
 
             } else {
-                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appService.getExternalConfigId());
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appService.getExternalConfigId());
                 appService.setRepoUrl(appExternalConfigDTO.getRepositoryUrl());
                 appService.setAppExternalConfigDTO(appExternalConfigDTO);
             }

@@ -422,7 +422,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
 
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
             ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
                 if (appExternalConfigDTO == null) {
@@ -885,7 +885,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 删除.gitlab-ci.yaml文件
         List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(pipelineId);
-        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
         devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
             if (appExternalConfigDTO == null) {
@@ -924,7 +924,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
         //触发ci流水线
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
-        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(),
                 userAttrDTO.getGitlabUserId().intValue(),
@@ -1487,7 +1487,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
             List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(ciCdPipelineDTO.getId());
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
             devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
                 if (appExternalConfigDTO == null) {

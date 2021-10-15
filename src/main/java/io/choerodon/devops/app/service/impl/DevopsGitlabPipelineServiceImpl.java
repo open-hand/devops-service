@@ -118,7 +118,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         //查询pipeline最新阶段信息
         List<Stage> stages = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
-        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
         List<Integer> gitlabJobIds = gitlabServiceClientOperator.listJobs(applicationDTO.getGitlabProjectId(),
                 TypeUtil.objToInteger(pipelineWebHookVO.getObjectAttributes().getId()),
                 gitlabUserId, appExternalConfigDTO)

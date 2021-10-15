@@ -33,8 +33,17 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     private AppExternalConfigMapper appExternalConfigMapper;
 
     @Override
-    public AppExternalConfigDTO baseQuery(Long id) {
-        return appExternalConfigMapper.selectByPrimaryKey(id);
+    public AppExternalConfigDTO baseQueryWithPassword(Long id) {
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigMapper.selectByPrimaryKey(id);
+        appExternalConfigDTO.setPassword(null);
+        return appExternalConfigDTO;
+    }
+
+    @Override
+    public AppExternalConfigDTO baseQueryWithoutPassword(Long id) {
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigMapper.selectByPrimaryKey(id);
+        appExternalConfigDTO.setPassword(null);
+        return appExternalConfigDTO;
     }
 
     @Override
