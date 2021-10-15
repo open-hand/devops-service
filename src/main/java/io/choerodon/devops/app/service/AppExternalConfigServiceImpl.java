@@ -61,7 +61,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
         appExternalConfigDTO.setProjectId(projectId);
 
         handlerAppExternalConfigDTO(appExternalConfigDTO);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExternalConfigMapper, appExternalConfigDTO, ERROR_UPDATE_APP_CONFIG_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appExternalConfigMapper, appExternalConfigDTO, ERROR_UPDATE_APP_CONFIG_FAILED);
     }
 
     @Override
