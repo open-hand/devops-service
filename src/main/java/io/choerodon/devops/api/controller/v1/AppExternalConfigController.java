@@ -44,6 +44,6 @@ public class AppExternalConfigController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok(appExternalConfigService.baseQueryWithoutPassword(id));
+        return ResponseEntity.ok(appExternalConfigService.baseQueryWithoutPasswordAndToken(id));
     }
 }

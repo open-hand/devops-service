@@ -15,7 +15,7 @@ public interface AppExternalConfigService {
 
     AppExternalConfigDTO baseQueryWithPassword(Long id);
 
-    AppExternalConfigDTO baseQueryWithoutPassword(Long id);
+    AppExternalConfigDTO baseQueryWithoutPasswordAndToken(Long id);
 
     void baseSave(AppExternalConfigDTO appExternalConfigDTO);
 
