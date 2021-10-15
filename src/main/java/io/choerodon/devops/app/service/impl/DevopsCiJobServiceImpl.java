@@ -182,7 +182,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
-            appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_DETAIL);
         return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
@@ -198,7 +198,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
 
-            appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY_TASK);
 
@@ -290,7 +290,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
-            appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
 

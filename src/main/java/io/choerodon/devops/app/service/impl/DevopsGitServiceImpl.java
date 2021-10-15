@@ -319,7 +319,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
         // 外部应用服务直接从gitlab查询
         if (applicationDTO.getExternalConfigId() != null) {
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
             List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listExternalBranch(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
             if (branchDTOS == null) {
                 return new Page<>();
@@ -566,7 +566,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         if (applicationDTO.getExternalConfigId() != null) {
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(applicationDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
             List<TagDTO> tagDTOS = gitlabServiceClientOperator.listExternalTags(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
             if (tagDTOS == null) {
                 return new Page<>();
@@ -578,7 +578,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 Object tagName = searchParam.get("tagName");
                 tagVOS = tagVOS.stream().filter(tag -> tag.getName().contains(tagName.toString())).collect(Collectors.toList());
             }
-
             return PageUtils.createPageFromList(tagVOS, new PageRequest(page, size));
         }
 

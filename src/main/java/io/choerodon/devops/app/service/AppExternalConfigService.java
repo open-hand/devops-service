@@ -13,7 +13,9 @@ import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
  */
 public interface AppExternalConfigService {
 
-    AppExternalConfigDTO baseQuery(Long id);
+    AppExternalConfigDTO baseQueryWithPassword(Long id);
+
+    AppExternalConfigDTO baseQueryWithoutPassword(Long id);
 
     void baseSave(AppExternalConfigDTO appExternalConfigDTO);
 

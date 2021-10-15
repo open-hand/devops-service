@@ -343,7 +343,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         if (devopsCiStageMapper.selectCount(devopsCiStageDTO) == 0) {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
 
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQuery(appServiceDTO.getExternalConfigId());
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
             String sha;
             List<CommitDTO> commitDTOList;
             if (appExternalConfigDTO == null) {
