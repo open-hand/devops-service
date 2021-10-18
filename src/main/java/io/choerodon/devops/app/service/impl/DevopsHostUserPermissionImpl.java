@@ -19,7 +19,6 @@ import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
 import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHostUserPermissionMapper;
 
 @Service
@@ -118,6 +117,11 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return new ArrayList<>();
         }
         return devopsHostUserPermissionMapper.listUserHostPermissionByUserIdAndHostIds(userId, hostIds);
+    }
+
+    @Override
+    public void deleteByHostIdAndUserIds(Long hostId, List<Long> userIds) {
+        devopsHostUserPermissionMapper.deleteByHostIdAndUserIds(hostId, userIds);
     }
 
     @Override
