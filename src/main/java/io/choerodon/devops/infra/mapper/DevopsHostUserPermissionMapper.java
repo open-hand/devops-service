@@ -17,4 +17,5 @@ public interface DevopsHostUserPermissionMapper extends BaseMapper<DevopsHostUse
 
     List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(@Param("userId") Long userId, @Param("hostIds") List<Long> hostIds);
 
+    void deleteByHostIdAndUserIds(@Param("hostId") Long hostId, @Param("userIds") List<Long> userIds);
 }

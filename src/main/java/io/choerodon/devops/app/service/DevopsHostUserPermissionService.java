@@ -66,9 +66,18 @@ public interface DevopsHostUserPermissionService {
 
     /**
      * 根据hostId以及用户id查出所有权限
+     *
      * @param userId
      * @param hostId
      * @return
      */
     List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostId);
+
+    /**
+     * 删除主机指定用户的权限
+     *
+     * @param hostId
+     * @param userIds
+     */
+    void deleteByHostIdAndUserIds(Long hostId, List<Long> userIds);
 }

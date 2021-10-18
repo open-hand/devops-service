@@ -39,7 +39,7 @@
     </sql>
 
     <select id="queryPermissionLabelByHostIdAndUserId"
-            resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+            resultType="java.lang.String">
     SELECT permission_label FROM devops_host_user_permission dhup
         WHERE dhup.host_id=#{hostId}
         AND dhup.iam_user_id=#{userId}
@@ -54,4 +54,13 @@
             #{hostId}
         </foreach>
     </select>
+
+    <delete id="deleteByHostIdAndUserIds">
+        DELETE FROM devops_host_user_permission
+        WHERE host_id=#{hostId}
+        AND iam_user_id IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </delete>
 </mapper>
