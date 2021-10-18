@@ -17,6 +17,8 @@ public class HostMsgVO {
     private String hostId;
     @ApiModelProperty("command_id")
     private Long commandId;
+    @ApiModelProperty("文件配置")
+    private String configSettings;
 
     public String getType() {
         return type;
@@ -48,5 +50,13 @@ public class HostMsgVO {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getConfigSettings() {
+        return configSettings;
+    }
+
+    public void setConfigSettings(String configSettings) {
+        this.configSettings = configSettings;
     }
 }
