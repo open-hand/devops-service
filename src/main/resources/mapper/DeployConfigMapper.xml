@@ -20,5 +20,30 @@
         <result column="object_version_number" property="objectVersionNumber" jdbcType="DECIMAL"/>
     </resultMap>
 
+    <select id="queryConfigsByHostId" resultType="io.choerodon.devops.infra.dto.DeployConfigDTO">
+        SELECT ddc.id,
+               ddc.project_id,
+               ddc.deploy_record_id,
+               ddc.host_id,
+               ddc.deploy_object_key,
+               ddc.instance_name,
+               ddc.config_id,
+               ddc.mount_path,
+               ddc.config_group,
+               ddc.config_code,
+               ddc.object_version_number
+        FROM devops_deploy_config ddc
+        WHERE ddc.host_id = #{hostId}
+          AND ddc.deploy_record_id IN
+          (
+              SELECT MAX(ddr.id)
+              FROM devops_deploy_record ddr
+              JOIN devops_deploy_config ddcon ON ddcon.project_id = ddr.project_id
+                                                     AND ddcon.deploy_record_id = ddr.id
+                                                     AND ddcon.host_id = ddr.deploy_payload_id
+              WHERE ddcon.host_id = #{hostId}
+              GROUP BY ddcon.instance_name
+          )
+    </select>
 
 </mapper>

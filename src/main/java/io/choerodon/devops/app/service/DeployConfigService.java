@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.deploy.ConfigSettingVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.infra.dto.DeployConfigDTO;
 
@@ -32,4 +31,12 @@ public interface DeployConfigService {
      * @param jarDeployVO
      */
     String doCreateConfigSetting(Long projectId, JarDeployVO jarDeployVO);
+
+    /**
+     * 构造发送到agent的配置
+     *
+     * @param hostId
+     * @return
+     */
+    String doCreateConfigSettings(Long hostId);
 }

@@ -303,7 +303,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
-
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.JAVA_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
