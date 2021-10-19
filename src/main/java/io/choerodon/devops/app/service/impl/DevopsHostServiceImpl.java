@@ -759,44 +759,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
+    public void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
         DevopsHostDTO preHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostUserPermissionUpdateVO.getHostId());
         // 校验主机属于该项目
         CommonExAssertUtil.assertTrue(projectId.equals(preHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, preHostDTO, DetailsHelper.getUserDetails().getUserId());
 
-        // 权限范围是否发生变化，项目下所有成员=>项目下指定成员 / 项目下指定成员=>项目下所有成员
-        boolean permissionRangeChanged = false;
-        if (!preHostDTO.getPermissionForAll().equals(devopsHostUserPermissionUpdateVO.getPermissionForAll())) {
-            permissionRangeChanged = true;
-            DevopsHostDTO devopsHostDTOToUpdate = new DevopsHostDTO();
-            devopsHostDTOToUpdate.setId(preHostDTO.getId());
-            devopsHostDTOToUpdate.setObjectVersionNumber(preHostDTO.getObjectVersionNumber());
-            devopsHostDTOToUpdate.setPermissionForAll(devopsHostUserPermissionUpdateVO.getPermissionForAll());
-            devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTOToUpdate);
-        }
-
-        if (devopsHostUserPermissionUpdateVO.getPermissionForAll()) {
-            List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = listNonRelatedMembers(projectId, devopsHostUserPermissionUpdateVO.getHostId(), null, null)
-                    .stream()
-                    .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
-                    .collect(Collectors.toList());
-            devopsHostUserPermissionService.deleteByHostId(devopsHostUserPermissionUpdateVO.getHostId());
-            devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
-        } else {
-            List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = baseServiceClientOperator.listUsersByIds(devopsHostUserPermissionUpdateVO.getUserIds())
-                    .stream()
-                    .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
-                    .collect(Collectors.toList());
-            // 如果是由项目下所有转变为项目下指定成员，删除所有用户权限，再添加新的用户权限
-            if (permissionRangeChanged) {
-                devopsHostUserPermissionService.deleteByHostId(devopsHostUserPermissionUpdateVO.getHostId());
-            } else {
-                // 如果不是由项目下所有转变为项目下指定成员，删除被更新用户的权限，再重新插入
-                devopsHostUserPermissionService.deleteByHostIdAndUserIds(devopsHostUserPermissionUpdateVO.getHostId(), devopsHostUserPermissionUpdateVO.getUserIds());
-            }
-            devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
-        }
+        devopsHostUserPermissionService.deleteByHostIdAndUserIds(devopsHostUserPermissionUpdateVO.getHostId(), devopsHostUserPermissionUpdateVO.getUserIds());
+        List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = baseServiceClientOperator.listUsersByIds(devopsHostUserPermissionUpdateVO.getUserIds())
+                .stream()
+                .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
+                .collect(Collectors.toList());
+        devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
     }
 
     @Override

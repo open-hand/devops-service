@@ -116,8 +116,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
 
     changeSet(author: 'lihao', id: '2021-10-13-drop-is-skip-check-permission') {
         dropColumn(columnName: "skip_check_permission", tableName: "devops_host")
-        addColumn(tableName: 'devops_host') {
-            column(name: 'permission_for_all', type: 'TINYINT UNSIGNED', remarks: '为所有用户分配权限',defaultValue: "0")
-        }
     }
 }
