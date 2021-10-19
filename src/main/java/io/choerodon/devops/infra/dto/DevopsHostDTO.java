@@ -65,9 +65,6 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机连接token")
     private String token;
 
-    @ApiModelProperty("为所有用户分配权限")
-    private Boolean permissionForAll;
-
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostType}
      */
@@ -193,13 +190,5 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setPrivatePort(Integer privatePort) {
         this.privatePort = privatePort;
-    }
-
-    public Boolean getPermissionForAll() {
-        return permissionForAll;
-    }
-
-    public void setPermissionForAll(Boolean permissionForAll) {
-        this.permissionForAll = permissionForAll;
     }
 }
