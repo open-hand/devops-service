@@ -337,7 +337,7 @@ public class CertificationServiceImpl implements CertificationService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         CERT_PREFIX + certificationDTO.getName() + ".yaml",
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
@@ -362,7 +362,7 @@ public class CertificationServiceImpl implements CertificationService {
                         gitLabEnvProjectId,
                         devopsEnvFileResourceDTO.getFilePath(),
                         "DELETE FILE " + certName,
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();

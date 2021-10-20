@@ -8,8 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.host.*;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -50,7 +54,6 @@ public interface DevopsHostService {
      *
      * @param projectId 项目id
      * @param hostId    主机id
-     * @deprecated
      */
     DevopsHostVO queryHost(Long projectId, Long hostId);
 
@@ -267,7 +270,7 @@ public interface DevopsHostService {
      * @param hostId
      * @return
      */
-    Page<DevopsUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long hostId);
+    Page<DevopsHostUserPermissionVO> pageUserPermissionByHostId(Long projectId, PageRequest pageable, String params, Long hostId);
 
     /**
      * 删除主机下该用户的权限
@@ -275,18 +278,24 @@ public interface DevopsHostService {
     void deletePermissionOfUser(Long projectId, Long hostId, Long userId);
 
     /**
-     * 获取环境下所有用户权限
+     * 分页查询项目下所有与该环境未分配权限的项目成员
+     *
+     * @param projectId
+     * @param hostId
+     * @param selectedIamUserId
+     * @param pageable
+     * @param params
+     * @return
      */
-    List<DevopsUserVO> listAllUserPermission(Long hostId);
-
-    /**
-     * 环境下为用户分配权限
-     */
-    void updateHostUserPermission(Long projectId, DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO);
+    Page<DevopsUserVO> pageNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
 
     /**
      * 查询项目下所有与该环境未分配权限的项目成员
      */
-    Page<DevopsUserVO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params);
+    List<IamUserDTO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, String params);
 
+    /**
+     * 主机下为用户批量分配权限
+     */
+    void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO);
 }

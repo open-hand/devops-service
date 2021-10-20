@@ -50,9 +50,6 @@ public class DevopsHostVO {
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
 
-    @ApiModelProperty("是否跳过权限检验")
-    private Boolean skipCheckPermission;
-
     @ApiModelProperty("版本号")
     private Long objectVersionNumber;
 
@@ -61,8 +58,8 @@ public class DevopsHostVO {
 
     private Boolean selected;
 
-    @ApiModelProperty("是否展示权限管理tab和按钮")
-    private Boolean showPermission;
+    @ApiModelProperty("权限标签")
+    private String permissionLabel;
 
     public Long getId() {
         return id;
@@ -152,14 +149,6 @@ public class DevopsHostVO {
         this.selected = selected;
     }
 
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -168,11 +157,11 @@ public class DevopsHostVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public Boolean getShowPermission() {
-        return showPermission;
+    public String getPermissionLabel() {
+        return permissionLabel;
     }
 
-    public void setShowPermission(Boolean showPermission) {
-        this.showPermission = showPermission;
+    public void setPermissionLabel(String permissionLabel) {
+        this.permissionLabel = permissionLabel;
     }
 }

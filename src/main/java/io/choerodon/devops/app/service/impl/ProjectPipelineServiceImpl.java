@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.CheckGitlabAccessLevelService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.ProjectPipelineService;
@@ -47,7 +46,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CICD_OPERATION);
         return gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(),
-                pipelineId.intValue(), getGitlabUserId()) != null;
+                pipelineId.intValue(), getGitlabUserId(), null) != null;
     }
 
     @Override
@@ -55,12 +54,6 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CICD_OPERATION);
         return gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(),
-                pipelineId.intValue(), getGitlabUserId()) != null;
-    }
-
-    @Override
-    public Boolean create(Long gitlabProjectId, String ref) {
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref) != null;
+                pipelineId.intValue(), getGitlabUserId(), null) != null;
     }
 }

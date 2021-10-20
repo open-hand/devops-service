@@ -45,8 +45,7 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
      */
     AppServiceDTO queryGitlabProjectIdByRecordId(@Param("pipelineRecordId") Long recordId);
 
-    List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(@Param("date") Date date,
-                                                               @Param("currentDate") Date currentDate);
+    List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(@Param("date") Date date);
 
     DevopsCiPipelineRecordVO selectById(Long ciPipelineRecordId);
 }

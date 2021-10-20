@@ -921,7 +921,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "-gitops",
                 devopsEnvironmentDTO.getCode(),
-                gitlabProjectPayload.getUserId());
+                gitlabProjectPayload.getUserId(),
+                false);
         if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     gitlabProjectPayload.getGroupId(),
@@ -1613,7 +1614,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 准备创建GitLab的项目
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), envCode, gitlabUserId);
+                GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(),
+                        projectDTO.getCode(),
+                        GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX),
+                envCode,
+                gitlabUserId,
+                false);
         if (gitlabProjectDO == null || gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabServiceClientOperator.createProject(
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
@@ -1677,7 +1683,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             String systemEnvProjectCode = GitOpsUtil.getSystemEnvCode(clusterCode);
             Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
             GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                    GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(), projectDTO.getCode(), GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX), systemEnvProjectCode, gitlabUserId);
+                    GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(),
+                            projectDTO.getCode(),
+                            GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX),
+                    systemEnvProjectCode,
+                    gitlabUserId,
+                    false);
             if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
                 DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
                 condition.setGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));

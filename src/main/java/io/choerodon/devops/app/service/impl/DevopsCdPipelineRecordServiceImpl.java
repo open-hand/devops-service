@@ -172,11 +172,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private HostConnectionHandler hostConnectionHandler;
 
     @Override
-    public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
+    public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
-        devopsCdPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        return devopsCdPipelineRecordMapper.selectOne(devopsCdPipelineRecordDTO);
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+
+        return devopsCdPipelineRecordMapper.queryByPipelineIdAndGitlabPipelineId(devopsPipelineId, gitlabPipelineId);
     }
 
     @Override

@@ -2,8 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +33,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
@@ -117,6 +116,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
 
     @Value("${services.gateway.url}")
@@ -391,11 +392,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(pipelineRecordId, "pipelineRecordId shouldn't be null");
 
         AppServiceDTO appServiceDTO = devopsCiPipelineRecordMapper.queryGitlabProjectIdByRecordId(pipelineRecordId);
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+
         Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
         GitlabPipelineDTO pipelineDTO = gitlabServiceClientOperator.queryPipeline(TypeUtil.objToInteger(gitlabProjectId),
                 TypeUtil.objToInteger(gitlabPipelineId),
-                GitUserNameUtil.getAdminId());
-        List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId, gitlabPipelineId, GitUserNameUtil.getAdminId());
+                null,
+                appExternalConfigDTO);
+        List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId,
+                gitlabPipelineId,
+                null,
+                appExternalConfigDTO);
 
         Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
         handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
@@ -414,9 +421,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(gitlabPipelineDTO.getDuration()));
         devopsCiPipelineRecordDTO.setStatus(gitlabPipelineDTO.getStatus().toValue());
         devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
+
+
         // 如果流水线状态更新为成功，则执行cd流水线触发逻辑
         if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getGitlabPipelineId());
             if (devopsCdPipelineRecordDTO != null) {
                 devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
             }
@@ -812,19 +821,28 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     public void retry(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
         // 重试pipeline
-        Pipeline pipeline = gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        Pipeline pipeline = gitlabServiceClientOperator.retryPipeline(gitlabProjectId.intValue(),
+                gitlabPipelineId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                appExternalConfigDTO);
 
         try {
             // 更新pipeline status
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus().toValue());
             // 更新job status
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
+                    gitlabPipelineId.intValue(),
+                    userAttrDTO.getGitlabUserId().intValue(),
+                    appExternalConfigDTO);
             updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
@@ -837,18 +855,24 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_CANCEL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
         checkUserBranchPushPermission(projectId, gitlabPipelineId, gitlabProjectId, userAttrDTO.getGitlabUserId());
 
-        gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        gitlabServiceClientOperator.cancelPipeline(gitlabProjectId.intValue(),
+                gitlabPipelineId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                appExternalConfigDTO);
 
         try {
             // 更新pipeline status
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, PipelineStatus.CANCELED.toValue());
             // 更新job status
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
             updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
@@ -861,24 +885,18 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
-    public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId) {
+    public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
         Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsCiPipelineRecordDTO.setGitlabPipelineId(devopsPipelineId);
         return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
     }
 
     @Override
     public List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String currentDateStr = sdf.format(new Date());
-        Date currentDate = null;
-        try {
-            currentDate = sdf.parse(currentDateStr);
-        } catch (ParseException e) {
-            LOGGER.error("parse failed", e);
-        }
-        return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds), currentDate);
+        return devopsCiPipelineRecordMapper.queryNotSynchronizedRecord(new Date(System.currentTimeMillis() - statusUpdatePeriodMilliSeconds));
     }
 
     /**
@@ -990,5 +1008,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
         return devopsCiPipelineRecordVO;
+    }
+
+    @Override
+    public AppServiceDTO queryAppServiceByPipelineRecordId(Long pipelineRecordId) {
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+        return applicationService.baseQuery(ciCdPipelineVO.getAppServiceId());
     }
 }

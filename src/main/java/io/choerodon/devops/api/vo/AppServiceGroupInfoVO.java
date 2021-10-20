@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
@@ -24,6 +25,17 @@ public class AppServiceGroupInfoVO {
     private List<AppServiceVersionDTO> versions;
     private Boolean share;
     private String projectName;
+    @Encrypt
+    @ApiModelProperty("外部仓库配置id")
+    private Long externalConfigId;
+
+    public Long getExternalConfigId() {
+        return externalConfigId;
+    }
+
+    public void setExternalConfigId(Long externalConfigId) {
+        this.externalConfigId = externalConfigId;
+    }
 
     public List<AppServiceVersionDTO> getVersions() {
         return versions;

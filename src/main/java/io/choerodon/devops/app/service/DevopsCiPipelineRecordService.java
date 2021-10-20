@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -68,9 +69,17 @@ public interface DevopsCiPipelineRecordService {
      */
     DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
 
-    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long gitlabPipelineId);
+    DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId);
 
     List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds);
 
     DevopsCiPipelineRecordVO queryByCiPipelineRecordId(Long ciPipelineRecordId);
+
+
+    /**
+     * 查询任务记录所属的应用服务
+     * @param pipelineRecordId
+     * @return
+     */
+    AppServiceDTO queryAppServiceByPipelineRecordId(Long pipelineRecordId);
 }

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import com.google.common.collect.Lists;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsHostUserPermissionVO;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -112,6 +113,25 @@ public class PageRequestUtil {
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getLoginName, order.getDirection());
                 case "realName":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getRealName, order.getDirection());
+                case "creationDate":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
+                default:
+                    throw new CommonException("error.field.not.supported.for.sort", order.getProperty());
+            }
+        } else {
+            return toBeSorted;
+        }
+    }
+
+    public static List<DevopsHostUserPermissionVO> sortHostUserPermission(List<DevopsHostUserPermissionVO> toBeSorted, Sort sort) {
+        if (sort != null) {
+            // 取第一个
+            Sort.Order order = sort.iterator().next();
+            switch (order.getProperty()) {
+                case "loginName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsHostUserPermissionVO::getLoginName, order.getDirection());
+                case "realName":
+                    return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsHostUserPermissionVO::getRealName, order.getDirection());
                 case "creationDate":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
                 default:

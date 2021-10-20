@@ -73,6 +73,50 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
     }
 
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "创建外部代码仓库")
+    @PostMapping("/external")
+    public ResponseEntity<AppServiceDTO> createExternalApp(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody @Validated ExternalAppServiceVO externalAppServiceVO) {
+        return ResponseEntity.ok(applicationServiceService.createExternalApp(projectId, externalAppServiceVO));
+    }
+
+    /**
+     * 校验外部地址GITLAB仓库地址唯一性
+     *
+     * @param projectId         项目id
+     * @param externalGitlabUrl gitlab的url
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验外部地址GITLAB仓库地址唯一性")
+    @GetMapping(value = "/external/check_gitlab_url")
+    public ResponseEntity<Boolean> checkGitlabUrl(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "gitlab的url", required = true)
+            @RequestParam(value = "external_gitlab_url")  String externalGitlabUrl) {
+        return ResponseEntity.ok(applicationServiceService.isExternalGitlabUrlUnique(externalGitlabUrl));
+    }
+
+    /**
+     * 测试GITLAB是否联通
+     *
+     * @param projectId         项目id
+     * @param appExternalConfigDTO gitlab的url
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "测试GITLAB是否联通")
+    @PostMapping(value = "/external/test_connection")
+    public ResponseEntity<Boolean> testConnection(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody AppExternalConfigDTO appExternalConfigDTO) {
+        return Results.success(applicationServiceService.testConnection(appExternalConfigDTO));
+    }
+
     /**
      * 项目下从外部代码库导入服务
      *
@@ -254,6 +298,8 @@ public class AppServiceController {
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "服务是否市场导入")
             @RequestParam(value = "app_market", required = false) Boolean appMarket,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
             @ApiParam(value = "服务类型")
             @RequestParam(value = "type", required = false) String type,
             @ApiParam(value = "是否校验团队成员权限")
@@ -265,7 +311,7 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember, includeExternal))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -617,6 +663,8 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "市场来源", required = true)
             @RequestParam(required = true) Boolean share,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询项目Id", required = false)
@@ -624,7 +672,7 @@ public class AppServiceController {
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
         return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, pageable))
+                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, includeExternal, pageable))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.group.error"));
     }
@@ -716,8 +764,10 @@ public class AppServiceController {
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "导入应用服务类型")
-            @RequestParam(value = "share") Boolean share) {
-        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share), HttpStatus.OK);
+            @RequestParam(value = "share") Boolean share,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
+        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share, includeExternal), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

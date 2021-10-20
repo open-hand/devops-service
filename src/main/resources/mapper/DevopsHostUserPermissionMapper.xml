@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostUserPermissionMapper">
-    <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
-        SELECT dhup.login_name,
-               dhup.iam_user_id,
-               dhup.real_name,
-               dhup.host_id,
-        FROM devops_host_user_permission dhup
-        WHERE dhup.host_id = #{hostId}
-    </select>
-
     <select id="listUserIdsByHostId" resultType="java.lang.Long">
         SELECT dhup.iam_user_id
         FROM devops_host_user_permission dhup
@@ -46,4 +37,30 @@
             </foreach>
         </if>
     </sql>
+
+    <select id="queryPermissionLabelByHostIdAndUserId"
+            resultType="java.lang.String">
+    SELECT permission_label FROM devops_host_user_permission dhup
+        WHERE dhup.host_id=#{hostId}
+        AND dhup.iam_user_id=#{userId}
+    </select>
+
+    <select id="listUserHostPermissionByUserIdAndHostIds"
+            resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
+        SELECT host_id ,permission_label FROM devops_host_user_permission dhup
+        WHERE dhup.iam_user_id=#{userId}
+        AND host_id IN
+        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
+            #{hostId}
+        </foreach>
+    </select>
+
+    <delete id="deleteByHostIdAndUserIds">
+        DELETE FROM devops_host_user_permission
+        WHERE host_id=#{hostId}
+        AND iam_user_id IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+    </delete>
 </mapper>

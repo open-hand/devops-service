@@ -211,7 +211,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // ci流水线执行成功， 开始执行cd流水线
         if (PipelineStatus.SUCCESS.toValue().equals(status)) {
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(pipelineAttr.getId());
+            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), pipelineAttr.getId());
             if (devopsCdPipelineRecordDTO == null) {
                 LOGGER.info("current pipeline have no match ciPipelineRecordDTO.");
                 DevopsCiPipelineRecordDTO ciPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
@@ -1143,7 +1143,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return;
         }
         // 校验CD流水线记录是否已经创建，未创建才创建记录，并将记录的初始状态设置为pending
-        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(gitlabPipelineId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), gitlabPipelineId);
         Map<Long, DevopsCdStageDTO> devopsCdStageDTOMap = devopsCdStageDTOList.stream().collect(Collectors.toMap(DevopsCdStageDTO::getId, v -> v));
         if (devopsCdPipelineRecordDTO == null) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> init cd pipeline >>>>>>>>>>>>>>>>>>>>>>>>>>>>");
@@ -1169,7 +1169,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                 devopsCdPipelineRecordDTO = initPipelineRecord(devopsCiPipelineDTO, gitlabPipelineId, commitSha, ref);
 
                 // 保存流水线记录关系
-                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(gitlabPipelineId);
+                DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), gitlabPipelineId);
                 DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByPipelineIdAndCiPipelineRecordId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getId());
                 devopsPipelineRecordRelDTO.setCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
                 devopsPipelineRecordRelService.update(devopsPipelineRecordRelDTO);

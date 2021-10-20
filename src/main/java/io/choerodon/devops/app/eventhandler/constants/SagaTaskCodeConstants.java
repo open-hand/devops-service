@@ -28,6 +28,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_CREATE_APPLICATION_SERVICE = "devopsCreateApplicationService";
 
     /**
+     * 创建外部gitlab项目
+     */
+    public static final String DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE = "devopsCreateExternalApplicationService";
+
+    /**
      * Devops从外部代码平台导入到gitlab项目
      */
     public static final String DEVOPS_CREATE_GITLAB_PROJECT = "devopsCreateGitlabProject";

@@ -26,6 +26,7 @@ spring:
 
 services:
   gitlab:
+    proxy-url: ${SERVICES_GITLAB_PROXY_URL:} # 代理服务地址, 可为空 (v1.1)
     url: "gitlab.example.com" # gitlab地址
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
@@ -86,6 +87,11 @@ choerodon:
   resource:
     jwt:
       ignore: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop, /websocket
+  sass:
+    resource-limit:
+      gitlab:
+        standard: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_STANDARD:2147483648} # 1024 * 1024 * 1024 * 2  (2G)
+        senior: ${CHOERODON_SASS_RESOURCE_LIMIT_GITLAB_SENIOR:10737418240} # 1024 * 1024 * 1024 * 10 (10G)
 agent:
   version: "0.5.0" # devops-service此版本所预期的 choerodon-agent 的版本
   serviceUrl: "agent.example.com" # 用于 choerodon-agent 连接 devops-service 的地址
@@ -220,3 +226,8 @@ websocket:
     maxTextMessageSize: 131072
     # 默认 512KiB
     maxBinaryMessageSize: 524288
+DesEncrypt:
+  # 加解密密钥
+  desKey: ${DES_ENCRYPT_DES_KEY:W1CLYB54T44PAL8NCGV4999OVSDCAEIPY76W32INQNXTH86ZEF1R1HTTWBLMQ5LQ5D9FLTUDNBLUQM9YF94NJTIJNOVIUFS13FRXUZD6D52JIPMUNI0AE9QN1Q2G1HHN}
+  # 长度：8位
+  desIV: ${DES_ENCRYPT_DES_IV:7HHT5EVO}

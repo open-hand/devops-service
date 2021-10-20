@@ -213,6 +213,28 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 创建gitlab项目
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE,
+            description = "创建gitlab项目",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String createExternalAppService(String data) {
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        try {
+            appServiceService.operationExternalApplication(devOpsAppServicePayload);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
+            throw e;
+        }
+        //创建成功发送webhook
+        sendNotificationService.sendWhenAppServiceCreate(appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId()));
+        return data;
+    }
+
+
+    /**
      * GitOps 事件处理
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,

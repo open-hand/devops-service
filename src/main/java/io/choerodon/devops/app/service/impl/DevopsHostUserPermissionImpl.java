@@ -7,10 +7,10 @@ import java.util.Map;
 import org.hzero.mybatis.BatchInsertHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsHostService;
@@ -18,72 +18,21 @@ import io.choerodon.devops.app.service.DevopsHostUserPermissionService;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
 import io.choerodon.devops.infra.mapper.DevopsHostUserPermissionMapper;
 
 @Service
 public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionService {
 
-    private static final String ERROR_NOT_OWNED_HOST_PERMISSION = "error.not.owned.host.permission";
-
     @Autowired
     private DevopsHostUserPermissionMapper devopsHostUserPermissionMapper;
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    @Lazy
     private DevopsHostService devopsHostService;
     @Autowired
     private PermissionHelper permissionHelper;
-
     @Autowired
     @Qualifier("devopsHostUserPermissionInsertHelper")
     private BatchInsertHelper<DevopsHostUserPermissionDTO> batchInsertHelper;
-
-    @Override
-    public void checkUserPermissionAndThrow(Long projectId, Long hostId, Long userId) {
-        // 1. 主机是跳过权限校验的直接放行
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-        if (Boolean.TRUE.equals(devopsHostDTO.getSkipCheckPermission())) {
-            return;
-        }
-        // 2. 用户是root用户、项目所有者、主机创建者也直接放行
-        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)
-                || devopsHostDTO.getCreatedBy().equals(userId)) {
-            return;
-        }
-        // 3. 判断用户是否在devops_host_user_permission表中
-        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
-        devopsHostUserPermissionDTO.setHostId(hostId);
-        devopsHostUserPermissionDTO.setIamUserId(userId);
-        if (CollectionUtils.isEmpty(devopsHostUserPermissionMapper.select(devopsHostUserPermissionDTO))) {
-            throw new CommonException(ERROR_NOT_OWNED_HOST_PERMISSION);
-        }
-
-    }
-
-    @Override
-    public Boolean checkUserPermission(Long projectId, Long hostId, Long userId) {
-        // 1. 主机是跳过权限校验的直接放行
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-        if (Boolean.TRUE.equals(devopsHostDTO.getSkipCheckPermission())) {
-            return true;
-        }
-        // 2. 用户是root用户、项目所有者、主机创建者也直接放行
-        if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)
-                || devopsHostDTO.getCreatedBy().equals(userId)) {
-            return true;
-        }
-        // 3. 判断用户是否在devops_host_user_permission表中
-        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
-        devopsHostUserPermissionDTO.setHostId(hostId);
-        devopsHostUserPermissionDTO.setIamUserId(userId);
-        if (!CollectionUtils.isEmpty(devopsHostUserPermissionMapper.select(devopsHostUserPermissionDTO))) {
-            return true;
-        }
-        return false;
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -109,23 +58,8 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdate(Long hostId, List<Long> addUsersList) {
-        // 待添加的用户列表
-        List<IamUserDTO> addIamUsers = baseServiceClientOperator.listUsersByIds(addUsersList);
-        List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = new ArrayList<>();
-        addIamUsers.forEach(e -> devopsHostUserPermissionDTOList.add(new DevopsHostUserPermissionDTO(e.getLoginName(), e.getId(), e.getRealName(), hostId)));
-        batchInsert(devopsHostUserPermissionDTOList);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public void baseDelete(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO) {
         devopsHostUserPermissionMapper.delete(devopsHostUserPermissionDTO);
-    }
-
-    @Override
-    public List<DevopsHostUserPermissionDTO> baseListByHostId(Long hostId) {
-        return devopsHostUserPermissionMapper.listByHostId(hostId);
     }
 
     @Override
@@ -136,5 +70,68 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     @Override
     public List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(Long hostId, Map<String, Object> searchParamMap, List<String> paramList) {
         return devopsHostUserPermissionMapper.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
+    }
+
+    @Override
+    public void checkUserOwnUsePermissionOrThrow(Long projectId, DevopsHostDTO devopsHostDTO, Long userId) {
+        // 检查用户为主机创建者
+        if (devopsHostDTO.getCreatedBy().equals(userId)) {
+            return;
+        }
+        // 检查用户为项目所有者
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
+        if (projectOwnerOrRoot) {
+            return;
+        }
+        // 检查用户有权限（只要有权限标签，就代表有使用权限）
+        if (!StringUtils.isEmpty(devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId))) {
+            return;
+        }
+        // 抛出异常
+        throw new CommonException("error.host.user.permission");
+    }
+
+    @Override
+    public void checkUserOwnManagePermissionOrThrow(Long projectId, DevopsHostDTO devopsHostDTO, Long userId) {
+        // 检查用户为主机创建者
+        if (devopsHostDTO.getCreatedBy().equals(userId)) {
+            return;
+        }
+        // 检查用户为项目所有者
+        boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
+        if (projectOwnerOrRoot) {
+            return;
+        }
+        // 检查用户有主机管理权限（必须拥有administrator标签，才有管理权限）
+        String permissionLabel = devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId);
+        if (DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue().equals(permissionLabel)) {
+            return;
+        }
+        // 抛出异常
+        throw new CommonException("error.host.user.permission");
+    }
+
+    @Override
+    public List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostIds) {
+        if (CollectionUtils.isEmpty(hostIds)) {
+            return new ArrayList<>();
+        }
+        return devopsHostUserPermissionMapper.listUserHostPermissionByUserIdAndHostIds(userId, hostIds);
+    }
+
+    @Override
+    public void deleteByHostIdAndUserIds(Long hostId, List<Long> userIds) {
+        devopsHostUserPermissionMapper.deleteByHostIdAndUserIds(hostId, userIds);
+    }
+
+    @Override
+    public Boolean checkUserOwnUsePermission(Long projectId, Long hostId, Long userId) {
+        try {
+            DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+            checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, userId);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 }

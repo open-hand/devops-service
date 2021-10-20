@@ -95,6 +95,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
+
 
     private static final Gson gson = new Gson();
 
@@ -339,21 +342,31 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         devopsCiStageDTO.setCiPipelineId(pipelineId);
         if (devopsCiStageMapper.selectCount(devopsCiStageDTO) == 0) {
             AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
-            DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
-            devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
-            devopsGitlabCommitDTO.setRef(ref);
-            List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
-            if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
-                throw new CommonException("error.no.commit.information.under.the.application.service");
+
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            String sha;
+            List<CommitDTO> commitDTOList;
+            if (appExternalConfigDTO == null) {
+                DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
+                devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
+                devopsGitlabCommitDTO.setRef(ref);
+                List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
+                if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
+                    throw new CommonException("error.no.commit.information.under.the.application.service");
+                }
+                Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
+                String sinceDate = simpleDateFormat.format(commitDate);
+                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, sinceDate);
+                if (CollectionUtils.isEmpty(commitDTOList)) {
+                    throw new CommonException("error.ref.no.commit");
+                }
+            } else {
+                commitDTOList = gitlabServiceClientOperator.listExternalCommits(TypeUtil.objToInteger(gitlabProjectId), 1, 5, appExternalConfigDTO);
             }
-            Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
-            String sinceDate = simpleDateFormat.format(commitDate);
-            List<CommitDTO> commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, sinceDate);
-            if (CollectionUtils.isEmpty(commitDTOList)) {
-                throw new CommonException("error.ref.no.commit");
-            }
-            devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag, null);
+            sha = commitDTOList.get(0).getId();
+
+            devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), sha, ref, tag, null);
         } else {
             devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
         }

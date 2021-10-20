@@ -6,7 +6,9 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-public class DevopsHostPermissionUpdateVO {
+import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
+
+public class DevopsHostUserPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("主机id / 必需")
     @NotNull(message = "error.env.id.null")
@@ -17,9 +19,11 @@ public class DevopsHostPermissionUpdateVO {
     @NotNull(message = "error.user.ids.null")
     private List<Long> userIds;
 
-    @ApiModelProperty("是否跳过权限校验 / 必需")
-    @NotNull(message = "error.is.skip.permission.check.null")
-    private Boolean skipCheckPermission;
+    /**
+     * {@link DevopsHostUserPermissionLabelEnums}
+     */
+    @ApiModelProperty("用户在主机下的权限标签")
+    private String permissionLabel;
 
     @ApiModelProperty("主机的版本号, 如果更新了'skipCheckPermission'字段则必填")
     private Long objectVersionNumber;
@@ -40,14 +44,6 @@ public class DevopsHostPermissionUpdateVO {
         this.userIds = userIds;
     }
 
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -56,4 +52,11 @@ public class DevopsHostPermissionUpdateVO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
+    public String getPermissionLabel() {
+        return permissionLabel;
+    }
+
+    public void setPermissionLabel(String permissionLabel) {
+        this.permissionLabel = permissionLabel;
+    }
 }

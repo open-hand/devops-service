@@ -9,6 +9,7 @@ import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.FeignClientUtils;
+import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -595,6 +596,15 @@ public class BaseServiceClientOperator {
         } catch (Exception ex) {
             LOGGER.info("Exception occurred when querying project by userId {} and organization id {}", userId, tenantId);
             return new ArrayList<>();
+        }
+    }
+
+    public ExternalTenantVO queryTenantByIdWithExternalInfo(Long organizationId) {
+        ResponseEntity<ExternalTenantVO> responseEntity = baseServiceClient.queryTenantByIdWithExternalInfo(organizationId);
+        if (responseEntity == null || responseEntity.getBody() == null) {
+            return null;
+        } else {
+            return responseEntity.getBody();
         }
     }
 }

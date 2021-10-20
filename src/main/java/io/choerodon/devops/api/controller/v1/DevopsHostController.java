@@ -411,7 +411,7 @@ public class DevopsHostController {
     @CustomPageRequest
     @ApiOperation(value = "分页查询主机下用户权限")
     @PostMapping(value = "/{host_id}/permission/page_by_options")
-    public ResponseEntity<Page<DevopsUserPermissionVO>> pageHostUserPermissions(
+    public ResponseEntity<Page<DevopsHostUserPermissionVO>> pageHostUserPermissions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -451,7 +451,7 @@ public class DevopsHostController {
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsHostService.listNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
+        return Optional.ofNullable(devopsHostService.pageNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.get.host.non.related.users"));
     }
@@ -479,48 +479,25 @@ public class DevopsHostController {
         return ResponseEntity.noContent().build();
     }
 
-
     /**
-     * 获取主机下所有用户权限（获取所有有主机权限的项目下项目成员）
+     * 主机下为用户批量分配权限
      *
-     * @param projectId 项目id
-     * @param hostId    主机id
-     * @return baseList
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "获取主机下所有用户权限")
-    @GetMapping(value = "/{host_id}/list_all")
-    public ResponseEntity<List<DevopsUserVO>> listAllUserPermission(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "主机id", required = true)
-            @PathVariable(value = "host_id") Long hostId) {
-        return Optional.ofNullable(devopsHostService.listAllUserPermission(hostId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.host.user.permission.get"));
-    }
-
-    /**
-     * 主机下为用户分配权限
-     *
-     * @param hostId                       主机id
-     * @param devopsHostPermissionUpdateVO 权限分配信息
+     * @param hostId                           主机id
+     * @param devopsHostUserPermissionUpdateVO 权限分配信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "主机下为用户分配权限")
-    @PostMapping(value = "/{host_id}/permission")
-    public ResponseEntity<Void> updateHostUserPermission(
+    @PostMapping(value = "/{host_id}/batch_update_permission")
+    public ResponseEntity<Void> batchUpdateHostUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "主机id", required = true)
             @PathVariable(value = "host_id") Long hostId,
-            @ApiParam(value = "有权限的用户ids")
-            @RequestBody @Valid DevopsHostPermissionUpdateVO devopsHostPermissionUpdateVO) {
-        devopsHostService.updateHostUserPermission(projectId, devopsHostPermissionUpdateVO);
+            @ApiParam(value = "权限信息")
+            @RequestBody @Valid DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
+        devopsHostService.batchUpdateHostUserPermission(projectId, devopsHostUserPermissionUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

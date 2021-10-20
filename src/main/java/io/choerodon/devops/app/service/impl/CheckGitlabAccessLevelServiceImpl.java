@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -35,10 +37,17 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private PermissionHelper permissionHelper;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public void checkGitlabPermission(Long projectId, Long appServiceId, AppServiceEvent appServiceEvent) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        // 外部仓库不校验权限
+        if (appServiceDTO.getExternalConfigId() != null) {
+            return;
+        }
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 

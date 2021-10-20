@@ -10,6 +10,8 @@ public final class MiscConstants {
     private MiscConstants() {
     }
 
+    public static final String DEFAULT_INTERNAL_APP_SERVICE_REPO_URL = "none";
+
     /**
      * 默认的chart配置的名称
      */
