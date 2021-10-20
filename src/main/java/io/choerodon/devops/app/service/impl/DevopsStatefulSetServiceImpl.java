@@ -184,6 +184,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             devopsStatefulSetDTO.setId(deployId);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsStatefulSetDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.STATEFULSET.getType(), devopsStatefulSetDTO.getId(), content);
         }
 
         devopsStatefulSetDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());

@@ -382,4 +382,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
         return devopsGitlabCommitMapper.baseListDevopsBranchesByIssueId(issueId);
     }
+
+    @Override
+    public DevopsGitlabCommitDTO selectByPrimaryKey(Long id) {
+        return devopsGitlabCommitMapper.selectByPrimaryKey(id);
+    }
 }

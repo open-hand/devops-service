@@ -794,7 +794,7 @@ public class DevopsSagaHandler {
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
         if (devopsHzeroDeployDetailsDTO != null) {
             // pod的操作记录不是最新的则丢弃
-            if (devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
+            if (!devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
                 LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
                 return;
             }

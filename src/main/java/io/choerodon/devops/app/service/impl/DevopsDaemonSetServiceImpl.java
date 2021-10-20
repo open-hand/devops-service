@@ -230,6 +230,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
             devopsDaemonSetDTO.setId(daemonSetId);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsDaemonSetDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.DAEMONSET.getType(), devopsDaemonSetDTO.getId(), content);
         }
 
         devopsDaemonSetDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());

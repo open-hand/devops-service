@@ -185,6 +185,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
             devopsJobDTO.setId(devopsJob);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsJobDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.JOB.getType(), devopsJobDTO.getId(), content);
         }
 
         devopsJobDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());

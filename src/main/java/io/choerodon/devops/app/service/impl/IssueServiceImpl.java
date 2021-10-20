@@ -101,7 +101,7 @@ public class IssueServiceImpl implements IssueService {
         List<Long> deletedBranchIds = devopsBranchService.listDeletedBranchIds(commitRelatedBranchIds);
 
         // 仍与issue存在关联关系的branchId
-        List<Long> relatedBranchIds = devopsIssueRelService.listRelatedBranchIds(commitRelatedBranchIds);
+        List<Long> relatedBranchIds = devopsIssueRelService.listExistRelationBranchIds(commitRelatedBranchIds);
 
         // 这一步操作将已删除的分支信息也添加到devopsBranchDTOS中
         devopsCommitRelatedBranchDTOS.forEach(d -> {

@@ -173,9 +173,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
-                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
-                if (!ObjectUtils.isEmpty(deploymentDTO)) {
-                    devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+                DevopsDeploymentVO deploymentVO = devopsDeploymentService.selectByPrimaryWithCommandInfo(devopsDeployAppCenterVO.getObjectId());
+                if (!ObjectUtils.isEmpty(deploymentVO)) {
+                    devopsDeployAppCenterVO.setStatus(deploymentVO.getCommandStatus());
+                    devopsDeployAppCenterVO.setError(deploymentVO.getError());
                 }
             }
             calculatePodStatus(devopsEnvPodDTOS, detailVO);
@@ -503,6 +504,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
             throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
+    }
+
+    @Transactional
+    @Override
+    public void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        devopsDeployAppCenterEnvMapper.delete(devopsDeployAppCenterEnvDTO);
     }
 
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {
