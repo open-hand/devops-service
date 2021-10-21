@@ -270,7 +270,7 @@ public class CiCdPipelineController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "批量查询测试任务关联的流水线")
-    @GetMapping(value = "/list_task_pipeline_referrance")
+    @PostMapping(value = "/list_task_pipeline_referrance")
     public ResponseEntity<List<PipelineInstanceReferenceVO>> listTaskReferencePipelineInfo(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
