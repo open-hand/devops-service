@@ -12,6 +12,7 @@
                dhup.iam_user_id,
                dhup.real_name,
                dhup.host_id,
+               dhup.permission_label,
                dhup.creation_date
         FROM devops_host_user_permission dhup
                 WHERE dhup.host_id = #{hostId}

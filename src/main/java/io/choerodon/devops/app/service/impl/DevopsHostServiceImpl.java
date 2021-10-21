@@ -689,7 +689,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         // 根据搜索参数查询数据库中所有的主机权限分配数据
         List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
-        List<Long> permissions = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+        Map<Long, DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOMap = devopsHostUserPermissionDTOList
+                .stream()
+                .collect(Collectors.toMap(DevopsHostUserPermissionDTO::getIamUserId, Function.identity()));
+        List<Long> iamUserIdsWithHostPermission = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
 
         List<DevopsHostUserPermissionVO> projectOwnerHostPermissionVO = ConvertUtils.convertList(projectOwners, DevopsHostUserPermissionVO.class)
                 .stream()
@@ -700,21 +703,20 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsHostUserPermissionVO> projectMemberHostPermissionVO = new ArrayList<>();
         projectMembers = projectMembers
                 .stream()
-                .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
+                .filter(member -> iamUserIdsWithHostPermission.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
                 .collect(Collectors.toList());
         projectMembers.forEach(devopsUserPermissionVO -> {
             if (devopsHostDTO.getCreatedBy().equals(devopsUserPermissionVO.getIamUserId())) {
                 DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
                 devopsHostUserPermissionVO.setPermissionLabel(DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue());
                 projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
-            } else if (permissions.contains(devopsUserPermissionVO.getIamUserId())) {
-                devopsHostUserPermissionDTOList.forEach(devopsHostUserPermissionDTO -> {
-                    if (devopsHostUserPermissionDTO.getIamUserId().equals(devopsUserPermissionVO.getIamUserId())) {
-                        DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
-                        devopsHostUserPermissionVO.setPermissionLabel(devopsHostUserPermissionDTO.getPermissionLabel());
-                        projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
-                    }
-                });
+            } else if (iamUserIdsWithHostPermission.contains(devopsUserPermissionVO.getIamUserId())) {
+                DevopsHostUserPermissionDTO specifiedDevopsHostUserPermissionDTO = devopsHostUserPermissionDTOMap.get(devopsUserPermissionVO.getIamUserId());
+                if (specifiedDevopsHostUserPermissionDTO != null) {
+                    DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(specifiedDevopsHostUserPermissionDTO, DevopsHostUserPermissionVO.class);
+                    devopsHostUserPermissionVO.setPermissionLabel(specifiedDevopsHostUserPermissionDTO.getPermissionLabel());
+                    projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
+                }
             }
         });
 
