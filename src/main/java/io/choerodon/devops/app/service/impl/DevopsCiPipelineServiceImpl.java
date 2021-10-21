@@ -422,14 +422,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
+            AppExternalConfigDTO appExternalConfigDTO = null;
+            if (appServiceDTO.getExternalConfigId() != null) {
 
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+                appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            }
 
+
+            AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
             ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
-                if (appExternalConfigDTO == null) {
+                if (finalAppExternalConfigDTO == null) {
                     initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl);
                 } else {
-                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, appExternalConfigDTO);
+                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, finalAppExternalConfigDTO);
                 }
 
             });
