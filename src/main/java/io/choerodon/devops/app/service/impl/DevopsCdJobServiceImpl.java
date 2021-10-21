@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCdJobVO;
 import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
@@ -99,5 +102,21 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     @Transactional
     public void baseDelete(Long id) {
         devopsCdJobMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<DevopsCdJobDTO> listByProjectIdAndType(Long projectId, JobTypeEnum typeEnum) {
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.ERROR_JOB_TYPE_IS_NULL);
+
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setProjectId(projectId);
+        devopsCdJobDTO.setType(typeEnum.value());
+        return devopsCdJobMapper.select(devopsCdJobDTO);
+    }
+
+    @Override
+    public List<DevopsCdJobVO> listByIdsWithNames(Set<Long> jobIds) {
+        return devopsCdJobMapper.listByIdsWithNames(jobIds);
     }
 }

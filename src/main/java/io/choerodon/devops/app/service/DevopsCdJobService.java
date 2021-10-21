@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
+import io.choerodon.devops.api.vo.DevopsCdJobVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 
@@ -32,4 +34,8 @@ public interface DevopsCdJobService {
     void baseUpdate(DevopsCdJobDTO devopsCdJobDTO);
 
     void baseDelete(Long id);
+
+    List<DevopsCdJobDTO> listByProjectIdAndType(Long projectId, JobTypeEnum typeEnum);
+
+    List<DevopsCdJobVO> listByIdsWithNames(Set<Long> jobIds);
 }

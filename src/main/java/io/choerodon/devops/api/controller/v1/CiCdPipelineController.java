@@ -1,9 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -20,10 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
-import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.HostConnectionVO;
-import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -272,6 +266,17 @@ public class CiCdPipelineController {
         return Optional.ofNullable(devopsCiPipelineService.runnerGuide(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "批量查询测试任务关联的流水线")
+    @GetMapping(value = "/list_task_pipeline_referrance")
+    public ResponseEntity<List<PipelineInstanceReferenceVO>> listTaskReferencePipelineInfo(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @RequestBody Set<Long> taskIds) {
+        return ResponseEntity.ok(devopsCiPipelineService.listTaskReferencePipelineInfo(projectId, taskIds));
     }
 
 }
