@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -32,6 +33,7 @@ public class AppExternalConfigController {
     public ResponseEntity<Void> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
             @RequestBody @Validated AppExternalConfigDTO appExternalConfigDTO) {
         appExternalConfigService.update(projectId, id, appExternalConfigDTO);
@@ -43,6 +45,7 @@ public class AppExternalConfigController {
     public ResponseEntity<AppExternalConfigDTO> query(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(appExternalConfigService.baseQueryWithoutPasswordAndToken(id));
     }

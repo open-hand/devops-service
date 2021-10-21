@@ -76,10 +76,30 @@ public class DevopsCdJobVO {
     private Long appId;
 
     private ExternalApprovalJobVO externalApprovalJobVO;
+    @ApiModelProperty("流水线名称")
+    private String pipelineName;
+    @ApiModelProperty("阶段名称")
+    private String stageName;
 
     @ApiModelProperty("是否有权限修改cd的job,默认有")
     private boolean edit = true;
 
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
 
     public Long getAppId() {
         return appId;

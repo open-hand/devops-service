@@ -68,6 +68,7 @@ public class ResourceCheckConstant {
     // pipeline
     public static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
     public static final String ERROR_JOB_NAME_ID_IS_NULL = "error.job.name.id.is.null";
+    public static final String ERROR_JOB_TYPE_IS_NULL = "error.job.type.is.null";
 
 
 }

@@ -18,4 +18,6 @@ public interface DevopsCdStageService {
     void deleteById(Long stageId);
 
     void deleteByPipelineId(Long pipelineId);
+
+    DevopsCdStageDTO queryById(Long stageId);
 }
