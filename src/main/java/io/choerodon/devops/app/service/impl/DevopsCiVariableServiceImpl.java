@@ -140,9 +140,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Override
     public List<CiVariableVO> listKeysOnProject(Long projectId) {
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
-
         return gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), GitUserNameUtil.getAdminId());
     }
 
