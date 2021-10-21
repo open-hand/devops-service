@@ -200,7 +200,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
-            BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO);
+            BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO, "id");
             if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
