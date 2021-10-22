@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl.isMiddleware;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 
 import java.util.*;
 import java.util.function.Function;
@@ -58,8 +60,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployAppCenterServiceImpl.class);
 
     private static final String POD_RUNNING_STATUS = "Running";
-    private static final String APP_SHELVES_CODE = "ApplicationShelves";
-    private static final String APP_SHELVES_NAME = "市场服务已下架";
 
     @Autowired
     DevopsDeployAppCenterEnvMapper devopsDeployAppCenterEnvMapper;
