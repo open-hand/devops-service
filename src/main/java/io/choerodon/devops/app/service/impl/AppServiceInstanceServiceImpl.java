@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
 
 import java.io.File;
@@ -1106,6 +1108,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private MarketServiceVO getMarketServiceVO(Long projectId, Long marketAppServiceId, Long marketDeployObjectId) {
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, marketAppServiceId);
+        if (marketServiceVO == null) {
+            marketServiceVO = new MarketServiceVO();
+            marketServiceVO.setMarketServiceCode(APP_SHELVES_CODE);
+            marketServiceVO.setMarketServiceName(APP_SHELVES_NAME);
+        }
         marketServiceVO.setMarketDeployObjectId(marketDeployObjectId);
         return marketServiceVO;
     }

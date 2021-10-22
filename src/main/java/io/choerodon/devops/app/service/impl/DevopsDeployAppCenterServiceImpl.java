@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl.isMiddleware;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 
 import java.util.*;
 import java.util.function.Function;
@@ -208,6 +210,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 detailVO.setAppServiceName(appServiceDTO.getName());
             } else {
                 MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceInstanceInfoDTO.getAppServiceId());
+                // 处理已经下架的应用 不存在的情况
+                if (marketServiceVO == null) {
+                    marketServiceVO = new MarketServiceVO();
+                    marketServiceVO.setMarketServiceCode(APP_SHELVES_CODE);
+                    marketServiceVO.setMarketServiceName(APP_SHELVES_NAME);
+                }
                 // 这里的code仅hzero开放平台的应用有数据，其他应用从marketServiceDeployObjectVO获取
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
