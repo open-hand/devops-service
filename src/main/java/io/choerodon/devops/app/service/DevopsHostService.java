@@ -275,7 +275,7 @@ public interface DevopsHostService {
     /**
      * 删除主机下该用户的权限
      */
-    void deletePermissionOfUser(Long projectId, Long hostId, Long userId);
+    DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId);
 
     /**
      * 分页查询项目下所有与该环境未分配权限的项目成员

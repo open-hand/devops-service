@@ -723,16 +723,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public void deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+    public DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+        DevopsHostUserPermissionDeleteResultVO deleteResultVO = new DevopsHostUserPermissionDeleteResultVO(true);
         if (hostId == null || userId == null) {
-            return;
+            return deleteResultVO;
         }
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
 
         if (devopsHostDTO == null) {
-            return;
+            return deleteResultVO;
         }
 
         if (userId.equals(devopsHostDTO.getCreatedBy())) {
@@ -744,7 +745,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
 
         if (userAttrDTO == null) {
-            return;
+            return deleteResultVO;
         }
 
         if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
@@ -756,6 +757,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostUserPermissionDTO.setHostId(hostId);
         devopsHostUserPermissionDTO.setIamUserId(userId);
         devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
+
+        // 表示用户删除的不是自己的权限，前端不需要刷新整个页面
+        if (!userId.equals(DetailsHelper.getUserDetails().getUserId())) {
+            deleteResultVO.setRefreshAll(false);
+        }
+        return deleteResultVO;
     }
 
     @Transactional(rollbackFor = Exception.class)

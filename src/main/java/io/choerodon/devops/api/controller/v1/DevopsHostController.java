@@ -466,7 +466,7 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除该用户在该主机下的权限")
     @DeleteMapping(value = "/{host_id}/permission")
-    public ResponseEntity<Void> deletePermissionOfUser(
+    public ResponseEntity<DevopsHostUserPermissionDeleteResultVO> deletePermissionOfUser(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -475,8 +475,7 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
-        devopsHostService.deletePermissionOfUser(projectId, hostId, userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(devopsHostService.deletePermissionOfUser(projectId, hostId, userId));
     }
 
     /**
