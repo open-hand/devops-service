@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
 
-import org.hzero.websocket.constant.WebSocketConstant;
+import org.hzero.websocket.constant.ClientWebSocketConstant;
 import org.hzero.websocket.vo.MsgVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,14 +91,14 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             upgradeInfo.put("version", agentVersion);
             hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
 
-            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
+            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
 
         } else {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
             hostMsgVO.setHostId(hostId);
             // 为了保持和其他通过hzero发送的消息结构一致
-            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(WebSocketConstant.SendType.S_GROUP);
+            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         }
 
         sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));

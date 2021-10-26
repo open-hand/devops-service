@@ -6,7 +6,7 @@ import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.devops.infra.util.KeyParseUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import org.hzero.core.util.StringPool;
-import org.hzero.websocket.config.WebSocketConfig;
+import org.hzero.websocket.config.ClientWebSocketConfig;
 import org.hzero.websocket.handler.DefaultSocketHandler;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -242,7 +242,7 @@ public class WebSocketTool {
             return false;
         }
         // 获取配置
-        WebSocketConfig config = ApplicationContextHelper.getContext().getBean(WebSocketConfig.class);
+        ClientWebSocketConfig config = ApplicationContextHelper.getContext().getBean(ClientWebSocketConfig.class);
 
         try {
             // 请求 oauth 服务获取用户信息
