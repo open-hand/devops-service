@@ -895,13 +895,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(pipelineId);
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
-        devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
-            if (appExternalConfigDTO == null) {
-                deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch());
-            } else {
-                deleteExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
-            }
-        });
+        if (!CollectionUtils.isEmpty(devopsCiStageDTOS)) {
+            devopsPipelineBranchRelDTOS.forEach(devopsPipelineBranchRelDTO -> {
+                if (appExternalConfigDTO == null) {
+                    deleteGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch());
+                } else {
+                    deleteExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), devopsPipelineBranchRelDTO.getBranch(), appExternalConfigDTO);
+                }
+            });
+        }
 
 
         // 删除流水线分支关系
