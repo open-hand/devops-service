@@ -95,7 +95,7 @@ public class HostDeployUtil {
         String[] lines = rawCommand.split("\n");
         for (String line : lines) {
             if (line.length() > 0 && !line.contains("#")) {
-                commandSB.append(line);
+                commandSB.append(line).append("\n");
             }
         }
         return commandSB.toString();
