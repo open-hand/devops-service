@@ -871,6 +871,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(DELETE_PIPELINE_FAILED);
         }
         // 删除stage
+        List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
         devopsCiStageService.deleteByPipelineId(pipelineId);
         devopsCdStageService.deleteByPipelineId(pipelineId);
 
@@ -888,6 +889,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 删除content file
         devopsCiContentService.deleteByPipelineId(pipelineId);
+
 
         // 删除.gitlab-ci.yaml文件
         List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(pipelineId);
