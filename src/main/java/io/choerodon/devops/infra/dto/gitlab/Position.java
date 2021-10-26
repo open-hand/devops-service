@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public class Position {
 
-    public static enum PositionType {
+    public enum PositionType {
 
         TEXT, IMAGE;
         private static JacksonJsonEnumHelper<PositionType> enumHelper = new JacksonJsonEnumHelper<>(PositionType.class,

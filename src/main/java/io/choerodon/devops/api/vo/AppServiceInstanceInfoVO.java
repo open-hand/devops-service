@@ -66,7 +66,7 @@ public class AppServiceInstanceInfoVO {
     private String effectCommandVersion;
     @ApiModelProperty("当前实例生效的command的状态/可能为null，为")
     private String effectCommandStatus;
-    
+
     @ApiModelProperty("应用市场所属的实例部署的当前版本是否可用, 如果被删除就是false/只有市场实例需要")
     private Boolean currentVersionAvailable;
     @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
@@ -77,10 +77,35 @@ public class AppServiceInstanceInfoVO {
     @Encrypt
     private Long clusterId;
 
+    @ApiModelProperty("环境id")
+    @Encrypt
+    private Long environmentId;
+
+    @ApiModelProperty("应用名称")
+    private String name;
+
     /**
-     * {@link io.choerodon.devops.infra.enums.AppServiceInstanceSource}
+     * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
     private String source;
+
+    @ApiModelProperty("具体应用属于hzero还是市场")
+    private String applicationType;
+
+    @Encrypt
+    @ApiModelProperty(name = "市场应用版本id")
+    private Long mktAppVersionId;
+    @Encrypt
+    @ApiModelProperty(name = "部署对象id")
+    private Long mktDeployObjectId;
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
 
     public Long getEffectCommandId() {
         return effectCommandId;
@@ -288,5 +313,37 @@ public class AppServiceInstanceInfoVO {
 
     public void setUpgradeAvailable(Boolean upgradeAvailable) {
         this.upgradeAvailable = upgradeAvailable;
+    }
+
+    public Long getEnvironmentId() {
+        return environmentId;
+    }
+
+    public void setEnvironmentId(Long environmentId) {
+        this.environmentId = environmentId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Long getMktAppVersionId() {
+        return mktAppVersionId;
+    }
+
+    public void setMktAppVersionId(Long mktAppVersionId) {
+        this.mktAppVersionId = mktAppVersionId;
+    }
+
+    public Long getMktDeployObjectId() {
+        return mktDeployObjectId;
+    }
+
+    public void setMktDeployObjectId(Long mktDeployObjectId) {
+        this.mktDeployObjectId = mktDeployObjectId;
     }
 }

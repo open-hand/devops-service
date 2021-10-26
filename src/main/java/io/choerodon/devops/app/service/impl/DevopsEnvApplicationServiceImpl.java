@@ -7,18 +7,27 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.app.service.PermissionHelper;
-import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
@@ -37,14 +46,23 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Autowired
     private PermissionHelper permissionHelper;
 
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public List<DevopsEnvApplicationVO> batchCreate(Long projectId, DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         permissionHelper.checkEnvBelongToProject(projectId, devopsEnvAppServiceVO.getEnvId());
         permissionHelper.checkAppServicesBelongToProject(projectId, devopsEnvAppServiceVO.getAppServiceIds());
+
         return devopsEnvAppServiceVO.getAppServiceIds().stream()
                 .map(appServiceId -> new DevopsEnvAppServiceDTO(appServiceId, devopsEnvAppServiceVO.getEnvId()))
-                .peek(e -> createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId()))
+                .peek(e -> {
+                    AppServiceDTO appServiceDTO = applicationService.baseQuery(e.getAppServiceId());
+                    if (!Objects.isNull(appServiceDTO)) {
+                        boolean isProjectAppService = projectId.equals(appServiceDTO.getProjectId());
+                        ApplicationCenterEnum appSourceType = isProjectAppService ? ApplicationCenterEnum.PROJECT : ApplicationCenterEnum.SHARE;
+                        createEnvAppRelationShipIfNon(e.getAppServiceId(), e.getEnvId(), appSourceType.value(), appServiceDTO.getCode(), appServiceDTO.getName());
+                    }
+                })
                 .map(e -> ConvertUtils.convertObject(e, DevopsEnvApplicationVO.class))
                 .collect(Collectors.toList());
     }
@@ -57,13 +75,17 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void createEnvAppRelationShipIfNon(Long appServiceId, Long envId) {
+    public void createEnvAppRelationShipIfNon(Long appServiceId, Long envId, String source, String serviceCode, String serviceName) {
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO();
         devopsEnvAppServiceDTO.setAppServiceId(Objects.requireNonNull(appServiceId));
         devopsEnvAppServiceDTO.setEnvId(Objects.requireNonNull(envId));
         // 如果没有，插入
         if (devopsEnvAppServiceMapper.selectCount(devopsEnvAppServiceDTO) == 0) {
+
             devopsEnvAppServiceMapper.insertSelective(devopsEnvAppServiceDTO);
+        } else {
+            //旧的关联关系可以跟新
+            devopsEnvAppServiceMapper.updateByPrimaryKeySelective(devopsEnvAppServiceDTO);
         }
     }
 
@@ -90,7 +112,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
      * @param appServiceId 应用服务id
      * @return true 可以删除
      */
-    private boolean checkCanDelete(Long envId, Long appServiceId) {
+    public boolean checkCanDelete(Long envId, Long appServiceId) {
         return devopsEnvAppServiceMapper.countInstances(appServiceId, envId, null) == 0 &&
                 devopsEnvAppServiceMapper.countRelatedConfigMap(appServiceId, envId, null) == 0 &&
                 devopsEnvAppServiceMapper.countRelatedSecret(appServiceId, envId, null) == 0 &&
@@ -166,4 +188,5 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     public List<BaseApplicationServiceVO> listNonRelatedAppService(Long projectId, Long envId) {
         return devopsEnvAppServiceMapper.listNonRelatedApplications(projectId, envId);
     }
+
 }

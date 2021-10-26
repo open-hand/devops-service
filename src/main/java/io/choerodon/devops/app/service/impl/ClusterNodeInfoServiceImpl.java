@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -186,9 +185,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
                     .opsForList()
                     .range(redisKey, 0, nodeDTOS.size())
                     .stream()
-                    .map(node -> {
-                        return JSONObject.parseObject(node, ClusterNodeInfoVO.class);
-                    })
+                    .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                     .collect(Collectors.toMap(ClusterNodeInfoVO::getNodeName, v -> v));
 
             List<ClusterNodeInfoVO> nodeInfoVOS = nodeDTOS.stream().map(node -> {
@@ -255,7 +252,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             // 现在分页从0开始了
             long start = (long) (pageable.getPage()) * (long) pageable.getSize();
             // stop不怕越界， redis会将边界之前的最后的那些元素返回
-            long stop = start + (long) pageable.getSize() - 1;
+            long stop = start + pageable.getSize() - 1;
             nodes = stringRedisTemplate
                     .opsForList()
                     .range(redisKey, start, stop)

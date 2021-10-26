@@ -9,12 +9,13 @@ import javax.annotation.Nullable;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
+import io.choerodon.devops.api.vo.open.OpenAppServiceReqVO;
 import io.choerodon.devops.app.eventhandler.payload.AppServiceImportPayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppImportServicePayload;
 import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -84,10 +85,11 @@ public interface AppServiceService {
      *
      * @param projectId  项目id
      * @param isActive   是否启用
-     * @param appMarket  服务市场导入
      * @param hasVersion 是否存在版本
+     * @param appMarket  服务市场导入
      * @param pageable   分页参数
      * @param params     参数
+     * @param includeExternal
      * @return Page
      */
     Page<AppServiceRepVO> pageByOptions(Long projectId,
@@ -98,7 +100,7 @@ public interface AppServiceService {
                                         Boolean doPage,
                                         PageRequest pageable,
                                         String params,
-                                        Boolean checkMember);
+                                        Boolean checkMember, Boolean includeExternal);
 
     /**
      * 处理服务创建逻辑
@@ -106,6 +108,8 @@ public interface AppServiceService {
      * @param gitlabProjectEventDTO 服务信息
      */
     void operationApplication(DevOpsAppServicePayload gitlabProjectEventDTO);
+
+    void operationExternalApplication(DevOpsAppServicePayload gitlabProjectEventDTO);
 
     /**
      * 处理服务导入逻辑
@@ -313,10 +317,6 @@ public interface AppServiceService {
      */
     Page<DevopsUserPermissionVO> pagePermissionUsers(Long projectId, Long appServiceId, PageRequest pageable, String searchParam);
 
-    Page<DevopsUserPermissionVO> combineOwnerAndMember(List<DevopsUserPermissionVO> allProjectMembers, List<DevopsUserPermissionVO> allProjectOwners, PageRequest pageable);
-
-    DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner);
-
     List<ProjectVO> listProjects(Long organizationId, Long projectId, String params);
 
     /**
@@ -354,7 +354,8 @@ public interface AppServiceService {
     AppServiceDTO baseQuery(Long appServiceId);
 
     Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params, Boolean checkMember);
+                                          String type, Boolean doPage, PageRequest pageable, String params,
+                                          Boolean checkMember, Boolean includeExternal);
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
@@ -383,7 +384,7 @@ public interface AppServiceService {
      *
      * @return List<AppServiceGroupVO>
      */
-    Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, PageRequest pageable);
+    Page<AppServiceGroupInfoVO> pageAppServiceByMode(Long projectId, Boolean share, Long searchProjectId, String param, Boolean includeExternal, PageRequest pageable);
 
     /**
      * 查询所有应用服务
@@ -449,7 +450,7 @@ public interface AppServiceService {
      * @param share
      * @return
      */
-    List<ProjectVO> listProjectByShare(Long projectId, Boolean share);
+    List<ProjectVO> listProjectByShare(Long projectId, Boolean share, Boolean includeExternal);
 
     /**
      * 根据版本Id集合查询应用服务
@@ -550,15 +551,60 @@ public interface AppServiceService {
 
     /**
      * 查询项目下资源使用情况
+     *
      * @param projectIds
      * @return
      */
     List<ResourceVO> listResourceByIds(List<Long> projectIds);
 
     /**
-     *
      * @param appServiceList
      * @return
      */
     List<AppServiceSimpleVO> listByProjectIdAndCode(List<AppServiceSimpleVO> appServiceList);
+
+    Long countAppCountByOptions(Long projectId);
+
+    Page<AppServiceRepVO> applicationCenter(Long projectId, Long envId, String type, String params, PageRequest pageRequest);
+
+    List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId);
+
+    Boolean checkDeleteEnvApp(Long appServiceId, Long envId);
+
+    /**
+     * 根据坐标查询出项目下的应用列表
+     *
+     * @param projectId
+     * @param groupId
+     * @param artifactId
+     * @return
+     */
+    List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId);
+
+    Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest);
+
+    Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value, Long appId);
+
+    void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList);
+
+    void createAppServiceForTransfer(AppServiceTransferVO appServiceTransferVO);
+
+    List<CheckAppServiceCodeAndNameVO> checkNameAndCode(Long projectId, List<CheckAppServiceCodeAndNameVO> codeAndNameVOList);
+
+    OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO);
+
+    String getPrivateToken(Long projectId, String serviceCode, String email);
+
+    String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);
+
+    AppServiceDTO createExternalApp(Long projectId, ExternalAppServiceVO externalAppServiceVO);
+
+    Boolean isExternalGitlabUrlUnique(String externalGitlabUrl);
+
+    Boolean testConnection(AppExternalConfigDTO appExternalConfigDTO);
+
+    Set<Long> listExternalAppIdByProjectId(Long projectId);
+
+    List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds);
+
 }

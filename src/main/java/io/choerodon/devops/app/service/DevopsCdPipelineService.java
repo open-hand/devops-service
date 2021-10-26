@@ -31,6 +31,10 @@ public interface DevopsCdPipelineService {
      */
     void envAutoDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 
+
+    void pipelineDeploy(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log);
+
+    void pipelineDeployDeployment(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, StringBuilder log);
     /**
      * 执行下一个任务
      * 1. 人工卡点任务更新为待审核
@@ -127,4 +131,26 @@ public interface DevopsCdPipelineService {
      */
     @Nullable
     PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long instanceId);
+
+    /**
+     * 查询引用了环境应用作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param projectId  项目id
+     * @param appId 应用id
+     * @return 一个或者无
+     */
+    @Nullable
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+
+    /**
+     * 查询引用了主机应用作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
+     *
+     * @param projectId  项目id
+     * @param appId 应用id
+     * @return 一个或者无
+     */
+    @Nullable
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
+
+    void hostDeployStatusUpdate(Long jobRecordId, Boolean status, String error);
 }

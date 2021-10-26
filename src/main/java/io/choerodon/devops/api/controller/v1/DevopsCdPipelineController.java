@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
@@ -29,6 +30,8 @@ public class DevopsCdPipelineController {
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     /**
      * 主机模式镜像部署接口
@@ -172,5 +175,13 @@ public class DevopsCdPipelineController {
     @GetMapping("/external_approval_task/callback_url")
     public ResponseEntity<String> queryCallbackUrl() {
         return ResponseEntity.ok(devopsCdPipelineService.queryCallbackUrl());
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "hzero部署接口")
+    @PostMapping("/hzero_deploy")
+    public ResponseEntity<Void> hzeroDeploy(@RequestParam(value = "details_record_id") Long detailsRecordId) {
+        appServiceInstanceService.hzeroDeploy(detailsRecordId);
+        return ResponseEntity.noContent().build();
     }
 }

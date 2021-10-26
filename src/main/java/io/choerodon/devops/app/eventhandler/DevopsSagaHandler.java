@@ -23,10 +23,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.AppServiceInstanceVO;
-import io.choerodon.devops.api.vo.PipelineWebHookVO;
-import io.choerodon.devops.api.vo.PushWebHookVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
@@ -35,16 +32,22 @@ import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 
 
 /**
@@ -103,19 +106,22 @@ public class DevopsSagaHandler {
     private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
     @Autowired
     private DevopsClusterNodeOperatorService devopsClusterNodeOperatorService;
-
-    @Autowired
-    private PipelineTaskRecordService pipelineTaskRecordService;
-    @Autowired
-    private PipelineStageRecordService pipelineStageRecordService;
-    @Autowired
-    private PipelineService pipelineService;
-    @Autowired
-    private PipelineRecordService pipelineRecordService;
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private MarketUseRecordService marketUseRecordService;
+    @Autowired
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    @Autowired
+    private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    private DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     /**
      * devops创建环境
@@ -207,6 +213,28 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 创建gitlab项目
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE,
+            description = "创建gitlab项目",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_EXTERNAL_APPLICATION_SERVICE,
+            maxRetryCount = 3,
+            seq = 1)
+    public String createExternalAppService(String data) {
+        DevOpsAppServicePayload devOpsAppServicePayload = gson.fromJson(data, DevOpsAppServicePayload.class);
+        try {
+            appServiceService.operationExternalApplication(devOpsAppServicePayload);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
+            throw e;
+        }
+        //创建成功发送webhook
+        sendNotificationService.sendWhenAppServiceCreate(appServiceService.baseQuery(devOpsAppServicePayload.getAppServiceId()));
+        return data;
+    }
+
+
+    /**
      * GitOps 事件处理
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_GITLAB_PROJECT,
@@ -219,7 +247,6 @@ public class DevopsSagaHandler {
         try {
             appServiceService.operationAppServiceImport(devOpsAppImportPayload);
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>errorMessage:{}>>>>>>>>>", e.getCause());
             devOpsAppImportPayload.setErrorMessage(getStackTrace(e));
             appServiceService.setAppErrStatus(JsonHelper.marshalByJackson(devOpsAppImportPayload), devOpsAppImportPayload.getIamProjectId(), devOpsAppImportPayload.getAppServiceId());
             throw e;
@@ -342,10 +369,16 @@ public class DevopsSagaHandler {
             }
             LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId);
+            LOGGER.error("error create pipeline auto deploy instance", e);
+            String log = devopsCdJobRecordDTO.getLog();
+            if (log != null) {
+                log = LogUtil.cutOutString(log + System.lineSeparator() + LogUtil.readContentOfThrowable(e), 2500);
+            } else {
+                log = LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500);
+            }
+            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log);
             devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId, e.getMessage());
+            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
 
             Long userId = GitUserNameUtil.getUserId();
             sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
@@ -505,7 +538,7 @@ public class DevopsSagaHandler {
                 try {
                     sw.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    LOGGER.error("error.sw.close", e1);
                 }
             }
             if (pw != null) {
@@ -578,8 +611,8 @@ public class DevopsSagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public void deleteEnv(String data) {
-        JsonObject JSONObject = gson.fromJson(data, JsonObject.class);
-        Long envId = JSONObject.get("envId").getAsLong();
+        JsonObject jsonObject = gson.fromJson(data, JsonObject.class);
+        Long envId = jsonObject.get("envId").getAsLong();
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
@@ -680,55 +713,6 @@ public class DevopsSagaHandler {
     /**
      * 创建流水线自动部署实例
      */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
-            description = "创建流水线自动部署实例",
-            sagaCode = DEVOPS_PIPELINE_AUTO_DEPLOY_INSTANCE,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void pipelineAutoDeployInstance(String data) {
-        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
-        Long taskRecordId = appServiceDeployVO.getRecordId();
-        Long stageRecordId = pipelineTaskRecordService.baseQueryRecordById(taskRecordId).getStageRecordId();
-        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-        PipelineTaskRecordDTO taskRecordDTO = pipelineTaskRecordService.baseQueryRecordById(taskRecordId);
-        Long pipelineRecordId = stageRecordDTO.getPipelineRecordId();
-        try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
-            if (!pipelineRecordService.baseQueryById(pipelineRecordId).getStatus().equals(WorkFlowStatus.FAILED.toValue()) || stageRecordDTO.getIsParallel() == 1) {
-                if (!taskRecordDTO.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                    PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-                    pipelineTaskRecordDTO.setInstanceId(appServiceInstanceVO.getId());
-                    pipelineTaskRecordDTO.setStatus(WorkFlowStatus.SUCCESS.toString());
-                    pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-                    pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-                    LOGGER.info("create pipeline auto deploy instance success");
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance {}", e);
-            PipelineTaskRecordDTO pipelineTaskRecordDTO = new PipelineTaskRecordDTO();
-            pipelineTaskRecordDTO.setId(appServiceDeployVO.getRecordId());
-            pipelineTaskRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineTaskRecordService.baseCreateOrUpdateRecord(pipelineTaskRecordDTO);
-
-            Long time = System.currentTimeMillis() - TypeUtil.objToLong(stageRecordDTO.getExecutionTime());
-            stageRecordDTO.setStatus(WorkFlowStatus.FAILED.toValue());
-            stageRecordDTO.setExecutionTime(time.toString());
-            pipelineStageRecordService.baseCreateOrUpdate(stageRecordDTO);
-
-            pipelineService.updateStatus(pipelineRecordId, null, WorkFlowStatus.FAILED.toValue(), e.getMessage());
-            Long userId = GitUserNameUtil.getUserId();
-            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                    MessageCodeConstants.PIPELINE_FAILED,
-                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
-        }
-    }
-
-    /**
-     * 创建流水线自动部署实例
-     */
     @SagaTask(code = SagaTaskCodeConstants.HANDLE_API_TEST_TASK_COMPLETE_EVENT,
             description = "创建流水线自动部署实例",
             sagaCode = SagaTopicCodeConstants.API_TEST_TASK_COMPLETE_EVENT,
@@ -741,6 +725,108 @@ public class DevopsSagaHandler {
         if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
             devopsCdPipelineService.handleApiTestTaskCompleteEvent(apiTestCompleteEventVO);
         }
+    }
+
+    /**
+     * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
+            description = "处理pod ready消息",
+            sagaCode = DEVOPS_POD_READY,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handlePodReadyEvent(String data) {
+        PodReadyEventVO podReadyEventVO = JsonHelper.unmarshalByJackson(data, PodReadyEventVO.class);
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, podReadyEventVO.getInstanceId());
+        if (devopsDeployAppCenterEnvDTO == null) {
+            LOGGER.info(">>>>>>>>>>>>>>>App not found, skip. instanceId : {}<<<<<<<<<<<<<<<<<", podReadyEventVO.getInstanceId());
+            return;
+        }
+
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
+        if (devopsHzeroDeployDetailsDTO != null) {
+            // pod的操作记录不是最新的则丢弃
+            if (podReadyEventVO.getCommandId() < devopsHzeroDeployDetailsDTO.getCommandId()) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+                return;
+            }
+            if (Boolean.FALSE.equals(devopsEnvPodService.checkInstancePodStatusAllReadyWithCommandId(devopsHzeroDeployDetailsDTO.getEnvId(),
+                    devopsHzeroDeployDetailsDTO.getAppId(),
+                    devopsHzeroDeployDetailsDTO.getCommandId()))) {
+                return;
+            }
+
+            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+
+            devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.SUCCESS);
+            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+                // 1. 后续还有任务则通知下一任务执行
+                // 2. 后续没有任务了，则更新部署记录状态为成功
+                if (Boolean.TRUE.equals(devopsHzeroDeployDetailsService.completed(devopsHzeroDeployDetailsDTO.getDeployRecordId()))) {
+                    devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.SUCCESS);
+                } else {
+                    workFlowServiceOperator.approveUserTask(devopsDeployRecordDTO.getProjectId(),
+                            devopsDeployRecordDTO.getBusinessKey(),
+                            MiscConstants.WORKFLOW_ADMIN_NAME,
+                            MiscConstants.WORKFLOW_ADMIN_ID,
+                            MiscConstants.WORKFLOW_ADMIN_ORG_ID);
+                }
+
+
+            }
+        }
+
+    }
+
+    /**
+     * hzero实例部署失败
+     */
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_HZERO_DEPLOY_FAILED,
+            description = "处理hzero实例部署失败",
+            sagaCode = DEVOPS_DEPLOY_FAILED,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleHzeroDeployFailedEvent(String data) {
+        DevopsDeployFailedVO devopsDeployFailedVO = JsonHelper.unmarshalByJackson(data, DevopsDeployFailedVO.class);
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, devopsDeployFailedVO.getInstanceId());
+        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
+        if (devopsHzeroDeployDetailsDTO != null) {
+            // pod的操作记录不是最新的则丢弃
+            if (!devopsDeployFailedVO.getCommandId().equals(devopsHzeroDeployDetailsDTO.getCommandId())) {
+                LOGGER.info(">>>>>>>>>>>>>>>pod commandId before details CommandId, skip<<<<<<<<<<<<<<<<<");
+                return;
+            }
+
+            DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+            if (!DeployResultEnum.CANCELED.value().equals(devopsDeployRecordDTO.getDeployResult())) {
+                workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+                devopsHzeroDeployDetailsService.updateStatusById(devopsHzeroDeployDetailsDTO.getId(), HzeroDeployDetailsStatusEnum.FAILED);
+                devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
+            }
+        }
+
+    }
+
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            description = "处理应用服务迁移",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleTransferAppService(String data) {
+
+        AppServiceTransferVO appServiceTransferVO = JsonHelper.unmarshalByJackson(data, AppServiceTransferVO.class);
+
+        try {
+            appServiceService.createAppServiceForTransfer(appServiceTransferVO);
+        } catch (Exception e) {
+            appServiceService.setAppErrStatus(data, appServiceTransferVO.getProjectId(), appServiceTransferVO.getAppServiceId());
+            throw e;
+        }
+
     }
 
 }

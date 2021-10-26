@@ -45,4 +45,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress.groovy') {
             column(name: 'annotations', type: 'VARCHAR(2000)', remarks: 'ingress对象的Annotations字段的JSON格式字符串', afterColumn: 'domain')
         }
     }
+
+    changeSet(author: 'lihao', id: '2021-06-15-add-column-instance_id') {
+        addColumn(tableName: 'devops_ingress') {
+            column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: 'ingress对象关联的实例id', afterColumn: 'command_id')
+        }
+    }
 }

@@ -379,27 +379,12 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public void fixIssueId() {
-        int totalCount = devopsGitlabCommitMapper.countBranchBoundWithIssue();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        do {
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<DevopsGitlabCommitDTO> result = PageHelper.doPage(pageRequest, () -> devopsGitlabCommitMapper.listCommitBoundWithIssue());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<DevopsIssueRelDTO> devopsIssueRelDTOList = result.getContent().stream().map(b -> {
-                    DevopsIssueRelDTO devopsIssueRelDTO = new DevopsIssueRelDTO();
-                    devopsIssueRelDTO.setIssueId(b.getIssueId());
-                    devopsIssueRelDTO.setObject(DevopsIssueRelObjectTypeEnum.COMMIT.getValue());
-                    devopsIssueRelDTO.setObjectId(b.getId());
-                    return devopsIssueRelDTO;
-                }).collect(Collectors.toList());
-                batchInsertHelper.batchInsert(devopsIssueRelDTOList);
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
+    public List<DevopsBranchDTO> baseListDevopsBranchesByIssueId(Long issueId) {
+        return devopsGitlabCommitMapper.baseListDevopsBranchesByIssueId(issueId);
+    }
+
+    @Override
+    public DevopsGitlabCommitDTO selectByPrimaryKey(Long id) {
+        return devopsGitlabCommitMapper.selectByPrimaryKey(id);
     }
 }

@@ -213,7 +213,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
         for (DevopsClusterNodeDTO node : devopsClusterNodeDTOS) {
             if (node.getType().equalsIgnoreCase(ClusterNodeTypeEnum.INNER.getType())) {// 设置所有节点
                 if (HostAuthType.ACCOUNTPASSWORD.value().equals(node.getAuthType())) {
-                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PASSWORD_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
+                    k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PSW_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), node.getPassword()))
                             .append(System.lineSeparator());
                 } else {
                     k8sInventoryVO.getAll().append(String.format(INVENTORY_INI_TEMPLATE_FOR_ALL_PRIVATE_KEY_TYPE, node.getName(), node.getHostIp(), node.getHostPort(), node.getUsername(), String.format(PRIVATE_KEY_SAVE_PATH_TEMPLATE, node.getName())))
@@ -393,8 +393,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             if (e instanceof TransportException) {
                 LOGGER.info(">>>>>>>>> [install k8s] clusterId {} : ssh connection disconnect ,host: [ {} ] <<<<<<<<<", devopsClusterInstallPayload.getClusterId(), ssh.getRemoteHostname());
             } else {
-                LOGGER.info(">>>>>>>>> [install k8s] clusterId {} :failed to install ,error: {}<<<<<<<<<", devopsClusterInstallPayload.getClusterId(), e.getMessage());
-                e.printStackTrace();
+                LOGGER.error(">>>>>>>>> [install k8s] clusterId {} :failed to install ,error: {}<<<<<<<<<", devopsClusterInstallPayload.getClusterId(), e);
             }
         } finally {
             devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);
@@ -539,7 +538,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
             // 安装基础环境、git、ansible
             try {
                 LOGGER.info(">>>>>>>>> [check node] key {} :initialize the environment <<<<<<<<<", redisKey);
-                sshUtil.uploadPreProcessShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode(), "kube");
+                sshUtil.uploadPreProcessShell(ssh, devopsClusterInstallInfoVO.getDevopsClusterReqVO().getCode());
                 ExecResultInfoVO resultInfoVO = sshUtil.execCommand(ssh, String.format(BASH_COMMAND_TEMPLATE, PRE_KUBEADM_HA_SH));
                 if (resultInfoVO != null && resultInfoVO.getExitCode() != 0) {
                     throw new Exception(String.format(">>>>>>>>> [check node] failed to initialize the environment on host: [ %s ],error is :%s <<<<<<<<<", ssh.getRemoteHostname(), resultInfoVO.getStdErr()));
@@ -762,7 +761,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
                     record.setStatus(ClusterOperationStatusEnum.FAILED.value())
                             .appendErrorMsg(e.getMessage());
                     devopsClusterDTO.setStatus(ClusterStatusEnum.FAILED.value());
-                    e.printStackTrace();
+                    LOGGER.error("update fail", e);
                 } finally {
                     devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO);
                     devopsClusterOperationRecordMapper.updateByPrimaryKeySelective(record);

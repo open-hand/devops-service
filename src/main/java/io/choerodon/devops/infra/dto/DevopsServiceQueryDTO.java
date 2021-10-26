@@ -32,6 +32,16 @@ public class DevopsServiceQueryDTO extends AuditDomain {
     private String commandStatus;
     private String error;
     private Long targetAppServiceId;
+    private Long targetDeploymentId;
+    private Long instanceId;
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
 
     public Long getId() {
         return id;
@@ -215,5 +225,13 @@ public class DevopsServiceQueryDTO extends AuditDomain {
 
     public void setTargetAppServiceId(Long targetAppServiceId) {
         this.targetAppServiceId = targetAppServiceId;
+    }
+
+    public Long getTargetDeploymentId() {
+        return targetDeploymentId;
+    }
+
+    public void setTargetDeploymentId(Long targetDeploymentId) {
+        this.targetDeploymentId = targetDeploymentId;
     }
 }

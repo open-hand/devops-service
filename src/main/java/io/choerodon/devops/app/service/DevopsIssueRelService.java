@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
+import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
+
 public interface DevopsIssueRelService {
     /**
      * 添加关联关系
@@ -47,13 +50,34 @@ public interface DevopsIssueRelService {
     void deleteRelationByObjectAndObjectIdAndIssueId(String object, Long objectId, Long issueId);
 
     /**
-     * @param object    对象类型 branch/object
+     * 列举出关联对象id和issueIds的map关系图
+     *
+     * @param object    对象类型 commit/branch
      * @param objectIds 对象id
-     * @return key:objectId value: issueIds
+     * @return key: objectId value: issueIds
      */
     Map<Long, List<Long>> listMappedIssueIdsByObjectTypeAndObjectId(String object, Set<Long> objectIds);
 
-    void fixBranchInfo();
+    /**
+     * 列出关联了敏捷问题的commitId或branchId
+     *
+     * @param projectId
+     * @param object
+     * @param issueId
+     * @return
+     */
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId, String object, Long issueId);
+
+    /**
+     * 列出敏捷问题以及关联的分支信息
+     *
+     * @param issueIds 敏捷问题ids
+     */
+    List<IssueIdAndBranchIdsVO> listBranchInfoByIssueIds(Set<Long> issueIds);
+
+    List<Long> listExistRelationBranchIds(Set<Long> commitRelatedBranchIds);
+
+    List<Long> listBranchIdsByCommitIds(Set<Long> commitIds);
 
     /**
      * 根据branchId删除commit的关联
@@ -62,4 +86,12 @@ public interface DevopsIssueRelService {
      * @param issueId  问题id
      */
     void deleteCommitRelationByBranchId(Long branchId, Long issueId);
+
+    /**
+     * 根据branchId列举出所有和问题关联的commitId
+     *
+     * @param branchId
+     * @return
+     */
+    List<Long> listCommitRelationByBranchId(Long branchId);
 }

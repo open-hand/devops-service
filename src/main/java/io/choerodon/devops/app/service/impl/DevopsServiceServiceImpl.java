@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -19,6 +23,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -36,8 +41,10 @@ import io.choerodon.devops.app.eventhandler.payload.ServiceSagaPayLoad;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.k8s.ServiceTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -55,7 +62,7 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * Created by Zenger on 2018/4/13.
  */
 @Service
-public class DevopsServiceServiceImpl implements DevopsServiceService {
+public class DevopsServiceServiceImpl implements DevopsServiceService, ChartResourceOperatorService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsServiceServiceImpl.class);
 
@@ -75,6 +82,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Lazy
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
+    @Lazy
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private AppServiceService applicationService;
@@ -113,6 +121,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private PermissionHelper permissionHelper;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
+    @Autowired
+    private DevopsDeploymentService devopsDeploymentService;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -169,7 +179,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_SERVICE,
             description = "Devops创建网络", inputSchema = "{}")
     public Boolean create(Long projectId, DevopsServiceReqVO devopsServiceReqVO) {
-
+        //校验部署方式是否唯一
+        permissionHelper.checkDeploymentWay(devopsServiceReqVO);
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, devopsServiceReqVO.getEnvId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -385,7 +396,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
@@ -408,7 +419,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<V1Service> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -486,6 +497,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //分页组件暂不支持级联查询，只能手写分页
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
         List<String> paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
+        // todo 遗留逻辑混乱，待梳理
         return PageInfoUtil.createPageFromList(devopsServiceMapper.listDevopsServiceByPage(
                 projectId, envId, instanceId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                 paramList, sortResult, appServiceId), pageable);
@@ -496,6 +508,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setEnvId(envId);
         return devopsServiceMapper.select(devopsServiceDTO);
+    }
+
+    @Override
+    public Integer countInstanceService(Long projectId, Long envId, Long objectId) {
+        List<DevopsServiceQueryDTO> devopsServiceQueryDTOS = devopsServiceMapper.listDevopsServiceByPage(
+                projectId, envId, objectId, null,
+                null, null, null);
+        return devopsServiceQueryDTOS.size();
     }
 
 
@@ -672,6 +692,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
             }
         }
+
+        if (devopsServiceQueryDTO.getTargetDeploymentId() != null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsServiceQueryDTO.getTargetDeploymentId());
+            if (devopsDeploymentDTO != null) {
+                devopsServiceTargetVO.setTargetDeploymentName(devopsDeploymentDTO.getName());
+            }
+        }
         devopsServiceVO.setTarget(devopsServiceTargetVO);
 
         // service的dnsName为${serviceName.namespace}
@@ -838,6 +865,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceDTO.setTargetInstanceCode(null);
             baseUpdateTargetInstanceCode(devopsServiceDTO.getId());
         }
+        if (devopsServiceReqVO.getTargetDeploymentId() != null) {
+            devopsServiceDTO.setTargetDeploymentId(devopsServiceReqVO.getTargetDeploymentId());
+        } else {
+            devopsServiceDTO.setTargetDeploymentId(null);
+            baseUpdateTargetDeploymentId(devopsServiceDTO.getId());
+        }
         if (devopsServiceReqVO.getAppServiceId() == null) {
             if (devopsServiceReqVO.getTargetAppServiceId() != null) {
                 devopsServiceDTO.setAppServiceId(devopsServiceReqVO.getTargetAppServiceId());
@@ -861,6 +894,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private void baseUpdateTargetInstanceCode(Long devopsServiceId) {
         devopsServiceMapper.updateTargetInstanceCodeToNull(devopsServiceId);
+    }
+
+    private void baseUpdateTargetDeploymentId(Long devopsServiceId) {
+        devopsServiceMapper.updateTargetDeploymentIdToNull(devopsServiceId);
     }
 
     private DevopsServiceDTO handlerUpdateService(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
@@ -929,7 +966,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         Map<String, String> instanceSelector = buildSelectorForInstance(
                 devopsServiceReqVO.getTargetInstanceCode(),
-                devopsServiceReqVO.getTargetAppServiceId());
+                devopsServiceReqVO.getTargetAppServiceId(),
+                devopsServiceReqVO.getTargetDeploymentId());
         if (instanceSelector.isEmpty()) {
             spec.setSelector(devopsServiceReqVO.getSelectors());
         } else {
@@ -973,17 +1011,24 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      *
      * @param targetInstanceCode 实例Id
      * @param targetAppServiceId 目标应用服务id
+     * @param targetDeploymentId 目标部署组id
      * @return 选择器
      */
     @Nonnull
     private Map<String, String> buildSelectorForInstance(String targetInstanceCode,
-                                                         Long targetAppServiceId) {
+                                                         Long targetAppServiceId,
+                                                         Long targetDeploymentId) {
         Map<String, String> selectors = new HashMap<>();
         if (targetInstanceCode != null) {
             selectors.put(AppServiceInstanceService.INSTANCE_LABEL_RELEASE, targetInstanceCode);
         }
         if (targetAppServiceId != null) {
             selectors.put(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID, targetAppServiceId.toString());
+        }
+        if (targetDeploymentId != null) {
+            DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(targetDeploymentId);
+            selectors.put(PARENT_WORK_LOAD_NAME_LABEL, devopsDeploymentDTO.getName());
+            selectors.put(PARENT_WORK_LOAD_LABEL, DEPLOYMENT.getType());
         }
         return selectors;
     }
@@ -1207,4 +1252,88 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
 
+    @Override
+    @Transactional
+    public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
+        V1Service v1Service = json.deserialize(detailsJson, V1Service.class);
+
+        DevopsServiceDTO oldDevopsServiceDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1Service.getMetadata().getName());
+        if (oldDevopsServiceDTO != null) {
+            oldDevopsServiceDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+
+            fillDevopsServiceInfo(oldDevopsServiceDTO, v1Service);
+
+            devopsServiceMapper.updateByPrimaryKeySelective(oldDevopsServiceDTO);
+        } else {
+
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+            if (devopsEnvironmentDTO == null) {
+                LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
+                return;
+            }
+            DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+            devopsServiceDTO.setEnvId(appServiceInstanceDTO.getEnvId());
+            devopsServiceDTO.setCommandId(appServiceInstanceDTO.getId());
+            devopsServiceDTO.setName(v1Service.getMetadata().getName());
+            devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
+            fillDevopsServiceInfo(devopsServiceDTO, v1Service);
+            devopsServiceMapper.insertSelective(devopsServiceDTO);
+        }
+    }
+
+    private void fillDevopsServiceInfo(DevopsServiceDTO oldDevopsServiceDTO, V1Service v1Service) {
+        oldDevopsServiceDTO.setType(v1Service.getSpec().getType());
+
+        // 添加service类型
+        if (ServiceTypeEnum.LOAD_BALANCER.value().equals(v1Service.getSpec().getType())) {
+            oldDevopsServiceDTO.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
+        } else if (ServiceTypeEnum.CLUSTER_IP.value().equals(v1Service.getSpec().getType())) {
+            oldDevopsServiceDTO.setExternalIp(v1Service.getSpec().getClusterIP());
+        } else if (ServiceTypeEnum.NODE_PORT.value().equals(v1Service.getSpec().getType())) {
+            // do nothing
+        } else {
+            // 其他类型不保存
+            throw new CommonException("error.unknown.service.type");
+        }
+
+        // 添加选择器
+        String appServiceId = v1Service.getMetadata().getLabels().get(AppServiceInstanceService.INSTANCE_LABEL_APP_SERVICE_ID);
+        String instanceCode = v1Service.getMetadata().getLabels().get(AppServiceInstanceService.INSTANCE_LABEL_RELEASE);
+        Map<String, String> selector = v1Service.getSpec().getSelector();
+        if (appServiceId != null) {
+            oldDevopsServiceDTO.setTargetAppServiceId(Long.parseLong(appServiceId));
+        } else if (org.apache.commons.lang3.StringUtils.isNoneBlank(instanceCode)) {
+            oldDevopsServiceDTO.setTargetInstanceCode(instanceCode);
+        } else if (!CollectionUtils.isEmpty(selector)) {
+            oldDevopsServiceDTO.setSelectors(gson.toJson(selector));
+        }
+
+        oldDevopsServiceDTO.setPorts(gson.toJson(v1Service.getSpec().getPorts()));
+        oldDevopsServiceDTO.setStatus(ServiceStatus.RUNNING.getStatus());
+    }
+
+    private DevopsServiceDTO baseQueryByEnvIdAndName(Long envId, String name) {
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setEnvId(envId);
+        devopsServiceDTO.setName(name);
+        return devopsServiceMapper.selectOne(devopsServiceDTO);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEnvIdAndName(Long envId, String name) {
+        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
+        devopsServiceDTO.setEnvId(envId);
+        devopsServiceDTO.setName(name);
+        devopsServiceMapper.delete(devopsServiceDTO);
+    }
+
+    @Override
+    public ResourceType getType() {
+        return ResourceType.SERVICE;
+    }
 }

@@ -1,18 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.DevopsEnvPodVO;
-import io.choerodon.devops.app.service.DevopsEnvPodService;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.DevopsServiceInstanceDTO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.Optional;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -22,7 +11,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Optional;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsEnvPodVO;
+import io.choerodon.devops.app.service.DevopsEnvPodService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -68,6 +65,22 @@ public class DevopsEnvPodController {
                 projectId, envId, appServiceId, instanceId, pageable, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.query"));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "按类型分页查询环境下pod")
+    @CustomPageRequest
+    @PostMapping(value = "/page_by_kind")
+    public ResponseEntity<Page<DevopsEnvPodVO>> pageByKind(
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiIgnore PageRequest pageable,
+            @Encrypt
+            @RequestParam(value = "env_id") Long envId,
+            @RequestParam(value = "kind") String kind,
+            @RequestParam(value = "name") String name,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return ResponseEntity.ok(devopsEnvPodService.pageByKind(projectId, envId, kind, name, pageable, searchParam));
     }
 
 //    /**

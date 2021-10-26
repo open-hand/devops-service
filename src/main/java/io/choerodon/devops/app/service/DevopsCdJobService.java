@@ -1,8 +1,11 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
+import io.choerodon.devops.api.vo.DevopsCdJobVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 
 public interface DevopsCdJobService {
     DevopsCdJobDTO create(DevopsCdJobDTO devopsCdJobDTO);
@@ -14,14 +17,25 @@ public interface DevopsCdJobService {
      */
     List<DevopsCdJobDTO> listByPipelineId(Long pipelineId);
 
+    /**
+     * 根据流水线id,查询job列表
+     * @param jobTypeEnum
+     * @return
+     */
+    List<DevopsCdJobDTO> listByType(JobTypeEnum jobTypeEnum);
+
 
     void deleteByStageId(Long stageId);
 
     void deleteByPipelineId(Long pipelineId);
 
-    String queryTrace(Long gitlabProjectId, Long jobId);
-
-    void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
-
     DevopsCdJobDTO queryById(Long stageId);
+
+    void baseUpdate(DevopsCdJobDTO devopsCdJobDTO);
+
+    void baseDelete(Long id);
+
+    List<DevopsCdJobDTO> listByProjectIdAndType(Long projectId, JobTypeEnum typeEnum);
+
+    List<DevopsCdJobVO> listByIdsWithNames(Set<Long> jobIds);
 }

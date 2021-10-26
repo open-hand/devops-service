@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 /**
@@ -35,5 +36,11 @@ public class AgentExecAndLogSocketHandler {
         String group = WebSocketTool.getGroup(webSocketSession);
         String processor = WebSocketTool.getProcessor(webSocketSession);
         LOGGER.info("Connection established from agent. The group is {} and the processor is {}", group, processor);
+    }
+
+    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) {
+        // 关闭前端的web socket Session
+        WebSocketTool.closeFrontSessionByKey(WebSocketTool.getKey(webSocketSession));
+        WebSocketTool.closeSessionQuietly(webSocketSession);
     }
 }

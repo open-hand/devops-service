@@ -4,6 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsBranchMapper">
     <resultMap id="DevopsBranchDTOWithIssueIds" type="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         <id property="id" column="id"/>
+        <result column="branch_name" property="branchName"/>
         <collection property="issueIds" ofType="java.lang.Long">
             <result column="issue_id"/>
         </collection>
@@ -133,6 +134,15 @@
           AND db.branch_name = #{branchName}
     </select>
 
+    <select id="queryByAppAndBranchIdWithIssueId" resultMap="DevopsBranchDTOWithIssueIds">
+        SELECT db.id,db.branch_name,
+        dsr.issue_id AS issue_id
+        FROM devops_branch db
+        LEFT JOIN devops_issue_rel dsr ON dsr.object_id = db.id
+        WHERE db.app_service_id = #{appServiceId}
+        AND db.id = #{branchId}
+    </select>
+
     <select id="listByCommitIds" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
         SELECT db.id, dgc.id AS commitId, das.code AS app_service_code, das.project_id AS project_id
         FROM devops_gitlab_commit dgc
@@ -142,6 +152,14 @@
                 dgc.id IN
         <foreach collection="commitIds" item="commitId" open="(" close=")" separator=",">
             #{commitId}
+        </foreach>
+    </select>
+
+    <select id="listExistBranchIds" resultType="java.lang.Long">
+        SELECT id FROM devops_branch db
+        WHERE db.id IN
+        <foreach collection="branchIds" item="branchId" open="(" close=")" separator=",">
+            #{branchId}
         </foreach>
     </select>
 

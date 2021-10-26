@@ -38,4 +38,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_job.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-09-10-add-column') {
+        addColumn(tableName: 'devops_cd_job') {
+            column(name: 'value_id', type: 'BIGINT UNSIGNED', remarks: 'chart部署任务才需要设置，表示选择的部署配置id', beforeColumn: "metadata")
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '部署任务关联的应用id', beforeColumn: "value_id")
+        }
+    }
+    changeSet(author: 'wanghao', id: '2021-09-10-drop-column') {
+        sql("""
+            DELETE FROM devops_cd_job WHERE type = 'cdHost';
+        """)
+    }
 }

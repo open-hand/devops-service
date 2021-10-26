@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CustomMergeRequestVO;
@@ -47,11 +48,13 @@ public class IssueServiceImpl implements IssueService {
     private AppServiceMapper appServiceMapper;
     @Autowired
     private UserAttrService userAttrService;
+    @Autowired
+    private DevopsIssueRelService devopsIssueRelService;
 
 
     @Override
     public IssueVO countCommitAndMergeRequest(Long issueId) {
-        List<DevopsBranchVO> devopsBranchVOS = getBranchsByIssueId(issueId);
+        List<DevopsBranchVO> devopsBranchVOS = getBranchesByIssueId(issueId);
         List<DevopsGitlabCommitDTO> devopsGitlabCommitVOS = new ArrayList<>();
         List<CustomMergeRequestVO> customMergeRequestVOS = new ArrayList<>();
         devopsBranchVOS.forEach(devopsBranchDTO -> {
@@ -83,8 +86,39 @@ public class IssueServiceImpl implements IssueService {
     }
 
     @Override
-    public List<DevopsBranchVO> getBranchsByIssueId(Long issueId) {
+    public List<DevopsBranchVO> getBranchesByIssueId(Long issueId) {
+
+        // 这一步操作只能够查出已存在的分支
         List<DevopsBranchDTO> devopsBranchDTOS = devopsBranchService.baseListDevopsBranchesByIssueId(issueId);
+        Map<Long, List<String>> appServiceIdDevopsBranchNameMap = devopsBranchDTOS.stream().collect(Collectors.groupingBy(DevopsBranchDTO::getAppServiceId, Collectors.mapping(DevopsBranchDTO::getBranchName, Collectors.toList())));
+
+        // 这一步操作是根据commit查出所有分支信息
+        List<DevopsBranchDTO> devopsCommitRelatedBranchDTOS = devopsGitlabCommitService.baseListDevopsBranchesByIssueId(issueId);
+
+        Set<Long> commitRelatedBranchIds = devopsCommitRelatedBranchDTOS.stream().map(DevopsBranchDTO::getId).collect(Collectors.toSet());
+
+        // 已经被删除的branchId
+        List<Long> deletedBranchIds = devopsBranchService.listDeletedBranchIds(commitRelatedBranchIds);
+
+        // 仍与issue存在关联关系的branchId
+        List<Long> relatedBranchIds = devopsIssueRelService.listExistRelationBranchIds(commitRelatedBranchIds);
+
+        // 这一步操作将已删除的分支信息也添加到devopsBranchDTOS中
+        devopsCommitRelatedBranchDTOS.forEach(d -> {
+            // 通过commit查出来的分支，要满足分支已被删除但是分支与问题关联关系仍存在
+            if (d.getId() != null && deletedBranchIds.contains(d.getId()) && relatedBranchIds.contains(d.getId())) {
+                List<String> branchNames = appServiceIdDevopsBranchNameMap.get(d.getAppServiceId());
+                if (CollectionUtils.isEmpty(branchNames) || !branchNames.contains(d.getBranchName())) {
+                    devopsBranchDTOS.add(d);
+                    if (branchNames == null) {
+                        branchNames = new ArrayList<>();
+                        appServiceIdDevopsBranchNameMap.put(d.getAppServiceId(), branchNames);
+                    }
+                    branchNames.add(d.getBranchName());
+                }
+            }
+        });
+
         List<DevopsBranchVO> devopsBranchVOS = new ArrayList<>();
 
         Set<Long> projectIds = new HashSet<>();
@@ -95,7 +129,7 @@ public class IssueServiceImpl implements IssueService {
             List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppServiceId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
-                    !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
+                            !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);

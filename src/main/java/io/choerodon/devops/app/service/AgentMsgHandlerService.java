@@ -84,4 +84,10 @@ public interface AgentMsgHandlerService {
      * 处理agent启动时发来的集群信息
      */
     void handleClusterInfo(AgentMsgVO msg);
+
+    /**
+     * 处理工作负载产生的pod事件
+     * @param payload
+     */
+    void workloadPodEvent(String payload);
 }

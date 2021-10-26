@@ -4,12 +4,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -30,6 +35,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 public class ResourceConvertToYamlHandler<T> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceConvertToYamlHandler.class);
+
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
@@ -40,6 +47,19 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
     private static final String PERSISTENT_VOLUME = "!!io.kubernetes.client.models.V1PersistentVolume";
     private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
+    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
+    private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
+
+    @Value(value = "${devops.deploy.enableDeleteBlankLine:true}")
+    private Boolean enableDeleteBlankLine;
+
+    static {
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.DEPLOYMENT.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.STATEFULSET.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.JOB.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.CRON_JOB.getType());
+        WORKLOAD_RESOURCE_TYPE.add(ResourceType.DAEMONSET.getType());
+    }
 
     private T type;
 
@@ -68,7 +88,7 @@ public class ResourceConvertToYamlHandler<T> {
      * @return 返回修改后的文件的sha值
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                                         Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
+                                       Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Boolean deleteCert, Long envId, String filePath) {
         GitlabServiceClientOperator gitlabServiceClientOperator = ApplicationContextHelper.getSpringFactory().getBean(GitlabServiceClientOperator.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag, true);
@@ -105,7 +125,7 @@ public class ResourceConvertToYamlHandler<T> {
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
-                    "UPDATE FILE", TypeUtil.objToInteger(userId));
+                    "UPDATE FILE", TypeUtil.objToInteger(userId), "master");
         }
     }
 
@@ -173,15 +193,70 @@ public class ResourceConvertToYamlHandler<T> {
                     case "Endpoints":
                         // 忽视掉Endpoints
                         break;
+                    case "Deployment":
+                    case "StatefulSet":
+                    case "Job":
+                    case "CronJob":
+                    case "DaemonSet":
+                        handleWorkload(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
                     default:
                         handleCustom(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                 }
             }
-            return resultBuilder.toString();
+            String result = resultBuilder.toString();
+            // 1. 判断是否开启删除gitops文件空行，没有开启则不处理。
+            if (Boolean.FALSE.equals(enableDeleteBlankLine)) {
+                LOGGER.info(">>>>>>>>>>>>>>>>return default gitops yaml <<<<<<<<<<<<<<<<<<<");
+                return result;
+            }
+            // 2. 如果开启，则删除空行后返回
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>Old result yaml is {} <<<<<<<<<<<<<<<<<<<", result);
+            }
+            String replacedResult = result.replaceAll("((\\r\\n)|\\n)[\\s\\t ]*(\\1)+", "$1");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(">>>>>>>>>>>>>>>>ReplacedResult yaml is {} <<<<<<<<<<<<<<<<<<<", replacedResult);
+            }
+            return replacedResult;
         } catch (FileNotFoundException e) {
             throw new CommonException(e.getMessage(), e);
         }
+    }
+
+    private void handleWorkload(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml7 = new Yaml();
+        Object workloadResource = yaml7.load(jsonObject.toJSONString());
+        if (WORKLOAD_RESOURCE_TYPE.contains(objectType)) {
+            String oldResourceName = ((LinkedHashMap) (((Map<String, Object>) workloadResource).get("metadata"))).get("name").toString();
+            String newResourceName = ((LinkedHashMap) (((Map<String, Object>) t).get("metadata"))).get("name").toString();
+            if (oldResourceName.equals(newResourceName)) {
+                if (operationType.equals(UPDATE)) {
+                    workloadResource = t;
+                } else {
+                    return;
+                }
+            }
+        }
+        resultBuilder.append("---").append("\n").append(getYamlObject(null, false).dump(workloadResource)).append("\n");
+    }
+
+    private void handleDeployment(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml = new Yaml();
+        V1beta2Deployment v1beta2Deployment = yaml.loadAs(jsonObject.toJSONString(), V1beta2Deployment.class);
+        V1beta2Deployment newV1beta2Deployment;
+        if (objectType.equals(ResourceType.DEPLOYMENT.getType()) && v1beta2Deployment.getMetadata().getName().equals(((V1beta2Deployment) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                newV1beta2Deployment = (V1beta2Deployment) t;
+            } else {
+                return;
+            }
+        } else {
+            newV1beta2Deployment = v1beta2Deployment;
+        }
+        Tag tag = new Tag(DEPLOYMENT);
+        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newV1beta2Deployment).replace(DEPLOYMENT, "---"));
     }
 
     private void handleService(T t, String content, String objectType, String operationType, StringBuilder

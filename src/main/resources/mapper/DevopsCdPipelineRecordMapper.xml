@@ -13,4 +13,12 @@
         FROM devops_cd_pipeline_record dcpr
         WHERE dcpr.id = #{cdPipelineRecordId}
     </select>
+    <select id="queryByPipelineIdAndGitlabPipelineId"
+            resultType="io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO">
+        SELECT *
+        FROM devops_cd_pipeline_record dcpr
+        WHERE dcpr.pipeline_id = #{devopsPipelineId} and dcpr.gitlab_pipeline_id = #{gitlabPipelineId}
+        order by dcpr.id desc
+        limit 1
+    </select>
 </mapper>

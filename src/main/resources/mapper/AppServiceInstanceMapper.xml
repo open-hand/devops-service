@@ -7,6 +7,8 @@
                ins.code,
                ins.status,
                ins.source,
+               ddace.name AS name,
+               env.id     AS environmentId,
                env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
@@ -40,14 +42,16 @@
                        where ndav.id = cmd.object_version_id
                        )                       commandVersion,
                cmd.command_type                commandType,
-               cmd.error                       error
+               cmd.error error
         FROM devops_app_service_instance ins
+                     JOIN devops_deploy_app_center_env ddace ON ddace.object_id = ins.id
                      LEFT JOIN devops_app_service_version version ON ins.app_service_version_id = version.id
                      LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
                      LEFT JOIN devops_env env ON ins.env_id = env.id
                      LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
                      LEFT JOIN devops_env_command effect ON ins.effect_command_id = effect.id
         WHERE ins.id = #{instanceId}
+          AND ddace.rdupm_type = 'chart'
     </select>
 
     <select id="listInstanceInfoByEnvAndOptions" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
@@ -659,5 +663,101 @@
                  INNER JOIN devops_env_command command ON dasi.effect_command_id = command.id
                  INNER JOIN devops_app_service_version dasv ON command.object_version_id = dasv.id
         WHERE dasv.app_service_id  = #{appServiceId};
+    </select>
+    <select id="listAppInstanceByAppSvcIdAndEnvId"
+            resultType="io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO">
+        select dasi.*, dasv.version
+        from devops_app_service_instance dasi
+        left join devops_app_service_version dasv on dasi.app_service_version_id = dasv.id
+        where dasi.app_service_id = #{appServiceId} and dasi.env_id = #{envId};
+    </select>
+
+    <select id="listInstanceByDeployDetailsCode" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+        SELECT
+            *
+        FROM devops_app_service_instance
+        WHERE env_id = #{envId}
+        AND code IN
+        <foreach collection="codes" item="code" separator="," open="(" close=")">
+            #{code}
+        </foreach>
+    </select>
+
+    <select id="queryInstanceStatusByEnvIdAndCode" resultType="java.lang.String">
+        SELECT
+            status
+        FROM devops_app_service_instance
+        WHERE env_id = #{envId}
+        AND code = #{code}
+    </select>
+
+    <select id="countInstance" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM devops_app_service_instance
+    </select>
+
+    <select id="listInstances" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
+        SELECT de.project_id,
+               dasi.code,
+               dasi.env_id,
+               dasi.id,
+               dasi.app_service_id,
+               dasi.source
+        FROM devops_app_service_instance dasi
+                     JOIN devops_env de ON de.id = dasi.env_id
+    </select>
+
+    <select id="listInfoById" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
+        SELECT ins.id,
+            ins.code,
+            ins.status,
+            ins.source,
+            ddace.name AS name,
+            env.id     AS environmentId,
+            env.project_id,
+            (SELECT count(1)
+            FROM devops_env_pod dp
+            WHERE dp.instance_id = ins.id) pod_count,
+            (SELECT count(1)
+            FROM devops_env_pod dp
+            WHERE dp.instance_id = ins.id
+            AND dp.`status` = 'Running'
+            AND dp.is_ready = TRUE) pod_running_count,
+            ins.app_service_id,
+            ins.app_service_version_id,
+            ins.effect_command_id,
+            effect.object_version_id AS     effect_command_version_id,
+            effect.status   AS              effect_command_status,
+            (
+            SELECT effect_version.version
+            FROM devops_app_service_version effect_version
+            WHERE effect_version.id = effect.object_version_id
+            )       AS              effect_command_version,
+            version.version as              version_name,
+            das.name        as              app_service_name,
+            ins.env_id,
+            ins.last_update_date,
+            ins.object_version_number,
+            env.cluster_id,
+            cmd.`status`                    commandStatus,
+            cmd.object_version_id           commandVersionId,
+            (
+            select ndav.version
+            from devops_app_service_version ndav
+            where ndav.id = cmd.object_version_id
+            )                       commandVersion,
+            cmd.command_type                commandType,
+            cmd.error error
+        FROM devops_app_service_instance ins
+        JOIN devops_deploy_app_center_env ddace ON ddace.object_id = ins.id
+        LEFT JOIN devops_app_service_version version ON ins.app_service_version_id = version.id
+        LEFT JOIN devops_app_service das ON ins.app_service_id = das.id
+        LEFT JOIN devops_env env ON ins.env_id = env.id
+        LEFT JOIN devops_env_command cmd ON cmd.id = ins.command_id
+        LEFT JOIN devops_env_command effect ON ins.effect_command_id = effect.id
+        WHERE ins.id in
+        <foreach collection="instanceIds" item="instanceId" open="(" close=")" separator=",">
+            #{instanceId, jdbcType=BIGINT}
+        </foreach>
+        AND ddace.rdupm_type = 'chart'
     </select>
 </mapper>

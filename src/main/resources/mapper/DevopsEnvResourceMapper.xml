@@ -3,19 +3,17 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper">
     <select id="listJobs" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
-        SELECT
-        *
+        SELECT *
         FROM devops_env_resource dir
         WHERE dir.command_id = #{commandId}
-        AND dir.kind = 'Job'
+          AND dir.kind = 'Job'
         ORDER BY dir.weight ASC
     </select>
 
 
     <select id="queryResource" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
-        SELECT
-        *
-        FROM devops_env_resource dir where 1=1
+        SELECT *
+        FROM devops_env_resource dir where 1 = 1
         <if test="instanceId != null">
             AND dir.instance_id = #{instanceId}
         </if>
@@ -35,36 +33,37 @@
 
 
     <select id="listByEnvAndType" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
-        SELECT * from devops_env_resource der
-        LEFT JOIN devops_app_service_instance dai
-        on der.instance_id = dai.id where dai.env_id = #{envId}
-        AND der.kind = #{type}
+        SELECT *
+        from devops_env_resource der
+                     LEFT JOIN devops_app_service_instance dai
+                on der.instance_id = dai.id where dai.env_id = #{envId}
+        <if test="type != null">
+            AND der.kind = #{type}
+        </if>
     </select>
 
     <select id="queryLatestJob" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
-        SELECT
-        *
-        FROM devops_env_resource dir where dir.kind = #{kind}
-        and dir.name = #{name}
-        ORDER BY
-        dir.creation_date DESC
+        SELECT *
+        FROM devops_env_resource dir
+        where dir.kind = #{kind}
+          and dir.name = #{name}
+        ORDER BY dir.creation_date DESC
         LIMIT 1
     </select>
 
     <select id="getResourceDetailByNameAndTypeAndInstanceId" resultType="java.lang.String">
         SELECT detail.message
         FROM devops_env_resource re
-        INNER JOIN devops_env_resource_detail detail
-        ON re.resource_detail_id = detail.id
+                     INNER JOIN devops_env_resource_detail detail
+                ON re.resource_detail_id = detail.id
         WHERE re.name = #{name}
-        AND re.kind = #{kind}
-        AND re.instance_id = #{instanceId}
+          AND re.kind = #{kind}
+          AND re.instance_id = #{instanceId}
     </select>
 
     <select id="listEnvResourceByOptions" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
-        SELECT
-        *
-        FROM devops_env_resource dir where 1=1
+        SELECT *
+        FROM devops_env_resource dir where 1 = 1
         <if test="envId != null">
             AND dir.env_id = #{envId}
         </if>
@@ -73,10 +72,39 @@
         </if>
         <if test="names != null and names.size > 0">
             AND dir.name in
-             <foreach collection="names" item="name" open="(" separator="," close=")">
+            <foreach collection="names" item="name" open="(" separator="," close=")">
                 #{name}
-             </foreach>
-
+            </foreach>
         </if>
+    </select>
+    <select id="getResourceDetailByEnvIdAndKindAndName" resultType="java.lang.String">
+        SELECT detail.message
+        FROM devops_env_resource re
+                     INNER JOIN devops_env_resource_detail detail
+                ON re.resource_detail_id = detail.id
+        WHERE re.name = #{name}
+          AND re.kind = #{kind}
+          AND re.env_id = #{envId}
+        order by re.id desc
+        limit 1
+    </select>
+
+    <select id="queryDetailsByKindAndName" resultType="java.lang.String">
+        select ders.message
+        from devops_env_resource der
+                     inner join devops_env_resource_detail ders on ders.id = der.resource_detail_id
+        where der.env_id = #{envId}
+          and der.kind = #{kind}
+          and der.name = #{name}
+    </select>
+
+    <select id="getResourceWithDetailByInstanceIdAndKind"
+            resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
+        SELECT re.*, detail.message
+        FROM devops_env_resource re
+                     INNER JOIN devops_env_resource_detail detail
+                ON re.resource_detail_id = detail.id
+        WHERE re.instance_id = #{instanceId}
+          AND re.kind = #{kind}
     </select>
 </mapper>

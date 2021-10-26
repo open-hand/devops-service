@@ -40,6 +40,6 @@ public class FrontLogHandler extends AbstractSocketHandler {
 
     @Override
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) {
-        logMessageHandler.handle(session, message);
+        logMessageHandler.handle(session, message, LogMessageHandler.VIEW_LOG);
     }
 }

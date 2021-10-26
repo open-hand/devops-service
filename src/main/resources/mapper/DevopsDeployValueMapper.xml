@@ -165,4 +165,12 @@
         INNER JOIN devops_app_service ds ON ddv.app_service_id = ds.id
         WHERE ddv.id = #{valueId}
     </select>
+    <select id="listByAppServiceIdAndEnvId" resultType="io.choerodon.devops.infra.dto.DevopsDeployValueDTO">
+        select *
+        from devops_deploy_value ddv
+        where ddv.app_service_id = #{appServiceId} and ddv.env_id = #{envId}
+        <if test="name != null">
+            AND ddv.name LIKE CONCAT(CONCAT('%', #{name}), '%')
+        </if>
+    </select>
 </mapper>

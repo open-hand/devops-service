@@ -33,6 +33,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     private static final String ERROR_SAVE_JOB_RECORD_FAILED = "error.save.job.record.failed";
     private static final String ERROR_UPDATE_JOB_RECORD_FAILED = "error.update.job.record.failed";
+    private static final Long DEFAULT_JOB_DURATION_SECONDS = 1L;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
@@ -134,12 +135,15 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     @Override
     @Transactional
-    public void updateJobStatusFailed(Long jobRecordId) {
+    public void updateJobStatusFailed(Long jobRecordId, String log) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
         devopsCdJobRecordDTO.setStatus(PipelineStatus.FAILED.toValue());
         devopsCdJobRecordDTO.setFinishedDate(new Date());
+        devopsCdJobRecordDTO.setLog(log);
         if (devopsCdJobRecordDTO.getStartedDate() != null) {
             devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
+        } else {
+            devopsCdJobRecordDTO.setDurationSeconds(DEFAULT_JOB_DURATION_SECONDS);
         }
         update(devopsCdJobRecordDTO);
     }
@@ -168,10 +172,9 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         devopsCdPipelineRecordService.updateStatusById(pipelineRecordId, PipelineStatus.RUNNING.toValue());
         // 2. 更新阶段状态为执行中
         devopsCdStageRecordService.updateStatusById(stageRecordId, PipelineStatus.RUNNING.toValue());
-        // 3. 更新任务状态为执行中
-        updateStatusById(jobRecordId, PipelineStatus.RUNNING.toValue());
-        // 4 重试任务
-        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())) {
+        // 3. 重试任务
+        if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordDTO.getType())
+                || JobTypeEnum.CD_DEPLOYMENT.value().equals(devopsCdJobRecordDTO.getType())) {
             // 4.1 重试环境部署任务
             devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordDTO.getType())) {

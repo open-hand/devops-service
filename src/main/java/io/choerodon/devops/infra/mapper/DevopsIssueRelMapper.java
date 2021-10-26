@@ -15,11 +15,27 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
 
     List<DevopsIssueRelDTO> listIssueIdsByObjectTypeAndObjectIds(Set<Long> objectIds, String object);
 
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(@Param("projectId") Long projectId, @Param("object") String object, @Param("issueId") Long issueId);
+
+    List<DevopsIssueRelDTO> listRelationByIssueIdsAndObjectType(@Param("object") String object, @Param("issueIds") Set<Long> issueIds);
+
     Integer count();
 
     void batchUpdate(@Param("dtosToUpdate") List<DevopsIssueRelDTO> dtosToUpdate);
 
+    /**
+     * 查出还存在关联关系的分支id
+     *
+     * @param commitRelatedBranchIds 待查询的分支id
+     * @return 仍存在关系的分支id
+     */
+    List<Long> listExistRelationBranchIds(@Param("commitRelatedBranchIds") Set<Long> commitRelatedBranchIds);
+
     void deleteCommitRelationByBranchIdAndIssueId(@Param("branchId") Long branchId, @Param("issueId") Long issueId);
 
     void batchDeleteCommitRelationByBranchIdAndIssueIds(@Param("branchId") Long branchId, @Param("issueIdsToDelete") List<Long> issueIdsToDelete);
+
+    List<Long> listBranchIdsByCommitIds(@Param("commitIds") Set<Long> commitIds);
+
+    List<Long> listCommitRelationByBranchId(@Param("branchId") Long branchId);
 }

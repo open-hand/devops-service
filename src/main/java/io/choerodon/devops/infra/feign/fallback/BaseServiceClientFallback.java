@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
@@ -202,5 +203,15 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<String> listProjectIdsInOrg(Long tenantId) {
         throw new CommonException("error.list.projectIds.in.org", tenantId);
+    }
+
+    @Override
+    public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(Long organizationId, Long userId) {
+        throw new CommonException("error.list.projectIds.in.org", organizationId);
+    }
+
+    @Override
+    public ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(Long organizationId) {
+        throw new CommonException("error.query.tenant", organizationId);
     }
 }

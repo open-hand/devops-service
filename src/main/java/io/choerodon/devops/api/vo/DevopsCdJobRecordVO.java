@@ -107,21 +107,22 @@ public class DevopsCdJobRecordVO {
         private String envName;
         private String appServiceName;
         private String appServiceVersion;
-        private String instanceName;
-        @Encrypt
-        private Long instanceId;
         @Encrypt
         private Long appServiceId;
         @Encrypt
         private Long envId;
+        @Encrypt
+        private Long appId;
+        private String appName;
+        private String status;
+        private String rdupmType;
+        private String chartSource;
+        private String operationType;
+        private String deployType;
+        @Encrypt
+        private Long deployTypeId;
+        private String hostName;
 
-        public Long getInstanceId() {
-            return instanceId;
-        }
-
-        public void setInstanceId(Long instanceId) {
-            this.instanceId = instanceId;
-        }
 
         public Long getAppServiceId() {
             return appServiceId;
@@ -163,12 +164,76 @@ public class DevopsCdJobRecordVO {
             this.appServiceVersion = appServiceVersion;
         }
 
-        public String getInstanceName() {
-            return instanceName;
+        public Long getAppId() {
+            return appId;
         }
 
-        public void setInstanceName(String instanceName) {
-            this.instanceName = instanceName;
+        public void setAppId(Long appId) {
+            this.appId = appId;
+        }
+
+        public String getAppName() {
+            return appName;
+        }
+
+        public void setAppName(String appName) {
+            this.appName = appName;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getRdupmType() {
+            return rdupmType;
+        }
+
+        public void setRdupmType(String rdupmType) {
+            this.rdupmType = rdupmType;
+        }
+
+        public String getChartSource() {
+            return chartSource;
+        }
+
+        public void setChartSource(String chartSource) {
+            this.chartSource = chartSource;
+        }
+
+        public String getDeployType() {
+            return deployType;
+        }
+
+        public void setDeployType(String deployType) {
+            this.deployType = deployType;
+        }
+
+        public Long getDeployTypeId() {
+            return deployTypeId;
+        }
+
+        public void setDeployTypeId(Long deployTypeId) {
+            this.deployTypeId = deployTypeId;
+        }
+
+        public String getOperationType() {
+            return operationType;
+        }
+
+        public void setOperationType(String operationType) {
+            this.operationType = operationType;
+        }
+
+        public String getHostName() {
+            return hostName;
+        }
+
+        public void setHostName(String hostName) {
+            this.hostName = hostName;
         }
     }
 

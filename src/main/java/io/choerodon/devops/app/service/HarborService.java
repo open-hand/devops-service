@@ -6,8 +6,6 @@ import java.util.Map;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.User;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,8 +15,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
  * Description:
  */
 public interface HarborService {
-
-    User convertHarborUser(ProjectDTO projectDTO, Boolean isPush, String username);
 
     List<HarborRepoConfigDTO> listAllCustomRepoByProject(Long projectId);
 

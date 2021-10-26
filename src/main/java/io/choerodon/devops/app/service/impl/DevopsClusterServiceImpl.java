@@ -58,6 +58,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
     private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
     private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
+    private static final String DIS_CONNECTION = "helm uninstall %s -n choerodon";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
@@ -326,7 +327,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null) {
             DevopsClusterDTO example = new DevopsClusterDTO();
-            example.setOrganizationId(organizationId);
+            example.setProjectId(projectId);
             int num = devopsClusterMapper.selectCount(example);
             return num < resourceLimitVO.getClusterMaxNumber();
         }
@@ -339,7 +340,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (StringUtils.isEmpty(devopsClusterUpdateVO.getName())) {
             devopsClusterUpdateVO.setName(null);
         }
-        baseUpdate(projectId, ConvertUtils.convertObject(devopsClusterUpdateVO, DevopsClusterDTO.class));
+
+        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterUpdateVO.getId());
+        // 内部调用不需要校验
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        // 可以更新的字段：集群名称、集群描述
+        devopsClusterDTO.setName(devopsClusterUpdateVO.getName());
+        devopsClusterDTO.setDescription(devopsClusterUpdateVO.getDescription());
+        devopsClusterMapper.updateByPrimaryKey(devopsClusterDTO);
     }
 
     @Override
@@ -986,5 +994,22 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (devopsClusterMapper.updateByPrimaryKeySelective(devopsClusterDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_CLUSTER_STATUS_FAILED);
         }
+    }
+
+    @Override
+    public Long countClusterByOptions(Long projectId) {
+        DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
+        devopsClusterDTO.setProjectId(projectId);
+        int selectCount = devopsClusterMapper.selectCount(devopsClusterDTO);
+        return Long.valueOf(selectCount);
+    }
+
+    @Override
+    public String disconnectionHost(Long clusterId) {
+        DevopsClusterDTO clusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
+        if (clusterDTO == null) {
+            throw new CommonException("cluster.not.exist");
+        }
+        return String.format(DIS_CONNECTION, clusterDTO.getCode());
     }
 }

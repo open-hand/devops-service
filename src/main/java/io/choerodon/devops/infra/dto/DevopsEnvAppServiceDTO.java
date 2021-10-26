@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

@@ -50,10 +50,21 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public static final String KIND = "kind";
     private static final String FILE_NAME_PATTERN = "custom-%s.yaml";
 
-    private static final List<String> RESOURCE_TYPE = Arrays.asList(ResourceType.SERVICE.getType(), ResourceType.INGRESS.getType(),
-            ResourceType.CONFIGMAP.getType(), ResourceType.SECRET.getType(),
-            ResourceType.C7NHELMRELEASE.getType(), ResourceType.CERTIFICATE.getType(),
-            ResourceType.ENDPOINTS.getType(), ResourceType.PERSISTENT_VOLUME_CLAIM.getType());
+    private static final List<String> RESOURCE_TYPE = Arrays.asList(
+            ResourceType.SERVICE.getType(),
+            ResourceType.INGRESS.getType(),
+            ResourceType.CONFIGMAP.getType(),
+            ResourceType.SECRET.getType(),
+            ResourceType.C7NHELMRELEASE.getType(),
+            ResourceType.CERTIFICATE.getType(),
+            ResourceType.ENDPOINTS.getType(),
+            ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
+            ResourceType.DEPLOYMENT.getType(),
+            ResourceType.JOB.getType(),
+            ResourceType.CRON_JOB.getType(),
+            ResourceType.DAEMONSET.getType(),
+            ResourceType.STATEFULSET.getType()
+    );
 
     @Autowired
     private DevopsCustomizeResourceMapper devopsCustomizeResourceMapper;
@@ -158,7 +169,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
-            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
 
     }
@@ -229,7 +240,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsCustomizeResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             } else {
                 devopsCustomizeResourceMapper.deleteByPrimaryKey(resourceId);
                 devopsCustomizeResourceContentService.baseDelete(devopsCustomizeResourceDTO.getContentId());
@@ -239,7 +250,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentDTO.getContent()), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
-            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
     }
 

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public class Note {
 
     /** Enum to use for ordering the results. */
-    public static enum OrderBy {
+    public enum OrderBy {
 
         CREATED_AT, UPDATED_AT;
         private static JacksonJsonEnumHelper<OrderBy> enumHelper = new JacksonJsonEnumHelper<>(OrderBy.class);
@@ -31,7 +31,7 @@ public class Note {
 
     // This is not used because the GitLab example JSON is using a funny string for the MERGE_REQUEST notable_type ("Merge request").
     // Once they fix the bug, the notableType field can be changed from String to NotableType.
-    public static enum NoteableType {
+    public enum NoteableType {
 
         COMMIT, EPIC, ISSUE, MERGE_REQUEST, SNIPPET;
         private static JacksonJsonEnumHelper<NoteableType> enumHelper = new JacksonJsonEnumHelper<>(NoteableType.class, true, true);
@@ -52,7 +52,7 @@ public class Note {
         }
     }
 
-    public static enum Type {
+    public enum Type {
 
         DISCUSSION_NOTE, DIFF_NOTE;
         private static JacksonJsonEnumHelper<Type> enumHelper = new JacksonJsonEnumHelper<>(Type.class, true, true);

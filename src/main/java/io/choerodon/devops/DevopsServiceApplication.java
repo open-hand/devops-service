@@ -1,7 +1,9 @@
 package io.choerodon.devops;
 
-import java.nio.charset.StandardCharsets;
+import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
@@ -18,7 +20,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
-import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
+import java.nio.charset.StandardCharsets;
 
 @EnableFeignClients("io.choerodon")
 @EnableEurekaClient
@@ -28,11 +30,13 @@ import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 @EnableCircuitBreaker
 @EnableAsync
 public class DevopsServiceApplication {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsServiceApplication.class);
+
     public static void main(String[] args) {
         try {
             SpringApplication.run(DevopsServiceApplication.class, args);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("start error",e);
         }
     }
 

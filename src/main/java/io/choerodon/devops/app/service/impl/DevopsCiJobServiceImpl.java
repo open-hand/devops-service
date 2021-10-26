@@ -5,14 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.enums.AccessLevel;
-import org.hzero.boot.file.FileClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +27,6 @@ import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -62,6 +56,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     private static final String SONAR = "sonar";
 
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
@@ -75,6 +74,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
+
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
                                   UserAttrService userAttrService,
@@ -83,10 +83,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
                                   DevopsCiJobRecordService devopsCiJobRecordService,
-                                  FileClient fileClient,
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
-                                  BaseServiceClientOperator baseServiceClientOperator,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
                                   DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
@@ -152,19 +150,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
         if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
             try {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient(
-                        sonarQubeConfigVO.getSonarUrl(),
-                        SONAR,
-                        sonarQubeConfigVO.getUsername(),
-                        sonarQubeConfigVO.getPassword());
-
-                Response<Void> execute = sonarClient.getUser().execute();
-                if (!Objects.isNull(execute.errorBody())) {
-                    LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody().toString());
-                    return false;
-                } else {
-                    return true;
-                }
+                return tryCheckSonarConnect(sonarQubeConfigVO);
             } catch (Exception e) {
                 LOGGER.error("error connect :", e);
                 return false;
@@ -173,28 +159,58 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return true;
     }
 
+    private Boolean tryCheckSonarConnect(SonarQubeConfigVO sonarQubeConfigVO) throws IOException {
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(
+                sonarQubeConfigVO.getSonarUrl(),
+                SONAR,
+                sonarQubeConfigVO.getUsername(),
+                sonarQubeConfigVO.getPassword());
+
+        Response<Void> execute = sonarClient.getUser().execute();
+        if (!Objects.isNull(execute.errorBody())) {
+            LOGGER.error("test connect response code :{},error messsage:{}", execute.code(), execute.errorBody());
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     @Override
     public String queryTrace(Long gitlabProjectId, Long jobId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         //检查该用户是否有git库的权限
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_DETAIL);
-        return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
     }
 
     @Override
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
-        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+
+        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_RETRY_TASK);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
         devopsCiPipelineService.checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
 
-        JobDTO jobDTO = gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        JobDTO jobDTO = gitlabServiceClientOperator.retryJob(gitlabProjectId.intValue(),
+                jobId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                appExternalConfigDTO);
         // 保存job记录
         try {
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId());
@@ -271,12 +287,20 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(devopsCiJobRecordDTO.getCiPipelineRecordId());
 
         devopsCiPipelineService.checkUserBranchMergePermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, devopsCiPipelineRecordDTO.getGitlabTriggerRef());
 
 
-        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue());
+        JobDTO jobDTO = gitlabServiceClientOperator.playJob(gitlabProjectId.intValue(),
+                jobId.intValue(),
+                userAttrDTO.getGitlabUserId().intValue(),
+                appExternalConfigDTO);
 
         devopsCiJobRecordDTO.setStatus(jobDTO.getStatus().toString());
 

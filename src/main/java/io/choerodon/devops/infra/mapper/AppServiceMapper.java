@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.AppServiceRepVO;
 import io.choerodon.devops.api.vo.AppServiceSimpleVO;
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
 import io.choerodon.devops.api.vo.ProjectAppSvcCountVO;
@@ -23,7 +24,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                              @Param("type") String type,
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("params") List<String> params,
-                             @Param("index") String index);
+                             @Param("index") String index,
+                             @Param("includeExternal") Boolean includeExternal);
 
     List<AppServiceDTO> listByProjectId(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
@@ -94,7 +96,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     List<AppServiceDTO> queryOrganizationShareApps(@Param("projectIds") List<Long> projectIds,
                                                    @Param("param") String param,
-                                                   @Param("projectId") Long projectId);
+                                                   @Param("projectId") Long projectId,
+                                                   @Param("includeExternal") Boolean includeExternal);
 
 
     List<AppServiceDTO> listProjectMembersAppService(@Param("projectId") Long projectId,
@@ -131,6 +134,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     int updateIsSynchroToTrueWhenFailed();
 
     List<Long> listAllAppServiceIds(@Param("projectId") Long projectId);
+
+    Set<Long> listAllExternalAppServiceIds(@Param("projectId") Long projectId);
 
     int updateIsActiveNullToTrue();
 
@@ -202,5 +207,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                          @Param("artifactId") String artifactId);
 
     List<AppServiceSimpleVO> listByProjectIdsAndCodes(@Param("projectIds") List<Long> projectIds, @Param("codes") List<String> codes);
+
+    List<AppServiceRepVO> queryApplicationCenter(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("type") String type, @Param("params") String params);
 }
 

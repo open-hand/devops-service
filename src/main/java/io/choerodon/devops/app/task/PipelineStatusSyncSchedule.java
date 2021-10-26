@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
  * @author wanghao
  * @since 2020/7/14 16:14
  */
-@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
+//@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Component
 @EnableScheduling
 public class PipelineStatusSyncSchedule {
@@ -40,9 +40,7 @@ public class PipelineStatusSyncSchedule {
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>> Start sync pipeline status <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         // 查询要修复的流水线记录
         List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordService.queryNotSynchronizedRecord(statusUpdatePeriodMilliSeconds);
-        devopsCiPipelineRecordDTOS.forEach(v -> {
-            devopsCiPipelineRecordService.asyncPipelineUpdate(v.getId(), v.getGitlabPipelineId().intValue());
-        });
+        devopsCiPipelineRecordDTOS.forEach(v -> devopsCiPipelineRecordService.asyncPipelineUpdate(v.getId(), v.getGitlabPipelineId().intValue()));
         // 执行修复逻辑
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>> End sync pipeline status <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }

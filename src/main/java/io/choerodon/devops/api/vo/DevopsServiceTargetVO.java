@@ -18,6 +18,7 @@ public class DevopsServiceTargetVO {
     @Encrypt
     private Long targetAppServiceId;
     private String targetAppServiceName;
+    private String targetDeploymentName;
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
@@ -64,5 +65,13 @@ public class DevopsServiceTargetVO {
 
     public void setTargetAppServiceName(String targetAppServiceName) {
         this.targetAppServiceName = targetAppServiceName;
+    }
+
+    public String getTargetDeploymentName() {
+        return targetDeploymentName;
+    }
+
+    public void setTargetDeploymentName(String targetDeploymentName) {
+        this.targetDeploymentName = targetDeploymentName;
     }
 }

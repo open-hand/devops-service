@@ -231,7 +231,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
+                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
             }
             return true;
         } else {
@@ -251,7 +251,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                     devopsEnvFileResourceDTO.getFilePath())) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(), "DELETE FILE",
-                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));
+                        TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -650,13 +650,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         int level = ResourceUnitLevelEnum.valueOf(unit.toUpperCase()).ordinal();
 
         // 1024的一次方 对应ki 1024的2次方 对应Mi 以此类推
+        // 1ki=1024
+        // 1Mi=1024*1024
         size = (long) (size * Math.pow(1024, (double) level + 2));
 
         return new BigDecimal(size);
     }
 
     private Quantity convertResource(String resourceString) {
-
         return new Quantity(convertResourceToDigits(resourceString), Quantity.Format.BINARY_SI);
     }
 

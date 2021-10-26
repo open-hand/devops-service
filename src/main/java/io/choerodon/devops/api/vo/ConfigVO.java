@@ -63,11 +63,11 @@ public class ConfigVO implements Serializable {
         this.email = email;
     }
 
-    public Boolean getPrivate() {
+    public Boolean getIsPrivate() {
         return isPrivate;
     }
 
-    public void setPrivate(Boolean aPrivate) {
+    public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
     }
 

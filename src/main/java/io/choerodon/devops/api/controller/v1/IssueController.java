@@ -47,7 +47,7 @@ public class IssueController {
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
 
-        return Optional.ofNullable(issueService.getBranchsByIssueId(issueId))
+        return Optional.ofNullable(issueService.getBranchesByIssueId(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.issue.commit.get"));
     }

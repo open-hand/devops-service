@@ -28,6 +28,8 @@ public interface DevopsRegistrySecretService {
 
     DevopsRegistrySecretDTO baseQuery(Long devopsRegistrySecretId);
 
+    DevopsRegistrySecretDTO baseQuery(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
+
     DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO);
 
     void baseUpdateStatus(Long id, Boolean status);

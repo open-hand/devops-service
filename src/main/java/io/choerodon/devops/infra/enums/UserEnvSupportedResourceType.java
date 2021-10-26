@@ -17,6 +17,11 @@ public enum UserEnvSupportedResourceType {
     CONFIGMAP("ConfigMap"),
     ENDPOINTS("Endpoints"),
     PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim"),
+    DEPLOYMENT("Deployment"),
+    DAEMONSET("DaemonSet"),
+    STATEFULSET("StatefulSet"),
+    CRON_JOB("CronJob"),
+    JOB("Job"),
     SECRET("Secret");
 
     @SuppressWarnings("unchecked")

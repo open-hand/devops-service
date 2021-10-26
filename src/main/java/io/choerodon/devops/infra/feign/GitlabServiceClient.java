@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
+import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -111,7 +112,9 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/queryByName")
     ResponseEntity<GitlabProjectDTO> queryProjectByName(@RequestParam("userId") Integer userId,
                                                         @RequestParam("groupName") String groupName,
-                                                        @RequestParam("projectName") String projectName);
+                                                        @RequestParam("projectName") String projectName,
+                                                        @RequestParam(value = "statistics", defaultValue = "false") Boolean statistics);
+
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDTO> create(@PathVariable("userId") Integer userId);
@@ -124,10 +127,18 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/groups/{groupId}/projects/event")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(@PathVariable("groupId") Integer groupId,
-                                                        @RequestParam(value = "userId", required = false) Integer userId);
+                                                        @RequestParam(value = "userId", required = false) Integer userId,
+                                                        @RequestParam(value = "page", required = false) Integer page,
+                                                        @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId);
+    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId,
+                                                             @RequestParam(value = "tokenName", required = false) String tokenName,
+                                                             @RequestParam(value = "date", required = false) Date date);
+
+    @DeleteMapping(value = "/v1/users/{userId}/impersonation_tokens")
+    ResponseEntity<Void> revokeImpersonationToken(@PathVariable("userId") Integer userId,
+                                                  @RequestParam(value = "tokenId") Integer tokenId);
 
     @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<List<ImpersonationTokenDTO>> listProjectToken(@PathVariable("userId") Integer userId);
@@ -145,20 +156,45 @@ public interface GitlabServiceClient {
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
-                                                 @RequestBody FileCreationVO fileCreationVO);
+                                                 @RequestBody FileCreationVO fileCreationVO,
+                                                 @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                 @RequestParam(value = "authType") String authType,
+                                                 @RequestParam(value = "accessToken") String accessToken,
+                                                 @RequestParam(value = "username") String username,
+                                                 @RequestParam(value = "password") String password);
 
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> updateFile(@PathVariable("projectId") Integer projectId,
-                                                 @RequestBody FileCreationVO fileCreationVO);
+                                                 @RequestBody FileCreationVO fileCreationVO,
+                                                 @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                 @RequestParam(value = "authType") String authType,
+                                                 @RequestParam(value = "accessToken") String accessToken,
+                                                 @RequestParam(value = "username") String username,
+                                                 @RequestParam(value = "password") String password);
 
     @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
-                              @RequestBody FileCreationVO fileCreationVO);
+                              @RequestBody FileCreationVO fileCreationVO,
+                              @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                              @RequestParam(value = "authType") String authType,
+                              @RequestParam(value = "accessToken") String accessToken,
+                              @RequestParam(value = "username") String username,
+                              @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<RepositoryFileDTO> getFile(@PathVariable("projectId") Integer projectId,
                                               @PathVariable("commit") String commit,
                                               @RequestParam(value = "file_path") String filePath);
+
+    @GetMapping(value = "/v1/external_projects/{projectId}/repository/{commit}/file")
+    ResponseEntity<RepositoryFileDTO> getExternalFile(@PathVariable("projectId") Integer projectId,
+                                                      @PathVariable("commit") String commit,
+                                                      @RequestParam(value = "file_path") String filePath,
+                                                      @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                      @RequestParam(value = "authType") String authType,
+                                                      @RequestParam(value = "accessToken") String accessToken,
+                                                      @RequestParam(value = "username") String username,
+                                                      @RequestParam(value = "password") String password);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
     ResponseEntity<CompareResultDTO> queryCompareResult(@PathVariable("projectId") Integer projectId,
@@ -182,7 +218,12 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
     ResponseEntity<GitlabPipelineDTO> queryPipeline(@PathVariable("projectId") Integer projectId,
                                                     @PathVariable("pipelineId") Integer pipelineId,
-                                                    @RequestParam("userId") Integer userId);
+                                                    @RequestParam("userId") Integer userId,
+                                                    @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                    @RequestParam(value = "authType") String authType,
+                                                    @RequestParam(value = "accessToken") String accessToken,
+                                                    @RequestParam(value = "username") String username,
+                                                    @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits")
     ResponseEntity<CommitDTO> queryCommit(@PathVariable("projectId") Integer projectId,
@@ -194,6 +235,16 @@ public interface GitlabServiceClient {
                                                 @RequestParam("page") Integer page,
                                                 @RequestParam("size") Integer size,
                                                 @RequestParam("userId") Integer userId);
+
+    @GetMapping(value = "/v1/external_projects/{projectId}/repository/commits/project")
+    ResponseEntity<List<CommitDTO>> listExternalCommits(@PathVariable("projectId") Integer projectId,
+                                                @RequestParam("page") Integer page,
+                                                @RequestParam("size") Integer size,
+                                                @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                @RequestParam(value = "authType") String authType,
+                                                @RequestParam(value = "accessToken") String accessToken,
+                                                @RequestParam(value = "username") String username,
+                                                @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatusDTO>> listCommitStatus(@PathVariable("projectId") Integer projectId,
@@ -207,7 +258,12 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDTO>> listJobs(@PathVariable("projectId") Integer projectId,
                                           @PathVariable("pipelineId") Integer pipelineId,
-                                          @RequestParam("userId") Integer userId);
+                                          @RequestParam("userId") Integer userId,
+                                          @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                          @RequestParam(value = "authType") String authType,
+                                          @RequestParam(value = "accessToken") String accessToken,
+                                          @RequestParam(value = "username") String username,
+                                          @RequestParam(value = "password") String password);
 
     @PutMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity updateMergeRequest(
@@ -232,19 +288,34 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{projectId}/repository/branches")
     ResponseEntity<List<BranchDTO>> listBranch(@PathVariable("projectId") Integer projectId,
-                                               @RequestParam(value = "userId") Integer userId);
+                                               @RequestParam(value = "userId") Integer userId,
+                                               @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                               @RequestParam(value = "authType") String authType,
+                                               @RequestParam(value = "accessToken") String accessToken,
+                                               @RequestParam(value = "username") String username,
+                                               @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
     ResponseEntity<Pipeline> retryPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
-            @RequestParam("userId") Integer userId);
+            @RequestParam("userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/cancel")
     ResponseEntity<Pipeline> cancelPipeline(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
-            @RequestParam("userId") Integer userId);
+            @RequestParam("userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
 
     /**
@@ -286,7 +357,12 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/repository/tags")
     ResponseEntity<List<TagDTO>> getTags(
             @PathVariable("projectId") Integer projectId,
-            @RequestParam(value = "userId", required = false) Integer userId);
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     /**
      * 创建tag
@@ -393,6 +469,16 @@ public interface GitlabServiceClient {
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId,
             @RequestBody ProjectHookDTO projectHookDTO);
+
+    @PostMapping("/v1/external_projects/hook")
+    ResponseEntity<ProjectHookDTO> createExternalProjectHook(
+            @RequestParam("projectId") Integer projectId,
+            @RequestBody ProjectHookDTO projectHookDTO,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @PutMapping("/v1/hook")
     ResponseEntity<ProjectHookDTO> updateProjectHook(
@@ -517,7 +603,12 @@ public interface GitlabServiceClient {
             @ApiParam(value = "userId")
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "分支")
-            @RequestParam(value = "ref") String ref);
+            @RequestParam(value = "ref") String ref,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     /**
      * 查询job执行日志
@@ -526,21 +617,36 @@ public interface GitlabServiceClient {
     ResponseEntity<String> queryTrace(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @ApiOperation(value = "重试job")
     @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/retry")
     ResponseEntity<JobDTO> retryJob(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @ApiOperation(value = "执行 manul job")
     @PutMapping(value = "/v1/projects/{projectId}/jobs/{jobId}/play")
     ResponseEntity<JobDTO> playJob(
             @PathVariable(value = "projectId") Integer projectId,
             @PathVariable(value = "jobId") Integer jobId,
-            @RequestParam(value = "userId") Integer userId);
+            @RequestParam(value = "userId") Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
     ResponseEntity<BranchDTO> queryBranchByName(
@@ -682,6 +788,13 @@ public interface GitlabServiceClient {
             @ApiParam(value = "项目信息", required = true)
             @RequestBody Project project);
 
+    @PutMapping("/v1/projects/{projectId}/name_and_path")
+    ResponseEntity<Project> updateNameAndPath(
+            @PathVariable Integer projectId,
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam Integer userId,
+            @RequestParam String name);
+
     @ApiOperation(value = "查询MR下的note列表")
     @GetMapping("/v1/notes/on_merge_request")
     ResponseEntity<List<Note>> listByMergeRequestIid(
@@ -689,4 +802,63 @@ public interface GitlabServiceClient {
             @RequestParam Integer projectId,
             @ApiParam(value = "MR Iid", required = true)
             @RequestParam Integer iid);
+
+    @ApiOperation(value = "查询有权限的所有组")
+    @PostMapping("/v1/groups/{userId}")
+    ResponseEntity<List<GroupDTO>> listGroupsWithParam(@ApiParam(value = "userId")
+                                                       @PathVariable(value = "userId") Integer userId,
+                                                       @RequestParam(value = "owned", required = false) Boolean owned,
+                                                       @RequestParam(value = "search", required = false) String search,
+                                                       @RequestBody List<Integer> skipGroups);
+
+    @ApiOperation(value = "获取项目列表")
+    @GetMapping(value = "/v1/groups/{groupId}/projects")
+    ResponseEntity<List<GitlabProjectDTO>> listProjects(
+            @ApiParam(value = "组ID", required = true)
+            @PathVariable(value = "groupId") Integer groupId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "owned", required = false) Boolean owned,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "perPage", required = false) Integer perPage);
+
+    @ApiParam(value = "迁移应用服务")
+    @PutMapping(value = "/v1/projects/{projectId}/transfer")
+    ResponseEntity<GitlabProjectDTO> transferProject(
+            @ApiParam(value = "用户id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "新的groupId")
+            @RequestParam(value = "groupId") Integer groupId);
+
+    @ApiParam(value = "下载服务源码 压缩包")
+    @GetMapping(value = "/v1/projects/{projectId}/repository/archive_format")
+    ResponseEntity<InputStream> downloadArchiveByFormat(
+            @ApiParam(value = "用户id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "用户Id")
+            @RequestParam(value = "user_id") Integer userId,
+            @RequestParam(value = "commit_sha") String commitSha,
+            @RequestParam(value = "format", required = false) String format);
+
+    @GetMapping(value = "/v1/external_projects/query_by_code")
+    ResponseEntity<GitlabProjectDTO> queryExternalProjectByCode(
+            @RequestParam(value = "namespace_code") String namespaceCode,
+            @RequestParam(value = "project_code") String projectCode,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @PutMapping(value = "/v1/external_projects/{projectId}/variables")
+    ResponseEntity<List<CiVariableVO>> batchSaveExternalProjectVariable(@PathVariable("projectId") Integer projectId,
+                                                                        @RequestBody List<CiVariableVO> ciVariableVOList,
+                                                                        @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                                        @RequestParam(value = "authType") String authType,
+                                                                        @RequestParam(value = "accessToken") String accessToken,
+                                                                        @RequestParam(value = "username") String username,
+                                                                        @RequestParam(value = "password") String password);
 }

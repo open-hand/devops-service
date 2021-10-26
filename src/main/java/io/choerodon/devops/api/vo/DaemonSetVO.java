@@ -2,16 +2,20 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 /**
  * @author zmf
  */
 public class DaemonSetVO {
     private String name;
+    @Encrypt
+    private Long instanceId;
     private Long desiredScheduled;
     private Long currentScheduled;
     private Long numberAvailable;
     private String age;
-    private List<DevopsEnvPodVO> devopsEnvPodDTOS;
+    private List<DevopsEnvPodVO> devopsEnvPodVOS;
 
     public String getName() {
         return name;
@@ -53,11 +57,19 @@ public class DaemonSetVO {
         this.age = age;
     }
 
-    public List<DevopsEnvPodVO> getDevopsEnvPodDTOS() {
-        return devopsEnvPodDTOS;
+    public List<DevopsEnvPodVO> getDevopsEnvPodVOS() {
+        return devopsEnvPodVOS;
     }
 
-    public void setDevopsEnvPodDTOS(List<DevopsEnvPodVO> devopsEnvPodDTOS) {
-        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
+    public void setDevopsEnvPodVOS(List<DevopsEnvPodVO> devopsEnvPodVOS) {
+        this.devopsEnvPodVOS = devopsEnvPodVOS;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 }

@@ -1,12 +1,13 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
 import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
+import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
@@ -147,7 +148,7 @@ public interface DevopsGitService {
      * @param params
      * @param page
      * @param size
-     * @param checkMember 是否校验gitlab项目角色
+     * @param checkMember   是否校验gitlab项目角色
      * @return
      */
     Page<TagVO> pageTagsByOptions(Long projectId, Long applicationId, String params, Integer page, Integer size, Boolean checkMember);
@@ -212,10 +213,10 @@ public interface DevopsGitService {
      *
      * @param projectId    项目id
      * @param appServiceId 应用id
-     * @param branchName   分支名称
+     * @param branchId     分支id
      * @param issueId      关联问题id
      */
-    void removeAssociation(Long projectId, Long appServiceId, String branchName, Long issueId);
+    void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId);
 
 
     /**
@@ -227,5 +228,9 @@ public interface DevopsGitService {
      * @param to           后一个tag
      * @return 所有的issueId
      */
-    Set<Long> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+    List<IssueIdAndBranchIdsVO> getIssueIdsBetweenTags(Long projectId, Long appServiceId, String from, String to);
+
+    List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search);
+
+    Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest);
 }

@@ -211,8 +211,11 @@ public class DevopsDeployValueController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @Encrypt
             @ApiParam(value = "环境Id", required = true)
-            @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId))
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "部署配置名", required = false)
+            @RequestParam(value = "name", required = false) String name
+            ) {
+        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryByIds"));
     }

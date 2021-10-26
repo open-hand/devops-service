@@ -241,7 +241,7 @@
 		SELECT  ddri.instance_id      AS instance_id,
 				ddri.app_service_id   AS app_service_id,
 				ddri.env_id           AS env_id,
-				ddri.instance_code    AS instance_name,
+				ddri.instance_code    AS app_name,
 				das.name              AS app_service_name,
 				ddri.instance_version AS app_service_version,
 				de.name               AS env_name,
@@ -266,7 +266,9 @@
 		    ddr.deploy_source,
 		    denc.status AS command_status,
 			denc.object_id AS instance_id,
-			ddr.instance_name,
+			ddr.app_name,
+			ddr.app_code,
+			ddr.app_id,
 			ddr.deploy_mode,
 			ddr.deploy_payload_id,
 			ddr.deploy_payload_name,
@@ -310,7 +312,9 @@
 		ddr.deploy_type,
 		denc.status AS command_status,
 		denc.object_id AS instance_id,
-		ddr.instance_name,
+		ddr.app_id,
+		ddr.app_name,
+		ddr.app_code,
 		ddr.deploy_mode,
 		ddr.deploy_payload_id,
 		ddr.deploy_payload_name,
@@ -323,5 +327,26 @@
 		FROM devops_deploy_record ddr
 		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
 		WHERE ddr.deploy_id = #{commandId} and ddr.deploy_mode = 'env' and ddr.deploy_type = 'auto'
+	</select>
+	<select id="queryHostDeployRecordByCommandId" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
+		SELECT
+			ddr.id AS id,
+			ddr.deploy_type,
+			dhc.status AS command_status,
+			ddr.app_id,
+			ddr.app_name,
+			ddr.app_code,
+			ddr.deploy_mode,
+			ddr.deploy_payload_id,
+			ddr.deploy_payload_name,
+			ddr.deploy_result,
+			ddr.deploy_object_type,
+			ddr.deploy_object_name,
+			ddr.deploy_object_version,
+			ddr.deploy_time,
+			ddr.created_by
+		FROM devops_deploy_record ddr
+				 LEFT JOIN devops_host_command dhc ON ddr.deploy_id = dhc.id
+		WHERE ddr.deploy_id = #{commandId} and ddr.deploy_mode = 'host' and ddr.deploy_type = 'auto'
 	</select>
 </mapper>

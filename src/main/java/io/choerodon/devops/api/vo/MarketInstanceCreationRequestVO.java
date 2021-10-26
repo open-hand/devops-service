@@ -19,11 +19,15 @@ public class MarketInstanceCreationRequestVO {
     private Long instanceId;
 
     @Encrypt
+    @ApiModelProperty("市场服务的应用Id")
     private Long marketAppServiceId;
 
     @Encrypt
     @ApiModelProperty("市场市场服务版本id")
     private Long marketDeployObjectId;
+
+    @ApiModelProperty("应用类型:market hzero")
+    private String applicationType;
 
     @ApiModelProperty("values内容")
     private String values;
@@ -65,6 +69,60 @@ public class MarketInstanceCreationRequestVO {
      * 中间件或者普通的市场应用
      */
     private String source;
+
+    @ApiModelProperty("应用中心应用名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
+    private String appName;
+
+    @ApiModelProperty("应用中心应用code，同时也作为实例名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
+    @NotBlank(message = "error.app.instance.code.null")
+    private String appCode;
+
+    @JsonIgnore
+    @ApiModelProperty("操作类型 hzero/base_component/create_app")
+    private String operationType;
+
+    public MarketInstanceCreationRequestVO() {
+    }
+
+    public MarketInstanceCreationRequestVO(@Nullable Long instanceId,
+                                           Long marketAppServiceId,
+                                           Long marketDeployObjectId,
+                                           String values,
+                                           String appName,
+                                           String appCode,
+                                           String commandType,
+                                           Long environmentId,
+                                           DevopsServiceReqVO devopsServiceReqVO,
+                                           DevopsIngressVO devopsIngressVO,
+                                           String source,
+                                           String applicationType,
+                                           String operationType) {
+        this.instanceId = instanceId;
+        this.marketAppServiceId = marketAppServiceId;
+        this.marketDeployObjectId = marketDeployObjectId;
+        this.values = values;
+        this.appName = appName;
+        this.appCode = appCode;
+        this.commandType = commandType;
+        this.environmentId = environmentId;
+        this.devopsServiceReqVO = devopsServiceReqVO;
+        this.devopsIngressVO = devopsIngressVO;
+        this.source = source;
+        this.applicationType = applicationType;
+        this.operationType=operationType;
+    }
+
+
+    public String getApplicationType() {
+        return applicationType;
+    }
+
+    public void setApplicationType(String applicationType) {
+        this.applicationType = applicationType;
+    }
 
     @Nullable
     public Long getInstanceId() {
@@ -169,5 +227,29 @@ public class MarketInstanceCreationRequestVO {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
     }
 }

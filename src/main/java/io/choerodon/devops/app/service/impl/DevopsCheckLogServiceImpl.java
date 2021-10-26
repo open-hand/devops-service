@@ -1,116 +1,123 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
-import com.alibaba.fastjson.JSON;
-import com.zaxxer.hikari.util.UtilityElf;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-import io.choerodon.devops.api.vo.kubernetes.CheckLog;
+import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
+import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCheckLogDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.mapper.PipelineTaskMapper;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
-    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
+
+    public static final String FIX_ENV_DATA = "fixEnvAppData";
+    public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
+    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
-    private PipelineTaskMapper pipelineTaskMapper;
+    private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
-    private AppServiceVersionService appServiceVersionService;
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
-    private DevopsCdAuditService devopsCdAuditService;
+    private DevopsCdJobService devopsCdJobService;
     @Autowired
-    private DevopsCdAuditRecordService devopsCdAuditRecordService;
-    @Autowired
-    private DevopsBranchService devopsBranchService;
-    @Autowired
-    private DevopsGitlabCommitService devopsGitlabCommitService;
-    @Autowired
-    private DevopsIssueRelService devopsIssueRelService;
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+
 
     @Override
-    public void checkLog(String version) {
-        LOGGER.info("start upgrade task");
-        executorService.execute(new UpgradeTask(version));
+    public void checkLog(String task) {
+        DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
+        devopsCheckLogDTO.setLog(task);
+        DevopsCheckLogDTO existDevopsCheckLogDTO = devopsCheckLogMapper.selectOne(devopsCheckLogDTO);
+        if (existDevopsCheckLogDTO != null) {
+            LOGGER.info("fix data task {} has already been executed", task);
+            return;
+        }
+        devopsCheckLogDTO.setBeginCheckDate(new Date());
+        switch (task) {
+            case FIX_APP_CENTER_DATA:
+                devopsDeployAppCenterService.fixData();
+                fixPipelineCdDeployData();
+                break;
+            default:
+                LOGGER.info("version not matched");
+                return;
+        }
+        devopsCheckLogDTO.setLog(task);
+        devopsCheckLogDTO.setEndCheckDate(new Date());
+        devopsCheckLogMapper.insert(devopsCheckLogDTO);
     }
 
-    private static void printRetryNotice() {
-        LOGGER.error("======================================================================================");
-        LOGGER.error("Please retry data migration later in choerodon interface after cheorodon-front upgrade");
-        LOGGER.error("======================================================================================");
-    }
-
-
-    class UpgradeTask implements Runnable {
-        private String version;
-
-        UpgradeTask(String version) {
-            this.version = version;
-        }
-
-        UpgradeTask(String version, Long env) {
-            this.version = version;
-        }
-
-        @Override
-        public void run() {
+    private void fixPipelineCdDeployData() {
+        List<DevopsCdEnvDeployInfoDTO> devopsCdEnvDeployInfoDTOS = devopsCdEnvDeployInfoService.listAll();
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline devopsCdEnvDeployInfoDTO! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        Set<Long> errorJobIds = new HashSet<>();
+        for (DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO : devopsCdEnvDeployInfoDTOS) {
             try {
-                DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
-                List<CheckLog> logs = new ArrayList<>();
-                devopsCheckLogDTO.setBeginCheckDate(new Date());
-                if ("0.21.1".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    pipelineTaskMapper.deletePipelineTask();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("0.23.0".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    appServiceVersionService.fixHarbor();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("0.23.3".equals(version)) {
-                    LOGGER.info("修复数据开始");
-                    devopsCdAuditService.fixProjectId();
-                    devopsCdAuditRecordService.fixProjectId();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.0.0".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    devopsBranchService.fixIssueId();
-                    devopsGitlabCommitService.fixIssueId();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else if ("1.0.9".equals(version)) {
-                    LOGGER.info("修复数据开始!");
-                    devopsIssueRelService.fixBranchInfo();
-                    LOGGER.info("修复数据完成!!!!!!");
-                } else {
-                    LOGGER.info("version not matched");
-                }
-                devopsCheckLogDTO.setLog(JSON.toJSONString(logs));
-                devopsCheckLogDTO.setEndCheckDate(new Date());
+                    if (devopsCdEnvDeployInfoDTO != null) {
 
-                devopsCheckLogMapper.insert(devopsCheckLogDTO);
-            } catch (Exception ex) {
-                printRetryNotice();
-                LOGGER.warn("Exception occurred when applying data migration. The ex is: {}", ex);
+                        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = null;
+                        // 实例id不为空就通过实例id查询应用
+                        if (devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
+                            devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, devopsCdEnvDeployInfoDTO.getInstanceId());
+                        } else {
+                            // 实例id为空就通过环境id和实例名称查询应用
+                            if (devopsCdEnvDeployInfoDTO.getEnvId() != null
+                                    && devopsCdEnvDeployInfoDTO.getInstanceName() != null) {
+                                devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdEnvDeployInfoDTO.getInstanceName());
+                            }
+                        }
+                        // 找到了关联的应用，设置关联应用id，流水线执行时走更新实例逻辑
+                        if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())
+                                && devopsDeployAppCenterEnvDTO != null) {
+                            devopsCdEnvDeployInfoDTO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+                            devopsCdEnvDeployInfoDTO.setAppName(devopsDeployAppCenterEnvDTO.getName());
+                            devopsCdEnvDeployInfoDTO.setAppId(devopsDeployAppCenterEnvDTO.getId());
+                            devopsCdEnvDeployInfoDTO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());
+                            devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
+                        } else {
+                            devopsCdEnvDeployInfoDTO.setAppName(devopsCdEnvDeployInfoDTO.getInstanceName());
+                            devopsCdEnvDeployInfoDTO.setAppCode(devopsCdEnvDeployInfoDTO.getInstanceName());
+                            devopsCdEnvDeployInfoDTO.setSkipCheckPermission(!devopsCdEnvDeployInfoDTO.getCheckEnvPermissionFlag());
+                            devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
+                        }
+                }
+            } catch (Exception e) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline devopsCdEnvDeployInfoDTO : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdEnvDeployInfoDTO.getId());
+                errorJobIds.add(devopsCdEnvDeployInfoDTO.getId());
+            }
+
+        }
+        if (CollectionUtils.isEmpty(errorJobIds)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline devopsCdEnvDeployInfoDTO! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        } else {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline devopsCdEnvDeployInfoDTO, but exist errors! Failed devopsCdEnvDeployInfo ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
             }
         }
+
 
     }
 }

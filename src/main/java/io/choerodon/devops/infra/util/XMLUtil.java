@@ -38,7 +38,7 @@ public class XMLUtil {
                 ByteArrayInputStream tInputStringStream = new ByteArrayInputStream(sInputString.getBytes());
                 return tInputStringStream;
             } catch (Exception ex) {
-                ex.printStackTrace();
+                LOGGER.error("error.get.stream", ex);
             }
         }
         return null;

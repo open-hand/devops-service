@@ -8,17 +8,11 @@ import javax.validation.constraints.Size;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
-import io.choerodon.devops.api.validator.annotation.AtMostSeveralFieldsNotEmpty;
 import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
  * Created by Zenger on 2018/4/13.
  */
-@AtMostSeveralFieldsNotEmpty(message = "error.service.target.too.much",
-        fields = {"endPoints", "selectors", "targetAppServiceId", "targetInstanceCode"})
-@AtLeastOneNotEmpty(message = "error.service.target.null",
-        fields = {"endPoints", "selectors", "targetAppServiceId", "targetInstanceCode"})
 public class DevopsServiceReqVO {
     @ApiModelProperty("环境ID / 必填")
     @NotNull(message = "error.env.id.null")
@@ -56,6 +50,10 @@ public class DevopsServiceReqVO {
 
     @ApiModelProperty("目标对象是单个实例时，实例code")
     private String targetInstanceCode;
+
+    @Encrypt
+    @ApiModelProperty("目标对象是部署组时，部署组的id")
+    private Long targetDeploymentId;
 
     private DevopsIngressVO devopsIngressVO;
 
@@ -145,5 +143,13 @@ public class DevopsServiceReqVO {
 
     public void setAppServiceId(Long appServiceId) {
         this.appServiceId = appServiceId;
+    }
+
+    public Long getTargetDeploymentId() {
+        return targetDeploymentId;
+    }
+
+    public void setTargetDeploymentId(Long targetDeploymentId) {
+        this.targetDeploymentId = targetDeploymentId;
     }
 }

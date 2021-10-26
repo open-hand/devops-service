@@ -4,25 +4,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsServiceReqVO;
-import io.choerodon.devops.api.vo.EndPointPortVO;
-import io.choerodon.devops.api.validator.DevopsServiceValidator;
-import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.exception.GitOpsExplainException;
-import io.choerodon.devops.infra.util.GitUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.ObjectType;
-
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.validator.DevopsServiceValidator;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
+import io.choerodon.devops.api.vo.EndPointPortVO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.CommandStatus;
+import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.ObjectType;
+import io.choerodon.devops.infra.exception.GitOpsExplainException;
+import io.choerodon.devops.infra.util.GitUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRelationsService<V1Service> {
@@ -36,10 +36,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsServiceService devopsServiceService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
-    @Autowired
-    private AppServiceInstanceService appServiceInstanceService;
-    @Autowired
-    private AppServiceService appServiceService;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired

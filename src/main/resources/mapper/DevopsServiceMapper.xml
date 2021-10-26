@@ -86,6 +86,7 @@
         ds.`type`,
         ds.selectors,
         ds.end_points,
+        ds.instance_id,
         da.id AS app_service_id,
         da.`name` AS app_service_name,
         de.id AS env_id,
@@ -96,17 +97,18 @@
         cmd.error error,
         da.project_id AS app_service_project_id,
         CASE
-          WHEN ds.target_instance_code IS NULL THEN dsai.id
-          ELSE dai.id
-        END instance_id,
+        WHEN ds.target_instance_code IS NULL THEN dsai.id
+        ELSE dai.id
+        END target_instance_id,
         CASE
-          WHEN ds.target_instance_code IS NULL THEN dsai.code
-          ELSE ds.target_instance_code
+        WHEN ds.target_instance_code IS NULL THEN dsai.code
+        ELSE ds.target_instance_code
         END ins_code,
         CASE
-          WHEN dai.status IS NULL THEN 'deleted'
-          ELSE dai.status
-        END ins_status
+        WHEN dai.status IS NULL THEN 'deleted'
+        ELSE dai.status
+        END ins_status,
+        dp.id as target_deployment_id
         FROM
         (
         SELECT
@@ -132,6 +134,7 @@
         or (dai.code = ds.target_instance_code and dai.env_id = ds.env_id)
         or dai.app_service_id = ds.target_app_service_id
         )
+        LEFT JOIN devops_deployment dp ON ds.target_deployment_id=dp.id
         WHERE 1
         <if test="instanceId != null">
             AND dai.id = #{instanceId}
@@ -235,6 +238,7 @@
         <result property="appServiceId" column="app_service_id"/>
         <result property="appServiceName" column="app_service_name"/>
         <result property="targetAppServiceId" column="target_app_service_id"/>
+        <result property="targetDeploymentId" column="target_deployment_id"/>
         <result property="appServiceProjectId" column="app_service_project_id"/>
         <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
@@ -247,11 +251,12 @@
         <result property="selectors" column="selectors"/>
         <result property="endPoints" column="end_points"/>
         <result property="createdBy" column="created_by"/>
+        <result property="instanceId" column="instance_id"/>
         <result property="creationDate" column="creation_date"/>
         <result property="lastUpdatedBy" column="last_updated_by"/>
         <result property="lastUpdateDate" column="last_update_date"/>
         <collection property="instances" ofType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO" notNullColumn="ins_code">
-            <result column="instance_id" property="id" jdbcType="VARCHAR"/>
+            <result column="target_instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="ins_code" property="code" jdbcType="VARCHAR"/>
             <result column="ins_status" property="status" jdbcType="VARCHAR"/>
             <result column="ins_object_version_number" property="objectVersionNumber" jdbcType="VARCHAR"/>
@@ -377,4 +382,10 @@
             #{id}
         </foreach>
     </select>
+
+    <update id="updateTargetDeploymentIdToNull">
+        UPDATE devops_service ds
+        SET ds.target_deployment_id = null
+        WHERE ds.id = #{serviceId}
+    </update>
 </mapper>

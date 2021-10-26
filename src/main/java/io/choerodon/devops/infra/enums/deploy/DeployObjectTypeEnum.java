@@ -9,10 +9,22 @@ package io.choerodon.devops.infra.enums.deploy;
  */
 public enum DeployObjectTypeEnum {
 
-    APP("app"),
+    /**
+     * chart包
+     */
+    CHART("chart"),
+    /**
+     * 部署组-deployment 类型
+     */
+    DEPLOYMENT("deployment"),
     JAR("jar"),
     IMAGE("image"),
-    MIDDLEWARE("middleware");
+    MIDDLEWARE("middleware"),
+    /**
+     * 其他类型
+     */
+    OTHER("other"),
+    HZERO("hzero");
 
     private String value;
 

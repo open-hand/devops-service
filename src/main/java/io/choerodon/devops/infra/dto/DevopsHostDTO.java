@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -29,11 +30,6 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机名称")
     private String name;
 
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
-     */
-    @ApiModelProperty("主机类型")
-    private String type;
 
     @ApiModelProperty("项目id")
     private Long projectId;
@@ -48,29 +44,11 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机连接错误信息")
     private String hostCheckError;
 
-    @Deprecated
-    @Nullable
-    @ApiModelProperty("jmeter连接错误信息")
-    private String jmeterCheckError;
-
-    /**
-     * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
-     */
-    @Deprecated
-    @ApiModelProperty("jmeter状态")
-    private String jmeterStatus;
-
     @ApiModelProperty("主机ip")
     private String hostIp;
 
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
-
-    @ApiModelProperty("内网ip")
-    private String privateIp;
-
-    @ApiModelProperty("内网ssh端口")
-    private Integer privatePort;
 
     /**
      * {@link HostAuthType}
@@ -84,13 +62,31 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
-    @Deprecated
-    @ApiModelProperty("jmeter进程的端口号")
-    private Integer jmeterPort;
+    @ApiModelProperty("主机连接token")
+    private String token;
 
-    @Deprecated
-    @ApiModelProperty("jmeter二进制文件的路径")
-    private String jmeterPath;
+    /**
+     * {@link io.choerodon.devops.infra.enums.DevopsHostType}
+     */
+    @ApiModelProperty("主机类型")
+    @Transient
+    private String type;
+
+    @ApiModelProperty("内网ip")
+    @Transient
+    private String privateIp;
+
+    @ApiModelProperty("内网ssh端口")
+    @Transient
+    private Integer privatePort;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getId() {
         return id;
@@ -130,16 +126,6 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setHostStatus(String hostStatus) {
         this.hostStatus = hostStatus;
-    }
-
-    @Deprecated
-    public String getJmeterStatus() {
-        return jmeterStatus;
-    }
-
-    @Deprecated
-    public void setJmeterStatus(String jmeterStatus) {
-        this.jmeterStatus = jmeterStatus;
     }
 
     public String getHostIp() {
@@ -182,44 +168,12 @@ public class DevopsHostDTO extends AuditDomain {
         this.sshPort = sshPort;
     }
 
-    @Deprecated
-    public Integer getJmeterPort() {
-        return jmeterPort;
-    }
-
-    @Deprecated
-    public void setJmeterPort(Integer jmeterPort) {
-        this.jmeterPort = jmeterPort;
-    }
-
-    @Deprecated
-    public String getJmeterPath() {
-        return jmeterPath;
-    }
-
-    @Deprecated
-    public void setJmeterPath(String jmeterPath) {
-        this.jmeterPath = jmeterPath;
-    }
-
-    @Nullable
     public String getHostCheckError() {
         return hostCheckError;
     }
 
     public void setHostCheckError(@Nullable String hostCheckError) {
         this.hostCheckError = hostCheckError;
-    }
-
-    @Deprecated
-    @Nullable
-    public String getJmeterCheckError() {
-        return jmeterCheckError;
-    }
-
-    @Deprecated
-    public void setJmeterCheckError(@Nullable String jmeterCheckError) {
-        this.jmeterCheckError = jmeterCheckError;
     }
 
     public String getPrivateIp() {

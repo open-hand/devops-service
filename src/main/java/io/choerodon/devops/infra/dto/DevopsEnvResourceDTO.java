@@ -25,10 +25,13 @@ public class DevopsEnvResourceDTO extends AuditDomain {
     private Long commandId;
     private Long weight;
     private Long reversion;
+
     @Transient
-    private Long  devopsEnvCommandId;
+    private Long devopsEnvCommandId;
     @Transient
-    private Long  devopsEnvironmentId;
+    private Long devopsEnvironmentId;
+    @Transient
+    private String message;
 
     public Long getDevopsEnvCommandId() {
         return devopsEnvCommandId;
@@ -116,5 +119,13 @@ public class DevopsEnvResourceDTO extends AuditDomain {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

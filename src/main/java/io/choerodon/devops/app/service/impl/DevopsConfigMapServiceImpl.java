@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.*;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.choerodon.core.domain.Page;
@@ -34,10 +36,6 @@ import java.util.Map;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
-
-    public static final String CREATE_TYPE = "create";
-    public static final String UPDATE_TYPE = "update";
-    public static final String DELETE_TYPE = "delete";
     public static final String CONFIGMAP = "ConfigMap";
     public static final String CONFIG_MAP_PREFIX = "configMap-";
     private static final String MASTER = "master";
@@ -207,7 +205,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         DevopsEnvCommandDTO devopsEnvCommandE = initDevopsEnvCommandDTO(DELETE_TYPE);
 
-        //更新ingress
+        //更新configmap
         devopsEnvCommandE.setObjectId(configMapId);
         devopsConfigMapDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandE).getId());
         baseUpdate(devopsConfigMapDTO);
@@ -227,7 +225,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         CONFIG_MAP_PREFIX + devopsConfigMapDTO.getName() + ".yaml",
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
@@ -248,7 +246,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<V1ConfigMap> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

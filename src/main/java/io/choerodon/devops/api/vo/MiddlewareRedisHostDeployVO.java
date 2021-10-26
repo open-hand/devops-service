@@ -2,7 +2,6 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Map;
 import java.util.Set;
-
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -15,10 +14,21 @@ public class MiddlewareRedisHostDeployVO {
     private Set<Long> hostIds;
     @ApiModelProperty("部署模式")
     private String mode;
+
     @ApiModelProperty("名称")
     @Size(min = 1, max = 53, message = "error.app.instance.name.length")
     @NotBlank(message = "error.app.instance.name.null")
     private String name;
+
+    @ApiModelProperty("应用中心应用名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
+    @NotBlank(message = "error.app.instance.name.null")
+    private String appName;
+
+    @ApiModelProperty("应用中心应用code，同时也作为实例名称")
+    @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
+    @NotBlank(message = "error.app.instance.code.null")
+    private String appCode;
 
     @ApiModelProperty("密码")
     @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
@@ -76,5 +86,21 @@ public class MiddlewareRedisHostDeployVO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 }

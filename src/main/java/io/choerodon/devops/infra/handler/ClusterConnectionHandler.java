@@ -41,6 +41,9 @@ public class ClusterConnectionHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterConnectionHandler.class);
 
     private Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
+    @Value("${local.test:false}")
+    private Boolean localTest;
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
@@ -60,6 +63,10 @@ public class ClusterConnectionHandler {
      * @param clusterId 环境ID
      */
     public void checkEnvConnection(Long clusterId) {
+        // 这里加判断为方便本地调试，没有其他用途
+        if (localTest) {
+            return;
+        }
         if (!getEnvConnectionStatus(clusterId)) {
             throw new CommonException("error.env.disconnect");
         }
@@ -77,20 +84,6 @@ public class ClusterConnectionHandler {
                 .anyMatch(t -> clusterId.equals(t.getClusterId())
                         && agentExpectVersion.equals(t.getVersion()));
     }
-
-//
-//    /**
-//     * 已连接的集群列表, 请勿使用此方法
-//     *
-//     * @return 已连接的集群列表
-//     */
-//    @Deprecated
-//    public List<Long> getConnectedClusterList() {
-//        Map<String, ClusterSessionVO> clusterSessions = (Map<String, ClusterSessionVO>) (Map) redisTemplate.opsForHash().entries(CLUSTER_SESSION);
-//        return clusterSessions.entrySet().stream()
-//                .map(t -> t.value().getClusterId())
-//                .collect(Collectors.toCollection(ArrayList::new));
-//    }
 
     /**
      * 不需要进行升级的已连接的集群 up-to-date

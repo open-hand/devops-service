@@ -34,7 +34,7 @@ public interface DevopsCdJobRecordService {
 
     DevopsCdJobRecordDTO queryById(Long id);
 
-    void updateJobStatusFailed(Long jobRecordId);
+    void updateJobStatusFailed(Long jobRecordId, String log);
 
     /**
      * 1. 更新job状态为待审核

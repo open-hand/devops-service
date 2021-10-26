@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONArray;
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
 import org.hzero.websocket.constant.WebSocketConstant;
@@ -223,11 +222,12 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-    public void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count) {
+    public void operatePodCount(String kind, String name, String namespace, Long clusterId, Long count) {
         AgentMsgVO msg = new AgentMsgVO();
         OperationPodPayload operationPodPayload = new OperationPodPayload();
         operationPodPayload.setCount(count);
-        operationPodPayload.setDeploymentName(deploymentName);
+        operationPodPayload.setName(name);
+        operationPodPayload.setKind(kind);
         operationPodPayload.setNamespace(namespace);
         msg.setPayload(JsonHelper.marshalByJackson(operationPodPayload));
         msg.setType(OPERATE_POD_COUNT);
@@ -237,8 +237,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
     }
 
     @Override
-
-    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO, String type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ConfigVO configVO) {
         AgentMsgVO msg = new AgentMsgVO();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(configVO.getEmail());
@@ -265,7 +264,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 envCode,
                 envId));
         msg.setType(HelmType.RESOURCE_STATUS_SYNC.toValue());
-        msg.setPayload(JSONArray.toJSONString(commands));
+        msg.setPayload(JsonHelper.marshalByJackson(commands));
         sendToWebSocket(clusterId, msg);
     }
 
@@ -374,7 +373,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
                 AgentMsgVO msg = new AgentMsgVO();
                 msg.setKey(String.format("cluster:%d",
                         key));
-                msg.setPayload(JSONArray.toJSONString(value));
+                msg.setPayload(JsonHelper.marshalByJackson(value));
                 msg.setType(HelmType.TEST_STATUS.toValue());
                 sendToWebSocket(key, msg);
             }

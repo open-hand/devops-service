@@ -82,5 +82,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_record.groovy') {
             column(name: 'log', type: 'text', afterColumn: 'deploy_type')
         }
     }
+    changeSet(author: 'wanghao', id: '2021-7-28-add-column') {
+        addColumn(tableName: 'devops_deploy_record') {
+            column(name: 'business_key', type: 'VARCHAR(255)', remarks: '流程实例关联业务key')
+        }
+    }
+
+    changeSet(author: 'wanghao', id: '2021-9-13-modify-column') {
+        sql("""
+             UPDATE devops_deploy_record SET deploy_object_type='chart' WHERE deploy_object_type = 'app'
+        """)
+
+        renameColumn(columnDataType: 'varchar(255)', newColumnName: 'app_name', oldColumnName: 'instance_name', tableName: 'devops_deploy_record')
+
+        addColumn(tableName: 'devops_deploy_record') {
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id', afterColumn: 'deploy_object_version')
+            column(name: 'app_code', type: 'VARCHAR(255)', remarks: '应用编码', afterColumn: 'app_name')
+
+        }
+    }
 
 }

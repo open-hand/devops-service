@@ -12,6 +12,9 @@ public class DevopsBranchVO {
     @Encrypt
     private Long appServiceId;
 
+    @ApiModelProperty("应用服务code")
+    private String appServiceCode;
+
     @ApiModelProperty("应用服务名称")
     private String appServiceName;
 
@@ -41,6 +44,14 @@ public class DevopsBranchVO {
 
     @ApiModelProperty("所属项目code")
     private String projectCode;
+
+    @Encrypt
+    @ApiModelProperty("分支id")
+    private Long id;
+
+    @Encrypt
+    @ApiModelProperty("分支id/ 该字段敏捷用")
+    private Long branchId;
 
     public String getOriginBranch() {
         return originBranch;
@@ -128,5 +139,29 @@ public class DevopsBranchVO {
 
     public void setProjectCode(String projectCode) {
         this.projectCode = projectCode;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
+    }
+
+    public Long getBranchId() {
+        return branchId;
+    }
+
+    public void setBranchId(Long branchId) {
+        this.branchId = branchId;
     }
 }

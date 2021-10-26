@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper">
+    <select id="listAppFromEnv" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT *
+        FROM devops_deploy_app_center_env
+                WHERE project_id = #{projectId, jdbcType=BIGINT}
+        <if test="envId != null">
+            AND env_id = #{envId, jdbcType=BIGINT}
+        </if>
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="rdupmType != null and rdupmType != ''">
+            AND rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+        </if>
+        <if test="operationType != null and operationType != ''">
+            AND operation_type = #{operationType, jdbcType=VARCHAR}
+        </if>
+        <if test="params != null and params != ''">
+            AND name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="queryByEnvIdAndCode" resultType="io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO">
+        SELECT *
+        FROM devops_deploy_app_center_env
+        WHERE env_id = #{environmentId}
+          AND code = #{appCode}
+    </select>
+
+    <delete id="deleteByEnvIdAndObjectIdAndRdupmType">
+        DELETE
+        FROM devops_deploy_app_center_env
+        WHERE env_id = #{envId}
+          AND object_id = #{objectId}
+          AND rdupm_type = #{rdupmType}
+    </delete>
+
+    <select id="listAppFromEnvByUserId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT ddace.*
+        FROM devops_deploy_app_center_env ddace
+        LEFT JOIN devops_env de ON de.id = ddace.env_id
+        LEFT JOIN devops_env_user_permission deup ON deup.env_id = de.id
+        WHERE ddace.project_id = #{projectId, jdbcType=BIGINT}
+        AND (de.is_skip_check_permission = 1 OR deup.iam_user_id = #{userId})
+        <if test="envId != null">
+            AND ddace.env_id = #{envId, jdbcType=BIGINT}
+        </if>
+        <if test="name != null and name != ''">
+            AND ddace.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="rdupmType != null and rdupmType != ''">
+            AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+        </if>
+        <if test="operationType != null and operationType != ''">
+            AND ddace.operation_type = #{operationType, jdbcType=VARCHAR}
+        </if>
+        <if test="params != null and params != ''">
+            AND ddace.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY ddace.id DESC
+    </select>
+    <select id="checkNameUnique" resultType="java.lang.Boolean">
+        SELECT count(*) = 0
+        FROM devops_deploy_app_center_env ddace
+        WHERE ddace.env_id = #{envId}
+        AND ddace.name = #{name, jdbcType=VARCHAR}
+        <if test="rdupmType != null and rdupmType != ''">
+            AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+        </if>
+        <if test="objectId != null">
+            AND ddace.object_id != #{objectId}
+        </if>
+    </select>
+    <select id="checkCodeUnique" resultType="java.lang.Boolean">
+        SELECT count(*) = 0
+        FROM devops_deploy_app_center_env ddace
+        WHERE
+        ddace.env_id = #{envId, jdbcType=BIGINT}
+        AND ddace.code = #{code, jdbcType=VARCHAR}
+        <if test="rdupmType != null and rdupmType != ''">
+            AND ddace.rdupm_type = #{rdupmType, jdbcType=VARCHAR}
+        </if>
+        <if test="objectId != null">
+            AND ddace.object_id != #{objectId}
+        </if>
+    </select>
+
+    <select id="listByProjectIdAndEnvId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT *
+        FROM devops_deploy_app_center_env
+        WHERE project_id = #{projectId}
+        AND env_id = #{envId}
+        AND rdupm_type = 'deployment'
+    </select>
+
+    <select id="listByProjectIdAndEnvIdAndAppId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT ddace.*
+        FROM devops_deploy_app_center_env ddace
+        LEFT JOIN devops_app_service_instance dasi ON ddace.object_id = dasi.id
+        WHERE ddace.project_id = #{projectId}
+        AND ddace.env_id = #{envId}
+        AND dasi.app_service_id = #{appServiceId}
+        AND ddace.rdupm_type = 'chart'
+    </select>
+
+    <insert id="batchInsert">
+        INSERT INTO devops_deploy_app_center_env (name, code, project_id, object_id, env_id, operation_type, rdupm_type, chart_source)
+        VALUES
+        <foreach collection="devopsDeployAppCenterEnvDTOList" item="devopsDeployAppCenterEnvDTO" separator=",">
+            (#{devopsDeployAppCenterEnvDTO.name},
+            #{devopsDeployAppCenterEnvDTO.code},
+            #{devopsDeployAppCenterEnvDTO.projectId},
+            #{devopsDeployAppCenterEnvDTO.objectId},
+            #{devopsDeployAppCenterEnvDTO.envId},
+            #{devopsDeployAppCenterEnvDTO.operationType},
+            #{devopsDeployAppCenterEnvDTO.rdupmType},
+            #{devopsDeployAppCenterEnvDTO.chartSource})
+        </foreach>
+    </insert>
+
+    <select id="listChart" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT *
+        FROM devops_deploy_app_center_env
+        WHERE project_id = #{projectId, jdbcType=BIGINT}
+        AND env_id = #{envId, jdbcType=BIGINT}
+        AND rdupm_type = 'chart'
+        <if test="name != null and name != ''">
+            AND name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="operationType != null and operationType != ''">
+            AND operation_type = #{operationType, jdbcType=VARCHAR}
+        </if>
+        <if test="params != null and params != ''">
+            AND name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="listChartByUserId" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT *
+        FROM devops_deploy_app_center_env ddace
+        LEFT JOIN devops_env de ON de.id = ddace.env_id
+        LEFT JOIN devops_env_user_permission deup ON deup.env_id = de.id
+        WHERE ddace.project_id = #{projectId, jdbcType=BIGINT}
+        AND (de.is_skip_check_permission = 1 OR deup.iam_user_id = #{userId})
+        AND ddace.env_id = #{envId, jdbcType=BIGINT}
+        AND ddace.rdupm_type = 'chart'
+        <if test="name != null and name != ''">
+            AND ddace.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="operationType != null and operationType != ''">
+            AND ddace.operation_type = #{operationType, jdbcType=VARCHAR}
+        </if>
+        <if test="params != null and params != ''">
+            AND ddace.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY ddace.id DESC
+    </select>
+    <select id="checkNameUniqueByAppId" resultType="java.lang.Boolean">
+        SELECT count(*) = 0
+        FROM devops_deploy_app_center_env ddace
+        WHERE ddace.project_id = #{projectId}
+        AND ddace.name = #{name, jdbcType=VARCHAR}
+        <if test="appId != null">
+        AND ddace.id != #{appId}
+        </if>
+    </select>
+</mapper>

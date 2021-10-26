@@ -3,7 +3,6 @@ package io.choerodon.devops.api.vo;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
-import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
 
 /**
  * 〈功能简述〉

@@ -9,12 +9,41 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2021/3/17
  */
 public class PipelineInstanceReferenceVO {
+    @ApiModelProperty("任务id")
+    private Long jobId;
+    @ApiModelProperty("任务id")
+    private Long taskId;
     @ApiModelProperty("流水线的名称")
     private String pipelineName;
     @ApiModelProperty("阶段名称")
     private String stageName;
     @ApiModelProperty("任务名称")
     private String jobName;
+
+    public PipelineInstanceReferenceVO() {
+    }
+
+    public PipelineInstanceReferenceVO(String pipelineName, String stageName, String jobName) {
+        this.pipelineName = pipelineName;
+        this.stageName = stageName;
+        this.jobName = jobName;
+    }
+
+    public Long getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
+    }
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
 
     public String getPipelineName() {
         return pipelineName;

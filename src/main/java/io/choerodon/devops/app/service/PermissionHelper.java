@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
@@ -149,4 +150,10 @@ public interface PermissionHelper {
      * @param appServiceIds
      */
     void checkAppServicesBelongToProject(Long projectId, List<Long> appServiceIds);
+
+    /**
+     * 校验部署方式是否唯一
+     * @param devopsServiceReqVO
+     */
+    void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO);
 }

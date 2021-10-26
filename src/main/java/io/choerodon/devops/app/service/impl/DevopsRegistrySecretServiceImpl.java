@@ -65,6 +65,11 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         return devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretId);
     }
 
+    @Override
+    public DevopsRegistrySecretDTO baseQuery(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
+        return devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDTO);
+    }
+
     @Transactional
     @Override
     public DevopsRegistrySecretDTO baseUpdate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {

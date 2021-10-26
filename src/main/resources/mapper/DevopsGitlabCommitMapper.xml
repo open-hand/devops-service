@@ -131,4 +131,13 @@
         FROM devops_gitlab_commit dgc
         WHERE dgc.issue_id IS NOT NULL
     </select>
+
+    <select id="baseListDevopsBranchesByIssueId" resultType="io.choerodon.devops.infra.dto.DevopsBranchDTO">
+        SELECT dir.branch_id as id,dgc.ref as branchName,dgc.app_service_id,das.project_id FROM
+        devops_gitlab_commit dgc
+        JOIN devops_app_service das on dgc.app_service_id = das.id
+        JOIN devops_issue_rel dir ON dir.object_id=dgc.id
+        WHERE dir.object='commit'
+        AND dir.issue_id=#{issueId}
+    </select>
 </mapper>

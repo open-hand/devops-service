@@ -4,8 +4,8 @@ package io.choerodon.devops.infra.enums;
  * 中间件类型枚举类
  */
 public enum DevopsMiddlewareTypeEnum {
-    REDIS("Redis"),
-    MYSQL("MySQL");
+    Redis("Redis"),
+    MySQL("MySQL");
 
     private final String type;
 

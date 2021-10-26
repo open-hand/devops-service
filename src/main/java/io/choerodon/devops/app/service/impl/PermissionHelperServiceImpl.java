@@ -2,16 +2,19 @@ package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -43,9 +46,8 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     private AppServiceMapper appServiceMapper;
 
     @Override
-
     public boolean isGitlabAdmin(Long userId) {
-        UserAttrDTO result = userAttrService.baseQueryById(userId);
+        UserAttrDTO result = userAttrService.baseQueryByIamUserId(userId);
         return result != null && result.getGitlabAdmin();
     }
 
@@ -171,5 +173,27 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
                 .map(AppServiceDTO::getId)
                 .collect(Collectors.toList());
         CommonExAssertUtil.assertTrue(appServiceIdsBelongToProject.containsAll(appServiceIds), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+    }
+
+    @Override
+    public void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO) {
+        boolean flag = isOnlyOneTure(new boolean[]{devopsServiceReqVO.getTargetAppServiceId() == null, devopsServiceReqVO.getTargetDeploymentId() == null, StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode()),
+                ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints()), ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())});
+        if (!flag) {
+            throw new CommonException("error.deployment.way.not.only");
+        }
+    }
+
+    private boolean isOnlyOneTure(boolean[] flags) {
+        if (flags == null || flags.length == 0) {
+            return false;
+        }
+        int count = 0;
+        for (boolean flag : flags) {
+            if (!flag) {
+                count ++;
+            }
+        }
+        return count == 1;
     }
 }

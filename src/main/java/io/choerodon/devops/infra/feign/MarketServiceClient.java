@@ -37,14 +37,6 @@ public interface MarketServiceClient {
             @Encrypt @RequestParam(value = "with_values") Boolean withValues,
             @Encrypt @PathVariable("deploy_object_id") Long deployObjectId);
 
-//    /**
-//     * queryRepoConfig
-//     */
-//    @GetMapping("/v1/projects/{project_id}/deploy/{project_id}/repo/config")
-//    ResponseEntity<RepoConfigVO> queryRepoConfig(
-//            @PathVariable("project_id") Long projectId,
-//            @Encrypt @RequestParam("app_service_id") Long appId,
-//            @Encrypt @RequestParam("app_service_version_id") Long appServiceVersionId);
 
 
     @PostMapping("/v1/application/use/record")
@@ -136,4 +128,32 @@ public interface MarketServiceClient {
             @RequestParam("appName") String appName,
             @RequestParam("mode") String mode,
             @RequestParam("version") String version);
+
+
+    @ApiOperation("根据marketServiceId 查询部署对象的列表")
+    @GetMapping("/v1/projects/{project_id}/deploy/deploy_objects/by_market_service")
+    ResponseEntity<String> queryDeployObjectByMarketServiceId(@PathVariable("project_id") Long projectId, @RequestParam("marketServiceId") Long marketServiceId);
+
+
+    @ApiOperation("根据marketServiceIds 查询部署市场服务及其部署对象，所属的应用类型")
+    @PostMapping("/v1/projects/{project_id}/market/service/deploy_and_category")
+    ResponseEntity<String> queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(
+            @PathVariable("project_id") Long projectId,
+            @RequestBody Set<Long> marketServiceIds);
+
+    @GetMapping("/v1/market/application/{application_id}")
+    @ApiOperation("查询应用详情")
+    ResponseEntity<String> queryApplication(
+            @PathVariable(name = "application_id", required = false) Long applicationId,
+            @RequestParam(value = "organization_id", required = false) Long organizationId);
+
+    @ApiOperation(value = "查询版本信息")
+    @GetMapping("/v1/applications/{application_id}/app_versions/{app_version_id}")
+    ResponseEntity<String> queryAppVersionById(
+            @Encrypt @PathVariable(value = "application_id") Long applicationId,
+            @Encrypt @PathVariable(value = "app_version_id") Long appVersionId);
+
+    @ApiOperation(value = "查询hzero应用类型  （供部署使用）")
+    @GetMapping("/v1/market/application/hzero/type")
+    ResponseEntity<String> queryHzeroAppType(@RequestParam(value = "application_id") Long applicationId);
 }

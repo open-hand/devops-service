@@ -11,6 +11,7 @@
         da.is_active,
         da.is_synchro,
         da.gitlab_project_id,
+        da.external_config_id,
         da.uuid,
         da.is_failed,
         da.creation_date,
@@ -22,6 +23,9 @@
         da.artifact_id
         FROM devops_app_service da
         WHERE da.project_id = #{projectId}
+        <if test="!includeExternal">
+            AND da.external_config_id IS NULL
+        </if>
         <if test="isActive != null">
             <if test="isActive">
                 AND da.is_active = TRUE
@@ -57,6 +61,7 @@
         da.is_active,
         da.is_synchro,
         da.gitlab_project_id,
+        da.external_config_id,
         da.uuid,
         da.is_failed,
         da.creation_date,
@@ -155,10 +160,12 @@
         AND das.is_synchro IS TRUE
         AND das.gitlab_project_id IS NOT NULL
         AND das.project_id = #{projectId}
+        order by das.external_config_id is null desc
     </sql>
 
     <sql id="listProjectMembersAppServiceByActive">
-        SELECT da.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
+        SELECT da.*,
+            (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
         FROM devops_app_service da
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
@@ -170,6 +177,7 @@
                 #{appServiceId}
             </foreach>
         </if>
+        order by da.external_config_id is null desc
     </sql>
 
     <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -499,6 +507,9 @@
             and
             ((b.share_level = 'organization' and b.app_service_id IS NOT NULL) or
             (b.project_id = #{projectId} and b.share_level = 'project'))
+            <if test="!includeExternal">
+                AND das.external_config_id IS NULL
+            </if>
             <if test="param != null and param != ''">
                 AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
                 OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
@@ -669,13 +680,11 @@
         FROM devops_app_service das
         LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
         LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id = dcp.id
-        INNER JOIN devops_branch db ON das.id = db.app_service_id
         WHERE das.project_id = #{projectId,jdbcType=BIGINT}
         AND das.is_failed = FALSE
         AND das.is_synchro = TRUE
         AND das.is_active = TRUE
         AND dcp.id IS NULL
-        AND db.branch_name = 'master'
         <include refid="appServiceCiSqlparams"/>
     </select>
 
@@ -685,19 +694,17 @@
         FROM devops_app_service das
         LEFT JOIN devops_cicd_pipeline dcp ON das.id = dcp.app_service_id
         LEFT JOIN devops_ci_stage dcs on dcs.ci_pipeline_id = dcp.id
-        INNER JOIN devops_branch db ON das.id = db.app_service_id
         WHERE das.project_id = #{projectId,jdbcType=BIGINT}
         AND das.is_failed = FALSE
         AND das.is_synchro = TRUE
         AND das.is_active = TRUE
         AND dcp.id IS NULL
-        AND db.branch_name = 'master'
         <if test="appServiceIds != null and appServiceIds.size > 0">
-            and das.id in
+            and (das.external_config_id != null or das.id in
             <foreach collection="appServiceIds" item="appServiceId" index="index"
                      open="(" close=")" separator=",">
                 #{appServiceId}
-            </foreach>
+            </foreach>)
         </if>
         <include refid="appServiceCiSqlparams"/>
     </select>
@@ -815,16 +822,16 @@
 
     <select id="queryResourceById" resultType="io.choerodon.devops.api.vo.iam.ResourceVO">
         SELECT
-            das.project_id as projectId,
-            count( * ) as currentAppService,
-            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = das.project_id ) as currentCluster,
-            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = das.project_id ) as currentEnv
+            dp.iam_project_id AS projectId,
+            ( SELECT count( * ) FROM devops_app_service das WHERE das.project_id = dp.iam_project_id ) AS currentAppService,
+            ( SELECT count( * ) FROM devops_cluster dc WHERE dc.project_id = dp.iam_project_id ) AS currentCluster,
+            ( SELECT count( * ) FROM devops_env de WHERE de.project_id = dp.iam_project_id ) AS currentEnv
         FROM
-            devops_app_service das
+            devops_project dp
         WHERE
-            das.project_id = #{projectId}
+            dp.iam_project_id = #{projectId}
         GROUP BY
-            das.project_id
+            dp.iam_project_id
     </select>
 
     <select id="listShareAppServiceHavingVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
@@ -877,5 +884,50 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+    <select id="queryApplicationCenter" resultType="io.choerodon.devops.api.vo.AppServiceRepVO">
+
+        SELECT
+           *
+        FROM
+        (
+            SELECT
+               any_value ( deas.app_service_id ) AS ID,
+               any_value ( deas.source ) AS source,
+               any_value ( deas.service_name ) AS serviceName,
+               any_value ( deas.service_code ) AS serviceCode,
+               any_value ( deas.env_id ) AS envId,
+               any_value ( deas.id ) AS tempId
+            FROM
+              devops_env_app_service deas
+            JOIN devops_env de ON deas.env_id = de.id
+            WHERE
+              de.project_id=#{projectId,jdbcType=BIGINT}
+              <if test="envId != null and envId !=0">
+                  AND  deas.env_id = #{envId,jdbcType=BIGINT}
+              </if>
+              <if test="type != null and type != '' and type != 'all'">
+                  AND deas.source= #{type}
+              </if>
+              <if test="params != null and params != ''">
+                  AND  (
+                  deas.service_name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                  or
+                  deas.service_code LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                  )
+              </if>
+            GROUP BY
+              ID
+        ) temp
+        ORDER BY
+             temp.tempId DESC
+
+    </select>
+    <select id="listAllExternalAppServiceIds" resultType="java.lang.Long">
+        SELECT DISTINCT da.id
+        FROM devops_app_service da
+        WHERE da.is_active
+        AND da.project_id=#{projectId,jdbcType=BIGINT} and da.external_config_id is not null
     </select>
 </mapper>

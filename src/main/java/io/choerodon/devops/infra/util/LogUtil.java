@@ -57,6 +57,9 @@ public class LogUtil {
         throwable = getRootCause(throwable);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(byteArrayOutputStream);
+        if (throwable == null) {
+            return null;
+        }
         throwable.printStackTrace(ps);
         ps.flush();
         return byteArrayOutputStream.toString();

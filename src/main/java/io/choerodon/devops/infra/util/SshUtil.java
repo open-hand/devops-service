@@ -83,9 +83,11 @@ public class SshUtil {
 
             session = ssh.startSession();
             Session.Command cmd = session.exec("echo Hello World");
-            LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
+            }
             cmd.join(5, TimeUnit.SECONDS);
-            LOGGER.info("\n** exit status: " + cmd.getExitStatus());
+            LOGGER.info("** exit status: {}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
                 throw new CommonException("error.test.connection");
             }
@@ -154,7 +156,6 @@ public class SshUtil {
             stopJar.append(System.lineSeparator());
             stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, jarName.replace(".jar", ".log")));
             log.append(System.lineSeparator()).append(stopJar.toString());
-            LOGGER.info(stopJar.toString());
             Session session = null;
             try {
                 session = ssh.startSession();
@@ -200,7 +201,7 @@ public class SshUtil {
                     values = s;
                 }
             }
-            if (StringUtils.isEmpty(values) || !checkInstruction("jar", values)) {
+            if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("jar", values))) {
                 throw new CommonException("error.instruction");
             }
 
@@ -210,7 +211,6 @@ public class SshUtil {
 
             cmdStr.append(javaJarExec);
             StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
-            LOGGER.info(finalCmdStr.toString());
 
             final Session.Command cmd = session.exec(finalCmdStr.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
@@ -296,7 +296,6 @@ public class SshUtil {
             dockerRunExec.append("sudo docker stop ").append(containerName).append(" && ");
             dockerRunExec.append("sudo docker rm ").append(containerName);
             log.append(System.lineSeparator()).append(dockerRunExec.toString());
-            LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
@@ -358,14 +357,13 @@ public class SshUtil {
                 }
             }
             LOGGER.info("docker run values is {}", values);
-            if (StringUtils.isEmpty(values) || !checkInstruction("image", values)) {
+            if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
                 throw new CommonException("error.instruction");
             }
 
             // 判断镜像是否存在 存在删除 部署
             StringBuilder dockerRunExec = new StringBuilder();
             dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
-            LOGGER.info(dockerRunExec.toString());
             Session.Command cmd = session.exec(dockerRunExec.toString());
             String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
             String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
@@ -421,7 +419,7 @@ public class SshUtil {
             }
             ssh.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("close ssh", e);
         }
     }
 
@@ -429,7 +427,7 @@ public class SshUtil {
         try {
             ssh.disconnect();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("disconnect failed", e);
         }
     }
 
@@ -455,7 +453,7 @@ public class SshUtil {
                 try {
                     cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
                 } catch (ConnectionException e) {
-                    e.printStackTrace();
+                    LOGGER.error("Pulling the image failed", e);
                 }
             } else {
                 break;
@@ -463,25 +461,13 @@ public class SshUtil {
         }
     }
 
-    public void uploadPreProcessShell(SSHClient ssh, String suffix, String type) throws IOException {
+    public void uploadPreProcessShell(SSHClient ssh, String suffix) {
         InputStream shellInputStream = DevopsClusterNodeServiceImpl.class.getResourceAsStream("/shell/pre-process.sh");
         Map<String, String> map = new HashMap<>();
-        switch (type) {
-            case "kube":
-                map.put("{{ git-clone }}", "if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
-                        "    rm -rf /tmp/kubeadm-ha\n" +
-                        "fi\n" +
-                        "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
-                break;
-            case "middleware":
-                map.put("{{ git-clone }}", "if [ -d \"/tmp/middleware\" ]; then\n" +
-                        "    rm -rf /tmp/middleware\n" +
-                        "fi\n" +
-                        "git clone https://gitee.com/open-hand/middleware.git /tmp/middleware");
-                break;
-            default:
-                throw new CommonException("error.unsupported.preprocess.type", type);
-        }
+        map.put("{{ git-clone }}", "if [ -d \"/tmp/kubeadm-ha\" ]; then\n" +
+                "    rm -rf /tmp/kubeadm-ha\n" +
+                "fi\n" +
+                "git clone -b choerodon https://gitee.com/open-hand/kubeadm-ha.git /tmp/kubeadm-ha");
         String preProcessShell = FileUtil.replaceReturnString(shellInputStream, map);
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-process.sh";
         FileUtil.saveDataToFile(filePath, preProcessShell);

@@ -3,16 +3,18 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
+import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -22,6 +24,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface AppServiceInstanceService {
     String INSTANCE_LABEL_RELEASE = "choerodon.io/release";
     String INSTANCE_LABEL_APP_SERVICE_ID = "choerodon.io/app-service-id";
+    String PARENT_WORK_LOAD_LABEL = "choerodon.io/parent-workload";
+    String PARENT_WORK_LOAD_NAME_LABEL = "choerodon.io/parent-workload-name";
 
     /**
      * 根据实例id查询实例信息
@@ -84,7 +88,7 @@ public interface AppServiceInstanceService {
      * @param marketInstanceCreationRequestVO 请求参数
      * @return 实例信息
      */
-    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO);
+    AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO marketInstanceCreationRequestVO, Boolean saveRecord);
 
     /**
      * 部署应用,GitOps
@@ -147,7 +151,7 @@ public interface AppServiceInstanceService {
      * @param projectId  项目id
      * @param instanceId 实例id
      */
-    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline);
+    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean saveRecord);
 
     /**
      * 实例删除
@@ -312,12 +316,14 @@ public interface AppServiceInstanceService {
     /**
      * 操作pod的数量
      *
-     * @param projectId      项目id
-     * @param envId          环境id
-     * @param deploymentName deploymentName
-     * @param count          pod数量
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param kind      资源类型
+     * @param name      deploymentName
+     * @param count     pod数量
+     * @param workload  是否为操作工作负载pod
      */
-    void operationPodCount(Long projectId, String deploymentName, Long envId, Long count);
+    void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload);
 
 
     DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId);
@@ -405,4 +411,53 @@ public interface AppServiceInstanceService {
      * @return 版本
      */
     AppServiceVersionDTO queryVersion(Long appServiceInstanceId);
+
+    /**
+     * 查询应用服务在环境下的实例列表
+     *
+     * @param projectId    项目id
+     * @param appServiceId 应用服务id
+     * @param envId        环境id
+     * @return 实例列表
+     */
+    List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId);
+
+    void hzeroDeploy(Long detailsRecordId);
+
+    void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
+
+    /**
+     * 通过code和envId查询AppServiceInstanceDTO的code集合
+     *
+     * @param codes
+     * @param envId
+     * @return code列表
+     */
+    List<AppServiceInstanceDTO> listInstanceByDeployDetailsCode(List<String> codes, Long envId);
+
+    /**
+     * 通过code和envId查询AppServiceInstanceDTO的status
+     *
+     * @param code
+     * @param envId
+     * @return 状态
+     */
+    String queryInstanceStatusByEnvIdAndCode(String code, Long envId);
+
+    /**
+     * 查询应用实例数量
+     */
+    Integer countInstance();
+
+    List<AppServiceInstanceDTO> listInstances();
+
+    String getSecret(AppServiceDTO appServiceDTO, Long appServiceVersionId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO);
+
+    String makeMarketSecret(Long projectId, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO);
+
+    InstanceValueVO queryValues(Long instanceId);
+
+    InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
 }
