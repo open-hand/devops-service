@@ -32,7 +32,8 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Override
     public AppExternalConfigDTO baseQueryWithPassword(Long id) {
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigMapper.selectByPrimaryKey(id);
-        if (ExternalAppAuthTypeEnum.USERNAME_PASSWORD.getValue().equals(appExternalConfigDTO.getAuthType())) {
+        if (appExternalConfigDTO != null
+                && ExternalAppAuthTypeEnum.USERNAME_PASSWORD.getValue().equals(appExternalConfigDTO.getAuthType())) {
             appExternalConfigDTO.setPassword(DESEncryptUtil.decode(appExternalConfigDTO.getPassword()));
         }
         return appExternalConfigDTO;
