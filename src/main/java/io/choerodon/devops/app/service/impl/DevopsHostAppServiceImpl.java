@@ -302,7 +302,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 deploySourceVO);
 
         // 保存用户设置部署配置文件
-        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, deployObjectKey, jarDeployVO);
+        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, devopsHostAppInstanceDTO.getId(),
+                deployObjectKey, jarDeployVO);
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();

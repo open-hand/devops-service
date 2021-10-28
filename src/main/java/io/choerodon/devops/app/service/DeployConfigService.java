@@ -18,11 +18,12 @@ public interface DeployConfigService {
      *
      * @param projectId
      * @param devopsDeployRecordId
+     * @param id
      * @param deployObjectKey
      * @param jarDeployVO
      * @return
      */
-    List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, String deployObjectKey, JarDeployVO jarDeployVO);
+    List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, Long id, String deployObjectKey, JarDeployVO jarDeployVO);
 
     /**
      * 构造发送到agent的配置
@@ -42,11 +43,12 @@ public interface DeployConfigService {
     String doCreateConfigSettings(Long hostId);
 
     /**
-     * 查询部署的配置文件信息
+     * 查询配置文件信息
      *
      * @param projectId
      * @param recordId
+     * @param instanceId
      * @return
      */
-    ConfigSettingVO queryDeployConfig(Long projectId, Long recordId);
+    ConfigSettingVO queryDeployConfig(Long projectId, Long recordId, Long instanceId);
 }

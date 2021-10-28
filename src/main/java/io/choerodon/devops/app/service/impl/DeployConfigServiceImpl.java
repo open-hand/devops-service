@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.deploy.ConfigSettingVO;
@@ -36,7 +37,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     private EncryptClient encryptClient;
 
     @Override
-    public List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, String deployObjectKey, JarDeployVO jarDeployVO) {
+    public List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, Long instanceId, String deployObjectKey, JarDeployVO jarDeployVO) {
         List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return Collections.emptyList();
@@ -49,6 +50,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
                     .setDeployRecordId(devopsDeployRecordId)
                     .setHostId(jarDeployVO.getHostId())
                     .setDeployObjectKey(deployObjectKey)
+                    .setInstanceId(instanceId)
                     .setInstanceName(jarDeployVO.getAppCode())
                     .setMountPath(configSetting.getMountPath())
                     .setConfigId(configSetting.getConfigId())
@@ -107,8 +109,11 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     }
 
     @Override
-    public ConfigSettingVO queryDeployConfig(Long projectId, Long recordId) {
-        DeployConfigDTO deployConfigDTO = deployConfigMapper.queryDeployConfig(projectId, recordId);
+    public ConfigSettingVO queryDeployConfig(Long projectId, Long recordId, Long instanceId) {
+        if (Objects.isNull(recordId) && Objects.isNull(instanceId)) {
+            return null;
+        }
+        DeployConfigDTO deployConfigDTO = deployConfigMapper.queryDeployConfig(projectId, recordId, instanceId);
         return new ConfigSettingVO()
                 .setMountPath(deployConfigDTO.getMountPath())
                 .setConfigGroup(deployConfigDTO.getConfigGroup())

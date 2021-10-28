@@ -23,11 +23,12 @@ public class DevopsDeployConfigController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询部署配置文件信息")
-    @GetMapping("/record/{record_id}")
-    public ResponseEntity<ConfigSettingVO> queryDeployConfig(
+    @ApiOperation(value = "查询配置文件信息")
+    @GetMapping
+    public ResponseEntity<ConfigSettingVO> queryDeployConfigByRecordId(
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @PathVariable(value = "record_id") Long recordId) {
-        return ResponseEntity.ok(deployConfigService.queryDeployConfig(projectId, recordId));
+            @Encrypt @RequestParam(value = "record_id", required = false) Long recordId,
+            @Encrypt @RequestParam(value = "instance_id", required = false) Long instanceId) {
+        return ResponseEntity.ok(deployConfigService.queryDeployConfig(projectId, recordId, instanceId));
     }
 }

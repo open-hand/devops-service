@@ -8,6 +8,7 @@
         <result column="deploy_record_id" property="deployRecordId" jdbcType="DECIMAL"/>
         <result column="host_id" property="hostId" jdbcType="DECIMAL"/>
         <result column="deploy_object_key" property="deployObjectKey" jdbcType="VARCHAR"/>
+        <result column="instance_id" property="instanceId" jdbcType="DECIMAL"/>
         <result column="instance_name" property="instanceName" jdbcType="VARCHAR"/>
         <result column="config_id" property="configId" jdbcType="DECIMAL"/>
         <result column="mount_path" property="mountPath" jdbcType="VARCHAR"/>
@@ -26,6 +27,7 @@
                ddc.deploy_record_id,
                ddc.host_id,
                ddc.deploy_object_key,
+               ddc.instance_id,
                ddc.instance_name,
                ddc.config_id,
                ddc.mount_path,
@@ -52,6 +54,7 @@
                ddc.deploy_record_id,
                ddc.host_id,
                ddc.deploy_object_key,
+               ddc.instance_id,
                ddc.instance_name,
                ddc.config_id,
                ddc.mount_path,
@@ -59,6 +62,12 @@
                ddc.config_code,
                ddc.object_version_number
         FROM devops_deploy_config ddc
-        WHERE ddc.project_id = #{projectId} AND ddc.deploy_record_id = #{recordId}
+        WHERE ddc.project_id = #{projectId}
+        <if test="recordId != null">
+          AND ddc.deploy_record_id = #{recordId}
+        </if>
+        <if test="instanceId != null">
+          AND ddc.instance_id = #{instanceId}
+        </if>
     </select>
 </mapper>

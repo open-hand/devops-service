@@ -25,4 +25,11 @@ databaseChangeLog(logicalFilePath: 'script/db/devops_deploy_config.groovy') {
            column(name: "project_id")
        }
     }
+    changeSet(author: "jian.zhang02@hand-china.com", id: "devops_deploy_config-2021-10-28-version-2") {
+        addColumn (tableName: "devops_deploy_config") {
+            column (name: "instance_id", type: "BIGINT(20) UNSIGNED", remarks: "实例ID", afterColumn: "deploy_object_key") {
+                constraints (nullable: "false")
+            }
+        }
+    }
 }
