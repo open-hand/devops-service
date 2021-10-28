@@ -19,18 +19,11 @@ public class DevopsHostUserPermissionUpdateVO {
     @NotNull(message = "error.user.ids.null")
     private List<Long> userIds;
 
-    @ApiModelProperty("表示是否为项目下所有用户分配指定权限")
-    private Boolean updateAllUser;
-
     /**
      * {@link DevopsHostUserPermissionLabelEnums}
      */
     @ApiModelProperty("用户在主机下的权限标签")
     private String permissionLabel;
-
-    @ApiModelProperty("是否跳过权限校验 / 必需")
-    @NotNull(message = "error.is.skip.permission.check.null")
-    private Boolean skipCheckPermission;
 
     @ApiModelProperty("主机的版本号, 如果更新了'skipCheckPermission'字段则必填")
     private Long objectVersionNumber;
@@ -51,14 +44,6 @@ public class DevopsHostUserPermissionUpdateVO {
         this.userIds = userIds;
     }
 
-    public Boolean getSkipCheckPermission() {
-        return skipCheckPermission;
-    }
-
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        this.skipCheckPermission = skipCheckPermission;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -73,13 +58,5 @@ public class DevopsHostUserPermissionUpdateVO {
 
     public void setPermissionLabel(String permissionLabel) {
         this.permissionLabel = permissionLabel;
-    }
-
-    public Boolean getUpdateAllUser() {
-        return updateAllUser;
-    }
-
-    public void setUpdateAllUser(Boolean updateAllUser) {
-        this.updateAllUser = updateAllUser;
     }
 }

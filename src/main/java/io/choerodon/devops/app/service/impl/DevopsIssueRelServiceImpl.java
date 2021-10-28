@@ -125,16 +125,29 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public List<Long> listRelatedBranchIds(Set<Long> commitRelatedBranchIds) {
+    public List<Long> listExistRelationBranchIds(Set<Long> commitRelatedBranchIds) {
         if (CollectionUtils.isEmpty(commitRelatedBranchIds)) {
             return new ArrayList<>();
         }
-        return devopsIssueRelMapper.listRelatedBranchIds(commitRelatedBranchIds);
+        return devopsIssueRelMapper.listExistRelationBranchIds(commitRelatedBranchIds);
+    }
+
+    @Override
+    public List<Long> listBranchIdsByCommitIds(Set<Long> commitIds) {
+        if (CollectionUtils.isEmpty(commitIds)) {
+            return new ArrayList<>();
+        }
+        return devopsIssueRelMapper.listBranchIdsByCommitIds(commitIds);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteCommitRelationByBranchId(Long branchId, Long issueId) {
         devopsIssueRelMapper.deleteCommitRelationByBranchIdAndIssueId(branchId, issueId);
+    }
+
+    @Override
+    public List<Long> listCommitRelationByBranchId(Long branchId) {
+        return devopsIssueRelMapper.listCommitRelationByBranchId(branchId);
     }
 }

@@ -928,6 +928,18 @@ public class AppServiceController {
         return ResponseEntity.noContent().build();
     }
 
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "根据项目ids查询应用服务")
+    @PostMapping("/by_project_ids")
+    public ResponseEntity<List<AppServiceDTO>> queryAppByProjectIds(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestBody List<Long> projectIds) {
+        return new ResponseEntity<>(applicationServiceService.queryAppByProjectIds(projectIds), HttpStatus.OK);
+    }
+
+
 }
 
 

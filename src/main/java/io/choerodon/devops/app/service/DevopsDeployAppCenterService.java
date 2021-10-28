@@ -125,6 +125,8 @@ public interface DevopsDeployAppCenterService {
      */
     Page<DevopsDeployAppCenterVO> pageByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
+    void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
+
     /**
      * @Description 批量插入DevopsDeployAppCenterEnvDTO
      * @Param devopsDeployAppCenterEnvDTOList

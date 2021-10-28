@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
 
 import java.io.File;
@@ -910,6 +912,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         String appServiceCode;
         String appServiceName;
+        if (appServiceDeployVO.getMarketAppServiceId() == null) {
+            appServiceDeployVO.setMarketAppServiceId(marketServiceDeployObjectVO.getMarketServiceId());
+        }
         marketServiceVO = getMarketServiceVO(projectId, appServiceDeployVO.getMarketAppServiceId(), appServiceDeployVO.getMarketDeployObjectId());
         if (AppSourceType.HZERO.getValue().equals(appServiceDeployVO.getApplicationType())) {
             appServiceCode = marketServiceVO.getMarketServiceCode();
@@ -1106,6 +1111,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private MarketServiceVO getMarketServiceVO(Long projectId, Long marketAppServiceId, Long marketDeployObjectId) {
         MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, marketAppServiceId);
+        if (marketServiceVO == null) {
+            marketServiceVO = new MarketServiceVO();
+            marketServiceVO.setMarketServiceCode(APP_SHELVES_CODE);
+            marketServiceVO.setMarketServiceName(APP_SHELVES_NAME);
+        }
         marketServiceVO.setMarketDeployObjectId(marketDeployObjectId);
         return marketServiceVO;
     }
@@ -1951,9 +1961,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public void deleteByEnvId(Long envId) {
+        // 删除实例
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setEnvId(envId);
         appServiceInstanceMapper.delete(appServiceInstanceDTO);
+        // 删除实例对应的应用
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
+        devopsDeployAppCenterEnvDTO.setEnvId(envId);
+        devopsDeployAppCenterService.delete(devopsDeployAppCenterEnvDTO);
     }
 
     @Override

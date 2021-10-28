@@ -466,7 +466,7 @@ public class DevopsHostController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除该用户在该主机下的权限")
     @DeleteMapping(value = "/{host_id}/permission")
-    public ResponseEntity<Void> deletePermissionOfUser(
+    public ResponseEntity<DevopsHostUserPermissionDeleteResultVO> deletePermissionOfUser(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
@@ -475,29 +475,28 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "用户id", required = true)
             @RequestParam(value = "user_id") Long userId) {
-        devopsHostService.deletePermissionOfUser(projectId, hostId, userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(devopsHostService.deletePermissionOfUser(projectId, hostId, userId));
     }
 
     /**
-     * 主机下为用户分配权限
+     * 主机下为用户批量分配权限
      *
-     * @param hostId                       主机id
+     * @param hostId                           主机id
      * @param devopsHostUserPermissionUpdateVO 权限分配信息
      */
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "主机下为用户分配权限")
-    @PostMapping(value = "/{host_id}/permission")
-    public ResponseEntity<Void> updateHostUserPermission(
+    @PostMapping(value = "/{host_id}/batch_update_permission")
+    public ResponseEntity<Void> batchUpdateHostUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "主机id", required = true)
             @PathVariable(value = "host_id") Long hostId,
-            @ApiParam(value = "有权限的用户ids")
+            @ApiParam(value = "权限信息")
             @RequestBody @Valid DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
-        devopsHostService.updateHostUserPermission(projectId, devopsHostUserPermissionUpdateVO);
+        devopsHostService.batchUpdateHostUserPermission(projectId, devopsHostUserPermissionUpdateVO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

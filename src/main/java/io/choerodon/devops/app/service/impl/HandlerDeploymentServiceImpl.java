@@ -20,7 +20,6 @@ import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsWorkloadResourceContentDTO;
-import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
@@ -136,6 +135,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                                 .baseQueryByEnvIdAndName(envId, deploymentDTO.getName());
                         // 初始化deployment对象参数,更新deployment并更新文件对象关联关系
                         DevopsDeploymentVO devopsDeploymentVO = getDevopsDeploymentVO(deploymentDTO, projectId, envId, UPDATE_TYPE);
+                        devopsDeploymentVO.setSourceType(existDeploymentDTO.getSourceType());
 
                         //判断资源是否发生了改变
                         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = devopsWorkloadResourceContentService.baseQuery(existDeploymentDTO.getId(), ResourceType.DEPLOYMENT.getType());
@@ -179,7 +179,6 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
         devopsDeploymentVO.setProjectId(projectId);
         devopsDeploymentVO.setEnvId(envId);
         devopsDeploymentVO.setOperateType(operateType);
-        devopsDeploymentVO.setSourceType(WorkloadSourceTypeEnums.WORKLOAD.getType());
         return devopsDeploymentVO;
     }
 }

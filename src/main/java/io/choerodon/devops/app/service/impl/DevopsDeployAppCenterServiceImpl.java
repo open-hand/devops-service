@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl.isMiddleware;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
+import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 
 import java.util.*;
 import java.util.function.Function;
@@ -173,9 +175,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             } else if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterVO.getRdupmType())) {
                 // 添加pod运行统计
                 devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
-                DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterVO.getObjectId());
-                if (!ObjectUtils.isEmpty(deploymentDTO)) {
-                    devopsDeployAppCenterVO.setStatus(deploymentDTO.getStatus());
+                DevopsDeploymentVO deploymentVO = devopsDeploymentService.selectByPrimaryWithCommandInfo(devopsDeployAppCenterVO.getObjectId());
+                if (!ObjectUtils.isEmpty(deploymentVO)) {
+                    devopsDeployAppCenterVO.setStatus(deploymentVO.getCommandStatus());
+                    devopsDeployAppCenterVO.setError(deploymentVO.getError());
                 }
             }
             calculatePodStatus(devopsEnvPodDTOS, detailVO);
@@ -207,6 +210,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 detailVO.setAppServiceName(appServiceDTO.getName());
             } else {
                 MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceInstanceInfoDTO.getAppServiceId());
+                // 处理已经下架的应用 不存在的情况
+                if (marketServiceVO == null) {
+                    marketServiceVO = new MarketServiceVO();
+                    marketServiceVO.setMarketServiceCode(APP_SHELVES_CODE);
+                    marketServiceVO.setMarketServiceName(APP_SHELVES_NAME);
+                }
                 // 这里的code仅hzero开放平台的应用有数据，其他应用从marketServiceDeployObjectVO获取
                 detailVO.setAppServiceCode(marketServiceVO.getMarketServiceCode());
                 detailVO.setAppServiceName(marketServiceVO.getMarketServiceName());
@@ -503,6 +512,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
             throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
+    }
+
+    @Transactional
+    @Override
+    public void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        devopsDeployAppCenterEnvMapper.delete(devopsDeployAppCenterEnvDTO);
     }
 
     private Page<DevopsDeployAppCenterVO> pageAppCenterByUserId(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable) {

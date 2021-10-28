@@ -657,8 +657,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return new Page<>();
         }
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        // 校验用户为项目所有者或者为主机创建者
-        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);
@@ -689,7 +687,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 iamUserDTO -> DevopsUserPermissionVO.iamUserTOUserPermissionVO(iamUserDTO, false));
         // 根据搜索参数查询数据库中所有的主机权限分配数据
         List<DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOList = devopsHostUserPermissionService.listUserHostPermissionByOption(hostId, searchParamMap, paramList);
-        List<Long> permissions = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+        Map<Long, DevopsHostUserPermissionDTO> devopsHostUserPermissionDTOMap = devopsHostUserPermissionDTOList
+                .stream()
+                .collect(Collectors.toMap(DevopsHostUserPermissionDTO::getIamUserId, Function.identity()));
+        List<Long> iamUserIdsWithHostPermission = devopsHostUserPermissionDTOList.stream().map(DevopsHostUserPermissionDTO::getIamUserId).collect(Collectors.toList());
 
         List<DevopsHostUserPermissionVO> projectOwnerHostPermissionVO = ConvertUtils.convertList(projectOwners, DevopsHostUserPermissionVO.class)
                 .stream()
@@ -700,21 +701,21 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsHostUserPermissionVO> projectMemberHostPermissionVO = new ArrayList<>();
         projectMembers = projectMembers
                 .stream()
-                .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
+                .filter(member -> iamUserIdsWithHostPermission.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
                 .collect(Collectors.toList());
         projectMembers.forEach(devopsUserPermissionVO -> {
             if (devopsHostDTO.getCreatedBy().equals(devopsUserPermissionVO.getIamUserId())) {
                 DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
                 devopsHostUserPermissionVO.setPermissionLabel(DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue());
                 projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
-            } else if (permissions.contains(devopsUserPermissionVO.getIamUserId())) {
-                devopsHostUserPermissionDTOList.forEach(devopsHostUserPermissionDTO -> {
-                    if (devopsHostUserPermissionDTO.getIamUserId().equals(devopsUserPermissionVO.getIamUserId())) {
-                        DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
-                        devopsHostUserPermissionVO.setPermissionLabel(devopsHostUserPermissionDTO.getPermissionLabel());
-                        projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
-                    }
-                });
+            } else if (iamUserIdsWithHostPermission.contains(devopsUserPermissionVO.getIamUserId())) {
+                DevopsHostUserPermissionDTO specifiedDevopsHostUserPermissionDTO = devopsHostUserPermissionDTOMap.get(devopsUserPermissionVO.getIamUserId());
+                if (specifiedDevopsHostUserPermissionDTO != null) {
+                    DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(specifiedDevopsHostUserPermissionDTO, DevopsHostUserPermissionVO.class);
+                    devopsHostUserPermissionVO.setPermissionLabel(specifiedDevopsHostUserPermissionDTO.getPermissionLabel());
+                    devopsHostUserPermissionVO.setRoles(devopsUserPermissionVO.getRoles());
+                    projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
+                }
             }
         });
 
@@ -722,16 +723,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public void deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+    public DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+        DevopsHostUserPermissionDeleteResultVO deleteResultVO = new DevopsHostUserPermissionDeleteResultVO(true);
         if (hostId == null || userId == null) {
-            return;
+            return deleteResultVO;
         }
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
 
         if (devopsHostDTO == null) {
-            return;
+            return deleteResultVO;
         }
 
         if (userId.equals(devopsHostDTO.getCreatedBy())) {
@@ -743,7 +745,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
 
         if (userAttrDTO == null) {
-            return;
+            return deleteResultVO;
         }
 
         if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
@@ -755,30 +757,28 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostUserPermissionDTO.setHostId(hostId);
         devopsHostUserPermissionDTO.setIamUserId(userId);
         devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
+
+        // 表示用户删除的不是自己的权限，前端不需要刷新整个页面
+        if (!userId.equals(DetailsHelper.getUserDetails().getUserId())) {
+            deleteResultVO.setRefreshAll(false);
+        }
+        return deleteResultVO;
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
+    public void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO) {
         DevopsHostDTO preHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostUserPermissionUpdateVO.getHostId());
         // 校验主机属于该项目
         CommonExAssertUtil.assertTrue(projectId.equals(preHostDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, preHostDTO, DetailsHelper.getUserDetails().getUserId());
 
-        if (devopsHostUserPermissionUpdateVO.getUpdateAllUser()) {
-            List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = listNonRelatedMembers(projectId, devopsHostUserPermissionUpdateVO.getHostId(), null, null)
-                    .stream()
-                    .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
-                    .collect(Collectors.toList());
-            devopsHostUserPermissionService.deleteByHostId(devopsHostUserPermissionUpdateVO.getHostId());
-            devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
-        } else {
-            List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = baseServiceClientOperator.listUsersByIds(devopsHostUserPermissionUpdateVO.getUserIds())
-                    .stream()
-                    .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
-                    .collect(Collectors.toList());
-            devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
-        }
+        devopsHostUserPermissionService.deleteByHostIdAndUserIds(devopsHostUserPermissionUpdateVO.getHostId(), devopsHostUserPermissionUpdateVO.getUserIds());
+        List<DevopsHostUserPermissionDTO> permissionDTOListToInsert = baseServiceClientOperator.listUsersByIds(devopsHostUserPermissionUpdateVO.getUserIds())
+                .stream()
+                .map(userDTO -> new DevopsHostUserPermissionDTO(userDTO.getLoginName(), userDTO.getId(), preHostDTO.getId(), userDTO.getRealName(), devopsHostUserPermissionUpdateVO.getPermissionLabel()))
+                .collect(Collectors.toList());
+        devopsHostUserPermissionService.batchInsert(permissionDTOListToInsert);
     }
 
     @Override
@@ -793,8 +793,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public List<IamUserDTO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, String params) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        // 校验用户为项目所有者或者为主机创建者
-        CommonExAssertUtil.assertTrue(permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId) || devopsHostDTO.getCreatedBy().equals(DetailsHelper.getUserDetails().getUserId()), "error.host.permission.denied");
 
         RoleAssignmentSearchVO roleAssignmentSearchVO = new RoleAssignmentSearchVO();
         roleAssignmentSearchVO.setEnabled(true);

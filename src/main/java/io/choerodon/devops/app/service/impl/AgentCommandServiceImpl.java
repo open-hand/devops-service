@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
 import io.codearte.props2yaml.Props2YAML;
-import org.hzero.websocket.constant.WebSocketConstant;
+import org.hzero.websocket.constant.ClientWebSocketConstant;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.hzero.websocket.vo.MsgVO;
 import org.slf4j.Logger;
@@ -303,7 +303,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
         // 为了保持和其他通过hzero发送的消息结构一致
-        MsgVO msgVO = (new MsgVO()).setGroup(CLUSTER + clusterId).setKey(AGENT_INIT).setMessage(JsonHelper.marshalByJackson(msg)).setType(WebSocketConstant.SendType.S_GROUP);
+        MsgVO msgVO = (new MsgVO()).setGroup(CLUSTER + clusterId).setKey(AGENT_INIT).setMessage(JsonHelper.marshalByJackson(msg)).setType(ClientWebSocketConstant.SendType.S_GROUP);
 
         sendToSession(webSocketSession, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
     }

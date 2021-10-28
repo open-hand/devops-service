@@ -46,8 +46,7 @@
                 FROM devops_host dh
                              INNER JOIN devops_host_user_permission dhup ON dhup.host_id = dh.id
         <where>
-            dh.skip_check_permission = false
-                    AND dhup.iam_user_id = #{userId}
+                    dhup.iam_user_id = #{userId}
             <if test="projectId != null">
                 AND dh.project_id = #{projectId}
             </if>

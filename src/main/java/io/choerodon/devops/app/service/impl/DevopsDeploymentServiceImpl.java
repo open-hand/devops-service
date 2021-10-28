@@ -23,11 +23,7 @@ import org.springframework.util.ObjectUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.utils.ConvertUtils;
-import io.choerodon.devops.api.vo.DeploymentInfoVO;
-import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
-import io.choerodon.devops.api.vo.DevopsDeploymentVO;
-import io.choerodon.devops.api.vo.DevopsEnvPortVO;
-import io.choerodon.devops.api.vo.InstanceControllerDetailVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -35,11 +31,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDeploymentMapper;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -86,6 +78,11 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     private UserAttrService userAttrService;
     @Autowired
     private AgentCommandService agentCommandService;
+
+    @Override
+    public DevopsDeploymentVO selectByPrimaryWithCommandInfo(Long id) {
+        return devopsDeploymentMapper.selectByPrimaryKeyWithCommandInfo(id);
+    }
 
     @Override
     public DevopsDeploymentDTO selectByPrimaryKey(Long id) {
@@ -157,6 +154,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setId(deployId);
         } else {
             devopsEnvCommandDTO.setObjectId(devopsDeploymentDTO.getId());
+            devopsWorkloadResourceContentService.update(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId(), content);
         }
 
         devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
@@ -307,7 +305,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsDeploymentDTO devopsDeploymentDTO = selectByPrimaryKey(deploymentId);
         if (!ObjectUtils.isEmpty(devopsDeploymentDTO)) {
             String containerConfig = devopsDeploymentDTO.getContainerConfig();
-            List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = JsonHelper.unmarshalByJackson(containerConfig, new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {});
+            List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = JsonHelper.unmarshalByJackson(containerConfig, new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+            });
             if (!CollectionUtils.isEmpty(devopsDeployGroupContainerConfigVOS)) {
                 devopsEnvPortVOS = listPortByDevopsEnvMessageVOS(devopsDeployGroupContainerConfigVOS);
             }

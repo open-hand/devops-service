@@ -56,4 +56,10 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
             devopsCdStageDTOS.forEach(devopsCdStageDTO -> deleteById(devopsCdStageDTO.getId()));
         }
     }
+
+    @Override
+    public DevopsCdStageDTO queryById(Long stageId) {
+        Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
+        return devopsCdStageMapper.selectByPrimaryKey(stageId);
+    }
 }

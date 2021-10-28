@@ -3,11 +3,13 @@ package io.choerodon.devops.app.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineBranchRelDTO;
@@ -106,4 +108,6 @@ public interface DevopsCiPipelineService {
     Map<String, String> runnerGuide(Long projectId);
 
     List<DevopsPipelineBranchRelDTO> listPipelineBranchRel(Long pipelineId);
+
+    List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 }

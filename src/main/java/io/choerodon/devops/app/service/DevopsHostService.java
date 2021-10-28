@@ -275,12 +275,7 @@ public interface DevopsHostService {
     /**
      * 删除主机下该用户的权限
      */
-    void deletePermissionOfUser(Long projectId, Long hostId, Long userId);
-
-    /**
-     * 环境下为用户分配权限
-     */
-    void updateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO);
+    DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId);
 
     /**
      * 分页查询项目下所有与该环境未分配权限的项目成员
@@ -299,4 +294,8 @@ public interface DevopsHostService {
      */
     List<IamUserDTO> listNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, String params);
 
+    /**
+     * 主机下为用户批量分配权限
+     */
+    void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO);
 }
