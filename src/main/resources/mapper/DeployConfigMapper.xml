@@ -46,4 +46,19 @@
           )
     </select>
 
+    <select id="queryDeployConfig" resultType="io.choerodon.devops.infra.dto.DeployConfigDTO">
+        SELECT ddc.id,
+               ddc.project_id,
+               ddc.deploy_record_id,
+               ddc.host_id,
+               ddc.deploy_object_key,
+               ddc.instance_name,
+               ddc.config_id,
+               ddc.mount_path,
+               ddc.config_group,
+               ddc.config_code,
+               ddc.object_version_number
+        FROM devops_deploy_config ddc
+        WHERE ddc.project_id = #{projectId} AND ddc.deploy_record_id = #{recordId}
+    </select>
 </mapper>

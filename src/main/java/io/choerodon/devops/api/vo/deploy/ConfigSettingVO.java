@@ -26,23 +26,26 @@ public class ConfigSettingVO {
         return mountPath;
     }
 
-    public void setMountPath(String mountPath) {
+    public ConfigSettingVO setMountPath(String mountPath) {
         this.mountPath = mountPath;
+        return this;
     }
 
     public String getConfigGroup() {
         return configGroup;
     }
 
-    public void setConfigGroup(String configGroup) {
+    public ConfigSettingVO setConfigGroup(String configGroup) {
         this.configGroup = configGroup;
+        return this;
     }
 
     public String getConfigCode() {
         return configCode;
     }
 
-    public void setConfigCode(String configCode) {
+    public ConfigSettingVO setConfigCode(String configCode) {
         this.configCode = configCode;
+        return this;
     }
 }

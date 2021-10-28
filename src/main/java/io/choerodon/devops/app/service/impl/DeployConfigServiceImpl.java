@@ -44,6 +44,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         List<DeployConfigDTO> deployConfigDTOS = new ArrayList<>();
         configSettingVOS.forEach(configSetting -> {
             DeployConfigDTO deployConfigDTO = new DeployConfigDTO()
+                    .setId(null)
                     .setProjectId(projectId)
                     .setDeployRecordId(devopsDeployRecordId)
                     .setHostId(jarDeployVO.getHostId())
@@ -103,5 +104,14 @@ public class DeployConfigServiceImpl implements DeployConfigService {
             nacosListenConfig.setPassword(encryptClient.decrypt(nacosListenConfig.getPassword()));
         });
         return JsonHelper.marshalByJackson(nacosListenConfigs);
+    }
+
+    @Override
+    public ConfigSettingVO queryDeployConfig(Long projectId, Long recordId) {
+        DeployConfigDTO deployConfigDTO = deployConfigMapper.queryDeployConfig(projectId, recordId);
+        return new ConfigSettingVO()
+                .setMountPath(deployConfigDTO.getMountPath())
+                .setConfigGroup(deployConfigDTO.getConfigGroup())
+                .setConfigCode(deployConfigDTO.getConfigCode());
     }
 }
