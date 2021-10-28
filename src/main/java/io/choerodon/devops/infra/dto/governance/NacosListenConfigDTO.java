@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto.governance;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Map;
 import java.util.Set;
 
 public class NacosListenConfigDTO {
@@ -15,10 +16,17 @@ public class NacosListenConfigDTO {
     private String group;
     @ApiModelProperty(value = "dataId")
     private String dataId;
+    @ApiModelProperty(value = "用户名")
+    private String userName;
+    @ApiModelProperty(value = "密码")
+    private String password;
+
     @ApiModelProperty(value = "文件挂载路径")
     private Set<String> mountPaths;
     @ApiModelProperty(value = "实例名")
     private String instanceName;
+    @ApiModelProperty(value = "实例挂载路径")
+    private Map<String, Set<String>> instanceMountPaths;
 
     public Long getConfigId() {
         return configId;
@@ -65,6 +73,22 @@ public class NacosListenConfigDTO {
         return this;
     }
 
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public Set<String> getMountPaths() {
         return mountPaths;
     }
@@ -79,5 +103,13 @@ public class NacosListenConfigDTO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public Map<String, Set<String>> getInstanceMountPaths() {
+        return instanceMountPaths;
+    }
+
+    public void setInstanceMountPaths(Map<String, Set<String>> instanceMountPaths) {
+        this.instanceMountPaths = instanceMountPaths;
     }
 }

@@ -9,6 +9,7 @@ import io.choerodon.devops.infra.dto.governance.NacosListenConfigDTO;
 import io.choerodon.devops.infra.feign.operator.GovernanceServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DeployConfigMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import io.choerodon.devops.app.service.DeployConfigService;
@@ -31,15 +32,19 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     @Autowired
     private GovernanceServiceClientOperator governanceServiceClientOperator;
 
+    @Autowired
+    private EncryptClient encryptClient;
+
     @Override
     public List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, String deployObjectKey, JarDeployVO jarDeployVO) {
         List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
         if (CollectionUtils.isEmpty(configSettingVOS)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<DeployConfigDTO> deployConfigDTOS = new ArrayList<>();
         configSettingVOS.forEach(configSetting -> {
             DeployConfigDTO deployConfigDTO = new DeployConfigDTO()
+                    .setId(null)
                     .setProjectId(projectId)
                     .setDeployRecordId(devopsDeployRecordId)
                     .setHostId(jarDeployVO.getHostId())
@@ -72,7 +77,41 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         nacosListenConfigs.forEach(nacosListenConfig -> {
             nacosListenConfig.setMountPaths(configMountPathMap.get(nacosListenConfig.getConfigId()));
             nacosListenConfig.setInstanceName(jarDeployVO.getAppCode());
+            nacosListenConfig.setPassword(encryptClient.decrypt(nacosListenConfig.getPassword()));
         });
         return JsonHelper.marshalByJackson(nacosListenConfigs);
+    }
+
+    @Override
+    public String doCreateConfigSettings(Long hostId) {
+        List<DeployConfigDTO> configSettings = deployConfigMapper.queryConfigsByHostId(hostId);
+        if (CollectionUtils.isEmpty(configSettings)) {
+            return null;
+        }
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+        Map<Long, Map<String, Set<String>>> configSettingsMap =
+                configSettings.stream().collect(Collectors.groupingBy(DeployConfigDTO::getConfigId,
+                        Collectors.groupingBy(DeployConfigDTO::getInstanceName, Collectors.mapping(DeployConfigDTO::getMountPath,
+                                Collectors.toSet()))));
+
+        List<NacosListenConfigDTO> nacosListenConfigs = governanceServiceClientOperator.batchQueryListenConfig(
+                customUserDetails.getTenantId(),
+                configSettings.get(0).getProjectId(),
+                configSettingsMap.keySet());
+
+        nacosListenConfigs.forEach(nacosListenConfig -> {
+            nacosListenConfig.setInstanceMountPaths(configSettingsMap.get(nacosListenConfig.getConfigId()));
+            nacosListenConfig.setPassword(encryptClient.decrypt(nacosListenConfig.getPassword()));
+        });
+        return JsonHelper.marshalByJackson(nacosListenConfigs);
+    }
+
+    @Override
+    public ConfigSettingVO queryDeployConfig(Long projectId, Long recordId) {
+        DeployConfigDTO deployConfigDTO = deployConfigMapper.queryDeployConfig(projectId, recordId);
+        return new ConfigSettingVO()
+                .setMountPath(deployConfigDTO.getMountPath())
+                .setConfigGroup(deployConfigDTO.getConfigGroup())
+                .setConfigCode(deployConfigDTO.getConfigCode());
     }
 }
