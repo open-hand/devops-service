@@ -65,6 +65,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsHostServiceImpl implements DevopsHostService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
 
+    public static final String PERMISSION_LABEL = "permissionLabel";
+
     private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     private static final String LOGIN_NAME = "loginName";
@@ -719,7 +721,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             }
         });
 
-        return DevopsHostUserPermissionVO.combine(projectOwnerHostPermissionVO, projectMemberHostPermissionVO, pageable, devopsHostDTO.getCreatedBy());
+        return DevopsHostUserPermissionVO.combine(projectOwnerHostPermissionVO, projectMemberHostPermissionVO, pageable, devopsHostDTO.getCreatedBy(), searchParamMap);
     }
 
     @Override
