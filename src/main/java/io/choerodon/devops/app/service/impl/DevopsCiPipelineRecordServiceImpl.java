@@ -890,7 +890,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
-        devopsCiPipelineRecordDTO.setGitlabPipelineId(devopsPipelineId);
+        devopsCiPipelineRecordDTO.setCiPipelineId(devopsPipelineId);
         return devopsCiPipelineRecordMapper.selectOne(devopsCiPipelineRecordDTO);
     }
 
