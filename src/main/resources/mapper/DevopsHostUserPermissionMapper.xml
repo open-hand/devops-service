@@ -29,6 +29,10 @@
                 AND
                 dhup.real_name LIKE CONCAT(CONCAT('%', #{searchParam.realName, jdbcType=VARCHAR}),'%')
             </if>
+            <if test='searchParam.permissionLabel != null and searchParam.permissionLabel.length > 0'>
+                AND
+                dhup.permission_label=#{searchParam.permissionLabel}
+            </if>
         </if>
         <if test='params != null and params.size > 0'>
             AND

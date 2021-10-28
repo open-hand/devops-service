@@ -1,11 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import static io.choerodon.devops.app.service.impl.DevopsHostServiceImpl.PERMISSION_LABEL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
@@ -18,7 +21,7 @@ public class DevopsHostUserPermissionVO extends DevopsUserPermissionVO {
     @ApiModelProperty("主机权限标签")
     private String permissionLabel;
 
-    public static Page<DevopsHostUserPermissionVO> combine(List<DevopsHostUserPermissionVO> allProjectMembers, List<DevopsHostUserPermissionVO> allProjectOwners, PageRequest pageable, Long creatorId) {
+    public static Page<DevopsHostUserPermissionVO> combine(List<DevopsHostUserPermissionVO> allProjectMembers, List<DevopsHostUserPermissionVO> allProjectOwners, PageRequest pageable, Long creatorId, Map<String, Object> searchParamMap) {
         List<DevopsHostUserPermissionVO> userPermissionVOS = new ArrayList<>(allProjectOwners);
         userPermissionVOS.addAll(allProjectMembers);
         if (userPermissionVOS.isEmpty()) {
@@ -37,6 +40,9 @@ public class DevopsHostUserPermissionVO extends DevopsUserPermissionVO {
                     userPermissionVO.setCreator(true);
                 }
                 resultPermissionVOs.add(userPermissionVO);
+            }
+            if (!StringUtils.isEmpty(searchParamMap.get(PERMISSION_LABEL))) {
+                resultPermissionVOs = resultPermissionVOs.stream().filter(permission -> permission.getPermissionLabel().equals(searchParamMap.get(PERMISSION_LABEL))).collect(Collectors.toList());
             }
             resultPermissionVOs = PageRequestUtil.sortHostUserPermission(resultPermissionVOs, pageable.getSort());
             return PageInfoUtil.createPageFromList(new ArrayList<>(resultPermissionVOs), pageable);
