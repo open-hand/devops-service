@@ -98,6 +98,10 @@ public class HostDeployUtil {
                 commandSB.append(line).append("\n");
             }
         }
-        return commandSB.substring(0, commandSB.length() - 1);
+        if (commandSB.length() > 0) {
+            return commandSB.substring(0, commandSB.length() - 1);
+        } else {
+            return commandSB.toString();
+        }
     }
 }
