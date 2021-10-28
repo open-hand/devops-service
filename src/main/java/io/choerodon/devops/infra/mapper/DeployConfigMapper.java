@@ -23,11 +23,14 @@ public interface DeployConfigMapper extends BaseMapper<DeployConfigDTO> {
     List<DeployConfigDTO> queryConfigsByHostId(@Param("hostId") Long hostId);
 
     /**
-     * 查询部署的配置文件信息
+     * 查询配置文件信息
      *
      * @param projectId
      * @param recordId
+     * @param instanceId
      * @return
      */
-    DeployConfigDTO queryDeployConfig(@Param("projectId") Long projectId, @Param("recordId") Long recordId);
+    DeployConfigDTO queryDeployConfig(@Param("projectId") Long projectId,
+                                      @Param("recordId") Long recordId,
+                                      @Param("instanceId") Long instanceId);
 }

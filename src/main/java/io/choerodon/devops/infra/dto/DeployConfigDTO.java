@@ -59,6 +59,9 @@ public class DeployConfigDTO extends AuditDomain {
     @ApiModelProperty(value = "部署对象", required = true)
     @NotBlank
     private String deployObjectKey;
+    @ApiModelProperty(value = "实例ID", required = true)
+    @NotBlank
+    private Long instanceId;
     @ApiModelProperty(value = "实例名称", required = true)
     @NotBlank
     private String instanceName;
@@ -137,6 +140,16 @@ public class DeployConfigDTO extends AuditDomain {
 		this.deployObjectKey = deployObjectKey;
         return this;
 	}
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public DeployConfigDTO setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+        return this;
+    }
+
     /**
      * @return 实例名称
      */
