@@ -2729,7 +2729,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType) {
+    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType, Boolean includeExternal) {
         List<String> params = new ArrayList<>();
         if (!StringUtils.isEmpty(param)) {
             params.add(param);
@@ -2742,7 +2742,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return ArrayUtil.singleAsList(appServiceGroupVO);
             }
             case SHARE_SERVICE: {
-                return listAllAppServicesHavingVersion(projectId, params, serviceType);
+                return listAllAppServicesHavingVersion(projectId, params, serviceType, includeExternal);
             }
             default: {
                 throw new CommonException("error.list.deploy.app.service.type");
@@ -2750,7 +2750,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
     }
 
-    private List<AppServiceGroupVO> listAllAppServicesHavingVersion(Long projectId, List<String> params, String serviceType) {
+    private List<AppServiceGroupVO> listAllAppServicesHavingVersion(Long projectId, List<String> params, String serviceType, Boolean includeExternal) {
         List<AppServiceGroupVO> appServiceGroupList = new ArrayList<>();
         Long organizationId = baseServiceClientOperator.queryImmutableProjectInfo(projectId).getTenantId();
 
@@ -2758,7 +2758,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Set<Long> ids = baseServiceClientOperator.listProjectIdsInOrg(organizationId);
         // 移除当前项目
         ids.remove(projectId);
-        List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params);
+        List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params, includeExternal);
 
         // 将应用服务按照项目分组
         Map<Long, List<AppServiceGroupInfoVO>> map = list.stream()

@@ -84,7 +84,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceDTO> listShareAppServiceHavingVersion(@Param("projectIds") Collection<Long> projectIds,
                                                          @Param("currentProjectId") Long currentProjectId,
                                                          @Param("type") String type,
-                                                         @Param("params") List<String> params);
+                                                         @Param("params") List<String> params,
+                                                         @Param("includeExternal") Boolean includeExternal);
 
     void updateHarborConfigNullByConfigId(@Param("harborConfigId") Long harborConfigId);
 

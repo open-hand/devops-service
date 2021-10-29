@@ -709,9 +709,11 @@ public class AppServiceController {
             @ApiParam(value = "是否仅部署", required = true)
             @RequestParam(value = "deploy_only", required = true) Boolean deployOnly,
             @ApiParam(value = "应用服务类型", required = false)
-            @RequestParam(value = "service_type", required = false) String serviceType) {
+            @RequestParam(value = "service_type", required = false) String serviceType,
+            @ApiParam(value = "是否包含外部应用服务")
+            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
         return Optional.ofNullable(
-                applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType))
+                applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType, includeExternal))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }
