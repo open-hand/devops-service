@@ -109,14 +109,18 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     }
 
     @Override
-    public ConfigSettingVO queryDeployConfig(Long projectId, Long recordId, Long instanceId) {
+    public List<ConfigSettingVO> queryDeployConfig(Long projectId, Long recordId, Long instanceId) {
         if (Objects.isNull(recordId) && Objects.isNull(instanceId)) {
             return null;
         }
-        DeployConfigDTO deployConfigDTO = deployConfigMapper.queryDeployConfig(projectId, recordId, instanceId);
-        return new ConfigSettingVO()
-                .setMountPath(deployConfigDTO.getMountPath())
-                .setConfigGroup(deployConfigDTO.getConfigGroup())
-                .setConfigCode(deployConfigDTO.getConfigCode());
+        List<DeployConfigDTO> deployConfigs = deployConfigMapper.queryDeployConfig(projectId, recordId, instanceId);
+        List<ConfigSettingVO> configSettingVOS = new ArrayList<>();
+        deployConfigs.forEach(deployConfig -> {
+            configSettingVOS.add(new ConfigSettingVO()
+                    .setMountPath(deployConfig.getMountPath())
+                    .setConfigGroup(deployConfig.getConfigGroup())
+                    .setConfigCode(deployConfig.getConfigCode()));
+        });
+        return configSettingVOS;
     }
 }

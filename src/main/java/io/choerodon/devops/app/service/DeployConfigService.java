@@ -50,5 +50,5 @@ public interface DeployConfigService {
      * @param instanceId
      * @return
      */
-    ConfigSettingVO queryDeployConfig(Long projectId, Long recordId, Long instanceId);
+    List<ConfigSettingVO> queryDeployConfig(Long projectId, Long recordId, Long instanceId);
 }
