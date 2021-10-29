@@ -269,10 +269,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceReqVO.setProjectId(projectId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(appServiceReqVO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 判断项目下是否还能创建应用服务
-        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
 
         // 校验模板id和模板版本id是否都有值或者都为空
         boolean isTemplateNull = appServiceReqVO.getTemplateAppServiceId() == null;
@@ -902,8 +902,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                 devopsProjectDTO.getIamProjectId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsProjectDTO.getIamProjectId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
                 .queryProjectByName(organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), appServiceDTO.getCode(),
                         devOpsAppServicePayload.getUserId(), false);
