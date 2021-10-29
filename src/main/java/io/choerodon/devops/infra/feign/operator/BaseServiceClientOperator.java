@@ -88,6 +88,10 @@ public class BaseServiceClientOperator {
         return queryIamProjectById(projectId, true, true, true);
     }
 
+    public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
+        return queryIamProjectById(projectId, false, false, false);
+    }
+
     public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
@@ -100,6 +104,10 @@ public class BaseServiceClientOperator {
 
     public Tenant queryOrganizationById(Long organizationId) {
         return queryOrganizationById(organizationId, true);
+    }
+
+    public Tenant queryOrganizationBasicInfoById(Long organizationId) {
+        return queryOrganizationById(organizationId, false);
     }
 
     public Tenant queryOrganizationById(Long organizationId, Boolean withMoreInfo) {

@@ -38,6 +38,18 @@ public class AppServiceUtils {
     }
 
     /**
+     * 校验项目下是否还能创建应用服务
+     *
+     * @param projectId 项目id
+     * @param appSize   服务的个数
+     */
+    public void checkEnableCreateAppSvcOrThrowE(Long organizationId, Long projectId, int appSize) {
+        if (Boolean.FALSE.equals(checkEnableCreateAppSvcWithSize(organizationId, projectId, appSize))) {
+            throw new CommonException(ERROR_PROJECT_APP_SVC_NUM_MAX);
+        }
+    }
+
+    /**
      * 校验服务的名称的唯一性
      *
      * @param projectId 项目id
@@ -76,8 +88,12 @@ public class AppServiceUtils {
     }
 
     public Boolean checkEnableCreateAppSvcWithSize(Long projectId, int appSize) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
-        ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        return checkEnableCreateAppSvcWithSize(projectDTO.getOrganizationId(), projectId, appSize);
+    }
+
+    public Boolean checkEnableCreateAppSvcWithSize(Long organizationId, Long projectId, int appSize) {
+        ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null && !Objects.isNull(resourceLimitVO.getAppSvcMaxNumber())) {
             AppServiceDTO example = new AppServiceDTO();
             example.setProjectId(projectId);
