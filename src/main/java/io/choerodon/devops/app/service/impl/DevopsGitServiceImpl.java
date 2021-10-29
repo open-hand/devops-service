@@ -1204,7 +1204,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } else {
             if (file.isDirectory() && file.listFiles().length > 0) {
                 String localPath = String.format("%s%s", path, GIT_SUFFIX);
-                return GitUtil.pullBySsh(localPath, envIdRsa);
+                return gitUtil.pullBySsh(localPath, envIdRsa);
             } else {
                 return gitUtil.cloneBySsh(path, url, envIdRsa);
             }
