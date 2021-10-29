@@ -9,6 +9,8 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Created by jianzhang on 2021/10/28.
  */
@@ -25,7 +27,7 @@ public class DevopsDeployConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询配置文件信息")
     @GetMapping
-    public ResponseEntity<ConfigSettingVO> queryDeployConfigByRecordId(
+    public ResponseEntity<List<ConfigSettingVO>> queryDeployConfigByRecordId(
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt @RequestParam(value = "record_id", required = false) Long recordId,
             @Encrypt @RequestParam(value = "instance_id", required = false) Long instanceId) {

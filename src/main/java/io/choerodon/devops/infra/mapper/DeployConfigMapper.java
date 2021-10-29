@@ -30,7 +30,7 @@ public interface DeployConfigMapper extends BaseMapper<DeployConfigDTO> {
      * @param instanceId
      * @return
      */
-    DeployConfigDTO queryDeployConfig(@Param("projectId") Long projectId,
-                                      @Param("recordId") Long recordId,
-                                      @Param("instanceId") Long instanceId);
+    List<DeployConfigDTO> queryDeployConfig(@Param("projectId") Long projectId,
+                                            @Param("recordId") Long recordId,
+                                            @Param("instanceId") Long instanceId);
 }
