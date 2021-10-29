@@ -212,8 +212,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Lazy
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Lazy
     @Autowired
     private RdupmClient rdupmClient;
@@ -251,6 +249,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    private ExternalGitUtil externalGitUtil;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -983,8 +983,8 @@ public class AppServiceServiceImpl implements AppServiceService {
                 TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGroupId()));
         AppServiceDTO appServiceDTO = baseQueryByCode(devOpsAppServiceImportPayload.getPath(),
                 devopsProjectDTO.getIamProjectId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsProjectDTO.getIamProjectId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 organizationDTO.getTenantNum() + "-" + projectDTO.getCode(),
@@ -1017,7 +1017,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             String templateVersion = tempUrl[1];
             String repositoryUrl = tempUrl[0];
-            gitUtil.cloneAppMarket(applicationDir, templateVersion, repositoryUrl, devOpsAppServiceImportPayload.getAccessToken());
+            externalGitUtil.cloneAppMarket(applicationDir, templateVersion, repositoryUrl, devOpsAppServiceImportPayload.getAccessToken());
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
             replaceParams(appServiceDTO.getCode(), organizationDTO.getTenantNum() + "-" + projectDTO.getCode(), applicationDir, null, null, true);
             Git newGit = gitUtil.initGit(applicationWorkDir);
@@ -1078,7 +1078,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
         } else {
-            Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+            Git repositoryGit = externalGitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
             // 设置Application对应的gitlab项目的仓库地址
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
@@ -1281,9 +1281,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
-        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
 
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -3647,10 +3647,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         externalConfigDTO.setRepositoryUrl(externalConfigDTO.getRepositoryUrl().replace(".git", ""));
 
         ApplicationValidator.checkApplicationService(externalAppServiceVO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 判断项目下是否还能创建应用服务
-        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
+        appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
 
         // 校验账户权限
         GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(externalConfigDTO);
