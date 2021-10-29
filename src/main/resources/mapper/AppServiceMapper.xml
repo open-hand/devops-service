@@ -848,6 +848,9 @@
                                                                     #{projectId}
                                                                 </foreach>
                                                                   )
+                                                            <if test="!includeExternal">
+                                                                AND das.external_config_id IS NULL
+                                                            </if>
                                                           AND das.is_active = true) dastmp ON dasr.app_service_id = dastmp.id
                                    WHERE dasr.share_level = 'organization'
                                       OR (dasr.share_level = 'project' AND dasr.project_id = #{currentProjectId})) rule
