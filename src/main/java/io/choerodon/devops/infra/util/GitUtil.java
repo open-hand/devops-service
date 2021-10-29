@@ -276,7 +276,7 @@ public class GitUtil {
      *
      * @param path git repo
      */
-    public static Git pullBySsh(String path, String envRas) {
+    public Git pullBySsh(String path, String envRas) {
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             return pullBySsh(repository, envRas);

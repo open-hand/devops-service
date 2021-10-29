@@ -957,7 +957,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     appExternalConfigDTO);
             devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
         } catch (Exception e) {
-            LOGGER.info("save pipeline Records failed， ciPipelineId {}.", pipelineId);
+            LOGGER.info("save pipeline Records failed.", e);
         }
     }
 
