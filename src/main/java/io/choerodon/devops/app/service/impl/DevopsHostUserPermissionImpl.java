@@ -127,8 +127,8 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
 
     @Override
     @Transactional
-    public void deleteByUserIdAndHostIds(Long userId, List<Long> hostIds) {
-        devopsHostUserPermissionMapper.deleteByUserIdAndHostIds(userId, hostIds);
+    public void deletePermissionByProjectIdAndUserId(Long projectId, Long userId) {
+        devopsHostUserPermissionMapper.deletePermissionByProjectIdAndUserId(projectId, userId);
     }
 
     @Override

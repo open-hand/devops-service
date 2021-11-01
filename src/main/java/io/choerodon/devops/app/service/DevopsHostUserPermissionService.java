@@ -37,8 +37,6 @@ public interface DevopsHostUserPermissionService {
      */
     List<DevopsHostUserPermissionDTO> listUserHostPermissionByOption(Long hostId, Map<String, Object> searchParamMap, List<String> paramList);
 
-    void deleteByUserIdAndHostIds(Long userId, List<Long> hostIds);
-
     /**
      * 检查用户拥有使用权限（包括部署、查看、删除、修改、停止、重启应用）,有 返回true，没有 返回false
      *
@@ -76,10 +74,12 @@ public interface DevopsHostUserPermissionService {
     List<DevopsHostUserPermissionDTO> listUserHostPermissionByUserIdAndHostIds(Long userId, List<Long> hostId);
 
     /**
-     * 删除主机指定用户的权限
+     * 删除用户在指定项目下的所有主机权限
      *
-     * @param hostId
-     * @param userIds
+     * @param projectId
+     * @param userId
      */
+    void deletePermissionByProjectIdAndUserId(Long projectId, Long userId);
+
     void deleteByHostIdAndUserIds(Long hostId, List<Long> userIds);
 }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.enums.LabelType.PROJECT_ADMIN;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -67,7 +69,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
-
+    @Autowired
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberVO> gitlabGroupMemberVOList, boolean isCreateUser) {
@@ -93,6 +96,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
                             return;
                         }
+                        if (userMemberRoleList.contains(PROJECT_ADMIN.getValue())) {
+                            // 如果角色标签里面有PROJECT_ADMIN标签，表示添加项目所有者权限，需要删除该项目下的主机权限信息
+                            devopsHostUserPermissionService.deletePermissionByProjectIdAndUserId(gitlabGroupMemberVO.getResourceId(), gitlabGroupMemberVO.getUserId());
+                        }
+
                         MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
                         operation(gitlabGroupMemberVO.getResourceId(),
                                 gitlabGroupMemberVO.getResourceType(),

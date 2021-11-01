@@ -312,10 +312,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         if (projectOwnerOrRoot) {
             devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
             List<Long> hostIds = devopsHostVOList.stream().map(DevopsHostVO::getId).collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(hostIds)) {
-                // 用户原本是项目成员，被分配主机使用权限，然后被添加项目所有者角色，这时候应该删除devops_host_user_permission中的数据
-                devopsHostUserPermissionService.deleteByUserIdAndHostIds(DetailsHelper.getUserDetails().getUserId(), hostIds);
-            }
         } else {
             devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
             if (CollectionUtils.isEmpty(devopsHostVOList)) {
