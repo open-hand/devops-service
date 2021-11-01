@@ -530,10 +530,7 @@
 
     <delete id="deleteInstanceRelInfo">
         DELETE
-                devops_env_command,
-                devops_command_event,
-                devops_env_command_log,
-                devops_env_command_value
+            devops_env_command,devops_command_event,devops_env_command_log,devops_env_command_value
         FROM devops_env_command
                      LEFT JOIN devops_command_event ON devops_env_command.id = devops_command_event.command_id
                      LEFT JOIN devops_env_command_log ON devops_env_command.id = devops_env_command_log.command_id
