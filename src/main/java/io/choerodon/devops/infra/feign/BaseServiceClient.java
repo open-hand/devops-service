@@ -282,4 +282,12 @@ public interface BaseServiceClient {
 
     @GetMapping("/choerodon/v1/organizations/external/tenants")
     ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId);
+
+    @PostMapping("/choerodon/v1/organizations/saas/tenants")
+    @ApiOperation(value = "查询Saas的组织")
+    ResponseEntity<List<ExternalTenantVO>> querySaasTenants(@RequestBody List<String> saasLevels);
+
+    @GetMapping("/choerodon/v1/organizations/register/tenants")
+    @ApiOperation(value = "查询注册的组织")
+    ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant();
 }
