@@ -34,9 +34,7 @@ public class DevopsHostUserPermissionVO extends DevopsUserPermissionVO {
             for (Map.Entry<Long, List<DevopsHostUserPermissionVO>> entry : hostPermissionMaps.entrySet()) {
                 DevopsHostUserPermissionVO hostUserPermissionVO = entry.getValue().get(0);
                 List<RoleDTO> roleDTOS = new ArrayList<>();
-                if (entry.getValue().size() > 1) {
-                    entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
-                }
+                entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
                 // 这步操作是为了把拥有项目成员角色的其它角色也提取出来
                 if (projectMemberPermissionMaps.get(hostUserPermissionVO.getIamUserId()) != null) {
                     projectMemberPermissionMaps.get(hostUserPermissionVO.getIamUserId()).getRoles().forEach(projectMemberRole -> {
