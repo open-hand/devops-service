@@ -68,4 +68,13 @@
             #{userId}
         </foreach>
     </delete>
+
+    <delete id="deleteByUserIdAndHostIds">
+        DELETE FROM devops_host_user_permission
+        WHERE iam_user_id=#{userId}
+        AND host_id IN
+        <foreach collection="hostIds" item="hostId" open="(" close="" separator=",">
+            #{hostId}
+        </foreach>
+    </delete>
 </mapper>
