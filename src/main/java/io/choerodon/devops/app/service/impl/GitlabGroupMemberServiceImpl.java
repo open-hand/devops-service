@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.enums.LabelType.PROJECT_ADMIN;
+import static io.choerodon.devops.infra.enums.LabelType.GITLAB_PROJECT_OWNER;
+import static io.choerodon.devops.infra.enums.LabelType.TENANT_ADMIN;
 
 import java.util.*;
 import java.util.function.Function;
@@ -96,8 +97,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             deleteGitlabGroupMemberRole(gitlabGroupMemberVOList);
                             return;
                         }
-                        if (userMemberRoleList.contains(PROJECT_ADMIN.getValue())) {
-                            // 如果角色标签里面有PROJECT_ADMIN标签，表示添加项目所有者权限，需要删除该项目下的主机权限信息
+                        if (userMemberRoleList.contains(GITLAB_PROJECT_OWNER.getValue()) || userMemberRoleList.contains(TENANT_ADMIN.getValue())) {
+                            // 如果角色标签里面有GITLAB_OWNER标签或TENANT_ADMIN标签，需要删除该项目下的主机权限信息，让用户在该项目下的所有主机权限变成administrator
                             devopsHostUserPermissionService.deletePermissionByProjectIdAndUserId(gitlabGroupMemberVO.getResourceId(), gitlabGroupMemberVO.getUserId());
                         }
 
@@ -129,7 +130,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private void doCreateOrUpdateWithOrgLabel(GitlabGroupMemberVO gitlabGroupMemberVO, boolean isCreateUser) {
         List<String> roleLabels = gitlabGroupMemberVO.getRoleLabels();
         // 如果是组织管理员
-        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(LabelType.TENANT_ADMIN.getValue())) {
+        if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(TENANT_ADMIN.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
             if (!CollectionUtils.isEmpty(projectDTOS)) {
                 projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
@@ -142,7 +143,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 // 如果传了（即使为空数组），可以方便的判断权限的变更，避免轮询组织下所有的项目来操作权限
                 // 如果更新前用户的label不包含组织层admin的标签，就跳过之后删除权限的逻辑 (2020-11-19)
                 if (gitlabGroupMemberVO.getPreviousRoleLabels() != null
-                        && !gitlabGroupMemberVO.getPreviousRoleLabels().contains(LabelType.TENANT_ADMIN.getValue())) {
+                        && !gitlabGroupMemberVO.getPreviousRoleLabels().contains(TENANT_ADMIN.getValue())) {
                     return;
                 }
                 deleteGitLabPermissionsForOrgAdmin(gitlabGroupMemberVO);
@@ -170,7 +171,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             UserProjectLabelVO projectLabel = projectLabels.get(projectDTO.getId());
             if (projectLabel != null
                     && projectLabel.getRoleLabels() != null
-                    && projectLabel.getRoleLabels().contains(LabelType.GITLAB_PROJECT_OWNER.getValue())) {
+                    && projectLabel.getRoleLabels().contains(GITLAB_PROJECT_OWNER.getValue())) {
                 // 如果在项目层有gitlab owner这个标签就不删除权限，没有的话清除掉之前admin带来的group的owner权限
                 return;
             }
