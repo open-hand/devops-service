@@ -721,8 +721,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 }
             }
         });
-
-        return DevopsHostUserPermissionVO.combine(projectOwnerHostPermissionVO, projectMemberHostPermissionVO, pageable, devopsHostDTO.getCreatedBy(), searchParamMap);
+        return DevopsHostUserPermissionVO.combine(projectMemberHostPermissionVO, projectOwnerHostPermissionVO, projectMembers, pageable, devopsHostDTO.getCreatedBy(), searchParamMap);
     }
 
     @Override
