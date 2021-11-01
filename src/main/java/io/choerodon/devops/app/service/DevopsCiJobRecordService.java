@@ -31,12 +31,12 @@ public interface DevopsCiJobRecordService {
     /**
      * 保存多条job记录
      */
-    void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId);
+    void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId, Long appServiceId);
 
     /**
      * 保存一条job记录
      */
-    void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId);
+    void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId, Long appServiceId);
 
     /**
      * 根据流水线纪录id获取job纪录的数量

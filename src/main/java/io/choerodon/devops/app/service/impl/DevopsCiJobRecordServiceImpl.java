@@ -113,12 +113,12 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
-        jobDTOS.forEach(job -> create(ciPipelineRecordId, gitlabProjectId, job, iamUserId));
+    public void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId, Long appServiceId) {
+        jobDTOS.forEach(job -> create(ciPipelineRecordId, gitlabProjectId, job, iamUserId, appServiceId));
     }
 
     @Override
-    public void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId) {
+    public void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId, Long appServiceId) {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
@@ -133,6 +133,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setFinishedDate(jobDTO.getFinishedAt());
         recordDTO.setName(jobDTO.getName());
         recordDTO.setTriggerUserId(iamUserId);
+        recordDTO.setAppServiceId(appServiceId);
         DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
         logger.debug(">>>>>>>>>>>>>{}>>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(existDevopsCiJobDTO));
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
