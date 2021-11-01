@@ -19,5 +19,5 @@ public interface DevopsHostUserPermissionMapper extends BaseMapper<DevopsHostUse
 
     void deleteByHostIdAndUserIds(@Param("hostId") Long hostId, @Param("userIds") List<Long> userIds);
 
-    void deleteByUserIdAndHostIds(@Param("userId") Long userId, @Param("hostIds") List<Long> hostIds);
+    void deletePermissionByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 }

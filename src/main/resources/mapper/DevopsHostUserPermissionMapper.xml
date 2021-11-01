@@ -69,12 +69,11 @@
         </foreach>
     </delete>
 
-    <delete id="deleteByUserIdAndHostIds">
-        DELETE FROM devops_host_user_permission
-        WHERE iam_user_id=#{userId}
-        AND host_id IN
-        <foreach collection="hostIds" item="hostId" open="(" close=")" separator=",">
-            #{hostId}
-        </foreach>
+    <delete id="deletePermissionByProjectIdAndUserId">
+        DELETE dhup FROM devops_host_user_permission dhup
+        JOIN devops_host dh
+        ON dhup.host_id=dh.id
+        WHERE dh.project_id=#{projectId}
+        AND dhup.iam_user_id=#{userId}
     </delete>
 </mapper>
