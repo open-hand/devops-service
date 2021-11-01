@@ -12,7 +12,7 @@ public interface DevopsGitlabPipelineService {
 
     void create(PipelineWebHookVO pipelineWebHookVO, String token);
 
-    void updateStages(JobWebHookVO jobWebHookVO);
+    void updateStages(JobWebHookVO jobWebHookVO, String token);
 
     PipelineTimeVO getPipelineTime(Long appServiceId, Date startTime, Date endTime);
 

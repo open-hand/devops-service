@@ -60,8 +60,10 @@ public class DevopsCiJobController {
     public ResponseEntity<String> queryTrace(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
-            @PathVariable(value = "job_id") Long jobId) {
-        return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId));
+            @PathVariable(value = "job_id") Long jobId,
+            @Encrypt
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId, appServiceId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -70,8 +72,10 @@ public class DevopsCiJobController {
     public ResponseEntity<Void> retryJob(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
-            @PathVariable(value = "job_id") Long jobId) {
-        devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId);
+            @PathVariable(value = "job_id") Long jobId,
+            @Encrypt
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId, appServiceId);
         return ResponseEntity.noContent().build();
     }
 
@@ -81,8 +85,10 @@ public class DevopsCiJobController {
     public ResponseEntity<Void> playJob(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
-            @PathVariable(value = "job_id") Long jobId) {
-        devopsCiJobService.playJob(projectId, gitlabProjectId, jobId);
+            @PathVariable(value = "job_id") Long jobId,
+            @Encrypt
+            @RequestParam(value = "app_service_id") Long appServiceId) {
+        devopsCiJobService.playJob(projectId, gitlabProjectId, jobId, appServiceId);
         return ResponseEntity.noContent().build();
     }
 

@@ -176,10 +176,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public String queryTrace(Long gitlabProjectId, Long jobId) {
+    public String queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         //检查该用户是否有git库的权限
-        AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
@@ -189,12 +189,12 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public void retryJob(Long projectId, Long gitlabProjectId, Long jobId) {
+    public void retryJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
 
-        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
 
@@ -281,13 +281,13 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Override
     @Transactional
-    public void playJob(Long projectId, Long gitlabProjectId, Long jobId) {
+    public void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
-        AppServiceDTO appServiceDTO = devopsCiPipelineRecordService.queryAppServiceByPipelineRecordId(devopsCiJobRecordDTO.getCiPipelineRecordId());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());

@@ -228,6 +228,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         DevopsCiPipelineRecordDTO recordDTO = new DevopsCiPipelineRecordDTO();
         recordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+        recordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
         Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
         CustomContextUtil.setDefaultIfNull(iamUserId);
@@ -249,7 +250,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            saveJobRecords(pipelineWebHookVO, pipelineRecordId, devopsCiPipelineDTO.getId());
+            saveJobRecords(pipelineWebHookVO,
+                    pipelineRecordId,
+                    devopsCiPipelineDTO.getId(),
+                    applicationDTO.getId());
 
             // 保存流水线记录关系
             DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
@@ -271,7 +275,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 更新job状态
             // 保存job执行记录
             Long pipelineRecordId = devopsCiPipelineRecordDTO.getId();
-            saveJobRecords(pipelineWebHookVO, pipelineRecordId, devopsCiPipelineDTO.getId());
+            saveJobRecords(pipelineWebHookVO,
+                    pipelineRecordId,
+                    devopsCiPipelineDTO.getId(),
+                    applicationDTO.getId());
         }
         if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.FAILED.value())) {
             sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
@@ -279,9 +286,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId, Long cipipelineId) {
+    private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId, Long ciPipelineId, Long appServiceId) {
         pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
-            DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(ciJobWebHookVO.getId());
+            DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, ciJobWebHookVO.getId());
             if (devopsCiJobRecordDTO == null) {
                 LOGGER.debug("Start to create job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
@@ -296,7 +303,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
                 devopsCiJobRecordDTO.setMetadata(ciJobWebHookVO.getMetadata());
-                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, cipipelineId);
+                devopsCiJobRecordDTO.setAppServiceId(appServiceId);
+                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
@@ -457,13 +465,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 更新job状态
         // 保存job执行记录
-        saveJobRecords(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), pipelineRecordId, jobs, jobType);
+        saveJobRecords(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), pipelineRecordId, jobs, jobType, appServiceDTO.getId());
     }
 
-    private void saveJobRecords(Long gitlabProjectId, Long pipelineRecordId, List<JobDTO> jobs, Map<Integer, String> jobType) {
+    private void saveJobRecords(Long gitlabProjectId, Long pipelineRecordId, List<JobDTO> jobs, Map<Integer, String> jobType, Long appServiceId) {
         jobs.forEach(ciJobWebHookVO -> {
             Long jobId = TypeUtil.objToLong(ciJobWebHookVO.getId());
-            DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByGitlabJobId(jobId);
+            DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
             if (devopsCiJobRecordDTO == null) {
                 LOGGER.debug("Start to create job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
