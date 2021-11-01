@@ -33,13 +33,17 @@ public class DevopsHostUserPermissionVO extends DevopsUserPermissionVO {
             Map<Long, DevopsUserPermissionVO> projectMemberPermissionMaps = allProjectMembers.stream().collect(Collectors.toMap(DevopsUserPermissionVO::getIamUserId, Function.identity()));
             for (Map.Entry<Long, List<DevopsHostUserPermissionVO>> entry : hostPermissionMaps.entrySet()) {
                 DevopsHostUserPermissionVO hostUserPermissionVO = entry.getValue().get(0);
-                List<RoleDTO> roleDTOS = hostUserPermissionVO.getRoles() == null ? new ArrayList<>() : hostUserPermissionVO.getRoles();
+                List<RoleDTO> roleDTOS = new ArrayList<>();
                 if (entry.getValue().size() > 1) {
                     entry.getValue().forEach(v -> roleDTOS.addAll(v.getRoles()));
                 }
                 // 这步操作是为了把拥有项目成员角色的其它角色也提取出来
                 if (projectMemberPermissionMaps.get(hostUserPermissionVO.getIamUserId()) != null) {
-                    roleDTOS.addAll(projectMemberPermissionMaps.get(hostUserPermissionVO.getIamUserId()).getRoles());
+                    projectMemberPermissionMaps.get(hostUserPermissionVO.getIamUserId()).getRoles().forEach(projectMemberRole -> {
+                        if (!roleDTOS.contains(projectMemberRole)) {
+                            roleDTOS.add(projectMemberRole);
+                        }
+                    });
                 }
                 hostUserPermissionVO.setRoles(roleDTOS);
                 if (hostUserPermissionVO.getIamUserId().equals(creatorId)) {

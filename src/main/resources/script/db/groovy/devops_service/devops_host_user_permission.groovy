@@ -29,4 +29,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_user_permission.groovy') {
         UPDATE devops_host_user_permission set permission_label='common'
                """)
     }
+
+    changeSet(author: 'lihao',id: '2021-11-01-drop-column'){
+        dropColumn(login_name: "publish_time", tableName: "devops_host_user_permission")
+        dropColumn(real_name: "publish_time", tableName: "devops_host_user_permission")
+    }
 }
