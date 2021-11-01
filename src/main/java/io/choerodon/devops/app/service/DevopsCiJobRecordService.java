@@ -17,9 +17,9 @@ public interface DevopsCiJobRecordService {
     /**
      * 根据gitlab-Job id查询job执行记录
      */
-    DevopsCiJobRecordDTO queryByGitlabJobId(Long gitlabJobId);
+    DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId);
 
-    void update(JobWebHookVO jobWebHookVO);
+    void update(JobWebHookVO jobWebHookVO, String token);
 
     void deleteByPipelineId(Long ciPipelineId);
 

@@ -4,9 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 
 /**
  * 〈功能简述〉
@@ -55,12 +53,12 @@ public interface DevopsCiJobService {
     /**
      * 查询job日志
      */
-    String queryTrace(Long gitlabProjectId, Long jobId);
+    String queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId);
 
     /**
      * 重试job
      */
-    void retryJob(Long projectId, Long gitlabProjectId, Long jobId);
+    void retryJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId);
 
     /**
      * 删除流水线下的job
@@ -93,7 +91,8 @@ public interface DevopsCiJobService {
      * @param projectId
      * @param gitlabProjectId
      * @param jobId
+     * @param appServiceId
      */
-    void playJob(Long projectId, Long gitlabProjectId, Long jobId);
+    void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId);
 
 }

@@ -31,6 +31,8 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     private Long gitlabJobId;
     @ApiModelProperty("流水线记录id")
     private Long ciPipelineRecordId;
+    @ApiModelProperty("所属应用服务id")
+    private Long appServiceId;
     @ApiModelProperty("gitlabProjectId")
     private Long gitlabProjectId;
     @ApiModelProperty("阶段名称")
@@ -52,11 +54,18 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
 
     @ApiModelProperty("详细信息")
     private String metadata;
-
     /**
      * maven Setting Id
      */
     private Long mavenSettingId;
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
 
     public Long getMavenSettingId() {
         return mavenSettingId;

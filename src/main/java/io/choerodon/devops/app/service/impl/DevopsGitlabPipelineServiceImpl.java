@@ -211,7 +211,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public void updateStages(JobWebHookVO jobWebHookVO) {
+    public void updateStages(JobWebHookVO jobWebHookVO, String token) {
         //按照job的状态实时更新pipeline阶段的状态
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(jobWebHookVO.getSha(), jobWebHookVO.getRef());
 

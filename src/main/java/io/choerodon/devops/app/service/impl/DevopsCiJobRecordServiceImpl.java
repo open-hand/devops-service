@@ -11,17 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.JobWebHookVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
@@ -48,6 +48,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    @Autowired
+    private AppServiceService appServiceService;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -58,20 +60,21 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public DevopsCiJobRecordDTO queryByGitlabJobId(Long gitlabJobId) {
-        if (gitlabJobId == null) {
-            throw new CommonException(ERROR_GITLAB_JOB_ID_IS_NULL);
-        }
+    public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabJobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
         devopsCiJobRecordDTO.setGitlabJobId(gitlabJobId);
+        devopsCiJobRecordDTO.setAppServiceId(appServiceId);
         return devopsCiJobRecordMapper.selectOne(devopsCiJobRecordDTO);
     }
 
     @Override
-    public void update(JobWebHookVO jobWebHookVO) {
-        DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
-        recordDTO.setGitlabJobId(jobWebHookVO.getBuildId());
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordMapper.selectOne(recordDTO);
+    @Transactional(rollbackFor = Exception.class)
+    public void update(JobWebHookVO jobWebHookVO, String token) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), jobWebHookVO.getBuildId());
         if (devopsCiJobRecordDTO != null) {
             devopsCiJobRecordDTO.setStatus(jobWebHookVO.getBuildStatus());
             devopsCiJobRecordDTO.setStartedDate(jobWebHookVO.getBuildStartedAt());

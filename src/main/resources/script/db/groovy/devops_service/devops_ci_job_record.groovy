@@ -62,4 +62,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         }
     }
 
+    changeSet(author: 'wanghao', id: '2021-11-1-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: "app_service_id", type: 'BIGINT UNSIGNED', afterColumn: 'duration_seconds')
+        }
+        sql("""
+            UPDATE 
+            devops_ci_job_record dasv 
+            set object_version_number=1
+        """)
+        addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "app_service_id", columnDataType: "BIGINT UNSIGNED")
+    }
+
 }
