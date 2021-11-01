@@ -3700,12 +3700,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Boolean testConnection(AppExternalConfigDTO appExternalConfigDTO) {
-        boolean flag;
+        boolean flag = true;
         try {
             // 校验账户权限
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
-            flag = !ObjectUtils.isEmpty(gitlabProjectDTO);
+            if (gitlabProjectDTO == null || gitlabProjectDTO.getId() == null) {
+                flag = false;
+            }
         } catch (Exception e) {
             LOGGER.error("error.query.gitlab.group", e);
             flag = false;
