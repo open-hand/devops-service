@@ -1,5 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CiVariableVO;
@@ -8,14 +17,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.choerodon.devops.infra.util.GitUserNameUtil;
 
 /**
  * @author lihao
@@ -138,9 +140,8 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Override
     public List<CiVariableVO> listKeysOnProject(Long projectId) {
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
         DevopsProjectDTO devopsProjectDTO = projectService.queryById(projectId);
-        return gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), userAttrVO.getGitlabUserId().intValue());
+        return gitlabServiceClientOperator.listProjectVariable(devopsProjectDTO.getDevopsAppGroupId().intValue(), GitUserNameUtil.getAdminId());
     }
 
     @Override

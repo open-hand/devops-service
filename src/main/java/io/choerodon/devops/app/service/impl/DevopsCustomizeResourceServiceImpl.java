@@ -58,6 +58,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             ResourceType.C7NHELMRELEASE.getType(),
             ResourceType.CERTIFICATE.getType(),
             ResourceType.ENDPOINTS.getType(),
+            ResourceType.PERSISTENT_VOLUME.getType(),
             ResourceType.PERSISTENT_VOLUME_CLAIM.getType(),
             ResourceType.DEPLOYMENT.getType(),
             ResourceType.JOB.getType(),
