@@ -2758,6 +2758,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         Set<Long> ids = baseServiceClientOperator.listProjectIdsInOrg(organizationId);
         // 移除当前项目
         ids.remove(projectId);
+        if (CollectionUtils.isEmpty(ids)){
+            return new ArrayList<>();
+        }
         List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params, includeExternal);
 
         // 将应用服务按照项目分组
