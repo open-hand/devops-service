@@ -8,9 +8,7 @@
     </select>
 
     <select id="listUserHostPermissionByOption" resultType="io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO">
-        SELECT dhup.login_name,
-               dhup.iam_user_id,
-               dhup.real_name,
+        SELECT dhup.iam_user_id,
                dhup.host_id,
                dhup.permission_label,
                dhup.creation_date
