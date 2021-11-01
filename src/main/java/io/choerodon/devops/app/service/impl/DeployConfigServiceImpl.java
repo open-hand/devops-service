@@ -42,6 +42,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return Collections.emptyList();
         }
+        Date creationDate = new Date();
         List<DeployConfigDTO> deployConfigDTOS = new ArrayList<>();
         configSettingVOS.forEach(configSetting -> {
             DeployConfigDTO deployConfigDTO = new DeployConfigDTO()
@@ -56,6 +57,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
                     .setConfigId(configSetting.getConfigId())
                     .setConfigGroup(configSetting.getConfigGroup())
                     .setConfigCode(configSetting.getConfigCode());
+            deployConfigDTO.setCreationDate(creationDate);
             deployConfigMapper.insertSelective(deployConfigDTO);
             deployConfigDTOS.add(deployConfigDTO);
         });
