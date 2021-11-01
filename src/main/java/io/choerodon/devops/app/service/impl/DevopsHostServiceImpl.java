@@ -1,8 +1,35 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -29,32 +56,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -313,7 +314,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             List<Long> hostIds = devopsHostVOList.stream().map(DevopsHostVO::getId).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(hostIds)) {
                 // 用户原本是项目成员，被分配主机使用权限，然后被添加项目所有者角色，这时候应该删除devops_host_user_permission中的数据
-                devopsHostUserPermissionService.deleteByHostIdAndUserIds(DetailsHelper.getUserDetails().getUserId(), hostIds);
+                devopsHostUserPermissionService.deleteByUserIdAndHostIds(DetailsHelper.getUserDetails().getUserId(), hostIds);
             }
         } else {
             devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
