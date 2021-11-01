@@ -31,7 +31,6 @@ import io.choerodon.devops.infra.dto.iam.UserProjectLabelVO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.enums.GitlabGroupType;
-import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -99,7 +98,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         }
                         if (userMemberRoleList.contains(GITLAB_PROJECT_OWNER.getValue()) || userMemberRoleList.contains(TENANT_ADMIN.getValue())) {
                             // 如果角色标签里面有GITLAB_OWNER标签或TENANT_ADMIN标签，需要删除该项目下的主机权限信息，让用户在该项目下的所有主机权限变成administrator
-                            devopsHostUserPermissionService.deletePermissionByProjectIdAndUserId(gitlabGroupMemberVO.getResourceId(), gitlabGroupMemberVO.getUserId());
+                            devopsHostUserPermissionService.deleteByProjectIdAndUserId(gitlabGroupMemberVO.getResourceId(), gitlabGroupMemberVO.getUserId());
                         }
 
                         MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
@@ -279,6 +278,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         }
         deleteAboutApplicationService(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
         deleteAboutEnvironment(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
+        deleteAboutHost(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getIamUserId());
 
         // 删除集群环境对应gitlab的权限
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() != null) {
@@ -289,6 +289,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             }
             deleteAboutCluster(gitlabGroupMemberVO.getResourceId(), userAttrDTO.getGitlabUserId().intValue(), userAttrDTO.getIamUserId());
         }
+    }
+
+    private void deleteAboutHost(Long resourceId, Long iamUserId) {
+        devopsHostUserPermissionService.deleteByProjectIdAndUserId(resourceId, iamUserId);
     }
 
     /**

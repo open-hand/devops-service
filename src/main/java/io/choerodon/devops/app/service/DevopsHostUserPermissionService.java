@@ -79,7 +79,7 @@ public interface DevopsHostUserPermissionService {
      * @param projectId
      * @param userId
      */
-    void deletePermissionByProjectIdAndUserId(Long projectId, Long userId);
+    void deleteByProjectIdAndUserId(Long projectId, Long userId);
 
     void deleteByHostIdAndUserIds(Long hostId, List<Long> userIds);
 }

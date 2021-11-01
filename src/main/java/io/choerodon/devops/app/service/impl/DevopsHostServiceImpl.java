@@ -714,9 +714,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             } else if (iamUserIdsWithHostPermission.contains(devopsUserPermissionVO.getIamUserId())) {
                 DevopsHostUserPermissionDTO specifiedDevopsHostUserPermissionDTO = devopsHostUserPermissionDTOMap.get(devopsUserPermissionVO.getIamUserId());
                 if (specifiedDevopsHostUserPermissionDTO != null) {
-                    DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(specifiedDevopsHostUserPermissionDTO, DevopsHostUserPermissionVO.class);
+                    DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
                     devopsHostUserPermissionVO.setPermissionLabel(specifiedDevopsHostUserPermissionDTO.getPermissionLabel());
-                    devopsHostUserPermissionVO.setRoles(devopsUserPermissionVO.getRoles());
                     projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
                 }
             }
