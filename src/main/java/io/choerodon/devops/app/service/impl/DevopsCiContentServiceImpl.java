@@ -3,8 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,7 @@ import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
+import io.choerodon.devops.infra.util.FileUtil;
 
 /**
  * 〈功能简述〉
@@ -37,6 +41,8 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private DevopsCiContentMapper devopsCiContentMapper;
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
+    @Value("${services.gateway.url}")
+    private String gatewayUrl;
 
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH)) {
@@ -60,7 +66,12 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
         }
-        return devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
+        String ciContent = devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
+
+        Map<String, String> params = new HashMap<>();
+        gatewayUrl = gatewayUrl.endsWith("/") ? gatewayUrl.substring(0, gatewayUrl.length() - 1) : gatewayUrl;
+        params.put("${CHOERODON_URL}", gatewayUrl);
+        return FileUtil.replaceReturnString(ciContent, params);
     }
 
     @Override
