@@ -716,6 +716,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 if (specifiedDevopsHostUserPermissionDTO != null) {
                     DevopsHostUserPermissionVO devopsHostUserPermissionVO = ConvertUtils.convertObject(devopsUserPermissionVO, DevopsHostUserPermissionVO.class);
                     devopsHostUserPermissionVO.setPermissionLabel(specifiedDevopsHostUserPermissionDTO.getPermissionLabel());
+                    devopsHostUserPermissionVO.setCreationDate(specifiedDevopsHostUserPermissionDTO.getCreationDate());
                     projectMemberHostPermissionVO.add(devopsHostUserPermissionVO);
                 }
             }
