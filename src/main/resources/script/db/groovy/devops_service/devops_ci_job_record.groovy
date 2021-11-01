@@ -68,8 +68,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         }
         sql("""
             UPDATE 
-            devops_ci_job_record dasv 
-            set object_version_number=1
+            devops_ci_job_record dcjr 
+            set dcjr.app_service_id = 
+            (SELECT dcp.app_service_id
+            FROM devops_ci_pipeline_record dcpr
+            JOIN devops_cicd_pipeline dcp ON dcp.id = dcpr.ci_pipeline_id
+            WHERE dcpr.id = dcjr.ci_pipeline_record_id
+            GROUP BY dcp.app_service_id)
         """)
         addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "app_service_id", columnDataType: "BIGINT UNSIGNED")
     }
