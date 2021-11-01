@@ -219,6 +219,7 @@ devops:
   deploy:
     # 部署时是否删除gitops文件空行，true代表删除
     enableDeleteBlankLine: ${DEVOPS_DEPLOY_ENABLE_DELETE_BLANKLINE:true}
+  proxyToken: ${DEVOPS_PROXY_TOKEN:xxxxx}  # 代理认证token(v1.1新增，可为空)
 # websocket的最大缓冲区大小，单位字节byte
 websocket:
   buffer:
