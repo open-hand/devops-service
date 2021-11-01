@@ -68,6 +68,11 @@
         </if>
         <if test="instanceId != null">
           AND ddc.instance_id = #{instanceId}
+          AND ddc.creation_date = (
+            SELECT MAX(ddco.creation_date)
+            FROM devops_deploy_config ddco
+            WHERE ddco.project_id = #{projectId} AND ddco.instance_id = #{instanceId}
+        )
         </if>
     </select>
 </mapper>

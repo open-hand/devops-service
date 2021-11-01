@@ -27,7 +27,7 @@ public class DevopsDeployConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询配置文件信息")
     @GetMapping
-    public ResponseEntity<List<ConfigSettingVO>> queryDeployConfigByRecordId(
+    public ResponseEntity<List<ConfigSettingVO>> queryDeployConfig(
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt @RequestParam(value = "record_id", required = false) Long recordId,
             @Encrypt @RequestParam(value = "instance_id", required = false) Long instanceId) {
