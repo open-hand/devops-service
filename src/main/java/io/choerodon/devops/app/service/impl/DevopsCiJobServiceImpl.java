@@ -213,7 +213,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                 appExternalConfigDTO);
         // 保存job记录
         try {
-            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId());
+            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId(),appServiceDTO.getId());
         } catch (Exception e) {
             LOGGER.info("update job Records failed， jobid {}.", jobId);
         }

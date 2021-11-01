@@ -851,7 +851,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     gitlabPipelineId.intValue(),
                     userAttrDTO.getGitlabUserId().intValue(),
                     appExternalConfigDTO);
-            updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+            updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId(), appServiceDTO.getId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
         }
@@ -881,7 +881,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 更新job status
 
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(), gitlabPipelineId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
-            updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId());
+            updateOrInsertJobRecord(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTOS, userAttrDTO.getIamUserId(), appServiceDTO.getId());
         } catch (Exception e) {
             LOGGER.info("update pipeline Records failed， gitlabPipelineId {}.", gitlabPipelineId);
         }
@@ -929,14 +929,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordDTO;
     }
 
-    private void updateOrInsertJobRecord(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId) {
+    private void updateOrInsertJobRecord(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId, Long appServiceId) {
         jobDTOS.forEach(jobDTO -> {
             DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
             recordDTO.setGitlabJobId(TypeUtil.objToLong(jobDTO.getId()));
             DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordMapper.selectOne(recordDTO);
             // job记录存在则更新，不存在则插入
             if (devopsCiJobRecordDTO == null) {
-                devopsCiJobRecordService.create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId);
+                devopsCiJobRecordService.create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId);
             } else {
                 devopsCiJobRecordDTO.setGitlabJobId(jobDTO.getId().longValue());
                 devopsCiJobRecordDTO.setTriggerUserId(iamUserId);
