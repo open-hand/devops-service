@@ -41,7 +41,6 @@ import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -66,8 +65,7 @@ public class BaseServiceClientOperator {
 
     @Autowired
     private BaseServiceClient baseServiceClient;
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+
 
     /**
      * @param organizationId 组织id
@@ -83,6 +81,27 @@ public class BaseServiceClientOperator {
             throw new CommonException("error.organization.role.id.get", code);
         }
     }
+
+    public List<ExternalTenantVO> querySaasTenants(List<String> saasLevels) {
+        ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.querySaasTenants(saasLevels);
+        if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
+            return Collections.EMPTY_LIST;
+        } else {
+            List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
+            return externalTenantVOS;
+        }
+    }
+
+    public List<ExternalTenantVO> queryRegisterTenant() {
+        ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.queryRegisterTenant();
+        if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
+            return Collections.EMPTY_LIST;
+        } else {
+            List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
+            return externalTenantVOS;
+        }
+    }
+
 
     public ProjectDTO queryIamProjectById(Long projectId) {
         return queryIamProjectById(projectId, true, true, true);

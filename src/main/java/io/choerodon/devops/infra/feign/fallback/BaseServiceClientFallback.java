@@ -214,4 +214,14 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(Long organizationId) {
         throw new CommonException("error.query.tenant", organizationId);
     }
+
+    @Override
+    public ResponseEntity<List<ExternalTenantVO>> querySaasTenants(List<String> saasLevels) {
+        throw new CommonException("error.query.saas.tenant");
+    }
+
+    @Override
+    public ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant() {
+        throw new CommonException("error.query.register.tenant");
+    }
 }
