@@ -931,11 +931,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+
         //触发ci流水线
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
-
+        // 外置仓库不校验
+        if (appExternalConfigDTO == null) {
+            checkUserBranchPushPermission(projectId, userAttrDTO.getGitlabUserId(), gitlabProjectId, ref);
+        }
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(),
                 userAttrDTO.getGitlabUserId().intValue(),
                 ref,

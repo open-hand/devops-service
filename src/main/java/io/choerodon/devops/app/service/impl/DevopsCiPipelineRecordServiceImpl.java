@@ -824,7 +824,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setCreatedDate(pipeline.getCreatedAt());
         pipelineRecordDTO.setFinishedDate(pipeline.getFinished_at());
         pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
-        pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
+        pipelineRecordDTO.setStatus(pipeline.getStatus());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
         pipelineRecordDTO.setCommitSha(pipeline.getSha());
@@ -851,7 +851,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         try {
             // 更新pipeline status
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus().toValue());
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus());
             // 更新job status
 
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
