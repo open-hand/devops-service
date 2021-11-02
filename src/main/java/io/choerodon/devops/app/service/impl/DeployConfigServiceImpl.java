@@ -42,11 +42,13 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return Collections.emptyList();
         }
+        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         Date creationDate = new Date();
         List<DeployConfigDTO> deployConfigDTOS = new ArrayList<>();
         configSettingVOS.forEach(configSetting -> {
             DeployConfigDTO deployConfigDTO = new DeployConfigDTO()
                     .setId(null)
+                    .setOrganizationId(customUserDetails.getTenantId())
                     .setProjectId(projectId)
                     .setDeployRecordId(devopsDeployRecordId)
                     .setHostId(jarDeployVO.getHostId())
@@ -92,14 +94,13 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         if (CollectionUtils.isEmpty(configSettings)) {
             return null;
         }
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
         Map<Long, Map<String, Set<String>>> configSettingsMap =
                 configSettings.stream().collect(Collectors.groupingBy(DeployConfigDTO::getConfigId,
                         Collectors.groupingBy(DeployConfigDTO::getInstanceName, Collectors.mapping(DeployConfigDTO::getMountPath,
                                 Collectors.toSet()))));
 
         List<NacosListenConfigDTO> nacosListenConfigs = governanceServiceClientOperator.batchQueryListenConfig(
-                customUserDetails.getTenantId(),
+                configSettings.get(0).getOrganizationId(),
                 configSettings.get(0).getProjectId(),
                 configSettingsMap.keySet());
 
