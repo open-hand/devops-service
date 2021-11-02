@@ -57,7 +57,6 @@ public class DeployConfigDTO extends AuditDomain {
     @NotNull
     private Long hostId;
     @ApiModelProperty(value = "部署对象", required = true)
-    @NotBlank
     private String deployObjectKey;
     @ApiModelProperty(value = "实例ID", required = true)
     @NotBlank
