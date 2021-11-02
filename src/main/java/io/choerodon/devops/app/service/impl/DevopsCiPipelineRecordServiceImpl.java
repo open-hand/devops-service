@@ -230,7 +230,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         recordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         recordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
-        Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        Long iamUserId;
+        if (applicationDTO.getExternalConfigId() == null) {
+            iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        } else {
+            // 外置仓库默认使用admin账户执行
+            iamUserId = IamAdminIdHolder.getAdminId();
+        }
+
         CustomContextUtil.setDefaultIfNull(iamUserId);
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
