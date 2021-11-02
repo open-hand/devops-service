@@ -197,12 +197,15 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Transactional(rollbackFor = Exception.class)
     public void cascadeDeleteByInstanceId(Long instanceId) {
         List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = baseListByObject(ObjectType.INSTANCE.getType(), instanceId);
-        Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
-        Set<Long> valueIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getValueId).collect(Collectors.toSet());
+        if (!CollectionUtils.isEmpty(devopsEnvCommandDTOS)) {
+            Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
+            Set<Long> valueIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getValueId).collect(Collectors.toSet());
 
-        devopsCommandEventService.batchDeleteByCommandIds(commandIds);
-        devopsEnvCommandLogService.batchDeleteByCommandIds(commandIds);
-        devopsEnvCommandValueService.batchDeleteByIds(valueIds);
-        deleteByInstanceId(instanceId);
+            devopsCommandEventService.batchDeleteByCommandIds(commandIds);
+            devopsEnvCommandLogService.batchDeleteByCommandIds(commandIds);
+            devopsEnvCommandValueService.batchDeleteByIds(valueIds);
+            deleteByInstanceId(instanceId);
+        }
+
     }
 }
