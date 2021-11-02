@@ -79,4 +79,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "app_service_id", columnDataType: "BIGINT UNSIGNED")
     }
 
+    changeSet(author: 'wanghao', id: '2021-11-2-modify-unique-index') {
+        dropUniqueConstraint(tableName: 'devops_ci_job_record',
+                constraintName: 'uk_gitlab_job_id')
+        addUniqueConstraint(tableName: 'devops_ci_job_record',
+                constraintName: 'uk_gitlab_job_app_service_id', columnNames: 'gitlab_job_id, app_service_id')
+    }
+
 }
