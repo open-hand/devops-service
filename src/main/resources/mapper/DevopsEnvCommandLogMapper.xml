@@ -12,5 +12,12 @@
         WHERE de.object = 'instance' AND de.object_id = #{instanceId}
         ORDER BY de.id DESC limit 10) x)
     </delete>
+    <delete id="batchDeleteByCommandIds">
+        DELETE FROM devops_env_command_log
+        WHERE command_id IN
+        <foreach collection="commandIds" item="commandId" open="(" separator="," close=")" index="i">
+            #{commandId}
+        </foreach>
+    </delete>
 
 </mapper>

@@ -1695,7 +1695,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (devopsEnvFileResourceDTO == null) {
             appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
             devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
-            appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+            // 删除相关数据
+            devopsEnvCommandService.cascadeDeleteByInstanceId(instanceId);
             devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
@@ -1712,7 +1713,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     devopsEnvFileResourceDTO.getFilePath())) {
                 appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
                 devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
-                appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+                devopsEnvCommandService.cascadeDeleteByInstanceId(instanceId);
                 devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
                 devopsEnvFileResourceService.baseDeleteById(devopsEnvFileResourceDTO.getId());
                 return;
@@ -1775,7 +1776,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
         devopsDeployRecordService.deleteRelatedRecordOfInstance(instanceId);
-        appServiceInstanceMapper.deleteInstanceRelInfo(instanceId);
+        devopsEnvCommandService.cascadeDeleteByInstanceId(instanceId);
         appServiceInstanceMapper.deleteByPrimaryKey(instanceId);
         devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), instanceId, RdupmTypeEnum.CHART.value());
 

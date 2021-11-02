@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCommandEventService;
@@ -62,5 +63,11 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
         DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
         devopsCommandEventDTO.setCommandId(commandId);
         return devopsCommandEventMapper.select(devopsCommandEventDTO);
+    }
+
+    @Override
+    @Transactional
+    public void batchDeleteByCommandIds(Set<Long> commandIds) {
+        devopsCommandEventMapper.batchDeleteByCommandIds(commandIds);
     }
 }

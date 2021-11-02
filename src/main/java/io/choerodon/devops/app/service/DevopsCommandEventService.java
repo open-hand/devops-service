@@ -33,4 +33,6 @@ public interface DevopsCommandEventService {
      * @return
      */
     List<DevopsCommandEventDTO> listByCommandId(Long commandId);
+
+    void batchDeleteByCommandIds(Set<Long> commandIds);
 }

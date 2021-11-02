@@ -12,6 +12,13 @@
         WHERE de.object = 'instance' AND de.object_id = #{instanceId}
         ORDER BY de.id DESC limit 10) x)
     </delete>
+    <delete id="batchDeleteByCommandIds">
+        DELETE FROM devops_command_event
+        WHERE command_id IN
+        <foreach collection="commandIds" item="commandId" open="(" separator="," close=")" index="i">
+            #{commandId}
+        </foreach>
+    </delete>
 
     <select id="listByCommandIdsAndType" resultType="io.choerodon.devops.infra.dto.DevopsCommandEventDTO">
        select * from devops_command_event
