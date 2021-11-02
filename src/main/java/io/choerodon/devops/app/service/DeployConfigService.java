@@ -32,7 +32,7 @@ public interface DeployConfigService {
      * @param projectId
      * @param jarDeployVO
      */
-    String doCreateConfigSetting(Long projectId, JarDeployVO jarDeployVO);
+    String doCreateConfigSettings(Long projectId, JarDeployVO jarDeployVO);
 
     /**
      * 构造发送到agent的配置

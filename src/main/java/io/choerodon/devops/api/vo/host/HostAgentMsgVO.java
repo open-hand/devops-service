@@ -12,7 +12,7 @@ public class HostAgentMsgVO {
     private String payload;
     private String commandId;
     private String hostId;
-    private String configSetting;
+    private String configSettings;
 
     public String getType() {
         return type;
@@ -46,11 +46,11 @@ public class HostAgentMsgVO {
         this.hostId = hostId;
     }
 
-    public String getConfigSetting() {
-        return configSetting;
+    public String getConfigSettings() {
+        return configSettings;
     }
 
-    public void setConfigSetting(String configSetting) {
-        this.configSetting = configSetting;
+    public void setConfigSettings(String configSettings) {
+        this.configSettings = configSettings;
     }
 }

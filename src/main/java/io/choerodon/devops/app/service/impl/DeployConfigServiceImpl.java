@@ -67,7 +67,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     }
 
     @Override
-    public String doCreateConfigSetting(Long projectId, JarDeployVO jarDeployVO) {
+    public String doCreateConfigSettings(Long projectId, JarDeployVO jarDeployVO) {
         List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return null;
