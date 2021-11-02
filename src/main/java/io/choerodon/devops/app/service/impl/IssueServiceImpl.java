@@ -129,7 +129,7 @@ public class IssueServiceImpl implements IssueService {
             List<DevopsGitlabCommitDTO> devopsGitlabCommitES = devopsGitlabCommitService.baseListByAppIdAndBranch(devopsBranchDO.getAppServiceId(), devopsBranchDO.getBranchName(), devopsBranchDO.getCheckoutDate());
 
             devopsGitlabCommitES = devopsGitlabCommitES.stream().filter(devopsGitlabCommitE ->
-                            !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
+                    !devopsGitlabCommitE.getCommitSha().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(devopsBranchDO, DevopsBranchVO.class);
             devopsBranchVO.setCommits(devopsGitlabCommitES);
@@ -137,6 +137,7 @@ public class IssueServiceImpl implements IssueService {
             projectIds.add(applicationDTO.getProjectId());
             devopsBranchVO.setProjectId(applicationDTO.getProjectId());
             devopsBranchVO.setAppServiceName(applicationDTO.getName());
+            devopsBranchVO.setAppServiceCode(applicationDTO.getCode());
             List<DevopsMergeRequestDTO> mergeRequests = devopsMergeRequestService.baseListBySourceBranch(
                     devopsBranchDO.getBranchName(), (long) gitLabProjectId);
             devopsBranchVO.setMergeRequests(addAuthorNameAndAssigneeName(
