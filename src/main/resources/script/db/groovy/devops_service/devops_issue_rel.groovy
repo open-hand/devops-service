@@ -43,4 +43,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_issue_rel.groovy') {
             column(name: 'app_service_code', type: 'VARCHAR(64)', remarks: '该条记录所属应用code', afterColumn: 'project_id')
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_object_id_issue_id_object", tableName: "devops_issue_rel")
+    }
 }

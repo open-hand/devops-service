@@ -39,4 +39,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deployment.groovy') {
     changeSet(author: 'lihao', id: '2021-09-26-update-column') {
         modifyDataType(tableName: 'devops_deployment', columnName: 'name', newDataType: 'VARCHAR(64)')
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_env_id", tableName: "devops_deployment")
+    }
 }

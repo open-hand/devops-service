@@ -167,4 +167,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_external_config_id', columnNames: "external_config_id")
 
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+            dropIndex(indexName: "devops_app_idx_project_id", tableName: "devops_app_service")
+    }
 }

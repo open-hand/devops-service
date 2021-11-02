@@ -32,4 +32,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
             column(name: "command_id")
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_command_id_type", tableName: "devops_command_event")
+    }
 }
