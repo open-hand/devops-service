@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Set;
+
 import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 
 /**
@@ -13,4 +15,6 @@ public interface DevopsEnvCommandValueService {
     void baseDeleteById(Long commandId);
 
     void baseUpdateById(Long valueId, String value);
+
+    void batchDeleteByIds(Set<Long> ids);
 }

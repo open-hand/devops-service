@@ -84,7 +84,13 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
                                          @Param("resourceName") String resourceName,
                                          @Param("resourceType") String resourceType);
 
-    void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
+    /**
+     * hzero不支持级联，后续删除
+     * @param code
+     * @param envId
+     * @return
+     */
+//    void deleteInstanceRelInfo(@Param("instanceId") Long instanceId);
 
     Boolean checkCodeExist(@Param("code") String code,
                            @Param("envId") Long envId);

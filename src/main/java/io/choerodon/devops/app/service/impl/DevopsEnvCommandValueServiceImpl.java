@@ -7,6 +7,9 @@ import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandValueMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -39,5 +42,11 @@ public class DevopsEnvCommandValueServiceImpl implements DevopsEnvCommandValueSe
         devopsEnvCommandValueDTO.setId(valueId);
         devopsEnvCommandValueDTO.setValue(value);
         devopsEnvCommandValueMapper.updateByPrimaryKeySelective(devopsEnvCommandValueDTO);
+    }
+
+    @Override
+    @Transactional
+    public void batchDeleteByIds(Set<Long> ids) {
+        devopsEnvCommandValueMapper.batchDeleteByIds(ids);
     }
 }

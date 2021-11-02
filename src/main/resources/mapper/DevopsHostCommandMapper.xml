@@ -34,16 +34,6 @@
         where dhc.host_id = #{hostId} and dhc.status = 'operating' and dhc.last_update_date <![CDATA[<=]]> #{beforeDate}
     </select>
 
-    <delete id="listByHostId">
-        SELECT
-          *
-        FROM
-          devops_host_command
-        WHERE
-          host_id = # {hostId}
-        ORDER BY creation_date DESC
-    </delete>
-
     <delete id="deleteByHostId">
         DELETE FROM devops_host_command WHERE host_id = #{hostId}
     </delete>

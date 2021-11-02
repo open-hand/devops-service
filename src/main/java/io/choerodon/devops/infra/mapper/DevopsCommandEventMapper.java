@@ -21,4 +21,6 @@ public interface DevopsCommandEventMapper extends BaseMapper<DevopsCommandEventD
     int deletePreInstanceCommandEvent(@Param("instanceId") Long instanceId);
 
     List<DevopsCommandEventDTO> listByCommandIdsAndType(@Param("commandIds") Set<Long> commandIds, @Param("type") String type);
+
+    void batchDeleteByCommandIds(@Param("commandIds") Set<Long> commandIds);
 }

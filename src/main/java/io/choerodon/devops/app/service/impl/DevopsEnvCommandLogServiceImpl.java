@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
@@ -50,5 +52,11 @@ public class DevopsEnvCommandLogServiceImpl implements DevopsEnvCommandLogServic
         DevopsEnvCommandLogDTO devopsEnvCommandLogDTO = new DevopsEnvCommandLogDTO();
         devopsEnvCommandLogDTO.setCommandId(commandId);
         devopsEnvCommandLogMapper.delete(devopsEnvCommandLogDTO);
+    }
+
+    @Override
+    @Transactional
+    public void batchDeleteByCommandIds(Set<Long> commandIds) {
+        devopsEnvCommandLogMapper.batchDeleteByCommandIds(commandIds);
     }
 }

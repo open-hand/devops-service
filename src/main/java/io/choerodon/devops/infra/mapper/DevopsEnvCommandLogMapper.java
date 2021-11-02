@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.mapper;
 
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Set;
+
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -18,4 +20,6 @@ public interface DevopsEnvCommandLogMapper extends BaseMapper<DevopsEnvCommandLo
      * @return 删除行数
      */
     int deletePreInstanceCommandLog(@Param("instanceId") Long instanceId);
+
+    void batchDeleteByCommandIds(@Param("commandIds") Set<Long> commandIds);
 }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DevopsEnvCommandLogDTO;
 
@@ -19,4 +20,6 @@ public interface DevopsEnvCommandLogService {
     void baseDeleteByInstanceId(Long instanceId);
 
     void baseDeleteByCommandId(Long commandId);
+
+    void batchDeleteByCommandIds(Set<Long> commandIds);
 }

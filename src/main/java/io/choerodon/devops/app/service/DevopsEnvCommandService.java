@@ -75,4 +75,8 @@ public interface DevopsEnvCommandService {
      * @return
      */
     Long  queryWorkloadEffectCommandId(String workloadType, Long workloadId);
+
+    void deleteByInstanceId(Long instanceId);
+
+    void cascadeDeleteByInstanceId(Long instanceId);
 }

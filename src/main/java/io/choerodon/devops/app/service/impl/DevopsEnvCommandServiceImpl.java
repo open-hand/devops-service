@@ -3,12 +3,16 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
@@ -18,6 +22,7 @@ import io.choerodon.devops.app.service.DevopsCommandEventService;
 import io.choerodon.devops.app.service.DevopsEnvCommandLogService;
 import io.choerodon.devops.app.service.DevopsEnvCommandService;
 import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
@@ -176,5 +181,28 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     public Long queryWorkloadEffectCommandId(String workloadType, Long workloadId) {
         return devopsEnvCommandMapper.queryWorkloadEffectCommandId(workloadType, workloadId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteByInstanceId(Long instanceId) {
+        Assert.notNull(instanceId, ResourceCheckConstant.ERROR_INSTANCE_ID_IS_NULL);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        devopsEnvCommandDTO.setObjectId(instanceId);
+        devopsEnvCommandDTO.setObject(ObjectType.INSTANCE.getType());
+        devopsEnvCommandMapper.delete(devopsEnvCommandDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cascadeDeleteByInstanceId(Long instanceId) {
+        List<DevopsEnvCommandDTO> devopsEnvCommandDTOS = baseListByObject(ObjectType.INSTANCE.getType(), instanceId);
+        Set<Long> commandIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getId).collect(Collectors.toSet());
+        Set<Long> valueIds = devopsEnvCommandDTOS.stream().map(DevopsEnvCommandDTO::getValueId).collect(Collectors.toSet());
+
+        devopsCommandEventService.batchDeleteByCommandIds(commandIds);
+        devopsEnvCommandLogService.batchDeleteByCommandIds(commandIds);
+        devopsEnvCommandValueService.batchDeleteByIds(valueIds);
+        deleteByInstanceId(instanceId);
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvCommandValueMapper">
+
+
+    <delete id="batchDeleteByIds">
+        DELETE FROM devops_env_command_value
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")" index="i">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
