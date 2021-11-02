@@ -35,4 +35,9 @@ databaseChangeLog(logicalFilePath: 'script/db/devops_deploy_config.groovy') {
     changeSet(author: "jian.zhang02@hand-china.com", id: "devops_deploy_config-2021-11-02-version-3") {
         dropNotNullConstraint (tableName: "devops_deploy_config", columnName: "deploy_object_key", columnDataType: "VARCHAR(120)")
     }
+    addColumn (tableName: "devops_deploy_config") {
+        column (name: "organization_id", type: "BIGINT(20) UNSIGNED", remarks: "租户ID", afterColumn: "id") {
+            constraints (nullable: "false")
+        }
+    }
 }

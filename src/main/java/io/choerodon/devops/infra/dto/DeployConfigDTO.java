@@ -5,6 +5,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -46,7 +47,11 @@ public class DeployConfigDTO extends AuditDomain {
     @ApiModelProperty("主键ID")
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
+    @ApiModelProperty("租户ID")
+    @NotNull
+    private Long organizationId;
     @ApiModelProperty(value = "项目ID", required = true)
     @NotNull
     private Long projectId;
@@ -95,6 +100,16 @@ public class DeployConfigDTO extends AuditDomain {
 		this.id = id;
         return this;
 	}
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public DeployConfigDTO setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+        return this;
+    }
+
     /**
      * @return 项目ID
      */
