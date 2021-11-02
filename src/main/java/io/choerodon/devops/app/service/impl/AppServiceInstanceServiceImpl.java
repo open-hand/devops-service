@@ -1651,7 +1651,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             return;
         }
 
-//        devopsDeployAppCenterService.checkEnableDeleteAndThrowE(projectId, RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
+        devopsDeployAppCenterService.checkEnableDeleteAndThrowE(projectId, RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
 
         // 加锁
         if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
