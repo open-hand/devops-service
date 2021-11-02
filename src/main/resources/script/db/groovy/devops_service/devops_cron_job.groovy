@@ -31,4 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cron_job.groovy') {
         modifyDataType(tableName: 'devops_cron_job', columnName: 'name', newDataType: 'VARCHAR(64)')
     }
 
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_env_id", tableName: "devops_cron_job")
+    }
 }

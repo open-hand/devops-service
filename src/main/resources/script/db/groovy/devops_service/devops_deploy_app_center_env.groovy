@@ -55,4 +55,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
             }
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_env_id", tableName: "devops_deploy_app_center_env")
+    }
 }

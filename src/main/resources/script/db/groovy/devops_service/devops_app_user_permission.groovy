@@ -50,4 +50,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_app_service_user_rel',
                 constraintName: 'uk_devops_app_service_user_rel_app_service_id_iam_user_id', columnNames: 'app_service_id,iam_user_id')
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_app_id", tableName: "devops_app_service_user_rel")
+    }
 }

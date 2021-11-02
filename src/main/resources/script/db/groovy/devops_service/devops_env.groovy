@@ -204,4 +204,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: 'is_auto_deploy', type: 'TINYINT UNSIGNED', defaultValue: '1', remarks: '一键开启或者关闭自动部署，1：开启，0：关闭', afterColumn: 'is_active')
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "devops_env_idx_project_id", tableName: "devops_env")
+    }
 }

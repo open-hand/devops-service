@@ -43,4 +43,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
             column(name: "project_id")
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "idx_host_id", tableName: "devops_host_app")
+    }
 }

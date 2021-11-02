@@ -89,4 +89,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
             column(name: 'ref', type: 'VARCHAR(64)', afterColumn: 'commit', remarks: 'gitlab commit ref')
         }
     }
+
+    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+        dropIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_service_version")
+    }
 }
