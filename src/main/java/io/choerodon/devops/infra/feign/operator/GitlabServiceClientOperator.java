@@ -492,11 +492,13 @@ public class GitlabServiceClientOperator {
 
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         try {
-            gitlabServiceClient.getFile(projectId, branch, filePath);
+            ResponseEntity<RepositoryFileDTO> file = gitlabServiceClient.getFile(projectId, branch, filePath);
+            // 文件不存在返回false
+            return file.getBody() != null && file.getBody().getFilePath() != null;
         } catch (Exception e) {
             return false;
         }
-        return true;
+
     }
 
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
