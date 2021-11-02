@@ -469,8 +469,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         devopsHzeroDeployDetailsVOS.forEach(devopsHzeroDeployDetailsVO -> {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, devopsHzeroDeployDetailsVO.getMktDeployObjectId());
             // 添加市场服务名和版本
-            devopsHzeroDeployDetailsVO.setMktServiceName(marketServiceDeployObjectVO.getMarketServiceName());
-            devopsHzeroDeployDetailsVO.setMktServiceVersion(marketServiceDeployObjectVO.getMarketServiceVersion());
+            devopsHzeroDeployDetailsVO.setMktServiceName(marketServiceDeployObjectVO != null ? marketServiceDeployObjectVO.getMarketServiceName() : "none");
+            devopsHzeroDeployDetailsVO.setMktServiceVersion(marketServiceDeployObjectVO != null ? marketServiceDeployObjectVO.getMarketServiceVersion(): "none");
             // 添加values
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsVO.getValueId());
             if (devopsHzeroDeployConfigDTO != null) {
