@@ -711,7 +711,7 @@ public class AppServiceController {
             @ApiParam(value = "应用服务类型", required = false)
             @RequestParam(value = "service_type", required = false) String serviceType,
             @ApiParam(value = "是否包含外部应用服务")
-            @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
+            @RequestParam(value = "include_external", defaultValue = "false") Boolean includeExternal) {
         return Optional.ofNullable(
                 applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType, includeExternal))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

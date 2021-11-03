@@ -2736,7 +2736,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", true);
+                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
                 return ArrayUtil.singleAsList(appServiceGroupVO);
