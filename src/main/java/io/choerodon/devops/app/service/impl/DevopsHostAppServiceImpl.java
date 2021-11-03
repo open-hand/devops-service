@@ -134,10 +134,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
 
         // 标识部署对象
-        String deployObjectKey = null;
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-            deployObjectKey = String.valueOf(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
@@ -187,14 +185,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
-
-            deployObjectKey = new StringBuilder()
-                    .append(nexusRepoId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(groupId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(artifactId)
-                    .toString();
         }
 
         // 2.保存记录
