@@ -52,7 +52,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class DevopsDeployServiceImpl implements DevopsDeployService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDeployServiceImpl.class);
-    public static final int THIRTY_MINUTE_MILLISECONDS = 30 * 60 * 1000;
+    public static final int THIRTY_MINUTE_MILLISECONDS = 3 * 60 * 1000;
 
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
