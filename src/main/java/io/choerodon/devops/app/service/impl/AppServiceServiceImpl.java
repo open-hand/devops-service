@@ -3706,6 +3706,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         boolean flag = true;
         try {
             // 校验账户权限
+            appExternalConfigDTO.setRepositoryUrl(appExternalConfigDTO.getRepositoryUrl().replace(".git", ""));
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
             if (gitlabProjectDTO == null || gitlabProjectDTO.getId() == null) {
