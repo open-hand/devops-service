@@ -96,8 +96,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
-    private DeployConfigService deployConfigService;
-    @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
@@ -136,10 +134,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
 
         // 标识部署对象
-        String deployObjectKey = null;
         if (StringUtils.endsWithIgnoreCase(AppSourceType.MARKET.getValue(), jarDeployVO.getSourceType())
                 || StringUtils.endsWithIgnoreCase(AppSourceType.HZERO.getValue(), jarDeployVO.getSourceType())) {
-            deployObjectKey = String.valueOf(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId());
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
@@ -189,14 +185,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
-
-            deployObjectKey = new StringBuilder()
-                    .append(nexusRepoId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(groupId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(artifactId)
-                    .toString();
         }
 
         // 2.保存记录
@@ -301,21 +289,17 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppDTO.getId(),
                 deploySourceVO);
 
-        // 保存用户设置部署配置文件
-        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, devopsHostAppInstanceDTO.getId(),
-                deployObjectKey, jarDeployVO);
-
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
-        hostAgentMsgVO.setConfigSetting(deployConfigService.doCreateConfigSetting(projectId, jarDeployVO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
+
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));

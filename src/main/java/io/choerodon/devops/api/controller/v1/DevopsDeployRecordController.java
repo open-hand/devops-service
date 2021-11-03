@@ -96,7 +96,7 @@ public class DevopsDeployRecordController {
     @GetMapping("/{record_id}")
     public ResponseEntity<HzeroDeployRecordVO> queryHzeroDetailsById(
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @PathVariable(value = "record_id") Long recordId) {
+            @PathVariable(value = "record_id") Long recordId) {
         return ResponseEntity.ok(devopsDeployRecordService.queryHzeroDetailsById(projectId, recordId));
     }
 }
