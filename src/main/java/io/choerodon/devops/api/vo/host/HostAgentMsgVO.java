@@ -12,7 +12,6 @@ public class HostAgentMsgVO {
     private String payload;
     private String commandId;
     private String hostId;
-    private String configSetting;
 
     public String getType() {
         return type;
@@ -44,13 +43,5 @@ public class HostAgentMsgVO {
 
     public void setHostId(String hostId) {
         this.hostId = hostId;
-    }
-
-    public String getConfigSetting() {
-        return configSetting;
-    }
-
-    public void setConfigSetting(String configSetting) {
-        this.configSetting = configSetting;
     }
 }
