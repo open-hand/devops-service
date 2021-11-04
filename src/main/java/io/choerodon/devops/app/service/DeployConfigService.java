@@ -30,17 +30,18 @@ public interface DeployConfigService {
      *
      * @return
      * @param projectId
-     * @param jarDeployVO
      */
-    String doCreateConfigSettings(Long projectId, JarDeployVO jarDeployVO);
+    String doCreateConfigSettings(Long projectId);
 
     /**
      * 构造发送到agent的配置
      *
      * @param hostId
+     * @param instanceId
+     * @param jarDeployVO
      * @return
      */
-    String doCreateConfigSettings(Long hostId);
+    String doCreateConfigSettings(Long hostId, Long instanceId, JarDeployVO jarDeployVO);
 
     /**
      * 查询配置文件信息

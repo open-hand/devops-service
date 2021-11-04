@@ -23,6 +23,8 @@ public class NacosListenConfigDTO {
 
     @ApiModelProperty(value = "文件挂载路径")
     private Set<String> mountPaths;
+    @ApiModelProperty(value = "实例ID")
+    private String instanceId;
     @ApiModelProperty(value = "实例名")
     private String instanceName;
     @ApiModelProperty(value = "实例挂载路径")
@@ -121,5 +123,13 @@ public class NacosListenConfigDTO {
 
     public void setContentTypeName(String contentTypeName) {
         this.contentTypeName = contentTypeName;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }
