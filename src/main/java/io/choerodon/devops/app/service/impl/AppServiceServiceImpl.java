@@ -1290,7 +1290,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
-
+        // 为没有加.git后缀的仓库加上
+        if (!appServiceImportVO.getRepositoryUrl().endsWith(".git")) {
+            appServiceImportVO.setRepositoryUrl(appServiceImportVO.getRepositoryUrl() + ".git");
+        }
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
