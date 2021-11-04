@@ -140,8 +140,10 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private List<ApprovalVO> listMergeRequestApproval(Tenant tenant, Map<Long, ProjectDTO> projectMap, List<AppServiceDTO> appServiceDTOList) {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
         // 不统计外部仓库
-        List<Integer> gitlabProjectIds = appServiceDTOList.stream()
+        appServiceDTOList = appServiceDTOList.stream()
                 .filter(v -> v.getExternalConfigId() == null)
+                .collect(Collectors.toList());;
+        List<Integer> gitlabProjectIds = appServiceDTOList.stream()
                 .map(AppServiceDTO::getGitlabProjectId)
                 .collect(Collectors.toList());
         Map<Integer, AppServiceDTO> gitlabProjectAndAppMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getGitlabProjectId, v -> v));
