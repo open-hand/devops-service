@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.deploy.ConfigSettingVO;
@@ -10,6 +9,7 @@ import io.choerodon.devops.infra.dto.governance.NacosListenConfigDTO;
 import io.choerodon.devops.infra.feign.operator.GovernanceServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DeployConfigMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.platform.encrypt.EncryptClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,7 +67,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     }
 
     @Override
-    public String doCreateConfigSettings(Long projectId, JarDeployVO jarDeployVO) {
+    public String doCreateConfigSettings(Long projectId, Long instanceId, JarDeployVO jarDeployVO) {
         List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return null;
@@ -83,6 +83,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         nacosListenConfigs.forEach(nacosListenConfig -> {
             nacosListenConfig.setMountPaths(configMountPathMap.get(nacosListenConfig.getConfigId()));
             nacosListenConfig.setInstanceName(jarDeployVO.getAppCode());
+            nacosListenConfig.setInstanceId(String.valueOf(instanceId));
             nacosListenConfig.setPassword(encryptClient.decrypt(nacosListenConfig.getPassword()));
         });
         return JsonHelper.marshalByJackson(nacosListenConfigs);
@@ -96,7 +97,8 @@ public class DeployConfigServiceImpl implements DeployConfigService {
         }
         Map<Long, Map<String, Set<String>>> configSettingsMap =
                 configSettings.stream().collect(Collectors.groupingBy(DeployConfigDTO::getConfigId,
-                        Collectors.groupingBy(DeployConfigDTO::getInstanceName, Collectors.mapping(DeployConfigDTO::getMountPath,
+                        Collectors.groupingBy(deployConfigDTO -> String.valueOf(deployConfigDTO.getInstanceId()),
+                                Collectors.mapping(DeployConfigDTO::getMountPath,
                                 Collectors.toSet()))));
 
         List<NacosListenConfigDTO> nacosListenConfigs = governanceServiceClientOperator.batchQueryListenConfig(

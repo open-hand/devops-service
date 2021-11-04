@@ -311,7 +311,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
-        hostAgentMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(projectId, jarDeployVO));
+        hostAgentMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(projectId, devopsHostAppInstanceDTO.getId(), jarDeployVO));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
