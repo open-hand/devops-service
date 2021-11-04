@@ -37,8 +37,13 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     private EncryptClient encryptClient;
 
     @Override
-    public List<DeployConfigDTO> saveConfigSetting(Long projectId, Long devopsDeployRecordId, Long instanceId, String deployObjectKey, JarDeployVO jarDeployVO) {
-        List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
+    public List<DeployConfigDTO> saveConfigSetting(Long projectId,
+                                                   Long devopsDeployRecordId,
+                                                   Long instanceId,
+                                                   String deployObjectKey,
+                                                   Long hostId,
+                                                   String instanceName,
+                                                   List<ConfigSettingVO> configSettingVOS) {
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return Collections.emptyList();
         }
@@ -51,10 +56,10 @@ public class DeployConfigServiceImpl implements DeployConfigService {
                     .setOrganizationId(customUserDetails.getTenantId())
                     .setProjectId(projectId)
                     .setDeployRecordId(devopsDeployRecordId)
-                    .setHostId(jarDeployVO.getHostId())
+                    .setHostId(hostId)
                     .setDeployObjectKey(deployObjectKey)
                     .setInstanceId(instanceId)
-                    .setInstanceName(jarDeployVO.getAppCode())
+                    .setInstanceName(instanceName)
                     .setMountPath(configSetting.getMountPath())
                     .setConfigId(configSetting.getConfigId())
                     .setConfigGroup(configSetting.getConfigGroup())
@@ -67,8 +72,10 @@ public class DeployConfigServiceImpl implements DeployConfigService {
     }
 
     @Override
-    public String doCreateConfigSettings(Long projectId, Long instanceId, JarDeployVO jarDeployVO) {
-        List<ConfigSettingVO> configSettingVOS = jarDeployVO.getConfigSettingVOS();
+    public String doCreateConfigSettings(Long projectId,
+                                         Long instanceId,
+                                         String instanceName,
+                                         List<ConfigSettingVO> configSettingVOS) {
         if (CollectionUtils.isEmpty(configSettingVOS)) {
             return null;
         }
@@ -82,7 +89,7 @@ public class DeployConfigServiceImpl implements DeployConfigService {
 
         nacosListenConfigs.forEach(nacosListenConfig -> {
             nacosListenConfig.setMountPaths(configMountPathMap.get(nacosListenConfig.getConfigId()));
-            nacosListenConfig.setInstanceName(jarDeployVO.getAppCode());
+            nacosListenConfig.setInstanceName(instanceName);
             nacosListenConfig.setInstanceId(String.valueOf(instanceId));
             nacosListenConfig.setPassword(encryptClient.decrypt(nacosListenConfig.getPassword()));
         });

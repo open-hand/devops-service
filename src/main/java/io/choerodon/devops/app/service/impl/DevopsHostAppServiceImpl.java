@@ -302,8 +302,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 deploySourceVO);
 
         // 保存用户设置部署配置文件
-        deployConfigService.saveConfigSetting(projectId, devopsDeployRecordId, devopsHostAppInstanceDTO.getId(),
-                deployObjectKey, jarDeployVO);
+        deployConfigService.saveConfigSetting(projectId,
+                devopsDeployRecordId,
+                devopsHostAppInstanceDTO.getId(),
+                deployObjectKey,
+                jarDeployVO.getHostId(),
+                jarDeployVO.getAppCode(),
+                jarDeployVO.getConfigSettingVOS());
 
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
@@ -311,7 +316,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
-        hostAgentMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(projectId, devopsHostAppInstanceDTO.getId(), jarDeployVO));
+        hostAgentMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(projectId,
+                devopsHostAppInstanceDTO.getId(),
+                jarDeployVO.getAppCode(),
+                jarDeployVO.getConfigSettingVOS()));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -583,7 +591,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         // 保存执行记录
-        devopsDeployRecordService.saveRecord(
+        Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 devopsHostCommandDTO.getId(),
@@ -599,12 +607,25 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppDTO.getId(),
                 deploySourceVO);
 
+        // 保存用户设置部署配置文件
+        deployConfigService.saveConfigSetting(projectId,
+                devopsDeployRecordId,
+                devopsHostAppInstanceDTO.getId(),
+                null,
+                customDeployVO.getHostId(),
+                customDeployVO.getAppCode(),
+                customDeployVO.getConfigSettingVOS());
+
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(projectId,
+                devopsHostAppInstanceDTO.getId(),
+                customDeployVO.getAppCode(),
+                customDeployVO.getConfigSettingVOS()));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
