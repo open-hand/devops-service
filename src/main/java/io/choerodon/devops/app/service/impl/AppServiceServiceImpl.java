@@ -1291,7 +1291,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
         // 为没有加.git后缀的仓库加上
-        if (!appServiceImportVO.getRepositoryUrl().endsWith(".git")) {
+        if (org.apache.commons.lang3.StringUtils.isNoneBlank(appServiceImportVO.getRepositoryUrl())
+                && !appServiceImportVO.getRepositoryUrl().endsWith(".git")) {
             appServiceImportVO.setRepositoryUrl(appServiceImportVO.getRepositoryUrl() + ".git");
         }
         // 获取当前操作的用户的信息
