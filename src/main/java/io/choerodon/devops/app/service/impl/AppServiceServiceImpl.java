@@ -122,7 +122,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final String PRIVATE_TOKEN_FORMAT = "private-token:%s";
     private static final String PRIVATE_TOKEN_ID_FORMAT = "private-token-id:%s";
-    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
+    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*");
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String SONAR = "sonar";
@@ -1290,11 +1290,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
-        // 为没有加.git后缀的仓库加上
-        if (org.apache.commons.lang3.StringUtils.isNoneBlank(appServiceImportVO.getRepositoryUrl())
-                && !appServiceImportVO.getRepositoryUrl().endsWith(".git")) {
-            appServiceImportVO.setRepositoryUrl(appServiceImportVO.getRepositoryUrl() + ".git");
-        }
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
