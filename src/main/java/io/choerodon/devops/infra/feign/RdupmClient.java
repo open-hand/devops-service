@@ -73,6 +73,16 @@ public interface RdupmClient {
                                            @ApiParam(value = "自定义仓库ID", required = true)
                                            @RequestParam("customRepoId") Long customRepoId);
 
+
+    /**
+     * 删除关联关系
+     */
+    @DeleteMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/delete_all_relation")
+    ResponseEntity deleteAllRelationByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
+                                           @PathVariable("projectId") Long projectId,
+                                           @ApiParam(value = "应用服务ID", required = true)
+                                           @PathVariable("appServiceId") Long appServiceId);
+
     /**
      * 仓库配置查询接口
      * 应用服务关联了自定义仓库就返回自定义，

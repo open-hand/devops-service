@@ -110,4 +110,9 @@ public class RdupmClientFallback implements RdupmClient {
     public ResponseEntity<C7nNexusRepoDTO> getMavenRepo(Long organizationId, Long projectId, Long repositoryId) {
         throw new CommonException("error.query.repo.by.id");
     }
+
+    @Override
+    public ResponseEntity deleteAllRelationByService(Long projectId, Long appServiceId) {
+        throw new CommonException("error.delete.all.repo.relation");
+    }
 }
