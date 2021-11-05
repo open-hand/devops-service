@@ -61,4 +61,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
             column(name: 'end_time', type: 'DATETIME', remarks: '结束部署时间', afterColumn: 'sequence')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2021-11-05-add-column') {
+        addColumn(tableName: 'devops_hzero_deploy_details') {
+            column(name: 'hzero_type', type: 'VARCHAR(32)', remarks: 'hzero版本：sass、open', afterColumn: 'sequence')
+        }
+    }
 }

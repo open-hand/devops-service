@@ -486,7 +486,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
         hzeroDeployRecordVO.setMktApplication(marketServiceDeployObjectVO != null ? marketServiceDeployObjectVO.getMarketAppName() : "none");
         hzeroDeployRecordVO.setMktAppVersion(marketServiceDeployObjectVO != null ? marketServiceDeployObjectVO.getMarketAppVersion() : "none");
         hzeroDeployRecordVO.setDeployDetailsVOList(devopsHzeroDeployDetailsVOS);
-        hzeroDeployRecordVO.setType(marketServiceClientOperator.queryHzeroAppType(marketServiceDeployObjectVO.getMarketAppId()));
+        hzeroDeployRecordVO.setType(devopsHzeroDeployDetailsVOS.get(0).getHzeroType());
 
         return hzeroDeployRecordVO;
     }

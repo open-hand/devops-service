@@ -118,6 +118,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                 deploySourceVO,
                 businessKey);
         List<DevopsHzeroDeployDetailsDTO> devopsHzeroDeployDetailsList = new ArrayList<>();
+        String type = marketServiceClientOperator.queryHzeroAppType(hzeroDeployVO.getMktAppId());
         hzeroDeployVO.getDeployDetailsVOList().forEach(instanceVO -> {
             // 保存部署配置
             DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseSave(new DevopsHzeroDeployConfigDTO(instanceVO.getValue(),
@@ -132,7 +133,8 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
                     HzeroDeployDetailsStatusEnum.CREATED.value(),
                     instanceVO.getAppCode(),
                     instanceVO.getAppName(),
-                    instanceVO.getSequence()));
+                    instanceVO.getSequence(),
+                    type));
             devopsHzeroDeployDetailsList.add(devopsHzeroDeployDetailsDTO);
         });
         // 构建工作流部署对象
