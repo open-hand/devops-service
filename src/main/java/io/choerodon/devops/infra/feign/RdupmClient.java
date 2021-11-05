@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.NexusServerConfig;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -79,9 +80,9 @@ public interface RdupmClient {
      */
     @DeleteMapping("/v1/harbor-choerodon-repos/project/{projectId}/{appServiceId}/delete_all_relation")
     ResponseEntity deleteAllRelationByService(@ApiParam(value = "猪齿鱼项目ID", required = true)
-                                           @PathVariable("projectId") Long projectId,
-                                           @ApiParam(value = "应用服务ID", required = true)
-                                           @PathVariable("appServiceId") Long appServiceId);
+                                              @PathVariable("projectId") Long projectId,
+                                              @ApiParam(value = "应用服务ID", required = true)
+                                              @PathVariable("appServiceId") Long appServiceId);
 
     /**
      * 仓库配置查询接口
@@ -198,4 +199,10 @@ public interface RdupmClient {
     ResponseEntity<C7nNexusRepoDTO> getMavenRepo(@ApiParam(value = "组织ID", required = true) @PathVariable(name = "organizationId") Long organizationId,
                                                  @ApiParam(value = "项目Id", required = true) @PathVariable(name = "projectId") Long projectId,
                                                  @ApiParam(value = "仓库主键Id", required = true) @PathVariable(name = "repositoryId") @Encrypt Long repositoryId);
+
+
+    @ApiOperation(value = "查询默认的nexus仓库配置")
+    @GetMapping("/v1/nexus-repositorys/{organizationId}/default/maven")
+    ResponseEntity<NexusServerConfig> getDefaultMavenRepo(@ApiParam(value = "组织ID", required = true) @PathVariable(name = "organizationId") Long organizationId);
+
 }

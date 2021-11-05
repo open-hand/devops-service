@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.NexusServerConfig;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -114,5 +115,10 @@ public class RdupmClientFallback implements RdupmClient {
     @Override
     public ResponseEntity deleteAllRelationByService(Long projectId, Long appServiceId) {
         throw new CommonException("error.delete.all.repo.relation");
+    }
+
+    @Override
+    public ResponseEntity<NexusServerConfig> getDefaultMavenRepo(Long organizationId) {
+        throw new CommonException("error.query.nexus.service.config");
     }
 }
