@@ -104,7 +104,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (groupDTO == null) {
             return false;
         }
-        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabAppGroupId(groupDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabGroupId(groupDTO.getId());
         LOGGER.info(">>>>>>>>>>>>>>>>>devopsProjectDTO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsProjectDTO));
 
         if (devopsProjectDTO == null) {

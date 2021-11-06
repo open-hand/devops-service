@@ -43,4 +43,9 @@
             #{id}
         </foreach>
     </select>
+    <select id="baseQueryByGitlabGroupId" resultType="io.choerodon.devops.infra.dto.DevopsProjectDTO">
+        SELECT *
+        FROM devops_project dp
+        WHERE dp.devops_app_group_id = #{groupId} OR dp.devops_env_group_id = #{groupId} OR dp.devops_cluster_env_group_id = #{groupId}
+    </select>
 </mapper>

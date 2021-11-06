@@ -21,4 +21,7 @@ public interface DevopsProjectMapper extends BaseMapper<DevopsProjectDTO> {
     List<GitlabProjectSimple> selectByProjectIds(@Param("projectIds") List<Long> projectIds);
 
     List<DevopsProjectDTO> listExistGroup(@Param("groupIds") Set<Integer> groupIds);
+
+    DevopsProjectDTO baseQueryByGitlabGroupId(@Param("groupId") Integer groupId);
+
 }

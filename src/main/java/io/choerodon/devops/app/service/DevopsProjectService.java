@@ -22,6 +22,8 @@ public interface DevopsProjectService {
 
     DevopsProjectDTO baseQueryByGitlabAppGroupId(Integer appGroupId);
 
+    DevopsProjectDTO baseQueryByGitlabGroupId(Integer groupId);
+
     /**
      * 通过项目id查询纪录, 会对查询结果进行校验
      *
