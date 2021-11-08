@@ -66,7 +66,7 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
         devopsHzeroDeployDetailsDTO.setStatus(status.value());
         if ((Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.SUCCESS.value()) || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.FAILED.value())
                 || Objects.equals(status.value(), HzeroDeployDetailsStatusEnum.CANCELED.value())) && devopsHzeroDeployDetailsDTO.getStartTime() != null) {
-            if (devopsHzeroDeployDetailsDTO.getEndTime() != null) {
+            if (devopsHzeroDeployDetailsDTO.getEndTime() == null) {
                 devopsHzeroDeployDetailsDTO.setEndTime(new Date());
             }
         }

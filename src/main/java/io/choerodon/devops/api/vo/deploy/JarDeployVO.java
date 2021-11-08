@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo.deploy;
 
 import java.util.List;
-import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;

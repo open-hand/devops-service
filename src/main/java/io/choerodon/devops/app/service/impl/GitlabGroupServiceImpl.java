@@ -47,6 +47,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private long standardRepositoryStorageLimit;
     @Value(value = "${choerodon.sass.resource-limit.gitlab.senior}")
     private long seniorRepositoryStorageLimit;
+    @Value(value = "${devops.proxyToken}")
+    private String proxyToken;
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -89,6 +91,11 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
     @Override
     public Boolean checkRepositoryAvailable(String groupName, String projectName, String token) {
+        // 校验token
+        if (!proxyToken.equals(token)) {
+            throw new CommonException("error.token.is.invalid");
+        }
+
         LOGGER.info(">>>>>>>>>>>>>>>>>checkRepositoryAvailable,groupName: {}, projectName：{}， token： {}<<<<<<<<<<<<<<<<", groupName, projectName, token);
         // 1. 先判断租户是否有限制，没有限制则直接放行
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(groupName, null);

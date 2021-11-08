@@ -17,11 +17,22 @@ public class C7nNexusRepoDTO {
     @ApiModelProperty(value = "仓库名称")
     private String neRepositoryName;
 
-    @ApiModelProperty(value = "访问url")
-    private String url;
+//    @ApiModelProperty(value = "访问url")
+//    private String url;
+
+    @ApiModelProperty(value = "内部url")
+    private String internalUrl;
 
     @ApiModelProperty(value = "仓库的版本策略")
     private String versionPolicy;
+
+    public String getInternalUrl() {
+        return internalUrl;
+    }
+
+    public void setInternalUrl(String internalUrl) {
+        this.internalUrl = internalUrl;
+    }
 
     public String getVersionPolicy() {
         return versionPolicy;
@@ -31,13 +42,13 @@ public class C7nNexusRepoDTO {
         this.versionPolicy = versionPolicy;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
+//    public String getUrl() {
+//        return url;
+//    }
+//
+//    public void setUrl(String url) {
+//        this.url = url;
+//    }
 
     public Long getConfigId() {
         return configId;

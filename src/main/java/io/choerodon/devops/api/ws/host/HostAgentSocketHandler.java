@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
-import io.choerodon.devops.app.service.DeployConfigService;
+
 import org.hzero.websocket.constant.ClientWebSocketConstant;
 import org.hzero.websocket.vo.MsgVO;
 import org.slf4j.Logger;
@@ -56,9 +56,6 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    @Autowired
-    private DeployConfigService deployConfigService;
-
     @Override
     public String processor() {
         return DevOpsWebSocketConstants.HOST_AGENT;
@@ -90,16 +87,14 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
             Map<String, String> upgradeInfo = new HashMap<>();
-            upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId()));
+            upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId(), true));
             upgradeInfo.put("version", agentVersion);
             hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
-            hostMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(Long.parseLong(hostId)));
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         } else {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
             hostMsgVO.setHostId(hostId);
-            hostMsgVO.setConfigSettings(deployConfigService.doCreateConfigSettings(Long.parseLong(hostId)));
             // 为了保持和其他通过hzero发送的消息结构一致
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         }

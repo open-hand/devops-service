@@ -75,10 +75,22 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
     @ApiModelProperty("结束部署时间")
     private Date endTime;
 
+    @ApiModelProperty("hzero版本类型")
+    private String hzeroType;
+
     public DevopsHzeroDeployDetailsDTO() {
     }
 
-    public DevopsHzeroDeployDetailsDTO(Long deployRecordId, Long envId, Long mktServiceId, Long mktDeployObjectId, Long valueId, String status, String appCode, String appName, Long sequence) {
+    public DevopsHzeroDeployDetailsDTO(Long deployRecordId,
+                                       Long envId,
+                                       Long mktServiceId,
+                                       Long mktDeployObjectId,
+                                       Long valueId,
+                                       String status,
+                                       String appCode,
+                                       String appName,
+                                       Long sequence,
+                                       String hzeroType) {
         this.deployRecordId = deployRecordId;
         this.envId = envId;
         this.mktServiceId = mktServiceId;
@@ -88,6 +100,15 @@ public class DevopsHzeroDeployDetailsDTO extends AuditDomain {
         this.appCode = appCode;
         this.appName = appName;
         this.sequence = sequence;
+        this.hzeroType = hzeroType;
+    }
+
+    public String getHzeroType() {
+        return hzeroType;
+    }
+
+    public void setHzeroType(String hzeroType) {
+        this.hzeroType = hzeroType;
     }
 
     public String getAppCode() {

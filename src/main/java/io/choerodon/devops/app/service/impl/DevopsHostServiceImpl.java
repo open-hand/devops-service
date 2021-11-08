@@ -568,9 +568,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String queryShell(Long projectId, Long hostId) {
+    public String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
-        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
+        // 如果是agent自动升级查询shell，那么不进行权限校验
+        if (!queryForAutoUpdate) {
+            devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
+        }
         return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
     }
 
@@ -588,7 +591,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return;
         }
         Map<String, String> map = new HashMap<>();
-        String command = queryShell(projectId, hostId);
+        String command = queryShell(projectId, hostId, false);
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
         automaticHost(devopsHostConnectionVO, map, redisKey, command);
     }

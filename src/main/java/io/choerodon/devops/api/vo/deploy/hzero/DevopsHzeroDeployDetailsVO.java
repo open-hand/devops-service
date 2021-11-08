@@ -74,6 +74,17 @@ public class DevopsHzeroDeployDetailsVO {
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
 
+    @ApiModelProperty("hzero版本类型")
+    private String hzeroType;
+
+    public String getHzeroType() {
+        return hzeroType;
+    }
+
+    public void setHzeroType(String hzeroType) {
+        this.hzeroType = hzeroType;
+    }
+
     public Long getAppId() {
         return appId;
     }

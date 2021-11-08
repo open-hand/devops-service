@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -148,6 +149,8 @@ public class SagaHandler {
      */
     @SagaTask(code = SagaTaskCodeConstants.IAM_UPDATE_MEMBER_ROLE,
             description = "角色同步事件",
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
+            concurrentLimitNum = 30,
             sagaCode = SagaTopicCodeConstants.IAM_UPDATE_MEMBER_ROLE,
             maxRetryCount = 3, seq = 1)
     public List<GitlabGroupMemberVO> handleGitlabGroupMemberEvent(String payload) {

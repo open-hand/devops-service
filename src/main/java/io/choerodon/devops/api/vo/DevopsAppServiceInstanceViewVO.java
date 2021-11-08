@@ -8,10 +8,21 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsAppServiceInstanceViewVO {
     @Encrypt
     private Long id;
+    @Encrypt
+    private Long appId;
     private String code;
     private Long podCount;
     private Long podRunningCount;
     private String status;
+
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getId() {
         return id;
