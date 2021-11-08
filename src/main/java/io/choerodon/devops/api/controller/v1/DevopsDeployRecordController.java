@@ -75,7 +75,7 @@ public class DevopsDeployRecordController {
     @PutMapping("/{record_id}/stop")
     public ResponseEntity<Void> stop(
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "record_id") Long recordId) {
+            @Encrypt @PathVariable(value = "record_id") Long recordId) {
         devopsDeployRecordService.stop(projectId, recordId);
         return ResponseEntity.noContent().build();
     }

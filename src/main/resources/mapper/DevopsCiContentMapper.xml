@@ -14,7 +14,7 @@
         UPDATE devops_ci_content
         SET ci_content_file = REPLACE ( ci_content_file, #{nexusDefaultUrl,jdbcType=VARCHAR}, #{nexusProxyUrl,jdbcType=VARCHAR} )
         WHERE
-	    id IN
+        ci_pipeline_id IN
         <foreach collection="ids" item="id" index="index"
                  open="(" close=")" separator=",">
             #{id,jdbcType=BIGINT}

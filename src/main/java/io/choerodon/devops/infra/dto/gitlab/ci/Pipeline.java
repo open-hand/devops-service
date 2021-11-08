@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Pipeline {
 
     private Integer id;
-    private PipelineStatus status;
+    private String status;
     private String ref;
     private String sha;
     private String beforeSha;
@@ -34,11 +34,11 @@ public class Pipeline {
         this.id = id;
     }
 
-    public PipelineStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(PipelineStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

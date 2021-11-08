@@ -296,7 +296,7 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId) {
-        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId));
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId,false));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -122,7 +123,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR_KEY = "%s-%s:%s";
     private static final String PRIVATE_TOKEN_FORMAT = "private-token:%s";
     private static final String PRIVATE_TOKEN_ID_FORMAT = "private-token-id:%s";
-    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
+    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*");
     private static final String ISSUE = "issue";
     private static final String COVERAGE = "coverage";
     private static final String SONAR = "sonar";
@@ -577,11 +578,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         //保存应用服务与harbor仓库的关系
         if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
             if (DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
-                HarborRepoDTO beforeRepo = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
-                //如果之前存在非默认仓库与应用服务的关联关系，则删除
-                if (!Objects.isNull(beforeRepo) && !DEFAULT_REPO.equals(beforeRepo.getRepoType())) {
-                    deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
-                }
+                deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
             }
             if (CUSTOM_REPO.equals((appServiceUpdateDTO.getHarborRepoConfigDTO().getType()))) {
                 deleteHarborAppServiceRel(projectId, appServiceDTO.getId());
@@ -601,10 +598,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void deleteHarborAppServiceRel(Long projectId, Long appServcieId) {
-        HarborCustomRepo harborCustomRepoVO = rdupmClient.listRelatedCustomRepoByService(projectId, appServcieId).getBody();
-        if (!Objects.isNull(harborCustomRepoVO)) {
-            rdupmClient.deleteRelationByService(projectId, appServcieId, harborCustomRepoVO.getId());
-        }
+        //删除应用服务关联的所有自定义仓库
+        rdupmClient.deleteAllRelationByService(projectId, appServcieId);
     }
 
 
@@ -960,9 +955,15 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     public void setExternalProjectHook(AppServiceDTO appServiceDTO, Integer projectId, String token, AppExternalConfigDTO appExternalConfigDTO) {
-        ProjectHookDTO projectHookDTO =new ProjectHookDTO();
-        projectHookDTO.setPipelineEvents(true);
-        projectHookDTO.setJobEvents(true);
+        ProjectHookDTO projectHookDTO = new ProjectHookDTO(false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false,
+                false,
+                false);
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
@@ -1284,7 +1285,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
-
         // 获取当前操作的用户的信息
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -2487,7 +2487,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal)
-                        );
+                );
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
@@ -2736,7 +2736,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", true);
+                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
                 return ArrayUtil.singleAsList(appServiceGroupVO);
@@ -2758,7 +2758,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         Set<Long> ids = baseServiceClientOperator.listProjectIdsInOrg(organizationId);
         // 移除当前项目
         ids.remove(projectId);
-        if (CollectionUtils.isEmpty(ids)){
+        if (CollectionUtils.isEmpty(ids)) {
             return new ArrayList<>();
         }
         List<AppServiceDTO> list = appServiceMapper.listShareAppServiceHavingVersion(ids, projectId, serviceType, params, includeExternal);
@@ -3706,6 +3706,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         boolean flag = true;
         try {
             // 校验账户权限
+            appExternalConfigDTO.setRepositoryUrl(appExternalConfigDTO.getRepositoryUrl().replace(".git", ""));
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
             if (gitlabProjectDTO == null || gitlabProjectDTO.getId() == null) {

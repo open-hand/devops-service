@@ -141,12 +141,12 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
                     if (!Objects.isNull(c7nNexusRepoDTO)) {
                         neRepositoryName = c7nNexusRepoDTO.getNeRepositoryName();
-                        String[] temp = c7nNexusRepoDTO.getUrl().split(BaseConstants.Symbol.SLASH);
+                        String[] temp = c7nNexusRepoDTO.getInternalUrl().split(BaseConstants.Symbol.SLASH);
                         String repo = temp[temp.length - 1];
-                        if (c7nNexusRepoDTO.getUrl().endsWith("/")) {
-                            c7nNexusRepoDTO.setUrl(c7nNexusRepoDTO.getUrl().substring(0, c7nNexusRepoDTO.getUrl().length() - 1));
+                        if (c7nNexusRepoDTO.getInternalUrl().endsWith("/")) {
+                            c7nNexusRepoDTO.setInternalUrl(c7nNexusRepoDTO.getInternalUrl().substring(0, c7nNexusRepoDTO.getInternalUrl().length() - 1));
                         }
-                        baseUrl = c7nNexusRepoDTO.getUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
+                        baseUrl = c7nNexusRepoDTO.getInternalUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
                         String finalNeRepositoryName = neRepositoryName;
                         server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
                     }

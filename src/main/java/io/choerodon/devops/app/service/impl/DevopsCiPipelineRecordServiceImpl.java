@@ -230,7 +230,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         recordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
         recordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
-        Long iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        Long iamUserId;
+        if (applicationDTO.getExternalConfigId() == null) {
+            iamUserId = getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        } else {
+            // 外置仓库默认使用admin账户执行
+            iamUserId = IamAdminIdHolder.getAdminId();
+        }
+
         CustomContextUtil.setDefaultIfNull(iamUserId);
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
@@ -817,7 +824,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setCreatedDate(pipeline.getCreatedAt());
         pipelineRecordDTO.setFinishedDate(pipeline.getFinished_at());
         pipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(pipeline.getDuration()));
-        pipelineRecordDTO.setStatus(pipeline.getStatus().toValue());
+        pipelineRecordDTO.setStatus(pipeline.getStatus());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
         pipelineRecordDTO.setCommitSha(pipeline.getSha());
@@ -844,7 +851,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         try {
             // 更新pipeline status
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus().toValue());
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = updatePipelineStatus(gitlabPipelineId, pipeline.getStatus());
             // 更新job status
 
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
