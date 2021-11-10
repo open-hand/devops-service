@@ -20,6 +20,17 @@ public class GroupDTO {
     private Integer parentId;
     private Integer sharedRunnersMinutesLimit;
 
+    private GroupStatistics statistics;
+
+
+    public GroupStatistics getStatistics() {
+        return statistics;
+    }
+
+    public void setStatistics(GroupStatistics statistics) {
+        this.statistics = statistics;
+    }
+
     private boolean bindFlag = false;
 
     public boolean getBindFlag() {

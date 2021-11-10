@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -145,6 +146,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final String GITLAB_VARIABLE_TOKEN = "Token";
     public static final String GITLAB_VARIABLE_TRIVY_INSECURE = "TRIVY_INSECURE";
     public static final String CHOERODON_URL = "CHOERODON_URL";
+    private static final Long ONE_GB_TO_B = 1073741824L;
 
     /**
      * CI 文件模板
@@ -252,6 +254,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private ExternalGitUtil externalGitUtil;
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -2102,13 +2106,22 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<ResourceVO> listResourceByIds(List<Long> projectIds) {
+    public List<ResourceVO> listResourceByIds(Long organizationId, List<Long> projectIds) {
         List<ResourceVO> resourceVOList;
         if (CollectionUtils.isEmpty(projectIds)) {
             return new ArrayList<>();
         } else {
             resourceVOList = new ArrayList<>();
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId, false);
+            if (tenant == null) {
+                return new ArrayList<>();
+            }
+            DecimalFormat df = new DecimalFormat("#.00");
             projectIds.forEach(t -> {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t);
+                if (projectDTO == null) {
+                    return;
+                }
                 ResourceVO resourceVO = appServiceMapper.queryResourceById(t);
                 if (resourceVO == null) {
                     resourceVO = new ResourceVO();
@@ -2116,11 +2129,48 @@ public class AppServiceServiceImpl implements AppServiceService {
                     resourceVO.setCurrentEnv(0L);
                     resourceVO.setCurrentCluster(0L);
                     resourceVO.setProjectId(t);
+                    GroupDTO groupDTO = queryGroupWithStatistics(tenant.getTenantNum(), projectDTO);
+                    GroupStatistics statistics = groupDTO.getStatistics();
+                    if (statistics == null) {
+                        if (statistics.getStorageSize() < ONE_GB_TO_B) {
+                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(statistics.getStorageSize(), 1.0 / 2.0)) + "MB");
+                        } else if (statistics.getStorageSize() >= ONE_GB_TO_B) {
+                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(statistics.getStorageSize(), 1.0 / 3.0)) + "GB");
+                        }
+                    }
                 }
                 resourceVOList.add(resourceVO);
             });
             return resourceVOList;
         }
+    }
+
+    @Nullable
+    private GroupDTO queryGroupWithStatistics(String tenantCode, ProjectDTO projectDTO) {
+        //查询内置仓库的所有仓库的使用量
+        DevopsProjectDTO record = new DevopsProjectDTO();
+        record.setIamProjectId(projectDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectOne(record);
+        //创建失败的项目和非devops类型的项目不统计
+        if (devopsProjectDTO == null || devopsProjectDTO.getDevopsAppGroupId() == null) {
+            return null;
+        }
+        UserAttrDTO userRecord = new UserAttrDTO();
+        userRecord.setIamUserId(DetailsHelper.getUserDetails().getUserId());
+        UserAttrDTO userAttrDTO = userAttrMapper.selectOne(userRecord);
+        if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+            return null;
+        }
+        String path = tenantCode + BaseConstants.Symbol.MIDDLE_LINE + projectDTO.getCode();
+        List<GroupDTO> groupDTOS = gitlabServiceClientOperator.queryGroupWithStatisticsByName(path, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), Boolean.TRUE);
+        if (!CollectionUtils.isEmpty(groupDTOS)) {
+            List<GroupDTO> projectGroups = groupDTOS.stream().filter(groupDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(groupDTO.getPath(), path)).collect(toList());
+            if (CollectionUtils.isEmpty(projectGroups)) {
+                return projectGroups.get(0);
+            }
+
+        }
+        return null;
     }
 
     @Override

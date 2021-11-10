@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.iam;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @Author: scp
  * @Description:
@@ -11,6 +13,17 @@ public class ResourceVO {
     private Long currentAppService;
     private Long currentCluster;
     private Long currentEnv;
+
+    @ApiModelProperty("当前gitlab的使用量")
+    private String currentGitlabCapacity;
+
+    public String getCurrentGitlabCapacity() {
+        return currentGitlabCapacity;
+    }
+
+    public void setCurrentGitlabCapacity(String currentGitlabCapacity) {
+        this.currentGitlabCapacity = currentGitlabCapacity;
+    }
 
     public Long getProjectId() {
         return projectId;
