@@ -392,7 +392,8 @@ public class GitlabServiceClientOperator {
 
     /**
      * 这里是更新master分支上的文件内容
-     *  @param projectId     项目id
+     *
+     * @param projectId     项目id
      * @param path          文件路径
      * @param content       文件内容
      * @param commitMessage 提交信息
@@ -747,7 +748,7 @@ public class GitlabServiceClientOperator {
     public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null,null, null);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null, null, null);
         } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
         }
@@ -1157,7 +1158,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<CommitDTO> listExternalCommits(Integer projectId,Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
+    public List<CommitDTO> listExternalCommits(Integer projectId, Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
@@ -1582,5 +1583,11 @@ public class GitlabServiceClientOperator {
                 appExternalConfigVO.getPassword()).getBody();
 
     }
+
+    public List<GroupDTO> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
+
+        return gitlabServiceClient.queryGroupWithStatisticsByName(groupName, userId, statistics).getBody();
+    }
+
 
 }
