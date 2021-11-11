@@ -761,13 +761,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
-            applicationDTOServiceList = appServiceMapper.listByActive(projectId);
+            applicationDTOServiceList = appServiceMapper.listByActive(projectId, null);
         } else {
             Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new ArrayList<>();
             }
-            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId);
+            applicationDTOServiceList = appServiceMapper.listProjectMembersAppServiceByActive(projectId, appServiceIds, userId, null);
         }
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -3731,5 +3731,23 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceDTO> appServiceDTOS = appServiceMapper.listByActiveAndProjects(projectIds);
         return appServiceDTOS;
+    }
+
+    @Override
+    public Page<AppServiceDTO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param) {
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false);
+        boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
+        Page<AppServiceDTO> appServiceDTOPage;
+        if (projectOwner) {
+            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listByActive(targetProjectId, param));
+        } else {
+            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), targetProjectId, userId);
+            if (CollectionUtils.isEmpty(appServiceIds)) {
+                return new Page<>();
+            }
+            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listProjectMembersAppServiceByActive(targetProjectId, appServiceIds, userId, param));
+        }
+        return appServiceDTOPage;
     }
 }

@@ -392,6 +392,28 @@ public class AppServiceController {
     }
 
     /**
+     * 分页查询指定项目已启用应用服务
+     *
+     * @param projectId 项目id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询指定项目已启用应用服务")
+    @GetMapping("/page_by_active")
+    public ResponseEntity<Page<AppServiceDTO>> pageByActive(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "搜索参数")
+            @RequestParam(name = "param", required = false) String param,
+            @RequestParam("target_project_id") Long targetProjectId
+    ) {
+        return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, pageRequest, param))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+    }
+
+    /**
      * 项目下查询所有已经启用服务数量
      *
      * @param projectId 项目id

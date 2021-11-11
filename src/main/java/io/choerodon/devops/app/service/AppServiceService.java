@@ -607,4 +607,5 @@ public interface AppServiceService {
 
     List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds);
 
+    Page<AppServiceDTO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param);
 }
