@@ -2129,13 +2129,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                     resourceVO.setCurrentEnv(0L);
                     resourceVO.setCurrentCluster(0L);
                     resourceVO.setProjectId(t);
+                    resourceVO.setCurrentGitlabCapacity(String.valueOf(0));
+                } else {
                     GroupDTO groupDTO = queryGroupWithStatistics(tenant.getTenantNum(), projectDTO);
-                    GroupStatistics statistics = groupDTO.getStatistics();
-                    if (statistics == null) {
-                        if (statistics.getStorageSize() < ONE_GB_TO_B) {
-                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(statistics.getStorageSize(), 1.0 / 2.0)) + "MB");
-                        } else if (statistics.getStorageSize() >= ONE_GB_TO_B) {
-                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(statistics.getStorageSize(), 1.0 / 3.0)) + "GB");
+                    if (groupDTO != null && groupDTO.getStatistics() != null) {
+                        if (groupDTO.getStatistics().getStorageSize() == 0) {
+                            resourceVO.setCurrentGitlabCapacity(String.valueOf(0));
+                        } else if (groupDTO.getStatistics().getStorageSize() < ONE_GB_TO_B && groupDTO.getStatistics().getStorageSize() > 0) {
+                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(groupDTO.getStatistics().getStorageSize(), 1.0 / 2.0)) + "MB");
+                        } else if (groupDTO.getStatistics().getStorageSize() >= ONE_GB_TO_B) {
+                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(groupDTO.getStatistics().getStorageSize(), 1.0 / 3.0)) + "GB");
                         }
                     }
                 }
@@ -2165,7 +2168,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<GroupDTO> groupDTOS = gitlabServiceClientOperator.queryGroupWithStatisticsByName(path, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), Boolean.TRUE);
         if (!CollectionUtils.isEmpty(groupDTOS)) {
             List<GroupDTO> projectGroups = groupDTOS.stream().filter(groupDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(groupDTO.getPath(), path)).collect(toList());
-            if (CollectionUtils.isEmpty(projectGroups)) {
+            if (!CollectionUtils.isEmpty(projectGroups)) {
                 return projectGroups.get(0);
             }
 
