@@ -2116,7 +2116,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (tenant == null) {
                 return new ArrayList<>();
             }
-            DecimalFormat df = new DecimalFormat("#.00");
+
             projectIds.forEach(t -> {
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t);
                 if (projectDTO == null) {
@@ -2136,9 +2136,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                         if (groupDTO.getStatistics().getStorageSize() == 0) {
                             resourceVO.setCurrentGitlabCapacity(String.valueOf(0));
                         } else if (groupDTO.getStatistics().getStorageSize() < ONE_GB_TO_B && groupDTO.getStatistics().getStorageSize() > 0) {
-                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(groupDTO.getStatistics().getStorageSize(), 1.0 / 2.0)) + "MB");
+                            resourceVO.setCurrentGitlabCapacity(String.format("%.2f", groupDTO.getStatistics().getStorageSize() / new BigDecimal(1024).pow(2).doubleValue()) + "MB");
+
                         } else if (groupDTO.getStatistics().getStorageSize() >= ONE_GB_TO_B) {
-                            resourceVO.setCurrentGitlabCapacity(df.format(Math.pow(groupDTO.getStatistics().getStorageSize(), 1.0 / 3.0)) + "GB");
+                            resourceVO.setCurrentGitlabCapacity(String.format("%.2f", groupDTO.getStatistics().getStorageSize() / new BigDecimal(1024).pow(3).doubleValue()) + "GB");
                         }
                     }
                 }
