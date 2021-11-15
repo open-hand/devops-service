@@ -83,12 +83,12 @@ public interface AppServiceService {
     /**
      * 组织下分页查询服务
      *
-     * @param projectId  项目id
-     * @param isActive   是否启用
-     * @param hasVersion 是否存在版本
-     * @param appMarket  服务市场导入
-     * @param pageable   分页参数
-     * @param params     参数
+     * @param projectId       项目id
+     * @param isActive        是否启用
+     * @param hasVersion      是否存在版本
+     * @param appMarket       服务市场导入
+     * @param pageable        分页参数
+     * @param params          参数
      * @param includeExternal
      * @return Page
      */
@@ -555,7 +555,7 @@ public interface AppServiceService {
      * @param projectIds
      * @return
      */
-    List<ResourceVO> listResourceByIds(List<Long> projectIds);
+    List<ResourceVO> listResourceByIds(Long organizationId, List<Long> projectIds);
 
     /**
      * @param appServiceList

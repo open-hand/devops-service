@@ -861,4 +861,11 @@ public interface GitlabServiceClient {
                                                                         @RequestParam(value = "accessToken") String accessToken,
                                                                         @RequestParam(value = "username") String username,
                                                                         @RequestParam(value = "password") String password);
+
+    @GetMapping(value = "/v1/groups/{group_name}/with_statistics")
+    ResponseEntity<List<GroupDTO>> queryGroupWithStatisticsByName(
+            @PathVariable(value = "group_name") String groupName,
+            @RequestParam("userId") Integer userId,
+            @RequestParam(value = "statistics") Boolean statistics);
+
 }
