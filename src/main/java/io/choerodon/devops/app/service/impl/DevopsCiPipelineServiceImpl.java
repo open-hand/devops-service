@@ -161,6 +161,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private DevopsPipelineBranchRelMapper devopsPipelineBranchRelMapper;
+    @Autowired
+    private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -371,6 +373,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
             MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");
         });
+
+        // 保存流水线函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
+        }
+
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         // 2.保存cd stage信息
@@ -1238,6 +1250,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return pipelineInstanceReferenceVOList;
     }
 
+    @Override
+    public List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId) {
+        return devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(pipelineId);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
@@ -1449,6 +1466,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
             // 之前不存在ci stage则证明之前是纯cd流水线
             initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
+        }
+
+        // 更新流水线函数
+        // 先删除之前的函数
+        devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
+        // 保存新的函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
         }
 
         //更新CI流水线
