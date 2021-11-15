@@ -78,7 +78,7 @@ public interface DevopsCiPipelineService {
     /**
      * 全新执行流水线
      */
-    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref);
+    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref, Map<String, String> variables);
 
     /**
      * 校验用户是否有分支权限

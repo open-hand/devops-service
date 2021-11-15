@@ -1409,7 +1409,7 @@ public class GitlabServiceClientOperator {
     public Pipeline createPipeline(int projectId,
                                    int gitlabUserid,
                                    String ref,
-                                   @Nullable AppExternalConfigDTO appExternalConfigDTO) {
+                                   @Nullable AppExternalConfigDTO appExternalConfigDTO, Map<String, String> variables) {
         ResponseEntity<Pipeline> pipeline;
         try {
             if (appExternalConfigDTO == null) {
@@ -1420,7 +1420,8 @@ public class GitlabServiceClientOperator {
                         null,
                         null,
                         null,
-                        null);
+                        null,
+                        variables);
             } else {
                 GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
@@ -1431,7 +1432,8 @@ public class GitlabServiceClientOperator {
                         appExternalConfigDTO.getAuthType(),
                         appExternalConfigDTO.getAccessToken(),
                         appExternalConfigDTO.getUsername(),
-                        appExternalConfigDTO.getPassword());
+                        appExternalConfigDTO.getPassword(),
+                        variables);
             }
 
         } catch (Exception e) {

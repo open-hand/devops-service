@@ -447,7 +447,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password) {
+    public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password, Map<String, String> variables) {
         return null;
     }
 
