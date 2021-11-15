@@ -16,6 +16,9 @@ public class CiJob {
     private String image;
     @ApiModelProperty("所属stage")
     private String stage;
+
+    @ApiModelProperty("job的并发数")
+    private String parallel;
     @ApiModelProperty("ci里面的services")
     private List<CiJobServices> services;
     @YamlProperty(value = "after_script")
@@ -30,6 +33,14 @@ public class CiJob {
     private OnlyExceptPolicy except;
     @ApiModelProperty("缓存配置")
     private Cache cache;
+
+    public String getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(String parallel) {
+        this.parallel = parallel;
+    }
 
     public List<String> getAfterScript() {
         return afterScript;

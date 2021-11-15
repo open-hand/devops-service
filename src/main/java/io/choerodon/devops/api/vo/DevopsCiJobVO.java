@@ -31,6 +31,9 @@ public class DevopsCiJobVO {
     @ApiModelProperty("runner镜像地址")
     private String image;
 
+    @ApiModelProperty("job的并发数")
+    private String parallel;
+
     @Encrypt
     @ApiModelProperty("阶段id")
     private Long ciStageId;
@@ -82,6 +85,14 @@ public class DevopsCiJobVO {
     @Transient
     @ApiModelProperty("类型为build的job的metadata转为json后的对象")
     private CiConfigVO configVO;
+
+    public String getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(String parallel) {
+        this.parallel = parallel;
+    }
 
     public Long getId() {
         return id;

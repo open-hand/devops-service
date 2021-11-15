@@ -1619,6 +1619,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
+                    ciJob.setParallel(job.getParallel());
                     //增加afterScript
 //                    ciJob.setAfterScript(buildAfterScript(job));
                     //增加services
