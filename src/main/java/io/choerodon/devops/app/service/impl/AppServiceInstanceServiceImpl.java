@@ -1188,9 +1188,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //创建实例时，如果选择了创建网络
-        if (instanceSagaPayload.getDevopsServiceReqVO() != null) {
-            instanceSagaPayload.getDevopsServiceReqVO().setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
-            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), instanceSagaPayload.getDevopsServiceReqVO());
+        DevopsServiceReqVO devopsServiceReqVO = instanceSagaPayload.getDevopsServiceReqVO();
+        if (devopsServiceReqVO != null) {
+            devopsServiceReqVO.setAppServiceId(instanceSagaPayload.getApplicationDTO().getId());
+            devopsServiceReqVO.setEnvId(instanceSagaPayload.getDevopsEnvironmentDTO().getId());
+            devopsServiceService.create(instanceSagaPayload.getDevopsEnvironmentDTO().getProjectId(), devopsServiceReqVO);
         }
 
         try {
