@@ -179,9 +179,11 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     public void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO) {
         int count = 0;
         if (devopsServiceReqVO.getTargetAppServiceId() != null) count++;
+        if (devopsServiceReqVO.getTargetDeploymentId() != null) count++;
         if (!StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode())) count++;
         if (!ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints())) count++;
         if (!ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())) count++;
+
 
         if (count != 1) {
             throw new CommonException("error.deployment.way.not.only");
