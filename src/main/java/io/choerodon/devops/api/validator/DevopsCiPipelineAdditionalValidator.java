@@ -63,6 +63,8 @@ public class DevopsCiPipelineAdditionalValidator {
 
         validateImage(ciCdPipelineVO.getImage());
 
+        validateBranch(ciCdPipelineVO.getRelatedBranches());
+
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
@@ -95,6 +97,15 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+    }
+
+    private static void validateBranch(Set<String> relatedBranches) {
+        if (CollectionUtils.isEmpty(relatedBranches)) {
+            throw new CommonException("error.pipeline.related.branch.empty");
+        }
+        if (relatedBranches.size() > 5) {
+            throw new CommonException("error.pipeline.related.branch.size.invalid");
+        }
     }
 
     private static void validateTriggerRefRegex(DevopsCdJobVO job) {
