@@ -936,9 +936,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initMarketInstanceDevopsEnvCommandDTO(appServiceDeployVO);
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = initDevopsEnvCommandValueDTO(appServiceDeployVO.getValues());
 
-        //8.获取市场部署实例时授权secret的code
+        //8.获取市场部署实例时授权secret的code ,只同步了chart的市场应用不再创建 secret
         String secretCode = null;
-        if (isMarket(appServiceDeployVO.getSource())) {
+        if (isMarket(appServiceDeployVO.getSource()) && !Objects.isNull(marketServiceDeployObjectVO.getHarborConfigId())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, marketServiceDeployObjectVO);
         }
 
@@ -1597,7 +1597,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //获取授权secret
         String secretCode = null;
-        if (isMarket(appServiceInstanceDTO.getSource())) {
+        if (isMarket(appServiceInstanceDTO.getSource()) && !Objects.isNull(appServiceVersion.getHarborConfigId())) {
             secretCode = makeMarketSecret(projectId, devopsEnvironmentDTO, appServiceVersion);
         }
 
