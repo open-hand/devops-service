@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -3734,7 +3733,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceDTO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param) {
+    public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
@@ -3748,6 +3747,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listProjectMembersAppServiceByActive(targetProjectId, appServiceIds, userId, param));
         }
-        return appServiceDTOPage;
+        return ConvertUtils.convertPage(appServiceDTOPage, AppServiceVO.class);
     }
 }

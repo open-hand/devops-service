@@ -98,14 +98,14 @@ public class AppServiceController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab的url", required = true)
-            @RequestParam(value = "external_gitlab_url")  String externalGitlabUrl) {
+            @RequestParam(value = "external_gitlab_url") String externalGitlabUrl) {
         return ResponseEntity.ok(applicationServiceService.isExternalGitlabUrlUnique(externalGitlabUrl));
     }
 
     /**
      * 测试GITLAB是否联通
      *
-     * @param projectId         项目id
+     * @param projectId            项目id
      * @param appExternalConfigDTO gitlab的url
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -400,7 +400,7 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询指定项目已启用应用服务")
     @GetMapping("/page_by_active")
-    public ResponseEntity<Page<AppServiceDTO>> pageByActive(
+    public ResponseEntity<Page<AppServiceVO>> pageByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore PageRequest pageRequest,
