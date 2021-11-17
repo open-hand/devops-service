@@ -13,6 +13,8 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
+
 public class CiCdPipelineVO {
     @Encrypt(ignoreUserConflict = true)
     @Id
@@ -66,6 +68,7 @@ public class CiCdPipelineVO {
 
     private Set<String> relatedBranches;
 
+    private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
 
     private Long objectVersionNumber;
 
@@ -81,6 +84,14 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+
+    public List<DevopsCiPipelineFunctionDTO> getDevopsCiPipelineFunctionDTOList() {
+        return devopsCiPipelineFunctionDTOList;
+    }
+
+    public void setDevopsCiPipelineFunctionDTOList(List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList) {
+        this.devopsCiPipelineFunctionDTOList = devopsCiPipelineFunctionDTOList;
+    }
 
     public Set<String> getRelatedBranches() {
         return relatedBranches;

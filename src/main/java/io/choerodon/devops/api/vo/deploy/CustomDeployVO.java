@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -34,6 +36,9 @@ public class CustomDeployVO {
     private String postCommand;
 
     private FileInfoVO fileInfoVO;
+
+    @ApiModelProperty("部署配置文件列表")
+    private List<ConfigSettingVO> configSettingVOS;
 
     public CustomDeployVO() {
     }
@@ -115,5 +120,13 @@ public class CustomDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public List<ConfigSettingVO> getConfigSettingVOS() {
+        return configSettingVOS;
+    }
+
+    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
+        this.configSettingVOS = configSettingVOS;
     }
 }

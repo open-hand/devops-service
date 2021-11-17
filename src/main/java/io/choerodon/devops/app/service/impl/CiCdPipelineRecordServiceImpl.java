@@ -336,7 +336,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     @Transactional
-    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag) {
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag, Map<String, String> variables) {
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
         devopsCiStageDTO.setCiPipelineId(pipelineId);
@@ -368,7 +368,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
             devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), sha, ref, tag, null);
         } else {
-            devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
+            devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         }
     }
 

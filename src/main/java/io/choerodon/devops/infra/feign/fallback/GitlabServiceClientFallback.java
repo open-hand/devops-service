@@ -447,7 +447,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password) {
+    public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password, Map<String, String> variables) {
         return null;
     }
 
@@ -550,5 +550,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<CiVariableVO>> batchSaveExternalProjectVariable(Integer projectId, List<CiVariableVO> ciVariableVOList, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.save.external.project");
+    }
+
+    @Override
+    public ResponseEntity<List<GroupDTO>> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
+        throw new CommonException("error.query.group.statistics");
     }
 }
