@@ -555,7 +555,7 @@ public interface AppServiceService {
      * @param projectIds
      * @return
      */
-    List<ResourceVO> listResourceByIds(List<Long> projectIds);
+    List<ResourceVO> listResourceByIds(Long organizationId, List<Long> projectIds);
 
     /**
      * @param appServiceList

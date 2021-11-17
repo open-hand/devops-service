@@ -161,6 +161,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private DevopsPipelineBranchRelMapper devopsPipelineBranchRelMapper;
+    @Autowired
+    private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -371,6 +373,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
             MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");
         });
+
+        // 保存流水线函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
+        }
+
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         // 2.保存cd stage信息
@@ -928,7 +940,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     @Transactional
-    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref) {
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Map<String, String> variables) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
 
@@ -942,7 +954,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Pipeline pipeline = gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(),
                 userAttrDTO.getGitlabUserId().intValue(),
                 ref,
-                appExternalConfigDTO);
+                appExternalConfigDTO,
+                variables);
         // 保存执行记录
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(pipelineId, gitlabProjectId, pipeline);
@@ -1237,6 +1250,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return pipelineInstanceReferenceVOList;
     }
 
+    @Override
+    public List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId) {
+        return devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(pipelineId);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
@@ -1450,6 +1468,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
         }
 
+        // 更新流水线函数
+        // 先删除之前的函数
+        devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
+        // 保存新的函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
+        }
+
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
         //更新CD流水线
@@ -1619,6 +1649,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setImage(job.getImage());
                     }
                     ciJob.setStage(stageVO.getName());
+                    ciJob.setParallel(job.getParallel());
                     //增加afterScript
 //                    ciJob.setAfterScript(buildAfterScript(job));
                     //增加services

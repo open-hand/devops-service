@@ -593,6 +593,7 @@ public interface GitlabServiceClient {
      *
      * @param projectId 项目id
      * @param ref       分支
+     * @param variables
      * @return Pipeline
      */
     @ApiOperation(value = "Create a pipelines jobs ")
@@ -608,7 +609,8 @@ public interface GitlabServiceClient {
             @RequestParam(value = "authType") String authType,
             @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
-            @RequestParam(value = "password") String password);
+            @RequestParam(value = "password") String password,
+            @RequestBody Map<String, String> variables);
 
     /**
      * 查询job执行日志
@@ -861,4 +863,11 @@ public interface GitlabServiceClient {
                                                                         @RequestParam(value = "accessToken") String accessToken,
                                                                         @RequestParam(value = "username") String username,
                                                                         @RequestParam(value = "password") String password);
+
+    @GetMapping(value = "/v1/groups/{group_name}/with_statistics")
+    ResponseEntity<List<GroupDTO>> queryGroupWithStatisticsByName(
+            @PathVariable(value = "group_name") String groupName,
+            @RequestParam("userId") Integer userId,
+            @RequestParam(value = "statistics") Boolean statistics);
+
 }

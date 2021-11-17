@@ -392,7 +392,8 @@ public class GitlabServiceClientOperator {
 
     /**
      * 这里是更新master分支上的文件内容
-     *  @param projectId     项目id
+     *
+     * @param projectId     项目id
      * @param path          文件路径
      * @param content       文件内容
      * @param commitMessage 提交信息
@@ -747,7 +748,7 @@ public class GitlabServiceClientOperator {
     public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null,null, null);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null, null, null);
         } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
         }
@@ -1157,7 +1158,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<CommitDTO> listExternalCommits(Integer projectId,Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
+    public List<CommitDTO> listExternalCommits(Integer projectId, Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
@@ -1408,7 +1409,7 @@ public class GitlabServiceClientOperator {
     public Pipeline createPipeline(int projectId,
                                    int gitlabUserid,
                                    String ref,
-                                   @Nullable AppExternalConfigDTO appExternalConfigDTO) {
+                                   @Nullable AppExternalConfigDTO appExternalConfigDTO, Map<String, String> variables) {
         ResponseEntity<Pipeline> pipeline;
         try {
             if (appExternalConfigDTO == null) {
@@ -1419,7 +1420,8 @@ public class GitlabServiceClientOperator {
                         null,
                         null,
                         null,
-                        null);
+                        null,
+                        variables);
             } else {
                 GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
@@ -1430,7 +1432,8 @@ public class GitlabServiceClientOperator {
                         appExternalConfigDTO.getAuthType(),
                         appExternalConfigDTO.getAccessToken(),
                         appExternalConfigDTO.getUsername(),
-                        appExternalConfigDTO.getPassword());
+                        appExternalConfigDTO.getPassword(),
+                        variables);
             }
 
         } catch (Exception e) {
@@ -1582,5 +1585,11 @@ public class GitlabServiceClientOperator {
                 appExternalConfigVO.getPassword()).getBody();
 
     }
+
+    public List<GroupDTO> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
+
+        return gitlabServiceClient.queryGroupWithStatisticsByName(groupName, userId, statistics).getBody();
+    }
+
 
 }
