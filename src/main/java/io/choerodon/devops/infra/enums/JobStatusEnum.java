@@ -25,4 +25,14 @@ public enum JobStatusEnum {
     public String value() {
         return this.value;
     }
+    public static Boolean execEnd(String status) {
+        if (JobStatusEnum.FAILED.value().equals(status)
+                || JobStatusEnum.SUCCESS.value().equals(status)
+                || JobStatusEnum.CANCELED.value().equals(status)
+                || JobStatusEnum.SKIPPED.value().equals(status)
+                || JobStatusEnum.MANUAL.value().equals(status)) {
+            return true;
+        }
+        return false;
+    }
 }

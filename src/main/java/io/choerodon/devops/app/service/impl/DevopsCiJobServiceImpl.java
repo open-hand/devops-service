@@ -17,12 +17,14 @@ import org.springframework.util.StringUtils;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
+import io.choerodon.devops.infra.enums.JobStatusEnum;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
@@ -176,7 +178,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public String queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId) {
+    public DevopsCiJobLogVO queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         //检查该用户是否有git库的权限
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
@@ -184,8 +186,14 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
+        devopsCiJobRecordDTO.setAppServiceId(appServiceId);
+        devopsCiJobRecordDTO.setGitlabJobId(jobId);
+
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO1 = devopsCiJobRecordMapper.selectOne(devopsCiJobRecordDTO);
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceDTO.getId(), AppServiceEvent.CI_PIPELINE_DETAIL);
-        return gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
+        String logs = gitlabServiceClientOperator.queryTrace(gitlabProjectId.intValue(), jobId.intValue(), userAttrDTO.getGitlabUserId().intValue(), appExternalConfigDTO);
+        return new DevopsCiJobLogVO(JobStatusEnum.execEnd(devopsCiJobRecordDTO1.getStatus()), logs);
     }
 
     @Override
