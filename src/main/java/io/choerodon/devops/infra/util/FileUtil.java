@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.composer.Composer;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -608,14 +609,20 @@ public class FileUtil {
     /**
      * yaml format
      *
-     * @param yaml yaml value
+     * @param yamlStr yaml value
      */
-    public static void checkYamlFormat(String yaml) {
+    public static void checkYamlFormat(String yamlStr) {
+        LoaderOptions options = new LoaderOptions();
+        options.setAllowDuplicateKeys(false);
+        Yaml yaml = new Yaml(options);
+        Iterable<Object> objects = yaml.loadAll(yamlStr);
+        Iterator<Object> iterator = objects.iterator();
         try {
-            Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
-            composer.getSingleNode();
+            while (iterator.hasNext()) {
+                iterator.next();
+            }
         } catch (Exception e) {
-            throw new CommonException(e.getMessage(), e);
+            throw new CommonException("error.yaml.format.invalid", e);
         }
     }
 
