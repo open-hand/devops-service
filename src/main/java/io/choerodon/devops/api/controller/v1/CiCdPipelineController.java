@@ -58,6 +58,7 @@ public class CiCdPipelineController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
         DevopsCiPipelineAdditionalValidator.additionalCheckPipeline(ciCdPipelineVO);
+        DevopsCiPipelineAdditionalValidator.validateBranch(ciCdPipelineVO.getRelatedBranches());
         return ResponseEntity.ok(devopsCiPipelineService.create(projectId, ciCdPipelineVO));
     }
 

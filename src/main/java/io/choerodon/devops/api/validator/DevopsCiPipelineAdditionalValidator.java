@@ -63,8 +63,6 @@ public class DevopsCiPipelineAdditionalValidator {
 
         validateImage(ciCdPipelineVO.getImage());
 
-        validateBranch(ciCdPipelineVO.getRelatedBranches());
-
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
@@ -99,7 +97,7 @@ public class DevopsCiPipelineAdditionalValidator {
                 });
     }
 
-    private static void validateBranch(Set<String> relatedBranches) {
+    public static void validateBranch(Set<String> relatedBranches) {
         if (CollectionUtils.isEmpty(relatedBranches)) {
             throw new CommonException("error.pipeline.related.branch.empty");
         }
@@ -197,7 +195,7 @@ public class DevopsCiPipelineAdditionalValidator {
      *
      * @param image 镜像地址
      */
-    private static void validateImage(String image) {
+    public static void validateImage(String image) {
         if (image == null) {
             return;
         }
