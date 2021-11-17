@@ -159,7 +159,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         preConditions(onFail: "MARK_RAN") {
             indexExists(tableName: "devops_app_service", indexName: "uk_app_gitlab_project_id")
         }
-        dropIndex(tableName: "devops_app_service", indexName: "idx_gitlab_project_id")
+        dropIndex(tableName: "devops_app_service", indexName: "uk_app_gitlab_project_id")
     }
 
     changeSet(author: 'wanghao', id: '2021-09-29-add-columns') {
