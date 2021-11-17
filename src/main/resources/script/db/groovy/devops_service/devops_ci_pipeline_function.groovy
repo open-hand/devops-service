@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_function.groovy') {
                 constraintName: 'uk_function_name', columnNames: 'devops_pipeline_id,name')
 
         createIndex(indexName: "idx_pipeline_id", tableName: "devops_ci_pipeline_function") {
-            column(name: "pipeline_id")
+            column(name: "devops_pipeline_id")
         }
     }
 }
