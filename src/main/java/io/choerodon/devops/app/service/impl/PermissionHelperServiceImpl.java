@@ -177,23 +177,16 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
 
     @Override
     public void checkDeploymentWay(DevopsServiceReqVO devopsServiceReqVO) {
-        boolean flag = isOnlyOneTure(new boolean[]{devopsServiceReqVO.getTargetAppServiceId() == null, devopsServiceReqVO.getTargetDeploymentId() == null, StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode()),
-                ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints()), ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())});
-        if (!flag) {
+        int count = 0;
+        if (devopsServiceReqVO.getTargetAppServiceId() != null) count++;
+        if (devopsServiceReqVO.getTargetDeploymentId() != null) count++;
+        if (!StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode())) count++;
+        if (!ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints())) count++;
+        if (!ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())) count++;
+
+
+        if (count != 1) {
             throw new CommonException("error.deployment.way.not.only");
         }
-    }
-
-    private boolean isOnlyOneTure(boolean[] flags) {
-        if (flags == null || flags.length == 0) {
-            return false;
-        }
-        int count = 0;
-        for (boolean flag : flags) {
-            if (!flag) {
-                count ++;
-            }
-        }
-        return count == 1;
     }
 }

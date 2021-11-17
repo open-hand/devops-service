@@ -404,6 +404,7 @@
                        any_value(env.name)                                                              as env_name,
                        any_value(env.code)                                                              as env_code,
                        any_value(ins.id)                                                                as ins_id,
+                       any_value(ddace.id)                                                                as app_id,
                        any_value(ins.status)                                                            as ins_status,
                        any_value(ins.code)                                                              as ins_code,
                        any_value(env.cluster_id)                                                        as cluster_id,
@@ -417,6 +418,7 @@
                         ON env.id = ins.env_id AND ins.status != 'deleted'
                              LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
                              LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
+                             LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
                 WHERE env.project_id = #{projectId}
                   AND env.is_skip_check_permission = FALSE
                   AND env.is_active = TRUE

@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.annotation.Nullable;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
@@ -18,6 +12,12 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import javax.annotation.Nullable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -607,4 +607,5 @@ public interface AppServiceService {
 
     List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds);
 
+    Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param);
 }

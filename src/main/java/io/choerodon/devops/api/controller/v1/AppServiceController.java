@@ -98,14 +98,14 @@ public class AppServiceController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab的url", required = true)
-            @RequestParam(value = "external_gitlab_url")  String externalGitlabUrl) {
+            @RequestParam(value = "external_gitlab_url") String externalGitlabUrl) {
         return ResponseEntity.ok(applicationServiceService.isExternalGitlabUrlUnique(externalGitlabUrl));
     }
 
     /**
      * 测试GITLAB是否联通
      *
-     * @param projectId         项目id
+     * @param projectId            项目id
      * @param appExternalConfigDTO gitlab的url
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -387,6 +387,28 @@ public class AppServiceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationServiceService.listByActive(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+    }
+
+    /**
+     * 分页查询指定项目已启用应用服务
+     *
+     * @param projectId 项目id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询指定项目已启用应用服务")
+    @GetMapping("/page_by_active")
+    public ResponseEntity<Page<AppServiceVO>> pageByActive(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "搜索参数")
+            @RequestParam(name = "param", required = false) String param,
+            @RequestParam("target_project_id") Long targetProjectId
+    ) {
+        return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }

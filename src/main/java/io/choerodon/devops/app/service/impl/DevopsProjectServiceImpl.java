@@ -93,6 +93,11 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     }
 
     @Override
+    public DevopsProjectDTO baseQueryByGitlabGroupId(Integer groupId) {
+        return devopsProjectMapper.baseQueryByGitlabGroupId(groupId);
+    }
+
+    @Override
     public DevopsProjectDTO baseQueryByGitlabEnvGroupId(Integer envGroupId) {
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO();
         devopsProjectDTO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));

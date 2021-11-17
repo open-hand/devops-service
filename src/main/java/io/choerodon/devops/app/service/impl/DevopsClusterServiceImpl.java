@@ -58,7 +58,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_ACTIVATE_COMMAND_TEMPLATE;
     private static final String SAGA_INSTALL_K8S_REF_TYPE = "install-cluster";
     private static final String SAGA_RETRY_INSTALL_K8S_REF_TYPE = "retry-install";
-    private static final String DIS_CONNECTION = "helm uninstall %s -n choerodon";
+    private static final String DIS_CONNECTION = "helm uninstall choerodon-cluster-agent-%s -n choerodon";
 
     /**
      * 存储集群基本信息的key: cluster-{clusterId}-info
