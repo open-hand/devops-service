@@ -153,7 +153,7 @@
         </if>
     </select>
 
-    <sql id="listByActive">
+    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT das.*, (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = das.id) AS empty_repository
         FROM devops_app_service das
         WHERE das.is_active IS TRUE
@@ -167,11 +167,23 @@
             )
         </if>
         order by das.external_config_id is null desc
-    </sql>
+    </select>
 
-    <sql id="listProjectMembersAppServiceByActive">
+    <select id="countByActive" resultType="integer">
+        SELECT count(1) FROM(
+        SELECT das.id
+        FROM devops_app_service das
+        WHERE das.is_active IS TRUE
+        AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND das.project_id = #{projectId}
+        order by das.external_config_id is null desc
+        ) as result
+    </select>
+
+    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT da.*,
-            (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
+        (SELECT COUNT(1) = 0 FROM devops_branch db WHERE db.app_service_id = da.id) AS empty_repository
         FROM devops_app_service da
         WHERE da.is_active IS TRUE
         AND da.is_synchro IS TRUE
@@ -190,25 +202,23 @@
             </foreach>
         </if>
         order by da.external_config_id is null desc
-    </sql>
-
-    <select id="listByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        <include refid="listByActive"/>
-    </select>
-
-    <select id="countByActive" resultType="integer">
-        SELECT count(1) FROM(
-        <include refid="listByActive"/>
-        ) as result
-    </select>
-
-    <select id="listProjectMembersAppServiceByActive" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        <include refid="listProjectMembersAppServiceByActive"/>
     </select>
 
     <select id="countProjectMembersAppServiceByActive" resultType="integer">
         SELECT count(1) FROM (
-        <include refid="listProjectMembersAppServiceByActive"/>
+        SELECT da.id
+        FROM devops_app_service da
+        WHERE da.is_active IS TRUE
+        AND da.is_synchro IS TRUE
+        AND da.gitlab_project_id IS NOT NULL
+        <if test="appServiceIds != null and appServiceIds.size > 0">
+            and da.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
+        order by da.external_config_id is null desc
         ) as result
     </select>
 
