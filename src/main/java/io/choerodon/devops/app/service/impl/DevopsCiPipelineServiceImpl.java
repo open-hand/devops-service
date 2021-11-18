@@ -379,6 +379,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
             devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
                 devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
                 devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
             });
         }
@@ -1476,6 +1477,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
             devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
                 devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionDTO.setDevopsPipelineId(pipelineId);
                 devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
             });
         }
