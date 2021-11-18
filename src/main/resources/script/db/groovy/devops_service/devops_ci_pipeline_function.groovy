@@ -1,7 +1,7 @@
 package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_function.groovy') {
-    changeSet(author: 'wanghao', id: '20221-11-15-create-table') {
+    changeSet(author: 'wanghao', id: '2021-11-15-create-table') {
         createTable(tableName: "devops_ci_pipeline_function", remarks: 'devops_ci_pipeline') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
