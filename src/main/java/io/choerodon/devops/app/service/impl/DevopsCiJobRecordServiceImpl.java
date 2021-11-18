@@ -135,7 +135,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         recordDTO.setTriggerUserId(iamUserId);
         recordDTO.setAppServiceId(appServiceId);
         DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
-        logger.debug(">>>>>>>>>>>>>{}>>>>>>>>>>>>>>>", JsonHelper.marshalByJackson(existDevopsCiJobDTO));
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
