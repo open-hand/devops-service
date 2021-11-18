@@ -28,7 +28,7 @@ public class CiCdPipelineUtils {
 
     }
 
-    private static final Pattern JOB_NAME_REGEX_PATTERN = Pattern.compile("(.*) \\d/\\d");
+    private static final Pattern JOB_NAME_REGEX_PATTERN = Pattern.compile("(.*) [1-5]\\d*/[1-5]\\d*");
 
     public static <T extends BaseDomain> void recordListSort(List<T> list) {
         Collections.sort(list, (o1, o2) -> {
