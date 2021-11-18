@@ -1245,6 +1245,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
             functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
             StringBuilder stringBuilder = new StringBuilder(ciStr);
+            stringBuilder.append(System.lineSeparator());
             if (!CollectionUtils.isEmpty(functionDTOS)) {
                 functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
             }
