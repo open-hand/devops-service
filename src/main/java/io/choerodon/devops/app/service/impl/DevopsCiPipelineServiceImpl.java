@@ -905,6 +905,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除content file
         devopsCiContentService.deleteByPipelineId(pipelineId);
 
+        // 删除流水线定义函数
+        devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
+
 
         // 删除.gitlab-ci.yaml文件
         List<DevopsPipelineBranchRelDTO> devopsPipelineBranchRelDTOS = listPipelineBranchRel(pipelineId);
