@@ -18,7 +18,7 @@ public class CiJob {
     private String stage;
 
     @ApiModelProperty("job的并发数")
-    private String parallel;
+    private Integer parallel;
     @ApiModelProperty("ci里面的services")
     private List<CiJobServices> services;
     @YamlProperty(value = "after_script")
@@ -34,11 +34,11 @@ public class CiJob {
     @ApiModelProperty("缓存配置")
     private Cache cache;
 
-    public String getParallel() {
+    public Integer getParallel() {
         return parallel;
     }
 
-    public void setParallel(String parallel) {
+    public void setParallel(Integer parallel) {
         this.parallel = parallel;
     }
 

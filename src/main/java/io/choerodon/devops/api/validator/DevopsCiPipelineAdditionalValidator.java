@@ -76,6 +76,7 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     stage.getJobList().forEach(job -> {
                         validateImage(job.getImage());
+                        validateParallel(job);
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
@@ -95,6 +96,13 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+    }
+
+    private static void validateParallel(DevopsCiJobVO job) {
+        if (job.getParallel() != null
+                && (job.getParallel() < 2 || job.getParallel() > 50)) {
+            throw new CommonException("error.job.parallel.size.range");
+        }
     }
 
     public static void validateBranch(Set<String> relatedBranches) {

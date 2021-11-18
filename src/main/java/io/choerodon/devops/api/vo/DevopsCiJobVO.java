@@ -32,7 +32,7 @@ public class DevopsCiJobVO {
     private String image;
 
     @ApiModelProperty("job的并发数")
-    private String parallel;
+    private Integer parallel;
 
     @Encrypt
     @ApiModelProperty("阶段id")
@@ -86,11 +86,11 @@ public class DevopsCiJobVO {
     @ApiModelProperty("类型为build的job的metadata转为json后的对象")
     private CiConfigVO configVO;
 
-    public String getParallel() {
+    public Integer getParallel() {
         return parallel;
     }
 
-    public void setParallel(String parallel) {
+    public void setParallel(Integer parallel) {
         this.parallel = parallel;
     }
 
