@@ -8,6 +8,14 @@
         WHERE dcms.ci_job_id = #{jobId,jdbcType=BIGINT}
         AND dcms.sequence = #{sequence,jdbcType=BIGINT}
     </select>
+    <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO">
+        select *
+        from devops_ci_maven_settings
+        where ci_job_id in
+        <foreach collection="jobIds" item="jobId" index="i" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
 
     <delete id="deleteByJobIds">
         DELETE dcms.*
