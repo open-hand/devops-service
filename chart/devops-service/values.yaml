@@ -119,6 +119,8 @@ env:
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     # agent初始化repo时并发数
     AGENT_REPOCONCURRENCYSYNCSIZE: 1
+    # 日志级别
+    LOG_LEVEL: info
 
     # 忽略校验的接口路径
     CHOERODON_RESOURCE_JWT_IGNORE: /workflow/**, /sonar/**, /ci, /sonar/info, /v2/api-docs, /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**, /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
