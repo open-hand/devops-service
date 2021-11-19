@@ -17,20 +17,20 @@
                                                 type,
                                                 gitlab_project_id) VALUES
     <foreach collection="devopsCiJobRecordDTOS" item="recordDTO" open="(" separator="," close=")" index="i">
-        (#{recordDTO.getGitlabJobId()},
-        #{recordDTO.getCiPipelineRecordId()},
-        #{recordDTO.getName()},
-        #{recordDTO.getStage()},
-        #{recordDTO.getStatus()},
-        #{recordDTO.getTriggerUserId()},
-        #{recordDTO.getStartedDate()},
-        #{recordDTO.getAppServiceId()},
-        #{recordDTO.getMavenSettingId()},
-        #{recordDTO.getMetadata()},
-        #{recordDTO.getCreatedBy()},
-        #{recordDTO.getLastUpdatedBy()},
-        #{recordDTO.getType()},
-        #{recordDTO.getGitlabProjectId()})
+        (#{recordDTO.gitlabJobId},
+        #{recordDTO.ciPipelineRecordId},
+        #{recordDTO.name},
+        #{recordDTO.stage},
+        #{recordDTO.status},
+        #{recordDTO.triggerUserId},
+        #{recordDTO.startedDate},
+        #{recordDTO.appServiceId},
+        #{recordDTO.mavenSettingId},
+        #{recordDTO.metadata},
+        #{recordDTO.createdBy},
+        #{recordDTO.lastUpdatedBy},
+        #{recordDTO.type},
+        #{recordDTO.gitlabProjectId})
     </foreach>
 
 
