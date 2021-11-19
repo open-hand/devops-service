@@ -491,6 +491,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus().toValue());
                 devopsCiJobRecordDTO.setGitlabProjectId(gitlabProjectId);
+                devopsCiJobRecordDTO.setAppServiceId(appServiceId);
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
