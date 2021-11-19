@@ -73,6 +73,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineServiceImpl.class);
 
+
+    private static final Long DEFAULT_PIPELINE_ID = 0L;
     private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
     private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
     private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
@@ -147,6 +149,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     @Lazy
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+
+    @Autowired
+    private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -300,12 +305,37 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(CREATE_PIPELINE_FAILED);
         }
 
+
+        // 保存流水线函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
+        }
+
+
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         // 2.保存cd stage信息
         saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
     }
+
+    @Override
+    public List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault) {
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = new ArrayList<>();
+
+        if (Boolean.TRUE.equals(includeDefault) && !pipelineId.equals(DEFAULT_PIPELINE_ID)) {
+            devopsCiPipelineFunctionDTOList.addAll(devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(DEFAULT_PIPELINE_ID));
+        }
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(pipelineId);
+        devopsCiPipelineFunctionDTOList.addAll(devopsCiPipelineFunctionDTOS);
+        return devopsCiPipelineFunctionDTOList;
+    }
+
 
     private void saveCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         //2.保存cd stage 的信息
@@ -789,6 +819,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除content file
         devopsCiContentService.deleteByPipelineId(pipelineId);
 
+        // 删除流水线定义函数
+        devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
 
         // 删除.gitlab-ci.yaml文件
         if (!CollectionUtils.isEmpty(devopsCiStageDTOS)) {
@@ -1236,6 +1268,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 之前不存在ci stage则证明之前是纯cd流水线
             initCiFileFlag = CollectionUtils.isEmpty(devopsCiStageDTOS);
         }
+
+        // 更新流水线函数
+        // 先删除之前的函数
+        devopsCiPipelineFunctionService.deleteByPipelineId(pipelineId);
+        // 保存新的函数
+        List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
+        if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
+            devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
+                devopsCiPipelineFunctionDTO.setId(null);
+                devopsCiPipelineFunctionDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
+                devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
+            });
+        }
+
 
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);

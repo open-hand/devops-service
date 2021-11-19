@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -100,4 +101,6 @@ public interface DevopsCiPipelineService {
     ExecuteTimeVO pipelineExecuteTime(List<Long> pipelineIds, Date startTime, Date endTime);
 
     Page<CiCdPipelineRecordVO> pagePipelineExecuteTime(List<Long> pipelineIds, Date startTime, Date endTime, PageRequest pageRequest);
+
+    List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
 }

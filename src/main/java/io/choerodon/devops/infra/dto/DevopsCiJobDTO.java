@@ -25,6 +25,8 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     @ApiModelProperty("镜像地址")
     private String image;
+    @ApiModelProperty("job的并发数")
+    private Integer parallel;
 
     @ApiModelProperty("阶段id")
     private Long ciStageId;
@@ -54,6 +56,14 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     @Column(name = "is_to_download")
     private Boolean toDownload;
+
+    public Integer getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(Integer parallel) {
+        this.parallel = parallel;
+    }
 
     public Long getId() {
         return id;

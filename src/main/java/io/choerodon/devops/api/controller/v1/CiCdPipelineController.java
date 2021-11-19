@@ -29,6 +29,7 @@ import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -263,5 +264,16 @@ public class CiCdPipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询流水线下定义的函数")
+    @PostMapping(value = "/{pipeline_id}/functions")
+    public ResponseEntity<List<DevopsCiPipelineFunctionDTO>> listFunctionsByDevopsPipelineId(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt(ignoreUserConflict = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId,
+            @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
+        return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
+    }
 
 }

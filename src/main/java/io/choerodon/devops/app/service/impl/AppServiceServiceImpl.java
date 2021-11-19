@@ -28,6 +28,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -228,6 +229,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsAppTemplateMapper devopsAppTemplateMapper;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
+    @Autowired
+    private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -1150,7 +1153,21 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
-            return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+            String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+
+            // 查询应用服务关联的流水线, 添加自定义函数
+            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+            List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
+            List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
+            List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
+            functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
+            functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
+            StringBuilder stringBuilder = new StringBuilder(ciStr);
+            stringBuilder.append(System.lineSeparator());
+            if (!CollectionUtils.isEmpty(functionDTOS)) {
+                functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+            }
+            return stringBuilder.toString();
         } catch (CommonException e) {
 //            LOGGER.warn("Error query ci.sh for app-service with token {} , the ex is ", token, e);
             throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());
