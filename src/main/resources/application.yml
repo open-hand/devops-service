@@ -164,10 +164,9 @@ asgard-servie:
 
 logging:
   level:
-    #    io.choerodon.event.consumer: debug
-    #    com.zaxxer: debug
-    io.choerodon.feign: warn
-    com.netflix: warn
+    org.apache.ibatis: ${LOG_LEVEL:info}
+    io.choerodon: ${LOG_LEVEL:info}
+    org.hzero: ${LOG_LEVEL:info}
   #    io.choerodon.devops.app.service: debug
   config: classpath:logback-spring.xml
 
