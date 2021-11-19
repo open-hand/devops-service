@@ -2,11 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
-import io.choerodon.devops.api.vo.DeployTimeVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
@@ -75,7 +75,7 @@ public interface DevopsCiPipelineService {
     /**
      * 全新执行流水线
      */
-    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref);
+    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref, Map<String, String> variables);
 
     /**
      * 校验用户是否有分支权限

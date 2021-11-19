@@ -1100,10 +1100,10 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public Pipeline createPipeline(int projectId, int gitlabUserid, String ref) {
+    public Pipeline createPipeline(int projectId, int gitlabUserid, String ref, Map<String, String> variables) {
         ResponseEntity<Pipeline> pipeline;
         try {
-            pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref);
+            pipeline = gitlabServiceClient.createPipeline(projectId, gitlabUserid, ref, variables);
         } catch (Exception e) {
             throw new CommonException(ERROR_CREATE_PIPELINE_FILED);
         }

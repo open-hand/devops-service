@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.google.gson.Gson;
-import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -24,12 +23,8 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.*;
@@ -347,7 +342,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Override
     @Transactional
-    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag) {
+    public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag, Map<String, String> variables) {
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
         DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
         devopsCiStageDTO.setCiPipelineId(pipelineId);
@@ -369,7 +364,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             }
             devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), commitDTOList.get(0).getId(), ref, tag, null);
         } else {
-            devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref);
+            devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         }
     }
 

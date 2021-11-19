@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -507,6 +506,7 @@ public interface GitlabServiceClient {
      *
      * @param projectId 项目id
      * @param ref       分支
+     * @param variables
      * @return Pipeline
      */
     @ApiOperation(value = "Create a pipelines jobs ")
@@ -517,7 +517,8 @@ public interface GitlabServiceClient {
             @ApiParam(value = "userId")
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "分支")
-            @RequestParam(value = "ref") String ref);
+            @RequestParam(value = "ref") String ref,
+            @RequestBody Map<String, String> variables);
 
     /**
      * 查询job执行日志

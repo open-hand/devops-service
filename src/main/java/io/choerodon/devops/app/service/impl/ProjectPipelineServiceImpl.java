@@ -61,6 +61,6 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     @Override
     public Boolean create(Long gitlabProjectId, String ref) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
-        return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref) != null;
+        return gitlabServiceClientOperator.createPipeline(gitlabProjectId.intValue(), userAttrDTO.getGitlabUserId().intValue(), ref, variables) != null;
     }
 }

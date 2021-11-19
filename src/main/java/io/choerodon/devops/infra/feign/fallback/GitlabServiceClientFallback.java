@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
-import io.choerodon.devops.api.vo.GitlabTransferVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
@@ -426,7 +425,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity createPipeline(Integer projectId, Integer userId, String ref) {
+    public ResponseEntity createPipeline(Integer projectId, Integer userId, String ref, Map<String, String> variables) {
         return null;
     }
 
