@@ -16,7 +16,7 @@
                                                 last_updated_by,
                                                 type,
                                                 gitlab_project_id) VALUES
-    <foreach collection="devopsCiJobRecordDTOS" item="recordDTO" open="(" separator="," close=")" index="i">
+    <foreach collection="devopsCiJobRecordDTOS" item="recordDTO" separator="," index="i">
         (#{recordDTO.gitlabJobId},
         #{recordDTO.ciPipelineRecordId},
         #{recordDTO.name},
