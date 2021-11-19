@@ -20,4 +20,7 @@ public interface DevopsCiMavenSettingsMapper extends BaseMapper<DevopsCiMavenSet
      * @param jobIds 猪齿鱼job id
      */
     void deleteByJobIds(@Param("jobIds") List<Long> jobIds);
+
+
+    List<DevopsCiMavenSettingsDTO> listByJobIds(@Param("jobIds") List<Long> jobIds);
 }

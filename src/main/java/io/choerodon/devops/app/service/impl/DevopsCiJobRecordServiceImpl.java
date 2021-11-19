@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -114,7 +116,45 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     public void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId, Long appServiceId) {
-        jobDTOS.forEach(job -> create(ciPipelineRecordId, gitlabProjectId, job, iamUserId, appServiceId));
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
+        List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+        Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
+
+        List<DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOS = devopsCiMavenSettingsMapper.listByJobIds(jobIds);
+        Map<Long, DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsCiMavenSettingsDTOS)) {
+            devopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOS.stream().collect(Collectors.toMap(DevopsCiMavenSettingsDTO::getCiJobId, Function.identity()));
+        }
+        Map<Long, DevopsCiMavenSettingsDTO> finalDevopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOMap;
+        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = jobDTOS.stream().map(jobDTO -> {
+            DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+            recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
+            recordDTO.setGitlabProjectId(gitlabProjectId);
+            recordDTO.setStatus(jobDTO.getStatus().toValue());
+            recordDTO.setStage(jobDTO.getStage());
+            recordDTO.setGitlabJobId(TypeUtil.objToLong(jobDTO.getId()));
+            recordDTO.setStartedDate(jobDTO.getStartedAt());
+            recordDTO.setFinishedDate(jobDTO.getFinishedAt());
+            recordDTO.setName(jobDTO.getName());
+            recordDTO.setTriggerUserId(iamUserId);
+            recordDTO.setAppServiceId(appServiceId);
+            DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
+            if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
+                recordDTO.setType(existDevopsCiJobDTO.getType());
+                recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
+                if (!CollectionUtils.isEmpty(finalDevopsCiMavenSettingsDTOMap)) {
+                    DevopsCiMavenSettingsDTO ciMavenSettingsDTO = finalDevopsCiMavenSettingsDTOMap.get(existDevopsCiJobDTO.getId());
+                    if (!Objects.isNull(ciMavenSettingsDTO)) {
+                        recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
+                    }
+                }
+            }
+
+            return recordDTO;
+        }).collect(Collectors.toList());
+        devopsCiJobRecordMapper.batchInert(devopsCiJobRecordDTOS);
+
     }
 
     @Override
