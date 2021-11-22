@@ -1452,6 +1452,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     @Transactional
     public CiCdPipelineDTO update(Long projectId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
+        checkResourceId(pipelineId, ciCdPipelineVO);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
@@ -1499,6 +1500,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //更新CD流水线
         updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+    }
+
+    private void checkResourceId(Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
+        if (ciCdPipelineVO.getId() != null && !pipelineId.equals(ciCdPipelineVO.getId())) {
+            throw new CommonException("error.pipeline.id.invalid");
+        }
+        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
+            ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
+                if (devopsCiStageVO.getCiPipelineId() != null && devopsCiStageVO.getCiPipelineId().equals(pipelineId)) {
+                    throw new CommonException("error.pipeline.id.invalid");
+                }
+                if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
+                    devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
+                        if (devopsCiJobVO.getCiPipelineId() != null && devopsCiJobVO.getCiPipelineId().equals(pipelineId)) {
+                            throw new CommonException("error.pipeline.id.invalid");
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private void updateCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
