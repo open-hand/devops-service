@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -53,7 +54,7 @@ public interface DevopsCiJobService {
     /**
      * 查询job日志
      */
-    String queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId);
+    DevopsCiJobLogVO queryTrace(Long gitlabProjectId, Long jobId, Long appServiceId);
 
     /**
      * 重试job

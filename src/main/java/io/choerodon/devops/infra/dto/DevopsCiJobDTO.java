@@ -34,6 +34,8 @@ public class DevopsCiJobDTO extends AuditDomain {
     private String type;
     @ApiModelProperty("触发类型对应的值")
     private String triggerValue;
+    @ApiModelProperty("job的并发数")
+    private Integer parallel;
 
     /**
      * {@link io.choerodon.devops.infra.enums.CiTriggerType}
@@ -54,6 +56,14 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     @Column(name = "is_to_download")
     private Boolean toDownload;
+
+    public Integer getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(Integer parallel) {
+        this.parallel = parallel;
+    }
 
     public Long getId() {
         return id;

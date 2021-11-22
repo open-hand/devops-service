@@ -12,6 +12,7 @@ import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineBranchRelDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -78,7 +79,7 @@ public interface DevopsCiPipelineService {
     /**
      * 全新执行流水线
      */
-    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref);
+    void executeNew(Long projectId, Long ciPipelineId, Long gitlabProjectId, String ref, Map<String, String> variables);
 
     /**
      * 校验用户是否有分支权限
@@ -110,4 +111,6 @@ public interface DevopsCiPipelineService {
     List<DevopsPipelineBranchRelDTO> listPipelineBranchRel(Long pipelineId);
 
     List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
+
+    List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
 }

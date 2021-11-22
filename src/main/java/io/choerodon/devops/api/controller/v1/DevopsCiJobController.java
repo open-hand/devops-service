@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.DevopsCiJobService;
@@ -57,7 +58,7 @@ public class DevopsCiJobController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询job日志")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
-    public ResponseEntity<String> queryTrace(
+    public ResponseEntity<DevopsCiJobLogVO> queryTrace(
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
             @PathVariable(value = "job_id") Long jobId,

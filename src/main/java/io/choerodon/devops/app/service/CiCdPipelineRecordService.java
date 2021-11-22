@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Map;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -12,7 +14,7 @@ public interface CiCdPipelineRecordService {
 
     void cancel(Long projectId, Long pipelineRecordRelId, Long gitlabProjectId);
 
-    void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag);
+    void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag, Map<String, String> variables);
 
     Page<CiCdPipelineRecordVO> pagingPipelineRecord(Long projectId, Long ciPipelineId, PageRequest pageable);
 

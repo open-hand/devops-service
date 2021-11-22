@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -83,6 +84,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
@@ -144,6 +146,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public static final String GITLAB_VARIABLE_TOKEN = "Token";
     public static final String GITLAB_VARIABLE_TRIVY_INSECURE = "TRIVY_INSECURE";
     public static final String CHOERODON_URL = "CHOERODON_URL";
+    private static final Long ONE_GB_TO_B = 1073741824L;
 
     /**
      * CI 文件模板
@@ -251,6 +254,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private ExternalGitUtil externalGitUtil;
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -1228,7 +1235,21 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
-            return FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+            String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+
+            // 查询应用服务关联的流水线, 添加自定义函数
+            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+            List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
+            List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
+            List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
+            functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
+            functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
+            StringBuilder stringBuilder = new StringBuilder(ciStr);
+            stringBuilder.append(System.lineSeparator());
+            if (!CollectionUtils.isEmpty(functionDTOS)) {
+                functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+            }
+            return stringBuilder.toString();
         } catch (CommonException e) {
             throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());
         }
@@ -2101,13 +2122,22 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<ResourceVO> listResourceByIds(List<Long> projectIds) {
+    public List<ResourceVO> listResourceByIds(Long organizationId, List<Long> projectIds) {
         List<ResourceVO> resourceVOList;
         if (CollectionUtils.isEmpty(projectIds)) {
             return new ArrayList<>();
         } else {
             resourceVOList = new ArrayList<>();
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId, false);
+            if (tenant == null) {
+                return new ArrayList<>();
+            }
+
             projectIds.forEach(t -> {
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t);
+                if (projectDTO == null) {
+                    return;
+                }
                 ResourceVO resourceVO = appServiceMapper.queryResourceById(t);
                 if (resourceVO == null) {
                     resourceVO = new ResourceVO();
@@ -2115,11 +2145,52 @@ public class AppServiceServiceImpl implements AppServiceService {
                     resourceVO.setCurrentEnv(0L);
                     resourceVO.setCurrentCluster(0L);
                     resourceVO.setProjectId(t);
+                    resourceVO.setCurrentGitlabCapacity(String.valueOf(0));
+                } else {
+                    GroupDTO groupDTO = queryGroupWithStatistics(tenant.getTenantNum(), projectDTO);
+                    if (groupDTO != null && groupDTO.getStatistics() != null) {
+                        if (groupDTO.getStatistics().getStorageSize() == 0) {
+                            resourceVO.setCurrentGitlabCapacity(String.valueOf(0));
+                        } else if (groupDTO.getStatistics().getStorageSize() < ONE_GB_TO_B && groupDTO.getStatistics().getStorageSize() > 0) {
+                            resourceVO.setCurrentGitlabCapacity(String.format("%.2f", groupDTO.getStatistics().getStorageSize() / new BigDecimal(1024).pow(2).doubleValue()) + "MB");
+
+                        } else if (groupDTO.getStatistics().getStorageSize() >= ONE_GB_TO_B) {
+                            resourceVO.setCurrentGitlabCapacity(String.format("%.2f", groupDTO.getStatistics().getStorageSize() / new BigDecimal(1024).pow(3).doubleValue()) + "GB");
+                        }
+                    }
                 }
                 resourceVOList.add(resourceVO);
             });
             return resourceVOList;
         }
+    }
+
+    @Nullable
+    private GroupDTO queryGroupWithStatistics(String tenantCode, ProjectDTO projectDTO) {
+        //查询内置仓库的所有仓库的使用量
+        DevopsProjectDTO record = new DevopsProjectDTO();
+        record.setIamProjectId(projectDTO.getId());
+        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectOne(record);
+        //创建失败的项目和非devops类型的项目不统计
+        if (devopsProjectDTO == null || devopsProjectDTO.getDevopsAppGroupId() == null) {
+            return null;
+        }
+        UserAttrDTO userRecord = new UserAttrDTO();
+        userRecord.setIamUserId(DetailsHelper.getUserDetails().getUserId());
+        UserAttrDTO userAttrDTO = userAttrMapper.selectOne(userRecord);
+        if (userAttrDTO == null || userAttrDTO.getGitlabUserId() == null) {
+            return null;
+        }
+        String path = tenantCode + BaseConstants.Symbol.MIDDLE_LINE + projectDTO.getCode();
+        List<GroupDTO> groupDTOS = gitlabServiceClientOperator.queryGroupWithStatisticsByName(path, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), Boolean.TRUE);
+        if (!CollectionUtils.isEmpty(groupDTOS)) {
+            List<GroupDTO> projectGroups = groupDTOS.stream().filter(groupDTO -> org.apache.commons.lang3.StringUtils.equalsIgnoreCase(groupDTO.getPath(), path)).collect(toList());
+            if (!CollectionUtils.isEmpty(projectGroups)) {
+                return projectGroups.get(0);
+            }
+
+        }
+        return null;
     }
 
     @Override

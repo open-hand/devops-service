@@ -1,4 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper">
+    <insert id="batchInert">
+        INSERT IGNORE INTO devops_ci_job_record(gitlab_job_id,
+                                                ci_pipeline_record_id,
+                                                name,
+                                                stage,
+                                                status,
+                                                trigger_user_id,
+                                                started_date,
+                                                app_service_id,
+                                                maven_setting_id,
+                                                metadata,
+                                                created_by,
+                                                last_updated_by,
+                                                type,
+                                                gitlab_project_id) VALUES
+    <foreach collection="devopsCiJobRecordDTOS" item="recordDTO" separator="," index="i">
+        (#{recordDTO.gitlabJobId},
+        #{recordDTO.ciPipelineRecordId},
+        #{recordDTO.name},
+        #{recordDTO.stage},
+        #{recordDTO.status},
+        #{recordDTO.triggerUserId},
+        #{recordDTO.startedDate},
+        #{recordDTO.appServiceId},
+        #{recordDTO.mavenSettingId},
+        #{recordDTO.metadata},
+        #{recordDTO.createdBy},
+        #{recordDTO.lastUpdatedBy},
+        #{recordDTO.type},
+        #{recordDTO.gitlabProjectId})
+    </foreach>
+
+
+
+
+    </insert>
 </mapper>

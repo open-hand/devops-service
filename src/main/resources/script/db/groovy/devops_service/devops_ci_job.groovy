@@ -54,4 +54,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
         sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'refs' WHERE dcj.trigger_value IS NOT NULL")
         sql("UPDATE devops_ci_job dcj SET dcj.trigger_type = 'refs' WHERE dcj.trigger_type IS NULL")
     }
+
+    changeSet(author: 'wanghao', id: '2021-11-18-add-column') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数', afterColumn: 'trigger_type')
+        }
+    }
 }
