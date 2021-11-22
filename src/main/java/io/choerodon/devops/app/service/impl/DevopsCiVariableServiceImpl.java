@@ -146,9 +146,8 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
 
     @Override
     public List<CiVariableVO> listKeysOnApp(Long appServiceId) {
-        UserAttrVO userAttrVO = userAttrService.queryByUserId(DetailsHelper.getUserDetails().getUserId());
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
+        return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), GitUserNameUtil.getAdminId());
     }
 
     private void performUpdate(Long projectId, String level, Long appServiceId, List<String> keysToDelete, List<CiVariableVO> ciVariableVOList) {

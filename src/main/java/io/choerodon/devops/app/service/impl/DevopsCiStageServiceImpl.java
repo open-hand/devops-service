@@ -64,6 +64,8 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     @Transactional
     public void update(DevopsCiStageVO devopsCiStageVO) {
         DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
+        // 不允许修改所属流水线
+        devopsCiStageDTO.setCiPipelineId(null);
         devopsCiStageMapper.updateByPrimaryKeySelective(devopsCiStageDTO);
     }
 

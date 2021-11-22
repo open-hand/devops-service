@@ -155,13 +155,30 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         }
     }
 
+    changeSet(author: 'wanghao', id: '2021-09-29-drop-unique-constraint') {
+        preConditions(onFail: "MARK_RAN") {
+            indexExists(tableName: "devops_app_service", indexName: "uk_app_gitlab_project_id")
+        }
+        dropIndex(tableName: "devops_app_service", indexName: "uk_app_gitlab_project_id")
+    }
+
     changeSet(author: 'wanghao', id: '2021-09-29-add-columns') {
         addColumn(tableName: 'devops_app_service') {
             column(name: 'external_gitlab_url', type:  'varchar(512)', defaultValue: "none" ,remarks: '外部平台gitlab地址，不为空则是外部应用', afterColumn: 'token')
             column(name: 'external_config_id', type:  'BIGINT UNSIGNED' ,remarks: '外部配置id', afterColumn: 'external_gitlab_url')
         }
-
-        dropUniqueConstraint(constraintName: "uk_app_gitlab_project_id", tableName: "devops_app_service")
+        sql("""
+            UPDATE 
+            devops_app_service das
+            SET das.external_gitlab_url = UUID()
+            WHERE das.id IN 
+            (SELECT * FROM
+            (SELECT d.id
+            from devops_app_service d
+            WHERE d.gitlab_project_id IN 
+            (select  ds1.gitlab_project_id 
+            from devops_app_service ds1 group by ds1.gitlab_project_id having count(ds1.gitlab_project_id) > 1)) tmp)
+        """)
 
         addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_app_gitlab_project_id_and_url', columnNames: "gitlab_project_id, external_gitlab_url")
         addUniqueConstraint(tableName: "devops_app_service", constraintName: 'uk_external_config_id', columnNames: "external_config_id")
