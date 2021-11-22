@@ -1464,13 +1464,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
-                if (devopsCiStageVO.getCiPipelineId() != null && devopsCiStageVO.getCiPipelineId().equals(pipelineId)) {
-                    throw new CommonException("error.pipeline.id.invalid");
+                if (devopsCiStageVO.getCiPipelineId() != null && !devopsCiStageVO.getCiPipelineId().equals(pipelineId)) {
+                    throw new CommonException("error.stage.pipeline.id.invalid");
                 }
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        if (devopsCiJobVO.getCiPipelineId() != null && devopsCiJobVO.getCiPipelineId().equals(pipelineId)) {
-                            throw new CommonException("error.pipeline.id.invalid");
+                        if (devopsCiJobVO.getCiPipelineId() != null && !devopsCiJobVO.getCiPipelineId().equals(pipelineId)) {
+                            throw new CommonException("error.job.pipeline.id.invalid");
                         }
                     });
                 }
