@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.PostConstruct;
+
 import io.choerodon.devops.app.service.DeployConfigService;
 import org.hzero.websocket.constant.ClientWebSocketConstant;
 import org.hzero.websocket.vo.MsgVO;
@@ -104,6 +105,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         }
 
+        LOGGER.info("==========send msg=========" + JsonHelper.marshalByJackson(msgVO));
         sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
 
     }
