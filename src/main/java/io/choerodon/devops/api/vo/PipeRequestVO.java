@@ -52,4 +52,13 @@ public class PipeRequestVO {
     public void setNamespace(String namespace) {
         this.namespace = namespace;
     }
+
+    public Boolean getPrevious() {
+        return previous;
+    }
+
+    public PipeRequestVO setPrevious(Boolean previous) {
+        this.previous = previous;
+        return this;
+    }
 }
