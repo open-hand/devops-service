@@ -105,9 +105,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         }
 
-        LOGGER.info("==========send msg=========" + JsonHelper.marshalByJackson(msgVO));
         sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
-
     }
 
     private void sendToSession(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
