@@ -54,6 +54,8 @@
         de.id envId,
         de.`code` envCode,
         de.`name` envName,
+        dp.node_name nodeName,
+        dp.restart_count restartCount,
         dp.object_version_number
         FROM
         devops_env_pod dp
