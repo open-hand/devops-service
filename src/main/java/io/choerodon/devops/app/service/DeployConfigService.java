@@ -37,9 +37,9 @@ public interface DeployConfigService {
      * 构造发送到agent的配置
      *
      * @return
-     * @param projectId
+     * @param hostId
      */
-    String doCreateConfigSettings(Long projectId);
+    String doCreateConfigSettings(Long hostId);
 
     /**
      * 构造发送到agent的配置
