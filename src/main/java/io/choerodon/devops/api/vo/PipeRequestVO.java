@@ -9,13 +9,15 @@ public class PipeRequestVO {
     private String containerName;
     private String pipeID;
     private String namespace;
+    private Boolean previous;
 
 
-    public PipeRequestVO(String podName, String containerName, String pipeID, String namespace) {
+    public PipeRequestVO(String podName, String containerName, String pipeID, String namespace, Boolean previous) {
         this.podName = podName;
         this.containerName = containerName;
         this.pipeID = pipeID;
         this.namespace = namespace;
+        this.previous = previous;
     }
 
 
