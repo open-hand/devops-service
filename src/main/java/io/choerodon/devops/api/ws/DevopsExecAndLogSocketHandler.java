@@ -70,7 +70,8 @@ public class DevopsExecAndLogSocketHandler {
                 attribute.get(POD_NAME).toString(),
                 attribute.get(CONTAINER_NAME).toString(),
                 attribute.get(LOG_ID).toString(),
-                attribute.get(ENV).toString());
+                attribute.get(ENV).toString(),
+                attribute.get(PREVIOUS) != null && Boolean.parseBoolean(attribute.get(PREVIOUS).toString()));
 
         Long clusterId = WebSocketTool.getClusterId(webSocketSession);
 
