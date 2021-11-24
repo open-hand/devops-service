@@ -289,7 +289,7 @@ public class CiCdPipelineController {
     public ResponseEntity<List<DevopsCiPipelineFunctionDTO>> listFunctionsByDevopsPipelineId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
+            @Encrypt(ignoreUserConflict = true, ignoreValue = {"0"})
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
