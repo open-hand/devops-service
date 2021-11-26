@@ -3,13 +3,22 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.api.vo.iam.UserVO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 /**
  * GitLabDTO 合并请求
  */
 public class MergeRequestVO {
 
     private AssigneeVO assignee;
+    @Encrypt
+    private Long assigneeId;
     private AuthorVO author;
+    @Encrypt
+    private Long authorId;
     private Date createdAt;
     private String description;
     private Integer id;
@@ -24,6 +33,19 @@ public class MergeRequestVO {
     private String title;
     private Date updatedAt;
     private String webUrl;
+
+    @Encrypt
+    private Long appServiceId;
+
+    private String appServiceName;
+
+    private String appServiceCode;
+
+    private String gitlabUrl;
+
+    private UserVO iamAuthor;
+
+    private UserVO iamAssignee;
 
     private List<CommitVO> commits;
 
@@ -167,4 +189,67 @@ public class MergeRequestVO {
         this.webUrl = webUrl;
     }
 
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getGitlabUrl() {
+        return gitlabUrl;
+    }
+
+    public void setGitlabUrl(String gitlabUrl) {
+        this.gitlabUrl = gitlabUrl;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
+    }
+
+    public Long getAssigneeId() {
+        return assigneeId;
+    }
+
+    public void setAssigneeId(Long assigneeId) {
+        this.assigneeId = assigneeId;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public UserVO getIamAuthor() {
+        return iamAuthor;
+    }
+
+    public void setIamAuthor(UserVO iamAuthor) {
+        this.iamAuthor = iamAuthor;
+    }
+
+    public UserVO getIamAssignee() {
+        return iamAssignee;
+    }
+
+    public void setIamAssignee(UserVO iamAssignee) {
+        this.iamAssignee = iamAssignee;
+    }
 }
