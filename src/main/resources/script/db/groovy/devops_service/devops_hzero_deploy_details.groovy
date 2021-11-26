@@ -67,4 +67,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_hzero_deploy_details.groovy') {
             column(name: 'hzero_type', type: 'VARCHAR(32)', remarks: 'hzero版本：sass、open', afterColumn: 'sequence')
         }
     }
+
+    changeSet(author: 'wanghao',id: '2021-11-26-add-index'){
+        createIndex(indexName: "idx_app_id", tableName: "devops_hzero_deploy_details") {
+            column(name: "app_id")
+        }
+    }
 }

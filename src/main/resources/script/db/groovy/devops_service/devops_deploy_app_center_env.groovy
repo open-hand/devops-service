@@ -59,4 +59,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
     changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
         dropIndex(indexName: "idx_env_id", tableName: "devops_deploy_app_center_env")
     }
+
+
+    changeSet(author: 'wanghao',id: '2021-11-26-add-index'){
+        createIndex(indexName: "idx_object_type_and_id", tableName: "devops_deploy_app_center_env") {
+            column(name: "object_id,rdupm_type")
+        }
+    }
 }
