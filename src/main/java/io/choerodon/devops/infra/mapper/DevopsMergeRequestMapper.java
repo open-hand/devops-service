@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.LatestAppServiceVO;
+import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -54,4 +55,6 @@ public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestD
      * @return
      */
     Integer countMergedBranchesByName(@Param("branchNames") Set<String> branchNames, @Param("gitlabProjectId") Long gitlabProjectId);
+
+    List<MergeRequestVO> listMergeRequestToBeChecked(@Param("projectId") Long projectId, @Param("appServiceIds") Set<Long> appServiceIds, @Param("param") String param);
 }

@@ -8,8 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CountVO;
+import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.agile.SprintDTO;
@@ -18,6 +21,7 @@ import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
@@ -29,7 +33,6 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
 
-
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
 
@@ -40,6 +43,9 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
     private AppServiceInstanceService appServiceInstanceService;
 
     @Autowired
+    private DevopsMergeRequestService devopsMergeRequestService;
+
+    @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
 
     @Autowired
@@ -47,12 +53,6 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Autowired
     private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
-
-    @Autowired
-    private AppServiceInstanceMapper appServiceInstanceMapper;
-
-    @Autowired
-    private DevopsEnvCommandMapper devopsEnvCommandMapper;
 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
@@ -210,6 +210,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         result.setDate(date);
         result.setCount(count);
         return result;
+    }
+
+    @Override
+    public Page<MergeRequestVO> getMergeRequestToBeChecked(Long projectId, Set<Long> appServiceIdsToSearch, String param, PageRequest pageRequest) {
+        return devopsMergeRequestService.getMergeRequestToBeChecked(projectId, appServiceIdsToSearch, param, pageRequest);
     }
 
     private boolean isEnvUp(List<Long> updatedClusterList, DevopsEnvironmentDTO t) {

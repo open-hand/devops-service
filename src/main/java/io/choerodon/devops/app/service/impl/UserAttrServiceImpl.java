@@ -110,6 +110,14 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
+    public List<UserAttrDTO> baseListByGitlabUserIds(List<Long> gitlabUserIds) {
+        if (gitlabUserIds == null || gitlabUserIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return userAttrMapper.listByGitlabUserIds(new ArrayList<>(gitlabUserIds));
+    }
+
+    @Override
     public List<UserAttrDTO> baseListByUserIds(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return new ArrayList<>();

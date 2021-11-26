@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
+import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -27,4 +29,6 @@ public interface DevopsMergeRequestService {
     void baseCreate(DevopsMergeRequestVO devopsMergeRequestVO, String token);
 
     DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId);
+
+    Page<MergeRequestVO> getMergeRequestToBeChecked(Long projectId, Set<Long> appServiceIdsToSearch, String param, PageRequest pageRequest);
 }
