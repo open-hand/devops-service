@@ -757,4 +757,11 @@
         </foreach>
         AND ddace.rdupm_type = 'chart'
     </select>
+
+    <select id="listMarketInstance" resultType="io.choerodon.devops.api.vo.AppServiceInstanceVO">
+        SELECT id,app_service_id FROM devops_app_service_instance dasi
+        WHERE dasi.env_id=#{envId}
+        AND source IN
+        ('middleware','market')
+    </select>
 </mapper>

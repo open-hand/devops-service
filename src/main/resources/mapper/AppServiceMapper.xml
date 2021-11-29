@@ -245,6 +245,9 @@
         JOIN devops_env de ON dai.env_id = de.id
         WHERE da.is_active
         AND de.project_id = #{projectId}
+        <if test="envId != null">
+            AND de.id=#{envId}
+        </if>
         <if test="appServiceName != null and appServiceName != ''">
             AND  da.NAME = #{appServiceName,jdbcType=VARCHAR}
         </if>

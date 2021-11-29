@@ -257,6 +257,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
+    @Autowired
+    private AppServiceInstanceService appServiceInstanceService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -815,8 +817,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceRepVO> listAll(Long projectId, String appServiceName) {
-        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId, appServiceName), AppServiceRepVO.class);
+    public List<AppServiceRepVO> listAll(Long projectId, Long envId) {
+        // 查询本项目或其它项目共享的应用
+        List<AppServiceRepVO> appServiceRepVOList = ConvertUtils.convertList(baseListAll(projectId, envId, null), AppServiceRepVO.class);
         appServiceRepVOList.forEach(appServiceRepVO -> {
             if (appServiceRepVO.getProjectId() != null && appServiceRepVO.getProjectId().equals(projectId)) {
                 appServiceRepVO.setServiceType(NORMAL_SERVICE);
@@ -824,6 +827,24 @@ public class AppServiceServiceImpl implements AppServiceService {
                 appServiceRepVO.setServiceType(SHARE_SERVICE);
             }
         });
+
+        // 查询应用市场的应用
+        List<AppServiceInstanceVO> appServiceInstanceVOS = appServiceInstanceService.listMarketInstance(envId);
+        if (!CollectionUtils.isEmpty(appServiceInstanceVOS)) {
+            Set<Long> marketServiceIds = appServiceInstanceVOS.stream().map(AppServiceInstanceVO::getAppServiceId).collect(toSet());
+            List<MarketServiceVO> marketServiceVOS = marketServiceClientOperator.queryMarketServiceByIds(projectId, marketServiceIds);
+            marketServiceVOS.forEach(marketServiceVO ->
+                    {
+                        AppServiceRepVO appServiceRepVO = new AppServiceRepVO();
+                        appServiceRepVO.setId(marketServiceVO.getId());
+                        appServiceRepVO.setServiceType(AppServiceType.MARKET_SERVICE.getType());
+                        appServiceRepVO.setType(AppSourceType.MARKET.getValue());
+                        appServiceRepVO.setName(marketServiceVO.getMarketServiceName());
+                        appServiceRepVO.setCode(marketServiceVO.getMarketServiceCode());
+                        appServiceRepVOList.add(appServiceRepVO);
+                    }
+            );
+        }
         return appServiceRepVOList;
     }
 
@@ -2854,11 +2875,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private List<AppServiceDTO> baseListAll(Long projectId) {
-        return appServiceMapper.listAll(projectId, null);
+        return appServiceMapper.listAll(projectId, null, null);
     }
 
-    private List<AppServiceDTO> baseListAll(Long projectId, String appServiceName) {
-        return appServiceMapper.listAll(projectId, appServiceName);
+    private List<AppServiceDTO> baseListAll(Long projectId, Long envId, String appServiceName) {
+        return appServiceMapper.listAll(projectId, envId, appServiceName);
     }
 
     private AppServiceDTO fromImportVoToDto(AppServiceImportVO appServiceImportVO) {

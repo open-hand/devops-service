@@ -7,6 +7,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Author: shanyu
@@ -26,12 +27,12 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
     void deleteByEnvIdAndObjectIdAndRdupmType(@Param("envId") Long envId, @Param("objectId") Long objectId, @Param("rdupmType") String rdupmType);
 
     List<DevopsDeployAppCenterVO> listAppFromEnvByUserId(@Param("projectId") Long projectId,
-                                                 @Param("envId") Long envId,
-                                                 @Param("name") String name,
-                                                 @Param("rdupmType") String rdupmType,
-                                                 @Param("operationType") String operationType,
-                                                 @Param("params") String params,
-                                                 @Param("userId") Long userId);
+                                                         @Param("envId") Long envId,
+                                                         @Param("name") String name,
+                                                         @Param("rdupmType") String rdupmType,
+                                                         @Param("operationType") String operationType,
+                                                         @Param("params") String params,
+                                                         @Param("userId") Long userId);
 
     Boolean checkNameUnique(@Param("rdupmType") String rdupmType,
                             @Param("objectId") Long objectId,
@@ -45,6 +46,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
 
     /**
      * 根据项目id和环境id查询deployment的应用列表
+     *
      * @param projectId
      * @param envId
      * @return DevopsDeployAppCenterVO集合
@@ -54,6 +56,7 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
 
     /**
      * 根据项目id,环境id和应用服务id查询chart的应用列表
+     *
      * @param projectId
      * @param envId
      * @param appServiceId
@@ -93,13 +96,15 @@ public interface DevopsDeployAppCenterEnvMapper extends BaseMapper<DevopsDeployA
      * @Return DevopsDeployAppCenterVO集合
      */
     List<DevopsDeployAppCenterVO> listChartByUserId(@Param("projectId") Long projectId,
-                                                         @Param("envId") Long envId,
-                                                         @Param("name") String name,
-                                                         @Param("operationType") String operationType,
-                                                         @Param("params") String params,
-                                                         @Param("userId") Long userId);
+                                                    @Param("envId") Long envId,
+                                                    @Param("name") String name,
+                                                    @Param("operationType") String operationType,
+                                                    @Param("params") String params,
+                                                    @Param("userId") Long userId);
 
     Boolean checkNameUniqueByAppId(@Param("appId") Long appId,
-                            @Param("projectId") Long projectId,
-                            @Param("name") String name);
+                                   @Param("projectId") Long projectId,
+                                   @Param("name") String name);
+
+    List<DevopsDeployAppCenterVO> listByAppServiceIds(@Param("envId") Long envId, @Param("appServiceIds") Set<Long> appServiceIds);
 }

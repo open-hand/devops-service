@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -148,4 +149,6 @@ public interface DevopsDeployAppCenterService {
     PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId);
 
     void checkEnableDeleteAndThrowE(Long projectId, RdupmTypeEnum rdupmTypeEnum, Long instanceId);
+
+    List<DevopsDeployAppCenterVO> listByAppServiceIds(Long envId, Set<Long> appServiceIds);
 }

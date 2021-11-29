@@ -119,6 +119,14 @@ public interface AppServiceInstanceService {
     List<RunningInstanceVO> listRunningInstance(Long projectId, Long appServiceId, Long appServiceServiceId, Long envId);
 
     /**
+     * 查出通过应用市场部署的实例
+     *
+     * @param envId 环境id
+     * @return
+     */
+    List<AppServiceInstanceVO> listMarketInstance(Long envId);
+
+    /**
      * 环境下某应用运行中或失败的实例
      *
      * @param projectId    项目id
@@ -418,9 +426,10 @@ public interface AppServiceInstanceService {
      * @param projectId    项目id
      * @param appServiceId 应用服务id
      * @param envId        环境id
+     * @param withPodInfo  是否设置pod信息
      * @return 实例列表
      */
-    List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId);
+    List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId, boolean withPodInfo);
 
     void hzeroDeploy(Long detailsRecordId);
 
