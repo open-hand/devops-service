@@ -38,9 +38,14 @@ public enum DevopsCiStepTypeEnum {
      */
     SONAR("sonar"),
     /**
-     * chart 类型
+     * 上传chart 类型
      */
-    CHART("chart"),
+    UPLOAD_CHART("upload_chart"),
+
+    /**
+     * 上传jar 类型
+     */
+    UPLOAD_JAR("upload_jar"),
 
     /**
      * 自定义任务
