@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
@@ -12,12 +18,6 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -174,9 +174,10 @@ public interface AppServiceService {
      * 项目下查询所有可选已经启用的服务
      *
      * @param projectId 项目id
+     * @param envId     环境id
      * @return baseList of ApplicationRepDTO
      */
-    List<AppServiceRepVO> listAll(Long projectId, String appServiceName);
+    List<AppServiceRepVO> listAll(Long projectId, Long envId);
 
     /**
      * 创建服务校验名称是否存在

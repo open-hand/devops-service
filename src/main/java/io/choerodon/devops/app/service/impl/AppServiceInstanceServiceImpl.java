@@ -1463,6 +1463,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
+    public List<AppServiceInstanceVO> listMarketInstance(Long envId) {
+        return appServiceInstanceMapper.listMarketInstance(envId);
+    }
+
+    @Override
     public List<RunningInstanceVO> listByAppIdAndEnvId(Long projectId, Long appServiceId, Long envId) {
         return ConvertUtils.convertList(appServiceInstanceMapper.listRunningAndFailedInstance(projectId, envId, appServiceId),
                 RunningInstanceVO.class);

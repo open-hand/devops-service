@@ -444,8 +444,8 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceRepVO>> listAll(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "appServiceName", required = false) String appServiceName) {
-        return Optional.ofNullable(applicationServiceService.listAll(projectId, appServiceName))
+            @Encrypt @RequestParam("env_id") Long envId) {
+        return Optional.ofNullable(applicationServiceService.listAll(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList.all"));
     }

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.polaris.InstanceWithPolarisStorageVO;
 import io.choerodon.devops.infra.dto.*;
@@ -86,6 +87,7 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
 
     /**
      * hzero不支持级联，后续删除
+     *
      * @param code
      * @param envId
      * @return
@@ -181,4 +183,5 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
 
     List<AppServiceInstanceInfoDTO> listInfoById(@Param("instanceIds") List<Long> instanceIds);
 
+    List<AppServiceInstanceVO> listMarketInstance(@Param("envId") Long envId);
 }
