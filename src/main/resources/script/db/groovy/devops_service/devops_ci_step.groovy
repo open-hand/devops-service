@@ -6,14 +6,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_step.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(255)', remarks: '步骤名称')
-            column(name: 'devops_ci_job_id', type: 'BIGINT UNSIGNED', remarks: 'devops流水线任务id')
+            column(name: 'name', type: 'VARCHAR(255)', remarks: '步骤名称') {
+                constraints(nullable: true)
+            }
+            column(name: 'devops_ci_job_id', type: 'BIGINT UNSIGNED', remarks: 'devops流水线任务id') {
+                constraints(nullable: true)
+            }
 
-            column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 build 构建，sonar 代码检查, chart chart发布, custom 自定义')
+            column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 build 构建，sonar 代码检查, chart chart发布, custom 自定义') {
+                constraints(nullable: true)
+            }
 
             column(name: 'script', type: 'VARCHAR(2000)', remarks: '步骤中包含的脚本')
 
             column(name: 'config_id', type: 'VARCHAR(2000)', remarks: '步骤的配置信息')
+
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '步骤的顺序') {
+                constraints(nullable: true)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

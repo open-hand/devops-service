@@ -1,17 +1,11 @@
-package io.choerodon.devops.infra.dto;
+package io.choerodon.devops.api.vo;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 
 /**
  * 〈功能简述〉
@@ -20,13 +14,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
  * @author wanghao
  * @since 2021/11/29 11:38
  */
-@Table(name = "devops_ci_step")
-@ModifyAudit
-@VersionAudit
-public class DevopsCiStepDTO extends AuditDomain {
+public class DevopsCiStepVO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("步骤名称")
     private String name;
@@ -48,6 +37,17 @@ public class DevopsCiStepDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("步骤配置信息id")
     private Long configId;
+
+    @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
+    private DevopsCiSonarConfigDTO devopsCiSonarConfigDTO;
+
+    public DevopsCiSonarConfigDTO getDevopsCiSonarConfigDTO() {
+        return devopsCiSonarConfigDTO;
+    }
+
+    public void setDevopsCiSonarConfigDTO(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO) {
+        this.devopsCiSonarConfigDTO = devopsCiSonarConfigDTO;
+    }
 
     public Long getSequence() {
         return sequence;
