@@ -2232,22 +2232,24 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId) {
+    public List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId, boolean withPodInfo) {
         List<ApplicationInstanceInfoVO> applicationInstanceInfoVOS = appServiceInstanceMapper.listAppInstanceByAppSvcIdAndEnvId(appServiceId, envId);
         if (CollectionUtils.isEmpty(applicationInstanceInfoVOS)) {
             return new ArrayList<>();
         }
-        applicationInstanceInfoVOS.forEach(applicationInstanceInfoVO -> {
-            List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(applicationInstanceInfoVO.getId());
-            if (CollectionUtils.isEmpty(devopsEnvPodDTOS)) {
-                applicationInstanceInfoVO.setPodCount(0);
-                applicationInstanceInfoVO.setPodRunningCount(0);
-            } else {
-                long count = devopsEnvPodDTOS.stream().filter(v -> Boolean.TRUE.equals(v.getReady())).count();
-                applicationInstanceInfoVO.setPodCount(devopsEnvPodDTOS.size());
-                applicationInstanceInfoVO.setPodRunningCount((int) count);
-            }
-        });
+        if (withPodInfo) {
+            applicationInstanceInfoVOS.forEach(applicationInstanceInfoVO -> {
+                List<DevopsEnvPodDTO> devopsEnvPodDTOS = devopsEnvPodService.baseListByInstanceId(applicationInstanceInfoVO.getId());
+                if (CollectionUtils.isEmpty(devopsEnvPodDTOS)) {
+                    applicationInstanceInfoVO.setPodCount(0);
+                    applicationInstanceInfoVO.setPodRunningCount(0);
+                } else {
+                    long count = devopsEnvPodDTOS.stream().filter(v -> Boolean.TRUE.equals(v.getReady())).count();
+                    applicationInstanceInfoVO.setPodCount(devopsEnvPodDTOS.size());
+                    applicationInstanceInfoVO.setPodRunningCount((int) count);
+                }
+            });
+        }
 
         return applicationInstanceInfoVOS;
     }

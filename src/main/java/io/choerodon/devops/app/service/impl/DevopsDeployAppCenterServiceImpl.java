@@ -514,6 +514,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
     }
 
+    @Override
+    public List<DevopsDeployAppCenterVO> listByAppServiceIds(Long envId, Set<Long> appServiceIds) {
+        if (CollectionUtils.isEmpty(appServiceIds)) {
+            return new ArrayList<>();
+        }
+       return devopsDeployAppCenterEnvMapper.listByAppServiceIds(envId, appServiceIds);
+    }
+
     @Transactional
     @Override
     public void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
