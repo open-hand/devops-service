@@ -167,13 +167,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
     @Autowired
-    private List<DevopsCiStepHandler> devopsCiStepHandlerList;
+    private List<AbstractDevopsCiStepHandler> devopsCiStepHandlerList;
 
-    private Map<String, DevopsCiStepHandler> ciStepHandlerMap;
+    private Map<String, AbstractDevopsCiStepHandler> ciStepHandlerMap;
 
     @PostConstruct
     void init() {
-        ciStepHandlerMap = devopsCiStepHandlerList.stream().collect(Collectors.toMap(DevopsCiStepHandler::getType, Function.identity()));
+        ciStepHandlerMap = devopsCiStepHandlerList.stream().collect(Collectors.toMap(AbstractDevopsCiStepHandler::getType, Function.identity()));
     }
 
     public DevopsCiPipelineServiceImpl(
@@ -438,16 +438,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-                        devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
+                        devopsCiJobService.create(devopsCiJobDTO);
 
                         // 保存任务中的步骤信息
                         devopsCiJobVO.getDevopsCiStepVOList().forEach(devopsCiStepVO -> {
                             // 保存步骤的配置信息
-                            DevopsCiStepHandler devopsCiStepHandler = ciStepHandlerMap.get(devopsCiStepVO.getType());
+                            AbstractDevopsCiStepHandler devopsCiStepHandler = ciStepHandlerMap.get(devopsCiStepVO.getType());
                             if (devopsCiStepHandler == null) {
                                 throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
                             }
-                            devopsCiStepHandler.save(devopsCiStepVO);
+                            devopsCiStepHandler.save(devopsCiJobDTO.getId(), devopsCiStepVO);
                         });
 
                     });
@@ -458,22 +458,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
-            AppExternalConfigDTO appExternalConfigDTO = null;
             if (appServiceDTO.getExternalConfigId() != null) {
-
-                appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+                ciCdPipelineVO.getRelatedBranches().forEach(branch -> initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, appExternalConfigDTO));
+            } else {
+                ciCdPipelineVO.getRelatedBranches().forEach(branch -> initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl));
             }
-
-
-            AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
-            ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
-                if (finalAppExternalConfigDTO == null) {
-                    initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl);
-                } else {
-                    initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, finalAppExternalConfigDTO);
-                }
-
-            });
 
         }
     }

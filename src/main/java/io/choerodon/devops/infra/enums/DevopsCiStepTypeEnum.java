@@ -11,9 +11,28 @@ public enum DevopsCiStepTypeEnum {
 
 
     /**
-     * 构建
+     * maven 构建
      */
-    BUILD("build"),
+    MAVEN_BUILD("maven_build"),
+
+    /**
+     * npm 构建
+     */
+    NPM_BUILD("npm_build"),
+
+    /**
+     * go 构建
+     */
+    GO_BUILD("go_build"),
+
+    /**
+     * mvn 发布
+     */
+    MAVEN_PUBLISH("maven_publish"),
+    /**
+     * docker构建
+     */
+    DOCKER_BUILD("docker_build"),
     /**
      * sonar检查
      */
