@@ -2,9 +2,12 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
+import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiSonarConfigMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 〈功能简述〉
@@ -17,4 +20,12 @@ import io.choerodon.devops.infra.mapper.DevopsCiSonarConfigMapper;
 public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigService {
     @Autowired
     private DevopsCiSonarConfigMapper devopsCiSonarConfigMapper;
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsCiSonarConfigMapper,
+                devopsCiSonarConfigDTO,
+                "error.save.ci.sonar.config.failed");
+    }
 }

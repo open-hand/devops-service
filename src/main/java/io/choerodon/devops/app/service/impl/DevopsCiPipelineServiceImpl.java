@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -165,6 +166,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsPipelineBranchRelMapper devopsPipelineBranchRelMapper;
     @Autowired
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
+    @Autowired
+    private List<DevopsCiStepHandler> devopsCiStepHandlerList;
+
+    private Map<String, DevopsCiStepHandler> ciStepHandlerMap;
+
+    @PostConstruct
+    void init() {
+        ciStepHandlerMap = devopsCiStepHandlerList.stream().collect(Collectors.toMap(DevopsCiStepHandler::getType, Function.identity()));
+    }
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -423,12 +433,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
-                        decryptCiBuildMetadata(devopsCiJobVO);
+//                        decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobVO.setId(devopsCiJobService.create(devopsCiJobDTO).getId());
+
+                        // 保存任务中的步骤信息
+                        devopsCiJobVO.getDevopsCiStepVOList().forEach(devopsCiStepVO -> {
+                            // 保存步骤的配置信息
+                            DevopsCiStepHandler devopsCiStepHandler = ciStepHandlerMap.get(devopsCiStepVO.getType());
+                            if (devopsCiStepHandler == null) {
+                                throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
+                            }
+                            devopsCiStepHandler.save(devopsCiStepVO);
+                        });
+
                     });
                 }
             });
