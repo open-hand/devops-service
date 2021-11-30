@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Set;
+
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 
 /**
@@ -12,4 +14,6 @@ import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 public interface DevopsCiSonarConfigService {
 
     void baseCreate(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO);
+
+    void batchDeleteByIds(Set<Long> ids);
 }

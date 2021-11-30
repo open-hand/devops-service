@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,4 +48,13 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     }
 
+    @Override
+    @Transactional
+    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
+        super.batchDeleteCascade(devopsCiStepDTOS);
+
+        // 删除关联的配置
+        Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
+        devopsCiSonarConfigService.batchDeleteByIds(configIds);
+    }
 }

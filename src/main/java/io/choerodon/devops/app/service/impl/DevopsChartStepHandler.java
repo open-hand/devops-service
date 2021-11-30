@@ -15,6 +15,6 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 @Service
 public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.CHART;
+    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.UPLOAD_CHART;
 
 }

@@ -8,7 +8,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -167,14 +166,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
     @Autowired
-    private List<AbstractDevopsCiStepHandler> devopsCiStepHandlerList;
+    private DevopsCiStepOperator devopsCiStepOperator;
 
-    private Map<String, AbstractDevopsCiStepHandler> ciStepHandlerMap;
-
-    @PostConstruct
-    void init() {
-        ciStepHandlerMap = devopsCiStepHandlerList.stream().collect(Collectors.toMap(AbstractDevopsCiStepHandler::getType, Function.identity()));
-    }
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -443,7 +436,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         // 保存任务中的步骤信息
                         devopsCiJobVO.getDevopsCiStepVOList().forEach(devopsCiStepVO -> {
                             // 保存步骤的配置信息
-                            AbstractDevopsCiStepHandler devopsCiStepHandler = ciStepHandlerMap.get(devopsCiStepVO.getType());
+                            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
                             if (devopsCiStepHandler == null) {
                                 throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
                             }
@@ -1554,8 +1547,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Set<Long> oldStageIds = devopsCiStageDTOS.stream().map(DevopsCiStageDTO::getId).collect(Collectors.toSet());
 
         Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                .filter(devopsCiStageVO -> devopsCiStageVO.getId() != null)
                 .map(DevopsCiStageVO::getId)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
         // 去掉要更新的记录，剩下的为要删除的记录
         oldStageIds.removeAll(updateIds);
@@ -1568,7 +1561,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (devopsCiStageVO.getId() != null) {
                 // 更新
                 devopsCiStageService.update(devopsCiStageVO);
-                devopsCiJobService.deleteByStageId(devopsCiStageVO.getId());
+                devopsCiJobService.deleteByStageIdCascade(devopsCiStageVO.getId());
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {

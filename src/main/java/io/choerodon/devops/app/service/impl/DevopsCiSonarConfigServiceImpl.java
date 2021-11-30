@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,5 +29,11 @@ public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigServic
         MapperUtil.resultJudgedInsertSelective(devopsCiSonarConfigMapper,
                 devopsCiSonarConfigDTO,
                 "error.save.ci.sonar.config.failed");
+    }
+
+    @Override
+    @Transactional
+    public void batchDeleteByIds(Set<Long> ids) {
+        devopsCiSonarConfigMapper.batchDeleteByIds(ids);
     }
 }
