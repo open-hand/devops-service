@@ -3,8 +3,10 @@ package io.choerodon.devops.infra.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -20,6 +22,8 @@ import org.springframework.util.Assert;
 import org.xml.sax.helpers.DefaultHandler;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.maven.*;
 
@@ -36,6 +40,7 @@ public class MavenSettingsUtil {
     }
 
     private static final String DEFAULT_PROFILE_ID = "default";
+    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
 
     /**
      * 数组字节流的初始大小
@@ -46,6 +51,31 @@ public class MavenSettingsUtil {
     private static final String GROUP_ID = "groupId";
     private static final String VERSION = "version";
     private static final String ARTIFACT_ID = "artifactId";
+
+
+    public static String buildSettings(List<MavenRepoVO> mavenRepoList) {
+        List<Server> servers = new ArrayList<>();
+        List<Repository> repositories = new ArrayList<>();
+
+        mavenRepoList.forEach(m -> {
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
+            }
+            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
+                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
+            }
+            repositories.add(new Repository(
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getUrl()),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+        });
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+    }
 
     /**
      * 生成maven的settings文件

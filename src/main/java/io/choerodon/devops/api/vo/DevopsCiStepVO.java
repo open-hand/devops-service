@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 
 /**
@@ -44,6 +46,28 @@ public class DevopsCiStepVO {
 
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
     private DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO;
+
+    @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
+    private DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO;
+
+    @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
+    private DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO;
+
+    public DevopsCiMavenBuildConfigDTO getDevopsCiMavenBuildConfigDTO() {
+        return devopsCiMavenBuildConfigDTO;
+    }
+
+    public void setDevopsCiMavenBuildConfigDTO(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO) {
+        this.devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigDTO;
+    }
+
+    public DevopsCiMavenPublishConfigDTO getDevopsCiMavenPublishConfigDTO() {
+        return devopsCiMavenPublishConfigDTO;
+    }
+
+    public void setDevopsCiMavenPublishConfigDTO(DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO) {
+        this.devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigDTO;
+    }
 
     public DevopsCiSonarConfigDTO getDevopsCiSonarConfigDTO() {
         return devopsCiSonarConfigDTO;

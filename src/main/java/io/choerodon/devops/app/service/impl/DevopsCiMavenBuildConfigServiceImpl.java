@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenBuildConfigMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 〈功能简述〉
@@ -51,5 +53,13 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
         }
 
         return devopsCiMavenBuildConfigVO;
+    }
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsCiMavenBuildConfigMapper,
+                devopsCiMavenBuildConfigDTO,
+                "error.save.maven.build.config.failed");
     }
 }

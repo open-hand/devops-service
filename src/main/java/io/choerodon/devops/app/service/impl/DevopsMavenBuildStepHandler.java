@@ -13,10 +13,12 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.maven.Repository;
@@ -26,10 +28,7 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
-import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.GitlabCiUtil;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.MavenSettingsUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * 〈功能简述〉
@@ -54,6 +53,25 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
+
+    @Override
+    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getDevopsCiMavenBuildConfigDTO();
+        devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
+
+        // 保存步骤
+        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
+        devopsCiStepDTO.setConfigId(devopsCiMavenBuildConfigDTO.getId());
+        devopsCiStepDTO.setId(null);
+        devopsCiStepDTO.setProjectId(projectId);
+        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
+        devopsCiStepService.baseCreate(devopsCiStepDTO);
+    }
+
+    @Override
+    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
+        super.batchDeleteCascade(devopsCiStepDTOS);
+    }
 
     @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
