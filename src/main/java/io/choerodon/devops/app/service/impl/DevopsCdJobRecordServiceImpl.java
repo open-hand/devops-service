@@ -270,7 +270,6 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
             code = SagaTaskCodeConstants.DEVOPS_REPAIR_API_TEST_TASK_FROM_CD,
             seq = 10,
             maxRetryCount = 3)
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public void taskRepairCdJobRecordData(String payload) {
         List<CdApiTestConfigForSagaVO> cdApiTestConfigForSagaVOList = JsonHelper.unmarshalByJackson(payload, new com.fasterxml.jackson.core.type.TypeReference<List<CdApiTestConfigForSagaVO>>() {
@@ -287,8 +286,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
                 DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdApiTestConfigForSagaVO.getDevopsCdJobRecordId());
                 try {
                     CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
-                    cdApiTestConfigVO.setApITestConfigId(cdApiTestConfigForSagaVO.getApITestConfigId());
-                    cdApiTestConfigVO.setApiTestConfigName(cdApiTestConfigForSagaVO.getApiTestConfigName());
+                    cdApiTestConfigVO.setApITestConfigId(cdApiTestConfigForSagaVO.getApiTestConfigId());
                     devopsCdJobRecordDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
                     devopsCdJobRecordMapper.updateByPrimaryKeySelective(devopsCdJobRecordDTO);
                 } catch (Exception e) {

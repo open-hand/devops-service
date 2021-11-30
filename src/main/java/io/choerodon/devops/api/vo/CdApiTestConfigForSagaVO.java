@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
-import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 
 /**
  * 〈功能简述〉
@@ -13,12 +12,9 @@ import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 public class CdApiTestConfigForSagaVO {
     @Encrypt
     private Long apiTestTaskId;
-    private String apiTestTaskName;
     @Encrypt
-    private Long apITestConfigId;
-    private String apiTestConfigName;
-    private String deployJobName;
-    private WarningSettingVO warningSettingVO;
+    private Long apiTestConfigId;
+    @Encrypt
     private Long devopsCdJobRecordId;
 
     public Long getApiTestTaskId() {
@@ -29,44 +25,12 @@ public class CdApiTestConfigForSagaVO {
         this.apiTestTaskId = apiTestTaskId;
     }
 
-    public String getApiTestTaskName() {
-        return apiTestTaskName;
+    public Long getApiTestConfigId() {
+        return apiTestConfigId;
     }
 
-    public void setApiTestTaskName(String apiTestTaskName) {
-        this.apiTestTaskName = apiTestTaskName;
-    }
-
-    public Long getApITestConfigId() {
-        return apITestConfigId;
-    }
-
-    public void setApITestConfigId(Long apITestConfigId) {
-        this.apITestConfigId = apITestConfigId;
-    }
-
-    public String getApiTestConfigName() {
-        return apiTestConfigName;
-    }
-
-    public void setApiTestConfigName(String apiTestConfigName) {
-        this.apiTestConfigName = apiTestConfigName;
-    }
-
-    public String getDeployJobName() {
-        return deployJobName;
-    }
-
-    public void setDeployJobName(String deployJobName) {
-        this.deployJobName = deployJobName;
-    }
-
-    public WarningSettingVO getWarningSettingVO() {
-        return warningSettingVO;
-    }
-
-    public void setWarningSettingVO(WarningSettingVO warningSettingVO) {
-        this.warningSettingVO = warningSettingVO;
+    public void setApiTestConfigId(Long apiTestConfigId) {
+        this.apiTestConfigId = apiTestConfigId;
     }
 
     public Long getDevopsCdJobRecordId() {
@@ -79,13 +43,10 @@ public class CdApiTestConfigForSagaVO {
 
     @Override
     public String toString() {
-        return "CdApiTestConfigVO{" +
+        return "CdApiTestConfigForSagaVO{" +
                 "apiTestTaskId=" + apiTestTaskId +
-                ", apiTestTaskName='" + apiTestTaskName + '\'' +
-                ", apITestConfigId=" + apITestConfigId +
-                ", apiTestConfigName='" + apiTestConfigName + '\'' +
-                ", deployJobName='" + deployJobName + '\'' +
-                ", warningSettingVO=" + warningSettingVO +
+                ", apiTestConfigId=" + apiTestConfigId +
+                ", devopsCdJobRecordId=" + devopsCdJobRecordId +
                 '}';
     }
 }

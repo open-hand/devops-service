@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CdApiTestConfigForSagaVO;
-import io.choerodon.devops.api.vo.CdApiTestConfigVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
@@ -192,10 +191,9 @@ public class DevopsCdPipelineController {
         return ResponseEntity.noContent().build();
     }
 
-
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查看cd流水线下所有api测试任务日志的解析")
-    @GetMapping("/log/api_test")
+    @GetMapping("/api_test/list")
     public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig() {
         return Results.success(devopsCdJobRecordService.listCdApiTestConfig());
     }
