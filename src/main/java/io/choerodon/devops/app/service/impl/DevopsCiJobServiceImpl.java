@@ -153,6 +153,17 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    public List<DevopsCiJobDTO> listCustomByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobDTO.setType(JobTypeEnum.CUSTOM.value());
+        return devopsCiJobMapper.select(devopsCiJobDTO);
+    }
+
+    @Override
     public List<DevopsCiJobDTO> listByStageId(Long stageId) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiStageId(Objects.requireNonNull(stageId));

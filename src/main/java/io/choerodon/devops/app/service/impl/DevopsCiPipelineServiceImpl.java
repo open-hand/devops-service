@@ -398,6 +398,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
     }
 
+    @Override
+    public String generateGitlabCiYaml(CiCdPipelineDTO ciCdPipelineDTO) {
+        Long pipelineId = ciCdPipelineDTO.getId();
+        GitlabCi gitlabCi = buildGitLabCiObject(ciCdPipelineDTO);
+
+        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
+
+        List<DevopsCiJobDTO> devopsCiCustomJobDTOList = devopsCiJobService.listCustomByPipelineId(pipelineId);
+        // 拼接自定义job
+        if (!CollectionUtils.isEmpty(devopsCiCustomJobDTOList)) {
+            for (DevopsCiJobDTO job : devopsCiCustomJobDTOList) {
+                gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
+            }
+        }
+        return gitlabCiYaml.toString();
+    }
+
     private void saveCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         //2.保存cd stage 的信息
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
@@ -419,7 +436,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void saveCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
             ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
                 DevopsCiStageDTO devopsCiStageDTO = ConvertUtils.convertObject(devopsCiStageVO, DevopsCiStageDTO.class);
                 devopsCiStageDTO.setCiPipelineId(ciCdPipelineDTO.getId());
@@ -442,7 +459,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             });
             // 保存ci配置文件
-            saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
+//            saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
 
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
             String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
@@ -1608,9 +1625,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             }
         });
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
-
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//        saveCiContent(projectId, projectDTO.getOrganizationId(), ciCdPipelineDTO.getId(), ciCdPipelineVO);
+//
         // 新增ci阶段，需要初始化gitlab-ci.yaml
         if (initCiFileFlag) {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
@@ -1673,11 +1690,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
      *
-     * @param projectId      项目id
-     * @param ciCdPipelineVO 流水线数据
+     * @param CiCdPipelineDTO 流水线数据
      * @return 构建完的CI文件对象
      */
-    private GitlabCi buildGitLabCiObject(final Long projectId, final Long organizationId, CiCdPipelineDTO ciCdPipelineDTO) {
+    private GitlabCi buildGitLabCiObject(CiCdPipelineDTO ciCdPipelineDTO) {
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
+        Long projectId = projectDTO.getId();
+        Long organizationId = projectDTO.getOrganizationId();
+
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(ciCdPipelineDTO.getId());
         // 对阶段排序
         List<String> stages = devopsCiStageDTOS.stream()

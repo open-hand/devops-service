@@ -15,7 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsCiContentMapper extends BaseMapper<DevopsCiContentDTO> {
 
-    String queryLatestContent(@Param("pipelineId") Long pipelineId);
+    DevopsCiContentDTO queryLatestContent(@Param("pipelineId") Long pipelineId);
 
     void updateCiContent(@Param("ids") Set<Long> ids, @Param("nexusDefaultUrl") String nexusDefaultUrl, @Param("nexusProxyUrl") String nexusProxyUrl);
 

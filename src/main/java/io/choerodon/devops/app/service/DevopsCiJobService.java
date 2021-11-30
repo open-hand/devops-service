@@ -46,6 +46,13 @@ public interface DevopsCiJobService {
     List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
 
     /**
+     * 查询流水线中的自定义任务
+     * @param ciPipelineId
+     * @return
+     */
+    List<DevopsCiJobDTO> listCustomByPipelineId(Long ciPipelineId);
+
+    /**
      * 根据stage查询job列表
      *
      * @param stageId stage的id
