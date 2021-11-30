@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Set;
+
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 
 /**
@@ -12,4 +14,8 @@ import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 public interface DevopsCiDockerBuildConfigService {
 
     DevopsCiDockerBuildConfigDTO baseQuery(Long id);
+
+    void baseCreate(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO);
+
+    void batchDeleteByIds(Set<Long> ids);
 }

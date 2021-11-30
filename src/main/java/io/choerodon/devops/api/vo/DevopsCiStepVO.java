@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 
 /**
@@ -41,12 +42,23 @@ public class DevopsCiStepVO {
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
     private DevopsCiSonarConfigDTO devopsCiSonarConfigDTO;
 
+    @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
+    private DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO;
+
     public DevopsCiSonarConfigDTO getDevopsCiSonarConfigDTO() {
         return devopsCiSonarConfigDTO;
     }
 
     public void setDevopsCiSonarConfigDTO(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO) {
         this.devopsCiSonarConfigDTO = devopsCiSonarConfigDTO;
+    }
+
+    public DevopsCiDockerBuildConfigDTO getDevopsCiDockerBuildConfigDTO() {
+        return devopsCiDockerBuildConfigDTO;
+    }
+
+    public void setDevopsCiDockerBuildConfigDTO(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO) {
+        this.devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigDTO;
     }
 
     public Long getSequence() {

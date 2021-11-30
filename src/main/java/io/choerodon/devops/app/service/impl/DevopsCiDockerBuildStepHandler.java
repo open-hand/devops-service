@@ -2,15 +2,20 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -43,5 +48,28 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
                 devopsCiStepDTO.getDevopsCiJobId());
     }
 
+    @Override
+    @Transactional
+    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
+        // 保存任务配置
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDevopsCiDockerBuildConfigDTO();
+        devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
 
+        // 保存步骤
+        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
+        devopsCiStepDTO.setConfigId(devopsCiDockerBuildConfigDTO.getId());
+        devopsCiStepDTO.setId(null);
+        devopsCiStepDTO.setProjectId(projectId);
+        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
+        devopsCiStepService.baseCreate(devopsCiStepDTO);
+    }
+
+    @Override
+    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
+        super.batchDeleteCascade(devopsCiStepDTOS);
+
+        // 删除关联的配置
+        Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
+        devopsCiDockerBuildConfigService.batchDeleteByIds(configIds);
+    }
 }
