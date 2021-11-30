@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 
 /**
@@ -36,5 +37,12 @@ public class DevopsCiStepOperator {
         return ciStepHandlerMap.get(Type);
     }
 
+    public AbstractDevopsCiStepHandler getHandlerOrThrowE(String Type) {
+        AbstractDevopsCiStepHandler handler = getHandler(Type);
+        if (handler == null) {
+            throw new CommonException("error.unsupported.step.type");
+        }
+        return handler;
+    }
 
 }

@@ -5,14 +5,11 @@ import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
-import io.choerodon.devops.api.vo.CiConfigTemplateVO;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
@@ -248,7 +245,11 @@ public class GitlabCiUtil {
      * @param dockerFilePath        dockerfile文件路径
      * @param skipTlsVerify         是否跳过证书校验
      */
-    public static List<String> generateDockerScripts(String dockerBuildContextDir, String dockerFilePath, boolean skipTlsVerify, boolean imageScan, DevopsCiJobVO jobVO) {
+    public static List<String> generateDockerScripts(String dockerBuildContextDir,
+                                                     String dockerFilePath,
+                                                     boolean skipTlsVerify,
+                                                     boolean imageScan,
+                                                     Long jobId) {
         List<String> commands = new ArrayList<>();
 
         // 在生成镜像的命令前保存镜像的元数据
@@ -265,7 +266,7 @@ public class GitlabCiUtil {
             //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
             if (imageScan) {
                 String resolveCommond = "trivyScanImage %s";
-                commands.add(String.format(resolveCommond, jobVO.getId()));
+                commands.add(String.format(resolveCommond, jobId));
             }
             String skopeoCommand = "skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
             commands.add(skopeoCommand);

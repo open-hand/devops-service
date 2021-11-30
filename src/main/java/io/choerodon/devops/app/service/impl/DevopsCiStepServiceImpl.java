@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.DevopsCiStepService;
@@ -62,5 +63,13 @@ public class DevopsCiStepServiceImpl implements DevopsCiStepService {
     @Transactional
     public void batchDeleteByIds(Set<Long> ids) {
         devopsCiStepMapper.batchDeleteByIds(ids);
+    }
+
+    @Override
+    public List<DevopsCiStepDTO> listByJobId(Long jobId) {
+        Assert.notNull(jobId, "error.job.id.is.null");
+        DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
+        devopsCiStepDTO.setDevopsCiJobId(jobId);
+        return devopsCiStepMapper.select(devopsCiStepDTO);
     }
 }

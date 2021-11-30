@@ -10,10 +10,10 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  * 〈〉
  *
  * @author wanghao
- * @since 2021/11/29 17:35
+ * @since 2021/11/30 11:29
  */
 @Service
-public class DevopsDockerBuildStepHandler extends AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.DOCKER_BUILD;
+public class DevopsNpmStepHandler extends AbstractDevopsCiStepHandler {
+    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.NPM_BUILD;
 
 }

@@ -12,6 +12,7 @@ import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
  * 〈功能简述〉
@@ -28,12 +29,23 @@ public abstract class AbstractDevopsCiStepHandler {
     protected DevopsCiStepService devopsCiStepService;
 
     @Transactional
-    public void save(Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
+    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
         // 保存步骤
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
         devopsCiStepDTO.setId(null);
+        devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+    }
+
+    /**
+     * 根据配置信息构建gitlab-ci脚本
+     * @param devopsCiStepDTO
+     * @return
+     */
+    public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
+        // 保存步骤
+        return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
     }
 
     /**

@@ -20,4 +20,6 @@ public interface DevopsCiStepService {
     void deleteByJobIds(List<Long> jobIds);
 
     void batchDeleteByIds(Set<Long> ids);
+
+    List<DevopsCiStepDTO> listByJobId(Long jobId);
 }

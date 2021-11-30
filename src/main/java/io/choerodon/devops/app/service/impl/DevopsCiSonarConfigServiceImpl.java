@@ -36,4 +36,9 @@ public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigServic
     public void batchDeleteByIds(Set<Long> ids) {
         devopsCiSonarConfigMapper.batchDeleteByIds(ids);
     }
+
+    @Override
+    public DevopsCiSonarConfigDTO baseQuery(Long id) {
+        return devopsCiSonarConfigMapper.selectByPrimaryKey(id);
+    }
 }

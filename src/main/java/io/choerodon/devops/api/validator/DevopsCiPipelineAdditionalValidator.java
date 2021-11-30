@@ -146,6 +146,63 @@ public class DevopsCiPipelineAdditionalValidator {
      *
      * @param config maven步骤数据
      */
+    public static void validateMavenBuildStep(DevopsCiMavenBuildConfigVO config) {
+        // 主要是校验仓库设置
+        if (!CollectionUtils.isEmpty(config.getRepos())) {
+            config.getRepos().forEach(repo -> {
+                if (StringUtils.isEmpty(repo.getType())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_EMPTY);
+                }
+                String[] types = repo.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_INVALID, repo.getType());
+                }
+
+                if (StringUtils.isEmpty(repo.getName())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_NAME_EMPTY);
+                }
+
+                if (!MAVEN_REPO_NAME_REGEX.matcher(repo.getName()).matches()) {
+                    throw new CommonException(ERROR_MAVEN_REPO_NAME_INVALID, repo.getName());
+                }
+
+                if (StringUtils.isEmpty(repo.getUrl())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_URL_EMPTY);
+                }
+
+                if (!GitOpsConstants.HTTP_URL_PATTERN.matcher(repo.getUrl()).matches()) {
+                    throw new CommonException(ERROR_MAVEN_REPO_URL_INVALID, repo.getUrl());
+                }
+
+                if (Boolean.TRUE.equals(repo.getPrivateRepo())) {
+                    if (StringUtils.isEmpty(repo.getUsername())) {
+                        throw new CommonException(ERROR_MAVEN_REPO_USERNAME_EMPTY);
+                    }
+                    if (StringUtils.isEmpty(repo.getPassword())) {
+                        throw new CommonException(ERROR_MAVEN_REPO_PSW_EMPTY);
+                    }
+                }
+            });
+
+            // 两个字段只能填一个
+            if (!StringUtils.isEmpty(config.getMavenSettings())) {
+                throw new CommonException(ERROR_BOTH_REPOS_AND_SETTINGS_EXIST);
+            }
+        }
+
+        // 校验用户直接粘贴的maven的settings文件的内容
+        if (!StringUtils.isEmpty(config.getMavenSettings())
+                && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
+            // 如果不符合xml格式，抛异常
+            throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT);
+        }
+    }
+
+    /**
+     * 校验maven步骤的参数
+     *
+     * @param config maven步骤数据
+     */
     public static void validateMavenStep(CiConfigTemplateVO config) {
         // 主要是校验仓库设置
         if (!CollectionUtils.isEmpty(config.getRepos())) {
@@ -194,7 +251,7 @@ public class DevopsCiPipelineAdditionalValidator {
         if (!StringUtils.isEmpty(config.getMavenSettings())
                 && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
             // 如果不符合xml格式，抛异常
-                throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
+            throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
         }
     }
 

@@ -28,6 +28,9 @@ public class DevopsCiStepDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @ApiModelProperty("项目id")
+    private Long projectId;
     @ApiModelProperty("步骤名称")
     private String name;
     /**
@@ -55,6 +58,14 @@ public class DevopsCiStepDTO extends AuditDomain {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public Long getId() {

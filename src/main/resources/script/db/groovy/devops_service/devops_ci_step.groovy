@@ -6,6 +6,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_step.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
+
             column(name: 'name', type: 'VARCHAR(255)', remarks: '步骤名称') {
                 constraints(nullable: true)
             }
