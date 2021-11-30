@@ -434,14 +434,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCiJobService.create(devopsCiJobDTO);
 
                         // 保存任务中的步骤信息
-                        devopsCiJobVO.getDevopsCiStepVOList().forEach(devopsCiStepVO -> {
-                            // 保存步骤的配置信息
-                            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
-                            if (devopsCiStepHandler == null) {
-                                throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
-                            }
-                            devopsCiStepHandler.save(devopsCiJobDTO.getId(), devopsCiStepVO);
-                        });
+                        batchSaveStep(devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
 
                     });
                 }
@@ -459,6 +452,21 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
 
         }
+    }
+
+    /**
+     * 保存步骤的配置信息
+     * @param jobId
+     * @param devopsCiStepVOList
+     */
+    private void batchSaveStep(Long jobId, List<DevopsCiStepVO> devopsCiStepVOList) {
+        devopsCiStepVOList.forEach(devopsCiStepVO -> {
+            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
+            if (devopsCiStepHandler == null) {
+                throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
+            }
+            devopsCiStepHandler.save(jobId, devopsCiStepVO);
+        });
     }
 
     private void getDockerTagName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
@@ -1554,7 +1562,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         oldStageIds.removeAll(updateIds);
         oldStageIds.forEach(stageId -> {
             devopsCiStageService.deleteById(stageId);
-            devopsCiJobService.deleteByStageId(stageId);
+            devopsCiJobService.deleteByStageIdCascade(stageId);
         });
 
         ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
@@ -1565,14 +1573,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        decryptCiBuildMetadata(devopsCiJobVO);
+//                        decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobService.create(devopsCiJobDTO);
-                        devopsCiJobVO.setId(devopsCiJobDTO.getId());
+
+                        batchSaveStep(devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
             } else {
@@ -1583,14 +1592,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        decryptCiBuildMetadata(devopsCiJobVO);
+//                        decryptCiBuildMetadata(devopsCiJobVO);
                         processCiJobVO(devopsCiJobVO);
 
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobService.create(devopsCiJobDTO);
-                        devopsCiJobVO.setId(devopsCiJobDTO.getId());
+
+                        batchSaveStep(devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
             }
