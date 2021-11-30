@@ -1,23 +1,20 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_language.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_pipeline_template_language') {
-        createTable(tableName: "devops_pipeline_template_language", remarks: '流水线模板适用语言表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_variable.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_variable') {
+        createTable(tableName: "devops_ci_template_variable", remarks: '流水线模板配置的CI变量') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'language', type: 'VARCHAR(64)', remarks: '语言') {
-                constraints(nullable: false)
-            }
-            column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
+
+            column(name: 'pipeline_template_id',  type: 'BIGINT UNSIGNED', remarks: '流水线模板id') {
                 constraints(nullable: false)
             }
 
-            column(name: 'source_id',  type: 'BIGINT UNSIGNED', remarks: '层级Id') {
+            column(name: 'variable_key', type: 'VARCHAR(255)', remarks: '层级') {
                 constraints(nullable: false)
             }
-
-            column(name: 'built_in',  type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
+            column(name: 'variable_value', type: 'VARCHAR(255)', remarks: '层级') {
                 constraints(nullable: false)
             }
 

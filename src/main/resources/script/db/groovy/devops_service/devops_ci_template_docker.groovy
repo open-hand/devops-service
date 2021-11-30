@@ -1,18 +1,15 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_docker_config.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_pipeline_template_docker_config') {
-        createTable(tableName: "devops_pipeline_template_docker_config", remarks: '流水线任务模板与步骤模板关系表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_docker.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_docker') {
+        createTable(tableName: "devops_ci_template_docker", remarks: '流水线任务模板与步骤模板关系表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: '主键，ID') {
-                constraints(nullable: false)
-            }
-            column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: 'docker上下文') {
-                constraints(nullable: false)
-            }
             column(name: 'docker_file_path', type: 'VARCHAR(255)', remarks: 'docker file 地址') {
+                constraints(nullable: false)
+            }
+            column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: 'docker 上下文路径') {
                 constraints(nullable: false)
             }
             column(name: 'skip_docker_tls_verify',  type: 'TINYINT UNSIGNED', remarks: '是否跳过tls') {

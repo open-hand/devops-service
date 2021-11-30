@@ -1,14 +1,15 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_pipeline_template') {
-        createTable(tableName: "devops_pipeline_template", remarks: '流水线模板表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job_group.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_job_group') {
+        createTable(tableName: "devops_ci_template_job_group", remarks: '流水线任务模板分组') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'name', type: 'VARCHAR(120)', remarks: '流水线模板名称') {
+            column(name: 'name', type: 'VARCHAR(30)', remarks: '任务名称') {
                 constraints(nullable: false)
             }
+
             column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
                 constraints(nullable: false)
             }
@@ -18,22 +19,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
             column(name: 'built_in',  type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
                 constraints(nullable: false)
             }
-
-            column(name: 'ci_template_language_id',  type: 'BIGINT UNSIGNED', remarks: '关联语言id') {
-                constraints(nullable: false)
-            }
-
-            column(name: 'enable',  type: 'TINYINT UNSIGNED', remarks: '是否启用') {
-                constraints(nullable: false)
-            }
-            column(name: 'version_name',  type: 'VARCHAR(255)', remarks: '版本命名规则') {
-                constraints(nullable: false)
-            }
-            column(name: 'runner_images',  type: 'VARCHAR(500)', remarks: '流水线模板镜像地址') {
-                constraints(nullable: false)
-            }
-
-
 
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

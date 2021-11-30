@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_job.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_pipeline_template_job') {
-        createTable(tableName: "devops_pipeline_template_job", remarks: '流水线任务模板表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_job') {
+        createTable(tableName: "devops_ci_template_job", remarks: '流水线任务模板表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

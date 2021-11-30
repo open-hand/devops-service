@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_step.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_pipeline_template_step') {
-        createTable(tableName: "devops_pipeline_template_step", remarks: '流水线步骤模板') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_step.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_step') {
+        createTable(tableName: "devops_ci_template_step", remarks: '流水线步骤模板') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

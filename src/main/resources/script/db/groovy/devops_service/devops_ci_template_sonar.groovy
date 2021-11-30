@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_sonar_config.groovy') {
-    changeSet(author: 'wanghao', id: '2021-11-29-create-table-devops_pipeline_template_sonar_config') {
-        createTable(tableName: "devops_pipeline_template_sonar_config", remarks: 'devops_pipeline_template_sonar_config') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_sonar.groovy') {
+    changeSet(author: 'wanghao', id: '2021-11-29-create-table-devops_ci_template_sonar') {
+        createTable(tableName: "devops_ci_template_sonar", remarks: 'devops_ci_template_sonar') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
