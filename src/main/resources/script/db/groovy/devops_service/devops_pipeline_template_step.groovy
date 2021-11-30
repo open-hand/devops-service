@@ -24,10 +24,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_step.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'step_type', type: 'VARCHAR(20)', remarks: '流水线步骤分类id') {
+            column(name: 'step_type', type: 'VARCHAR(20)', remarks: '步骤类型') {
                 constraints(nullable: false)
             }
             column(name: 'script', type: 'text', remarks: '自定义步骤的脚本') {
+                constraints(nullable: false)
+            }
+            column(name: 'step_config_id', type: 'BIGINT UNSIGNED', remarks: '具体步骤参数配置Id') {
                 constraints(nullable: false)
             }
 

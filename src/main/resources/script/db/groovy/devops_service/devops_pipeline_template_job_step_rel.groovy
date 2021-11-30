@@ -13,6 +13,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template_job_step_rel.gr
             column(name: 'pipeline_template_step_id', type: 'BIGINT UNSIGNED', remarks: '层级Id') {
                 constraints(nullable: false)
             }
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '顺序') {
+                constraints(nullable: false)
+            }
 
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
