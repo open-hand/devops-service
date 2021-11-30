@@ -406,9 +406,10 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "搜索参数")
             @RequestParam(name = "param", required = false) String param,
-            @RequestParam("target_project_id") Long targetProjectId
+            @RequestParam("target_project_id") Long targetProjectId,
+            @Encrypt @RequestParam(value = "target_app_service_id",required = false) Long targetAppServiceId
     ) {
-        return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, pageRequest, param))
+        return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, targetAppServiceId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
