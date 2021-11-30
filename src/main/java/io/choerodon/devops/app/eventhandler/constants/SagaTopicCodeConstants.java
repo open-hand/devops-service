@@ -315,6 +315,12 @@ public class SagaTopicCodeConstants {
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
+
+    /**
+     * 修复流水线api测试数据
+     */
+    public static final String REPAIR_API_TEST_TASK_FROM_CD = "repair-api-test-task-from-cd";
+
     private SagaTopicCodeConstants() {
     }
 }

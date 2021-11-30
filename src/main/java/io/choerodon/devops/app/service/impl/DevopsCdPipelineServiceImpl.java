@@ -1212,7 +1212,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             cdApiTestConfigVO.getApiTestTaskId(),
                             devopsCdJobRecordDTO.getCreatedBy(),
                             ApiTestTriggerType.PIPELINE.getValue(),
-                            jobRecordId);
+                            jobRecordId,
+                            cdApiTestConfigVO.getApITestConfigId());
 
             DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
             devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());

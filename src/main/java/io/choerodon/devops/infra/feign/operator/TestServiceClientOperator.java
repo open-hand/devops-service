@@ -34,9 +34,10 @@ public class TestServiceClientOperator {
      * @param createdBy
      * @return
      */
-    public ApiTestTaskRecordDTO executeTask(Long projectId, Long taskId, Long createdBy, String triggerType, Long triggerId) {
+    public ApiTestTaskRecordDTO executeTask(Long projectId, Long taskId, Long createdBy, String triggerType, Long triggerId, Long getApITestConfigId) {
         ApiTestExecuteVO apiTestExecuteVO = new ApiTestExecuteVO();
         apiTestExecuteVO.setTaskId(taskId);
+        apiTestExecuteVO.setConfigId(getApITestConfigId);
         return FeignClientUtils.doRequest(() -> testServiceClient.executeTask(projectId, apiTestExecuteVO, createdBy, triggerType, triggerId), ApiTestTaskRecordDTO.class, "error.execute.api.test.task");
     }
 

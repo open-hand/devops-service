@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
 import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 
 /**
@@ -11,7 +10,7 @@ import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
  * @author wanghao
  * @since 2020/9/9 9:55
  */
-public class CdApiTestConfigVO {
+public class CdApiTestConfigForSagaVO {
     @Encrypt
     private Long apiTestTaskId;
     private String apiTestTaskName;
@@ -20,7 +19,7 @@ public class CdApiTestConfigVO {
     private String apiTestConfigName;
     private String deployJobName;
     private WarningSettingVO warningSettingVO;
-
+    private Long devopsCdJobRecordId;
 
     public Long getApiTestTaskId() {
         return apiTestTaskId;
@@ -68,6 +67,14 @@ public class CdApiTestConfigVO {
 
     public void setWarningSettingVO(WarningSettingVO warningSettingVO) {
         this.warningSettingVO = warningSettingVO;
+    }
+
+    public Long getDevopsCdJobRecordId() {
+        return devopsCdJobRecordId;
+    }
+
+    public void setDevopsCdJobRecordId(Long devopsCdJobRecordId) {
+        this.devopsCdJobRecordId = devopsCdJobRecordId;
     }
 
     @Override

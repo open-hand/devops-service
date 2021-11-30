@@ -2,7 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.CdApiTestConfigForSagaVO;
+import io.choerodon.devops.api.vo.CdApiTestConfigVO;
 import io.choerodon.devops.api.vo.PodEventVO;
+import io.choerodon.devops.api.vo.test.ApiTestExecuteVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 
 /**
@@ -81,4 +84,12 @@ public interface DevopsCdJobRecordService {
     List<DevopsCdJobRecordDTO> queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status);
 
     DevopsCdJobRecordDTO queryByPipelineRecordIdAndJobName(Long pipelineRecordId, String deployJobName);
+
+    /**
+     * 修复数据使用，查询所有apiTest类型的数据
+     * @return
+     */
+    List<CdApiTestConfigForSagaVO> listCdApiTestConfig();
+
+    void taskRepairCdJobRecordData(String payload);
 }
