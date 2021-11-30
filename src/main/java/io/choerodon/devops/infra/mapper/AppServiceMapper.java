@@ -45,6 +45,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     List<AppServiceDTO> listByActive(@Param("projectId") Long projectId, @Param("param") String param);
 
+    List<AppServiceDTO> listByActiveOrderByTargetAppServiceId(@Param("projectId") Long projectId, @Param("targetAppServiceId") Long targetAppServiceId, @Param("param") String param);
+
     Integer countByActive(@Param("projectId") Long projectId);
 
     List<AppServiceDTO> listDeployedApp(@Param("projectId") Long projectId);
@@ -120,6 +122,12 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                              @Param("appServiceIds") Set<Long> appServiceIds,
                                                              @Param("userId") Long userId,
                                                              @Param("param") String param);
+
+    List<AppServiceDTO> listProjectMembersAppServiceByActiveOrderByTargetAppServiceId(@Param("projectId") Long projectId,
+                                                                                      @Param("targetAppServiceId") Long targetAppServiceId,
+                                                                                      @Param("appServiceIds") Set<Long> appServiceIds,
+                                                                                      @Param("userId") Long userId,
+                                                                                      @Param("param") String param);
 
     Integer countProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
                                                   @Param("appServiceIds") Set<Long> appServiceIds,

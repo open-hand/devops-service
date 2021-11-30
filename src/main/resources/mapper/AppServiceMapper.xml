@@ -169,6 +169,26 @@
         order by das.external_config_id is null desc
     </select>
 
+    <select id="listByActiveOrderByTargetAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.id,
+               das.name,
+               das.code
+        FROM devops_app_service das
+                WHERE das.is_active IS TRUE
+                  AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND das.project_id = #{projectId}
+        <if test="param != null and param != ''">
+            AND
+            (das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+        <if test="targetAppServiceId!=null">
+        ORDER BY das.id=#{targetAppServiceId} DESC
+        </if>
+    </select>
+
     <select id="countByActive" resultType="integer">
         SELECT count(1) FROM(
         SELECT das.id
@@ -203,6 +223,33 @@
         </if>
         order by da.external_config_id is null desc
     </select>
+
+    <select id="listProjectMembersAppServiceByActiveOrderByTargetAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT da.id,
+               da.name,
+               da.code
+        FROM devops_app_service da
+                WHERE da.is_active IS TRUE
+                  AND da.is_synchro IS TRUE
+                  AND da.gitlab_project_id IS NOT NULL
+        <if test="param != null and param != ''">
+            AND
+            (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+        <if test="appServiceIds != null and appServiceIds.size > 0">
+            and da.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
+        <if test="targetAppServiceId!=null">
+        ORDER BY da.id=#{targetAppServiceId} DESC
+        </if>
+    </select>
+
 
     <select id="countProjectMembersAppServiceByActive" resultType="integer">
         SELECT count(1) FROM (

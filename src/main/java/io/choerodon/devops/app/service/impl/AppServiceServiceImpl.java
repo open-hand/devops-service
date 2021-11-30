@@ -3824,19 +3824,19 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param) {
+    public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
         Page<AppServiceDTO> appServiceDTOPage;
         if (projectOwner) {
-            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listByActive(targetProjectId, param));
+            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listByActiveOrderByTargetAppServiceId(targetProjectId, targetAppServiceId, param));
         } else {
             Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), targetProjectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new Page<>();
             }
-            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listProjectMembersAppServiceByActive(targetProjectId, appServiceIds, userId, param));
+            appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listProjectMembersAppServiceByActiveOrderByTargetAppServiceId(targetProjectId, targetAppServiceId, appServiceIds, userId, param));
         }
         return ConvertUtils.convertPage(appServiceDTOPage, AppServiceVO.class);
     }
