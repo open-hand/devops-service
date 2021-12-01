@@ -66,6 +66,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         addColumn(tableName: 'devops_ci_job_record') {
             column(name: "app_service_id", type: 'BIGINT UNSIGNED', afterColumn: 'duration_seconds')
         }
+    }
+
+    changeSet(author: 'wanghao', id: '2021-11-1-fix-column') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_ci_pipeline_record")
+            tableExists(tableName: "devops_cicd_pipeline")
+        }
         sql("""
             UPDATE 
             devops_ci_job_record dcjr 
@@ -76,8 +83,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             WHERE dcpr.id = dcjr.ci_pipeline_record_id
             GROUP BY dcp.app_service_id)
         """)
+    }
+
+    changeSet(author: 'wanghao', id: '2021-11-1-add-constraint') {
         addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "app_service_id", columnDataType: "BIGINT UNSIGNED")
     }
+
 
     changeSet(author: 'wanghao', id: '2021-11-2-modify-unique-index') {
         dropUniqueConstraint(tableName: 'devops_ci_job_record',
