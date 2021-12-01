@@ -8,4 +8,10 @@
         LEFT JOIN devops_cd_stage dcs ON dcs.id = dcj.stage_id
         LEFT JOIN devops_cicd_pipeline dcp ON dcp.id = dcs.pipeline_id
     </select>
+
+    <select id="listByType" resultType="io.choerodon.devops.infra.dto.DevopsCdJobDTO">
+        SELECT *
+        FROM devops_cd_job
+        WHERE type = #{type}
+    </select>
 </mapper>

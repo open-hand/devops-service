@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
@@ -50,6 +52,8 @@ public class CiCdPipelineController {
         this.ciCdPipelineRecordService = ciCdPipelineRecordService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
     }
+    @Autowired
+    private DevopsCdJobService devopsCdJobService;
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线")
@@ -293,6 +297,13 @@ public class CiCdPipelineController {
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看cd流水线下所有api测试任务日志的解析")
+    @GetMapping("/api_test/list")
+    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig() {
+        return Results.success(devopsCdJobService.listCdApiTestConfig());
     }
 
 }
