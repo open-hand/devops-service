@@ -41,7 +41,7 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
@@ -53,15 +53,15 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @ApiModelProperty(value = "层级Id", required = true)
     @NotNull
-    private Object sourceId;
+    private Long sourceId;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
-    private Object builtIn;
+    private Long builtIn;
 
     @ApiModelProperty(value = "流水线步骤分类id", required = true)
     @NotNull
-    private Object categoryId;
+    private Long categoryId;
 
     @ApiModelProperty(value = "步骤类型", required = true)
     @NotBlank
@@ -73,14 +73,14 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @ApiModelProperty(value = "具体步骤参数配置Id", required = true)
     @NotNull
-    private Object stepConfigId;
+    private Long stepConfigId;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -100,27 +100,27 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.sourceType = sourceType;
     }
 
-    public Object getSourceId() {
+    public Long getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Object sourceId) {
+    public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
     }
 
-    public Object getBuiltIn() {
+    public Long getBuiltIn() {
         return builtIn;
     }
 
-    public void setBuiltIn(Object builtIn) {
+    public void setBuiltIn(Long builtIn) {
         this.builtIn = builtIn;
     }
 
-    public Object getCategoryId() {
+    public Long getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Object categoryId) {
+    public void setCategoryId(Long categoryId) {
         this.categoryId = categoryId;
     }
 
@@ -140,11 +140,11 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.script = script;
     }
 
-    public Object getStepConfigId() {
+    public Long getStepConfigId() {
         return stepConfigId;
     }
 
-    public void setStepConfigId(Object stepConfigId) {
+    public void setStepConfigId(Long stepConfigId) {
         this.stepConfigId = stepConfigId;
     }
 

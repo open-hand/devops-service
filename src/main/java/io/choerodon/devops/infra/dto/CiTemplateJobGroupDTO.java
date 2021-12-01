@@ -37,7 +37,7 @@ public class CiTemplateJobGroupDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
@@ -49,18 +49,18 @@ public class CiTemplateJobGroupDTO extends AuditDomain {
 
     @ApiModelProperty(value = "层级Id", required = true)
     @NotNull
-    private Object sourceId;
+    private Long sourceId;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
-    private Object builtIn;
+    private Long builtIn;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -80,19 +80,19 @@ public class CiTemplateJobGroupDTO extends AuditDomain {
         this.sourceType = sourceType;
     }
 
-    public Object getSourceId() {
+    public Long getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Object sourceId) {
+    public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
     }
 
-    public Object getBuiltIn() {
+    public Long getBuiltIn() {
         return builtIn;
     }
 
-    public void setBuiltIn(Object builtIn) {
+    public void setBuiltIn(Long builtIn) {
         this.builtIn = builtIn;
     }
 

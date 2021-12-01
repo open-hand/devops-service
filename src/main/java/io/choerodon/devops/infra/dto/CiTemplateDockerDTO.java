@@ -41,7 +41,7 @@ public class CiTemplateDockerDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "docker file 地址", required = true)
     @NotBlank
@@ -53,15 +53,15 @@ public class CiTemplateDockerDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否跳过tls", required = true)
     @NotNull
-    private Object skipDockerTlsVerify;
+    private Long skipDockerTlsVerify;
 
     @ApiModelProperty(value = "是否是否开启镜像扫描", required = true)
     @NotNull
-    private Object imageScan;
+    private Long imageScan;
 
     @ApiModelProperty(value = "是否开启门禁检查", required = true)
     @NotNull
-    private Object securityControl;
+    private Long securityControl;
 
     @ApiModelProperty(value = "漏洞危险程度")
     private String level;
@@ -74,11 +74,11 @@ public class CiTemplateDockerDTO extends AuditDomain {
     private Integer condition;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -98,27 +98,27 @@ public class CiTemplateDockerDTO extends AuditDomain {
         this.dockerContextDir = dockerContextDir;
     }
 
-    public Object getSkipDockerTlsVerify() {
+    public Long getSkipDockerTlsVerify() {
         return skipDockerTlsVerify;
     }
 
-    public void setSkipDockerTlsVerify(Object skipDockerTlsVerify) {
+    public void setSkipDockerTlsVerify(Long skipDockerTlsVerify) {
         this.skipDockerTlsVerify = skipDockerTlsVerify;
     }
 
-    public Object getImageScan() {
+    public Long getImageScan() {
         return imageScan;
     }
 
-    public void setImageScan(Object imageScan) {
+    public void setImageScan(Long imageScan) {
         this.imageScan = imageScan;
     }
 
-    public Object getSecurityControl() {
+    public Long getSecurityControl() {
         return securityControl;
     }
 
-    public void setSecurityControl(Object securityControl) {
+    public void setSecurityControl(Long securityControl) {
         this.securityControl = securityControl;
     }
 

@@ -41,7 +41,7 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
@@ -49,7 +49,7 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty(value = "任务分组id", required = true)
     @NotNull
-    private Object groupId;
+    private Long groupId;
 
     @ApiModelProperty(value = "流水线模板镜像地址", required = true)
     @NotBlank
@@ -61,26 +61,26 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty(value = "层级Id", required = true)
     @NotNull
-    private Object sourceId;
+    private Long sourceId;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
-    private Object builtIn;
+    private Long builtIn;
 
     @ApiModelProperty(value = "是否上传到共享目录", required = true)
     @NotNull
-    private Object isToUpload;
+    private Long isToUpload;
 
     @ApiModelProperty(value = "是否下载到共享目录", required = true)
     @NotNull
-    private Object isToDownload;
+    private Long isToDownload;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -92,11 +92,11 @@ public class CiTemplateJobDTO extends AuditDomain {
         this.name = name;
     }
 
-    public Object getGroupId() {
+    public Long getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(Object groupId) {
+    public void setGroupId(Long groupId) {
         this.groupId = groupId;
     }
 
@@ -116,35 +116,35 @@ public class CiTemplateJobDTO extends AuditDomain {
         this.sourceType = sourceType;
     }
 
-    public Object getSourceId() {
+    public Long getSourceId() {
         return sourceId;
     }
 
-    public void setSourceId(Object sourceId) {
+    public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
     }
 
-    public Object getBuiltIn() {
+    public Long getBuiltIn() {
         return builtIn;
     }
 
-    public void setBuiltIn(Object builtIn) {
+    public void setBuiltIn(Long builtIn) {
         this.builtIn = builtIn;
     }
 
-    public Object getIsToUpload() {
+    public Long getIsToUpload() {
         return isToUpload;
     }
 
-    public void setIsToUpload(Object isToUpload) {
+    public void setIsToUpload(Long isToUpload) {
         this.isToUpload = isToUpload;
     }
 
-    public Object getIsToDownload() {
+    public Long getIsToDownload() {
         return isToDownload;
     }
 
-    public void setIsToDownload(Object isToDownload) {
+    public void setIsToDownload(Long isToDownload) {
         this.isToDownload = isToDownload;
     }
 

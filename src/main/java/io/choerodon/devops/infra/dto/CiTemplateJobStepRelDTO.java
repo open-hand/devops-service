@@ -36,62 +36,62 @@ public class CiTemplateJobStepRelDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "层级Id", required = true)
     @NotNull
-    private Object ciTemplateJobId;
+    private Long ciTemplateJobId;
 
     @ApiModelProperty(value = "层级Id", required = true)
     @NotNull
-    private Object ciTemplateStepId;
+    private Long ciTemplateStepId;
 
     @ApiModelProperty(value = "顺序", required = true)
     @NotNull
-    private Object sequence;
+    private Long sequence;
 
     @ApiModelProperty(value = "顺序", required = true)
     @NotNull
-    private Object ciTemplateStageId;
+    private Long ciTemplateStageId;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Object getCiTemplateJobId() {
+    public Long getCiTemplateJobId() {
         return ciTemplateJobId;
     }
 
-    public void setCiTemplateJobId(Object ciTemplateJobId) {
+    public void setCiTemplateJobId(Long ciTemplateJobId) {
         this.ciTemplateJobId = ciTemplateJobId;
     }
 
-    public Object getCiTemplateStepId() {
+    public Long getCiTemplateStepId() {
         return ciTemplateStepId;
     }
 
-    public void setCiTemplateStepId(Object ciTemplateStepId) {
+    public void setCiTemplateStepId(Long ciTemplateStepId) {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
-    public Object getSequence() {
+    public Long getSequence() {
         return sequence;
     }
 
-    public void setSequence(Object sequence) {
+    public void setSequence(Long sequence) {
         this.sequence = sequence;
     }
 
-    public Object getCiTemplateStageId() {
+    public Long getCiTemplateStageId() {
         return ciTemplateStageId;
     }
 
-    public void setCiTemplateStageId(Object ciTemplateStageId) {
+    public void setCiTemplateStageId(Long ciTemplateStageId) {
         this.ciTemplateStageId = ciTemplateStageId;
     }
 

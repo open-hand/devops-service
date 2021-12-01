@@ -1,5 +1,9 @@
 package io.choerodon.devops.api.vo.pipeline;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -9,4 +13,5 @@ package io.choerodon.devops.api.vo.pipeline;
  */
 public class PipelineTemplateVO {
 
+    private List<CiTemplateLanguageDTO> ciTemplateLanguageDTOList;
 }

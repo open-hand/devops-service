@@ -40,14 +40,14 @@ public class CiTemplateSonarDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "扫描器类型 sonarmaven 、sonarscanner", required = true)
     @NotBlank
     private String scannerType;
 
     @ApiModelProperty(value = "是否跳过单测")
-    private Object skiptests;
+    private Long skiptests;
 
     @ApiModelProperty(value = "要扫描的文件目录，多个文件夹使用,隔开")
     private String sources;
@@ -68,11 +68,11 @@ public class CiTemplateSonarDTO extends AuditDomain {
     private String token;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -84,11 +84,11 @@ public class CiTemplateSonarDTO extends AuditDomain {
         this.scannerType = scannerType;
     }
 
-    public Object getSkiptests() {
+    public Long getSkiptests() {
         return skiptests;
     }
 
-    public void setSkiptests(Object skiptests) {
+    public void setSkiptests(Long skiptests) {
         this.skiptests = skiptests;
     }
 

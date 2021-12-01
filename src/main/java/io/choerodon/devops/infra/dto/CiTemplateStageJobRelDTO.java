@@ -34,38 +34,38 @@ public class CiTemplateStageJobRelDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "流水线模板阶段id", required = true)
     @NotNull
-    private Object ciTemplateStageId;
+    private Long ciTemplateStageId;
 
     @ApiModelProperty(value = "流水线模板id", required = true)
     @NotNull
-    private Object ciTemplateJobId;
+    private Long ciTemplateJobId;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Object getCiTemplateStageId() {
+    public Long getCiTemplateStageId() {
         return ciTemplateStageId;
     }
 
-    public void setCiTemplateStageId(Object ciTemplateStageId) {
+    public void setCiTemplateStageId(Long ciTemplateStageId) {
         this.ciTemplateStageId = ciTemplateStageId;
     }
 
-    public Object getCiTemplateJobId() {
+    public Long getCiTemplateJobId() {
         return ciTemplateJobId;
     }
 
-    public void setCiTemplateJobId(Object ciTemplateJobId) {
+    public void setCiTemplateJobId(Long ciTemplateJobId) {
         this.ciTemplateJobId = ciTemplateJobId;
     }
 

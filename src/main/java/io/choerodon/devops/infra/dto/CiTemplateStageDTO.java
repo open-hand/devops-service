@@ -35,7 +35,7 @@ public class CiTemplateStageDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    private Object id;
+    private Long id;
 
     @ApiModelProperty(value = "阶段名称", required = true)
     @NotBlank
@@ -43,14 +43,14 @@ public class CiTemplateStageDTO extends AuditDomain {
 
     @ApiModelProperty(value = "流水线模板id", required = true)
     @NotNull
-    private Object pipelineTemplateId;
+    private Long pipelineTemplateId;
 
 
-    public Object getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -62,11 +62,11 @@ public class CiTemplateStageDTO extends AuditDomain {
         this.name = name;
     }
 
-    public Object getPipelineTemplateId() {
+    public Long getPipelineTemplateId() {
         return pipelineTemplateId;
     }
 
-    public void setPipelineTemplateId(Object pipelineTemplateId) {
+    public void setPipelineTemplateId(Long pipelineTemplateId) {
         this.pipelineTemplateId = pipelineTemplateId;
     }
 
