@@ -12,4 +12,6 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsCdJobMapper extends BaseMapper<DevopsCdJobDTO> {
 
     List<DevopsCdJobVO> listByIdsWithNames(@Param("jobIds") Set<Long> jobIds);
+
+    List<DevopsCdJobDTO> listByType(@Param("type") String type);
 }

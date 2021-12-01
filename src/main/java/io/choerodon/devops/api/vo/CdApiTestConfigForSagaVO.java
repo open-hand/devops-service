@@ -15,7 +15,7 @@ public class CdApiTestConfigForSagaVO {
     @Encrypt
     private Long apiTestConfigId;
     @Encrypt
-    private Long devopsCdJobRecordId;
+    private Long devopsCdJobId;
 
     public Long getApiTestTaskId() {
         return apiTestTaskId;
@@ -33,12 +33,12 @@ public class CdApiTestConfigForSagaVO {
         this.apiTestConfigId = apiTestConfigId;
     }
 
-    public Long getDevopsCdJobRecordId() {
-        return devopsCdJobRecordId;
+    public Long getDevopsCdJobId() {
+        return devopsCdJobId;
     }
 
-    public void setDevopsCdJobRecordId(Long devopsCdJobRecordId) {
-        this.devopsCdJobRecordId = devopsCdJobRecordId;
+    public void setDevopsCdJobId(Long devopsCdJobId) {
+        this.devopsCdJobId = devopsCdJobId;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class CdApiTestConfigForSagaVO {
         return "CdApiTestConfigForSagaVO{" +
                 "apiTestTaskId=" + apiTestTaskId +
                 ", apiTestConfigId=" + apiTestConfigId +
-                ", devopsCdJobRecordId=" + devopsCdJobRecordId +
+                ", devopsCdJobId=" + devopsCdJobId +
                 '}';
     }
 }

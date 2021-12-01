@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.devops.api.vo.CdApiTestConfigForSagaVO;
 import io.choerodon.devops.api.vo.DevopsCdJobVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
@@ -38,4 +39,16 @@ public interface DevopsCdJobService {
     List<DevopsCdJobDTO> listByProjectIdAndType(Long projectId, JobTypeEnum typeEnum);
 
     List<DevopsCdJobVO> listByIdsWithNames(Set<Long> jobIds);
+
+    /**
+     * 修复数据使用，查询所有apiTest类型的数据
+     * @return
+     */
+    List<CdApiTestConfigForSagaVO> listCdApiTestConfig();
+
+    /**
+     * 修复数据saga
+     * @param payload
+     */
+    void taskRepairCdJobRecordData(String payload);
 }

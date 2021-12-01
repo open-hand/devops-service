@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.vo.test.ApiTestExecuteVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -26,6 +25,4 @@ public interface DevopsCdJobRecordMapper extends BaseMapper<DevopsCdJobRecordDTO
 
     DevopsCdJobRecordDTO queryByPipelineRecordIdAndJobName(@Param("pipelineRecordId") Long pipelineRecordId,
                                                            @Param("deployJobName") String deployJobName);
-
-    List<DevopsCdJobRecordDTO> listByType(@Param("type") String type);
 }

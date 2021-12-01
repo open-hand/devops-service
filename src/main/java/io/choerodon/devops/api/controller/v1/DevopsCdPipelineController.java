@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -12,9 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CdApiTestConfigForSagaVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsCdJobRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.swagger.annotation.Permission;
@@ -36,8 +32,6 @@ public class DevopsCdPipelineController {
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
-    @Autowired
-    private DevopsCdJobRecordService devopsCdJobRecordService;
 
     /**
      * 主机模式镜像部署接口
@@ -189,12 +183,5 @@ public class DevopsCdPipelineController {
     public ResponseEntity<Void> hzeroDeploy(@RequestParam(value = "details_record_id") Long detailsRecordId) {
         appServiceInstanceService.hzeroDeploy(detailsRecordId);
         return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查看cd流水线下所有api测试任务日志的解析")
-    @GetMapping("/api_test/list")
-    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig() {
-        return Results.success(devopsCdJobRecordService.listCdApiTestConfig());
     }
 }
