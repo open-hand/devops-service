@@ -9,9 +9,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_docker_build_config.groovy') {
             column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: 'docker构建上下文') {
                 constraints(nullable: false)
             }
-            column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: 'docker上下文') {
-                constraints(nullable: false)
-            }
             column(name: 'docker_file_path', type: 'VARCHAR(255)', remarks: 'docker file 地址') {
                 constraints(nullable: false)
             }

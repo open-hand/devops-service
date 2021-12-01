@@ -27,9 +27,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_docker.groovy') {
             column(name: 'symbol', type: 'VARCHAR(255)', remarks: '门禁条件') {
                 constraints(nullable: true)
             }
-            column(name: 'symbol', type: 'VARCHAR(255)', remarks: '门禁条件') {
-                constraints(nullable: false)
-            }
             column(name: 'condition', type: 'INT(4)', remarks: '漏洞数量') {
                 constraints(nullable: false)
             }
