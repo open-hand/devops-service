@@ -2,6 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStageMapper">
 
-    
+
+    <select id="listByPipelineTemplateIds" resultType="io.choerodon.devops.infra.dto.CiTemplateStageDTO">
+        select *
+        from devops_ci_template_stage dcts
+        where id in
+        <foreach collection="pipelineTemplateIds" item="pipelineTemplateId" open="(" close=")" separator=",">
+            #{pipelineTemplateId}
+        </foreach>
+    </select>
 </mapper>
 

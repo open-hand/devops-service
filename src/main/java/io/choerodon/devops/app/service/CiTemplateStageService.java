@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
+
 /**
  * 流水线模阶段(CiTemplateStage)应用服务
  *
@@ -8,5 +13,6 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateStageService {
 
+    List<CiTemplateStageDTO> listByPipelineTemplateIds(Set<Long> pipelineTemplateIds);
 }
 

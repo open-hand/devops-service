@@ -16,21 +16,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_step.groovy') {
             column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '层级Id') {
                 constraints(nullable: false)
             }
-            column(name: 'built_in', type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
-                constraints(nullable: false)
-            }
 
             column(name: 'category_id', type: 'BIGINT UNSIGNED', remarks: '流水线步骤分类id') {
                 constraints(nullable: false)
             }
 
-            column(name: 'step_type', type: 'VARCHAR(20)', remarks: '步骤类型') {
+            column(name: 'type', type: 'VARCHAR(20)', remarks: '步骤类型') {
                 constraints(nullable: false)
             }
             column(name: 'script', type: 'text', remarks: '自定义步骤的脚本') {
                 constraints(nullable: false)
             }
-            column(name: 'step_config_id', type: 'BIGINT UNSIGNED', remarks: '具体步骤参数配置Id') {
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '具体步骤参数配置Id') {
                 constraints(nullable: false)
             }
 

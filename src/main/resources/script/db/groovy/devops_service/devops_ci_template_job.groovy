@@ -21,16 +21,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'source_id',  type: 'BIGINT UNSIGNED', remarks: '层级Id') {
                 constraints(nullable: false)
             }
-            column(name: 'built_in',  type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
+            column(name: 'type', type: 'VARCHAR(20)', remarks: '步骤类型') {
                 constraints(nullable: false)
             }
 
 
-            column(name: 'is_to_upload',  type: 'TINYINT UNSIGNED', remarks: '是否上传到共享目录') {
+            column(name: 'to_upload', type: 'TINYINT UNSIGNED', remarks: '是否上传到共享目录') {
                 constraints(nullable: false)
             }
 
-            column(name: 'is_to_download',  type: 'TINYINT UNSIGNED', remarks: '是否下载到共享目录') {
+            column(name: 'to_download', type: 'TINYINT UNSIGNED', remarks: '是否下载到共享目录') {
                 constraints(nullable: false)
             }
 

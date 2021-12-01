@@ -29,12 +29,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
             column(name: 'version_name',  type: 'VARCHAR(255)', remarks: '版本命名规则') {
                 constraints(nullable: false)
             }
-            column(name: 'runner_images',  type: 'VARCHAR(500)', remarks: '流水线模板镜像地址') {
-                constraints(nullable: false)
-            }
-
-
-
+            column(name: 'image', type: 'VARCHAR(500)', remarks: '流水线模板镜像地址')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

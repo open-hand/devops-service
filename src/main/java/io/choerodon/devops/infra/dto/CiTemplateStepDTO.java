@@ -55,17 +55,13 @@ public class CiTemplateStepDTO extends AuditDomain {
     @NotNull
     private Long sourceId;
 
-    @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
-    @NotNull
-    private Long builtIn;
-
     @ApiModelProperty(value = "流水线步骤分类id", required = true)
     @NotNull
     private Long categoryId;
 
     @ApiModelProperty(value = "步骤类型", required = true)
     @NotBlank
-    private String stepType;
+    private String type;
 
     @ApiModelProperty(value = "自定义步骤的脚本", required = true)
     @NotBlank
@@ -73,7 +69,7 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @ApiModelProperty(value = "具体步骤参数配置Id", required = true)
     @NotNull
-    private Long stepConfigId;
+    private Long configId;
 
 
     public Long getId() {
@@ -108,14 +104,6 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.sourceId = sourceId;
     }
 
-    public Long getBuiltIn() {
-        return builtIn;
-    }
-
-    public void setBuiltIn(Long builtIn) {
-        this.builtIn = builtIn;
-    }
-
     public Long getCategoryId() {
         return categoryId;
     }
@@ -124,12 +112,12 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.categoryId = categoryId;
     }
 
-    public String getStepType() {
-        return stepType;
+    public String getType() {
+        return type;
     }
 
-    public void setStepType(String stepType) {
-        this.stepType = stepType;
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getScript() {
@@ -140,12 +128,12 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.script = script;
     }
 
-    public Long getStepConfigId() {
-        return stepConfigId;
+    public Long getConfigId() {
+        return configId;
     }
 
-    public void setStepConfigId(Long stepConfigId) {
-        this.stepConfigId = stepConfigId;
+    public void setConfigId(Long configId) {
+        this.configId = configId;
     }
 
 }
