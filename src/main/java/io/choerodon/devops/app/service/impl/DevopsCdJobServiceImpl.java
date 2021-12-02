@@ -140,7 +140,8 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
             devopsCdJobDTOList.forEach(devopsCdJobDTO -> {
                 CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
                 CdApiTestConfigForSagaVO cdApiTestConfigForSagaVO = new CdApiTestConfigForSagaVO();
-                ConvertUtils.convert(cdApiTestConfigVO, CdApiTestConfigForSagaVO.class);
+                cdApiTestConfigForSagaVO.setApiTestTaskId(cdApiTestConfigVO.getApiTestTaskId());
+                cdApiTestConfigForSagaVO.setApiTestConfigId(cdApiTestConfigVO.getApITestConfigId());
                 cdApiTestConfigForSagaVO.setDevopsCdJobId(devopsCdJobDTO.getId());
                 cdApiTestConfigForSagaVOArrayList.add(cdApiTestConfigForSagaVO);
             });
