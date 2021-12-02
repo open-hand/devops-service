@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo;
+package io.choerodon.devops.api.vo.template;
 
 import java.util.List;
 

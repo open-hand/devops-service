@@ -4,6 +4,8 @@ import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
+
 /**
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 17:01:24
