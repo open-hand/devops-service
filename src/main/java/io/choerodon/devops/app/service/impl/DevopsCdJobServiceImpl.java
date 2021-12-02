@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.beanutils.ConvertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,7 @@ import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -139,9 +139,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
         if (!CollectionUtils.isEmpty(devopsCdJobDTOList)) {
             devopsCdJobDTOList.forEach(devopsCdJobDTO -> {
                 CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
-                CdApiTestConfigForSagaVO cdApiTestConfigForSagaVO = new CdApiTestConfigForSagaVO();
-                cdApiTestConfigForSagaVO.setApiTestTaskId(cdApiTestConfigVO.getApiTestTaskId());
-                cdApiTestConfigForSagaVO.setApiTestConfigId(cdApiTestConfigVO.getApITestConfigId());
+                CdApiTestConfigForSagaVO cdApiTestConfigForSagaVO = ConvertUtils.convertObject(cdApiTestConfigVO, CdApiTestConfigForSagaVO.class);
                 cdApiTestConfigForSagaVO.setDevopsCdJobId(devopsCdJobDTO.getId());
                 cdApiTestConfigForSagaVOArrayList.add(cdApiTestConfigForSagaVO);
             });
