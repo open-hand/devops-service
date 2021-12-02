@@ -9,12 +9,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'name', type: 'VARCHAR(60)', remarks: '任务名称') {
                 constraints(nullable: false)
             }
-            column(name: 'group_id',  type: 'BIGINT UNSIGNED', remarks: '任务分组id') {
+            column(name: 'group_id', type: 'BIGINT UNSIGNED', remarks: '任务分组id') {
                 constraints(nullable: false)
             }
-            column(name: 'image', type: 'VARCHAR(500)', remarks: '流水线模板镜像地址') {
-                constraints(nullable: false)
-            }
+            column(name: 'image', type: 'VARCHAR(500)', remarks: '流水线模板镜像地址')
+
             column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
                 constraints(nullable: false)
             }
