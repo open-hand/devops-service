@@ -14,5 +14,7 @@ import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
 public interface CiTemplateStageService {
 
     List<CiTemplateStageDTO> listByPipelineTemplateIds(Set<Long> pipelineTemplateIds);
+
+    List<CiTemplateStageDTO> listByPipelineTemplateId(Long pipelineTemplateId);
 }
 

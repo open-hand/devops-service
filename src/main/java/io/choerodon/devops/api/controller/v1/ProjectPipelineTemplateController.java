@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
 import io.choerodon.devops.app.service.PipelineTemplateService;
 import io.choerodon.swagger.annotation.Permission;
@@ -35,5 +36,16 @@ public class ProjectPipelineTemplateController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return ResponseEntity.ok(pipelineTemplateService.listTemplateWithLanguage(projectId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询项目下可用的流水线模板列表")
+    @GetMapping("{template_id}")
+    public ResponseEntity<CiCdPipelineVO> queryPipelineInfoByTemplateId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "模板ID", required = true)
+            @PathVariable(value = "template_id") Long templateId) {
+        return ResponseEntity.ok(pipelineTemplateService.queryPipelineInfoByTemplateId(projectId, templateId));
     }
 }

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.PipelineTemplateVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
 import io.choerodon.devops.app.service.CiTemplateLanguageService;
@@ -14,6 +15,8 @@ import io.choerodon.devops.app.service.CiTemplateStageJobRelService;
 import io.choerodon.devops.app.service.CiTemplateStageService;
 import io.choerodon.devops.app.service.PipelineTemplateService;
 import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
+import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineTemplateMapper;
@@ -53,9 +56,27 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     }
 
     @Override
+    public PipelineTemplateDTO baseQuery(Long id) {
+        return pipelineTemplatemapper.selectByPrimaryKey(id);
+    }
+
+
+    @Override
     public List<PipelineTemplateVO> listTemplateForProject(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         return pipelineTemplatemapper.listTemplateForProject(projectDTO.getOrganizationId());
+    }
+
+    @Override
+    public CiCdPipelineVO queryPipelineInfoByTemplateId(Long projectId, Long templateId) {
+
+        PipelineTemplateDTO pipelineTemplateDTO = baseQuery(templateId);
+
+        // 查询模板下的阶段
+        List<CiTemplateStageDTO> ciTemplateStageDTOS = ciTemplateStageService.listByPipelineTemplateId(templateId);
+
+
+        return null;
     }
 
 
