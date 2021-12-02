@@ -12,11 +12,11 @@
         <id column="enable" property="enable"/>
         <id column="version_name" property="versionName"/>
         <id column="pipeline_image" property="image"/>
-        <collection property="ciTemplateStageVOList" ofType="io.choerodon.devops.api.vo.CiTemplateStageVO">
+        <collection property="ciTemplateStageVOList" ofType="io.choerodon.devops.api.vo.template.CiTemplateStageVO">
             <id column="stage_id" property="id"/>
             <id column="stage_name" property="name"/>
             <id column="pipeline_template_id" property="pipelineTemplateId"/>
-            <collection property="ciTemplateJobVOList" ofType="io.choerodon.devops.api.vo.CiTemplateJobVO">
+            <collection property="ciTemplateJobVOList" ofType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
                 <id column="job_id" property="id"/>
                 <id column="job_name" property="name"/>
                 <id column="group_id" property="groupId"/>
