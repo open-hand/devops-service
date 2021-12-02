@@ -21,6 +21,11 @@ public class PipelineTemplateCompositeVO {
     @ApiModelProperty("模板集合")
     private List<PipelineTemplateVO> pipelineTemplateVOList;
 
+    public PipelineTemplateCompositeVO(List<CiTemplateLanguageDTO> ciTemplateLanguageDTOList, List<PipelineTemplateVO> pipelineTemplateVOList) {
+        this.ciTemplateLanguageDTOList = ciTemplateLanguageDTOList;
+        this.pipelineTemplateVOList = pipelineTemplateVOList;
+    }
+
     public List<CiTemplateLanguageDTO> getCiTemplateLanguageDTOList() {
         return ciTemplateLanguageDTOList;
     }

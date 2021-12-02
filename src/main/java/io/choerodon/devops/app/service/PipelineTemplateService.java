@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.PipelineTemplateVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
-import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 
 /**
  * 流水线模板表(PipelineTemplate)应用服务
@@ -21,7 +21,7 @@ public interface PipelineTemplateService {
      * @param projectId
      * @return
      */
-    List<PipelineTemplateDTO> listTemplateForProject(Long projectId);
+    List<PipelineTemplateVO> listTemplateForProject(Long projectId);
 
 }
 
