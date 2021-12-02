@@ -28,9 +28,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_step.groovy') {
             column(name: 'type', type: 'VARCHAR(20)', remarks: '步骤类型') {
                 constraints(nullable: false)
             }
-            column(name: 'script', type: 'text', remarks: '自定义步骤的脚本') {
-                constraints(nullable: false)
-            }
+            column(name: 'script', type: 'text', remarks: '自定义步骤的脚本')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
