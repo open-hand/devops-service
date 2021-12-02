@@ -302,7 +302,9 @@ public class CiCdPipelineController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查看cd流水线下所有api测试任务日志的解析")
     @GetMapping("/api_test/list")
-    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig() {
+    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
         return Results.success(devopsCdJobService.listCdApiTestConfig());
     }
 
