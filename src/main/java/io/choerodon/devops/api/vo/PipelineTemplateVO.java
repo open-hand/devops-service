@@ -19,7 +19,7 @@ public class PipelineTemplateVO {
     @ApiModelProperty(value = "层级Id", required = true)
     private Long sourceId;
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
-    private Long builtIn;
+    private Boolean builtIn;
     @ApiModelProperty(value = "关联语言id", required = true)
     private Long ciTemplateLanguageId;
     @ApiModelProperty(value = "是否启用", required = true)
@@ -71,11 +71,11 @@ public class PipelineTemplateVO {
         this.sourceId = sourceId;
     }
 
-    public Long getBuiltIn() {
+    public Boolean getBuiltIn() {
         return builtIn;
     }
 
-    public void setBuiltIn(Long builtIn) {
+    public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
     }
 

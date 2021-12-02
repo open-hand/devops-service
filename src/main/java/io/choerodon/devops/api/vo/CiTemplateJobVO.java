@@ -29,6 +29,17 @@ public class CiTemplateJobVO {
 
     private String type;
 
+    @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
+    private Boolean builtIn;
+
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
+    }
+
     public String getType() {
         return type;
     }
