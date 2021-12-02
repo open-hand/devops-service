@@ -55,7 +55,7 @@ public class PipelineTemplateDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
-    private Long builtIn;
+    private Boolean builtIn;
 
     @ApiModelProperty(value = "关联语言id", required = true)
     @NotNull
@@ -106,11 +106,11 @@ public class PipelineTemplateDTO extends AuditDomain {
         this.sourceId = sourceId;
     }
 
-    public Long getBuiltIn() {
+    public Boolean getBuiltIn() {
         return builtIn;
     }
 
-    public void setBuiltIn(Long builtIn) {
+    public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
     }
 

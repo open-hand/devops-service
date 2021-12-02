@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_build_config.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven.groovy') {
     changeSet(author: 'wanghao', id: '2021-11-29-create-table') {
-        createTable(tableName: "devops_ci_maven_build_config", remarks: 'devops_ci_maven_build_config') {
+        createTable(tableName: "devops_ci_template_maven", remarks: 'devops_ci_template_maven') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -12,13 +12,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_build_config.groovy') {
 
             column(name: 'maven_settings', type: 'TEXT', remarks: '直接粘贴的maven的settings内容')
 
+            column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤Id') {
+                constraints(nullable: false)
+            }
+
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-
+        addUniqueConstraint(tableName: 'devops_ci_template_maven', constraintName: 'uk_ci_template_step_id', columnNames: 'ci_template_step_id')
     }
 
 }

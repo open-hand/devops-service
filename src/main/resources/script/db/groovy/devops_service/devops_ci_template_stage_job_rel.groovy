@@ -22,6 +22,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_stage_job_rel.groovy'
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
+        addUniqueConstraint(tableName: 'devops_ci_template_stage_job_rel', constraintName: 'uk_stage_job_id', columnNames: 'ci_template_stage_id,ci_template_job_id')
+        createIndex(tableName: 'devops_ci_template_stage_job_rel', indexName: 'idx_ci_template_stage_id') {
+            column(name: 'ci_template_stage_id')
+        }
+        createIndex(tableName: 'devops_ci_template_stage_job_rel', indexName: 'idx_ci_template_job_id') {
+            column(name: 'ci_template_job_id')
+        }
 
     }
 }

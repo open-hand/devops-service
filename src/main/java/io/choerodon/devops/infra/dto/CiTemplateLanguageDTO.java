@@ -53,7 +53,15 @@ public class CiTemplateLanguageDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
-    private Long builtIn;
+    private Boolean builtIn;
+
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
+    }
 
 
     public Long getId() {
@@ -86,14 +94,6 @@ public class CiTemplateLanguageDTO extends AuditDomain {
 
     public void setSourceId(Long sourceId) {
         this.sourceId = sourceId;
-    }
-
-    public Long getBuiltIn() {
-        return builtIn;
-    }
-
-    public void setBuiltIn(Long builtIn) {
-        this.builtIn = builtIn;
     }
 
 }

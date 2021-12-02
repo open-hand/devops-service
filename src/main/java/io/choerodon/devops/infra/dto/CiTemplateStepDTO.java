@@ -70,7 +70,17 @@ public class CiTemplateStepDTO extends AuditDomain {
     @ApiModelProperty(value = "具体步骤参数配置Id", required = true)
     @NotNull
     private Long configId;
+    @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
+    @NotNull
+    private Boolean builtIn;
 
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
+    }
 
     public Long getId() {
         return id;

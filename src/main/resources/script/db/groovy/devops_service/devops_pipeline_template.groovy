@@ -19,16 +19,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'ci_template_language_id',  type: 'BIGINT UNSIGNED', remarks: '关联语言id') {
+            column(name: 'ci_template_language_id', type: 'BIGINT UNSIGNED', remarks: '关联语言id') {
                 constraints(nullable: false)
             }
 
-            column(name: 'enable',  type: 'TINYINT UNSIGNED', remarks: '是否启用') {
+            column(name: 'enable', type: 'TINYINT UNSIGNED', remarks: '是否启用') {
                 constraints(nullable: false)
             }
-            column(name: 'version_name',  type: 'VARCHAR(255)', remarks: '版本命名规则') {
-                constraints(nullable: false)
-            }
+            column(name: 'version_name', type: 'VARCHAR(255)', remarks: '版本命名规则')
+
             column(name: 'image', type: 'VARCHAR(500)', remarks: '流水线模板镜像地址')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
@@ -38,6 +37,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-
+        addUniqueConstraint(tableName: 'devops_pipeline_template', constraintName: 'uk_name_source_type_source_id', columnNames: 'name,source_type,source_id')
+        createIndex(tableName: 'devops_pipeline_template', indexName: 'idx_ci_template_language_id') {
+            column(name: 'ci_template_language_id')
+        }
+        createIndex(tableName: 'devops_pipeline_template', indexName: 'idx_source_type_source_id') {
+            column(name: 'source_type')
+            column(name: 'source_id')
+        }
     }
 }
