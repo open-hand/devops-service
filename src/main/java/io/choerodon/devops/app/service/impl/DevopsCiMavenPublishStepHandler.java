@@ -245,4 +245,9 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         }
         return shells;
     }
+
+    @Override
+    public String getType() {
+        return type.value();
+    }
 }

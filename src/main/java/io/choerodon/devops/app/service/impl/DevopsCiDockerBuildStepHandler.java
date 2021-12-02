@@ -72,4 +72,9 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
         devopsCiDockerBuildConfigService.batchDeleteByIds(configIds);
     }
+
+    @Override
+    public String getType() {
+        return type.value();
+    }
 }

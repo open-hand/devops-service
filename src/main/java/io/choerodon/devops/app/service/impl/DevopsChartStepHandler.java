@@ -17,4 +17,9 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.UPLOAD_CHART;
 
+
+    @Override
+    public String getType() {
+        return type.value();
+    }
 }

@@ -199,4 +199,9 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         return MavenSettingsUtil.generateMavenSettings(servers, repositories);
     }
 
+    @Override
+    public String getType() {
+        return type.value();
+    }
+
 }

@@ -121,4 +121,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
         devopsCiSonarConfigService.batchDeleteByIds(configIds);
     }
+
+    @Override
+    public String getType() {
+        return type.value();
+    }
 }

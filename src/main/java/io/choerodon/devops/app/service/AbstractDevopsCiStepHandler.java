@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
-import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
@@ -22,7 +21,6 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
  * @since 2021/11/29 16:18
  */
 public abstract class AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type;
 
     @Autowired
     @Lazy
@@ -58,7 +56,5 @@ public abstract class AbstractDevopsCiStepHandler {
         devopsCiStepService.batchDeleteByIds(ids);
     }
 
-    public String getType() {
-        return type.value();
-    }
+    public abstract String getType();
 }
