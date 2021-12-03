@@ -14,7 +14,9 @@ public interface DevopsCiMavenBuildConfigService {
 
     DevopsCiMavenBuildConfigDTO baseQuery(Long id);
 
-    DevopsCiMavenBuildConfigVO queryById(Long id);
+    DevopsCiMavenBuildConfigVO queryUnmarshalByStepId(Long stepId);
+
+    DevopsCiMavenBuildConfigDTO queryByStepId(Long stepId);
 
     void baseCreate(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO);
 }

@@ -50,16 +50,18 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     @Override
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getDevopsCiMavenPublishConfigDTO();
-        devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
 
         // 保存步骤
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setConfigId(devopsCiMavenPublishConfigDTO.getId());
         devopsCiStepDTO.setId(null);
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getDevopsCiMavenPublishConfigDTO();
+        devopsCiMavenPublishConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
+
     }
 
     @Override
@@ -67,7 +69,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         Long projectId = devopsCiStepDTO.getProjectId();
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
 
-        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = devopsCiMavenPublishConfigService.queryById(devopsCiStepDTO.getConfigId());
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
+        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = ConvertUtils.convertObject(devopsCiMavenPublishConfigDTO, DevopsCiMavenPublishConfigVO.class);
 
         List<MavenRepoVO> targetRepos = new ArrayList<>();
         boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId,
@@ -89,8 +92,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         super.batchDeleteCascade(devopsCiStepDTOS);
 
         // 删除关联的配置
-        Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
-        devopsCiMavenPublishConfigService.batchDeleteByIds(configIds);
+        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+        devopsCiMavenPublishConfigService.batchDeleteByStepIds(stepIds);
     }
 
     /**

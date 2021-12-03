@@ -1,12 +1,13 @@
 package io.choerodon.devops.api.vo.template;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -42,7 +43,6 @@ public class CiTemplateStageJobRelVO extends AuditDomain {
     @ApiModelProperty(value = "流水线模板id", required = true)
     @NotNull
     private Long ciTemplateJobId;
-
 
     public Long getId() {
         return id;

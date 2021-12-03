@@ -6,16 +6,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_docker_build_config.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤id') {
+                constraints(nullable: false)
+            }
             column(name: 'docker_context_dir', type: 'VARCHAR(255)', remarks: 'docker构建上下文') {
                 constraints(nullable: false)
             }
             column(name: 'docker_file_path', type: 'VARCHAR(255)', remarks: 'docker file 地址') {
                 constraints(nullable: false)
             }
-            column(name: 'skip_docker_tls_verify',  type: 'TINYINT UNSIGNED', remarks: '是否跳过tls') {
+            column(name: 'skip_docker_tls_verify', type: 'TINYINT UNSIGNED', remarks: '是否跳过tls') {
                 constraints(nullable: false)
             }
-            column(name: 'image_scan',  type: 'TINYINT UNSIGNED', remarks: '是否是否开启镜像扫描') {
+            column(name: 'image_scan', type: 'TINYINT UNSIGNED', remarks: '是否是否开启镜像扫描') {
                 constraints(nullable: false)
             }
             column(name: 'security_control',  type: 'TINYINT UNSIGNED', remarks: '是否开启门禁检查') {
@@ -38,6 +41,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_docker_build_config.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-
+        addUniqueConstraint(tableName: 'devops_ci_docker_build_config',
+                constraintName: 'uk_step_id', columnNames: 'step_id')
     }
 }

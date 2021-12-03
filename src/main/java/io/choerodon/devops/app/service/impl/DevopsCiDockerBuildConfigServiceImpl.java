@@ -5,6 +5,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
@@ -29,6 +30,15 @@ public class DevopsCiDockerBuildConfigServiceImpl implements DevopsCiDockerBuild
     }
 
     @Override
+    public DevopsCiDockerBuildConfigDTO queryByStepId(Long stepId) {
+        Assert.notNull(stepId, "error.step.id.is.null");
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = new DevopsCiDockerBuildConfigDTO();
+        devopsCiDockerBuildConfigDTO.setStepId(stepId);
+
+        return devopsCiDockerBuildConfigMapper.selectOne(devopsCiDockerBuildConfigDTO);
+    }
+
+    @Override
     @Transactional
     public void baseCreate(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiDockerBuildConfigMapper,
@@ -38,7 +48,7 @@ public class DevopsCiDockerBuildConfigServiceImpl implements DevopsCiDockerBuild
 
     @Override
     @Transactional
-    public void batchDeleteByIds(Set<Long> ids) {
-        devopsCiDockerBuildConfigMapper.batchDeleteByIds(ids);
+    public void batchDeleteByStepIds(Set<Long> stepIds) {
+        devopsCiDockerBuildConfigMapper.batchDeleteByStepIds(stepIds);
     }
 }

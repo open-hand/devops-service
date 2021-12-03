@@ -35,7 +35,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
         // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
-        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.baseQuery(devopsCiStepDTO.getConfigId());
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
 
         Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getSkipDockerTlsVerify();
         //是否开启镜像扫描 默认是关闭镜像扫描的
@@ -51,17 +51,17 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     @Override
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        // 保存任务配置
-        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDevopsCiDockerBuildConfigDTO();
-        devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
-
         // 保存步骤
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setConfigId(devopsCiDockerBuildConfigDTO.getId());
         devopsCiStepDTO.setId(null);
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+
+        // 保存任务配置
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDevopsCiDockerBuildConfigDTO();
+        devopsCiDockerBuildConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
     }
 
     @Override
@@ -69,10 +69,9 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         super.batchDeleteCascade(devopsCiStepDTOS);
 
         // 删除关联的配置
-        Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
-        devopsCiDockerBuildConfigService.batchDeleteByIds(configIds);
+        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+        devopsCiDockerBuildConfigService.batchDeleteByStepIds(stepIds);
     }
-
     @Override
     public String getType() {
         return type.value();

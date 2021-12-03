@@ -47,6 +47,16 @@ public class DevopsCiDockerBuildConfigDTO {
     private String symbol;
     @ApiModelProperty("漏洞数量")
     private Integer condition;
+    @ApiModelProperty("所属步骤id")
+    private Long stepId;
+
+    public Long getStepId() {
+        return stepId;
+    }
+
+    public void setStepId(Long stepId) {
+        this.stepId = stepId;
+    }
 
     public Long getId() {
         return id;

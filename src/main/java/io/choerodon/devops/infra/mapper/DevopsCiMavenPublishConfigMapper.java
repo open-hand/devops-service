@@ -15,5 +15,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2021/11/30 18:02
  */
 public interface DevopsCiMavenPublishConfigMapper extends BaseMapper<DevopsCiMavenPublishConfigDTO> {
-    void batchDeleteByIds(@Param("ids") Set<Long> ids);
+    void batchDeleteByStepIds(@Param("stepIds") Set<Long> stepIds);
 }

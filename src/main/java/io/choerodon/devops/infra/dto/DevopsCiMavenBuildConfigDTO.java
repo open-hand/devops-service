@@ -38,6 +38,17 @@ public class DevopsCiMavenBuildConfigDTO extends AuditDomain {
     @ApiModelProperty("直接粘贴的maven的settings内容")
     private String mavenSettings;
 
+    @ApiModelProperty("所属步骤id")
+    private Long stepId;
+
+    public Long getStepId() {
+        return stepId;
+    }
+
+    public void setStepId(Long stepId) {
+        this.stepId = stepId;
+    }
+
     public Long getId() {
         return id;
     }

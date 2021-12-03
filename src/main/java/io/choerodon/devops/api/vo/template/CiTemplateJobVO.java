@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+
 /**
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 17:12:44
@@ -14,8 +16,6 @@ public class CiTemplateJobVO {
     private String name;
     @ApiModelProperty(value = "任务分组id", required = true)
     private Long groupId;
-    @ApiModelProperty(value = "流水线模板镜像地址", required = true)
-    private String runnerImages;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;
     @ApiModelProperty(value = "层级Id", required = true)
@@ -31,6 +31,25 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
+
+    private Long relateStageId;
+    private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    public Long getRelateStageId() {
+        return relateStageId;
+    }
+
+    public void setRelateStageId(Long relateStageId) {
+        this.relateStageId = relateStageId;
+    }
+
+    public CiTemplateJobGroupDTO getCiTemplateJobGroupDTO() {
+        return ciTemplateJobGroupDTO;
+    }
+
+    public void setCiTemplateJobGroupDTO(CiTemplateJobGroupDTO ciTemplateJobGroupDTO) {
+        this.ciTemplateJobGroupDTO = ciTemplateJobGroupDTO;
+    }
 
     public Boolean getBuiltIn() {
         return builtIn;
@@ -70,14 +89,6 @@ public class CiTemplateJobVO {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
-    }
-
-    public String getRunnerImages() {
-        return runnerImages;
-    }
-
-    public void setRunnerImages(String runnerImages) {
-        this.runnerImages = runnerImages;
     }
 
     public String getSourceType() {

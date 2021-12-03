@@ -15,7 +15,11 @@ public interface DevopsCiSonarConfigService {
 
     void baseCreate(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO);
 
-    void batchDeleteByIds(Set<Long> ids);
+    void batchDeleteByStepIds(Set<Long> stepIds);
 
     DevopsCiSonarConfigDTO baseQuery(Long id);
+
+    DevopsCiSonarConfigDTO queryByStepId(Long stepId);
+
+
 }

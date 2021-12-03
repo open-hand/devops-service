@@ -1,9 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
+import com.google.common.base.Joiner;
+import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateJobGroupMapper;
 
 /**
@@ -18,5 +24,14 @@ public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService 
     private CiTemplateJobGroupMapper ciTemplateJobGroupmapper;
 
 
+    @Override
+    public CiTemplateJobGroupDTO baseQuery(Long groupId) {
+        return ciTemplateJobGroupmapper.selectByPrimaryKey(groupId);
+    }
+
+    @Override
+    public List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds) {
+        return ciTemplateJobGroupmapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(groupIds));
+    }
 }
 

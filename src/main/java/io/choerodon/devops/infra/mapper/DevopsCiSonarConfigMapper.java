@@ -16,5 +16,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsCiSonarConfigMapper extends BaseMapper<DevopsCiSonarConfigDTO> {
 
-    void batchDeleteByIds(@Param("ids") Set<Long> ids);
+    void batchDeleteByStepIds(@Param("stepIds") Set<Long> stepIds);
 }

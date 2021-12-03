@@ -5,6 +5,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
@@ -33,12 +34,22 @@ public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigServic
 
     @Override
     @Transactional
-    public void batchDeleteByIds(Set<Long> ids) {
-        devopsCiSonarConfigMapper.batchDeleteByIds(ids);
+    public void batchDeleteByStepIds(Set<Long> stepIds) {
+        devopsCiSonarConfigMapper.batchDeleteByStepIds(stepIds);
     }
 
     @Override
     public DevopsCiSonarConfigDTO baseQuery(Long id) {
         return devopsCiSonarConfigMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public DevopsCiSonarConfigDTO queryByStepId(Long stepId) {
+        Assert.notNull(stepId, "error.step.id.is.null");
+
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = new DevopsCiSonarConfigDTO();
+        devopsCiSonarConfigDTO.setStepId(stepId);
+
+        return devopsCiSonarConfigMapper.selectOne(devopsCiSonarConfigDTO);
     }
 }

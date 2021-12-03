@@ -45,6 +45,17 @@ public class DevopsCiSonarConfigDTO extends AuditDomain {
     @ApiModelProperty("要扫描的文件目录，多个文件夹使用','隔开")
     private String sources;
 
+    @ApiModelProperty("所属步骤id")
+    private Long stepId;
+
+    public Long getStepId() {
+        return stepId;
+    }
+
+    public void setStepId(Long stepId) {
+        this.stepId = stepId;
+    }
+
     public Long getId() {
         return id;
     }

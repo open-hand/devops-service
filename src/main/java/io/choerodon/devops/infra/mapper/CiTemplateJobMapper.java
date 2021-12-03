@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +17,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface CiTemplateJobMapper extends BaseMapper<CiTemplateJobDTO> {
 
+    List<CiTemplateJobDTO> listByStageId(Long stageId);
+
+    List<CiTemplateJobVO> listByStageIds(@Param("stageIds") Set<Long> stageIds);
 }
 

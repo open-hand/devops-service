@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+
 /**
  * 流水线任务模板分组(CiTemplateJobGroup)应用服务
  *
@@ -8,5 +13,8 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateJobGroupService {
 
+    CiTemplateJobGroupDTO baseQuery(Long groupId);
+
+    List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds);
 }
 

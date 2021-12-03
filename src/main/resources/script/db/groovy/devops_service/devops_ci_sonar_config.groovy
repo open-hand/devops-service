@@ -6,10 +6,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_sonar_config.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤id') {
+                constraints(nullable: false)
+            }
             column(name: 'scanner_type', type: 'VARCHAR(255)', remarks: '扫描器类型 sonarmaven 、sonarscanner') {
                 constraints(nullable: false)
             }
-            column(name: 'skipTests', type: 'TINYINT UNSIGNED', remarks: '是否跳过单测')
+            column(name: 'skip_tests', type: 'TINYINT UNSIGNED', remarks: '是否跳过单测')
 
             column(name: 'sources', type: 'VARCHAR(1024)', remarks: '要扫描的文件目录，多个文件夹使用,隔开')
 
@@ -25,7 +28,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_sonar_config.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-
+        addUniqueConstraint(tableName: 'devops_ci_sonar_config',
+                constraintName: 'uk_step_id', columnNames: 'step_id')
     }
 
 }

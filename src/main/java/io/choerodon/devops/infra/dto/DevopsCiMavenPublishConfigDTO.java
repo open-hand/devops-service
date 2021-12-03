@@ -41,6 +41,17 @@ public class DevopsCiMavenPublishConfigDTO extends AuditDomain {
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
     private Long nexusRepoIds;
 
+    @ApiModelProperty("所属步骤id")
+    private Long stepId;
+
+    public Long getStepId() {
+        return stepId;
+    }
+
+    public void setStepId(Long stepId) {
+        this.stepId = stepId;
+    }
+
     public Long getId() {
         return id;
     }

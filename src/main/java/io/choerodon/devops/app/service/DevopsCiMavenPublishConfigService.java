@@ -18,7 +18,9 @@ public interface DevopsCiMavenPublishConfigService {
 
     DevopsCiMavenPublishConfigVO queryById(Long id);
 
+    DevopsCiMavenPublishConfigDTO queryByStepId(Long stepId);
+
     void baseCreate(DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO);
 
-    void batchDeleteByIds(Set<Long> ids);
+    void batchDeleteByStepIds(Set<Long> stepIds);
 }

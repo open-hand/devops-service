@@ -17,6 +17,5 @@ public class CiTemplateStageJobRelServiceImpl implements CiTemplateStageJobRelSe
     @Autowired
     private CiTemplateStageJobRelMapper ciTemplateStageJobRelmapper;
 
-
 }
 

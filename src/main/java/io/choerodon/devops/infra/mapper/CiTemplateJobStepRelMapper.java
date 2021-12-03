@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.template.CiTemplateJobStepRelVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobStepRelDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +17,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface CiTemplateJobStepRelMapper extends BaseMapper<CiTemplateJobStepRelDTO> {
 
+    List<CiTemplateJobStepRelVO> listByJobIds(@Param("jobIds") Set<Long> jobIds);
 }
 

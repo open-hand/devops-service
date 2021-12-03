@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
  * @author wanghao
@@ -73,6 +74,16 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("ci阶段的构建类型")
     private List<String> configJobTypes;
+
+    private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    public CiTemplateJobGroupDTO getCiTemplateJobGroupDTO() {
+        return ciTemplateJobGroupDTO;
+    }
+
+    public void setCiTemplateJobGroupDTO(CiTemplateJobGroupDTO ciTemplateJobGroupDTO) {
+        this.ciTemplateJobGroupDTO = ciTemplateJobGroupDTO;
+    }
 
     public List<DevopsCiStepVO> getDevopsCiStepVOList() {
         return devopsCiStepVOList;

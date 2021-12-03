@@ -48,9 +48,6 @@ public class DevopsCiStepDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("步骤所属任务id")
     private Long devopsCiJobId;
-    @Encrypt
-    @ApiModelProperty("步骤配置信息id")
-    private Long configId;
 
     public Long getSequence() {
         return sequence;
@@ -108,11 +105,4 @@ public class DevopsCiStepDTO extends AuditDomain {
         this.devopsCiJobId = devopsCiJobId;
     }
 
-    public Long getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Long configId) {
-        this.configId = configId;
-    }
 }

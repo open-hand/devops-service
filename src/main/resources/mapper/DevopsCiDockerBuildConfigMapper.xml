@@ -3,12 +3,12 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiDockerBuildConfigMapper">
 
 
-    <delete id="batchDeleteByIds">
+    <delete id="batchDeleteByStepIds">
         delete
         from devops_ci_docker_build_config
-        where id in
-        <foreach collection="ids" item="id" open="(" separator="," close=")">
-            #{id}
+        where step_id in
+        <foreach collection="stepIds" item="stepId" open="(" separator="," close=")">
+            #{stepId}
         </foreach>
     </delete>
 </mapper>

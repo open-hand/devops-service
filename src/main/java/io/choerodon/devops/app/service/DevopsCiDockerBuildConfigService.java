@@ -15,7 +15,9 @@ public interface DevopsCiDockerBuildConfigService {
 
     DevopsCiDockerBuildConfigDTO baseQuery(Long id);
 
+    DevopsCiDockerBuildConfigDTO queryByStepId(Long stepId);
+
     void baseCreate(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO);
 
-    void batchDeleteByIds(Set<Long> ids);
+    void batchDeleteByStepIds(Set<Long> stepIds);
 }

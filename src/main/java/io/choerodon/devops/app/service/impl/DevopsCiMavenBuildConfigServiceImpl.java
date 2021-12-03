@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
@@ -37,22 +38,34 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
     }
 
     @Override
-    public DevopsCiMavenBuildConfigVO queryById(Long id) {
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = baseQuery(id);
+    public DevopsCiMavenBuildConfigVO queryUnmarshalByStepId(Long stepId) {
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = queryByStepId(stepId);
         DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = ConvertUtils.convertObject(devopsCiMavenBuildConfigDTO, DevopsCiMavenBuildConfigVO.class);
         if (StringUtils.isNoneBlank(devopsCiMavenBuildConfigVO.getNexusMavenRepoIdStr())) {
             devopsCiMavenBuildConfigVO
                     .setNexusMavenRepoIds(JsonHelper
-                            .unmarshalByJackson(devopsCiMavenBuildConfigVO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {}));
+                            .unmarshalByJackson(devopsCiMavenBuildConfigVO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
+                            }));
         }
 
         if (StringUtils.isNoneBlank(devopsCiMavenBuildConfigVO.getRepoStr())) {
             devopsCiMavenBuildConfigVO
                     .setRepos(JsonHelper
-                            .unmarshalByJackson(devopsCiMavenBuildConfigVO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {}));
+                            .unmarshalByJackson(devopsCiMavenBuildConfigVO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
+                            }));
         }
 
         return devopsCiMavenBuildConfigVO;
+    }
+
+    @Override
+    public DevopsCiMavenBuildConfigDTO queryByStepId(Long stepId) {
+        Assert.notNull(stepId, "error.step.id.is.null");
+
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = new DevopsCiMavenBuildConfigDTO();
+        devopsCiMavenBuildConfigDTO.setStepId(stepId);
+
+        return devopsCiMavenBuildConfigMapper.selectOne(devopsCiMavenBuildConfigDTO);
     }
 
     @Override

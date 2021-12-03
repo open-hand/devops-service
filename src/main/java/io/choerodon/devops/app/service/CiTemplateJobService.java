@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
+
 /**
  * 流水线任务模板表(CiTemplateJob)应用服务
  *
@@ -8,5 +13,8 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateJobService {
 
+    List<CiTemplateJobVO> listByStageIds(Set<Long> stageIds);
+
+    List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId);
 }
 

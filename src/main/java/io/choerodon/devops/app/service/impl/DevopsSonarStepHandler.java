@@ -50,17 +50,19 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        // 保存任务配置
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getDevopsCiSonarConfigDTO();
-        devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
+
 
         // 保存步骤
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setConfigId(devopsCiSonarConfigDTO.getId());
         devopsCiStepDTO.setId(null);
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+
+        // 保存任务配置
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getDevopsCiSonarConfigDTO();
+        devopsCiSonarConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
 
     }
 
@@ -68,7 +70,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         // sonar配置转化为gitlab-ci配置
         List<String> scripts = new ArrayList<>();
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.baseQuery(devopsCiStepDTO.getConfigId());
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.baseQuery(devopsCiStepDTO.getId());
 
         if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
@@ -118,8 +120,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         super.batchDeleteCascade(devopsCiStepDTOS);
 
         // 删除关联的配置
-        Set<Long> configIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getConfigId).collect(Collectors.toSet());
-        devopsCiSonarConfigService.batchDeleteByIds(configIds);
+        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+        devopsCiSonarConfigService.batchDeleteByStepIds(stepIds);
     }
 
     @Override

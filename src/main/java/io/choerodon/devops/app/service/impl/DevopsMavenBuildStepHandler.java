@@ -56,16 +56,17 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getDevopsCiMavenBuildConfigDTO();
-        devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
-
         // 保存步骤
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setConfigId(devopsCiMavenBuildConfigDTO.getId());
         devopsCiStepDTO.setId(null);
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getDevopsCiMavenBuildConfigDTO();
+        devopsCiMavenBuildConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
+
     }
 
     @Override
@@ -78,7 +79,7 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         Long projectId = devopsCiStepDTO.getProjectId();
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
         // 处理settings文件
-        DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryById(devopsCiStepDTO.getConfigId());
+        DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryUnmarshalByStepId(devopsCiStepDTO.getId());
 
 
         DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);

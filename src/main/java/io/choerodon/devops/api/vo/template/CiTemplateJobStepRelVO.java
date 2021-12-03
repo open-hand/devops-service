@@ -1,16 +1,10 @@
 package io.choerodon.devops.api.vo.template;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * 流水线任务模板与步骤模板关系表(CiTemplateJobStepRel)实体类
@@ -37,10 +31,15 @@ public class CiTemplateJobStepRelVO {
     @NotNull
     private Long sequence;
 
-    @ApiModelProperty(value = "顺序", required = true)
-    @NotNull
-    private Long ciTemplateStageId;
+    private CiTemplateStepVO ciTemplateStepVO;
 
+    public CiTemplateStepVO getCiTemplateStepVO() {
+        return ciTemplateStepVO;
+    }
+
+    public void setCiTemplateStepVO(CiTemplateStepVO ciTemplateStepVO) {
+        this.ciTemplateStepVO = ciTemplateStepVO;
+    }
 
     public Long getId() {
         return id;
@@ -72,14 +71,6 @@ public class CiTemplateJobStepRelVO {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
-    }
-
-    public Long getCiTemplateStageId() {
-        return ciTemplateStageId;
-    }
-
-    public void setCiTemplateStageId(Long ciTemplateStageId) {
-        this.ciTemplateStageId = ciTemplateStageId;
     }
 
 }
