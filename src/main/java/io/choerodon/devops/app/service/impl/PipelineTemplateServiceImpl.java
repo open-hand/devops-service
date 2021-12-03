@@ -40,9 +40,6 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
     @Autowired
     private CiTemplateJobService ciTemplateJobService;
-
-    @Autowired
-    private CiTemplateStageJobRelService ciTemplateStageJobRelService;
     @Autowired
     private CiTemplateLanguageService ciTemplateLanguageService;
     @Autowired
@@ -51,9 +48,6 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     private CiTemplateJobStepRelService ciTemplateJobStepRelService;
     @Autowired
     private CiTemplateJobGroupService ciTemplateJobGroupService;
-
-    @Autowired
-    private DevopsCiStepOperator devopsCiStepOperator;
 
     @Autowired
     private PipelineTemplateMapper pipelineTemplatemapper;
@@ -127,33 +121,25 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
                         // 组装步骤信息
                         List<CiTemplateStepVO> ciTemplateStepVOS = jobStepMap.get(stageTemplateJobVO.getId());
+                        List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
                         ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
                             DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                            AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+                            // todo 添加步骤关联的配置信息
+                            devopsCiStepVOList.add(devopsCiStepVO);
                         });
-
-
+                        devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
                         devopsCiJobVOList.add(devopsCiJobVO);
                     });
+
                     devopsCiStageVO.setJobList(devopsCiJobVOList);
-
-                    List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(stageTemplateJobVOList, DevopsCiJobVO.class);
-
                     devopsCiStageVOList.add(devopsCiStageVO);
                 });
 
-
-        ciTemplateStageDTOS.forEach(ciTemplateStageDTO -> {
-
-            // 查询阶段下的任务
-            List<CiTemplateJobVO> ciTemplateJobVOS = ciTemplateJobService.listByStageIdWithGroupInfo(ciTemplateStageDTO.getId());
-            ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
-
-            });
-
-        });
-
-        return null;
+        CiCdPipelineVO ciCdPipelineVO = new CiCdPipelineVO();
+        ciCdPipelineVO.setImage(pipelineTemplateDTO.getImage());
+        ciCdPipelineVO.setImage(pipelineTemplateDTO.getVersionName());
+        ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOList);
+        return ciCdPipelineVO;
     }
 
 

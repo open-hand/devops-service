@@ -37,9 +37,6 @@ public class DevopsCiStepVO {
     @Encrypt
     @ApiModelProperty("步骤所属任务id")
     private Long devopsCiJobId;
-    @Encrypt
-    @ApiModelProperty("步骤配置信息id")
-    private Long configId;
 
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
     private DevopsCiSonarConfigDTO devopsCiSonarConfigDTO;
@@ -131,13 +128,5 @@ public class DevopsCiStepVO {
 
     public void setDevopsCiJobId(Long devopsCiJobId) {
         this.devopsCiJobId = devopsCiJobId;
-    }
-
-    public Long getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Long configId) {
-        this.configId = configId;
     }
 }
