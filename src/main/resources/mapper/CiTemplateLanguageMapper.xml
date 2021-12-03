@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper">
 
 
-    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.CiTemplateLanguageDTO">
+    <select id="listByIds" resultType="io.choerodon.devops.infra.dto.CiTemplateCategoryDTO">
         select *
         from devops_ci_template_language dctl
         where dctl.id in

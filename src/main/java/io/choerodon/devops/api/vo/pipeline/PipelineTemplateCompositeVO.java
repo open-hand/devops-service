@@ -5,7 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.vo.PipelineTemplateVO;
-import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 
 /**
  * 〈功能简述〉
@@ -17,21 +17,21 @@ import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
 public class PipelineTemplateCompositeVO {
 
     @ApiModelProperty("模板的语言集合")
-    private List<CiTemplateLanguageDTO> ciTemplateLanguageDTOList;
+    private List<CiTemplateCategoryDTO> ciTemplateCategoryDTOList;
     @ApiModelProperty("模板集合")
     private List<PipelineTemplateVO> pipelineTemplateVOList;
 
-    public PipelineTemplateCompositeVO(List<CiTemplateLanguageDTO> ciTemplateLanguageDTOList, List<PipelineTemplateVO> pipelineTemplateVOList) {
-        this.ciTemplateLanguageDTOList = ciTemplateLanguageDTOList;
+    public PipelineTemplateCompositeVO(List<CiTemplateCategoryDTO> ciTemplateCategoryDTOList, List<PipelineTemplateVO> pipelineTemplateVOList) {
+        this.ciTemplateCategoryDTOList = ciTemplateCategoryDTOList;
         this.pipelineTemplateVOList = pipelineTemplateVOList;
     }
 
-    public List<CiTemplateLanguageDTO> getCiTemplateLanguageDTOList() {
-        return ciTemplateLanguageDTOList;
+    public List<CiTemplateCategoryDTO> getCiTemplateCategoryDTOList() {
+        return ciTemplateCategoryDTOList;
     }
 
-    public void setCiTemplateLanguageDTOList(List<CiTemplateLanguageDTO> ciTemplateLanguageDTOList) {
-        this.ciTemplateLanguageDTOList = ciTemplateLanguageDTOList;
+    public void setCiTemplateCategoryDTOList(List<CiTemplateCategoryDTO> ciTemplateCategoryDTOList) {
+        this.ciTemplateCategoryDTOList = ciTemplateCategoryDTOList;
     }
 
     public List<PipelineTemplateVO> getPipelineTemplateVOList() {

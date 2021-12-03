@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateLanguageService;
-import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper;
 
 /**
@@ -22,7 +22,7 @@ public class CiTemplateLanguageServiceImpl implements CiTemplateLanguageService 
     private CiTemplateLanguageMapper ciTemplateLanguagemapper;
 
     @Override
-    public List<CiTemplateLanguageDTO> listByIds(Set<Long> languageIds) {
+    public List<CiTemplateCategoryDTO> listByIds(Set<Long> languageIds) {
         return ciTemplateLanguagemapper.listByIds(languageIds);
     }
 }

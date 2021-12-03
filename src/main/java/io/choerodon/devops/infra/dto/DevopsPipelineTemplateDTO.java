@@ -35,8 +35,8 @@ public class DevopsPipelineTemplateDTO extends AuditDomain {
     @ApiModelProperty("是否预置")
     private Boolean builtIn;
 
-    @ApiModelProperty("模板适用语言")
-    private Long ciTemplateLanguageId;
+    @ApiModelProperty("分类id")
+    private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")
     private Boolean enable;
@@ -87,12 +87,12 @@ public class DevopsPipelineTemplateDTO extends AuditDomain {
         this.builtIn = builtIn;
     }
 
-    public Long getCiTemplateLanguageId() {
-        return ciTemplateLanguageId;
+    public Long getCiTemplateCategoryId() {
+        return ciTemplateCategoryId;
     }
 
-    public void setCiTemplateLanguageId(Long ciTemplateLanguageId) {
-        this.ciTemplateLanguageId = ciTemplateLanguageId;
+    public void setCiTemplateCategoryId(Long ciTemplateCategoryId) {
+        this.ciTemplateCategoryId = ciTemplateCategoryId;
     }
 
     public Boolean getEnable() {

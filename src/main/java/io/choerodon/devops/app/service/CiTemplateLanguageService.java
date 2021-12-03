@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 
 /**
  * 流水线模板适用语言表(CiTemplateLanguage)应用服务
@@ -13,6 +13,6 @@ import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
  */
 public interface CiTemplateLanguageService {
 
-    List<CiTemplateLanguageDTO> listByIds(Set<Long> languageIds);
+    List<CiTemplateCategoryDTO> listByIds(Set<Long> languageIds);
 }
 

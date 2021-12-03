@@ -14,7 +14,7 @@ import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
-import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
 import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -58,9 +58,9 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
         List<PipelineTemplateVO> pipelineTemplateVOS = listTemplateForProject(projectId);
 
         Set<Long> languageIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateLanguageId).collect(Collectors.toSet());
-        List<CiTemplateLanguageDTO> ciTemplateLanguageDTOS = ciTemplateLanguageService.listByIds(languageIds);
+        List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateLanguageService.listByIds(languageIds);
 
-        return new PipelineTemplateCompositeVO(ciTemplateLanguageDTOS, pipelineTemplateVOS);
+        return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }
 
     @Override

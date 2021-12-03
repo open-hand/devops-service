@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.CiTemplateLanguageDTO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -14,8 +14,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 15:58:18
  */
-public interface CiTemplateLanguageMapper extends BaseMapper<CiTemplateLanguageDTO> {
+public interface CiTemplateLanguageMapper extends BaseMapper<CiTemplateCategoryDTO> {
 
-    List<CiTemplateLanguageDTO> listByIds(@Param("ids") Set<Long> ids);
+    List<CiTemplateCategoryDTO> listByIds(@Param("ids") Set<Long> ids);
 }
 

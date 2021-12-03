@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
  */
 
 
-public class CiTemplateLanguageVO {
+public class CiTemplateCategoryVO {
 
     @Id
     @GeneratedValue

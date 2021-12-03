@@ -1,12 +1,12 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_language.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_language') {
-        createTable(tableName: "devops_ci_template_language", remarks: '流水线模板适用语言表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_category.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_category') {
+        createTable(tableName: "devops_ci_template_category", remarks: '流水线模板适用语言表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'language', type: 'VARCHAR(64)', remarks: '语言') {
+            column(name: 'category', type: 'VARCHAR(64)', remarks: '流水线分类') {
                 constraints(nullable: false)
             }
             column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
@@ -28,7 +28,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_language.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-        addUniqueConstraint(tableName: 'devops_ci_template_language', constraintName: 'uk_language', columnNames: 'language')
+        addUniqueConstraint(tableName: 'devops_ci_template_category', constraintName: 'uk_language', columnNames: 'language')
 
     }
 }

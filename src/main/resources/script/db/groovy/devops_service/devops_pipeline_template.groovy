@@ -19,7 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'ci_template_language_id', type: 'BIGINT UNSIGNED', remarks: '关联语言id') {
+            column(name: 'ci_template_category_id', type: 'BIGINT UNSIGNED', remarks: '关联语言id') {
                 constraints(nullable: false)
             }
 

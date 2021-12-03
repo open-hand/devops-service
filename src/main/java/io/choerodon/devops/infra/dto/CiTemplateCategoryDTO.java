@@ -25,8 +25,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_ci_template_language")
-public class CiTemplateLanguageDTO extends AuditDomain {
+@Table(name = "devops_ci_template_category")
+public class CiTemplateCategoryDTO extends AuditDomain {
     private static final long serialVersionUID = 355683976509988264L;
 
     public static final String FIELD_ID = "id";
@@ -41,7 +41,7 @@ public class CiTemplateLanguageDTO extends AuditDomain {
 
     @ApiModelProperty(value = "语言", required = true)
     @NotBlank
-    private String language;
+    private String category;
 
     @ApiModelProperty(value = "层级", required = true)
     @NotBlank
@@ -72,12 +72,13 @@ public class CiTemplateLanguageDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getLanguage() {
-        return language;
+
+    public String getCategory() {
+        return category;
     }
 
-    public void setLanguage(String language) {
-        this.language = language;
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getSourceType() {

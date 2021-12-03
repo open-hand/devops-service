@@ -31,7 +31,7 @@ public class DevopsPipelineTemplateVO {
     private Boolean builtIn;
 
     @ApiModelProperty("模板适用语言")
-    private Long ciTemplateLanguageId;
+    private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")
     private Boolean enable;
@@ -43,7 +43,7 @@ public class DevopsPipelineTemplateVO {
     private String image;
 
     @ApiModelProperty("适用变成语言对象")
-    private CiTemplateLanguageVO ciTemplateLanguageVO;
+    private CiTemplateCategoryVO ciTemplateCategoryVO;
 
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
@@ -95,12 +95,13 @@ public class DevopsPipelineTemplateVO {
         this.builtIn = builtIn;
     }
 
-    public Long getCiTemplateLanguageId() {
-        return ciTemplateLanguageId;
+
+    public Long getCiTemplateCategoryId() {
+        return ciTemplateCategoryId;
     }
 
-    public void setCiTemplateLanguageId(Long ciTemplateLanguageId) {
-        this.ciTemplateLanguageId = ciTemplateLanguageId;
+    public void setCiTemplateCategoryId(Long ciTemplateCategoryId) {
+        this.ciTemplateCategoryId = ciTemplateCategoryId;
     }
 
     public Boolean getEnable() {
@@ -128,12 +129,12 @@ public class DevopsPipelineTemplateVO {
     }
 
 
-    public CiTemplateLanguageVO getCiTemplateLanguageVO() {
-        return ciTemplateLanguageVO;
+    public CiTemplateCategoryVO getCiTemplateCategoryVO() {
+        return ciTemplateCategoryVO;
     }
 
-    public void setCiTemplateLanguageVO(CiTemplateLanguageVO ciTemplateLanguageVO) {
-        this.ciTemplateLanguageVO = ciTemplateLanguageVO;
+    public void setCiTemplateCategoryVO(CiTemplateCategoryVO ciTemplateCategoryVO) {
+        this.ciTemplateCategoryVO = ciTemplateCategoryVO;
     }
 
     public Date getCreationDate() {
