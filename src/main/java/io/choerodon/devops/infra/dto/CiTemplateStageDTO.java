@@ -45,6 +45,17 @@ public class CiTemplateStageDTO extends AuditDomain {
     @NotNull
     private Long pipelineTemplateId;
 
+    @ApiModelProperty(value = "顺序", required = true)
+    @NotNull
+    private Long sequence;
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
 
     public Long getId() {
         return id;

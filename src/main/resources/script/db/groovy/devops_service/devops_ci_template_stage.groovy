@@ -9,10 +9,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_stage.groovy') {
             column(name: 'name', type: 'VARCHAR(30)', remarks: '阶段名称') {
                 constraints(nullable: false)
             }
-            column(name: 'pipeline_template_id',  type: 'BIGINT UNSIGNED', remarks: '流水线模板id') {
+            column(name: 'pipeline_template_id', type: 'BIGINT UNSIGNED', remarks: '流水线模板id') {
                 constraints(nullable: false)
             }
-
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '顺序') {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
