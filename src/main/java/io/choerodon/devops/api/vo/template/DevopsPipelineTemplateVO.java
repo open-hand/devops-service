@@ -9,6 +9,9 @@ import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 public class DevopsPipelineTemplateVO {
 
     @Id
@@ -47,6 +50,9 @@ public class DevopsPipelineTemplateVO {
 
     @ApiModelProperty(value = "创建者")
     private Long createdBy;
+
+    @ApiModelProperty("创建者")
+    private IamUserDTO creator;
 
 
     public Long getId() {
@@ -144,5 +150,13 @@ public class DevopsPipelineTemplateVO {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
     }
 }
