@@ -5,6 +5,7 @@ package io.choerodon.devops.api.vo.template;
  */
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,6 +38,16 @@ public class DevopsPipelineTemplateVO {
 
     @ApiModelProperty("镜像地址")
     private String image;
+
+    @ApiModelProperty("适用变成语言对象")
+    private CiTemplateLanguageVO ciTemplateLanguageVO;
+
+    @ApiModelProperty(value = "创建时间")
+    private Date creationDate;
+
+    @ApiModelProperty(value = "创建者")
+    private Long createdBy;
+
 
     public Long getId() {
         return id;
@@ -108,5 +119,30 @@ public class DevopsPipelineTemplateVO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+
+    public CiTemplateLanguageVO getCiTemplateLanguageVO() {
+        return ciTemplateLanguageVO;
+    }
+
+    public void setCiTemplateLanguageVO(CiTemplateLanguageVO ciTemplateLanguageVO) {
+        this.ciTemplateLanguageVO = ciTemplateLanguageVO;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }
