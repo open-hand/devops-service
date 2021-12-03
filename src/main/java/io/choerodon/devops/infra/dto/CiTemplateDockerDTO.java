@@ -64,15 +64,37 @@ public class CiTemplateDockerDTO extends AuditDomain {
     private Long securityControl;
 
     @ApiModelProperty(value = "漏洞危险程度")
-    private String level;
+    private String severity;
 
     @ApiModelProperty(value = "门禁条件")
-    private String symbol;
+    private String securityControlConditions;
 
     @ApiModelProperty(value = "漏洞数量", required = true)
-    @NotNull
-    private Integer condition;
+    private Integer vulnerabilityCount;
 
+    public String getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+
+    public String getSecurityControlConditions() {
+        return securityControlConditions;
+    }
+
+    public void setSecurityControlConditions(String securityControlConditions) {
+        this.securityControlConditions = securityControlConditions;
+    }
+
+    public Integer getVulnerabilityCount() {
+        return vulnerabilityCount;
+    }
+
+    public void setVulnerabilityCount(Integer vulnerabilityCount) {
+        this.vulnerabilityCount = vulnerabilityCount;
+    }
 
     public Long getId() {
         return id;
@@ -122,29 +144,6 @@ public class CiTemplateDockerDTO extends AuditDomain {
         this.securityControl = securityControl;
     }
 
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
-    }
-
-    public String getSymbol() {
-        return symbol;
-    }
-
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
-    public Integer getCondition() {
-        return condition;
-    }
-
-    public void setCondition(Integer condition) {
-        this.condition = condition;
-    }
 
 }
 
