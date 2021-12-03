@@ -21,13 +21,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_docker.groovy') {
             column(name: 'security_control',  type: 'TINYINT UNSIGNED', remarks: '是否开启门禁检查') {
                 constraints(nullable: false)
             }
-            column(name: 'level', type: 'VARCHAR(255)', remarks: '漏洞危险程度') {
+            column(name: 'severity', type: 'VARCHAR(255)', remarks: '漏洞危险程度') {
                 constraints(nullable: true)
             }
-            column(name: 'symbol', type: 'VARCHAR(255)', remarks: '门禁条件') {
+            column(name: 'security_control_conditions', type: 'VARCHAR(255)', remarks: '门禁条件') {
                 constraints(nullable: true)
             }
-            column(name: 'condition', type: 'INT(4)', remarks: '漏洞数量') {
+            column(name: 'vulnerability_count', type: 'INT(4)', remarks: '漏洞数量') {
                 constraints(nullable: true)
             }
             column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤Id') {
