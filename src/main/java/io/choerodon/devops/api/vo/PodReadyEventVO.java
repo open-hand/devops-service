@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,23 +10,23 @@ package io.choerodon.devops.api.vo;
  * @since 2021/7/29 10:17
  */
 public class PodReadyEventVO {
-    private Long instanceId;
     private Long commandId;
+    private DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO;
 
     public PodReadyEventVO() {
     }
 
-    public PodReadyEventVO(Long instanceId, Long commandId) {
-        this.instanceId = instanceId;
+    public PodReadyEventVO(Long commandId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
         this.commandId = commandId;
+        this.devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsDTO;
     }
 
-    public Long getInstanceId() {
-        return instanceId;
+    public DevopsHzeroDeployDetailsDTO getDevopsHzeroDeployDetailsDTO() {
+        return devopsHzeroDeployDetailsDTO;
     }
 
-    public void setInstanceId(Long instanceId) {
-        this.instanceId = instanceId;
+    public void setDevopsHzeroDeployDetailsDTO(DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
+        this.devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsDTO;
     }
 
     public Long getCommandId() {

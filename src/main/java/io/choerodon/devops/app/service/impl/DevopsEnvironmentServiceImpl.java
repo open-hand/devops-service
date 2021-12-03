@@ -1131,9 +1131,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             // 根据搜索参数查询数据库中所有的环境权限分配数据
             List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.listUserEnvPermissionByOption(envId, searchParamMap, paramList);
             List<Long> permissions = devopsEnvUserPermissionDTOS.stream().map(DevopsEnvUserPermissionDTO::getIamUserId).collect(Collectors.toList());
+
+            Set<Long> userIds = projectMembers.stream().map(DevopsUserVO::getIamUserId).collect(Collectors.toSet());
+            Map<Long, Boolean> userGitlabProjectOwnerMap = baseServiceClientOperator.checkUsersAreGitlabProjectOwner(userIds, projectId);
+
             projectMembers = projectMembers
                     .stream()
-                    .filter(member -> permissions.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId))
+                    .filter(member -> permissions.contains(member.getIamUserId()) || Boolean.TRUE.equals(userGitlabProjectOwnerMap.get(member.getIamUserId())))
                     .collect(Collectors.toList());
             projectMembers.forEach(devopsUserPermissionVO -> {
                 if (permissions.contains(devopsUserPermissionVO.getIamUserId())) {

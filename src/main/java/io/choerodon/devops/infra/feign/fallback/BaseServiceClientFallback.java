@@ -121,6 +121,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Map<Long, Boolean>> checkUsersAreGitlabProjectOwner(Set<Long> id, Long projectId) {
+        throw new CommonException("error.check.project.permission");
+    }
+
+    @Override
     public ResponseEntity<Boolean> checkIsGitlabOrgOwner(Long userId, Long projectId) {
         throw new CommonException("error.check.org.permission");
     }
