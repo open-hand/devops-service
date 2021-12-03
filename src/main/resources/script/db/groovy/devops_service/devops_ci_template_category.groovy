@@ -9,13 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_category.groovy') {
             column(name: 'category', type: 'VARCHAR(64)', remarks: '流水线分类') {
                 constraints(nullable: false)
             }
-            column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
-                constraints(nullable: false)
-            }
 
-            column(name: 'source_id',  type: 'BIGINT UNSIGNED', remarks: '层级Id') {
-                constraints(nullable: false)
-            }
 
             column(name: 'built_in',  type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
                 constraints(nullable: false)

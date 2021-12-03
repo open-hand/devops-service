@@ -43,13 +43,6 @@ public class CiTemplateCategoryDTO extends AuditDomain {
     @NotBlank
     private String category;
 
-    @ApiModelProperty(value = "层级", required = true)
-    @NotBlank
-    private String sourceType;
-
-    @ApiModelProperty(value = "层级Id", required = true)
-    @NotNull
-    private Long sourceId;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
@@ -81,21 +74,6 @@ public class CiTemplateCategoryDTO extends AuditDomain {
         this.category = category;
     }
 
-    public String getSourceType() {
-        return sourceType;
-    }
-
-    public void setSourceType(String sourceType) {
-        this.sourceType = sourceType;
-    }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
-    }
 
 }
 

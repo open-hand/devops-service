@@ -14,12 +14,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job_group.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'source_type', type: 'VARCHAR(12)', remarks: '层级') {
-                constraints(nullable: false)
-            }
-            column(name: 'source_id', type: 'BIGINT UNSIGNED', remarks: '层级Id') {
-                constraints(nullable: false)
-            }
+
             column(name: 'type', type: 'VARCHAR(20)', remarks: '分组类型') {
                 constraints(nullable: false)
             }

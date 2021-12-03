@@ -29,14 +29,6 @@ public class CiTemplateCategoryVO {
     @NotBlank
     private String sourceType;
 
-    @ApiModelProperty(value = "层级Id", required = true)
-    @NotNull
-    private Long sourceId;
-
-    @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
-    @NotNull
-    private Boolean builtIn;
-
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
 
@@ -57,14 +49,6 @@ public class CiTemplateCategoryVO {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public Boolean getBuiltIn() {
-        return builtIn;
-    }
-
-    public void setBuiltIn(Boolean builtIn) {
-        this.builtIn = builtIn;
     }
 
 
@@ -92,13 +76,6 @@ public class CiTemplateCategoryVO {
         this.sourceType = sourceType;
     }
 
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
-    }
 
 }
 
