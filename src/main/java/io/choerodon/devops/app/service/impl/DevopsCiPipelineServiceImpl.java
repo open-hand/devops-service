@@ -390,6 +390,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
             });
         }
+        // 保存流水线变量
 
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
