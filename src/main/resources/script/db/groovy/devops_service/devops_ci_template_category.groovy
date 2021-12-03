@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_category.groovy') {
     changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_category') {
-        createTable(tableName: "devops_ci_template_category", remarks: '流水线模板适用语言表') {
+        createTable(tableName: "devops_ci_template_category", remarks: '流水线分类') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -22,7 +22,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_category.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-        addUniqueConstraint(tableName: 'devops_ci_template_category', constraintName: 'uk_language', columnNames: 'language')
 
     }
 }
