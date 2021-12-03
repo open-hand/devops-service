@@ -17,7 +17,6 @@ public class CdApiTestConfigVO {
     private String apiTestTaskName;
     @Encrypt
     private Long apITestConfigId;
-    private String apiTestConfigName;
     private String deployJobName;
     private WarningSettingVO warningSettingVO;
 
@@ -46,14 +45,6 @@ public class CdApiTestConfigVO {
         this.apITestConfigId = apITestConfigId;
     }
 
-    public String getApiTestConfigName() {
-        return apiTestConfigName;
-    }
-
-    public void setApiTestConfigName(String apiTestConfigName) {
-        this.apiTestConfigName = apiTestConfigName;
-    }
-
     public String getDeployJobName() {
         return deployJobName;
     }
@@ -76,7 +67,6 @@ public class CdApiTestConfigVO {
                 "apiTestTaskId=" + apiTestTaskId +
                 ", apiTestTaskName='" + apiTestTaskName + '\'' +
                 ", apITestConfigId=" + apITestConfigId +
-                ", apiTestConfigName='" + apiTestConfigName + '\'' +
                 ", deployJobName='" + deployJobName + '\'' +
                 ", warningSettingVO=" + warningSettingVO +
                 '}';
