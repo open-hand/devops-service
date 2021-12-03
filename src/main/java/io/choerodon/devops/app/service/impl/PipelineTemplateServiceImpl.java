@@ -14,10 +14,6 @@ import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
-import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
-import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
-import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.StageType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -49,6 +45,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     private CiTemplateJobStepRelService ciTemplateJobStepRelService;
     @Autowired
     private CiTemplateJobGroupService ciTemplateJobGroupService;
+    @Autowired
+    private CiTemplateVariableService ciTemplateVariableService;
 
     @Autowired
     private PipelineTemplateMapper pipelineTemplatemapper;
