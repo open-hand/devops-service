@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
+
 /**
  * 流水线配置的CI变量(DevopsCiPipelineVariable)应用服务
  *
@@ -8,5 +12,10 @@ package io.choerodon.devops.app.service;
  */
 public interface DevopsCiPipelineVariableService {
 
+    void baseCreate(DevopsCiPipelineVariableDTO devopsCiPipelineVariableDTO);
+
+    void deleteByPipelineId(Long pipelineId);
+
+    List<DevopsCiPipelineVariableDTO> listByPipelineId(Long pipelineId);
 }
 

@@ -169,6 +169,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiStepOperator devopsCiStepOperator;
     @Autowired
     private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiPipelineVariableService devopsCiPipelineVariableService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -374,14 +376,41 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException(CREATE_PIPELINE_FAILED);
         }
         // 保存流水线分支关系
+        saveBranchRel(ciCdPipelineVO, ciCdPipelineDTO);
+        // 保存流水线函数
+        saveFunction(ciCdPipelineVO, ciCdPipelineDTO);
+        // 保存流水线变量
+        saveCiVariable(ciCdPipelineVO, ciCdPipelineDTO);
+
+        // 1.保存ci stage信息
+        saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+        // 2.保存cd stage信息
+        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+        return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
+    }
+
+    /**
+     * 保存流水线分支关系
+     *
+     * @param ciCdPipelineVO
+     * @param ciCdPipelineDTO
+     */
+    private void saveBranchRel(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
             DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
             devopsPipelineBranchRelDTO.setBranch(branch);
             devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
             MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");
         });
+    }
 
-        // 保存流水线函数
+    /**
+     * 保存流水线函数
+     *
+     * @param ciCdPipelineVO
+     * @param ciCdPipelineDTO
+     */
+    private void saveFunction(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList = ciCdPipelineVO.getDevopsCiPipelineFunctionDTOList();
         if (!CollectionUtils.isEmpty(devopsCiPipelineFunctionDTOList)) {
             devopsCiPipelineFunctionDTOList.forEach(devopsCiPipelineFunctionDTO -> {
@@ -390,13 +419,21 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
             });
         }
-        // 保存流水线变量
+    }
 
-        // 1.保存ci stage信息
-        saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
-        // 2.保存cd stage信息
-        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
-        return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
+    /**
+     * 保存流水线变量
+     *
+     * @param ciCdPipelineVO
+     * @param ciCdPipelineDTO
+     */
+    private void saveCiVariable(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
+        List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList = ciCdPipelineVO.getDevopsCiPipelineVariableDTOList();
+        devopsCiPipelineVariableDTOList.forEach(devopsCiPipelineVariableDTO -> {
+            devopsCiPipelineVariableDTO.setId(null);
+            devopsCiPipelineVariableDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
+            devopsCiPipelineVariableService.baseCreate(devopsCiPipelineVariableDTO);
+        });
     }
 
     @Override
@@ -1527,6 +1564,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsCiPipelineFunctionService.baseCreate(devopsCiPipelineFunctionDTO);
             });
         }
+        // 更新流水线变量
+        // 先删除之前的旧数据（考虑到数据不多，性能影响不大，没有必要做对比更新）
+        devopsCiPipelineVariableService.deleteByPipelineId(pipelineId);
+        saveCiVariable(ciCdPipelineVO, ciCdPipelineDTO);
 
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
@@ -1699,8 +1740,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
         Long projectId = projectDTO.getId();
         Long organizationId = projectDTO.getOrganizationId();
+        Long pipelineId = ciCdPipelineDTO.getId();
 
-        List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(ciCdPipelineDTO.getId());
+        List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
         // 对阶段排序
         List<String> stages = devopsCiStageDTOS.stream()
                 .sorted(Comparator.comparing(DevopsCiStageDTO::getSequence))
@@ -1708,6 +1750,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 .collect(Collectors.toList());
 
         GitlabCi gitlabCi = new GitlabCi();
+
+        // 设置流水线变量
+        List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOS = devopsCiPipelineVariableService.listByPipelineId(pipelineId);
+        if (!CollectionUtils.isEmpty(devopsCiPipelineVariableDTOS)) {
+            Map<String, String> variables = devopsCiPipelineVariableDTOS.stream().collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
+            gitlabCi.setVariables(variables);
+        }
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());

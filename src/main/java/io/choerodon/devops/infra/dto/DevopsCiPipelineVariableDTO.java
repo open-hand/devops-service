@@ -38,7 +38,7 @@ public class DevopsCiPipelineVariableDTO extends AuditDomain {
 
     @ApiModelProperty(value = "流水线id", required = true)
     @NotNull
-    private Long pipelineId;
+    private Long devopsPipelineId;
 
     @ApiModelProperty(value = "变量名", required = true)
     @NotBlank
@@ -57,12 +57,12 @@ public class DevopsCiPipelineVariableDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getPipelineId() {
-        return pipelineId;
+    public Long getDevopsPipelineId() {
+        return devopsPipelineId;
     }
 
-    public void setPipelineId(Long pipelineId) {
-        this.pipelineId = pipelineId;
+    public void setDevopsPipelineId(Long devopsPipelineId) {
+        this.devopsPipelineId = devopsPipelineId;
     }
 
     public String getVariableKey() {

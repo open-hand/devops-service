@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto.gitlab.ci;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,6 +28,8 @@ public class GitlabCi {
     @ApiModelProperty("stage is defined per-job and relies on stages which is defined globally. It allows to group jobs into different stages, and jobs of the same stage are executed in parallel (subject to certain conditions).")
     private List<String> stages;
 
+    private Map<String, String> variables;
+
     // 用linkedHashMap的原因是保证job的遍历顺序
     @YamlUnwrapped
     @JsonUnwrapped
@@ -37,6 +40,14 @@ public class GitlabCi {
     @JsonProperty("before_script")
     @ApiModelProperty("before_script")
     private List<String> beforeScript;
+
+    public Map<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
 
     public String getInclude() {
         return include;

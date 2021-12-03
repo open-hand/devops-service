@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_variable.groovy') {
                 constraints(primaryKey: true)
             }
 
-            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
+            column(name: 'devops_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
                 constraints(nullable: false)
             }
 
