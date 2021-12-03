@@ -9,6 +9,7 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,9 +66,10 @@ public class DevopsDeploymentController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除deployment资源")
     @DeleteMapping
-    public void delete(@PathVariable(value = "project_id") Long projectId,
-                       @RequestParam @Encrypt Long id) {
+    public ResponseEntity<Void> delete(@PathVariable(value = "project_id") Long projectId,
+                                         @RequestParam @Encrypt Long id) {
         workloadService.delete(projectId, id, ResourceType.DEPLOYMENT);
+        return Results.success();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

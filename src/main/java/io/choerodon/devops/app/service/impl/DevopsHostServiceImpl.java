@@ -703,11 +703,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 .peek(u -> u.setPermissionLabel(DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue()))
                 .collect(Collectors.toList());
 
+        Set<Long> userIds = projectMembers.stream().map(DevopsUserVO::getIamUserId).collect(Collectors.toSet());
+        Map<Long, Boolean> userGitlabProjectOwnerMap = baseServiceClientOperator.checkUsersAreGitlabProjectOwner(userIds, projectId);
 
         List<DevopsHostUserPermissionVO> projectMemberHostPermissionVO = new ArrayList<>();
         projectMembers = projectMembers
                 .stream()
-                .filter(member -> iamUserIdsWithHostPermission.contains(member.getIamUserId()) || baseServiceClientOperator.isGitlabProjectOwner(member.getIamUserId(), projectId) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
+                .filter(member -> iamUserIdsWithHostPermission.contains(member.getIamUserId()) || Boolean.TRUE.equals(userGitlabProjectOwnerMap.get(member.getIamUserId())) || member.getIamUserId().equals(devopsHostDTO.getCreatedBy()))
                 .collect(Collectors.toList());
         projectMembers.forEach(devopsUserPermissionVO -> {
             if (devopsHostDTO.getCreatedBy().equals(devopsUserPermissionVO.getIamUserId())) {

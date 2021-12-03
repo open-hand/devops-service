@@ -42,9 +42,9 @@ public class AppServiceInstanceValidator {
     }
 
 
-    public static void checkName(String name) {
-        if (!isNameValid(name)) {
-            throw new CommonException("error.app.instance.name.notMatch");
+    public static void checkName(String code) {
+        if (!isNameValid(code)) {
+            throw new CommonException("error.app.instance.code.invalid");
         }
     }
 

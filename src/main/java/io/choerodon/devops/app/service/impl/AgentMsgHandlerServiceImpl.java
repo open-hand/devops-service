@@ -43,7 +43,9 @@ import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -171,6 +173,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Autowired
     private ChartResourceOperator chartResourceOperator;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_POD_READY,
             description = "pod状态更新",
@@ -249,16 +256,24 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             // 实例下的pod状态变为ready,发送通知
 
             if (Boolean.TRUE.equals(devopsEnvPodDTO.getReady())) {
-                PodReadyEventVO podReadyEventVO = new PodReadyEventVO(appServiceInstanceDTO.getId(), TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND)));
-                producer.applyAndReturn(
-                        StartSagaBuilder
-                                .newBuilder()
-                                .withLevel(ResourceLevel.SITE)
-                                .withRefType("")
-                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
-                        builder -> builder
-                                .withPayloadAndSerialize(podReadyEventVO)
-                                .withRefId(""));
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
+                if (devopsDeployAppCenterEnvDTO != null) {
+                    DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
+                    if (devopsHzeroDeployDetailsDTO != null) {
+                        PodReadyEventVO podReadyEventVO = new PodReadyEventVO(TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND)), devopsHzeroDeployDetailsDTO);
+                        producer.applyAndReturn(
+                                StartSagaBuilder
+                                        .newBuilder()
+                                        .withLevel(ResourceLevel.SITE)
+                                        .withRefType("")
+                                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
+                                builder -> builder
+                                        .withPayloadAndSerialize(podReadyEventVO)
+                                        .withRefId(""));
+                    }
+                }
+
+
             }
         } else {
             DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
