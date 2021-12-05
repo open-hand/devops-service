@@ -26,9 +26,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_variable.groovy') {
 
         }
         addUniqueConstraint(tableName: 'devops_ci_pipeline_variable',
-                constraintName: 'uk_key_value', columnNames: 'pipeline_id,variable_key')
+                constraintName: 'uk_key_value', columnNames: 'devops_pipeline_id,variable_key')
         createIndex(tableName: 'devops_ci_pipeline_variable', indexName: 'idx_pipeline_id') {
-            column(name: 'pipeline_id')
+            column(name: 'devops_pipeline_id')
         }
     }
 }
