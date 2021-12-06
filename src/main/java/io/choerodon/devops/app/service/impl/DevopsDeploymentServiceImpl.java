@@ -147,7 +147,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
             devopsEnvCommandDTO.setCreatedBy(userId);
         } else {
-            devopsEnvCommandDTO.setId(devopsDeploymentVO.getId());
+            devopsEnvCommandDTO.setId(devopsDeploymentVO.getCommandId());
         }
 
         DevopsDeploymentDTO devopsDeploymentDTO = ConvertUtils.convertObject(devopsDeploymentVO, DevopsDeploymentDTO.class);
