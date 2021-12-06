@@ -22,9 +22,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_step_category.groovy'
 
         }
         addUniqueConstraint(tableName: 'devops_ci_template_step_category', constraintName: 'uk_name', columnNames: 'name')
-        createIndex(tableName: 'devops_ci_template_step_category', indexName: 'idx_source_type_source_id') {
-            column(name: 'source_type')
-            column(name: 'source_id')
-        }
     }
 }
