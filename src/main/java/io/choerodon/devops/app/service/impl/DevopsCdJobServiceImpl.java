@@ -167,7 +167,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
                 DevopsCdJobDTO devopsCdJobDTO = devopsCdJobMapper.selectByPrimaryKey(cdApiTestConfigForSagaVO.getDevopsCdJobId());
                 try {
                     CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
-                    cdApiTestConfigVO.setApITestConfigId(cdApiTestConfigForSagaVO.getApiTestConfigId());
+                    cdApiTestConfigVO.setApiTestConfigId(cdApiTestConfigForSagaVO.getApiTestConfigId());
                     devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
                     devopsCdJobMapper.updateByPrimaryKeySelective(devopsCdJobDTO);
                 } catch (Exception e) {
