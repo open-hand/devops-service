@@ -38,9 +38,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_template.groovy') {
 
         }
         addUniqueConstraint(tableName: 'devops_pipeline_template', constraintName: 'uk_name_source_type_source_id', columnNames: 'name,source_type,source_id')
-        createIndex(tableName: 'devops_pipeline_template', indexName: 'idx_ci_template_language_id') {
-            column(name: 'ci_template_language_id')
-        }
         createIndex(tableName: 'devops_pipeline_template', indexName: 'idx_source_type_source_id') {
             column(name: 'source_type')
             column(name: 'source_id')

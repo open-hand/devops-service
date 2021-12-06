@@ -9,12 +9,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job_group.groovy') {
             column(name: 'name', type: 'VARCHAR(30)', remarks: '任务名称') {
                 constraints(nullable: false)
             }
-
             column(name: 'built_in', type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {
                 constraints(nullable: false)
             }
-
-
             column(name: 'type', type: 'VARCHAR(20)', remarks: '分组类型') {
                 constraints(nullable: false)
             }
