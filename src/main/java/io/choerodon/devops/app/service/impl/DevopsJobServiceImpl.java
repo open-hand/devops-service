@@ -201,6 +201,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
         DevopsJobDTO oldDevopsJobDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1Job.getMetadata().getName());
         if (oldDevopsJobDTO != null) {
             oldDevopsJobDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsJobDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsJobMapper.updateByPrimaryKeySelective(oldDevopsJobDTO);
         } else {
 
@@ -216,6 +217,8 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
             devopsJobDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsJobDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsJobDTO.setName(v1Job.getMetadata().getName());
+            devopsJobDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsJobDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsJobMapper.insertSelective(devopsJobDTO);
         }
     }
