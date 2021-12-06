@@ -145,6 +145,7 @@ public class HandlerDeploymentServiceImpl implements HandlerObjectFileRelationsS
                         //发生改变走处理改变资源的逻辑
                         if (!isNotChange) {
                             devopsDeploymentVO.setId(existDeploymentDTO.getId());
+                            devopsDeploymentVO.setCommandId(existDeploymentDTO.getCommandId());
                             devopsDeploymentVO = deploymentService.createOrUpdateByGitOps(devopsDeploymentVO, envId, deploymentDTO.getContent());
                             devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsDeploymentVO.getCommandId());
                         }

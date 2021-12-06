@@ -142,8 +142,13 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
-        devopsEnvCommandDTO.setCreatedBy(userId);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        if (devopsDeploymentVO.getCommandId() == null) {
+            devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
+            devopsEnvCommandDTO.setCreatedBy(userId);
+        } else {
+            devopsEnvCommandDTO.setId(devopsDeploymentVO.getId());
+        }
 
         DevopsDeploymentDTO devopsDeploymentDTO = ConvertUtils.convertObject(devopsDeploymentVO, DevopsDeploymentDTO.class);
 
@@ -157,7 +162,13 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsWorkloadResourceContentService.update(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId(), content);
         }
 
-        devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        if (devopsDeploymentVO.getCommandId() == null) {
+            devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+        } else {
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        }
+
+        devopsDeploymentDTO.setCommandId(devopsEnvCommandDTO.getId());
         baseUpdate(devopsDeploymentDTO);
         return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsDeploymentDTO, DevopsDeploymentVO.class);
     }
