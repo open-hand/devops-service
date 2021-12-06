@@ -56,8 +56,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     public PipelineTemplateCompositeVO listTemplateWithLanguage(Long projectId) {
         List<PipelineTemplateVO> pipelineTemplateVOS = listTemplateForProject(projectId);
 
-        Set<Long> languageIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateLanguageId).collect(Collectors.toSet());
-        List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateLanguageService.listByIds(languageIds);
+        Set<Long> categoryIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateCategoryId).collect(Collectors.toSet());
+        List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateLanguageService.listByIds(categoryIds);
 
         return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }

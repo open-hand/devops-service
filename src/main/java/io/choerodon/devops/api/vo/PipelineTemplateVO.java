@@ -23,7 +23,7 @@ public class PipelineTemplateVO {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
     @ApiModelProperty(value = "关联语言id", required = true)
-    private Long ciTemplateLanguageId;
+    private Long ciTemplateCategoryId;
     @ApiModelProperty(value = "是否启用", required = true)
     private Long enable;
     @ApiModelProperty(value = "版本命名规则", required = true)
@@ -81,12 +81,12 @@ public class PipelineTemplateVO {
         this.builtIn = builtIn;
     }
 
-    public Long getCiTemplateLanguageId() {
-        return ciTemplateLanguageId;
+    public Long getCiTemplateCategoryId() {
+        return ciTemplateCategoryId;
     }
 
-    public void setCiTemplateLanguageId(Long ciTemplateLanguageId) {
-        this.ciTemplateLanguageId = ciTemplateLanguageId;
+    public void setCiTemplateCategoryId(Long ciTemplateCategoryId) {
+        this.ciTemplateCategoryId = ciTemplateCategoryId;
     }
 
     public Long getEnable() {

@@ -59,7 +59,7 @@ public class PipelineTemplateDTO extends AuditDomain {
 
     @ApiModelProperty(value = "关联语言id", required = true)
     @NotNull
-    private Long ciTemplateLanguageId;
+    private Long ciTemplateCategoryId;
 
     @ApiModelProperty(value = "是否启用", required = true)
     @NotNull
@@ -114,12 +114,12 @@ public class PipelineTemplateDTO extends AuditDomain {
         this.builtIn = builtIn;
     }
 
-    public Long getCiTemplateLanguageId() {
-        return ciTemplateLanguageId;
+    public Long getCiTemplateCategoryId() {
+        return ciTemplateCategoryId;
     }
 
-    public void setCiTemplateLanguageId(Long ciTemplateLanguageId) {
-        this.ciTemplateLanguageId = ciTemplateLanguageId;
+    public void setCiTemplateCategoryId(Long ciTemplateCategoryId) {
+        this.ciTemplateCategoryId = ciTemplateCategoryId;
     }
 
     public Long getEnable() {
