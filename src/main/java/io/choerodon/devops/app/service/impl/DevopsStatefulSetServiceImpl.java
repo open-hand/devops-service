@@ -200,6 +200,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
         DevopsStatefulSetDTO oldDevopsStatefulSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2StatefulSet.getMetadata().getName());
         if (oldDevopsStatefulSetDTO != null) {
             oldDevopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsStatefulSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsStatefulSetMapper.updateByPrimaryKeySelective(oldDevopsStatefulSetDTO);
         } else {
 
@@ -215,6 +216,8 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             devopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsStatefulSetDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsStatefulSetDTO.setName(v1beta2StatefulSet.getMetadata().getName());
+            devopsStatefulSetDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsStatefulSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsStatefulSetMapper.insertSelective(devopsStatefulSetDTO);
         }
     }

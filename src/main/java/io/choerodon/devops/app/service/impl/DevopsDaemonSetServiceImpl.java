@@ -162,6 +162,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
         DevopsDaemonSetDTO oldDevopsDaemonSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2DaemonSet.getMetadata().getName());
         if (oldDevopsDaemonSetDTO != null) {
             oldDevopsDaemonSetDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsDaemonSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDaemonSetMapper.updateByPrimaryKeySelective(oldDevopsDaemonSetDTO);
         } else {
 
@@ -177,6 +178,8 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
             devopsDaemonSetDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsDaemonSetDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDaemonSetDTO.setName(v1beta2DaemonSet.getMetadata().getName());
+            devopsDaemonSetDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsDaemonSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDaemonSetMapper.insertSelective(devopsDaemonSetDTO);
         }
     }
