@@ -9,7 +9,7 @@ package io.choerodon.devops.api.vo.deploy;
  */
 public class FileInfoVO {
     private String fileName;
-    private String uploadUrl;
+    private String jarFileUrl;
 
     public String getFileName() {
         return fileName;
@@ -19,11 +19,11 @@ public class FileInfoVO {
         this.fileName = fileName;
     }
 
-    public String getUploadUrl() {
-        return uploadUrl;
+    public String getJarFileUrl() {
+        return jarFileUrl;
     }
 
-    public void setUploadUrl(String uploadUrl) {
-        this.uploadUrl = uploadUrl;
+    public void setJarFileUrl(String jarFileUrl) {
+        this.jarFileUrl = jarFileUrl;
     }
 }
