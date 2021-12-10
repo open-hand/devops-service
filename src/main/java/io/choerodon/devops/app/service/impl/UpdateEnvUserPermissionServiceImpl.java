@@ -65,7 +65,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsEnvUserPayload.getEnvId());
         Integer gitlabProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(devopsEnvUserPayload.getIamProjectId());
-        Integer gitlabGroupId = devopsProjectDTO.getDevopsAppGroupId().intValue();
+        Integer gitlabGroupId = devopsProjectDTO.getDevopsEnvGroupId().intValue();
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
