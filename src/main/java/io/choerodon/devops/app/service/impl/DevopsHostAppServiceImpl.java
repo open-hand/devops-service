@@ -249,7 +249,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand("none",
                     "none",
-                    jarDeployVO.getFileInfoVO().getJarFileUrl(),
+                    jarDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);
         } else {
@@ -553,7 +553,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType())) {
             downloadCommand = HostDeployUtil.genDownloadCommand(null,
                     null,
-                    customDeployVO.getFileInfoVO().getJarFileUrl(),
+                    customDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);
         }
