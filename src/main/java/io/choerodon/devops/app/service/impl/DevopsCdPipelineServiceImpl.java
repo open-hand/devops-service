@@ -13,8 +13,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1Pod;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
@@ -1251,16 +1249,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
             return JobStatusEnum.RUNNING.value();
         }
-        List<String> images = new ArrayList<>();
-        for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
-            V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
-            images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
-        }
-        if (images.stream().allMatch(v -> appServiceVersionDTO.getImage().equals(v))) {
-            return JobStatusEnum.SUCCESS.value();
-        } else {
-            return JobStatusEnum.RUNNING.value();
-        }
+        return JobStatusEnum.SUCCESS.value();
     }
 
     @Override
