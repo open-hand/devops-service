@@ -208,4 +208,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
         dropIndex(indexName: "devops_env_idx_project_id", tableName: "devops_env")
     }
+
+    changeSet(author: 'scp', id: '2021-12-10-fix-auto-deploy') {
+        sql("UPDATE devops_env SET is_auto_deploy = 1 WHERE is_auto_deploy IS NULL;")
+    }
 }
