@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
 @WillDeleted
 public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
+    private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
     private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
@@ -96,6 +97,19 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+    }
+
+    /**
+     * 校验流水线执行变量的key格式
+     *
+     * @param variables
+     */
+    public static void additionalCheckVariablesKey(Map<String, String> variables) {
+        variables.forEach((k, v) -> {
+            if (!PIPELINE_VARIABLE_KEY_FORMAT.matcher(k).matches()) {
+                throw new CommonException("error.variable.key.format.invalid");
+            }
+        });
     }
 
     private static void validateParallel(DevopsCiJobVO job) {

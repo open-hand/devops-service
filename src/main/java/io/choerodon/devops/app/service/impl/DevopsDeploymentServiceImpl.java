@@ -230,6 +230,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsDeploymentDTO oldDevopsDeploymentDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {
             oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsDeploymentDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
         } else {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
@@ -241,9 +242,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDeploymentDTO.setSourceType(WorkloadSourceTypeEnums.CHART.getType());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
+            devopsDeploymentDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsDeploymentDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }
-
     }
 
     @Override

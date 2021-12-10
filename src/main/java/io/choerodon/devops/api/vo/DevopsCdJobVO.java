@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -19,6 +20,7 @@ public class DevopsCdJobVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("任务名称")
+    @Size(min = 1, max = 30, message = "error.cd.job.name.length")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
 

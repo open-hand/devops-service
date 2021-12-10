@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
 
 import java.time.ZoneId;
@@ -8,15 +7,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1Pod;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
@@ -1237,8 +1233,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryByPipelineRecordIdAndJobName(pipelineRecordId, deployJobName);
         // 查询部署配置
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(devopsCdEnvDeployInfoDTO.getEnvId(), devopsCdEnvDeployInfoDTO.getAppCode());
+
         // 查询实例
-        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQueryByCodeAndEnv(devopsCdEnvDeployInfoDTO.getInstanceName(), devopsCdEnvDeployInfoDTO.getEnvId());
+        AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
         // 查询部署版本
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(instanceE.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
@@ -1250,16 +1249,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!podResourceDetailsDTOS.stream().allMatch(v -> Boolean.TRUE.equals(v.getReady()))) {
             return JobStatusEnum.RUNNING.value();
         }
-        List<String> images = new ArrayList<>();
-        for (PodResourceDetailsDTO podResourceDetailsDTO : podResourceDetailsDTOS) {
-            V1Pod podInfo = K8sUtil.deserialize(podResourceDetailsDTO.getMessage(), V1Pod.class);
-            images.addAll(podInfo.getSpec().getContainers().stream().map(V1Container::getImage).collect(Collectors.toList()));
-        }
-        if (images.stream().allMatch(v -> appServiceVersionDTO.getImage().equals(v))) {
-            return JobStatusEnum.SUCCESS.value();
-        } else {
-            return JobStatusEnum.RUNNING.value();
-        }
+        return JobStatusEnum.SUCCESS.value();
     }
 
     @Override

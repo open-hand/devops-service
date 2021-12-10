@@ -1274,6 +1274,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
             fillDevopsServiceInfo(oldDevopsServiceDTO, v1Service);
 
+            oldDevopsServiceDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
+
             devopsServiceMapper.updateByPrimaryKeySelective(oldDevopsServiceDTO);
         } else {
 
@@ -1289,6 +1291,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
             fillDevopsServiceInfo(devopsServiceDTO, v1Service);
+            devopsServiceDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsServiceDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsServiceMapper.insertSelective(devopsServiceDTO);
         }
     }

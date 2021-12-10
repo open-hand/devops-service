@@ -205,6 +205,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
         DevopsCronJobDTO oldDevopsCronJobDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta1CronJob.getMetadata().getName());
         if (oldDevopsCronJobDTO != null) {
             oldDevopsCronJobDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsCronJobDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsCronJobMapper.updateByPrimaryKeySelective(oldDevopsCronJobDTO);
         } else {
 
@@ -220,6 +221,8 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
             devopsCronJobDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsCronJobDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsCronJobDTO.setName(v1beta1CronJob.getMetadata().getName());
+            devopsCronJobDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsCronJobDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsCronJobMapper.insertSelective(devopsCronJobDTO);
         }
     }
