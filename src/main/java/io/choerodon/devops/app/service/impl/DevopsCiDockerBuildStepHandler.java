@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -50,28 +48,19 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
 
     @Override
     @Transactional
-    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        // 保存步骤
-        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setId(null);
-        devopsCiStepDTO.setProjectId(projectId);
-        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
-        devopsCiStepService.baseCreate(devopsCiStepDTO);
-
+    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDevopsCiDockerBuildConfigDTO();
-        devopsCiDockerBuildConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiDockerBuildConfigDTO.setStepId(stepId);
         devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
     }
 
     @Override
-    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
-        super.batchDeleteCascade(devopsCiStepDTOS);
-
-        // 删除关联的配置
-        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+    @Transactional
+    protected void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiDockerBuildConfigService.batchDeleteByStepIds(stepIds);
     }
+
     @Override
     public String getType() {
         return type.value();

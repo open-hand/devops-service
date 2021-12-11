@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
@@ -48,20 +47,10 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     private RdupmClientOperator rdupmClientOperator;
 
     @Override
-    @Transactional
-    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-
-        // 保存步骤
-        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setId(null);
-        devopsCiStepDTO.setProjectId(projectId);
-        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
-        devopsCiStepService.baseCreate(devopsCiStepDTO);
-
+    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getDevopsCiMavenPublishConfigDTO();
-        devopsCiMavenPublishConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiMavenPublishConfigDTO.setStepId(stepId);
         devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
-
     }
 
     @Override
@@ -87,12 +76,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
-    @Transactional
-    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
-        super.batchDeleteCascade(devopsCiStepDTOS);
-
-        // 删除关联的配置
-        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+    protected void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiMavenPublishConfigService.batchDeleteByStepIds(stepIds);
     }
 

@@ -75,4 +75,9 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
                 devopsCiMavenBuildConfigDTO,
                 "error.save.maven.build.config.failed");
     }
+
+    @Override
+    public void batchDeleteByStepIds(Set<Long> stepIds) {
+        devopsCiMavenBuildConfigMapper.batchDeleteByStepIds(stepIds);
+    }
 }

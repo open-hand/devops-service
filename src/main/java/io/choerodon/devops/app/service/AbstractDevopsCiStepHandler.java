@@ -34,6 +34,9 @@ public abstract class AbstractDevopsCiStepHandler {
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
+
+        // 保存任务配置
+        saveConfig(devopsCiStepDTO.getId(), devopsCiStepVO);
     }
 
     /**
@@ -46,15 +49,29 @@ public abstract class AbstractDevopsCiStepHandler {
         return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
     }
 
-    /**
-     * 子类如果有关联的配置，则需要重写
-     * @param devopsCiStepDTOS
-     */
     @Transactional
     public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
         Set<Long> ids = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
         devopsCiStepService.batchDeleteByIds(ids);
+
+        // 删除关联的配置,如果有的化话
+        batchDeleteConfig(ids);
     }
+
+    /**
+     * 保存任务配置，如果需要的话，子类负责实现
+     *
+     * @param stepId
+     * @param devopsCiStepVO
+     */
+    protected abstract void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO);
+
+    /**
+     * 批量删除步骤关联的配置（如果有关联的配置，子类则实现相关删除逻辑，没有则不做任何处理）
+     *
+     * @param stepIds
+     */
+    protected abstract void batchDeleteConfig(Set<Long> stepIds);
 
     public abstract String getType();
 }

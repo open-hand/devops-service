@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +29,10 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
-import io.choerodon.devops.infra.util.*;
+import io.choerodon.devops.infra.util.Base64Util;
+import io.choerodon.devops.infra.util.GitlabCiUtil;
+import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
 /**
  * 〈功能简述〉
@@ -55,23 +59,15 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     private RdupmClientOperator rdupmClientOperator;
 
     @Override
-    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-        // 保存步骤
-        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setId(null);
-        devopsCiStepDTO.setProjectId(projectId);
-        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
-        devopsCiStepService.baseCreate(devopsCiStepDTO);
-
+    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getDevopsCiMavenBuildConfigDTO();
-        devopsCiMavenBuildConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiMavenBuildConfigDTO.setStepId(stepId);
         devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
-
     }
 
     @Override
-    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
-        super.batchDeleteCascade(devopsCiStepDTOS);
+    protected void batchDeleteConfig(Set<Long> stepIds) {
+        devopsCiMavenBuildConfigService.batchDeleteByStepIds(stepIds);
     }
 
     @Override

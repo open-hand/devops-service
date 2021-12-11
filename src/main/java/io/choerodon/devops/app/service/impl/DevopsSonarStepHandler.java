@@ -6,11 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
@@ -26,7 +24,6 @@ import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -48,22 +45,11 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
 
     @Override
-    @Transactional
-    public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
-
-
-        // 保存步骤
-        DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
-        devopsCiStepDTO.setId(null);
-        devopsCiStepDTO.setProjectId(projectId);
-        devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
-        devopsCiStepService.baseCreate(devopsCiStepDTO);
-
+    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getDevopsCiSonarConfigDTO();
-        devopsCiSonarConfigDTO.setStepId(devopsCiStepDTO.getId());
+        devopsCiSonarConfigDTO.setStepId(stepId);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
-
     }
 
     @Override
@@ -115,12 +101,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    @Transactional
-    public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
-        super.batchDeleteCascade(devopsCiStepDTOS);
-
-        // 删除关联的配置
-        Set<Long> stepIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
+    protected void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiSonarConfigService.batchDeleteByStepIds(stepIds);
     }
 
