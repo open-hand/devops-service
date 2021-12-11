@@ -25,4 +25,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_user_rel.groovy') {
             column(name: "user_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline_user_rel")
+    }
 }
