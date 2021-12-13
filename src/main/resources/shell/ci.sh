@@ -159,49 +159,16 @@ function chart_build() {
   fi
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
-  # 重置values.yaml文件中image.repository属性
-  sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" ${CHART_PATH%/*}/values.yaml
-  # 构建chart包，重写version与app-version为当前版本
-  helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
-  TEMP=${CHART_PATH%/*}
-  FILE_NAME=${TEMP##*/}
-  # 通过Choerodon API上传chart包到devops-service
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
-    -F "repo_type=${REPO_TYPE}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
-    -F "commit=${CI_COMMIT_SHA}" \
-    -F "ref=${CI_COMMIT_REF_NAME}" \
-    -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
-    "${CHOERODON_URL}/devops/ci" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
-  # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo $response_upload_to_devops
-    echo "upload to devops error"
-    exit 1
+  # 重置values.yaml文件中image属性
+  if [ $(grep repository ${CHART_PATH%/*}/values.yaml -c | cat) -eq 0 ]; then
+    sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" \
+      ${CHART_PATH%/*}/values.yaml
+  else
+    which yq > /dev/null || echo "cibase不包含yq指令，请升级"
+    export DOCKER_REPOSITORY="${GROUP_NAME}/${PROJECT_NAME}"
+    yq e -i '.image.registry=strenv(DOCKER_REGISTRY)' ${CHART_PATH%/*}/values.yaml
+    yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
   fi
-}
-
-function chart_build_yq() {
-  #判断chart主目录名是否与应用编码保持一致
-  CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
-  if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
-    echo "The chart's home directory should be consistent with the application code!"
-    exit 1
-  fi
-  # 查找Chart.yaml文件
-  CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
-  # 重置values.yaml文件中image.repository属性
-  export DOCKER_REPOSITORY="${GROUP_NAME}/${PROJECT_NAME}"
-  yq e -i '.image.registry=strenv(DOCKER_REGISTRY)' ${CHART_PATH%/*}/values.yaml
-  yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
   # 构建chart包，重写version与app-version为当前版本
   helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
   TEMP=${CHART_PATH%/*}
