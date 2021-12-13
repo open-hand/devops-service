@@ -6,8 +6,6 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -28,7 +26,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/ci")
 public class CiController {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 

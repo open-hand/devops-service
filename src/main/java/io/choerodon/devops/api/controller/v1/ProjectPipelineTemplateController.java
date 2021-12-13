@@ -39,7 +39,7 @@ public class ProjectPipelineTemplateController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询项目下可用的流水线模板列表")
+    @ApiOperation(value = "根据模板id查询流水线配置信息")
     @GetMapping("{template_id}")
     public ResponseEntity<CiCdPipelineVO> queryPipelineInfoByTemplateId(
             @ApiParam(value = "项目ID", required = true)
