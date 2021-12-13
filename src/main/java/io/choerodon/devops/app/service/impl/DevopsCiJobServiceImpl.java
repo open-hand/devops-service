@@ -34,7 +34,6 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -60,9 +59,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+
     @Autowired
-    @Lazy
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private DevopsCiStepService devopsCiStepService;
+
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
@@ -129,12 +129,37 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    public void deleteByStageIdCascade(Long stageId) {
+        Assert.notNull(stageId, ERROR_STAGE_ID_IS_NULL);
+
+        List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+        if (!jobIds.isEmpty()) {
+            // 删除任务下的步骤
+            devopsCiStepService.deleteByJobIds(jobIds);
+            DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+            devopsCiJobDTO.setCiStageId(stageId);
+            devopsCiJobMapper.delete(devopsCiJobDTO);
+        }
+    }
+
+    @Override
     public List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        return devopsCiJobMapper.select(devopsCiJobDTO);
+    }
+
+    @Override
+    public List<DevopsCiJobDTO> listCustomByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobDTO.setType(JobTypeEnum.CUSTOM.value());
         return devopsCiJobMapper.select(devopsCiJobDTO);
     }
 

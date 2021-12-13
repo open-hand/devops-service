@@ -68,5 +68,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'application_id', tableName: 'devops_pipeline_task_record')
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_deploy_id', oldColumnName: 'app_deploy_id', tableName: 'devops_pipeline_task_record')
     }
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline_task_record")
+    }
 
 }

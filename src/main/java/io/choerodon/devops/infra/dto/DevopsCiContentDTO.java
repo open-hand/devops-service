@@ -26,8 +26,28 @@ public class DevopsCiContentDTO extends AuditDomain {
     private Long id;
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+    @ApiModelProperty("流水线版本号")
+    private Long pipelineVersionNumber;
+    @ApiModelProperty("devops默认渲染规则版本号")
+    private Long devopsDefaultRuleNumber;
     @ApiModelProperty("gitlab-ci配置文件")
     private String ciContentFile;
+
+    public Long getPipelineVersionNumber() {
+        return pipelineVersionNumber;
+    }
+
+    public void setPipelineVersionNumber(Long pipelineVersionNumber) {
+        this.pipelineVersionNumber = pipelineVersionNumber;
+    }
+
+    public Long getDevopsDefaultRuleNumber() {
+        return devopsDefaultRuleNumber;
+    }
+
+    public void setDevopsDefaultRuleNumber(Long devopsDefaultRuleNumber) {
+        this.devopsDefaultRuleNumber = devopsDefaultRuleNumber;
+    }
 
     public Long getId() {
         return id;

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStepMapper">
+
+
+    <select id="listByJobIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
+        select dcs.*, dctjsr.ci_template_job_id as relate_job_id
+        from devops_ci_template_job_step_rel dctjsr
+        join devops_ci_step dcs on dctjsr.ci_template_job_id = dcs.id
+        where dctjsr.ci_template_job_id in
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
+</mapper>
+
