@@ -21,7 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
     changeSet(author: 'scp', id: '2019-04-15-devops_pipeline-drop-column') {
         dropColumn(columnName: "is_enabled", tableName: "devops_pipeline")
         addColumn(tableName: 'devops_pipeline') {
-            column(name: 'is_enabled', type: 'TINYINT UNSIGNED', remarks: '是否启用',defaultValue: "1")
+            column(name: 'is_enabled', type: 'TINYINT UNSIGNED', remarks: '是否启用', defaultValue: "1")
         }
     }
 
@@ -29,5 +29,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
         createIndex(indexName: "idx_project_id ", tableName: "devops_pipeline") {
             column(name: "project_id")
         }
+    }
+
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline")
     }
 }

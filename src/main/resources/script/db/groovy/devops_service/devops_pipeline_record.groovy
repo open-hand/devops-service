@@ -54,4 +54,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: "project_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline_record")
+    }
 }

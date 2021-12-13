@@ -33,6 +33,8 @@ public interface DevopsCiPipelineService {
      */
     CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO);
 
+    String generateGitlabCiYaml(CiCdPipelineDTO ciCdPipelineDTO);
+
     /**
      * 更新流水线
      */

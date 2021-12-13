@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
 
 public class CiCdPipelineVO {
     @Encrypt(ignoreUserConflict = true)
@@ -62,6 +63,9 @@ public class CiCdPipelineVO {
     @Valid
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
+    @ApiModelProperty(name = "流水线变量")
+    private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
+
     private Boolean hasRecords = false;
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
@@ -84,6 +88,14 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+
+    public List<DevopsCiPipelineVariableDTO> getDevopsCiPipelineVariableDTOList() {
+        return devopsCiPipelineVariableDTOList;
+    }
+
+    public void setDevopsCiPipelineVariableDTOList(List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList) {
+        this.devopsCiPipelineVariableDTOList = devopsCiPipelineVariableDTOList;
+    }
 
     public List<DevopsCiPipelineFunctionDTO> getDevopsCiPipelineFunctionDTOList() {
         return devopsCiPipelineFunctionDTOList;

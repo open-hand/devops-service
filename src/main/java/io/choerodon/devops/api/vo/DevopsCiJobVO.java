@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
  * @author wanghao
@@ -68,8 +69,29 @@ public class DevopsCiJobVO {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     private Boolean toDownload;
 
+    @ApiModelProperty("任务中的步骤列表")
+    private List<DevopsCiStepVO> devopsCiStepVOList;
+
     @ApiModelProperty("ci阶段的构建类型")
     private List<String> configJobTypes;
+
+    private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    public CiTemplateJobGroupDTO getCiTemplateJobGroupDTO() {
+        return ciTemplateJobGroupDTO;
+    }
+
+    public void setCiTemplateJobGroupDTO(CiTemplateJobGroupDTO ciTemplateJobGroupDTO) {
+        this.ciTemplateJobGroupDTO = ciTemplateJobGroupDTO;
+    }
+
+    public List<DevopsCiStepVO> getDevopsCiStepVOList() {
+        return devopsCiStepVOList;
+    }
+
+    public void setDevopsCiStepVOList(List<DevopsCiStepVO> devopsCiStepVOList) {
+        this.devopsCiStepVOList = devopsCiStepVOList;
+    }
 
     public List<String> getConfigJobTypes() {
         return configJobTypes;

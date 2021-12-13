@@ -24,4 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage.groovy') {
             column(name: "pipeline_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline_stage")
+    }
 }
