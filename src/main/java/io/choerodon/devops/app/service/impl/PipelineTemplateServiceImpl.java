@@ -38,7 +38,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     @Autowired
     private CiTemplateJobService ciTemplateJobService;
     @Autowired
-    private CiTemplateLanguageService ciTemplateLanguageService;
+    private CiTemplateCategoryService ciTemplateCategoryService;
     @Autowired
     private CiTemplateStepService ciTemplateStepService;
     @Autowired
@@ -57,7 +57,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
         List<PipelineTemplateVO> pipelineTemplateVOS = listTemplateForProject(projectId);
 
         Set<Long> categoryIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateCategoryId).collect(Collectors.toSet());
-        List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateLanguageService.listByIds(categoryIds);
+        List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateCategoryService.listByIds(categoryIds);
 
         return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }

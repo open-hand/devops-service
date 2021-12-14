@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.devops.app.service.CiTemplateLanguageService;
+import io.choerodon.devops.app.service.CiTemplateCategoryService;
 
 /**
  * 流水线模板适用语言表(CiTemplateLanguage)表控制层
@@ -19,7 +19,7 @@ import io.choerodon.devops.app.service.CiTemplateLanguageService;
 public class CiTemplateLanguageController extends BaseController {
 
     @Autowired
-    private CiTemplateLanguageService ciTemplateLanguageService;
+    private CiTemplateCategoryService ciTemplateCategoryService;
 
 }
 
