@@ -134,6 +134,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
         CiCdPipelineVO ciCdPipelineVO = new CiCdPipelineVO();
         ciCdPipelineVO.setImage(pipelineTemplateDTO.getImage());
+        ciCdPipelineVO.setName(pipelineTemplateDTO.getName());
         ciCdPipelineVO.setVersionName(pipelineTemplateDTO.getVersionName());
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOList);
 
