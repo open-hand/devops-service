@@ -61,6 +61,9 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @ApiModelProperty(value = "步骤类型", required = true)
     @NotBlank
+    /**
+     *
+     */
     private String type;
 
     @ApiModelProperty(value = "自定义步骤的脚本", required = true)

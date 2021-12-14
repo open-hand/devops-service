@@ -18,5 +18,10 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface CiTemplateStepMapper extends BaseMapper<CiTemplateStepDTO> {
 
     List<CiTemplateStepVO> listByJobIds(@Param("jobIds") Set<Long> jobIds);
+
+    /**
+     * 根据
+     */
+    CiTemplateStepVO queryCiTemplateStepById(@Param("ciTemplateStepId") Long ciTemplateStepId);
 }
 
