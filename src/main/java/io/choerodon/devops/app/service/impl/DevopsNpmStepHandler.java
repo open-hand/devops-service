@@ -20,6 +20,11 @@ public class DevopsNpmStepHandler extends AbstractDevopsCiStepHandler {
     protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.NPM_BUILD;
 
     @Override
+    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
 
     }

@@ -49,6 +49,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
     @Autowired
     private PipelineTemplateMapper pipelineTemplatemapper;
+    @Autowired
+    private DevopsCiStepOperator devopsCiStepOperator;
 
 
     @Override
@@ -122,6 +124,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                         ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
                             DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
                             // todo 添加步骤关联的配置信息
+                            AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+                            ciTemplateStepHandler.fillConfigInfo(devopsCiStepVO);
                             devopsCiStepVOList.add(devopsCiStepVO);
                         });
                         devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
