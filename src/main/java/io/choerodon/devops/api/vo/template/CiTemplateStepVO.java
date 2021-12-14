@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.template;
 
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -25,6 +27,30 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
+
+
+    @ApiModelProperty(value = "所属任务id", required = true)
+    @NotNull
+    private Long ciTemplateJobId;
+    @ApiModelProperty(value = "任务中的顺序", required = true)
+    @NotNull
+    private Long sequence;
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
+
+    public Long getCiTemplateJobId() {
+        return ciTemplateJobId;
+    }
+
+    public void setCiTemplateJobId(Long ciTemplateJobId) {
+        this.ciTemplateJobId = ciTemplateJobId;
+    }
 
     public Long getId() {
         return id;

@@ -3,12 +3,12 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateJobStepRelMapper">
 
 
-    <select id="listByJobIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobStepRelVO">
+    <select id="listByJobIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
         select
-        dctjsr.id, dctjsr.ci_template_job_id, dctjsr.ci_template_step_id, dctjsr.sequence,
-        dcs.id, dcs.project_id, dcs.name, dcs.type, dcs.script
+        dctjsr.ci_template_job_id, dctjsr.sequence,
+        dcts.id, dcts.source_type, dcts.source_id, dcts.name, dcts.type, dcts.script
         from devops_ci_template_job_step_rel dctjsr
-        join devops_ci_step dcs on dctjsr.ci_template_step_id = dcs.id
+        join devops_ci_template_step dcts on dctjsr.ci_template_step_id = dcts.id
         where dctjsr.ci_template_job_id in
         <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
             #{jobId}
