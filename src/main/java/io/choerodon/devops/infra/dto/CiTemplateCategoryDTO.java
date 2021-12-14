@@ -30,10 +30,7 @@ public class CiTemplateCategoryDTO extends AuditDomain {
     private static final long serialVersionUID = 355683976509988264L;
 
     public static final String FIELD_ID = "id";
-    public static final String FIELD_LANGUAGE = "language";
     public static final String FIELD_SOURCE_TYPE = "sourceType";
-    public static final String FIELD_SOURCE_ID = "sourceId";
-    public static final String FIELD_BUILT_IN = "builtIn";
 
     @Id
     @GeneratedValue
