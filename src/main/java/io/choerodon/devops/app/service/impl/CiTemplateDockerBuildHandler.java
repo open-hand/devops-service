@@ -23,7 +23,7 @@ public class CiTemplateDockerBuildHandler extends AbstractCiTemplateStepHandler 
 
     @Override
     protected void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-
+        ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
     }
 
     @Override

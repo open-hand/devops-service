@@ -10,6 +10,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2021-12-01 15:56:48
  */
 public interface CiTemplateDockerMapper extends BaseMapper<CiTemplateDockerDTO> {
-
 }
 

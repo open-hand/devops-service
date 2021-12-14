@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
+
 /**
  * 流水线任务模板与步骤模板关系表(CiTemplateDocker)应用服务
  *
@@ -8,5 +10,6 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateDockerService {
 
+    CiTemplateDockerDTO queryByStepId(Long stepId);
 }
 
