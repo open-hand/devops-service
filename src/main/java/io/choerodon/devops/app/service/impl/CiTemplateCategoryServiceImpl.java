@@ -6,7 +6,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.app.service.CiTemplateLanguageService;
+import io.choerodon.devops.app.service.CiTemplateCategoryService;
 import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper;
 
@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper;
  * @since 2021-12-01 15:58:18
  */
 @Service
-public class CiTemplateLanguageServiceImpl implements CiTemplateLanguageService {
+public class CiTemplateCategoryServiceImpl implements CiTemplateCategoryService {
     @Autowired
     private CiTemplateLanguageMapper ciTemplateLanguagemapper;
 

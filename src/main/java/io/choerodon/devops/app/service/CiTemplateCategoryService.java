@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 15:58:18
  */
-public interface CiTemplateLanguageService {
+public interface CiTemplateCategoryService {
 
     List<CiTemplateCategoryDTO> listByIds(Set<Long> languageIds);
 }
