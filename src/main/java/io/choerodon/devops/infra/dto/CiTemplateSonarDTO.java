@@ -67,6 +67,9 @@ public class CiTemplateSonarDTO extends AuditDomain {
     @ApiModelProperty(value = "外部sonar认证的token")
     private String token;
 
+    @ApiModelProperty(value = "流水线模板步骤Id")
+    private Long  ciTemplateStepId;
+
 
     public Long getId() {
         return id;
@@ -140,5 +143,13 @@ public class CiTemplateSonarDTO extends AuditDomain {
         this.token = token;
     }
 
+
+    public Long getCiTemplateStepId() {
+        return ciTemplateStepId;
+    }
+
+    public void setCiTemplateStepId(Long ciTemplateStepId) {
+        this.ciTemplateStepId = ciTemplateStepId;
+    }
 }
 

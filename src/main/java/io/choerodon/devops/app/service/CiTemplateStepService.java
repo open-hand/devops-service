@@ -14,5 +14,7 @@ import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 public interface CiTemplateStepService {
 
     List<CiTemplateStepVO> listByJobIds(Set<Long> jobIds);
+
+    CiTemplateStepVO queryCiTemplateStepById(Long ciTemplateStepId);
 }
 

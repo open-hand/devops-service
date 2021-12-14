@@ -3,6 +3,10 @@ package io.choerodon.devops.api.vo.template;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * @author hao.wang08@hand-china.com
@@ -35,6 +39,39 @@ public class CiTemplateStepVO {
     @ApiModelProperty(value = "任务中的顺序", required = true)
     @NotNull
     private Long sequence;
+
+    @ApiModelProperty("创建者")
+    private IamUserDTO creator;
+
+    @ApiModelProperty("docker 配置")
+    private CiTemplateDockerVO ciTemplateDockerVO;
+
+    @ApiModelProperty("sonar 配置")
+    private CiTemplateSonarVO ciTemplateSonarVO;
+
+    public CiTemplateSonarVO getCiTemplateSonarVO() {
+        return ciTemplateSonarVO;
+    }
+
+    public void setCiTemplateSonarVO(CiTemplateSonarVO ciTemplateSonarVO) {
+        this.ciTemplateSonarVO = ciTemplateSonarVO;
+    }
+
+    public CiTemplateDockerVO getCiTemplateDockerVO() {
+        return ciTemplateDockerVO;
+    }
+
+    public void setCiTemplateDockerVO(CiTemplateDockerVO ciTemplateDockerVO) {
+        this.ciTemplateDockerVO = ciTemplateDockerVO;
+    }
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 
     public Long getSequence() {
         return sequence;
