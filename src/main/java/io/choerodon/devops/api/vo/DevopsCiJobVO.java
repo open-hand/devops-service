@@ -8,6 +8,7 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -19,6 +20,7 @@ import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
  * @since 2020/4/2 17:00
  */
 @WillDeleted
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiJobVO {
     @Encrypt
     @Id

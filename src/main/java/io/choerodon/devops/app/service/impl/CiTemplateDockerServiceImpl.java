@@ -17,6 +17,5 @@ public class CiTemplateDockerServiceImpl implements CiTemplateDockerService {
     @Autowired
     private CiTemplateDockerMapper ciTemplateDockermapper;
 
-
 }
 
