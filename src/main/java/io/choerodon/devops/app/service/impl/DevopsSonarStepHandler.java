@@ -53,6 +53,11 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
+    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         // sonar配置转化为gitlab-ci配置
         List<String> scripts = new ArrayList<>();

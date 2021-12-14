@@ -22,6 +22,11 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
 
     @Override
+    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
 
     }

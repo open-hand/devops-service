@@ -10,10 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.service.CiTemplateDockerService;
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
+import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -28,6 +31,15 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.DOCKER_BUILD;
     @Autowired
     private DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService;
+    @Autowired
+    private CiTemplateDockerService ciTemplateDockerService;
+
+    @Override
+    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        CiTemplateDockerDTO ciTemplateDockerDTO = ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = ConvertUtils.convertObject(ciTemplateDockerDTO, DevopsCiDockerBuildConfigDTO.class);
+        devopsCiStepVO.setDevopsCiDockerBuildConfigDTO(devopsCiDockerBuildConfigDTO);
+    }
 
     @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {

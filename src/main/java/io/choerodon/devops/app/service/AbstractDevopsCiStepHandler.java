@@ -26,6 +26,8 @@ public abstract class AbstractDevopsCiStepHandler {
     @Lazy
     protected DevopsCiStepService devopsCiStepService;
 
+    public abstract void fillConfigInfo(DevopsCiStepVO devopsCiStepVO);
+
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
         // 保存步骤

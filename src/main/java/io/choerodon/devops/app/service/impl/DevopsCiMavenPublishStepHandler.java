@@ -54,6 +54,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
+    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         Long projectId = devopsCiStepDTO.getProjectId();
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
