@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.template;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -17,7 +18,20 @@ public class CiTemplateStageVO {
     @ApiModelProperty(value = "流水线模板id", required = true)
     private Long pipelineTemplateId;
 
+    @ApiModelProperty(value = "顺序", required = true)
+    @NotNull
+    private Long sequence;
+
     private List<CiTemplateJobVO> ciTemplateJobVOList;
+
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
 
     public List<CiTemplateJobVO> getCiTemplateJobVOList() {
         return ciTemplateJobVOList;
