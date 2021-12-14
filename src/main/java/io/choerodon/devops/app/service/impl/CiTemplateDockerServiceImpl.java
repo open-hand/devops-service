@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateDockerService;
+import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateDockerMapper;
 
 /**
@@ -17,5 +18,12 @@ public class CiTemplateDockerServiceImpl implements CiTemplateDockerService {
     @Autowired
     private CiTemplateDockerMapper ciTemplateDockermapper;
 
+    @Override
+    public CiTemplateDockerDTO queryByStepId(Long stepId) {
+        CiTemplateDockerDTO ciTemplateDockerDTO = new CiTemplateDockerDTO();
+        ciTemplateDockerDTO.setStepId(stepId);
+
+        return ciTemplateDockermapper.selectOne(ciTemplateDockerDTO);
+    }
 }
 
