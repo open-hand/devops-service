@@ -5,8 +5,8 @@
 
     <select id="listByIds" resultType="io.choerodon.devops.infra.dto.CiTemplateCategoryDTO">
         select *
-        from devops_ci_template_language dctl
-        where dctl.id in
+        from devops_ci_template_category dctc
+        where dctc.id in
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
