@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
  */
 @Service
 public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.DOCKER_BUILD;
     @Autowired
     private DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService;
     @Autowired
@@ -74,7 +73,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.DOCKER_BUILD;
     }
 }

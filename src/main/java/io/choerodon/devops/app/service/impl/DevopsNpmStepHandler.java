@@ -17,7 +17,6 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  */
 @Service
 public class DevopsNpmStepHandler extends AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.NPM_BUILD;
 
     @Override
     public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
@@ -35,7 +34,7 @@ public class DevopsNpmStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.NPM_BUILD;
     }
 }

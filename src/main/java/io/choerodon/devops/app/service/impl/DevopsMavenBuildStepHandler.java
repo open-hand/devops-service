@@ -47,7 +47,6 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
 
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.MAVEN_BUILD;
 
     @Autowired
     private DevopsCiMavenBuildConfigService devopsCiMavenBuildConfigService;
@@ -202,8 +201,8 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.MAVEN_BUILD;
     }
 
 }

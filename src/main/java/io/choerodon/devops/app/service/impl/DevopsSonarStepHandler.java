@@ -36,8 +36,6 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 @Service
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.SONAR;
-
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
     @Autowired
@@ -111,7 +109,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.SONAR;
     }
 }

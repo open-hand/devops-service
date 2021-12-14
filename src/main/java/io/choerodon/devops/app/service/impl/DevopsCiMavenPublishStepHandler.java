@@ -33,7 +33,6 @@ import io.choerodon.devops.infra.util.*;
  */
 @Component
 public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.MAVEN_PUBLISH;
 
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
 
@@ -239,7 +238,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.MAVEN_PUBLISH;
     }
 }
