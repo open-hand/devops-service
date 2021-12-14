@@ -6,7 +6,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.template.CiTemplateJobStepRelVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiTemplateJobStepRelService;
 import io.choerodon.devops.infra.mapper.CiTemplateJobStepRelMapper;
 
@@ -23,7 +23,7 @@ public class CiTemplateJobStepRelServiceImpl implements CiTemplateJobStepRelServ
 
 
     @Override
-    public List<CiTemplateJobStepRelVO> listByJobIds(Set<Long> jobIds) {
+    public List<CiTemplateStepVO> listByJobIds(Set<Long> jobIds) {
         return ciTemplateJobStepRelmapper.listByJobIds(jobIds);
     }
 }

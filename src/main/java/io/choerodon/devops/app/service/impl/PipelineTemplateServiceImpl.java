@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
-import io.choerodon.devops.api.vo.template.CiTemplateJobStepRelVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
@@ -94,10 +93,9 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
         // 查询任务下的步骤
         Set<Long> jobIds = ciTemplateJobVOList.stream().map(CiTemplateJobVO::getId).collect(Collectors.toSet());
-        List<CiTemplateJobStepRelVO> ciTemplateJobStepRelVOS = ciTemplateJobStepRelService.listByJobIds(jobIds);
-        Map<Long, List<CiTemplateStepVO>> jobStepMap = ciTemplateJobStepRelVOS.stream().collect(Collectors
-                .groupingBy(CiTemplateJobStepRelVO::getCiTemplateJobId,
-                        Collectors.mapping(CiTemplateJobStepRelVO::getCiTemplateStepVO, Collectors.toList())));
+        List<CiTemplateStepVO> ciTemplateStepVOList = ciTemplateJobStepRelService.listByJobIds(jobIds);
+        Map<Long, List<CiTemplateStepVO>> jobStepMap = ciTemplateStepVOList.stream().collect(Collectors
+                .groupingBy(CiTemplateStepVO::getCiTemplateJobId));
 
         // 组装返回给前端的流水线对象
         List<DevopsCiStageVO> devopsCiStageVOList = new ArrayList<>();
@@ -136,7 +134,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
         CiCdPipelineVO ciCdPipelineVO = new CiCdPipelineVO();
         ciCdPipelineVO.setImage(pipelineTemplateDTO.getImage());
-        ciCdPipelineVO.setImage(pipelineTemplateDTO.getVersionName());
+        ciCdPipelineVO.setVersionName(pipelineTemplateDTO.getVersionName());
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOList);
 
         // 设置流水线变量
