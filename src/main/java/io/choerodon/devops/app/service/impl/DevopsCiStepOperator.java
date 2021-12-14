@@ -31,7 +31,7 @@ public class DevopsCiStepOperator {
     @PostConstruct
     void init() {
         ciStepHandlerMap = devopsCiStepHandlerList.stream()
-                .collect(Collectors.toMap(AbstractDevopsCiStepHandler::getType, Function.identity()));
+                .collect(Collectors.toMap(v -> v.getType().value(), Function.identity()));
     }
 
     public AbstractDevopsCiStepHandler getHandler(String Type) {

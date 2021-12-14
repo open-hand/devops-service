@@ -1,6 +1,11 @@
-package io.choerodon.devops.app.service;
+package io.choerodon.devops.app.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.AppExternalConfigService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.enums.ExternalAppAuthTypeEnum;
@@ -8,9 +13,6 @@ import io.choerodon.devops.infra.mapper.AppExternalConfigMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.DESEncryptUtil;
 import io.choerodon.devops.infra.util.MapperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉

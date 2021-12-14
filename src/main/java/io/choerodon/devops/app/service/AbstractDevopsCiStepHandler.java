@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
+import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
@@ -75,5 +76,5 @@ public abstract class AbstractDevopsCiStepHandler {
      */
     protected abstract void batchDeleteConfig(Set<Long> stepIds);
 
-    public abstract String getType();
+    public abstract DevopsCiStepTypeEnum getType();
 }

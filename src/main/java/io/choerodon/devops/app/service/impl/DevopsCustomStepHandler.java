@@ -17,7 +17,6 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  */
 @Service
 public class DevopsCustomStepHandler extends AbstractDevopsCiStepHandler {
-    protected DevopsCiStepTypeEnum type = DevopsCiStepTypeEnum.CUSTOM;
 
 
     @Override
@@ -36,7 +35,7 @@ public class DevopsCustomStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public String getType() {
-        return type.value();
+    public DevopsCiStepTypeEnum getType() {
+        return DevopsCiStepTypeEnum.CUSTOM;
     }
 }
