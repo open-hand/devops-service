@@ -47,9 +47,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_maven.groovy') {
     changeSet(author: 'wanghao', id: '2021-12-15-modify-unique-index') {
         dropUniqueConstraint(tableName: 'devops_ci_pipeline_maven',
                 constraintName: 'uk_gitlab_pipeline_id')
-        addNotNullConstraint(tableName: "devops_ci_pipeline_maven", columnName: "devops_pipeline_id", columnDataType: "BIGINT UNSIGNED")
-        addNotNullConstraint(tableName: "devops_ci_pipeline_maven", columnName: "gitlab_pipeline_id", columnDataType: "BIGINT UNSIGNED")
-        addNotNullConstraint(tableName: "devops_ci_pipeline_maven", columnName: "job_name", columnDataType: "VARCHAR(255)")
         addUniqueConstraint(tableName: 'devops_ci_pipeline_maven',
                 constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'devops_pipeline_id,gitlab_pipeline_id,job_name')
     }
