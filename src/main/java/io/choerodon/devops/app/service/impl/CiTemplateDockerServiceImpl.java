@@ -21,7 +21,7 @@ public class CiTemplateDockerServiceImpl implements CiTemplateDockerService {
     @Override
     public CiTemplateDockerDTO queryByStepId(Long stepId) {
         CiTemplateDockerDTO ciTemplateDockerDTO = new CiTemplateDockerDTO();
-        ciTemplateDockerDTO.setStepId(stepId);
+        ciTemplateDockerDTO.setCiTemplateStepId(stepId);
 
         return ciTemplateDockermapper.selectOne(ciTemplateDockerDTO);
     }

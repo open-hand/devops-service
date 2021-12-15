@@ -82,7 +82,7 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
 
     private void fillDockerConfig(CiTemplateStepVO reCiTemplateStepVO) {
         CiTemplateDockerDTO ciTemplateDockerDTO = new CiTemplateDockerDTO();
-        ciTemplateDockerDTO.setStepId(reCiTemplateStepVO.getId());
+        ciTemplateDockerDTO.setCiTemplateStepId(reCiTemplateStepVO.getId());
         CiTemplateDockerDTO templateDockerDTO = ciTemplateDockerMapper.selectOne(ciTemplateDockerDTO);
         if (templateDockerDTO != null) {
             reCiTemplateStepVO.setCiTemplateDockerVO(ConvertUtils.convertObject(templateDockerDTO, CiTemplateDockerVO.class));
