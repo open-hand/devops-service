@@ -1,17 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,11 @@ import io.choerodon.devops.api.vo.CiConfigTemplateVO;
 import io.choerodon.devops.api.vo.CiConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineMavenService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -63,6 +66,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
@@ -76,7 +82,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void createOrUpdate(CiPipelineMavenDTO ciPipelineMavenDTO) {
-        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
+        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getDevopsPipelineId(), ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
         if (oldCiPipelineMavenDTO == null) {
             if (ciPipelineMavenMapper.insertSelective(ciPipelineMavenDTO) != 1) {
                 throw new CommonException("error.create.maven.record");
@@ -105,6 +111,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } catch (Exception e) {
                 throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
             }
+            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+            ciPipelineMavenDTO.setDevopsPipelineId(Objects.requireNonNull(ciCdPipelineDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
@@ -194,12 +202,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     }
 
     @Override
-    public CiPipelineMavenDTO queryByGitlabPipelineId(Long gitlabPipelineId, String jobName) {
+    public CiPipelineMavenDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
         Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+        ciPipelineMavenDTO.setDevopsPipelineId(devopsPipelineId);
         ciPipelineMavenDTO.setJobName(jobName);
         return ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
     }
