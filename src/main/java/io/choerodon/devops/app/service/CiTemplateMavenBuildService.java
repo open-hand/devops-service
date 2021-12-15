@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
+
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)应用服务
  *
@@ -8,5 +10,6 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateMavenBuildService {
 
+    CiTemplateMavenBuildDTO baseQueryById(Long stepId);
 }
 

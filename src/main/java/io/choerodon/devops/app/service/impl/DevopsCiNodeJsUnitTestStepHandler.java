@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.Set;
 
+import org.springframework.stereotype.Service;
+
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
@@ -13,6 +15,7 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  * @author wanghao
  * @since 2021/12/15 10:23
  */
+@Service
 public class DevopsCiNodeJsUnitTestStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
