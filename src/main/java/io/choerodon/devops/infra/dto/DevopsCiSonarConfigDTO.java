@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -21,6 +22,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_sonar_config")
 @ModifyAudit
 @VersionAudit
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiSonarConfigDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

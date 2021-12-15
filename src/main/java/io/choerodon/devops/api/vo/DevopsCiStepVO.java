@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -17,6 +18,7 @@ import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
  * @author wanghao
  * @since 2021/11/29 11:38
  */
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiStepVO {
 
     private Long id;

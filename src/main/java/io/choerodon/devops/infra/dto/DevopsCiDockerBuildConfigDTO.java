@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -20,6 +21,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @Table(name = "devops_ci_docker_build_config")
 @ModifyAudit
 @VersionAudit
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiDockerBuildConfigDTO {
 
     @Id
