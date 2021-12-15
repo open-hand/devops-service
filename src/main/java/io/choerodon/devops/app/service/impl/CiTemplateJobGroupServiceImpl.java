@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiTemplateJobGroupMapper;
 
 /**
@@ -22,6 +24,8 @@ import io.choerodon.devops.infra.mapper.CiTemplateJobGroupMapper;
 public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService {
     @Autowired
     private CiTemplateJobGroupMapper ciTemplateJobGroupmapper;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -32,6 +36,12 @@ public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService 
     @Override
     public List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds) {
         return ciTemplateJobGroupmapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(groupIds));
+    }
+
+    @Override
+    public List<CiTemplateJobGroupDTO> listGroups(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        return null;
     }
 }
 
