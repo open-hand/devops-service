@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  * @author wanghao
  * @since 2021/12/15 10:23
  */
-public class DevopsCiNodeJsUnitTestHandler extends AbstractDevopsCiStepHandler {
+public class DevopsCiNodeJsUnitTestStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
