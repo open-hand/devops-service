@@ -30,10 +30,7 @@ public class CiTemplateJobGroupDTO extends AuditDomain {
     private static final long serialVersionUID = -58128204454217465L;
 
     public static final String FIELD_ID = "id";
-    public static final String FIELD_NAME = "name";
     public static final String FIELD_SOURCE_TYPE = "sourceType";
-    public static final String FIELD_SOURCE_ID = "sourceId";
-    public static final String FIELD_BUILT_IN = "builtIn";
 
     @Id
     @GeneratedValue
@@ -42,12 +39,21 @@ public class CiTemplateJobGroupDTO extends AuditDomain {
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
     private String name;
-
-
+    @ApiModelProperty(value = "任务分组类型", required = true)
+    @NotBlank
+    private String type;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Boolean getBuiltIn() {
         return builtIn;
