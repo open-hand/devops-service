@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD;
 
 import java.time.ZoneId;
@@ -8,7 +7,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -698,7 +696,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsDeployGroupContainerConfigVOS.forEach(config -> {
             if (config.getPipelineJobName() != null) {
                 if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
-                    CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                    CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getPipelineId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
                     HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
@@ -719,7 +717,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     config.setDockerDeployVO(dockerDeployVO);
 
                 } else {
-                    CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                    CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getPipelineId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
                     ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(ciPipelineMavenDTO.getNexusRepoId(),
                             ciPipelineMavenDTO.getGroupId(),
                             ciPipelineMavenDTO.getArtifactId(),
