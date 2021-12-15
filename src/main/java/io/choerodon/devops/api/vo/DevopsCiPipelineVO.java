@@ -12,8 +12,6 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
-
 /**
  *
  * @author wanghao
