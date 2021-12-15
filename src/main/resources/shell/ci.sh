@@ -129,13 +129,13 @@ function database_test() {
 }
 
 function cache_jar() {
-  mkdir -p ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
-  cp target/app.jar ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar
+  mkdir -p /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar
+  cp target/app.jar  /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar
 }
 
 #################################### 构建镜像 ####################################
 function docker_build() {
-  cp ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar ${1:-"src/main/docker"}/app.jar || true
+  cp /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar ${1:-"src/main/docker"}/app.jar || true
   cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"} || true
@@ -144,7 +144,7 @@ function docker_build() {
 
 #################################### 清理缓存 ####################################
 function clean_cache() {
-  rm -rf ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+  rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar
   rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
 }
 
@@ -159,8 +159,16 @@ function chart_build() {
   fi
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
-  # 重置values.yaml文件中image.repository属性
-  sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" ${CHART_PATH%/*}/values.yaml
+  # 重置values.yaml文件中image属性
+  if [ $(grep repository ${CHART_PATH%/*}/values.yaml -c | cat) -eq 0 ]; then
+    sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" \
+      ${CHART_PATH%/*}/values.yaml
+  else
+    which yq > /dev/null || echo "cibase不包含yq指令，请升级"
+    export DOCKER_REPOSITORY="${GROUP_NAME}/${PROJECT_NAME}"
+    yq e -i '.image.registry=strenv(DOCKER_REGISTRY)' ${CHART_PATH%/*}/values.yaml
+    yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
+  fi
   # 构建chart包，重写version与app-version为当前版本
   helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
   TEMP=${CHART_PATH%/*}
