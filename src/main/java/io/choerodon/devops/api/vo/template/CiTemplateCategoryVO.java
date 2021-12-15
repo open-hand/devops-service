@@ -6,6 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 流水线模板适用语言表(CiTemplateLanguage)实体类
@@ -17,8 +18,7 @@ import javax.validation.constraints.NotNull;
 
 public class CiTemplateCategoryVO {
 
-    @Id
-    @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "语言", required = true)

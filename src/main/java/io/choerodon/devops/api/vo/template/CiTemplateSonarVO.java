@@ -1,16 +1,12 @@
 package io.choerodon.devops.api.vo.template;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModel;
+
 import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * devops_ci_template_sonar(CiTemplateSonar)实体类
@@ -22,8 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class CiTemplateSonarVO {
 
 
-    @Id
-    @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "扫描器类型 sonarmaven 、sonarscanner", required = true)

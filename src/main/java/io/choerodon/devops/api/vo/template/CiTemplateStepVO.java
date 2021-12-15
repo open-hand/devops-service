@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.template;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
@@ -14,7 +15,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class CiTemplateStepVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "任务名称", required = true)
     @NotNull
@@ -24,6 +25,7 @@ public class CiTemplateStepVO {
     @ApiModelProperty(value = "层级Id", required = true)
     private Long sourceId;
     @ApiModelProperty(value = "流水线步骤分类id", required = true)
+    @Encrypt
     private Long categoryId;
     @NotNull
     @ApiModelProperty(value = "步骤类型", required = true)

@@ -7,6 +7,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 流水线步骤模板分类(CiTemplateStepCategory)实体类
@@ -17,8 +20,8 @@ import javax.validation.constraints.NotNull;
 
 
 public class CiTemplateStepCategoryVO {
-    @Id
-    @GeneratedValue
+
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "任务名称", required = true)
@@ -45,6 +48,40 @@ public class CiTemplateStepCategoryVO {
     @ApiModelProperty(value = "关联模板的总数")
     private Long templateNumber;
 
+    @ApiModelProperty("创建者")
+    private IamUserDTO creator;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getTemplateNumber() {
+        return templateNumber;
+    }
+
+    public void setTemplateNumber(Long templateNumber) {
+        this.templateNumber = templateNumber;
+    }
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 
     public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;

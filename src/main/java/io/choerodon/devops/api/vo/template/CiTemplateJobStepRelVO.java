@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 流水线任务模板与步骤模板关系表(CiTemplateJobStepRel)实体类
@@ -15,8 +16,8 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class CiTemplateJobStepRelVO {
 
-    @Id
-    @GeneratedValue
+
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "层级Id", required = true)

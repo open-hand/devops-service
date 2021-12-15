@@ -5,6 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 流水线任务模板与步骤模板关系表(CiTemplateDocker)实体类
@@ -16,8 +17,7 @@ import javax.validation.constraints.NotNull;
 
 public class CiTemplateDockerVO {
 
-    @Id
-    @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "docker file 地址", required = true)
