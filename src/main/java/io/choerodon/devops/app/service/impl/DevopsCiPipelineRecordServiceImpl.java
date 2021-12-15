@@ -568,6 +568,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             calculateStageStatus(devopsCiStageRecordVO, statusMap);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
             latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
+                // 添加Sonar扫描信息
+
+                // 添加chart版本信息
+
+
                 if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
                     if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
                         SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
