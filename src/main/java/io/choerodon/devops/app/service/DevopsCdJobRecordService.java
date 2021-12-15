@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.PodEventVO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 
 /**
@@ -66,8 +65,6 @@ public interface DevopsCdJobRecordService {
      * @param stageRecordId
      */
     void updateJobStatusStopByStageRecordId(Long stageRecordId);
-
-    List<PodEventVO> queryDeployJobLogs(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
 
     /**
      * 用于处理并发场景

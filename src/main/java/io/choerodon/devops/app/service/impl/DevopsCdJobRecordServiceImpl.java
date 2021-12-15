@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.PodEventVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
@@ -204,12 +203,6 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
                 throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
             }
         });
-    }
-
-    @Override
-    public List<PodEventVO> queryDeployJobLogs(Long projectId, Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
-        DevopsCdJobRecordDTO devopsCdJobRecordDTO = queryById(jobRecordId);
-        return devopsEnvResourceService.listPodEventBycommandId(devopsCdJobRecordDTO.getCommandId());
     }
 
     @Override
