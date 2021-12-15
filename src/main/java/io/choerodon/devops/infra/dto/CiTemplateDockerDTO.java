@@ -73,14 +73,14 @@ public class CiTemplateDockerDTO extends AuditDomain {
     private Integer vulnerabilityCount;
 
     @ApiModelProperty("所属步骤id")
-    private Long stepId;
+    private Long ciTemplateStepId;
 
-    public Long getStepId() {
-        return stepId;
+    public Long getCiTemplateStepId() {
+        return ciTemplateStepId;
     }
 
-    public void setStepId(Long stepId) {
-        this.stepId = stepId;
+    public void setCiTemplateStepId(Long ciTemplateStepId) {
+        this.ciTemplateStepId = ciTemplateStepId;
     }
 
     public String getSeverity() {
