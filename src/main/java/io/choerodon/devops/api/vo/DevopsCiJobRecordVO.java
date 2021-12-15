@@ -6,6 +6,8 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -75,6 +77,22 @@ public class DevopsCiJobRecordVO {
     private Boolean imageScan;
 
     private Long mavenSettingId;
+
+    @ApiModelProperty("ci任务产生的chart信息")
+    private PipelineChartInfo pipelineChartInfo;
+//    @ApiModelProperty("ci任务产生的sonar信息")
+//    private PipelineChartInfo pipelineSonarInfo;
+//    @ApiModelProperty("ci任务产生的镜像信息")
+//    private PipelineChartInfo pipelineImageInfo;
+
+
+    public PipelineChartInfo getPipelineChartInfo() {
+        return pipelineChartInfo;
+    }
+
+    public void setPipelineChartInfo(PipelineChartInfo pipelineChartInfo) {
+        this.pipelineChartInfo = pipelineChartInfo;
+    }
 
     public Long getMavenSettingId() {
         return mavenSettingId;
