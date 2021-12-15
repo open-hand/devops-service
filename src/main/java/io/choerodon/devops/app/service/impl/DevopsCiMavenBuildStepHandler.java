@@ -42,7 +42,7 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
  * @since 2021/11/29 17:52
  */
 @Service
-public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
+public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
@@ -120,7 +120,7 @@ public class DevopsMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
             if (hasNexusRepos) {
                 // 用户选择的已有的maven仓库
                 List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, devopsCiMavenBuildConfigVO.getNexusMavenRepoIds());
-                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsMavenBuildStepHandler::convertRepo).collect(Collectors.toList()));
+                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiMavenBuildStepHandler::convertRepo).collect(Collectors.toList()));
             }
 
             if (hasManualRepos) {

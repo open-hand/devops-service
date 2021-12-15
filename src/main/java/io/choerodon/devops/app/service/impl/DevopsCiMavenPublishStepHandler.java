@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
@@ -38,6 +39,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
+    @Autowired
+    private CiTemplateMavenPublishService ciTemplateMavenPublishService;
 
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
@@ -54,7 +57,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-
+        ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
     }
 
     @Override
