@@ -18,8 +18,12 @@ public enum DevopsCiStepTypeEnum {
      * Go单元测试
      */
     GO_UNIT_TEST("go_unit_test"),
+    /**
+     * Node.js单元测试
+     */
+    NODE_JS_UNIT_TEST("node_js_unit_test"),
 
-
+    // 构建相关
     /**
      * maven 构建
      */
@@ -36,13 +40,15 @@ public enum DevopsCiStepTypeEnum {
     GO_BUILD("go_build"),
 
     /**
-     * mvn 发布
-     */
-    MAVEN_PUBLISH("maven_publish"),
-    /**
      * docker构建
      */
     DOCKER_BUILD("docker_build"),
+
+    /**
+     * mvn 发布
+     */
+    MAVEN_PUBLISH("maven_publish"),
+
     /**
      * sonar检查
      */
