@@ -17,6 +17,7 @@ public class CiTemplateStepVO {
 
     private Long id;
     @ApiModelProperty(value = "任务名称", required = true)
+    @NotNull
     private String name;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;
@@ -24,6 +25,7 @@ public class CiTemplateStepVO {
     private Long sourceId;
     @ApiModelProperty(value = "流水线步骤分类id", required = true)
     private Long categoryId;
+    @NotNull
     @ApiModelProperty(value = "步骤类型", required = true)
     private String type;
     @ApiModelProperty(value = "自定义步骤的脚本", required = true)
