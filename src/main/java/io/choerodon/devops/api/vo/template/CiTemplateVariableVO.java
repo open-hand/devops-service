@@ -5,6 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 流水线模板配置的CI变量(CiTemplateVariable)实体类
@@ -15,8 +16,7 @@ import javax.validation.constraints.NotNull;
 
 public class CiTemplateVariableVO {
 
-    @Id
-    @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "流水线模板id", required = true)

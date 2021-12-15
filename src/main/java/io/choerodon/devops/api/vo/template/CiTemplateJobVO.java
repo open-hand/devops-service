@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
@@ -10,7 +11,7 @@ import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
  */
 public class CiTemplateJobVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "任务名称", required = true)
     private String name;

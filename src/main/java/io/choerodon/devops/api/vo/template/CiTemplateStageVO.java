@@ -4,6 +4,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang08@hand-china.com
@@ -11,11 +12,12 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CiTemplateStageVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "阶段名称", required = true)
     private String name;
     @ApiModelProperty(value = "流水线模板id", required = true)
+    @Encrypt
     private Long pipelineTemplateId;
 
     @ApiModelProperty(value = "顺序", required = true)

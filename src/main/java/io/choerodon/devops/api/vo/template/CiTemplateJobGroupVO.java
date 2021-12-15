@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 
 /**
@@ -18,8 +19,7 @@ import javax.validation.constraints.NotNull;
 
 public class CiTemplateJobGroupVO {
 
-    @Id
-    @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "任务名称", required = true)

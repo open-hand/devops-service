@@ -6,16 +6,14 @@ package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 public class DevopsPipelineTemplateVO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("流水线名称")
