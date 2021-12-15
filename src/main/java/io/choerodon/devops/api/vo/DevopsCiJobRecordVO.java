@@ -6,8 +6,6 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
-
 /**
  * 〈功能简述〉
  * 〈〉
@@ -15,7 +13,6 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @author wanghao
  * @since 2020/4/7 22:34
  */
-@WillDeleted
 public class DevopsCiJobRecordVO {
     @Encrypt
     private Long id;

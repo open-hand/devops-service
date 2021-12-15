@@ -11,7 +11,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
@@ -23,7 +22,6 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
  * @author zmf
  * @since 20-4-20
  */
-@WillDeleted
 public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
     private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");

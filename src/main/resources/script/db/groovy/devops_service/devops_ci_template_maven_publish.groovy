@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_publish.groovy') {
     changeSet(author: 'wanghao', id: '2021-11-29-create-table') {
-        createTable(tableName: "devops_ci_template_maven", remarks: 'devops_ci_template_maven') {
+        createTable(tableName: "devops_ci_template_maven_publish", remarks: 'devops_ci_template_maven_publish') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -11,6 +11,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven.groovy') {
             column(name: 'repo_str', type: 'TEXT', remarks: '表单填写的Maven的依赖仓库')
 
             column(name: 'maven_settings', type: 'TEXT', remarks: '直接粘贴的maven的settings内容')
+
+            column(name: 'nexus_repo_id', type: 'TEXT', remarks: 'nexus的maven仓库在制品库的主键id')
 
             column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤Id') {
                 constraints(nullable: false)
@@ -22,7 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'devops_ci_template_maven', constraintName: 'uk_ci_template_step_id', columnNames: 'ci_template_step_id')
+        addUniqueConstraint(tableName: 'devops_ci_template_maven_publish', constraintName: 'uk_ci_template_step_id', columnNames: 'ci_template_step_id')
     }
 
 }
