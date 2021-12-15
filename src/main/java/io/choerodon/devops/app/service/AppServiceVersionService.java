@@ -19,15 +19,26 @@ public interface AppServiceVersionService {
     /**
      * 创建应用版本信息
      *
-     * @param image          类型
-     * @param harborConfigId harborConfigId
-     * @param token          token
-     * @param version        版本
-     * @param commit         commit
-     * @param file           tgz包
-     * @param ref            分支名
+     * @param image            类型
+     * @param harborConfigId   harborConfigId
+     * @param token            token
+     * @param version          版本
+     * @param commit           commit
+     * @param file             tgz包
+     * @param ref              分支名
+     * @param gitlabPipelineId
+     * @param jobName
      */
-    void create(String image, String harborConfigId, String repoType, String token, String version, String commit, MultipartFile file, String ref);
+    void create(String image,
+                String harborConfigId,
+                String repoType,
+                String token,
+                String version,
+                String commit,
+                MultipartFile file,
+                String ref,
+                Long gitlabPipelineId,
+                String jobName);
 
 
     /**

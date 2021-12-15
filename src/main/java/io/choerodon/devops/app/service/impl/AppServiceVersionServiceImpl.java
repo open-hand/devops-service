@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -104,6 +105,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private SendNotificationService sendNotificationService;
     @Autowired
+    private DevopsCiPipelineChartService devopsCiPipelineChartService;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
     private RdupmClient rdupmClient;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
@@ -124,9 +129,40 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void create(String image, String harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
+    public void create(String image,
+                       String harborConfigId,
+                       String repoType,
+                       String token,
+                       String version,
+                       String commit,
+                       MultipartFile files,
+                       String ref,
+                       Long gitlabPipelineId,
+                       String jobName) {
         try {
-            doCreate(image, TypeUtil.objToLong(harborConfigId), repoType, token, version, commit, files, ref);
+            AppServiceVersionDTO appServiceVersionDTO = doCreate(image,
+                    TypeUtil.objToLong(harborConfigId),
+                    repoType,
+                    token,
+                    version,
+                    commit,
+                    files,
+                    ref);
+            // 保存流水线chart版本信息
+            if (gitlabPipelineId != null && StringUtils.isNotBlank(jobName)) {
+                CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceVersionDTO.getAppServiceId());
+                Long devopsPipelineId = ciCdPipelineDTO.getId();
+                DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
+                        gitlabPipelineId,
+                        jobName);
+                if (devopsCiPipelineChartDTO == null) {
+                    devopsCiPipelineChartService.baseCreate(new DevopsCiPipelineChartDTO(devopsPipelineId,
+                            gitlabPipelineId,
+                            jobName,
+                            appServiceVersionDTO.getVersion(),
+                            appServiceVersionDTO.getId()));
+                }
+            }
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
@@ -136,7 +172,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     }
 
-    private void doCreate(String image, Long harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
+    private AppServiceVersionDTO doCreate(String image, Long harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -204,6 +240,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
 
         // 更新版本纪录和values纪录
+
         if (oldVersionInDb != null) {
             // 重新上传chart包后更新values
             updateValues(oldVersionInDb.getValueId(), values);
@@ -224,13 +261,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
 
             newVersion.setReadmeValueId(appServiceVersionReadmeDTO.getId());
-            baseCreate(newVersion);
+            newVersion = baseCreate(newVersion);
         }
 
 
         FileUtil.deleteDirectories(destFilePath, storeFilePath);
         //生成版本成功后发送webhook json
         sendNotificationService.sendWhenAppServiceVersion(newVersion, appServiceDTO, projectDTO);
+        return newVersion;
     }
 
     private void updateVersion(AppServiceVersionDTO oldVersionInDb, AppServiceVersionDTO newVersion) {
