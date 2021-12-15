@@ -183,6 +183,8 @@ function chart_build() {
     -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
+    -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
+    -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
@@ -196,7 +198,6 @@ function chart_build() {
     exit 1
   fi
 }
-
 #################################### 下载settings文件 ####################################
 # $1 fileName   下载settings文件后保存为的文件名称
 # $2 project_id 项目id

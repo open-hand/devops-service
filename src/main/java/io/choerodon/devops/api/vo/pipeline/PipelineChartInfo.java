@@ -8,13 +8,17 @@ package io.choerodon.devops.api.vo.pipeline;
  * @since 2021/12/15 17:18
  */
 public class PipelineChartInfo {
-    private String version;
+    private String chartVersion;
 
-    public String getVersion() {
-        return version;
+    public PipelineChartInfo(String chartVersion) {
+        this.chartVersion = chartVersion;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public String getChartVersion() {
+        return chartVersion;
+    }
+
+    public void setChartVersion(String chartVersion) {
+        this.chartVersion = chartVersion;
     }
 }

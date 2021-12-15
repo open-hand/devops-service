@@ -99,10 +99,14 @@ public class CiController {
             @RequestParam String version,
             @ApiParam(value = "commit", required = true)
             @RequestParam String commit,
+            @ApiParam(value = "GitLab流水线id")
+            @RequestParam(value = "gitlab_pipeline_id", required = false) Long gitlabPipelineId,
+            @ApiParam(value = "job_name")
+            @RequestParam(value = "job_name", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
             @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref);
+        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref, gitlabPipelineId, jobName);
         return ResponseEntity.ok().build();
     }
 

@@ -2,9 +2,14 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiPipelineChartService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineChartDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineChartMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * ci任务生成chart记录(DevopsCiPipelineChart)应用服务
@@ -18,5 +23,23 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
     private DevopsCiPipelineChartMapper devopsCiPipelineChartMapper;
 
 
+    @Override
+    public DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(jobName, PipelineCheckConstant.ERROR_JOB_NAME_IS_NULL);
+
+        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = new DevopsCiPipelineChartDTO();
+        devopsCiPipelineChartDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsCiPipelineChartDTO.setDevopsPipelineId(devopsPipelineId);
+        devopsCiPipelineChartDTO.setJobName(jobName);
+        return devopsCiPipelineChartMapper.selectOne(devopsCiPipelineChartDTO);
+    }
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsCiPipelineChartDTO devopsCiPipelineChartDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineChartMapper, devopsCiPipelineChartDTO, "error.save.chart.info");
+    }
 }
 

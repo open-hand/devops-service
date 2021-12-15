@@ -30,6 +30,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -95,6 +96,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    private DevopsCiPipelineChartService devopsCiPipelineChartService;
 
     @Autowired
     private CiPipelineMavenMapper ciPipelineMavenMapper;
@@ -529,10 +533,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return new DevopsCiPipelineRecordVO();
         }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
+
         if (Objects.isNull(devopsCiPipelineRecordDTO)) {
             return new DevopsCiPipelineRecordVO();
         }
-        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
+        Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
+        Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
+
+        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -543,7 +551,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
 
         // 添加提交信息
-        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsPipelineId);
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
         addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
@@ -571,7 +579,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 // 添加Sonar扫描信息
 
                 // 添加chart版本信息
-
+                DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
+                        gitlabPipelineId,
+                        devopsCiJobRecordVO.getName());
+                if (devopsCiPipelineChartDTO != null) {
+                    devopsCiJobRecordVO.setPipelineChartInfo(new PipelineChartInfo(devopsCiPipelineChartDTO.getChartVersion()));
+                }
 
                 if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
                     if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
@@ -601,7 +614,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
                         && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
                     // 只有构建成功的才展示版本信息
-                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
+                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineId);
                     if (!Objects.isNull(ciCdPipelineDTO)) {
                         String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
                         String ref = devopsCiPipelineRecordVO.getCommit().getRef();
@@ -626,7 +639,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
                         if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
                             //添加job里面构建结果的下载的地址
-                            fillRepoUrl(projectId, devopsCiJobRecordVO, devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                            fillRepoUrl(projectId, devopsCiJobRecordVO, gitlabPipelineId);
                         }
                         //填充docker 下载的命令  需要包含docker的构建命令
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
@@ -636,7 +649,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
                             //是否本次流水线有镜像的扫描结果 有则展示
                             DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                            devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
+                            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
                             if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
                                 devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
                             } else {

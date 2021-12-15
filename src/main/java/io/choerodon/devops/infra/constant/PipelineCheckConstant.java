@@ -27,6 +27,7 @@ public class PipelineCheckConstant {
     // job
     public static final String ERROR_JOB_RECORD_ID_IS_NULL = "error.job.record.id.is.null";
     public static final String ERROR_JOB_ID_IS_NULL = "error.job.id.is.null";
+    public static final String ERROR_JOB_NAME_IS_NULL = "error.job.name.is.null";
     public static final String ERROR_JOB_STATUS_IS_NULL = "error.job.status.is.null";
 
     // step

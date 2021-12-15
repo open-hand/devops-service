@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_chart.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'devops_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'devops流水线id') {
+                constraints(nullable: false)
+            }
             column(name: 'gitlab_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'gitlabPipelineId') {
                 constraints(nullable: false)
             }
@@ -27,6 +30,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_chart.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_ci_pipeline_chart',
-                constraintName: 'uk_gitlab_pipeline_id', columnNames: 'gitlab_pipeline_id,job_name')
+                constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'devops_pipeline_id,gitlab_pipeline_id,job_name')
     }
 }
