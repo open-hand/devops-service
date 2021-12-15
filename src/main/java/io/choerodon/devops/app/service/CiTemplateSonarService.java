@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
+
 /**
  * devops_ci_template_sonar(CiTemplateSonar)应用服务
  *
@@ -8,5 +10,6 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateSonarService {
 
+    CiTemplateSonarDTO queryByStepId(Long id);
 }
 

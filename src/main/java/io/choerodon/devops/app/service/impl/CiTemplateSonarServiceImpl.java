@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateSonarService;
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateSonarMapper;
 
 /**
@@ -18,5 +19,11 @@ public class CiTemplateSonarServiceImpl implements CiTemplateSonarService {
     private CiTemplateSonarMapper ciTemplateSonarmapper;
 
 
+    @Override
+    public CiTemplateSonarDTO queryByStepId(Long stepId) {
+        CiTemplateSonarDTO ciTemplateSonarDTO = new CiTemplateSonarDTO();
+        ciTemplateSonarDTO.setCiTemplateStepId(stepId);
+        return ciTemplateSonarmapper.selectOne(ciTemplateSonarDTO);
+    }
 }
 
