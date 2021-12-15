@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
+import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateMavenBuildMapper;
 
 /**
@@ -18,5 +19,11 @@ public class CiTemplateMavenBuildServiceImpl implements CiTemplateMavenBuildServ
     private CiTemplateMavenBuildMapper ciTemplateMavenBuildMapper;
 
 
+    @Override
+    public CiTemplateMavenBuildDTO baseQueryById(Long stepId) {
+        CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = new CiTemplateMavenBuildDTO();
+        ciTemplateMavenBuildDTO.setCiTemplateStepId(stepId);
+        return ciTemplateMavenBuildMapper.selectOne(ciTemplateMavenBuildDTO);
+    }
 }
 
