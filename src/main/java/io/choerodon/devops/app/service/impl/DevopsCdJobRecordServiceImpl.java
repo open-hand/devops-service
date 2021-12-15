@@ -206,14 +206,6 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     }
 
     @Override
-    @Transactional
-    public void updateNotAuditJobStatus(Long jobRecordId, String status) {
-        if (devopsCdJobRecordMapper.updateNotAuditJobStatus(jobRecordId, status) != 1) {
-            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
-        }
-    }
-
-    @Override
     public List<DevopsCdJobRecordDTO> queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status) {
         Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
         Assert.notNull(status, PipelineCheckConstant.ERROR_JOB_STATUS_IS_NULL);
