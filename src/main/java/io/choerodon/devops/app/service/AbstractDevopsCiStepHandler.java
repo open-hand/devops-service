@@ -29,6 +29,13 @@ public abstract class AbstractDevopsCiStepHandler {
 
     public abstract void fillConfigInfo(DevopsCiStepVO devopsCiStepVO);
 
+    /**
+     * 保存步骤信息，如果存在配置信息也一并保存
+     *
+     * @param projectId      项目id
+     * @param devopsCiJobId  所属jobId
+     * @param devopsCiStepVO 步骤相关信息
+     */
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
         // 保存步骤
@@ -44,14 +51,20 @@ public abstract class AbstractDevopsCiStepHandler {
 
     /**
      * 根据配置信息构建gitlab-ci脚本
-     * @param devopsCiStepDTO
-     * @return
+     *
+     * @param devopsCiStepDTO 步骤信息
+     * @return gitlab-ci脚本
      */
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         // 保存步骤
         return GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
     }
 
+    /**
+     * 批量删除步骤信息
+     *
+     * @param devopsCiStepDTOS 要删除的步骤列表
+     */
     @Transactional
     public void batchDeleteCascade(List<DevopsCiStepDTO> devopsCiStepDTOS) {
         Set<Long> ids = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
@@ -64,17 +77,22 @@ public abstract class AbstractDevopsCiStepHandler {
     /**
      * 保存任务配置，如果需要的话，子类负责实现
      *
-     * @param stepId
-     * @param devopsCiStepVO
+     * @param stepId         步骤id
+     * @param devopsCiStepVO 步骤信息
      */
     protected abstract void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO);
 
     /**
      * 批量删除步骤关联的配置（如果有关联的配置，子类则实现相关删除逻辑，没有则不做任何处理）
      *
-     * @param stepIds
+     * @param stepIds 步骤ids
      */
     protected abstract void batchDeleteConfig(Set<Long> stepIds);
 
+    /**
+     * 步骤类型
+     *
+     * @return 步骤类型枚举
+     */
     public abstract DevopsCiStepTypeEnum getType();
 }
