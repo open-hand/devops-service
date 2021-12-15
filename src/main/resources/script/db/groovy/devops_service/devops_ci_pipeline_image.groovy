@@ -41,10 +41,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_image.groovy') {
         """)
     }
     changeSet(author: 'wanghao', id: '2021-12-15-modify-unique-index') {
-        dropUniqueConstraint(tableName: 'devops_ci_pipeline_record',
+        dropUniqueConstraint(tableName: 'devops_ci_pipeline_image',
                 constraintName: 'uk_gitlab_pipeline_id')
-        addNotNullConstraint(tableName: "devops_ci_pipeline_record", columnName: "devops_pipeline_id", columnDataType: "BIGINT UNSIGNED")
-        addUniqueConstraint(tableName: 'devops_ci_pipeline_record',
+        addNotNullConstraint(tableName: "devops_ci_pipeline_image", columnName: "devops_pipeline_id", columnDataType: "BIGINT UNSIGNED")
+        addUniqueConstraint(tableName: 'devops_ci_pipeline_image',
                 constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'devops_pipeline_id,gitlab_pipeline_id,job_name')
     }
 }
