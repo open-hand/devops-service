@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.service.CiTemplateSonarService;
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -24,6 +26,7 @@ import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -40,6 +43,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
     @Autowired
     private DevopsConfigService devopsConfigService;
+    @Autowired
+    private CiTemplateSonarService ciTemplateSonarService;
 
 
     @Override
@@ -52,7 +57,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-
+        CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigDTO.class);
+        devopsCiStepVO.setDevopsCiSonarConfigDTO(devopsCiSonarConfigDTO);
     }
 
     @Override
