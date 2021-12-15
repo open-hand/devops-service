@@ -3,8 +3,6 @@ package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;

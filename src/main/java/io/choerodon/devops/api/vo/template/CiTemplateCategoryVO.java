@@ -2,11 +2,10 @@ package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 流水线模板适用语言表(CiTemplateLanguage)实体类
@@ -23,7 +22,7 @@ public class CiTemplateCategoryVO {
 
     @ApiModelProperty(value = "语言", required = true)
     @NotBlank
-    private String language;
+    private String category;
 
     @ApiModelProperty(value = "层级", required = true)
     @NotBlank
@@ -34,6 +33,12 @@ public class CiTemplateCategoryVO {
 
     @ApiModelProperty(value = "创建者")
     private Long createdBy;
+
+    @ApiModelProperty(value = "关联模板的总数")
+    private Long templateNumber;
+
+    @ApiModelProperty("创建者")
+    private IamUserDTO creator;
 
     public Date getCreationDate() {
         return creationDate;
@@ -60,14 +65,6 @@ public class CiTemplateCategoryVO {
         this.id = id;
     }
 
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
     public String getSourceType() {
         return sourceType;
     }
@@ -76,6 +73,28 @@ public class CiTemplateCategoryVO {
         this.sourceType = sourceType;
     }
 
+    public String getCategory() {
+        return category;
+    }
 
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Long getTemplateNumber() {
+        return templateNumber;
+    }
+
+    public void setTemplateNumber(Long templateNumber) {
+        this.templateNumber = templateNumber;
+    }
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 }
 
