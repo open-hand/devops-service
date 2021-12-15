@@ -16,5 +16,7 @@ public interface CiTemplateJobGroupService {
     CiTemplateJobGroupDTO baseQuery(Long groupId);
 
     List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds);
+
+    List<CiTemplateJobGroupDTO> listGroups(Long projectId);
 }
 
