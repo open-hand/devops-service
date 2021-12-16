@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateCategoryService;
 import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
-import io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper;
+import io.choerodon.devops.infra.mapper.CiTemplateCategoryMapper;
 
 /**
  * 流水线模板适用语言表(CiTemplateLanguage)应用服务
@@ -19,7 +19,7 @@ import io.choerodon.devops.infra.mapper.CiTemplateLanguageMapper;
 @Service
 public class CiTemplateCategoryServiceImpl implements CiTemplateCategoryService {
     @Autowired
-    private CiTemplateLanguageMapper ciTemplateLanguagemapper;
+    private CiTemplateCategoryMapper ciTemplateLanguagemapper;
 
     @Override
     public List<CiTemplateCategoryDTO> listByIds(Set<Long> languageIds) {

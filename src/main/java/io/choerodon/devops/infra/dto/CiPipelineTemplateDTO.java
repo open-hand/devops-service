@@ -1,19 +1,26 @@
-package io.choerodon.devops.api.vo.template;
+package io.choerodon.devops.infra.dto;
 
 /**
  * Created by wangxiang on 2021/12/3
  */
 
 import io.swagger.annotations.ApiModelProperty;
-import java.util.Date;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-import org.hzero.starter.keyencrypt.core.Encrypt;
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+@ModifyAudit
+@VersionAudit
+@Table(name = "devops_ci_pipeline_template")
+public class CiPipelineTemplateDTO extends AuditDomain {
 
-public class DevopsPipelineTemplateVO {
-
-    @Encrypt
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @ApiModelProperty("流水线名称")
@@ -28,7 +35,7 @@ public class DevopsPipelineTemplateVO {
     @ApiModelProperty("是否预置")
     private Boolean builtIn;
 
-    @ApiModelProperty("模板适用语言")
+    @ApiModelProperty("分类id")
     private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")
@@ -39,19 +46,6 @@ public class DevopsPipelineTemplateVO {
 
     @ApiModelProperty("镜像地址")
     private String image;
-
-    @ApiModelProperty("适用变成语言对象")
-    private CiTemplateCategoryVO ciTemplateCategoryVO;
-
-    @ApiModelProperty(value = "创建时间")
-    private Date creationDate;
-
-    @ApiModelProperty(value = "创建者")
-    private Long createdBy;
-
-    @ApiModelProperty("创建者")
-    private IamUserDTO creator;
-
 
     public Long getId() {
         return id;
@@ -93,7 +87,6 @@ public class DevopsPipelineTemplateVO {
         this.builtIn = builtIn;
     }
 
-
     public Long getCiTemplateCategoryId() {
         return ciTemplateCategoryId;
     }
@@ -124,38 +117,5 @@ public class DevopsPipelineTemplateVO {
 
     public void setImage(String image) {
         this.image = image;
-    }
-
-
-    public CiTemplateCategoryVO getCiTemplateCategoryVO() {
-        return ciTemplateCategoryVO;
-    }
-
-    public void setCiTemplateCategoryVO(CiTemplateCategoryVO ciTemplateCategoryVO) {
-        this.ciTemplateCategoryVO = ciTemplateCategoryVO;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public IamUserDTO getCreator() {
-        return creator;
-    }
-
-    public void setCreator(IamUserDTO creator) {
-        this.creator = creator;
     }
 }
