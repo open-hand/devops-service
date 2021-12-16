@@ -21,4 +21,29 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_image.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline_image',
                 constraintName: 'uk_gitlab_pipeline_id', columnNames: 'gitlab_pipeline_id,job_name')
     }
+
+    changeSet(author: 'wanghao', id: '2021-12-15-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_image') {
+            column(name: "devops_pipeline_id", type: "BIGINT UNSIGNED")
+        }
+    }
+    changeSet(author: 'wanghao', id: '2021-12-15-fix-data') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_ci_pipeline_record")
+        }
+        sql("""
+            update devops_ci_pipeline_image dcpi
+            SET dcpi.devops_pipeline_id = 
+            (SELECT dcpr.ci_pipeline_id 
+                FROM devops_ci_pipeline_record dcpr 
+                WHERE dcpr.gitlab_pipeline_id = dcpi.gitlab_pipeline_id 
+                limit 1)
+        """)
+    }
+    changeSet(author: 'wanghao', id: '2021-12-15-modify-unique-index') {
+        dropUniqueConstraint(tableName: 'devops_ci_pipeline_image',
+                constraintName: 'uk_gitlab_pipeline_id')
+        addUniqueConstraint(tableName: 'devops_ci_pipeline_image',
+                constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'devops_pipeline_id,gitlab_pipeline_id,job_name')
+    }
 }

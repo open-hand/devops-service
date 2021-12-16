@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +10,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineImageMapper;
@@ -25,6 +28,9 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Autowired
     private CiPipelineImageMapper ciPipelineImageMapper;
     @Autowired
+    @Lazy
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
     private AppServiceService appServiceService;
 
     @Transactional(rollbackFor = Exception.class)
@@ -37,7 +43,9 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
 
         // 异常包装
         ExceptionUtil.wrapExWithCiEx(() -> {
-            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
+            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+
+            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciCdPipelineDTO.getId(), ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
             if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
                 CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
                 BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
@@ -54,9 +62,10 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     }
 
     @Override
-    public CiPipelineImageDTO queryByGitlabPipelineId(Long gitlabPipelineId, String jobName) {
+    public CiPipelineImageDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
+        ciPipelineImageDTO.setDevopsPipelineId(devopsPipelineId);
         ciPipelineImageDTO.setJobName(jobName);
         return ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
     }
