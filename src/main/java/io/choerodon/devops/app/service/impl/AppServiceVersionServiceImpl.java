@@ -240,7 +240,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
 
         // 更新版本纪录和values纪录
-
         if (oldVersionInDb != null) {
             // 重新上传chart包后更新values
             updateValues(oldVersionInDb.getValueId(), values);
