@@ -53,7 +53,7 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty(value = "流水线模板镜像地址", required = true)
     @NotBlank
-    private String runnerImages;
+    private String image;
 
     @ApiModelProperty(value = "层级", required = true)
     @NotBlank
@@ -111,12 +111,12 @@ public class CiTemplateJobDTO extends AuditDomain {
         this.groupId = groupId;
     }
 
-    public String getRunnerImages() {
-        return runnerImages;
+    public String getImage() {
+        return image;
     }
 
-    public void setRunnerImages(String runnerImages) {
-        this.runnerImages = runnerImages;
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public String getSourceType() {
