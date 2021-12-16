@@ -40,6 +40,14 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "任务模板下面的步骤模板")
     private List<CiTemplateStepVO> ciTemplateStepVOS;
 
+    public List<CiTemplateStepVO> getCiTemplateStepVOS() {
+        return ciTemplateStepVOS;
+    }
+
+    public void setCiTemplateStepVOS(List<CiTemplateStepVO> ciTemplateStepVOS) {
+        this.ciTemplateStepVOS = ciTemplateStepVOS;
+    }
+
     public Long getRelateStageId() {
         return relateStageId;
     }
