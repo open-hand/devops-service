@@ -10,8 +10,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiTemplateJobGroupMapper;
 
 /**
@@ -23,25 +21,22 @@ import io.choerodon.devops.infra.mapper.CiTemplateJobGroupMapper;
 @Service
 public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService {
     @Autowired
-    private CiTemplateJobGroupMapper ciTemplateJobGroupmapper;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
+    private CiTemplateJobGroupMapper ciTemplateJobGroupMapper;
 
 
     @Override
     public CiTemplateJobGroupDTO baseQuery(Long groupId) {
-        return ciTemplateJobGroupmapper.selectByPrimaryKey(groupId);
+        return ciTemplateJobGroupMapper.selectByPrimaryKey(groupId);
     }
 
     @Override
     public List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds) {
-        return ciTemplateJobGroupmapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(groupIds));
+        return ciTemplateJobGroupMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(groupIds));
     }
 
     @Override
-    public List<CiTemplateJobGroupDTO> listGroups(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        return null;
+    public List<CiTemplateJobGroupDTO> listAllGroups() {
+        return ciTemplateJobGroupMapper.selectAll();
     }
 }
 
