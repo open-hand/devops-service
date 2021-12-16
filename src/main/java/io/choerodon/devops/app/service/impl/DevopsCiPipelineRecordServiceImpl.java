@@ -591,7 +591,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
                 fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                //是否本次流水线有镜像的扫描结果 有则展示
+                fillImageScanInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
+                // todo 待删除
 //                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
 //                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
 //                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
@@ -637,36 +640,29 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //                }
 
 
-                if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
-                        && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
-                    List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-                    if (!CollectionUtils.isEmpty(ciConfigVOConfig)) {
-                        List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
-                        //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
-                        if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
-                            //添加job里面构建结果的下载的地址
-//                            fillJarInfo(projectId, devopsCiJobRecordVO, gitlabPipelineId);
-                        }
-                        //填充docker 下载的命令  需要包含docker的构建命令
-                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                            fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
-                        }
-                        // 是否包含docker构建步骤
-                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                            //是否本次流水线有镜像的扫描结果 有则展示
-                            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-                            if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
-                                devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
-                            } else {
-                                devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
-                            }
-                        }
-
-                    }
-
-                }
+//                if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
+//                        && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+//                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
+//                    List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+//                    if (!CollectionUtils.isEmpty(ciConfigVOConfig)) {
+//                        List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
+//                        //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
+//                        if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
+//                            //添加job里面构建结果的下载的地址
+////                            fillJarInfo(projectId, devopsCiJobRecordVO, gitlabPipelineId);
+//                        }
+//                        //填充docker 下载的命令  需要包含docker的构建命令
+//                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+//                            fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
+//                        }
+//                        // 是否包含docker构建步骤
+//                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+//
+//                        }
+//
+//                    }
+//
+//                }
 
 
             });
@@ -682,6 +678,18 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
+    }
+
+    private void fillImageScanInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+        devopsImageScanResultDTO.setDevopsPipelineId(devopsPipelineId);
+        devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsImageScanResultDTO.setJobName(devopsCiJobRecordVO.getName());
+        if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
+            devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+        } else {
+            devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
+        }
     }
 
     private void fillChartInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
