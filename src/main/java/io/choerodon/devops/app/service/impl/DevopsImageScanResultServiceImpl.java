@@ -20,7 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
@@ -42,6 +46,10 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
@@ -49,7 +57,13 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file) {
+    public void resolveImageScanJson(Long gitlabPipelineId,
+                                     Long jobId,
+                                     Date startDate,
+                                     Date endDate,
+                                     MultipartFile file,
+                                     String token,
+                                     String jobName) {
         LOGGER.info(">>>>>>>>>>>>>>>>>>startDate:{},endDate:{}", startDate, endDate);
         //file 有可能为null,如果镜像没有漏洞这个报告文件就是空的
         String content = null;
@@ -64,6 +78,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             handEmptyScanResult(gitlabPipelineId, startDate, endDate);
             return;
         }
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
+
+        Long devopsPipelineId = ciCdPipelineDTO.getId();
+
+
         imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
         });
         if (CollectionUtils.isEmpty(imageScanResultVOS)) {
@@ -72,10 +92,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         }
         //查询数据库是否存在，不存在则插入
         DevopsImageScanResultDTO existScanResult = new DevopsImageScanResultDTO();
+        existScanResult.setDevopsPipelineId(devopsPipelineId);
         existScanResult.setGitlabPipelineId(gitlabPipelineId);
+        existScanResult.setJobName(jobName);
         if (devopsImageScanResultMapper.selectCount(existScanResult) > 0) {
             //批量更新
-            devopsImageScanResultMapper.updateScanDate(startDate, endDate, gitlabPipelineId);
+            devopsImageScanResultMapper.updateScanDate(startDate, endDate, devopsPipelineId, gitlabPipelineId, jobName);
         } else {
             //批量插入
             ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
@@ -84,6 +106,9 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
             vulnerabilities.forEach(vulnerabilitieVO -> {
                 DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+                devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+                devopsImageScanResultDTO.setDevopsPipelineId(devopsPipelineId);
+                devopsImageScanResultDTO.setJobName(jobName);
                 devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
                 BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
                 devopsImageScanResultDTO.setStartDate(startDate);
