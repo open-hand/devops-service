@@ -14,7 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 15:58:18
  */
-public interface CiTemplateLanguageMapper extends BaseMapper<CiTemplateCategoryDTO> {
+public interface CiTemplateCategoryMapper extends BaseMapper<CiTemplateCategoryDTO> {
 
     List<CiTemplateCategoryDTO> listByIds(@Param("ids") Set<Long> ids);
 }
