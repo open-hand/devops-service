@@ -36,6 +36,9 @@ public class DevopsCiPipelineSonarDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    @ApiModelProperty("devops流水线id")
+    private Long devopsPipelineId;
+
     @ApiModelProperty(value = "gitlabPipelineId", required = true)
     @NotNull
     private Long gitlabPipelineId;
@@ -48,6 +51,19 @@ public class DevopsCiPipelineSonarDTO extends AuditDomain {
     @NotBlank
     private String scannerType;
 
+    public DevopsCiPipelineSonarDTO(Long devopsPipelineId, @NotNull Long gitlabPipelineId, @NotBlank String jobName) {
+        this.devopsPipelineId = devopsPipelineId;
+        this.gitlabPipelineId = gitlabPipelineId;
+        this.jobName = jobName;
+    }
+
+    public Long getDevopsPipelineId() {
+        return devopsPipelineId;
+    }
+
+    public void setDevopsPipelineId(Long devopsPipelineId) {
+        this.devopsPipelineId = devopsPipelineId;
+    }
 
     public Long getId() {
         return id;

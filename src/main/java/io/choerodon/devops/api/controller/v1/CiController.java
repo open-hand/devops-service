@@ -44,6 +44,8 @@ public class CiController {
 
     @Autowired
     private DevopsImageScanResultService devopsImageScanResultService;
+    @Autowired
+    private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -148,6 +150,23 @@ public class CiController {
         return ResponseEntity.ok().build();
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "存储sonar信息")
+    @PostMapping("/save_sonar_info")
+    public ResponseEntity<Void> saveSonarInfo(
+            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
+            @RequestParam("job_id") Long jobId,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "token", required = true)
+            @RequestParam(value = "scanner_type") String scannerType) {
+        devopsCiPipelineSonarService.saveSonarInfo(jobId, gitlabPipelineId, jobName, token, scannerType);
+        return ResponseEntity.ok().build();
+    }
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "判断平台是否有配置sonarqube")
