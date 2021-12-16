@@ -332,12 +332,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
                 // sonar任务执行成功后，缓存sonar信息到redis
-                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
-                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
-                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
-                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                }
+                // todo v1.2待删除
+//                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
+//                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
+//                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+//                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+//                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+//                }
             }
         });
     }
