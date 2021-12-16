@@ -8,6 +8,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
 import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
 
 /**
  * 〈功能简述〉
@@ -81,11 +82,18 @@ public class DevopsCiJobRecordVO {
 
     @ApiModelProperty("ci任务产生的chart信息")
     private PipelineChartInfo pipelineChartInfo;
-    //    @ApiModelProperty("ci任务产生的sonar信息")
-//    private PipelineChartInfo pipelineSonarInfo;
+    @ApiModelProperty("ci任务产生的sonar信息")
+    private PipelineSonarInfo pipelineSonarInfo;
     @ApiModelProperty("ci任务产生的镜像信息")
     private PipelineImageInfoVO pipelineImageInfo;
 
+    public PipelineSonarInfo getPipelineSonarInfo() {
+        return pipelineSonarInfo;
+    }
+
+    public void setPipelineSonarInfo(PipelineSonarInfo pipelineSonarInfo) {
+        this.pipelineSonarInfo = pipelineSonarInfo;
+    }
 
     public PipelineImageInfoVO getPipelineImageInfo() {
         return pipelineImageInfo;

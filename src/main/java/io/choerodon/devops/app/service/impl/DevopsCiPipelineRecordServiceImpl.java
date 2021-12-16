@@ -5,7 +5,6 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +31,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
 import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -127,7 +127,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private CiPipelineImageService ciPipelineImageService;
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
-
+    @Autowired
+    private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
 
     @Value("${services.gateway.url}")
     private String api;
@@ -581,42 +582,40 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             calculateStageStatus(devopsCiStageRecordVO, statusMap);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
             latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
-                // 添加Sonar扫描信息
 
                 // 添加chart版本信息
-                DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
-                        gitlabPipelineId,
-                        devopsCiJobRecordVO.getName());
-                if (devopsCiPipelineChartDTO != null) {
-                    devopsCiJobRecordVO.setPipelineChartInfo(new PipelineChartInfo(devopsCiPipelineChartDTO.getChartVersion()));
-                }
-                // 添加构建相关信息
+                fillChartInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                // 添加Sonar扫描信息
+                fillSonarInfo(projectId, ciCdPipelineVO.getAppServiceId(), devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
+                //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
+                fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
-                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
-                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
-                    }
-                    // 执行成功的添加sonar信息
-                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
-                        SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                        if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                            List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                            List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
-
-                            sonarContents.forEach(v -> {
-                                if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
-                                    devopsCiJobRecordVO.setCodeCoverage(v.getValue());
-                                }
-                            });
-                            devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
-                        }
-                    }
-
-                }
+//                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+//                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+//                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+//                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+//                    }
+//                    // 执行成功的添加sonar信息
+//                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+//                        SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+//                        if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+//                            List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+//                            List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+//                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+//                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+//
+//                            sonarContents.forEach(v -> {
+//                                if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+//                                    devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+//                                }
+//                            });
+//                            devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+//                        }
+//                    }
+//
+//                }
                 //release阶段，添加版本的信息
 //                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
 //                        && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
@@ -637,9 +636,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //
 //                }
 
-                //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
-                fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
-                fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
                         && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
@@ -686,6 +682,35 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
+    }
+
+    private void fillChartInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (devopsCiPipelineChartDTO != null) {
+            devopsCiJobRecordVO.setPipelineChartInfo(new PipelineChartInfo(devopsCiPipelineChartDTO.getChartVersion()));
+        }
+    }
+
+    private void fillSonarInfo(Long projectId, Long appServiceId, Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO.getName());
+        if (devopsCiPipelineSonarDTO != null) {
+            SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
+            if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+
+                sonarContents.forEach(v -> {
+                    if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                        devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                    }
+                });
+                devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS));
+            }
+        }
     }
 
     private void fillDockerInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
