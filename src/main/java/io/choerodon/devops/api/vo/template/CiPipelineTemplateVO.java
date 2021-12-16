@@ -7,6 +7,7 @@ package io.choerodon.devops.api.vo.template;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 
+import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -52,6 +53,17 @@ public class CiPipelineTemplateVO {
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
 
+    @ApiModelProperty("流水线模板的阶段模板")
+    private List<CiTemplateStageVO> templateStageVOS;
+
+
+    public List<CiTemplateStageVO> getTemplateStageVOS() {
+        return templateStageVOS;
+    }
+
+    public void setTemplateStageVOS(List<CiTemplateStageVO> templateStageVOS) {
+        this.templateStageVOS = templateStageVOS;
+    }
 
     public Long getId() {
         return id;
