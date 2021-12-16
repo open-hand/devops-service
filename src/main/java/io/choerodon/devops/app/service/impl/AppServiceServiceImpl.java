@@ -14,8 +14,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -729,13 +727,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
 
-            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
-            List<IamUserDTO> userResult;
-            try {
-                userResult = userFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new CommonException("Failed to get user", e);
-            }
+//            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
+//            List<IamUserDTO> userResult;
+//            try {
+//                userResult = userFuture.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                throw new CommonException("Failed to get user", e);
+//            }
+            List<IamUserDTO> userResult = baseServiceClientOperator.listUsersByIds(distinctIds);
 
             Map<Long, IamUserDTO> users = userResult.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
             // 收集失败的应用服务的id
