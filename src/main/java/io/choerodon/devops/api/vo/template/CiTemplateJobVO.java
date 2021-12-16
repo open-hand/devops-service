@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
@@ -35,6 +36,9 @@ public class CiTemplateJobVO {
 
     private Long relateStageId;
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    @ApiModelProperty(value = "任务模板下面的步骤模板")
+    private List<CiTemplateStepVO> ciTemplateStepVOS;
 
     public Long getRelateStageId() {
         return relateStageId;
