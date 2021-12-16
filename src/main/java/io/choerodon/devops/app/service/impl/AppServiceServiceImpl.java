@@ -1256,18 +1256,20 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+            StringBuilder stringBuilder = new StringBuilder(ciStr);
 
             // 查询应用服务关联的流水线, 添加自定义函数
             CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-            List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
-            List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
-            List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
-            functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
-            functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
-            StringBuilder stringBuilder = new StringBuilder(ciStr);
-            stringBuilder.append(System.lineSeparator());
-            if (!CollectionUtils.isEmpty(functionDTOS)) {
-                functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+            if (ciCdPipelineDTO != null) {
+                List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
+                List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
+                List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
+                functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
+                functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
+                stringBuilder.append(System.lineSeparator());
+                if (!CollectionUtils.isEmpty(functionDTOS)) {
+                    functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+                }
             }
             return stringBuilder.toString();
         } catch (CommonException e) {
