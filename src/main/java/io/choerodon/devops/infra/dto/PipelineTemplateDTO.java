@@ -25,7 +25,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_ci_pipeline_template")
+@Table(name = "devops_ci_template_pipeline")
 public class PipelineTemplateDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_NAME = "name";

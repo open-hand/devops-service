@@ -12,7 +12,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
-public class CiPipelineTemplateVO {
+public class CiTemplatePipelineVO {
 
     @Encrypt
     private Long id;

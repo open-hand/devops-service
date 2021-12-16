@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_template.groovy') {
-    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_pipeline_template') {
-        createTable(tableName: "devops_ci_pipeline_template", remarks: '流水线模板表') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_pipeline.groovy') {
+    changeSet(author: 'wx', id: '2021-11-29-create-table-devops_ci_template_pipeline') {
+        createTable(tableName: "devops_ci_template_pipeline", remarks: '流水线模板表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -37,8 +37,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_template.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-        addUniqueConstraint(tableName: 'devops_ci_pipeline_template', constraintName: 'uk_name_source_type_source_id', columnNames: 'name,source_type,source_id')
-        createIndex(tableName: 'devops_ci_pipeline_template', indexName: 'idx_source_type_source_id') {
+        addUniqueConstraint(tableName: 'devops_ci_template_pipeline', constraintName: 'uk_name_source_type_source_id', columnNames: 'name,source_type,source_id')
+        createIndex(tableName: 'devops_ci_template_pipeline', indexName: 'idx_source_type_source_id') {
             column(name: 'source_type')
             column(name: 'source_id')
         }
