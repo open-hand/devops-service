@@ -282,6 +282,8 @@ function trivyScanImage() {
     -H 'Expect:' \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_id=$1" \
+    -F "token=${Token}" \
+    -F "job_name=${CI_JOB_NAME}" \
     -F "start_date=${startDate}" \
     -F "end_date=${endDate}" \
     -F "file=@results-${CI_COMMIT_TAG}.json" \

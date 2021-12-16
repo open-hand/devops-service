@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.Date;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
@@ -14,7 +15,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsImageScanResultService {
 
-    void resolveImageScanJson(Long gitlabPipelineId,Long jobId, Date startDate, Date endDate, MultipartFile file);
+    void resolveImageScanJson(Long gitlabPipelineId, Long jobId, Date startDate, Date endDate, MultipartFile file, String token, String jobName);
 
     Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options);
 

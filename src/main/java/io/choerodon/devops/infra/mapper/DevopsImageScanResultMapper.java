@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.Date;
 import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
@@ -17,5 +18,9 @@ public interface DevopsImageScanResultMapper extends BaseMapper<DevopsImageScanR
 
     int insertScanResultBatch(@Param("devopsImageScanResultDTOS") List<DevopsImageScanResultDTO> devopsImageScanResultDTOS);
 
-    void updateScanDate(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("gitlabPipelineId") Long gitlabPipelineId);
+    void updateScanDate(@Param("startDate") Date startDate,
+                        @Param("endDate") Date endDate,
+                        @Param("devopsPipelineId") Long devopsPipelineId,
+                        @Param("gitlabPipelineId") Long gitlabPipelineId,
+                        @Param("jobName") String jobName);
 }
