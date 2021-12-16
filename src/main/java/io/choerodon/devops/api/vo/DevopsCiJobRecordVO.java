@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
+import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
 
 /**
  * 〈功能简述〉
@@ -69,7 +70,7 @@ public class DevopsCiJobRecordVO {
     /**
      * ci生成jar包地址
      */
-    private DownloadMavenJarVO downloadMavenJarVO;
+    private PipelineJarInfoVO pipelineJarInfoVO;
 
     /**
      * 是否有镜像扫描
@@ -80,11 +81,19 @@ public class DevopsCiJobRecordVO {
 
     @ApiModelProperty("ci任务产生的chart信息")
     private PipelineChartInfo pipelineChartInfo;
-//    @ApiModelProperty("ci任务产生的sonar信息")
+    //    @ApiModelProperty("ci任务产生的sonar信息")
 //    private PipelineChartInfo pipelineSonarInfo;
-//    @ApiModelProperty("ci任务产生的镜像信息")
-//    private PipelineChartInfo pipelineImageInfo;
+    @ApiModelProperty("ci任务产生的镜像信息")
+    private PipelineImageInfoVO pipelineImageInfo;
 
+
+    public PipelineImageInfoVO getPipelineImageInfo() {
+        return pipelineImageInfo;
+    }
+
+    public void setPipelineImageInfo(PipelineImageInfoVO pipelineImageInfo) {
+        this.pipelineImageInfo = pipelineImageInfo;
+    }
 
     public PipelineChartInfo getPipelineChartInfo() {
         return pipelineChartInfo;
@@ -110,12 +119,12 @@ public class DevopsCiJobRecordVO {
         this.imageScan = imageScan;
     }
 
-    public DownloadMavenJarVO getDownloadMavenJarVO() {
-        return downloadMavenJarVO;
+    public PipelineJarInfoVO getPipelineJarInfoVO() {
+        return pipelineJarInfoVO;
     }
 
-    public void setDownloadMavenJarVO(DownloadMavenJarVO downloadMavenJarVO) {
-        this.downloadMavenJarVO = downloadMavenJarVO;
+    public void setPipelineJarInfoVO(PipelineJarInfoVO pipelineJarInfoVO) {
+        this.pipelineJarInfoVO = pipelineJarInfoVO;
     }
 
     public String getDownloadImage() {

@@ -31,6 +31,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
+import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -122,6 +123,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
 
 
     @Value("${services.gateway.url}")
@@ -585,6 +590,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (devopsCiPipelineChartDTO != null) {
                     devopsCiJobRecordVO.setPipelineChartInfo(new PipelineChartInfo(devopsCiPipelineChartDTO.getChartVersion()));
                 }
+                // 添加构建相关信息
+
 
                 if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
                     if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
@@ -611,25 +618,29 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
                 }
                 //release阶段，添加版本的信息
-                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
-                        && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
-                    // 只有构建成功的才展示版本信息
-                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineId);
-                    if (!Objects.isNull(ciCdPipelineDTO)) {
-                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
-                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
-                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                        appServiceVersionDTO.setCommit(commitSha);
-                        appServiceVersionDTO.setRef(ref);
-                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
-                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
-                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
-                        }
-                    }
+//                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
+//                        && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+//                    // 只有构建成功的才展示版本信息
+//                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineId);
+//                    if (!Objects.isNull(ciCdPipelineDTO)) {
+//                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
+//                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
+//                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+//                        appServiceVersionDTO.setCommit(commitSha);
+//                        appServiceVersionDTO.setRef(ref);
+//                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
+//                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+//                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+//                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+//                        }
+//                    }
+//
+//                }
 
-                }
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
+                fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+
                 if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
                         && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
                     CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
@@ -639,7 +650,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
                         if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
                             //添加job里面构建结果的下载的地址
-                            fillRepoUrl(projectId, devopsCiJobRecordVO, gitlabPipelineId);
+//                            fillJarInfo(projectId, devopsCiJobRecordVO, gitlabPipelineId);
                         }
                         //填充docker 下载的命令  需要包含docker的构建命令
                         if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
@@ -677,6 +688,65 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordVO;
     }
 
+    private void fillDockerInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsPipelineId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (pipelineImageDTO == null) {
+            return;
+        }
+        devopsCiJobRecordVO.setPipelineImageInfo(new PipelineImageInfoVO(pipelineImageDTO.getImageTag(),
+                "docker pull " + pipelineImageDTO.getImageTag()));
+    }
+
+    private void fillJarInfo(Long projectId, Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsPipelineId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (Objects.isNull(pipelineMavenDTO)) {
+            return;
+        }
+        //返回代理地址的仓库和用户名密码
+        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
+        //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
+        if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
+            // 将maven的setting文件转换为java对象
+            Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+            if (!Objects.isNull(c7nNexusRepoDTO)) {
+                Server server = null;
+                if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+                    server = getServer(settings, c7nNexusRepoDTO);
+                }
+                //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                //区分RELEASE 和 SNAPSHOT
+                String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+                    downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                            pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                            BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+                } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+                    downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                } else {
+                    // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+                    downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                }
+                PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();
+                pipelineJarInfoVO.setDownloadUrl(downloadUrl);
+                pipelineJarInfoVO.setGroupId(pipelineMavenDTO.getGroupId());
+                pipelineJarInfoVO.setArtifactId(pipelineMavenDTO.getArtifactId());
+                pipelineJarInfoVO.setVersion(pipelineMavenDTO.getVersion());
+                pipelineJarInfoVO.setServer(server);
+                devopsCiJobRecordVO.setPipelineJarInfoVO(pipelineJarInfoVO);
+            } else {
+                LOGGER.error("error.query.repo.nexus.is.null");
+            }
+        }
+    }
+
     private void fillDockerPull(DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
@@ -687,63 +757,63 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillRepoUrl(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
-        if (Objects.isNull(gitlabPipelineId)) {
-            return;
-        }
-        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
-        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
-        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
-        if (Objects.isNull(pipelineMavenDTO)) {
-            return;
-        }
-        //返回代理地址的仓库和用户名密码
-        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
-        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
-        List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
-                StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                        || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
-                .collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
-            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
-            if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
-                // 将maven的setting文件转换为java对象
-                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-                if (!Objects.isNull(c7nNexusRepoDTO)) {
-                    Server server = null;
-                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
-                        server = getServer(settings, c7nNexusRepoDTO);
-                    }
-                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //区分RELEASE 和 SNAPSHOT
-                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
-                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
-                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
-                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
-                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-                    } else {
-                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-                    }
-                    DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
-                    downloadMavenJarVO.setDownloaJar(downloadUrl);
-                    downloadMavenJarVO.setServer(server);
-                    devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
-                } else {
-                    LOGGER.error("error.query.repo.nexus.is.null");
-                }
-            }
-        }
-
-
-    }
+//    private void fillJarInfo(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
+//        if (Objects.isNull(gitlabPipelineId)) {
+//            return;
+//        }
+//        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+//        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+//        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
+//        if (Objects.isNull(pipelineMavenDTO)) {
+//            return;
+//        }
+//        //返回代理地址的仓库和用户名密码
+//        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
+//        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+//        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
+//        List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
+//                StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+//                        || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
+//                .collect(Collectors.toList());
+//        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+//            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
+//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
+//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
+//                // 将maven的setting文件转换为java对象
+//                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
+//                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+//                if (!Objects.isNull(c7nNexusRepoDTO)) {
+//                    Server server = null;
+//                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+//                        server = getServer(settings, c7nNexusRepoDTO);
+//                    }
+//                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+//                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+//                    //区分RELEASE 和 SNAPSHOT
+//                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+//                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+//                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+//                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+//                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+//                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+//                    } else {
+//                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+//                    }
+//                    PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();
+//                    pipelineJarInfoVO.setDownloadUrl(downloadUrl);
+//                    pipelineJarInfoVO.setServer(server);
+//                    devopsCiJobRecordVO.setDownloadMavenJarVO(pipelineJarInfoVO);
+//                } else {
+//                    LOGGER.error("error.query.repo.nexus.is.null");
+//                }
+//            }
+//        }
+//
+//
+//    }
 
     private String getReleaseUrl(CiPipelineMavenDTO pipelineMavenDTO, C7nNexusRepoDTO c7nNexusRepoDTO, String downloadUrl) {
         downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
