@@ -16,8 +16,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @VersionAudit
-@Table(name = "devops_ci_pipeline_template")
-public class CiPipelineTemplateDTO extends AuditDomain {
+@Table(name = "devops_ci_template_pipeline")
+public class CiTemplatePipelineDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
