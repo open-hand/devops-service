@@ -278,6 +278,30 @@ function saveJarMetadata() {
   fi
 }
 
+############################### 存储sonar扫描的信息 ################################
+# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
+function saveSonarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "job_id=$1" \
+    -F "sequence=$2" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    "${CHOERODON_URL}/devops/ci/save_sonar_info" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 # $2 ciJobId    猪齿鱼的CI的JOB的id
 function trivyScanImage() {
