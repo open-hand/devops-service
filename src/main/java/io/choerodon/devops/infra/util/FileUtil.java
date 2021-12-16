@@ -775,7 +775,7 @@ public class FileUtil {
             }
 
         } catch (Exception e) {
-            logger.error("unpack error", e);
+            throw new CommonException("unpack error", e);
         }
     }
 
