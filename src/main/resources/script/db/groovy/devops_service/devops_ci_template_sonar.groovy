@@ -15,7 +15,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_sonar.groovy') {
             column(name: 'config_type', type: 'VARCHAR(255)', remarks: '配置类型, 如果是default就不需要其他字段 / default或custom') {
                 constraints(nullable: false)
             }
-            column(name: 'skipTests', type: 'TINYINT UNSIGNED', remarks: '是否跳过单测')
+            column(name: 'skip_tests', type: 'TINYINT UNSIGNED', remarks: '是否跳过单测') {
+                constraints(nullable: false)
+            }
 
             column(name: 'sources', type: 'VARCHAR(1024)', remarks: '要扫描的文件目录，多个文件夹使用,隔开')
 
