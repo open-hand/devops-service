@@ -41,7 +41,7 @@ public class DevopsCiMavenPublishConfigDTO extends AuditDomain {
 
     @Encrypt
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
-    private Long nexusRepoIds;
+    private Long nexusRepoId;
 
     @ApiModelProperty("所属步骤id")
     private Long stepId;
@@ -86,11 +86,11 @@ public class DevopsCiMavenPublishConfigDTO extends AuditDomain {
         this.mavenSettings = mavenSettings;
     }
 
-    public Long getNexusRepoIds() {
-        return nexusRepoIds;
+    public Long getNexusRepoId() {
+        return nexusRepoId;
     }
 
-    public void setNexusRepoIds(Long nexusRepoIds) {
-        this.nexusRepoIds = nexusRepoIds;
+    public void setNexusRepoId(Long nexusRepoId) {
+        this.nexusRepoId = nexusRepoId;
     }
 }
