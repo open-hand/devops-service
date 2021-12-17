@@ -52,16 +52,15 @@ public class CiTemplateDockerDTO extends AuditDomain {
     private String dockerContextDir;
 
     @ApiModelProperty(value = "是否跳过tls", required = true)
-    @NotNull
-    private Long skipDockerTlsVerify;
+    private Boolean skipDockerTlsVerify;
 
     @ApiModelProperty(value = "是否是否开启镜像扫描", required = true)
     @NotNull
-    private Long imageScan;
+    private Boolean imageScan;
 
     @ApiModelProperty(value = "是否开启门禁检查", required = true)
     @NotNull
-    private Long securityControl;
+    private Boolean securityControl;
 
     @ApiModelProperty(value = "漏洞危险程度")
     private String severity;
@@ -131,30 +130,28 @@ public class CiTemplateDockerDTO extends AuditDomain {
         this.dockerContextDir = dockerContextDir;
     }
 
-    public Long getSkipDockerTlsVerify() {
+    public Boolean getSkipDockerTlsVerify() {
         return skipDockerTlsVerify;
     }
 
-    public void setSkipDockerTlsVerify(Long skipDockerTlsVerify) {
+    public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
         this.skipDockerTlsVerify = skipDockerTlsVerify;
     }
 
-    public Long getImageScan() {
+    public Boolean getImageScan() {
         return imageScan;
     }
 
-    public void setImageScan(Long imageScan) {
+    public void setImageScan(Boolean imageScan) {
         this.imageScan = imageScan;
     }
 
-    public Long getSecurityControl() {
+    public Boolean getSecurityControl() {
         return securityControl;
     }
 
-    public void setSecurityControl(Long securityControl) {
+    public void setSecurityControl(Boolean securityControl) {
         this.securityControl = securityControl;
     }
-
-
 }
 
