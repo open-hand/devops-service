@@ -710,7 +710,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCiStepVO> devopsCiStepVOList = ConvertUtils.convertList(ciStepDTOS, DevopsCiStepVO.class);
             devopsCiStepVOList.forEach(ciStepVO -> {
                 AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(ciStepVO.getType());
-                handler.fillTemplateStepConfigInfo(ciStepVO);
+                handler.fillStepConfigInfo(ciStepVO);
             });
             devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
         });
