@@ -518,10 +518,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private void batchSaveStep(Long projectId, Long jobId, List<DevopsCiStepVO> devopsCiStepVOList) {
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
-            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
-            if (devopsCiStepHandler == null) {
-                throw new CommonException(PipelineCheckConstant.ERROR_STEP_TYPE_IS_INVALID);
-            }
+            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
         });
     }

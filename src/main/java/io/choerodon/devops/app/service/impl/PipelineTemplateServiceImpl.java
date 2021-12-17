@@ -59,6 +59,12 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
         Set<Long> categoryIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateCategoryId).collect(Collectors.toSet());
         List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateCategoryService.listByIds(categoryIds);
+        Map<Long, CiTemplateCategoryDTO> templateCategoryDTOMap = ciTemplateCategoryDTOS.stream().collect(Collectors.toMap(CiTemplateCategoryDTO::getId, Function.identity()));
+
+        pipelineTemplateVOS.forEach(pipelineTemplateVO -> {
+            CiTemplateCategoryDTO ciTemplateCategoryDTO = templateCategoryDTOMap.get(pipelineTemplateVO.getCiTemplateCategoryId());
+            pipelineTemplateVO.setCiTemplateCategoryDTO(ciTemplateCategoryDTO);
+        });
 
         return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }
