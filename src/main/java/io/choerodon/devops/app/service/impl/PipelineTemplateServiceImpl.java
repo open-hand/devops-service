@@ -59,6 +59,12 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
         Set<Long> categoryIds = pipelineTemplateVOS.stream().map(PipelineTemplateVO::getCiTemplateCategoryId).collect(Collectors.toSet());
         List<CiTemplateCategoryDTO> ciTemplateCategoryDTOS = ciTemplateCategoryService.listByIds(categoryIds);
+        Map<Long, CiTemplateCategoryDTO> templateCategoryDTOMap = ciTemplateCategoryDTOS.stream().collect(Collectors.toMap(CiTemplateCategoryDTO::getId, Function.identity()));
+
+        pipelineTemplateVOS.forEach(pipelineTemplateVO -> {
+            CiTemplateCategoryDTO ciTemplateCategoryDTO = templateCategoryDTOMap.get(pipelineTemplateVO.getCiTemplateCategoryId());
+            pipelineTemplateVO.setCiTemplateCategoryDTO(ciTemplateCategoryDTO);
+        });
 
         return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }
@@ -125,7 +131,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                             DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
                             // 添加步骤关联的配置信息
                             AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
-                            ciTemplateStepHandler.fillConfigInfo(devopsCiStepVO);
+                            ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
                             devopsCiStepVOList.add(devopsCiStepVO);
                         });
                         devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);

@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo.template;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import javax.validation.constraints.NotBlank;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -39,6 +40,17 @@ public class CiTemplateCategoryVO {
 
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
+    @ApiModelProperty(value = "分类图标base64格式", required = false)
+    private String image;
+
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
 
     public Date getCreationDate() {
         return creationDate;

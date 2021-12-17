@@ -332,12 +332,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
                 // sonar任务执行成功后，缓存sonar信息到redis
-                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
-                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
-                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
-                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                }
+                // todo v1.2待删除
+//                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
+//                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
+//                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+//                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+//                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+//                }
             }
         });
     }
@@ -811,7 +812,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
 //            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
 //            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
-//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
+//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && StringUtils.hasText(devopsCiMavenSettingsDTO.getMavenSettings())) {
 //                // 将maven的setting文件转换为java对象
 //                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
 //                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);

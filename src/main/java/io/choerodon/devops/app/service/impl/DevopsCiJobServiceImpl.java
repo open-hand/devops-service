@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
@@ -24,16 +24,17 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
-import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -62,6 +63,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Autowired
     private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
@@ -159,7 +162,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         }
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-        devopsCiJobDTO.setType(JobTypeEnum.CUSTOM.value());
+        devopsCiJobDTO.setType(CiJobTypeEnum.CUSTOM.value());
         return devopsCiJobMapper.select(devopsCiJobDTO);
     }
 
@@ -346,12 +349,15 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         CiCdPipelineDTO ciPipelineDTO = devopsCiCdPipelineMapper.selectOne(devopsCiPipelineDTO);
         if (!Objects.isNull(ciPipelineDTO)) {
-            DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-            devopsCiJobDTO.setCiPipelineId(ciPipelineDTO.getId());
-            devopsCiJobDTO.setType(JobTypeEnum.SONAR.value());
-            DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
-            if (!Objects.isNull(ciJobDTO) && !StringUtils.isEmpty(ciJobDTO.getMetadata())) {
-                sonarInfoVO = JsonHelper.unmarshalByJackson(ciJobDTO.getMetadata(), SonarInfoVO.class);
+            List<DevopsCiJobDTO> devopsCiJobDTOList = listByPipelineId(ciPipelineDTO.getId());
+            List<Long> jobIds = devopsCiJobDTOList.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+            List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobIds(jobIds);
+
+            Optional<DevopsCiStepDTO> first = devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).findFirst();
+            if (first.isPresent()) {
+                DevopsCiStepDTO devopsCiStepDTO = first.get();
+                DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepDTO.getId());
+                sonarInfoVO = ConvertUtils.convertObject(devopsCiSonarConfigDTO, SonarInfoVO.class);
             }
         }
         return sonarInfoVO;

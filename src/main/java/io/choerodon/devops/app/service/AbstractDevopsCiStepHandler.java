@@ -27,7 +27,9 @@ public abstract class AbstractDevopsCiStepHandler {
     @Lazy
     protected DevopsCiStepService devopsCiStepService;
 
-    public abstract void fillConfigInfo(DevopsCiStepVO devopsCiStepVO);
+    public abstract void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
+
+    public abstract void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
 
     /**
      * 保存步骤信息，如果存在配置信息也一并保存

@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 
 /**
  * @author hao.wang08@hand-china.com
@@ -32,6 +33,16 @@ public class PipelineTemplateVO {
     private String image;
 
     private List<CiTemplateStageVO> ciTemplateStageVOList;
+
+    private CiTemplateCategoryDTO ciTemplateCategoryDTO;
+
+    public CiTemplateCategoryDTO getCiTemplateCategoryDTO() {
+        return ciTemplateCategoryDTO;
+    }
+
+    public void setCiTemplateCategoryDTO(CiTemplateCategoryDTO ciTemplateCategoryDTO) {
+        this.ciTemplateCategoryDTO = ciTemplateCategoryDTO;
+    }
 
     public List<CiTemplateStageVO> getCiTemplateStageVOList() {
         return ciTemplateStageVOList;

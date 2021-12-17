@@ -26,8 +26,9 @@ spring:
       enabled: false
   mvc:
     static-path-pattern: /**
-  resources:
-    static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
+  web:
+    resources:
+      static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
 management:
   server:
     port: 8061

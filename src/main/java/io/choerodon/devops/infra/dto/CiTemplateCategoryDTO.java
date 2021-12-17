@@ -36,9 +36,12 @@ public class CiTemplateCategoryDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "语言", required = true)
+    @ApiModelProperty(value = "分类", required = true)
     @NotBlank
     private String category;
+
+    @ApiModelProperty(value = "分类图标base64格式", required = false)
+    private String image;
 
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
@@ -71,6 +74,12 @@ public class CiTemplateCategoryDTO extends AuditDomain {
         this.category = category;
     }
 
+    public String getImage() {
+        return image;
+    }
 
+    public void setImage(String image) {
+        this.image = image;
+    }
 }
 

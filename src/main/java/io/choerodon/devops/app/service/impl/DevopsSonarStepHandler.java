@@ -56,9 +56,15 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigDTO.class);
+        devopsCiStepVO.setDevopsCiSonarConfigDTO(devopsCiSonarConfigDTO);
+    }
+
+    @Override
+    public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setDevopsCiSonarConfigDTO(devopsCiSonarConfigDTO);
     }
 

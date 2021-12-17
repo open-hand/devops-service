@@ -34,9 +34,15 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     private CiTemplateDockerService ciTemplateDockerService;
 
     @Override
-    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateDockerDTO ciTemplateDockerDTO = ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = ConvertUtils.convertObject(ciTemplateDockerDTO, DevopsCiDockerBuildConfigDTO.class);
+        devopsCiStepVO.setDevopsCiDockerBuildConfigDTO(devopsCiDockerBuildConfigDTO);
+    }
+
+    @Override
+    public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setDevopsCiDockerBuildConfigDTO(devopsCiDockerBuildConfigDTO);
     }
 
