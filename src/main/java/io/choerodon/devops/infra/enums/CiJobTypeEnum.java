@@ -15,7 +15,7 @@ public enum CiJobTypeEnum {
     /**
      * 脚本任务类型
      */
-    SCRIPT("script");
+    CUSTOM("custom");
 
     private final String value;
 

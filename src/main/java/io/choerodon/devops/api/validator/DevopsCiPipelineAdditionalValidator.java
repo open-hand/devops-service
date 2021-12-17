@@ -12,8 +12,8 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.CiTriggerType;
-import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
@@ -286,7 +286,7 @@ public class DevopsCiPipelineAdditionalValidator {
      */
     @SuppressWarnings("unchecked")
     private static void validateCustomJobFormat(String stageName, DevopsCiJobVO devopsCiJobVO) {
-        if (!JobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
+        if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
 

@@ -20,7 +20,12 @@ public class DevopsCustomStepHandler extends AbstractDevopsCiStepHandler {
 
 
     @Override
-    public void fillConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
+    public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
     }
 

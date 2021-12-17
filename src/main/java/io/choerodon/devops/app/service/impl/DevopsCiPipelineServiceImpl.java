@@ -30,7 +30,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.service.*;
@@ -484,7 +483,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 不让数据库存加密的值
 //                        decryptCiBuildMetadata(devopsCiJobVO);
-                        processCiJobVO(devopsCiJobVO);
+//                        processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -525,77 +524,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
         });
-    }
-
-    private void getDockerTagName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
-        // 自定义的chart和docker tag名
-        // 0.1 获取到docker任务Id 和规则
-        if (devopsCiJobVO.getType().equals(JobTypeEnum.BUILD.value())) {
-            if (devopsCiJobVO.getConfigJobTypes().contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
-                Optional<CiConfigTemplateVO> optional = configVOS.stream().filter(t -> t.getType().equals(CiJobScriptTypeEnum.DOCKER.getType())).findFirst();
-                if (optional.isPresent()) {
-                    CiConfigTemplateVO templateVO = optional.get();
-                    if (templateVO.getCustomDockerTagName() != null && templateVO.getCustomDockerTagName()) {
-                        if (StringUtils.isEmpty(templateVO.getDockerTagName())) {
-                            throw new CommonException("error.docker.tag.name.empty");
-                        }
-                        CiDockerTagNameVO ciDockerTagNameVO = new CiDockerTagNameVO(devopsCiJobVO.getId(), devopsCiJobVO.getName(), templateVO.getDockerTagName());
-                        dockerTagNames.add(ciDockerTagNameVO);
-                    }
-                }
-            }
-        }
-    }
-
-    private void setChartVersionName(DevopsCiJobVO devopsCiJobVO, List<CiDockerTagNameVO> dockerTagNames) {
-        // chart任务 自定chart版本名
-        // 前端可能不会拿到最新的chartVersionName
-        // 更新metadata信息
-        if (devopsCiJobVO.getType().equals(JobTypeEnum.CHART.value())) {
-            List<CiConfigTemplateVO> configVOS = devopsCiJobVO.getConfigVO().getConfig();
-            if (!CollectionUtils.isEmpty(configVOS)) {
-                CiConfigTemplateVO ciConfigTemplateVO = configVOS.get(0);
-                if (ciConfigTemplateVO.getCustomChartVersionName() != null && ciConfigTemplateVO.getCustomChartVersionName()) {
-                    if (StringUtils.isEmpty(ciConfigTemplateVO.getDockerJobName()) && ciConfigTemplateVO.getDockerJobId() == null) {
-                        throw new CommonException("error.chart.docker.job.empty");
-                    }
-                    CiDockerTagNameVO ciDockerTagNameVO = null;
-                    // 创建根据名称判断 更新根据id
-                    if (devopsCiJobVO.getId() != null) {
-                        for (CiDockerTagNameVO t : dockerTagNames) {
-                            if (t.getDockerJobId().equals(devopsCiJobVO.getId())) {
-                                ciDockerTagNameVO = t;
-                                break;
-                            }
-                        }
-                    } else {
-                        for (CiDockerTagNameVO t : dockerTagNames) {
-                            if (t.getDockerJobName().equals(devopsCiJobVO.getName())) {
-                                ciDockerTagNameVO = t;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (ciDockerTagNameVO == null) {
-                        // 找不到docker任务 chart自定义名称设置为默认
-                        ciConfigTemplateVO.setCustomChartVersionName(false);
-                    } else {
-                        ciConfigTemplateVO.setDockerJobId(ciDockerTagNameVO.getDockerJobId());
-                        ciConfigTemplateVO.setDockerJobName(ciDockerTagNameVO.getDockerJobName());
-                        ciConfigTemplateVO.setChartVersionName(ciDockerTagNameVO.getDockerTagName());
-                    }
-
-                    configVOS.clear();
-                    configVOS.add(ciConfigTemplateVO);
-                    CiConfigVO ciConfigVO = new CiConfigVO(configVOS);
-                    devopsCiJobVO.setConfigVO(ciConfigVO);
-                    String metadata = gson.toJson(ciConfigVO);
-                    devopsCiJobVO.setMetadata(metadata.replace("\"", "'"));
-                }
-            }
-        }
     }
 
     @Override
@@ -757,14 +685,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
             List<DevopsCiJobVO> ciJobVOS = ciJobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
-            ciJobVOS = ciJobVOS.stream().peek(job -> {
-                if (JobTypeEnum.BUILD.value().equals(job.getType())) {
-                    // 将json string中字段进行加密
-                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(job.getMetadata(), CiConfigVO.class);
-                    // 返回给前端要用单引号而不是双引号的字符串
-                    job.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(ciConfigVO)));
-                }
-            }).sorted(Comparator.comparingLong(DevopsCiJobVO::getId)).collect(Collectors.toList());
+            ciJobVOS = ciJobVOS.stream().sorted(Comparator.comparingLong(DevopsCiJobVO::getId)).collect(Collectors.toList());
             devopsCiStageVO.setJobList(ciJobVOS);
         });
         return devopsCiStageVOS;
@@ -781,13 +702,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private Map<Long, List<DevopsCiJobVO>> handleCiJob(Long pipelineId) {
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(pipelineId);
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
-        devopsCiJobVOS.forEach(this::processBeforeQueryJob);
+//        devopsCiJobVOS.forEach(this::processBeforeQueryJob);
         // 封装CI对象
+        List<Long> jobIds = devopsCiJobVOS.stream().map(DevopsCiJobVO::getId).collect(Collectors.toList());
+        List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobIds(jobIds);
+        Map<Long, List<DevopsCiStepDTO>> jobStepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getDevopsCiJobId));
+
         devopsCiJobVOS.forEach(devopsCiJobVO -> {
-            if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-                CiConfigVO ciConfigVO = gson.fromJson(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-                devopsCiJobVO.setConfigJobTypes(ciConfigVO.getConfig().stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList()));
-            }
+            List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
+            List<DevopsCiStepVO> devopsCiStepVOList = ConvertUtils.convertList(ciStepDTOS, DevopsCiStepVO.class);
+            devopsCiStepVOList.forEach(ciStepVO -> {
+                AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(ciStepVO.getType());
+                handler.fillTemplateStepConfigInfo(ciStepVO);
+            });
+            devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
         });
         return devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
     }
@@ -821,21 +749,21 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return ConvertUtils.convertObject(ciCdPipelineDTO, CiCdPipelineVO.class);
     }
 
-    private void processBeforeQueryJob(DevopsCiJobVO devopsCiJobVO) {
-        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-            // 反序列化
-            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                // 将script字段加密
-                ciConfigVO.getConfig().stream().filter(e -> !Objects.isNull(e.getScript())).forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
-                // 序列化
-                devopsCiJobVO.setMetadata(JsonHelper.singleQuoteWrapped(JSONObject.toJSONString(ciConfigVO)));
-            }
-        } else if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobVO.getType())) {
-            // 加密自定义任务的元数据
-            devopsCiJobVO.setMetadata(Base64Util.getBase64EncodedString(devopsCiJobVO.getMetadata()));
-        }
-    }
+//    private void processBeforeQueryJob(DevopsCiJobVO devopsCiJobVO) {
+//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+//            // 反序列化
+//            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+//                // 将script字段加密
+//                ciConfigVO.getConfig().stream().filter(e -> !Objects.isNull(e.getScript())).forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
+//                // 序列化
+//                devopsCiJobVO.setMetadata(JsonHelper.singleQuoteWrapped(JSONObject.toJSONString(ciConfigVO)));
+//            }
+//        } else if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobVO.getType())) {
+//            // 加密自定义任务的元数据
+//            devopsCiJobVO.setMetadata(Base64Util.getBase64EncodedString(devopsCiJobVO.getMetadata()));
+//        }
+//    }
 
     @Override
     public CiCdPipelineDTO queryByAppSvcId(Long id) {
@@ -1636,7 +1564,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
 //                        decryptCiBuildMetadata(devopsCiJobVO);
-                        processCiJobVO(devopsCiJobVO);
+//                        processCiJobVO(devopsCiJobVO);
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setId(null);
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
@@ -1655,7 +1583,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
 //                        decryptCiBuildMetadata(devopsCiJobVO);
-                        processCiJobVO(devopsCiJobVO);
+//                        processCiJobVO(devopsCiJobVO);
 
                         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
                         devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
@@ -1688,46 +1616,46 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {
-        // 不让数据库存加密的值
-        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-            // 将构建类型的stage中的job的每个step进行解析和转化
-            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                ciConfigVO.getConfig().forEach(c -> {
-                    if (!org.springframework.util.StringUtils.isEmpty(c.getScript())) {
-                        c.setScript(Base64Util.getBase64DecodedString(c.getScript()));
-                    }
-                });
-            }
-            devopsCiJobVO.setConfigVO(ciConfigVO);
-            devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
-        }
-    }
+//    private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {
+//        // 不让数据库存加密的值
+//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+//            // 将构建类型的stage中的job的每个step进行解析和转化
+//            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
+//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+//                ciConfigVO.getConfig().forEach(c -> {
+//                    if (!org.springframework.util.ObjectUtils.isEmpty(c.getScript())) {
+//                        c.setScript(Base64Util.getBase64DecodedString(c.getScript()));
+//                    }
+//                });
+//            }
+//            devopsCiJobVO.setConfigVO(ciConfigVO);
+//            devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
+//        }
+//    }
 
-    private void saveCiContent(final Long projectId, final Long organizationId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
-        GitlabCi gitlabCi = buildGitLabCiObject(projectId, organizationId, ciCdPipelineVO);
-        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
-
-        // 拼接自定义job
-        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
-            List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
-                    .collect(Collectors.toList());
-            if (!CollectionUtils.isEmpty(ciJobVOS)) {
-                for (DevopsCiJobVO job : ciJobVOS) {
-                    gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
-                }
-            }
-
-        }
-
-        //保存gitlab-ci配置文件
-        DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
-        devopsCiContentDTO.setCiPipelineId(pipelineId);
-        devopsCiContentDTO.setCiContentFile(gitlabCiYaml.toString());
-        devopsCiContentService.create(devopsCiContentDTO);
-    }
+//    private void saveCiContent(final Long projectId, final Long organizationId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
+//        GitlabCi gitlabCi = buildGitLabCiObject(projectId, organizationId, ciCdPipelineVO);
+//        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
+//
+//        // 拼接自定义job
+//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
+//            List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getDevopsCiStageVOS().stream()
+//                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
+//                    .collect(Collectors.toList());
+//            if (!CollectionUtils.isEmpty(ciJobVOS)) {
+//                for (DevopsCiJobVO job : ciJobVOS) {
+//                    gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
+//                }
+//            }
+//
+//        }
+//
+//        //保存gitlab-ci配置文件
+//        DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
+//        devopsCiContentDTO.setCiPipelineId(pipelineId);
+//        devopsCiContentDTO.setCiContentFile(gitlabCiYaml.toString());
+//        devopsCiContentService.create(devopsCiContentDTO);
+//    }
 
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
@@ -1766,7 +1694,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByStageId(stageVO.getId());
             if (!CollectionUtils.isEmpty(devopsCiJobDTOS)) {
                 devopsCiJobDTOS.forEach(job -> {
-                    if (JobTypeEnum.CUSTOM.value().equals(job.getType())) {
+                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
                         return;
                     }
                     CiJob ciJob = new CiJob();
@@ -1798,97 +1726,97 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return gitlabCi;
     }
 
-    /**
-     * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
-     *
-     * @param projectId      项目id
-     * @param ciCdPipelineVO 流水线数据
-     * @return 构建完的CI文件对象
-     */
-    private GitlabCi buildGitLabCiObject(final Long projectId, final Long organizationId, CiCdPipelineVO ciCdPipelineVO) {
-        // 对阶段排序
-        List<String> stages = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                .sorted(Comparator.comparing(DevopsCiStageVO::getSequence))
-                .map(DevopsCiStageVO::getName)
-                .collect(Collectors.toList());
+//    /**
+//     * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
+//     *
+//     * @param projectId      项目id
+//     * @param ciCdPipelineVO 流水线数据
+//     * @return 构建完的CI文件对象
+//     */
+//    private GitlabCi buildGitLabCiObject(final Long projectId, final Long organizationId, CiCdPipelineVO ciCdPipelineVO) {
+//        // 对阶段排序
+//        List<String> stages = ciCdPipelineVO.getDevopsCiStageVOS().stream()
+//                .sorted(Comparator.comparing(DevopsCiStageVO::getSequence))
+//                .map(DevopsCiStageVO::getName)
+//                .collect(Collectors.toList());
+//
+//        GitlabCi gitlabCi = new GitlabCi();
+//
+//        // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
+//        gitlabCi.setImage(ObjectUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
+//
+//        gitlabCi.setStages(stages);
+//        ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
+//            if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
+//                stageVO.getJobList().forEach(job -> {
+//                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
+//                        return;
+//                    }
+//                    CiJob ciJob = new CiJob();
+//                    if (StringUtils.isNoneBlank(job.getImage())) {
+//                        ciJob.setImage(job.getImage());
+//                    }
+//                    ciJob.setStage(stageVO.getName());
+//                    ciJob.setParallel(job.getParallel());
+//                    //增加afterScript
+////                    ciJob.setAfterScript(buildAfterScript(job));
+//                    //增加services
+//                    CiJobServices ciJobServices = buildServices(job);
+//                    ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));
+//                    ciJob.setScript(buildScript(Objects.requireNonNull(organizationId), projectId, job));
+//                    ciJob.setCache(buildJobCache(job));
+//                    processOnlyAndExcept(job, ciJob);
+//                    gitlabCi.addJob(job.getName(), ciJob);
+//                });
+//            }
+//        });
+//        buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
+//        return gitlabCi;
+//    }
 
-        GitlabCi gitlabCi = new GitlabCi();
-
-        // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
-        gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
-
-        gitlabCi.setStages(stages);
-        ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
-            if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
-                stageVO.getJobList().forEach(job -> {
-                    if (JobTypeEnum.CUSTOM.value().equals(job.getType())) {
-                        return;
-                    }
-                    CiJob ciJob = new CiJob();
-                    if (!StringUtils.isEmpty(job.getImage())) {
-                        ciJob.setImage(job.getImage());
-                    }
-                    ciJob.setStage(stageVO.getName());
-                    ciJob.setParallel(job.getParallel());
-                    //增加afterScript
-//                    ciJob.setAfterScript(buildAfterScript(job));
-                    //增加services
-                    CiJobServices ciJobServices = buildServices(job);
-                    ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));
-                    ciJob.setScript(buildScript(Objects.requireNonNull(organizationId), projectId, job));
-                    ciJob.setCache(buildJobCache(job));
-                    processOnlyAndExcept(job, ciJob);
-                    gitlabCi.addJob(job.getName(), ciJob);
-                });
-            }
-        });
-        buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
-        return gitlabCi;
-    }
-
-    private List<String> buildAfterScript(DevopsCiJobVO jobVO) {
-        List<String> afterScript = new ArrayList<>();
-        if (isContainDokcerBuild(jobVO)) {
-            afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
-            return afterScript;
-        } else {
-            return null;
-        }
-    }
+//    private List<String> buildAfterScript(DevopsCiJobVO jobVO) {
+//        List<String> afterScript = new ArrayList<>();
+//        if (isContainDokcerBuild(jobVO)) {
+//            afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
+//            return afterScript;
+//        } else {
+//            return null;
+//        }
+//    }
 
 
-    private CiJobServices buildServices(DevopsCiJobVO jobVO) {
-        CiJobServices ciJobServices = new CiJobServices();
-        if (isContainDokcerBuild(jobVO)) {
-            ciJobServices.setName(defaultCiImage);
-            ciJobServices.setAlias("kaniko");
-            return ciJobServices;
-        } else {
-            return null;
-        }
-    }
+//    private CiJobServices buildServices(DevopsCiJobVO jobVO) {
+//        CiJobServices ciJobServices = new CiJobServices();
+//        if (isContainDokcerBuild(jobVO)) {
+//            ciJobServices.setName(defaultCiImage);
+//            ciJobServices.setAlias("kaniko");
+//            return ciJobServices;
+//        } else {
+//            return null;
+//        }
+//    }
 
-    private boolean isContainDokcerBuild(DevopsCiJobVO jobVO) {
-        if (Objects.isNull(jobVO)) {
-            return false;
-        }
-        if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-            CiConfigVO ciConfigVO = jobVO.getConfigVO();
-            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                return false;
-            }
-            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    private boolean isContainDokcerBuild(DevopsCiJobVO jobVO) {
+//        if (Objects.isNull(jobVO)) {
+//            return false;
+//        }
+//        if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+//            CiConfigVO ciConfigVO = jobVO.getConfigVO();
+//            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+//                return false;
+//            }
+//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /**
      * 处理job的触发方式
      *
      * @param devopsCiJobDTO job元数据
-     * @param ciJob    ci文件的job对象
+     * @param ciJob          ci文件的job对象
      */
     private void processOnlyAndExcept(DevopsCiJobDTO devopsCiJobDTO, CiJob ciJob) {
         if (StringUtils.isNotBlank(devopsCiJobDTO.getTriggerType())
@@ -2006,89 +1934,89 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return result;
     }
 
-    /**
-     * 把配置转换为gitlab-ci配置（maven,sonarqube）
-     *
-     * @param organizationId 组织id
-     * @param projectId      项目id
-     * @param jobVO          生成脚本
-     * @return 生成的脚本列表
-     */
-    private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobVO jobVO) {
-        Assert.notNull(jobVO, "Job can't be null");
-        Assert.notNull(organizationId, "Organization id can't be null");
-        Assert.notNull(projectId, "project id can't be null");
-        final Long jobId = jobVO.getId();
-        Assert.notNull(jobId, "Ci job id is required.");
-
-        if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
-            return calculateSonarScript(jobVO);
-        } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-            // 将构建类型的stage中的job的每个step进行解析和转化
-            CiConfigVO ciConfigVO = jobVO.getConfigVO();
-            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-                return Collections.emptyList();
-            }
-
-            List<Long> existedSequences = new ArrayList<>();
-            // 校验前端传入的sequence不为null且不重复
-            ciConfigVO.getConfig().forEach(config -> DevopsCiPipelineAdditionalValidator.validConfigSequence(config.getSequence(), config.getName(), existedSequences));
-
-            // 最后生成的所有script集合
-            List<String> result = new ArrayList<>();
-
-            // 同一个job中的所有step要按照sequence顺序来
-            // 将每一个step都转为一个List<String>并将所有的list合并为一个
-            ciConfigVO.getConfig()
-                    .stream()
-                    .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
-                    .forEach(config -> {
-                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType().toLowerCase());
-                        if (type == null) {
-                            throw new CommonException(ERROR_UNSUPPORTED_STEP_TYPE, config.getType());
-                        }
-
-                        switch (type) {
-                            // GO和NPM是一样处理
-                            case NPM:
-                                result.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(config.getScript()), true, true));
-                                break;
-                            case MAVEN:
-                                // 处理settings文件
-                                DevopsCiPipelineAdditionalValidator.validateMavenStep(config);
-                                boolean hasSettings = buildAndSaveMavenSettings(projectId, jobId, config);
-                                result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
-                                break;
-                            case DOCKER:
-                                // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
-                                // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
-                                Boolean doTlsVerify = config.getSkipDockerTlsVerify();
-                                //是否开启镜像扫描 默认是关闭镜像扫描的
-                                Boolean imageScan = config.getImageScan();
-                                result.addAll(GitlabCiUtil.generateDockerScripts(
-                                        config.getDockerContextDir(),
-                                        config.getDockerFilePath(),
-                                        doTlsVerify == null || !doTlsVerify,
-                                        Objects.isNull(imageScan) ? false : imageScan, jobVO.getId()));
-                                break;
-                            // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
-                            case UPLOAD_JAR:
-                            case MAVEN_DEPLOY:
-                                List<MavenRepoVO> targetRepos = new ArrayList<>();
-                                boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
-                                result.addAll(buildMavenJarDeployScripts(projectId, jobId, hasMavenSettings, config, targetRepos));
-                                break;
-                            default:
-                        }
-                    });
-
-            return result;
-        } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
-            // 生成chart步骤
-            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
-        }
-        return Collections.emptyList();
-    }
+//    /**
+//     * 把配置转换为gitlab-ci配置（maven,sonarqube）
+//     *
+//     * @param organizationId 组织id
+//     * @param projectId      项目id
+//     * @param jobVO          生成脚本
+//     * @return 生成的脚本列表
+//     */
+//    private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobVO jobVO) {
+//        Assert.notNull(jobVO, "Job can't be null");
+//        Assert.notNull(organizationId, "Organization id can't be null");
+//        Assert.notNull(projectId, "project id can't be null");
+//        final Long jobId = jobVO.getId();
+//        Assert.notNull(jobId, "Ci job id is required.");
+//
+//        if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
+//            return calculateSonarScript(jobVO);
+//        } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
+//            // 将构建类型的stage中的job的每个step进行解析和转化
+//            CiConfigVO ciConfigVO = jobVO.getConfigVO();
+//            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
+//                return Collections.emptyList();
+//            }
+//
+//            List<Long> existedSequences = new ArrayList<>();
+//            // 校验前端传入的sequence不为null且不重复
+//            ciConfigVO.getConfig().forEach(config -> DevopsCiPipelineAdditionalValidator.validConfigSequence(config.getSequence(), config.getName(), existedSequences));
+//
+//            // 最后生成的所有script集合
+//            List<String> result = new ArrayList<>();
+//
+//            // 同一个job中的所有step要按照sequence顺序来
+//            // 将每一个step都转为一个List<String>并将所有的list合并为一个
+//            ciConfigVO.getConfig()
+//                    .stream()
+//                    .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
+//                    .forEach(config -> {
+//                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType().toLowerCase());
+//                        if (type == null) {
+//                            throw new CommonException(ERROR_UNSUPPORTED_STEP_TYPE, config.getType());
+//                        }
+//
+//                        switch (type) {
+//                            // GO和NPM是一样处理
+//                            case NPM:
+//                                result.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(config.getScript()), true, true));
+//                                break;
+//                            case MAVEN:
+//                                // 处理settings文件
+//                                DevopsCiPipelineAdditionalValidator.validateMavenStep(config);
+//                                boolean hasSettings = buildAndSaveMavenSettings(projectId, jobId, config);
+//                                result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
+//                                break;
+//                            case DOCKER:
+//                                // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
+//                                // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
+//                                Boolean doTlsVerify = config.getSkipDockerTlsVerify();
+//                                //是否开启镜像扫描 默认是关闭镜像扫描的
+//                                Boolean imageScan = config.getImageScan();
+//                                result.addAll(GitlabCiUtil.generateDockerScripts(
+//                                        config.getDockerContextDir(),
+//                                        config.getDockerFilePath(),
+//                                        doTlsVerify == null || !doTlsVerify,
+//                                        Objects.isNull(imageScan) ? false : imageScan, jobVO.getId()));
+//                                break;
+//                            // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
+//                            case UPLOAD_JAR:
+//                            case MAVEN_DEPLOY:
+//                                List<MavenRepoVO> targetRepos = new ArrayList<>();
+//                                boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
+//                                result.addAll(buildMavenJarDeployScripts(projectId, jobId, hasMavenSettings, config, targetRepos));
+//                                break;
+//                            default:
+//                        }
+//                    });
+//
+//            return result;
+//        } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
+//            // 生成chart步骤
+//            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
+//        }
+//        return Collections.emptyList();
+//    }
 
     /**
      * 计算sonar脚本
@@ -2490,15 +2418,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    /**
-     * 将job中的metadata字段解密
-     *
-     * @param devopsCiJobVO job数据
-     */
-    private void decryptCiBuildMetadata(DevopsCiJobVO devopsCiJobVO) {
-        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-            // 解密json字符串中的加密的主键
-            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class)));
-        }
-    }
+//    /**
+//     * 将job中的metadata字段解密
+//     *
+//     * @param devopsCiJobVO job数据
+//     */
+//    private void decryptCiBuildMetadata(DevopsCiJobVO devopsCiJobVO) {
+//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
+//            // 解密json字符串中的加密的主键
+//            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class)));
+//        }
+//    }
 }

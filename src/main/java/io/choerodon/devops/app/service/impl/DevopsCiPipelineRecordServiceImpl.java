@@ -812,7 +812,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
 //            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
 //            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
-//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
+//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && StringUtils.hasText(devopsCiMavenSettingsDTO.getMavenSettings())) {
 //                // 将maven的setting文件转换为java对象
 //                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
 //                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
