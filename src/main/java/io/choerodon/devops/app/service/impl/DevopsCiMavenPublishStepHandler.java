@@ -113,7 +113,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         Set<Long> dependencyRepoIds = devopsCiMavenPublishConfigVO.getNexusMavenRepoIds();
         List<MavenRepoVO> dependencyRepos = devopsCiMavenPublishConfigVO.getRepos();
 
-        boolean targetRepoEmpty = devopsCiMavenPublishConfigVO.getNexusRepoIds() == null;
+        boolean targetRepoEmpty = devopsCiMavenPublishConfigVO.getNexusRepoId() == null;
         boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
         boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
 
@@ -125,7 +125,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         // 查询制品库
         List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null,
                 projectId,
-                ArrayUtil.singleAsSet(devopsCiMavenPublishConfigVO.getNexusRepoIds()));
+                ArrayUtil.singleAsSet(devopsCiMavenPublishConfigVO.getNexusRepoId()));
 
         // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
         if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
@@ -136,7 +136,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
             MavenRepoVO result = convertRepo(r);
             // 目标仓库不为空, 并且目标仓库包含
-            if (!targetRepoEmpty && devopsCiMavenPublishConfigVO.getNexusRepoIds().equals(r.getRepositoryId())) {
+            if (!targetRepoEmpty && devopsCiMavenPublishConfigVO.getNexusRepoId().equals(r.getRepositoryId())) {
                 targetRepoContainer.add(result);
             }
             return result;
@@ -236,7 +236,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
             // 只生成一个jar包元数据上传指令用于CD阶段
             //加上jobId  与sequence，用于查询jar包的时间戳
-            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoIds(),
+            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
                     jobId,
                     devopsCiStepDTO.getSequence()));
         } else {

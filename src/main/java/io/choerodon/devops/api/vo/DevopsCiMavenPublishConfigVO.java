@@ -28,7 +28,7 @@ public class DevopsCiMavenPublishConfigVO {
 
     @Encrypt
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
-    private Long nexusRepoIds;
+    private Long nexusRepoId;
 
     @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表")
@@ -85,11 +85,11 @@ public class DevopsCiMavenPublishConfigVO {
         this.mavenSettings = mavenSettings;
     }
 
-    public Long getNexusRepoIds() {
-        return nexusRepoIds;
+    public Long getNexusRepoId() {
+        return nexusRepoId;
     }
 
-    public void setNexusRepoIds(Long nexusRepoIds) {
-        this.nexusRepoIds = nexusRepoIds;
+    public void setNexusRepoId(Long nexusRepoId) {
+        this.nexusRepoId = nexusRepoId;
     }
 }
