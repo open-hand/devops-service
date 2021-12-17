@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo.template;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * @author hao.wang08@hand-china.com
@@ -36,6 +38,9 @@ public class CiTemplateJobVO {
 
     private Long relateStageId;
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    @ApiModelProperty("创建者信息")
+    private IamUserDTO creatorInfo;
 
     @ApiModelProperty(value = "任务模板下面的步骤模板")
     private List<CiTemplateStepVO> ciTemplateStepVOS;
@@ -142,5 +147,13 @@ public class CiTemplateJobVO {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public IamUserDTO getCreatorInfo() {
+        return creatorInfo;
+    }
+
+    public void setCreatorInfo(IamUserDTO creatorInfo) {
+        this.creatorInfo = creatorInfo;
     }
 }
