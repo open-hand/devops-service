@@ -46,8 +46,11 @@ public class CiTemplateSonarDTO extends AuditDomain {
     @NotBlank
     private String scannerType;
 
+    @ApiModelProperty("配置类型, 如果是default就不需要其他字段 / default或custom")
+    private String configType;
+
     @ApiModelProperty(value = "是否跳过单测")
-    private Long skiptests;
+    private Long skipTests;
 
     @ApiModelProperty(value = "要扫描的文件目录，多个文件夹使用,隔开")
     private String sources;
@@ -68,8 +71,16 @@ public class CiTemplateSonarDTO extends AuditDomain {
     private String token;
 
     @ApiModelProperty(value = "流水线模板步骤Id")
-    private Long  ciTemplateStepId;
+    private Long ciTemplateStepId;
 
+
+    public String getConfigType() {
+        return configType;
+    }
+
+    public void setConfigType(String configType) {
+        this.configType = configType;
+    }
 
     public Long getId() {
         return id;
@@ -87,12 +98,12 @@ public class CiTemplateSonarDTO extends AuditDomain {
         this.scannerType = scannerType;
     }
 
-    public Long getSkiptests() {
-        return skiptests;
+    public Long getSkipTests() {
+        return skipTests;
     }
 
-    public void setSkiptests(Long skiptests) {
-        this.skiptests = skiptests;
+    public void setSkipTests(Long skipTests) {
+        this.skipTests = skipTests;
     }
 
     public String getSources() {
