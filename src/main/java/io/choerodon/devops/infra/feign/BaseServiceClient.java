@@ -6,17 +6,20 @@ import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by younger on 2018/3/29.
@@ -285,4 +288,8 @@ public interface BaseServiceClient {
     @GetMapping("/choerodon/v1/organizations/register/tenants")
     @ApiOperation(value = "查询注册的组织")
     ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant();
+
+    @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
+    @GetMapping(value = "/self/is_site_administrator")
+    ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id", required = false) Long userId);
 }
