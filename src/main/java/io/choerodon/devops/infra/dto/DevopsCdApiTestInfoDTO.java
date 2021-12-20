@@ -41,6 +41,9 @@ public class DevopsCdApiTestInfoDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.test.ApiTestTaskType}
+     */
     @ApiModelProperty(value = "测试任务类型")
     private String taskType;
 

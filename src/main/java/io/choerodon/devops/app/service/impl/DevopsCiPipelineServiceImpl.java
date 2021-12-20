@@ -2357,17 +2357,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
 
-            WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
-
             DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = ConvertUtils.convertObject(cdApiTestConfigVO, DevopsCdApiTestInfoDTO.class);
-            devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
-            devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
-            devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
-            devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
 
-            if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
-                devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+            WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
+            if (warningSettingVO != null) {
+                devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
+                devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
+                devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
+                devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
+
+                if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
+                    devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+                }
             }
+
             devopsCdApiTestInfoService.baseCreate(devopsCdApiTestInfoDTO);
             devopsCdJobDTO.setDeployInfoId(devopsCdApiTestInfoDTO.getId());
         } else if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(t.getType())) {

@@ -1427,11 +1427,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             } catch (Exception e) {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
             }
-            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+            DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
             // 发送告警
             // 启用了告警设置，则需要判断成功率与阈值
-            if (cdApiTestConfigVO.getWarningSettingVO() != null
-                    && Boolean.TRUE.equals(cdApiTestConfigVO.getWarningSettingVO().getEnableWarningSetting())) {
+            if (Boolean.TRUE.equals(devopsCdApiTestInfoDTO.getEnableWarningSetting())) {
                 if (apiTestTaskRecordVO != null
                         && apiTestTaskRecordVO.getSuccessCount() != null
                         && apiTestTaskRecordVO.getFailCount() != null) {
@@ -1441,11 +1440,11 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     double successRate = (successCount / (successCount + failCount)) * 100;
                     successRate = (double) Math.round(successRate * 100) / 100;
 
-                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", cdApiTestConfigVO);
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, cdApiTestConfigVO: {} <<<<<<<<<<<<<<<<<<<<", devopsCdApiTestInfoDTO);
                     // 低于阈值
-                    if (successRate < cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold()) {
+                    if (successRate < devopsCdApiTestInfoDTO.getPerformThreshold()) {
                         // 未开启阻塞，则执行成功
-                        if (Boolean.FALSE.equals(cdApiTestConfigVO.getWarningSettingVO().getBlockAfterJob())) {
+                        if (Boolean.FALSE.equals(devopsCdApiTestInfoDTO.getBlockAfterJob())) {
                             result = true;
                         }
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
@@ -1456,7 +1455,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
                         param.put("taskName", devopsCdJobRecordDTO.getName());
                         param.put("successRate", String.valueOf(successRate));
-                        param.put("threshold", cdApiTestConfigVO.getWarningSettingVO().getPerformThreshold().toString());
+                        param.put("threshold", devopsCdApiTestInfoDTO.getPerformThreshold().toString());
                         param.put("link", frontUrl + link);
                         param.put("link_web", link);
                         ZoneId zoneId = ZoneId.systemDefault();
@@ -1465,7 +1464,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("successCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
                         param.put("failedCount", String.valueOf(apiTestTaskRecordVO.getFailCount()));
                         param.put("caseCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount() + apiTestTaskRecordVO.getFailCount()));
-                        sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
+                        Set<Long> userIds = JsonHelper.unmarshalByJackson(devopsCdApiTestInfoDTO.getNotifyUserIds(), new TypeReference<Set<Long>>() {
+                        });
+                        sendNotificationService.sendApiTestWarningMessage(userIds, param, devopsCdJobRecordDTO.getProjectId());
                     } else {
                         // 高于阈值
                         result = true;
