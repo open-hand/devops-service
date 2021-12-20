@@ -6,6 +6,10 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
+import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
+import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -48,11 +52,17 @@ public class CiTemplateStepVO {
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
 
-    @ApiModelProperty("docker 配置")
-    private CiTemplateDockerVO ciTemplateDockerVO;
+    @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
+    private CiTemplateSonarDTO sonarConfig;
 
-    @ApiModelProperty("sonar 配置")
-    private CiTemplateSonarVO ciTemplateSonarVO;
+    @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
+    private CiTemplateDockerDTO dockerBuildConfig;
+
+    @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
+    private CiTemplateMavenPublishDTO mavenPublishConfig;
+
+    @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
+    private CiTemplateMavenBuildDTO mavenBuildConfig;
 
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
@@ -65,22 +75,6 @@ public class CiTemplateStepVO {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
-    }
-
-    public CiTemplateSonarVO getCiTemplateSonarVO() {
-        return ciTemplateSonarVO;
-    }
-
-    public void setCiTemplateSonarVO(CiTemplateSonarVO ciTemplateSonarVO) {
-        this.ciTemplateSonarVO = ciTemplateSonarVO;
-    }
-
-    public CiTemplateDockerVO getCiTemplateDockerVO() {
-        return ciTemplateDockerVO;
-    }
-
-    public void setCiTemplateDockerVO(CiTemplateDockerVO ciTemplateDockerVO) {
-        this.ciTemplateDockerVO = ciTemplateDockerVO;
     }
 
     public IamUserDTO getCreator() {
@@ -185,5 +179,37 @@ public class CiTemplateStepVO {
 
     public void setCiTemplateStepCategoryVO(CiTemplateStepCategoryVO ciTemplateStepCategoryVO) {
         this.ciTemplateStepCategoryVO = ciTemplateStepCategoryVO;
+    }
+
+    public CiTemplateSonarDTO getSonarConfig() {
+        return sonarConfig;
+    }
+
+    public void setSonarConfig(CiTemplateSonarDTO sonarConfig) {
+        this.sonarConfig = sonarConfig;
+    }
+
+    public CiTemplateDockerDTO getDockerBuildConfig() {
+        return dockerBuildConfig;
+    }
+
+    public void setDockerBuildConfig(CiTemplateDockerDTO dockerBuildConfig) {
+        this.dockerBuildConfig = dockerBuildConfig;
+    }
+
+    public CiTemplateMavenPublishDTO getMavenPublishConfig() {
+        return mavenPublishConfig;
+    }
+
+    public void setMavenPublishConfig(CiTemplateMavenPublishDTO mavenPublishConfig) {
+        this.mavenPublishConfig = mavenPublishConfig;
+    }
+
+    public CiTemplateMavenBuildDTO getMavenBuildConfig() {
+        return mavenBuildConfig;
+    }
+
+    public void setMavenBuildConfig(CiTemplateMavenBuildDTO mavenBuildConfig) {
+        this.mavenBuildConfig = mavenBuildConfig;
     }
 }

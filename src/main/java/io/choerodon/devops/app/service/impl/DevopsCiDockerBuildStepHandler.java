@@ -9,14 +9,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateDockerService;
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
-import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -34,16 +33,14 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     private CiTemplateDockerService ciTemplateDockerService;
 
     @Override
-    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        CiTemplateDockerDTO ciTemplateDockerDTO = ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
-        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = ConvertUtils.convertObject(ciTemplateDockerDTO, DevopsCiDockerBuildConfigDTO.class);
-        devopsCiStepVO.setDevopsCiDockerBuildConfigDTO(devopsCiDockerBuildConfigDTO);
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateStepVO.setDockerBuildConfig(ciTemplateDockerService.queryByStepId(ciTemplateStepVO.getId()));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setDevopsCiDockerBuildConfigDTO(devopsCiDockerBuildConfigDTO);
+        devopsCiStepVO.setDockerBuildConfig(devopsCiDockerBuildConfigDTO);
     }
 
     @Override
@@ -67,7 +64,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     @Transactional
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
-        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDevopsCiDockerBuildConfigDTO();
+        DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDockerBuildConfig();
         devopsCiDockerBuildConfigDTO.setStepId(stepId);
         devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
     }

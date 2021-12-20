@@ -16,6 +16,7 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
 import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
@@ -62,7 +63,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getDevopsCiMavenBuildConfigDTO();
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getMavenBuildConfig();
         devopsCiMavenBuildConfigDTO.setStepId(stepId);
         devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
     }
@@ -73,14 +74,14 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId());
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId()));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setDevopsCiMavenBuildConfigDTO(devopsCiMavenBuildConfigDTO);
+        devopsCiStepVO.setMavenBuildConfig(devopsCiMavenBuildConfigDTO);
     }
 
     @Override

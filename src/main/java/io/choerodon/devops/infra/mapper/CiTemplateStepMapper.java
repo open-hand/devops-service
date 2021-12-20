@@ -23,5 +23,8 @@ public interface CiTemplateStepMapper extends BaseMapper<CiTemplateStepDTO> {
      * 根据
      */
     CiTemplateStepVO queryCiTemplateStepById(@Param("ciTemplateStepId") Long ciTemplateStepId);
+
+    List<CiTemplateStepVO> listStepsByTemplateJobId(@Param("organizationId") Long organizationId,
+                                                    @Param("templateJobId") Long templateJobId);
 }
 
