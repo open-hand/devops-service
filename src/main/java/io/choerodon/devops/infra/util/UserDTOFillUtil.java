@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -33,6 +34,9 @@ public class UserDTOFillUtil {
      * @param destFiled 目标DTO字段
      */
     public static void fillUserInfo(List<?> sourceList, String filed, String destFiled) {
+        if (CollectionUtils.isEmpty(sourceList)) {
+            return;
+        }
         List<Long> userIds = sourceList.stream().map(v -> {
             Class<?> aClass = v.getClass();
             try {
