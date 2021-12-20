@@ -42,6 +42,22 @@ public class TestServiceClientOperator {
     }
 
     /**
+     * 执行api测试任务
+     *
+     * @param projectId
+     * @param suiteId
+     * @param createdBy
+     * @return
+     */
+    public ApiTestTaskRecordDTO executeSuite(Long projectId, Long suiteId, Long createdBy, String triggerType, Long triggerId) {
+        return FeignClientUtils.doRequest(() -> testServiceClient.executeSuite(projectId,
+                suiteId,
+                createdBy,
+                triggerType,
+                triggerId), ApiTestTaskRecordDTO.class, "error.execute.api.test.suite");
+    }
+
+    /**
      * 查询api测试任务记录
      *
      * @param projectId

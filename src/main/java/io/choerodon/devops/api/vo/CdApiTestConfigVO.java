@@ -17,9 +17,18 @@ public class CdApiTestConfigVO {
     private String apiTestTaskName;
     @Encrypt
     private Long apiTestConfigId;
+    @Encrypt
+    private Long apiTestSuiteId;
     private String deployJobName;
     private WarningSettingVO warningSettingVO;
 
+    public Long getApiTestSuiteId() {
+        return apiTestSuiteId;
+    }
+
+    public void setApiTestSuiteId(Long apiTestSuiteId) {
+        this.apiTestSuiteId = apiTestSuiteId;
+    }
 
     public Long getApiTestTaskId() {
         return apiTestTaskId;

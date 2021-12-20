@@ -62,8 +62,8 @@ import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
@@ -185,7 +185,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
     @Autowired
-    private RdupmClient rdupmClient;
+    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
 
 
 
@@ -1197,26 +1197,38 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
             throw new CommonException("error.invalid.job.type");
         }
-        CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdApiTestConfigVO.class);
+        DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
         ApiTestTaskRecordDTO taskRecordDTO;
 
         // 更新记录状态为执行中
         devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.RUNNING.toValue());
         try {
-            taskRecordDTO = testServiceClientoperator
-                    .executeTask(devopsCdJobRecordDTO.getProjectId(),
-                            cdApiTestConfigVO.getApiTestTaskId(),
-                            devopsCdJobRecordDTO.getCreatedBy(),
-                            ApiTestTriggerType.PIPELINE.getValue(),
-                            jobRecordId,
-                            cdApiTestConfigVO.getApiTestConfigId());
+            if (ApiTestTaskType.TASK.getValue().equals(devopsCdApiTestInfoDTO.getTaskType())) {
+                taskRecordDTO = testServiceClientoperator
+                        .executeTask(devopsCdJobRecordDTO.getProjectId(),
+                                devopsCdApiTestInfoDTO.getApiTestTaskId(),
+                                devopsCdJobRecordDTO.getCreatedBy(),
+                                ApiTestTriggerType.PIPELINE.getValue(),
+                                jobRecordId,
+                                devopsCdApiTestInfoDTO.getApiTestConfigId());
+            } else if (ApiTestTaskType.SUITE.getValue().equals(devopsCdApiTestInfoDTO.getTaskType())) {
+                taskRecordDTO = testServiceClientoperator
+                        .executeSuite(devopsCdJobRecordDTO.getProjectId(),
+                                devopsCdApiTestInfoDTO.getApiTestTaskId(),
+                                devopsCdJobRecordDTO.getCreatedBy(),
+                                ApiTestTriggerType.PIPELINE.getValue(),
+                                jobRecordId);
+            } else {
+                throw new CommonException("error.task.type.invalid");
+            }
 
             DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
             devopsCdJobRecordDTO1.setApiTestTaskRecordId(taskRecordDTO.getId());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO1);
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task success. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task success. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId());
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), cdApiTestConfigVO.getApiTestTaskId(), e.getCause());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId(), e.getCause());
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);

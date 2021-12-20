@@ -170,6 +170,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiStepService devopsCiStepService;
     @Autowired
     private DevopsCiPipelineVariableService devopsCiPipelineVariableService;
+    @Autowired
+    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -2354,6 +2356,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             CdApiTestConfigVO cdApiTestConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdApiTestConfigVO));
+
+            WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
+
+            DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = ConvertUtils.convertObject(cdApiTestConfigVO, DevopsCdApiTestInfoDTO.class);
+            devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
+            devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
+            devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
+            devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
+
+            if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
+                devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+            }
+            devopsCdApiTestInfoService.baseCreate(devopsCdApiTestInfoDTO);
+            devopsCdJobDTO.setDeployInfoId(devopsCdApiTestInfoDTO.getId());
         } else if (JobTypeEnum.CD_EXTERNAL_APPROVAL.value().equals(t.getType())) {
             // 后续如果需要对外部卡点任务处理逻辑可以写这里
         }
