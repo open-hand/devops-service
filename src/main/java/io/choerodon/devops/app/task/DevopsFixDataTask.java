@@ -38,7 +38,6 @@ public class DevopsFixDataTask {
             logger.error("error.fix.data", e);
         }
     }
-
     /**
      * v1.2.0 执行此次任务需要保证，1.2.0-alpha版本的数据修复任务执行成功才行。即1.1版本必须先升级1.2.0-alpha版本，在升级1.2版本
      *
