@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -18,6 +19,7 @@ public class CiTemplatePipelineVO {
     private Long id;
 
     @ApiModelProperty("流水线名称")
+    @NotNull
     private String name;
 
     @ApiModelProperty("层级")
@@ -29,7 +31,8 @@ public class CiTemplatePipelineVO {
     @ApiModelProperty("是否预置")
     private Boolean builtIn;
 
-    @ApiModelProperty("模板适用语言")
+    @ApiModelProperty("模板分类Id")
+    @NotNull
     private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")

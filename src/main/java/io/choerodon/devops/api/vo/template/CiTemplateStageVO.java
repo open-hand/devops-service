@@ -15,6 +15,7 @@ public class CiTemplateStageVO {
     @Encrypt
     private Long id;
     @ApiModelProperty(value = "阶段名称", required = true)
+    @NotNull
     private String name;
     @ApiModelProperty(value = "流水线模板id", required = true)
     @Encrypt
