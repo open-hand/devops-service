@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.template;
 
+import java.util.Date;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -50,6 +51,11 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty("sonar 配置")
     private CiTemplateSonarVO ciTemplateSonarVO;
+
+    @ApiModelProperty(value = "创建时间")
+    private Date creationDate;
+
+    private CiTemplateStepCategoryVO ciTemplateStepCategoryVO;
 
     public CiTemplateSonarVO getCiTemplateSonarVO() {
         return ciTemplateSonarVO;
@@ -153,5 +159,21 @@ public class CiTemplateStepVO {
 
     public void setBuiltIn(Boolean builtIn) {
         this.builtIn = builtIn;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public CiTemplateStepCategoryVO getCiTemplateStepCategoryVO() {
+        return ciTemplateStepCategoryVO;
+    }
+
+    public void setCiTemplateStepCategoryVO(CiTemplateStepCategoryVO ciTemplateStepCategoryVO) {
+        this.ciTemplateStepCategoryVO = ciTemplateStepCategoryVO;
     }
 }
