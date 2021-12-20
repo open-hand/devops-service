@@ -62,6 +62,10 @@ public enum DevopsCiStepTypeEnum {
      * 上传jar 类型
      */
     UPLOAD_JAR("upload_jar"),
+    /**
+     * Node Js构建
+     */
+    NODE_JS_BUILD("node_js_build"),
 
     /**
      * 自定义任务
