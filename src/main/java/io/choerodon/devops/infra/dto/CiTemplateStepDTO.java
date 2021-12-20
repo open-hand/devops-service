@@ -70,9 +70,7 @@ public class CiTemplateStepDTO extends AuditDomain {
     @NotBlank
     private String script;
 
-    @ApiModelProperty(value = "具体步骤参数配置Id", required = true)
-    @NotNull
-    private Long configId;
+
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
@@ -141,13 +139,6 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.script = script;
     }
 
-    public Long getConfigId() {
-        return configId;
-    }
-
-    public void setConfigId(Long configId) {
-        this.configId = configId;
-    }
 
 }
 
