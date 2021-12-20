@@ -26,6 +26,8 @@ public class CiTemplateStepVO {
     @ApiModelProperty(value = "流水线步骤分类id", required = true)
     @Encrypt
     private Long categoryId;
+    @ApiModelProperty(value = "分类名称")
+    private String categoryName;
     @NotNull
     @ApiModelProperty(value = "步骤类型", required = true)
     private String type;
@@ -56,6 +58,14 @@ public class CiTemplateStepVO {
     private Date creationDate;
 
     private CiTemplateStepCategoryVO ciTemplateStepCategoryVO;
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 
     public CiTemplateSonarVO getCiTemplateSonarVO() {
         return ciTemplateSonarVO;
