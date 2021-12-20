@@ -39,6 +39,11 @@ public class DevopsFixDataTask {
         }
     }
 
+    /**
+     * v1.2.0 执行此次任务需要保证，1.2.0-alpha版本的数据修复任务执行成功才行。即1.1版本必须先升级1.2.0-alpha版本，在升级1.2版本
+     *
+     * @param map
+     */
     @JobTask(maxRetryCount = 3, code = FIX_PIPELINE_DATA, description = "修复流水线数据")
     @TimedTask(name = FIX_PIPELINE_DATA, description = "修复流水线数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixPipelineData(Map<String, Object> map) {
