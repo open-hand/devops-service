@@ -34,14 +34,14 @@ public class DevopsCiStepOperator {
                 .collect(Collectors.toMap(v -> v.getType().value(), Function.identity()));
     }
 
-    public AbstractDevopsCiStepHandler getHandler(String Type) {
-        return ciStepHandlerMap.get(Type);
+    public AbstractDevopsCiStepHandler getHandler(String type) {
+        return ciStepHandlerMap.get(type);
     }
 
-    public AbstractDevopsCiStepHandler getHandlerOrThrowE(String Type) {
-        AbstractDevopsCiStepHandler handler = getHandler(Type);
+    public AbstractDevopsCiStepHandler getHandlerOrThrowE(String type) {
+        AbstractDevopsCiStepHandler handler = getHandler(type);
         if (handler == null) {
-            throw new CommonException("error.unsupported.step.type");
+            throw new CommonException("error.unsupported.step.type", type);
         }
         return handler;
     }
