@@ -52,6 +52,16 @@ public interface TestServiceClient {
     ResponseEntity<String> queryById(@PathVariable("project_id") Long projectId,
                                      @PathVariable("record_id") Long recordId);
 
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation("查询测试套件记录基础信息")
+    @GetMapping("/v1/projects/{project_id}/api_test/suite_records/{id}/preview")
+    ResponseEntity<String> querySuitePreviewById(@ApiParam(value = "项目id", required = true)
+                                                 @PathVariable("project_id") Long projectId,
+                                                 @ApiParam(value = "套件记录id", required = true)
+                                                 @Encrypt
+                                                 @PathVariable("id") Long suiteRecordId);
+
     @ApiOperation("测试jmeter服务器是够可用于分布式测试 / devops-service用")
     @GetMapping("/v1/distribute_hosts/connection_test")
     ResponseEntity<String> testConnection(@RequestParam("host_ip") String hostIp,

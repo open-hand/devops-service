@@ -45,6 +45,7 @@ import io.choerodon.devops.api.vo.pipeline.ExternalApprovalInfoVO;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
+import io.choerodon.devops.api.vo.test.ApiTestSuiteRecordSimpleVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -56,6 +57,7 @@ import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.test.ApiTestTaskRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
@@ -1464,6 +1466,87 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("failedCount", String.valueOf(apiTestTaskRecordVO.getFailCount()));
                         param.put("caseCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount() + apiTestTaskRecordVO.getFailCount()));
                         sendNotificationService.sendApiTestWarningMessage(cdApiTestConfigVO.getWarningSettingVO().getNotifyUserIds(), param, devopsCdJobRecordDTO.getProjectId());
+                    } else {
+                        // 高于阈值
+                        result = true;
+                    }
+                }
+            } else {
+                // 未开启告警设置则直接成功
+                result = true;
+            }
+        }
+
+        if (result) {
+            handlerJobSuccess(devopsCdJobRecordDTO, devopsCdStageRecordDTO, devopsCdPipelineRecordDTO);
+        } else {
+            setAppDeployStatus(devopsCdPipelineRecordDTO.getId(),
+                    devopsCdStageRecordDTO.getId(),
+                    devopsCdJobRecordDTO.getId(),
+                    false);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void handleApiTestSuiteCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(apiTestCompleteEventVO.getTriggerId());
+        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
+        DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
+
+        // 流水线状态
+        // 失败：
+        // 1. API测试任务执行失败
+        // 2. API测试任务执行成功，开启了告警设置，成功率低于阈值，设置了阻塞
+
+        // 执行结果
+        boolean result = false;
+
+        if (PipelineStatus.SUCCESS.toValue().equals(apiTestCompleteEventVO.getStatus())) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Start send warning message <<<<<<<<<<<<<<<<<<<<");
+            ApiTestSuiteRecordSimpleVO apiTestSuiteRecordSimpleVO = null;
+            try {
+                apiTestSuiteRecordSimpleVO = testServiceClientoperator.querySuitePreviewById(devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
+            } catch (Exception e) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>> Query api test task record failed. projectId : {}, taskRecordId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdJobRecordDTO.getApiTestTaskRecordId());
+            }
+            DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+            // 发送告警
+            // 启用了告警设置，则需要判断成功率与阈值
+            if (Boolean.TRUE.equals(devopsCdApiTestInfoDTO.getEnableWarningSetting())) {
+                if (apiTestSuiteRecordSimpleVO != null
+                        && apiTestSuiteRecordSimpleVO.getTotalTask() != null
+                        && apiTestSuiteRecordSimpleVO.getSuccessTask() != null) {
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, apiTestSuiteRecordSimpleVO: {} <<<<<<<<<<<<<<<<<<<<", apiTestSuiteRecordSimpleVO);
+                    double totalTask = apiTestSuiteRecordSimpleVO.getTotalTask();
+                    double successTask = apiTestSuiteRecordSimpleVO.getSuccessTask();
+                    double successRate = (successTask / totalTask) * 100;
+                    successRate = (double) Math.round(successRate * 100) / 100;
+
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>> Send warning message, devopsCdApiTestInfoDTO: {} <<<<<<<<<<<<<<<<<<<<", devopsCdApiTestInfoDTO);
+                    // 低于阈值
+                    if (successRate < devopsCdApiTestInfoDTO.getPerformThreshold()) {
+                        // 未开启阻塞，则执行成功
+                        if (Boolean.FALSE.equals(devopsCdApiTestInfoDTO.getBlockAfterJob())) {
+                            result = true;
+                        }
+                        LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
+                        Map<String, String> param = new HashMap<>();
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                        Tenant tenant = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+                        String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
+                        param.put("projectName", projectDTO.getName());
+                        param.put("tenantName", tenant.getTenantName());
+                        param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
+                        param.put("taskName", devopsCdJobRecordDTO.getName());
+                        param.put("successRate", String.valueOf(successRate));
+                        param.put("threshold", devopsCdApiTestInfoDTO.getPerformThreshold().toString());
+                        param.put("link", frontUrl + link);
+                        param.put("link_web", link);
+                        Set<Long> userIds = JsonHelper.unmarshalByJackson(devopsCdApiTestInfoDTO.getNotifyUserIds(), new TypeReference<Set<Long>>() {
+                        });
+                        sendNotificationService.sendApiTestSuiteWarningMessage(userIds, param, devopsCdJobRecordDTO.getProjectId());
                     } else {
                         // 高于阈值
                         result = true;
