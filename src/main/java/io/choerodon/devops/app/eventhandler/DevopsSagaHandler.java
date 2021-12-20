@@ -728,6 +728,23 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * 消费测试套件执行成功的消息
+     */
+    @SagaTask(code = SagaTaskCodeConstants.HANDLE_API_TEST_SUITE_COMPLETE_EVENT,
+            description = "创建流水线自动部署实例",
+            sagaCode = SagaTopicCodeConstants.API_TEST_SUITE_COMPLETE_EVENT,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void handleApiTestSuiteCompleteEvent(String data) {
+        ApiTestCompleteEventVO apiTestCompleteEventVO = JsonHelper.unmarshalByJackson(data, ApiTestCompleteEventVO.class);
+        // 只处理流水线触发的api测试任务
+        if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
+            devopsCdPipelineService.handleApiTestSuiteCompleteEvent(apiTestCompleteEventVO);
+        }
+    }
+
+    /**
      * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
