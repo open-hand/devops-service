@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo.template;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -12,6 +13,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @author hao.wang08@hand-china.com
  * @since 2021-12-01 17:12:44
  */
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class CiTemplateJobVO {
 
     @Encrypt
