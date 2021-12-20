@@ -85,7 +85,7 @@ public class MessageCodeConstants {
     public static final String ENABLE_INSTANCE = "ENABLEINSTANCE";
     public static final String STOP_INSTANCE = "STOPINSTANCE";
     public static final String PIPELINE_API_TEST_WARNING = "PIPELINE_API_TEST_WARNING";
-    public static final String PIPELINE_API_TEST_SUITE_WARNING = "PIPELINE_API_TEST_SUITE_WARNING";
+    public static final String PIPELINE_API_SUITE_WARNING = "PIPELINE_API_SUITE_WARNING";
 
 
 }

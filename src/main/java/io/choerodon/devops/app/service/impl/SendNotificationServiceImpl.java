@@ -1281,7 +1281,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     List<Receiver> receivers = new ArrayList<>();
                     userIds.forEach(userId -> receivers.add(constructReceiver(userId)));
 
-                    sendNotices(MessageCodeConstants.PIPELINE_API_TEST_SUITE_WARNING, receivers, params, projectId);
+                    sendNotices(MessageCodeConstants.PIPELINE_API_SUITE_WARNING, receivers, params, projectId);
                 },
                 ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
     }
