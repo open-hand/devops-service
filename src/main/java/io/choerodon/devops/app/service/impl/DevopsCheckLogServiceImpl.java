@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import java.util.stream.Collectors;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.CdApiTestConfigVO;
 import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.NexusServerConfig;
-import io.choerodon.devops.api.vo.pipeline.DevopsDeployInfoVO;
+import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -24,11 +25,13 @@ import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.SaasLevelEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 
 
@@ -38,6 +41,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
+    public static final String FIX_PIPELINE_DATA = "fix.pipeline.data";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
@@ -49,8 +53,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
-    @Autowired
-    private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
@@ -65,6 +67,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiContentMapper devopsCiContentMapper;
     @Autowired
     private RdupmClient rdupmClient;
+    @Autowired
+    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
 
 
     @Override
@@ -85,6 +89,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case PIPELINE_CONTENT_FIX:
                 pipelineContentFix();
                 break;
+            case FIX_PIPELINE_DATA:
+                pipelineDataFix();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -92,6 +99,46 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void pipelineDataFix() {
+        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByType(JobTypeEnum.CD_API_TEST);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline api test data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        Set<Long> errorJobIds = new HashSet<>();
+        for (DevopsCdJobDTO devopsCdJobDTO : devopsCdJobDTOS) {
+            try {
+                if (devopsCdJobDTO != null) {
+                    CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+                    DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = ConvertUtils.convertObject(cdApiTestConfigVO, DevopsCdApiTestInfoDTO.class);
+                    devopsCdApiTestInfoDTO.setTaskType(ApiTestTaskType.TASK.getValue());
+
+                    WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
+                    if (warningSettingVO != null) {
+                        devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
+                        devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
+                        devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
+                        devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
+                        if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
+                            devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+                        }
+                    }
+                    devopsCdApiTestInfoService.baseCreate(devopsCdApiTestInfoDTO);
+                    devopsCdJobDTO.setDeployInfoId(devopsCdApiTestInfoDTO.getId());
+                    devopsCdJobService.baseUpdate(devopsCdJobDTO);
+                }
+            } catch (Exception e) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline api test data : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdJobDTO.getId());
+                errorJobIds.add(devopsCdJobDTO.getId());
+            }
+
+        }
+        if (CollectionUtils.isEmpty(errorJobIds)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline api test data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        } else {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline api test data, but exist errors! Failed job ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
+            }
+        }
     }
 
     private void pipelineContentFix() {
