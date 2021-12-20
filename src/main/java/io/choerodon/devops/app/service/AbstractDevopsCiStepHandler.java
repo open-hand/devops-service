@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -27,7 +28,7 @@ public abstract class AbstractDevopsCiStepHandler {
     @Lazy
     protected DevopsCiStepService devopsCiStepService;
 
-    public abstract void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
+    public abstract void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO);
 
     public abstract void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
 

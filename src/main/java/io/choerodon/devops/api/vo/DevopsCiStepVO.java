@@ -41,47 +41,47 @@ public class DevopsCiStepVO {
     private Long devopsCiJobId;
 
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
-    private DevopsCiSonarConfigDTO devopsCiSonarConfigDTO;
+    private DevopsCiSonarConfigDTO sonarConfig;
 
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
-    private DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO;
+    private DevopsCiDockerBuildConfigDTO dockerBuildConfig;
 
     @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
-    private DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO;
+    private DevopsCiMavenPublishConfigDTO mavenPublishConfig;
 
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
-    private DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO;
+    private DevopsCiMavenBuildConfigDTO mavenBuildConfig;
 
-    public DevopsCiMavenBuildConfigDTO getDevopsCiMavenBuildConfigDTO() {
-        return devopsCiMavenBuildConfigDTO;
+    public DevopsCiMavenBuildConfigDTO getMavenBuildConfig() {
+        return mavenBuildConfig;
     }
 
-    public void setDevopsCiMavenBuildConfigDTO(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO) {
-        this.devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigDTO;
+    public void setMavenBuildConfig(DevopsCiMavenBuildConfigDTO mavenBuildConfig) {
+        this.mavenBuildConfig = mavenBuildConfig;
     }
 
-    public DevopsCiMavenPublishConfigDTO getDevopsCiMavenPublishConfigDTO() {
-        return devopsCiMavenPublishConfigDTO;
+    public DevopsCiMavenPublishConfigDTO getMavenPublishConfig() {
+        return mavenPublishConfig;
     }
 
-    public void setDevopsCiMavenPublishConfigDTO(DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO) {
-        this.devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigDTO;
+    public void setMavenPublishConfig(DevopsCiMavenPublishConfigDTO mavenPublishConfig) {
+        this.mavenPublishConfig = mavenPublishConfig;
     }
 
-    public DevopsCiSonarConfigDTO getDevopsCiSonarConfigDTO() {
-        return devopsCiSonarConfigDTO;
+    public DevopsCiSonarConfigDTO getSonarConfig() {
+        return sonarConfig;
     }
 
-    public void setDevopsCiSonarConfigDTO(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO) {
-        this.devopsCiSonarConfigDTO = devopsCiSonarConfigDTO;
+    public void setSonarConfig(DevopsCiSonarConfigDTO sonarConfig) {
+        this.sonarConfig = sonarConfig;
     }
 
-    public DevopsCiDockerBuildConfigDTO getDevopsCiDockerBuildConfigDTO() {
-        return devopsCiDockerBuildConfigDTO;
+    public DevopsCiDockerBuildConfigDTO getDockerBuildConfig() {
+        return dockerBuildConfig;
     }
 
-    public void setDevopsCiDockerBuildConfigDTO(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO) {
-        this.devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigDTO;
+    public void setDockerBuildConfig(DevopsCiDockerBuildConfigDTO dockerBuildConfig) {
+        this.dockerBuildConfig = dockerBuildConfig;
     }
 
     public Long getSequence() {

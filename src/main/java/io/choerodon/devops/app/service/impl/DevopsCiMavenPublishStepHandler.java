@@ -12,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
@@ -50,20 +51,20 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getDevopsCiMavenPublishConfigDTO();
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getMavenPublishConfig();
         devopsCiMavenPublishConfigDTO.setStepId(stepId);
         devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
     }
 
     @Override
-    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateStepVO.setMavenPublishConfig(ciTemplateMavenPublishService.queryByStepId(ciTemplateStepVO.getId()));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setDevopsCiMavenPublishConfigDTO(devopsCiMavenPublishConfigDTO);
+        devopsCiStepVO.setMavenPublishConfig(devopsCiMavenPublishConfigDTO);
     }
 
     @Override

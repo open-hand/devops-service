@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateSonarService;
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -26,7 +26,6 @@ import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -50,22 +49,20 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getDevopsCiSonarConfigDTO();
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getSonarConfig();
         devopsCiSonarConfigDTO.setStepId(stepId);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
     }
 
     @Override
-    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigDTO.class);
-        devopsCiStepVO.setDevopsCiSonarConfigDTO(devopsCiSonarConfigDTO);
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateStepVO.setSonarConfig(ciTemplateSonarService.queryByStepId(ciTemplateStepVO.getId()));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setDevopsCiSonarConfigDTO(devopsCiSonarConfigDTO);
+        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigDTO);
     }
 
     @Override

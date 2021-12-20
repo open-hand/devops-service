@@ -5,6 +5,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 
@@ -18,7 +19,7 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 @Service
 public class DevopsCiGoBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Override
-    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
 
     }
 
