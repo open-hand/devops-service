@@ -30,6 +30,11 @@ public class TestServiceClientFallback implements TestServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> querySuitePreviewById(Long projectId, Long suiteRecordId) {
+        throw new CommonException("error.failed.to.query.suite.record");
+    }
+
+    @Override
     public ResponseEntity<String> testConnection(String hostIp, Integer jmeterPort) {
         throw new CommonException("error.failed.to.test.host.connection");
     }
