@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
+
 /**
  * 流水线步骤模板分类(CiTemplateStepCategory)应用服务
  *
@@ -8,5 +13,6 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTemplateStepCategoryService {
 
+    List<CiTemplateStepCategoryVO> listByIds(Set<Long> cids);
 }
 

@@ -1,8 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
 import io.choerodon.devops.app.service.CiTemplateStepCategoryService;
 import io.choerodon.devops.infra.mapper.CiTemplateStepCategoryMapper;
 
@@ -18,5 +22,9 @@ public class CiTemplateStepCategoryServiceImpl implements CiTemplateStepCategory
     private CiTemplateStepCategoryMapper ciTemplateStepCategorymapper;
 
 
+    @Override
+    public List<CiTemplateStepCategoryVO> listByIds(Set<Long> cids) {
+        return ciTemplateStepCategorymapper.listByIds(cids);
+    }
 }
 
