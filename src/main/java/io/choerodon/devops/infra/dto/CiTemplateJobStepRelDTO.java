@@ -50,9 +50,6 @@ public class CiTemplateJobStepRelDTO extends AuditDomain {
     @NotNull
     private Long sequence;
 
-    @ApiModelProperty(value = "顺序", required = true)
-    @NotNull
-    private Long ciTemplateStageId;
 
 
     public Long getId() {
@@ -87,13 +84,6 @@ public class CiTemplateJobStepRelDTO extends AuditDomain {
         this.sequence = sequence;
     }
 
-    public Long getCiTemplateStageId() {
-        return ciTemplateStageId;
-    }
-
-    public void setCiTemplateStageId(Long ciTemplateStageId) {
-        this.ciTemplateStageId = ciTemplateStageId;
-    }
 
 }
 
