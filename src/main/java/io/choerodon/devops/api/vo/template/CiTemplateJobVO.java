@@ -46,6 +46,8 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty(value = "任务模板下面的步骤模板")
     private List<CiTemplateStepVO> ciTemplateStepVOS;
+    @ApiModelProperty("所属任务分组名称")
+    private String groupName;
 
     public List<CiTemplateStepVO> getCiTemplateStepVOS() {
         return ciTemplateStepVOS;
@@ -157,5 +159,13 @@ public class CiTemplateJobVO {
 
     public void setCreatorInfo(IamUserDTO creatorInfo) {
         this.creatorInfo = creatorInfo;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }
