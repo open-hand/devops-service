@@ -1,15 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.service.CiTemplateStepCategoryService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -28,6 +32,8 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CiTemplateStepServiceImpl.class);
 
+    @Autowired
+    private CiTemplateStepCategoryService ciTemplateStepCategoryService;
     @Autowired
     private CiTemplateStepMapper ciTemplateStepMapper;
 
@@ -60,15 +66,27 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
     }
 
     @Override
-    public List<CiTemplateStepVO> listStepsByProjectId(Long projectId) {
+    public List<CiTemplateStepCategoryVO> listStepsByProjectId(Long projectId) {
+
+        // 先查询所有步骤
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateStepMapper.listStepsByOrganizationIdId(projectDTO.getOrganizationId());
         ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
             devopsCiStepHandler.fillTemplateStepConfigInfo(ciTemplateStepVO);
         });
+        Map<Long, List<CiTemplateStepVO>> categoryStepMap = ciTemplateStepVOS.stream().collect(Collectors.groupingBy(CiTemplateStepVO::getCategoryId));
 
-        return ciTemplateStepVOS;
+        Set<Long> cids = ciTemplateStepVOS.stream().map(CiTemplateStepVO::getCategoryId).collect(Collectors.toSet());
+        List<CiTemplateStepCategoryVO> ciTemplateStepCategoryVOS = ciTemplateStepCategoryService.listByIds(cids);
+
+        // 将步骤分组
+        ciTemplateStepCategoryVOS.forEach(ciTemplateStepCategoryVO -> {
+            List<CiTemplateStepVO> ciTemplateStepVOList = categoryStepMap.get(ciTemplateStepCategoryVO.getId());
+            ciTemplateStepCategoryVO.setCiTemplateStepVOList(ciTemplateStepVOList);
+        });
+
+        return ciTemplateStepCategoryVOS;
     }
 }
 

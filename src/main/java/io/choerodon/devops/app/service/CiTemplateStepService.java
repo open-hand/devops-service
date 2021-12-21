@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 
 /**
@@ -18,6 +19,6 @@ public interface CiTemplateStepService {
     List<CiTemplateStepVO> listStepsByTemplateJobId(Long projectId, Long templateJobId);
 
 
-    List<CiTemplateStepVO> listStepsByProjectId(Long projectId);
+    List<CiTemplateStepCategoryVO> listStepsByProjectId(Long projectId);
 }
 

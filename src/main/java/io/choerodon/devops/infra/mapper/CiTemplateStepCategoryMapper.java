@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
 import io.choerodon.devops.infra.dto.CiTemplateStepCategoryDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +17,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface CiTemplateStepCategoryMapper extends BaseMapper<CiTemplateStepCategoryDTO> {
 
+    List<CiTemplateStepCategoryVO> listByIds(@Param("cids") Set<Long> cids);
 }
 

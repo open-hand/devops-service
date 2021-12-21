@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo.template;
 
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
+import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -48,6 +50,16 @@ public class CiTemplateStepCategoryVO {
 
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
+
+    private List<CiTemplateStepVO> ciTemplateStepVOList;
+
+    public List<CiTemplateStepVO> getCiTemplateStepVOList() {
+        return ciTemplateStepVOList;
+    }
+
+    public void setCiTemplateStepVOList(List<CiTemplateStepVO> ciTemplateStepVOList) {
+        this.ciTemplateStepVOList = ciTemplateStepVOList;
+    }
 
     public Date getCreationDate() {
         return creationDate;
