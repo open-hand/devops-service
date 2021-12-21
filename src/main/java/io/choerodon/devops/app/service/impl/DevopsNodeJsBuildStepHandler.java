@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  * Created by wangxiang on 2021/12/20
  */
 @Service
-public class DevopsNodeJsBuildStepHandler  extends AbstractDevopsCiStepHandler {
+public class DevopsNodeJsBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Autowired
     private CiTemplateNodeJsBuildService ciTemplateNodeJsBuildService;
@@ -23,6 +23,11 @@ public class DevopsNodeJsBuildStepHandler  extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+
+    }
+
+    @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
     }
 

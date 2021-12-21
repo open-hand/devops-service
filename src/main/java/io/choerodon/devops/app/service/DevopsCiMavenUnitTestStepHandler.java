@@ -23,6 +23,11 @@ public class DevopsCiMavenUnitTestStepHandler extends AbstractDevopsCiStepHandle
     }
 
     @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
     }

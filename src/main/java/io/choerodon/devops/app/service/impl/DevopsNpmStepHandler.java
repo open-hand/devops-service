@@ -25,6 +25,11 @@ public class DevopsNpmStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
     }

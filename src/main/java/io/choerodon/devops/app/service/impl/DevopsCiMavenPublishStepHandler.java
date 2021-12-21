@@ -62,6 +62,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        devopsCiStepVO.setMavenPublishConfig(ConvertUtils.convertObject(ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId()), DevopsCiMavenPublishConfigDTO.class));
+    }
+
+    @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setMavenPublishConfig(devopsCiMavenPublishConfigDTO);
