@@ -53,6 +53,7 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
+    private Long createdBy;
 
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
     private CiTemplateSonarDTO sonarConfig;
@@ -68,6 +69,14 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 
     private CiTemplateStepCategoryVO ciTemplateStepCategoryVO;
 
