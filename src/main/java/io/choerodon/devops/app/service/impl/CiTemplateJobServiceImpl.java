@@ -79,17 +79,21 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
         List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateStepService.listByJobIds(jobIds);
         Map<Long, List<CiTemplateStepVO>> jobStepsMap = ciTemplateStepVOS.stream().collect(Collectors.groupingBy(CiTemplateStepVO::getCiTemplateJobId));
         ciTemplateJobVOList.forEach(templateJobVO -> {
-            List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
-            List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-            ciTemplateStepVOList.forEach(ciTemplateStepVO -> {
-                // 添加步骤关联的配置信息
-                DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
-                stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
-                devopsCiStepVOList.add(devopsCiStepVO);
-            });
             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(templateJobVO, DevopsCiJobVO.class);
-            devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+
+            // 填充步骤信息
+            List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
+            if (!CollectionUtils.isEmpty(ciTemplateStepVOList)) {
+                List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
+                ciTemplateStepVOList.forEach(ciTemplateStepVO -> {
+                    // 添加步骤关联的配置信息
+                    DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
+                    AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+                    stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+                    devopsCiStepVOList.add(devopsCiStepVO);
+                });
+                devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+            }
             devopsCiJobVOList.add(devopsCiJobVO);
         });
         return devopsCiJobVOList;
