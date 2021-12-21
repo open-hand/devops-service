@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.template;
 
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -55,7 +56,7 @@ public class CiTemplateJobVO {
     @ApiModelProperty("创建者Id")
     private Long createdBy;
 
-    private Long creationDate;
+    private Date creationDate;
 
 
     public List<CiTemplateStepVO> getCiTemplateStepVOS() {
@@ -194,11 +195,11 @@ public class CiTemplateJobVO {
         this.createdBy = createdBy;
     }
 
-    public Long getCreationDate() {
+    public Date getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(Long creationDate) {
+    public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
 }
