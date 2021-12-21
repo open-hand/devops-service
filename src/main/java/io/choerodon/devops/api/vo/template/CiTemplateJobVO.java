@@ -49,6 +49,15 @@ public class CiTemplateJobVO {
     @ApiModelProperty("所属任务分组名称")
     private String groupName;
 
+    @ApiModelProperty(value = "含有步骤数")
+    private Long stepNumber;
+
+    @ApiModelProperty("创建者Id")
+    private Long createdBy;
+
+    private Long creationDate;
+
+
     public List<CiTemplateStepVO> getCiTemplateStepVOS() {
         return ciTemplateStepVOS;
     }
@@ -167,5 +176,29 @@ public class CiTemplateJobVO {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public Long getStepNumber() {
+        return stepNumber;
+    }
+
+    public void setStepNumber(Long stepNumber) {
+        this.stepNumber = stepNumber;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Long getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Long creationDate) {
+        this.creationDate = creationDate;
     }
 }
