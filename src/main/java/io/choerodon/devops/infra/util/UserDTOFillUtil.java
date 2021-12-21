@@ -40,9 +40,9 @@ public class UserDTOFillUtil {
         List<Long> userIds = sourceList.stream().map(v -> {
             Class<?> aClass = v.getClass();
             try {
-                Field declaredField = aClass.getDeclaredField(filed);
-                declaredField.setAccessible(true);
-                return (Long) declaredField.get(v);
+                Field userIdFiled = getFiled(aClass, filed);
+                userIdFiled.setAccessible(true);
+                return (Long) userIdFiled.get(v);
             } catch (Exception e) {
                 LOGGER.info("read user id failed", e.fillInStackTrace());
             }
@@ -55,12 +55,13 @@ public class UserDTOFillUtil {
             sourceList.forEach(source -> {
                 Class<?> aClass = source.getClass();
                 try {
-                    Field userIdFiled = aClass.getDeclaredField(filed);
+                    Field userIdFiled = getFiled(aClass, filed);
                     userIdFiled.setAccessible(true);
                     Long userId = (Long) userIdFiled.get(source);
 
                     IamUserDTO iamUserDTO = iamUserDTOMap.get(userId);
-                    Field userDTOFiled = aClass.getDeclaredField(destFiled);
+
+                    Field userDTOFiled = getFiled(aClass, destFiled);
                     userDTOFiled.setAccessible(true);
                     userDTOFiled.set(source, iamUserDTO);
                 } catch (Exception e) {
@@ -68,5 +69,23 @@ public class UserDTOFillUtil {
                 }
             });
         }
+    }
+
+    private static Field getFiled(Class<?> aClass, String filed) throws NoSuchFieldException {
+
+        Field[] declaredFields = aClass.getDeclaredFields();
+
+        for (Field declaredField : declaredFields) {
+            if (declaredField.getName().equals(filed)) {
+                return declaredField;
+            }
+        }
+
+        if (aClass.getSuperclass() != null) {
+            return getFiled(aClass.getSuperclass(), filed);
+        }
+
+        throw new NoSuchFieldException(filed);
+
     }
 }
