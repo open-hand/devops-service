@@ -6,7 +6,10 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
@@ -22,13 +25,12 @@ public class ProjectCiTemplateStepController {
     private CiTemplateStepService ciTemplateStepService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询任务下的步骤列表")
+    @ApiOperation(value = "查询项目下的可选的步骤列表")
     @GetMapping
     public ResponseEntity<List<CiTemplateStepVO>> listStepsByTemplateJobId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "template_job_id") Long templateJobId) {
-        return ResponseEntity.ok(ciTemplateStepService.listStepsByTemplateJobId(projectId, templateJobId));
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(ciTemplateStepService.listStepsByProjectId(projectId));
     }
 
 }

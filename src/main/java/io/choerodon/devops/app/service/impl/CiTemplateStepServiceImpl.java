@@ -58,5 +58,17 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
 
         return ciTemplateStepVOS;
     }
+
+    @Override
+    public List<CiTemplateStepVO> listStepsByProjectId(Long projectId) {
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateStepMapper.listStepsByOrganizationIdId(projectDTO.getOrganizationId());
+        ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
+            AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
+            devopsCiStepHandler.fillTemplateStepConfigInfo(ciTemplateStepVO);
+        });
+
+        return ciTemplateStepVOS;
+    }
 }
 

@@ -16,5 +16,8 @@ public interface CiTemplateStepService {
     List<CiTemplateStepVO> listByJobIds(Set<Long> jobIds);
 
     List<CiTemplateStepVO> listStepsByTemplateJobId(Long projectId, Long templateJobId);
+
+
+    List<CiTemplateStepVO> listStepsByProjectId(Long projectId);
 }
 
