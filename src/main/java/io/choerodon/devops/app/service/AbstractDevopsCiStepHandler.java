@@ -30,6 +30,8 @@ public abstract class AbstractDevopsCiStepHandler {
 
     public abstract void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO);
 
+    public abstract void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
+
     public abstract void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
 
     /**

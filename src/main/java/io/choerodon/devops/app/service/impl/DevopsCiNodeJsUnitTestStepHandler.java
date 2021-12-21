@@ -24,6 +24,11 @@ public class DevopsCiNodeJsUnitTestStepHandler extends AbstractDevopsCiStepHandl
     }
 
     @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
 
     }

@@ -31,10 +31,7 @@ import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
-import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.GitlabCiUtil;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.MavenSettingsUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * 〈功能简述〉
@@ -76,6 +73,11 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId()));
+    }
+
+    @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        devopsCiStepVO.setMavenBuildConfig(ConvertUtils.convertObject(ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId()), DevopsCiMavenBuildConfigDTO.class));
     }
 
     @Override
