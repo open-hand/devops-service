@@ -15,7 +15,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_publish_config.groovy') 
 
             column(name: 'maven_settings', type: 'TEXT', remarks: '直接粘贴的maven的settings内容')
 
-            column(name: 'nexus_repo_id', type: 'TEXT', remarks: 'nexus的maven仓库在制品库的主键id')
+            column(name: 'nexus_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
