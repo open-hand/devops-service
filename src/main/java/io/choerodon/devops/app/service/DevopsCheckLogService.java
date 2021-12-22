@@ -9,4 +9,6 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
+    public void devopsCiPipelineDataFix();
+
 }

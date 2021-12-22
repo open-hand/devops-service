@@ -57,7 +57,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
 
-        Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getSkipDockerTlsVerify();
+        Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getEnableDockerTlsVerify();
         //是否开启镜像扫描 默认是关闭镜像扫描的
         Boolean imageScan = devopsCiDockerBuildConfigDTO.getImageScan();
         return GitlabCiUtil.generateDockerScripts(
