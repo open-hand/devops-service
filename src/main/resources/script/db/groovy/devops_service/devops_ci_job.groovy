@@ -60,4 +60,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数', afterColumn: 'trigger_type')
         }
     }
+
+    changeSet(author: 'wanghao', id: '2021-12-22-add-column') {
+        renameColumn(columnDataType: 'VARCHAR(255)', newColumnName: 'old_type', oldColumnName: 'type', remarks: '任务类型', tableName: 'devops_ci_job')
+
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'group_type', type: 'VARCHAR(20)', remarks: '分组类型', afterColumn: 'trigger_type')
+            column(name: 'script', type: 'VARCHAR(2000)', remarks: '步骤中包含的脚本', afterColumn: 'group_type')
+            column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 normal 普通，custom 自定义脚本')
+        }
+    }
 }

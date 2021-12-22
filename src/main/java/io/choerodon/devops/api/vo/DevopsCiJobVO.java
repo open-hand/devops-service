@@ -32,6 +32,9 @@ public class DevopsCiJobVO {
     @ApiModelProperty("runner镜像地址")
     private String image;
 
+    @ApiModelProperty("分组类型")
+    private String groupType;
+
     @ApiModelProperty("job的并发数")
     private Integer parallel;
 
@@ -75,7 +78,26 @@ public class DevopsCiJobVO {
     @ApiModelProperty("ci阶段的构建类型")
     private List<String> configJobTypes;
 
+    @ApiModelProperty("脚本类型任务的自定义脚本")
+    private String script;
+
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
 
     public CiTemplateJobGroupDTO getCiTemplateJobGroupDTO() {
         return ciTemplateJobGroupDTO;
