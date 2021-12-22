@@ -51,8 +51,8 @@ public class CiTemplateDockerDTO extends AuditDomain {
     @NotBlank
     private String dockerContextDir;
 
-    @ApiModelProperty(value = "是否跳过tls", required = true)
-    private Boolean skipDockerTlsVerify;
+    @ApiModelProperty("是否启用harbor的证书校验")
+    private Boolean enableDockerTlsVerify;
 
     @ApiModelProperty(value = "是否是否开启镜像扫描", required = true)
     @NotNull
@@ -130,12 +130,12 @@ public class CiTemplateDockerDTO extends AuditDomain {
         this.dockerContextDir = dockerContextDir;
     }
 
-    public Boolean getSkipDockerTlsVerify() {
-        return skipDockerTlsVerify;
+    public Boolean getEnableDockerTlsVerify() {
+        return enableDockerTlsVerify;
     }
 
-    public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
-        this.skipDockerTlsVerify = skipDockerTlsVerify;
+    public void setEnableDockerTlsVerify(Boolean enableDockerTlsVerify) {
+        this.enableDockerTlsVerify = enableDockerTlsVerify;
     }
 
     public Boolean getImageScan() {

@@ -34,8 +34,8 @@ public class DevopsCiDockerBuildConfigDTO {
     @ApiModelProperty("Dockerfile文件路径")
     private String dockerFilePath;
 
-    @ApiModelProperty("是否跳过harbor的证书校验 / true表示跳过")
-    private Boolean skipDockerTlsVerify;
+    @ApiModelProperty("是否启用harbor的证书校验")
+    private Boolean enableDockerTlsVerify;
 
     @ApiModelProperty("是否开启镜像扫描/true表示开启")
     private Boolean imageScan;
@@ -86,12 +86,12 @@ public class DevopsCiDockerBuildConfigDTO {
         this.dockerFilePath = dockerFilePath;
     }
 
-    public Boolean getSkipDockerTlsVerify() {
-        return skipDockerTlsVerify;
+    public Boolean getEnableDockerTlsVerify() {
+        return enableDockerTlsVerify;
     }
 
-    public void setSkipDockerTlsVerify(Boolean skipDockerTlsVerify) {
-        this.skipDockerTlsVerify = skipDockerTlsVerify;
+    public void setEnableDockerTlsVerify(Boolean enableDockerTlsVerify) {
+        this.enableDockerTlsVerify = enableDockerTlsVerify;
     }
 
     public Boolean getImageScan() {

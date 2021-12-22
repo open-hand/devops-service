@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.*;
@@ -110,9 +111,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     /**
      * 修复ci流水线数据
      */
-    private void devopsCiPipelineDataFix() {
+    @Transactional
+    public void devopsCiPipelineDataFix() {
 
-        fixBuildJob();
+//        fixBuildJob();
         fixSonarJob();
         fixChartJob();
         fixCustomJob();
@@ -281,7 +283,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 1. job的所属分组信息
                     // 将构建任务拆分为单步骤的任务
                     List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                    if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobDTO.getType())) {
+                    if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobDTO.getOldType())) {
                         devopsCiJobDTO.setScript(devopsCiJobDTO.getMetadata());
                         devopsCiJobDTO.setType(CiJobTypeEnum.CUSTOM.value());
 
@@ -327,7 +329,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 1. job的所属分组信息
                     // 将构建任务拆分为单步骤的任务
                     List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                    if (JobTypeEnum.CHART.value().equals(devopsCiJobDTO.getType())) {
+                    if (JobTypeEnum.CHART.value().equals(devopsCiJobDTO.getOldType())) {
                         DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
                         devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
                         devopsCiStepVO.setName("上传Chart至猪齿鱼");
@@ -378,7 +380,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 1. job的所属分组信息
                     // 将构建任务拆分为单步骤的任务
                     List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                    if (JobTypeEnum.SONAR.value().equals(devopsCiJobDTO.getType())) {
+                    if (JobTypeEnum.SONAR.value().equals(devopsCiJobDTO.getOldType())) {
                         SonarQubeConfigVO sonarQubeConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), SonarQubeConfigVO.class);
                         DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
                         devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
@@ -434,14 +436,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 1. job的所属分组信息
                     // 将构建任务拆分为单步骤的任务
                     List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                    if (JobTypeEnum.BUILD.value().equals(devopsCiJobDTO.getType())) {
+                    if (JobTypeEnum.BUILD.value().equals(devopsCiJobDTO.getOldType())) {
                         CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
                         List<CiConfigTemplateVO> config = ciConfigVO.getConfig();
 
                         devopsCiJobDTO.setType(CiJobTypeEnum.NORMAL.value());
 
                         for (CiConfigTemplateVO ciConfigTemplateVO : config) {
-                            if (CiJobScriptTypeEnum.NPM.getType().equals(ciConfigTemplateVO.getType())) {
+                            if (CiJobScriptTypeEnum.NPM.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
                                 DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
                                 devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
                                 devopsCiStepVO.setName("Npm构建");
@@ -452,7 +454,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsCiStepVOList.add(devopsCiStepVO);
 
                                 devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-                            } else if (CiJobScriptTypeEnum.MAVEN.getType().equals(ciConfigTemplateVO.getType())) {
+                            } else if (CiJobScriptTypeEnum.MAVEN.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
                                 DevopsCiStepVO mavenStep = new DevopsCiStepVO();
                                 mavenStep.setDevopsCiJobId(devopsCiJobId);
                                 mavenStep.setName("Maven构建");
@@ -469,7 +471,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
                                 devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
 
-                            } else if (CiJobScriptTypeEnum.DOCKER.getType().equals(ciConfigTemplateVO.getType())) {
+                            } else if (CiJobScriptTypeEnum.DOCKER.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
                                 DevopsCiStepVO dockerStep = new DevopsCiStepVO();
                                 dockerStep.setDevopsCiJobId(devopsCiJobId);
                                 dockerStep.setName("Docker构建");
@@ -479,15 +481,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
                                 DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = ConvertUtils.convertObject(ciConfigTemplateVO, DevopsCiDockerBuildConfigDTO.class);
                                 SecurityConditionConfigVO securityCondition = ciConfigTemplateVO.getSecurityCondition();
-
-                                devopsCiDockerBuildConfigDTO.setSeverity(securityCondition.getLevel());
-                                devopsCiDockerBuildConfigDTO.setSecurityControlConditions(securityCondition.getSymbol());
-                                devopsCiDockerBuildConfigDTO.setVulnerabilityCount(securityCondition.getCondition());
+                                if (securityCondition != null) {
+                                    devopsCiDockerBuildConfigDTO.setSeverity(securityCondition.getLevel());
+                                    devopsCiDockerBuildConfigDTO.setSecurityControlConditions(securityCondition.getSymbol());
+                                    devopsCiDockerBuildConfigDTO.setVulnerabilityCount(securityCondition.getCondition());
+                                }
+                                devopsCiDockerBuildConfigDTO.setSecurityControl(securityCondition != null);
+                                devopsCiDockerBuildConfigDTO.setEnableDockerTlsVerify(ciConfigTemplateVO.getSkipDockerTlsVerify() == null || ciConfigTemplateVO.getSkipDockerTlsVerify());
+                                devopsCiDockerBuildConfigDTO.setImageScan(ciConfigTemplateVO.getImageScan() != null ? ciConfigTemplateVO.getImageScan() : false);
                                 dockerStep.setDockerBuildConfig(devopsCiDockerBuildConfigDTO);
+
                                 devopsCiStepVOList.add(dockerStep);
 
                                 devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.DOCKER_BUILD.value());
-                            } else if (CiJobScriptTypeEnum.UPLOAD_JAR.getType().equals(ciConfigTemplateVO.getType())) {
+                            } else if (CiJobScriptTypeEnum.UPLOAD_JAR.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
                                 DevopsCiStepVO uploadJar = new DevopsCiStepVO();
                                 uploadJar.setDevopsCiJobId(devopsCiJobId);
                                 uploadJar.setName("上传Jar包至制品库");
@@ -505,7 +512,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsCiStepVOList.add(uploadJar);
 
                                 devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-                            } else if (CiJobScriptTypeEnum.MAVEN_DEPLOY.getType().equals(ciConfigTemplateVO.getType())) {
+                            } else if (CiJobScriptTypeEnum.MAVEN_DEPLOY.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
                                 DevopsCiStepVO mavenDeploy = new DevopsCiStepVO();
                                 mavenDeploy.setDevopsCiJobId(devopsCiJobId);
                                 mavenDeploy.setName("Maven发布");

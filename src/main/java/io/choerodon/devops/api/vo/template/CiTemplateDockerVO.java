@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.vo.template;
 
-import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -28,9 +27,9 @@ public class CiTemplateDockerVO {
     @NotBlank
     private String dockerContextDir;
 
-    @ApiModelProperty(value = "是否跳过tls", required = true)
+    @ApiModelProperty("是否启用harbor的证书校验")
     @NotNull
-    private Long skipDockerTlsVerify;
+    private Long enableDockerTlsVerify;
 
     @ApiModelProperty(value = "是否是否开启镜像扫描", required = true)
     @NotNull
@@ -74,12 +73,12 @@ public class CiTemplateDockerVO {
         this.dockerContextDir = dockerContextDir;
     }
 
-    public Long getSkipDockerTlsVerify() {
-        return skipDockerTlsVerify;
+    public Long getEnableDockerTlsVerify() {
+        return enableDockerTlsVerify;
     }
 
-    public void setSkipDockerTlsVerify(Long skipDockerTlsVerify) {
-        this.skipDockerTlsVerify = skipDockerTlsVerify;
+    public void setEnableDockerTlsVerify(Long enableDockerTlsVerify) {
+        this.enableDockerTlsVerify = enableDockerTlsVerify;
     }
 
     public Long getImageScan() {

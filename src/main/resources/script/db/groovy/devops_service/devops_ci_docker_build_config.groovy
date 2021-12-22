@@ -15,24 +15,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_docker_build_config.groovy') {
             column(name: 'docker_file_path', type: 'VARCHAR(255)', remarks: 'docker file 地址') {
                 constraints(nullable: false)
             }
-            column(name: 'skip_docker_tls_verify', type: 'TINYINT UNSIGNED', remarks: '是否跳过tls') {
+            column(name: 'enable_docker_tls_verify', type: 'TINYINT UNSIGNED', defaultValue: "true", remarks: '是否启用tls') {
                 constraints(nullable: false)
             }
-            column(name: 'image_scan', type: 'TINYINT UNSIGNED', remarks: '是否是否开启镜像扫描') {
+            column(name: 'image_scan', type: 'TINYINT UNSIGNED', defaultValue: "false", remarks: '是否是否开启镜像扫描') {
                 constraints(nullable: false)
             }
-            column(name: 'security_control', type: 'TINYINT UNSIGNED', remarks: '是否开启门禁检查') {
+            column(name: 'security_control', type: 'TINYINT UNSIGNED', defaultValue: "false", remarks: '是否开启门禁检查') {
                 constraints(nullable: false)
             }
-            column(name: 'severity', type: 'VARCHAR(255)', remarks: '漏洞危险程度') {
-                constraints(nullable: true)
-            }
-            column(name: 'security_control_conditions', type: 'VARCHAR(255)', remarks: '门禁条件') {
-                constraints(nullable: true)
-            }
-            column(name: 'vulnerability_count', type: 'INT(4)', remarks: '漏洞数量') {
-                constraints(nullable: true)
-            }
+            column(name: 'severity', type: 'VARCHAR(255)', remarks: '漏洞危险程度')
+            column(name: 'security_control_conditions', type: 'VARCHAR(255)', remarks: '门禁条件')
+            column(name: 'vulnerability_count', type: 'INT(4)', remarks: '漏洞数量')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
