@@ -93,6 +93,19 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询cicd流水线基础配置")
+    @GetMapping("/{pipeline_id}/basic_info")
+    public ResponseEntity<CiCdPipelineVO> queryBasicInfoById(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt(ignoreUserConflict = true)
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.queryById(pipelineId));
+    }
+
+
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下流水线")
     @PostMapping("/query")

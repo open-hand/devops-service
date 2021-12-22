@@ -13,6 +13,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
 import io.choerodon.devops.app.service.PipelineTemplateService;
+import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -47,5 +48,16 @@ public class ProjectPipelineTemplateController {
             @ApiParam(value = "模板ID", required = true)
             @PathVariable(value = "template_id") Long templateId) {
         return ResponseEntity.ok(pipelineTemplateService.queryPipelineInfoByTemplateId(projectId, templateId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据模板id查询流水线配置信息")
+    @GetMapping("{template_id}/basic_info")
+    public ResponseEntity<PipelineTemplateDTO> queryBasicInfoById(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "模板ID", required = true)
+            @PathVariable(value = "template_id") Long templateId) {
+        return ResponseEntity.ok(pipelineTemplateService.baseQuery(templateId));
     }
 }
