@@ -42,6 +42,16 @@ public class CiTemplateJobGroupVO {
     @ApiModelProperty(value = "关联模板的总数")
     private Long templateNumber;
 
+    private String type;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public Date getCreationDate() {
         return creationDate;
     }
