@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'type', type: 'VARCHAR(20)', remarks: '步骤类型') {
                 constraints(nullable: false)
             }
-
+            column(name: 'script', type: 'text', remarks: '自定义步骤的脚本')
 
             column(name: 'to_upload', type: 'TINYINT UNSIGNED', remarks: '是否上传到共享目录') {
                 constraints(nullable: false)

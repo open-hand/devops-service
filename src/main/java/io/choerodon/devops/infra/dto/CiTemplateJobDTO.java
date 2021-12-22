@@ -78,6 +78,19 @@ public class CiTemplateJobDTO extends AuditDomain {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
+    private String script;
+
+    public static long getSerialVersionUID() {
+        return serialVersionUID;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
+    }
 
     public Boolean getBuiltIn() {
         return builtIn;
