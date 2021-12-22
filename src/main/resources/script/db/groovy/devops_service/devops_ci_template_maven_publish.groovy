@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_publish.groovy'
 
             column(name: 'maven_settings', type: 'TEXT', remarks: '直接粘贴的maven的settings内容')
 
-            column(name: 'nexus_repo_id', type: 'TEXT', remarks: 'nexus的maven仓库在制品库的主键id')
+            column(name: 'nexus_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id')
 
             column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤Id') {
                 constraints(nullable: false)
