@@ -110,4 +110,5 @@ public interface DevopsCiJobService {
      */
     void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId);
 
+    List<DevopsCiJobDTO> listAll();
 }

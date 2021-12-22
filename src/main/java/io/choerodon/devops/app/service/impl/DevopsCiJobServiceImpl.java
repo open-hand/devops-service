@@ -343,6 +343,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
     }
 
+    @Override
+    public List<DevopsCiJobDTO> listAll() {
+        return devopsCiJobMapper.selectAll();
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();

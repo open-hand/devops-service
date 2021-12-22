@@ -58,6 +58,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsCdJobService devopsCdJobService;
     @Autowired
+    private DevopsCiJobService devopsCiJobService;
+    @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -88,6 +90,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case PIPELINE_CONTENT_FIX:
                 pipelineContentFix();
+                devopsCiPipelineDataFix();
                 break;
             case FIX_PIPELINE_DATA:
                 pipelineDataFix();
@@ -99,6 +102,83 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    /**
+     * 修复ci流水线数据
+     */
+    private void devopsCiPipelineDataFix() {
+//        List<DevopsCiJobDTO> devopsCiJobDTOList = devopsCiJobService.listAll();
+//        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline ci job data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//        Set<Long> errorJobIds = new HashSet<>();
+//        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOList) {
+//            try {
+//                if (devopsCiJobDTO != null) {
+//                    // 需要修复的内容
+//                    // 1. job的所属分组信息
+//                    // 将构建任务拆分为单步骤的任务
+//                    if (JobTypeEnum.BUILD.value().equals(devopsCiJobDTO.getType())) {
+//
+//                    }
+//
+//                    CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+//                    DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = ConvertUtils.convertObject(cdApiTestConfigVO, DevopsCdApiTestInfoDTO.class);
+//                    devopsCdApiTestInfoDTO.setTaskType(ApiTestTaskType.TASK.getValue());
+//
+//                    WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
+//                    if (warningSettingVO != null) {
+//                        devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
+//                        devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
+//                        devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
+//                        devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
+//                        if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
+//                            devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+//                        }
+//                    }
+//                    devopsCdApiTestInfoService.baseCreate(devopsCdApiTestInfoDTO);
+//                    devopsCdJobDTO.setDeployInfoId(devopsCdApiTestInfoDTO.getId());
+//                    devopsCdJobService.baseUpdate(devopsCdJobDTO);
+//                }
+//            } catch (Exception e) {
+//                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline api test data : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdJobDTO.getId());
+//                errorJobIds.add(devopsCdJobDTO.getId());
+//            }
+//        }
+//        for (DevopsCdJobDTO devopsCdJobDTO : devopsCdJobDTOS) {
+//            try {
+//                if (devopsCdJobDTO != null) {
+//                    CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+//                    DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = ConvertUtils.convertObject(cdApiTestConfigVO, DevopsCdApiTestInfoDTO.class);
+//                    devopsCdApiTestInfoDTO.setTaskType(ApiTestTaskType.TASK.getValue());
+//
+//                    WarningSettingVO warningSettingVO = cdApiTestConfigVO.getWarningSettingVO();
+//                    if (warningSettingVO != null) {
+//                        devopsCdApiTestInfoDTO.setEnableWarningSetting(warningSettingVO.getEnableWarningSetting());
+//                        devopsCdApiTestInfoDTO.setBlockAfterJob(warningSettingVO.getBlockAfterJob());
+//                        devopsCdApiTestInfoDTO.setSendEmail(warningSettingVO.getSendEmail());
+//                        devopsCdApiTestInfoDTO.setPerformThreshold(warningSettingVO.getPerformThreshold());
+//                        if (!CollectionUtils.isEmpty(warningSettingVO.getNotifyUserIds())) {
+//                            devopsCdApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(warningSettingVO.getNotifyUserIds()));
+//                        }
+//                    }
+//                    devopsCdApiTestInfoService.baseCreate(devopsCdApiTestInfoDTO);
+//                    devopsCdJobDTO.setDeployInfoId(devopsCdApiTestInfoDTO.getId());
+//                    devopsCdJobService.baseUpdate(devopsCdJobDTO);
+//                }
+//            } catch (Exception e) {
+//                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline api test data : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCdJobDTO.getId());
+//                errorJobIds.add(devopsCdJobDTO.getId());
+//            }
+//
+//        }
+//        if (CollectionUtils.isEmpty(errorJobIds)) {
+//            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline api test data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+//        } else {
+//            if (LOGGER.isInfoEnabled()) {
+//                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline api test data, but exist errors! Failed job ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
+//            }
+//        }
+
     }
 
     private void pipelineDataFix() {

@@ -8,23 +8,23 @@ package io.choerodon.devops.infra.enums;
  * @since 2020/4/3 16:57
  */
 public enum JobTypeEnum {
-//    /**
-//     * 构建
-//     */
-//    BUILD("build"),
-//    /**
-//     * maven sonar检查
-//     */
-//    SONAR("sonar"),
-//    /**
-//     * maven chart 类型
-//     */
-//    CHART("chart"),
-//
-//    /**
-//     * 自定义任务
-//     */
-//    CUSTOM("custom"),
+    /**
+     * 构建
+     */
+    BUILD("build"),
+    /**
+     * maven sonar检查
+     */
+    SONAR("sonar"),
+    /**
+     * maven chart 类型
+     */
+    CHART("chart"),
+
+    /**
+     * 自定义任务
+     */
+    CUSTOM("custom"),
 
     /**
      * cd 部署任务
