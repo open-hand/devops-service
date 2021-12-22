@@ -5,9 +5,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
@@ -17,6 +20,7 @@ import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
@@ -51,10 +55,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiStepVO.getMavenPublishConfig();
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = voToDto(devopsCiStepVO.getMavenPublishConfig());
         devopsCiMavenPublishConfigDTO.setStepId(stepId);
         devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
     }
+
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
@@ -63,13 +68,15 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        devopsCiStepVO.setMavenPublishConfig(ConvertUtils.convertObject(ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId()), DevopsCiMavenPublishConfigDTO.class));
+        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = ConvertUtils.convertObject(ciTemplateMavenPublishDTO, DevopsCiMavenPublishConfigDTO.class);
+        devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setMavenPublishConfig(devopsCiMavenPublishConfigDTO);
+        devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
     }
 
     @Override
@@ -250,6 +257,33 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             shells.addAll(templateShells);
         }
         return shells;
+    }
+
+    @Nullable
+    private DevopsCiMavenPublishConfigVO dtoToVo(DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO) {
+        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = ConvertUtils.convertObject(devopsCiMavenPublishConfigDTO, DevopsCiMavenPublishConfigVO.class);
+        if (StringUtils.hasText(devopsCiMavenPublishConfigDTO.getNexusMavenRepoIdStr())) {
+            devopsCiMavenPublishConfigVO.setNexusMavenRepoIds(JsonHelper.unmarshalByJackson(devopsCiMavenPublishConfigDTO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
+            }));
+        }
+        if (StringUtils.hasText(devopsCiMavenPublishConfigDTO.getRepoStr())) {
+            devopsCiMavenPublishConfigVO.setRepos(JsonHelper.unmarshalByJackson(devopsCiMavenPublishConfigDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
+            }));
+        }
+        return devopsCiMavenPublishConfigVO;
+    }
+
+
+    @Nullable
+    private DevopsCiMavenPublishConfigDTO voToDto(DevopsCiMavenPublishConfigVO mavenPublishConfig) {
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = ConvertUtils.convertObject(mavenPublishConfig, DevopsCiMavenPublishConfigDTO.class);
+        if (!CollectionUtils.isEmpty(mavenPublishConfig.getNexusMavenRepoIds())) {
+            devopsCiMavenPublishConfigDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(mavenPublishConfig.getNexusMavenRepoIds()));
+        }
+        if (!CollectionUtils.isEmpty(mavenPublishConfig.getRepos())) {
+            devopsCiMavenPublishConfigDTO.setRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getRepos()));
+        }
+        return devopsCiMavenPublishConfigDTO;
     }
 
     @Override

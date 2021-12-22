@@ -6,7 +6,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -60,7 +62,8 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiStepVO.getMavenBuildConfig();
+        DevopsCiMavenBuildConfigVO mavenBuildConfig = devopsCiStepVO.getMavenBuildConfig();
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
         devopsCiMavenBuildConfigDTO.setStepId(stepId);
         devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
     }
@@ -77,13 +80,14 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        devopsCiStepVO.setMavenBuildConfig(ConvertUtils.convertObject(ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId()), DevopsCiMavenBuildConfigDTO.class));
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = ConvertUtils.convertObject(ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId()), DevopsCiMavenBuildConfigDTO.class);
+        devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setMavenBuildConfig(devopsCiMavenBuildConfigDTO);
+        devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
     }
 
     @Override
@@ -210,6 +214,33 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
         return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+    }
+
+    @Nullable
+    private DevopsCiMavenBuildConfigVO dtoToVo(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO) {
+        DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = ConvertUtils.convertObject(devopsCiMavenBuildConfigDTO, DevopsCiMavenBuildConfigVO.class);
+        if (org.springframework.util.StringUtils.hasText(devopsCiMavenBuildConfigDTO.getNexusMavenRepoIdStr())) {
+            devopsCiMavenBuildConfigVO.setNexusMavenRepoIds(JsonHelper.unmarshalByJackson(devopsCiMavenBuildConfigDTO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
+            }));
+        }
+        if (org.springframework.util.StringUtils.hasText(devopsCiMavenBuildConfigDTO.getRepoStr())) {
+            devopsCiMavenBuildConfigVO.setRepos(JsonHelper.unmarshalByJackson(devopsCiMavenBuildConfigDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
+            }));
+        }
+        return devopsCiMavenBuildConfigVO;
+    }
+
+
+    @Nullable
+    private DevopsCiMavenBuildConfigDTO voToDto(DevopsCiMavenBuildConfigVO mavenBuildConfigVO) {
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = ConvertUtils.convertObject(mavenBuildConfigVO, DevopsCiMavenBuildConfigDTO.class);
+        if (!CollectionUtils.isEmpty(mavenBuildConfigVO.getNexusMavenRepoIds())) {
+            devopsCiMavenBuildConfigDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(mavenBuildConfigVO.getNexusMavenRepoIds()));
+        }
+        if (!CollectionUtils.isEmpty(mavenBuildConfigVO.getRepos())) {
+            devopsCiMavenBuildConfigDTO.setRepoStr(JsonHelper.marshalByJackson(mavenBuildConfigVO.getRepos()));
+        }
+        return devopsCiMavenBuildConfigDTO;
     }
 
     @Override
