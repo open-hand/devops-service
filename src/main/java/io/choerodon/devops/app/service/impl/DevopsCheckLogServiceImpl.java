@@ -40,7 +40,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
-    public static final String FIX_PIPELINE_DATA = "fix.pipeline.data";
+    public static final String FIX_PIPELINE_DATA = "fixPipelineData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
