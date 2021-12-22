@@ -55,9 +55,12 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = voToDto(devopsCiStepVO.getMavenPublishConfig());
-        devopsCiMavenPublishConfigDTO.setStepId(stepId);
-        devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
+        if (devopsCiStepVO.getMavenPublishConfig() != null) {
+            DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = voToDto(devopsCiStepVO.getMavenPublishConfig());
+            devopsCiMavenPublishConfigDTO.setStepId(stepId);
+
+            devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
+        }
     }
 
 
@@ -69,14 +72,20 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
-        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = ConvertUtils.convertObject(ciTemplateMavenPublishDTO, DevopsCiMavenPublishConfigDTO.class);
-        devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
+        if (ciTemplateMavenPublishDTO != null) {
+            DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = ConvertUtils.convertObject(ciTemplateMavenPublishDTO, DevopsCiMavenPublishConfigDTO.class);
+            devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
+        }
+
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
+        if (devopsCiMavenPublishConfigDTO != null) {
+            devopsCiStepVO.setMavenPublishConfig(dtoToVo(devopsCiMavenPublishConfigDTO));
+        }
+
     }
 
     @Override

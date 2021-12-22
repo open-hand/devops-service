@@ -23,6 +23,7 @@ import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
 import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
@@ -63,9 +64,12 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigVO mavenBuildConfig = devopsCiStepVO.getMavenBuildConfig();
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
-        devopsCiMavenBuildConfigDTO.setStepId(stepId);
-        devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
+        if (mavenBuildConfig != null) {
+            DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
+            devopsCiMavenBuildConfigDTO.setStepId(stepId);
+            devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
+        }
+
     }
 
     @Override
@@ -80,14 +84,19 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = ConvertUtils.convertObject(ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId()), DevopsCiMavenBuildConfigDTO.class);
-        devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
+        CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId());
+        if (ciTemplateMavenBuildDTO != null) {
+            DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = ConvertUtils.convertObject(ciTemplateMavenBuildDTO, DevopsCiMavenBuildConfigDTO.class);
+            devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
+        }
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
+        if (devopsCiMavenBuildConfigDTO != null) {
+            devopsCiStepVO.setMavenBuildConfig(dtoToVo(devopsCiMavenBuildConfigDTO));
+        }
     }
 
     @Override
