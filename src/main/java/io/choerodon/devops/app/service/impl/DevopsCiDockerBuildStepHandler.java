@@ -71,7 +71,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
 
     @Override
     @Transactional
-    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDockerBuildConfig();
         devopsCiDockerBuildConfigDTO.setStepId(stepId);
@@ -80,7 +80,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
 
     @Override
     @Transactional
-    protected void batchDeleteConfig(Set<Long> stepIds) {
+    public void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiDockerBuildConfigService.batchDeleteByStepIds(stepIds);
     }
 

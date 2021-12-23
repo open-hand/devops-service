@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -54,7 +55,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     private RdupmClientOperator rdupmClientOperator;
 
     @Override
-    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+    @Transactional
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         if (devopsCiStepVO.getMavenPublishConfig() != null) {
             DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = voToDto(devopsCiStepVO.getMavenPublishConfig());
             devopsCiMavenPublishConfigDTO.setStepId(stepId);
@@ -111,7 +113,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
-    protected void batchDeleteConfig(Set<Long> stepIds) {
+    public void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiMavenPublishConfigService.batchDeleteByStepIds(stepIds);
     }
 
