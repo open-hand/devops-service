@@ -19,7 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_step.groovy') {
                 constraints(nullable: true)
             }
 
-            column(name: 'script', type: 'VARCHAR(2000)', remarks: '步骤中包含的脚本')
+            column(name: 'script', type: 'TEXT', remarks: '步骤中包含的脚本')
 
             column(name: 'config_id', type: 'VARCHAR(2000)', remarks: '步骤的配置信息')
 
