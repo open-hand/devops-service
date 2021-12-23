@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -62,7 +63,8 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     private RdupmClientOperator rdupmClientOperator;
 
     @Override
-    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+    @Transactional
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiMavenBuildConfigVO mavenBuildConfig = devopsCiStepVO.getMavenBuildConfig();
         if (mavenBuildConfig != null) {
             DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
@@ -73,7 +75,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    protected void batchDeleteConfig(Set<Long> stepIds) {
+    public void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiMavenBuildConfigService.batchDeleteByStepIds(stepIds);
     }
 

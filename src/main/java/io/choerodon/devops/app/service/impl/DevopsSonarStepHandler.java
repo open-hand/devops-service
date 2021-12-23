@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
@@ -49,7 +51,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
 
     @Override
-    protected void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+    @Transactional
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getSonarConfig();
         devopsCiSonarConfigDTO.setStepId(stepId);
@@ -63,7 +66,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-
+        CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
+        devopsCiStepVO.setSonarConfig(ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigDTO.class));
     }
 
     @Override
@@ -121,7 +125,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    protected void batchDeleteConfig(Set<Long> stepIds) {
+    public void batchDeleteConfig(Set<Long> stepIds) {
         devopsCiSonarConfigService.batchDeleteByStepIds(stepIds);
     }
 

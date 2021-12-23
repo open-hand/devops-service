@@ -1212,7 +1212,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdJobRecordVO.setExternalApprovalJobVO(externalApprovalJobVO);
             }
             if (devopsCdJobRecordVO.getStartedDate() != null && devopsCdJobRecordVO.getFinishedDate() != null) {
-                long durationSeconds = (devopsCdJobRecordVO.getFinishedDate().getTime() - devopsCdJobRecordVO.getFinishedDate().getTime()) / 1000;
+                long durationSeconds = (devopsCdJobRecordVO.getFinishedDate().getTime() - devopsCdJobRecordVO.getStartedDate().getTime()) / 1000;
                 devopsCdJobRecordVO.setDurationSeconds(durationSeconds == 0 ? 1 : durationSeconds);
             }
         });

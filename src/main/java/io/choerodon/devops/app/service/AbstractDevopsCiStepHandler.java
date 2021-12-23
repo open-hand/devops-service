@@ -29,11 +29,32 @@ public abstract class AbstractDevopsCiStepHandler {
     @Lazy
     protected DevopsCiStepService devopsCiStepService;
 
-    public abstract void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO);
+    /**
+     * 添加模板步骤的配置信息，含有配置的子类自行重写
+     *
+     * @param ciTemplateStepVO
+     */
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
 
-    public abstract void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
+    }
 
-    public abstract void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO);
+    /**
+     * 添加模板步骤的配置信息，含有配置的子类自行重写
+     *
+     * @param devopsCiStepVO
+     */
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
+
+    /**
+     * 添加项目下流水线的配置信息
+     *
+     * @param devopsCiStepVO
+     */
+    public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+
+    }
 
     /**
      * 保存步骤信息，如果存在配置信息也一并保存
@@ -76,7 +97,7 @@ public abstract class AbstractDevopsCiStepHandler {
         Set<Long> ids = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getId).collect(Collectors.toSet());
         devopsCiStepService.batchDeleteByIds(ids);
 
-        // 删除关联的配置,如果有的化话
+        // 删除关联的配置,如果有的话
         batchDeleteConfig(ids);
     }
 
@@ -86,14 +107,18 @@ public abstract class AbstractDevopsCiStepHandler {
      * @param stepId         步骤id
      * @param devopsCiStepVO 步骤信息
      */
-    protected abstract void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO);
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+        // do nothing
+    }
 
     /**
      * 批量删除步骤关联的配置（如果有关联的配置，子类则实现相关删除逻辑，没有则不做任何处理）
      *
      * @param stepIds 步骤ids
      */
-    protected abstract void batchDeleteConfig(Set<Long> stepIds);
+    public void batchDeleteConfig(Set<Long> stepIds) {
+
+    }
 
     /**
      * 步骤类型
