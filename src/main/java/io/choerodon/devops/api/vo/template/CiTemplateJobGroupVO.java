@@ -9,6 +9,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+
 
 /**
  * 流水线任务模板分组(CiTemplateJobGroup)实体类
@@ -26,8 +28,6 @@ public class CiTemplateJobGroupVO {
     @NotBlank
     private String name;
 
-
-
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
@@ -43,6 +43,16 @@ public class CiTemplateJobGroupVO {
     private Long templateNumber;
 
     private String type;
+    @ApiModelProperty("创建者")
+    private IamUserDTO creator;
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 
     public String getType() {
         return type;
