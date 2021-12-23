@@ -6,7 +6,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_build.groovy') 
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'nexus_maven_repo_id_str', type: 'VARCHAR(1024)', remarks: '项目下已有的maven仓库id列表')
 
             column(name: 'repo_str', type: 'TEXT', remarks: '表单填写的Maven的依赖仓库')
 

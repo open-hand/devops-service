@@ -6,13 +6,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_publish.groovy'
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'nexus_maven_repo_id_str', type: 'VARCHAR(1024)', remarks: '项目下已有的maven仓库id列表')
 
             column(name: 'repo_str', type: 'TEXT', remarks: '表单填写的Maven的依赖仓库')
 
             column(name: 'maven_settings', type: 'TEXT', remarks: '直接粘贴的maven的settings内容')
-
-            column(name: 'nexus_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id')
 
             column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤Id') {
                 constraints(nullable: false)

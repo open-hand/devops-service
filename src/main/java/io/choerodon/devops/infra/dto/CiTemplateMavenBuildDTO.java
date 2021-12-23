@@ -36,9 +36,6 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "项目下已有的maven仓库id列表")
-    private String nexusMavenRepoIdStr;
-
     @ApiModelProperty(value = "表单填写的Maven的依赖仓库")
     private String repoStr;
 
@@ -56,14 +53,6 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getNexusMavenRepoIdStr() {
-        return nexusMavenRepoIdStr;
-    }
-
-    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
-        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
     }
 
     public String getRepoStr() {

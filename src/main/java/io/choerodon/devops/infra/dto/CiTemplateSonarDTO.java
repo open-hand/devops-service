@@ -50,7 +50,7 @@ public class CiTemplateSonarDTO extends AuditDomain {
     private String configType;
 
     @ApiModelProperty(value = "是否跳过单测")
-    private Long skipTests;
+    private Boolean skipTests;
 
     @ApiModelProperty(value = "要扫描的文件目录，多个文件夹使用,隔开")
     private String sources;
@@ -98,11 +98,11 @@ public class CiTemplateSonarDTO extends AuditDomain {
         this.scannerType = scannerType;
     }
 
-    public Long getSkipTests() {
+    public Boolean getSkipTests() {
         return skipTests;
     }
 
-    public void setSkipTests(Long skipTests) {
+    public void setSkipTests(Boolean skipTests) {
         this.skipTests = skipTests;
     }
 

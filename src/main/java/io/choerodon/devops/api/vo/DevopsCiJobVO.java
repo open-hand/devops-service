@@ -81,6 +81,18 @@ public class DevopsCiJobVO {
     @ApiModelProperty("脚本类型任务的自定义脚本")
     private String script;
 
+    @ApiModelProperty("任务信息是否完整")
+    private Boolean completed;
+
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
 
     public String getScript() {

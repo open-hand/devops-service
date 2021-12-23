@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
@@ -86,5 +87,46 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     @Override
     public DevopsCiStepTypeEnum getType() {
         return DevopsCiStepTypeEnum.DOCKER_BUILD;
+    }
+
+    @Override
+    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+        CiTemplateDockerDTO dockerBuildConfig = ciTemplateStepVO.getDockerBuildConfig();
+        if (dockerBuildConfig == null) {
+            return false;
+        }
+        if (!StringUtils.hasText(dockerBuildConfig.getDockerContextDir())) {
+            return false;
+        }
+        if (!StringUtils.hasText(dockerBuildConfig.getDockerFilePath())) {
+            return false;
+        }
+        if (dockerBuildConfig.getEnableDockerTlsVerify() == null) {
+            return false;
+        }
+        if (dockerBuildConfig.getImageScan() == null) {
+            return false;
+        }
+        if (Boolean.FALSE.equals(dockerBuildConfig.getImageScan())) {
+            return true;
+        }
+        if (dockerBuildConfig.getSecurityControl() == null) {
+            return false;
+        }
+        if (Boolean.FALSE.equals(dockerBuildConfig.getSecurityControl())) {
+            return true;
+        }
+
+        if (!StringUtils.hasText(dockerBuildConfig.getSeverity())) {
+            return false;
+        }
+        if (!StringUtils.hasText(dockerBuildConfig.getSecurityControlConditions())) {
+            return false;
+        }
+        if (dockerBuildConfig.getVulnerabilityCount() == null) {
+            return false;
+        }
+
+        return true;
     }
 }
