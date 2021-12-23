@@ -66,7 +66,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
 
         addColumn(tableName: 'devops_ci_job') {
             column(name: 'group_type', type: 'VARCHAR(20)', remarks: '分组类型', afterColumn: 'trigger_type')
-            column(name: 'script', type: 'VARCHAR(2000)', remarks: '步骤中包含的脚本', afterColumn: 'group_type')
+            column(name: 'script', type: 'text', remarks: '步骤中包含的脚本', afterColumn: 'group_type')
             column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 normal 普通，custom 自定义脚本')
         }
     }
