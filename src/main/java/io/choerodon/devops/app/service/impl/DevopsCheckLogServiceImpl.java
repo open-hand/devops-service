@@ -74,6 +74,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiStepOperator devopsCiStepOperator;
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
+    @Autowired
+    private DevopsCiStepService devopsCiStepService;
 
 
     @Override
@@ -280,20 +282,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 需要修复的内容
                     // 1. job的所属分组信息
                     // 将构建任务拆分为单步骤的任务
-                    List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
                     if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobDTO.getOldType())) {
                         devopsCiJobDTO.setScript(devopsCiJobDTO.getMetadata());
                         devopsCiJobDTO.setType(CiJobTypeEnum.CUSTOM.value());
 
                         devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.OTHER.value());
-                    }
-
-                    // 更新job step信息
-                    if (!CollectionUtils.isEmpty(devopsCiStepVOList)) {
-                        for (DevopsCiStepVO devopsCiStepVO : devopsCiStepVOList) {
-                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
-                            handler.save(projectId, devopsCiJobId, devopsCiStepVO);
-                        }
                     }
                     // 更新job信息
                     devopsCiJobMapper.updateByPrimaryKeySelective(devopsCiJobDTO);
@@ -338,7 +331,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         devopsCiJobDTO.setType(CiJobTypeEnum.NORMAL.value());
                         devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
                     }
-
+                    // 保证可重复执行，报错step信息前先删除旧数据
+                    List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(devopsCiJobId);
+                    if (!CollectionUtils.isEmpty(devopsCiStepDTOS)) {
+                        Map<String, List<DevopsCiStepDTO>> stepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getType));
+                        // 按类型级联删除
+                        stepMap.forEach((k, v) -> {
+                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(k);
+                            handler.batchDeleteCascade(v);
+                        });
+                    }
                     // 更新job step信息
                     if (!CollectionUtils.isEmpty(devopsCiStepVOList)) {
                         for (DevopsCiStepVO devopsCiStepVO : devopsCiStepVOList) {
@@ -392,6 +394,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         devopsCiJobDTO.setType(CiJobTypeEnum.NORMAL.value());
                         devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.CODE_SCAN.value());
 
+                    }
+
+                    // 保证可重复执行，报错step信息前先删除旧数据
+                    List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(devopsCiJobId);
+                    if (!CollectionUtils.isEmpty(devopsCiStepDTOS)) {
+                        Map<String, List<DevopsCiStepDTO>> stepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getType));
+                        // 按类型级联删除
+                        stepMap.forEach((k, v) -> {
+                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(k);
+                            handler.batchDeleteCascade(v);
+                        });
                     }
 
                     // 更新job step信息
@@ -532,6 +545,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
                         }
 
+                    }
+
+                    // 保证可重复执行，报错step信息前先删除旧数据
+                    List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(devopsCiJobId);
+                    if (!CollectionUtils.isEmpty(devopsCiStepDTOS)) {
+                        Map<String, List<DevopsCiStepDTO>> stepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getType));
+                        // 按类型级联删除
+                        stepMap.forEach((k, v) -> {
+                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(k);
+                            handler.batchDeleteCascade(v);
+                        });
                     }
 
                     // 更新job step信息
