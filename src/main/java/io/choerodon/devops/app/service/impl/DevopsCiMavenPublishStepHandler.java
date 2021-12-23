@@ -299,4 +299,9 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     public DevopsCiStepTypeEnum getType() {
         return DevopsCiStepTypeEnum.MAVEN_PUBLISH;
     }
+
+    @Override
+    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+        return false;
+    }
 }

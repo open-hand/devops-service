@@ -46,9 +46,6 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @ApiModelProperty(value = "直接粘贴的maven的settings内容")
     private String mavenSettings;
 
-    @ApiModelProperty(value = "nexus的maven仓库在制品库的主键id")
-    private String nexusRepoId;
-
     @ApiModelProperty(value = "所属步骤Id", required = true)
     @NotNull
     private Long ciTemplateStepId;
@@ -84,14 +81,6 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
 
     public void setMavenSettings(String mavenSettings) {
         this.mavenSettings = mavenSettings;
-    }
-
-    public String getNexusRepoId() {
-        return nexusRepoId;
-    }
-
-    public void setNexusRepoId(String nexusRepoId) {
-        this.nexusRepoId = nexusRepoId;
     }
 
     public Long getCiTemplateStepId() {

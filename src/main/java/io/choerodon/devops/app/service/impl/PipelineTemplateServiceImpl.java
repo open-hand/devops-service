@@ -131,6 +131,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                             // 添加步骤关联的配置信息
                             AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
                             ciTemplateStepHandler.fillTemplateStepConfigInfo(ciTemplateStepVO);
+                            ciTemplateStepHandler.isComplete(ciTemplateStepVO);
+
                             devopsCiStepVOList.add(ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class));
                         });
                         devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);

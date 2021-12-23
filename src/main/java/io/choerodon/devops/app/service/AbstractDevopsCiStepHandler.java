@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import groovy.lang.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
@@ -100,4 +101,18 @@ public abstract class AbstractDevopsCiStepHandler {
      * @return 步骤类型枚举
      */
     public abstract DevopsCiStepTypeEnum getType();
+
+    public Boolean isComplete(CiTemplateStepVO ciTemplateStepVO) {
+        if (!StringUtils.hasText(ciTemplateStepVO.getName())) {
+            return false;
+        }
+        if (!StringUtils.hasText(ciTemplateStepVO.getType())) {
+            return false;
+        }
+        return isConfigComplete(ciTemplateStepVO);
+    }
+
+    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+        return true;
+    }
 }

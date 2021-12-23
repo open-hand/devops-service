@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
@@ -18,6 +19,7 @@ import io.choerodon.devops.app.service.CiTemplateSonarService;
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -126,5 +128,48 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public DevopsCiStepTypeEnum getType() {
         return DevopsCiStepTypeEnum.SONAR;
+    }
+
+    @Override
+    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+        CiTemplateSonarDTO sonarConfig = ciTemplateStepVO.getSonarConfig();
+        if (sonarConfig == null) {
+            return false;
+        }
+        if (sonarConfig.getScannerType() == null) {
+            return false;
+        }
+        if (SonarScannerType.SONAR_MAVEN.value().equals(sonarConfig.getScannerType())) {
+            if (sonarConfig.getSkipTests() == null) {
+                return false;
+            }
+        } else if (SonarScannerType.SONAR_SCANNER.value().equals(sonarConfig.getScannerType())) {
+            if (!StringUtils.hasText(sonarConfig.getSources())) {
+                return false;
+            }
+        }
+        if (!StringUtils.hasText(sonarConfig.getConfigType())) {
+            return false;
+        }
+        if (CiSonarConfigType.DEFAULT.value().equals(sonarConfig.getConfigType())) {
+            return true;
+        } else if (CiSonarConfigType.CUSTOM.value().equals(sonarConfig.getConfigType())) {
+            if (!StringUtils.hasText(sonarConfig.getSonarUrl())) {
+                return false;
+            }
+            if (!StringUtils.hasText(sonarConfig.getAuthType())) {
+                return false;
+            }
+            if (SonarAuthType.USERNAME_PWD.value().equals(sonarConfig.getAuthType())) {
+                if (!StringUtils.hasText(sonarConfig.getUsername())) {
+                    return false;
+                }
+                return StringUtils.hasText(sonarConfig.getPassword());
+            } else if (SonarAuthType.TOKEN.value().equals(sonarConfig.getAuthType())) {
+                return StringUtils.hasText(sonarConfig.getToken());
+            }
+
+        }
+        return true;
     }
 }
