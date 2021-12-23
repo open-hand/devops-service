@@ -290,6 +290,6 @@ public interface BaseServiceClient {
     ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant();
 
     @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
-    @GetMapping(value = "/self/is_site_administrator")
-    ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id", required = false) Long userId);
+    @GetMapping(value = "/choerodon/v1/users/self/is_site_administrator")
+    ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id") Long userId);
 }

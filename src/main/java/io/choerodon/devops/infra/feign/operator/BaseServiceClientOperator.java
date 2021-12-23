@@ -188,7 +188,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.check.user.site.access");
+            throw new CommonException("error.check.user.site.access", e);
         }
     }
 
