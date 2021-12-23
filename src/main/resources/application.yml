@@ -200,7 +200,7 @@ devops:
   ci:
     default:
       image: ${CI_DFAULT_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}
-      rule-number: ${CI_DFAULT_RULE_NUMBER:1} # 流水线的ci生成规则版本，如果有修改则加1
+      rule-number: ${CI_DFAULT_RULE_NUMBER:2} # 流水线的ci生成规则版本，如果有修改则加1
     pipeline:
       sync:
         executor:
