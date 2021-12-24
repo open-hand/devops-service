@@ -1452,9 +1452,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         checkResourceId(pipelineId, ciCdPipelineVO);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineVO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_UPDATE);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineVO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 没有指定基础镜像，则使用默认镜像
         if (StringUtils.isEmpty(ciCdPipelineVO.getImage())) {
             ciCdPipelineDTO.setImage(defaultCiImage);
