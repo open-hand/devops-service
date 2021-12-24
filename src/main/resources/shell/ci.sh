@@ -332,3 +332,42 @@ function trivyScanImage() {
     exit 1
   fi
 }
+
+# 上传maven单元测试报告
+function uploadMavenUnitTestReport() {
+    uploadUnitTestReport maven_unit_test target/site/surefire-report.html
+}
+# 上传go单元测试报告
+function uploadGoUnitTestReport() {
+    uploadUnitTestReport go_unit_test target/site/surefire-report.html
+}
+# 上传nodeJs单元测试报告
+function uploadNodeJsUnitTestReport() {
+    tar -cvf report.zip mochawesome-report/
+    uploadUnitTestReport node_js_unit_test report.zip
+}
+
+
+# 上传测试报告
+# $1 测试报告类型
+# $2 测试报告路径
+function uploadUnitTestReport() {
+    result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "token=${Token}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "type=$1" \
+    -F "file=@$2" \
+    "${CHOERODON_URL}/devops/ci/upload_unit_test" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}

@@ -46,6 +46,8 @@ public class CiController {
     private DevopsImageScanResultService devopsImageScanResultService;
     @Autowired
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
+    @Autowired
+    private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -202,6 +204,24 @@ public class CiController {
             @ApiParam(value = "json文件", required = false)
             @RequestParam MultipartFile file) {
         devopsImageScanResultService.resolveImageScanJson(gitlabPipelineId, jobId, startDate, endDate, file, token, jobName);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "上传单元测试报告")
+    @PostMapping("/upload_unit_test")
+    public ResponseEntity<Void> uploadUnitTest(
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "token", required = true)
+            @RequestParam(value = "type") String type,
+            @ApiParam(value = "测试报告", required = true)
+            @RequestParam MultipartFile file) {
+        devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file);
         return ResponseEntity.ok().build();
     }
 
