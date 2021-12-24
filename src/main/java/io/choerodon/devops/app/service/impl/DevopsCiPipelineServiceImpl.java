@@ -430,11 +430,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private void saveCiVariable(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList = ciCdPipelineVO.getDevopsCiPipelineVariableDTOList();
-        devopsCiPipelineVariableDTOList.forEach(devopsCiPipelineVariableDTO -> {
-            devopsCiPipelineVariableDTO.setId(null);
-            devopsCiPipelineVariableDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
-            devopsCiPipelineVariableService.baseCreate(devopsCiPipelineVariableDTO);
-        });
+        if (!CollectionUtils.isEmpty(devopsCiPipelineVariableDTOList)) {
+            devopsCiPipelineVariableDTOList.forEach(devopsCiPipelineVariableDTO -> {
+                devopsCiPipelineVariableDTO.setId(null);
+                devopsCiPipelineVariableDTO.setDevopsPipelineId(ciCdPipelineDTO.getId());
+                devopsCiPipelineVariableService.baseCreate(devopsCiPipelineVariableDTO);
+            });
+        }
+
     }
 
     @Override
