@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_unit_test_report.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'devops_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'devops流水线id') {
+            column(name: 'app_service_id', type: 'BIGINT UNSIGNED', remarks: '应用服务id') {
                 constraints(nullable: false)
             }
             column(name: 'gitlab_pipeline_id', type: 'BIGINT UNSIGNED', remarks: 'gitlabPipelineId') {
