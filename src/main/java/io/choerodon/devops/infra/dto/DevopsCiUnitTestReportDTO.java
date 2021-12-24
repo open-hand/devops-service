@@ -41,9 +41,9 @@ public class DevopsCiUnitTestReportDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "devops流水线id", required = true)
+    @ApiModelProperty(value = "应用服务id", required = true)
     @NotNull
-    private Long devopsPipelineId;
+    private Long appServiceId;
 
     @ApiModelProperty(value = "gitlabPipelineId", required = true)
     @NotNull
@@ -81,12 +81,12 @@ public class DevopsCiUnitTestReportDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getDevopsPipelineId() {
-        return devopsPipelineId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setDevopsPipelineId(Long devopsPipelineId) {
-        this.devopsPipelineId = devopsPipelineId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getGitlabPipelineId() {

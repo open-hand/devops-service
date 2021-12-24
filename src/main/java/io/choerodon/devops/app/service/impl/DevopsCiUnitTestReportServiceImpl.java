@@ -11,12 +11,9 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.eventhandler.pipeline.CiUnitTestReportHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.CiUnitTestReportOperator;
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiUnitTestReportService;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiUnitTestReportDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiUnitTestReportMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -35,8 +32,6 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
     private CiUnitTestReportOperator ciUnitTestReportOperator;
 
 
@@ -47,23 +42,19 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
         if (appServiceDTO == null) {
             throw new CommonException("error.app.svc.not.found");
         }
-        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-        if (ciCdPipelineDTO == null) {
-            throw new CommonException("error.pipeline.not.found");
-        }
-        Long devopsPipelineId = ciCdPipelineDTO.getId();
+        Long appServiceId = appServiceDTO.getId();
         // 解析测试报告
         CiUnitTestReportHandler handlerByType = ciUnitTestReportOperator.getHandlerByType(type);
         DevopsCiUnitTestResultVO devopsCiUnitTestResultVO = handlerByType.analyseReport(file);
 
         // 上传测试报告
-        String reportUrl = handlerByType.uploadReport(devopsPipelineId, gitlabPipelineId, jobName, type, file);
+        String reportUrl = handlerByType.uploadReport(appServiceId, gitlabPipelineId, jobName, type, file);
 
-        DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = queryByUniqueIndex(devopsPipelineId, gitlabPipelineId, jobName, type);
+        DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = queryByUniqueIndex(appServiceId, gitlabPipelineId, jobName, type);
         if (devopsCiUnitTestReportDTO == null) {
 
             DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO1 = ConvertUtils.convertObject(devopsCiUnitTestResultVO, DevopsCiUnitTestReportDTO.class);
-            devopsCiUnitTestReportDTO1.setDevopsPipelineId(devopsPipelineId);
+            devopsCiUnitTestReportDTO1.setAppServiceId(appServiceId);
             devopsCiUnitTestReportDTO1.setGitlabPipelineId(gitlabPipelineId);
             devopsCiUnitTestReportDTO1.setJobName(jobName);
             devopsCiUnitTestReportDTO1.setType(type);
@@ -80,13 +71,13 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
     }
 
     @Override
-    public DevopsCiUnitTestReportDTO queryByUniqueIndex(Long devopsPipelineId, Long gitlabPipelineId, String jobName, String type) {
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+    public DevopsCiUnitTestReportDTO queryByUniqueIndex(Long appServiceId, Long gitlabPipelineId, String jobName, String type) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = new DevopsCiUnitTestReportDTO();
-        devopsCiUnitTestReportDTO.setDevopsPipelineId(devopsPipelineId);
+        devopsCiUnitTestReportDTO.setAppServiceId(appServiceId);
         devopsCiUnitTestReportDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsCiUnitTestReportDTO.setJobName(jobName);
         devopsCiUnitTestReportDTO.setType(type);
