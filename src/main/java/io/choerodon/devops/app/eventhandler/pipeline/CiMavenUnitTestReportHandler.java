@@ -37,7 +37,7 @@ public class CiMavenUnitTestReportHandler implements CiUnitTestReportHandler {
     public DevopsCiUnitTestResultVO analyseReport(MultipartFile file) {
         Document document = null;
         try {
-            document = Jsoup.parse(file.getInputStream(), null, null);
+            document = Jsoup.parse(new String(file.getBytes()));
         } catch (IOException e) {
             throw new CommonException(e);
         }
