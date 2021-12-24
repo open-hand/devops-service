@@ -42,7 +42,15 @@ public class CiTemplateCategoryVO {
     private IamUserDTO creator;
     @ApiModelProperty(value = "分类图标base64格式", required = false)
     private String image;
+    private Boolean builtIn;
 
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
+
+    public void setBuiltIn(Boolean builtIn) {
+        this.builtIn = builtIn;
+    }
 
     public String getImage() {
         return image;
