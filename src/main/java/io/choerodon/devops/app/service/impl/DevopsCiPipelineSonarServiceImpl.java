@@ -8,10 +8,8 @@ import org.springframework.util.Assert;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiPipelineSonarService;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineSonarDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineSonarMapper;
 import io.choerodon.devops.infra.util.ExceptionUtil;
@@ -40,23 +38,21 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
     public void saveSonarInfo(Long jobId, Long gitlabPipelineId, String jobName, String token, String scannerType) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-            Long devopsPipelineId = ciCdPipelineDTO.getId();
-            DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = queryByPipelineId(devopsPipelineId, gitlabPipelineId, jobName);
+            Long appServiceId = appServiceDTO.getId();
+            DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = queryByPipelineId(appServiceId, gitlabPipelineId, jobName);
             if (devopsCiPipelineSonarDTO == null) {
-                baseCreate(new DevopsCiPipelineSonarDTO(devopsPipelineId, gitlabPipelineId, jobName));
+                baseCreate(new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName));
             }
-
         });
     }
 
     @Override
-    public DevopsCiPipelineSonarDTO queryByPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+    public DevopsCiPipelineSonarDTO queryByPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
-        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = new DevopsCiPipelineSonarDTO(devopsPipelineId, gitlabPipelineId, jobName);
+        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName);
         return devopsCiPipelineSonarMapper.selectOne(devopsCiPipelineSonarDTO);
     }
 
