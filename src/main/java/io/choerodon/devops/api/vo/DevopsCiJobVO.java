@@ -51,6 +51,7 @@ public class DevopsCiJobVO {
     private String type;
 
     @ApiModelProperty("触发类型对应的值")
+    @NotEmpty(message = "error.job.trigger.type.cannot.be.null")
     private String triggerValue;
 
     /**
