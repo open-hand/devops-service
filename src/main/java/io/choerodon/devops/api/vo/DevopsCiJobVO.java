@@ -81,8 +81,8 @@ public class DevopsCiJobVO {
     @ApiModelProperty("脚本类型任务的自定义脚本")
     private String script;
 
-    @ApiModelProperty("任务信息是否完整")
-    private Boolean completed = true;
+    @ApiModelProperty("任务信息是否完整, 现在一定是false")
+    private Boolean completed = false;
 
 
     public Boolean getCompleted() {

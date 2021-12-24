@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.enums.StageType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineTemplateMapper;
@@ -121,8 +122,10 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                     List<DevopsCiJobVO> devopsCiJobVOList = new ArrayList<>();
                     stageTemplateJobVOList.forEach(stageTemplateJobVO -> {
                         DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(stageTemplateJobVO, DevopsCiJobVO.class);
+
                         CiTemplateJobGroupDTO ciTemplateJobGroupDTO = groupMap.get(stageTemplateJobVO.getGroupId());
                         devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+                        devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
 
                         // 组装步骤信息
                         List<CiTemplateStepVO> ciTemplateStepVOS = jobStepMap.get(stageTemplateJobVO.getId());
