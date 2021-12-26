@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -223,10 +222,6 @@ public interface DevopsHostService {
     String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate);
 
     String queryUninstallShell(Long projectId, Long hostId);
-
-    Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params);
-
-    Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String name, String type, String status, String params);
 
     /**
      * 主机连接

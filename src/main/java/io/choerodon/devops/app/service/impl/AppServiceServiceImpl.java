@@ -244,8 +244,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
     @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
-    @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
@@ -2398,17 +2396,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             type = AppSourceType.CURRENT_PROJECT.getValue();
         }
         String finalType = type;
-        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
-        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
-            return new Page<>();
-        }
-        handAppServices(projectId, serviceRepVOPage);
-        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
-                appServiceRepVO.setSource("project");
-            }
-        });
-        return serviceRepVOPage;
+        // todo delete?
+//        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
+//        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
+//            return new Page<>();
+//        }
+//        handAppServices(projectId, serviceRepVOPage);
+//        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
+//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
+//                appServiceRepVO.setSource("project");
+//            }
+//        });
+        return new Page<>();
+
     }
 
 

@@ -927,6 +927,7 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
     }
 
+    // todo delete?
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "有主机部署的应用服务")
     @GetMapping("/app_center/host/app/list")
