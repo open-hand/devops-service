@@ -10,7 +10,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineChartDTO;
  */
 public interface DevopsCiPipelineChartService {
 
-    DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long devopsPipelineId, Long gitlabPipelineId, String jobName);
+    DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long appServiceId, Long gitlabPipelineId, String jobName);
 
     void baseCreate(DevopsCiPipelineChartDTO devopsCiPipelineChartDTO);
 

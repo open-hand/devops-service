@@ -150,13 +150,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                     ref);
             // 保存流水线chart版本信息
             if (gitlabPipelineId != null && StringUtils.isNotBlank(jobName)) {
-                CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceVersionDTO.getAppServiceId());
-                Long devopsPipelineId = ciCdPipelineDTO.getId();
-                DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
+                Long appServiceId = appServiceVersionDTO.getAppServiceId();
+                DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(appServiceId,
                         gitlabPipelineId,
                         jobName);
                 if (devopsCiPipelineChartDTO == null) {
-                    devopsCiPipelineChartService.baseCreate(new DevopsCiPipelineChartDTO(devopsPipelineId,
+                    devopsCiPipelineChartService.baseCreate(new DevopsCiPipelineChartDTO(appServiceId,
                             gitlabPipelineId,
                             jobName,
                             appServiceVersionDTO.getVersion(),
