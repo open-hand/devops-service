@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import groovy.lang.Lazy;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -66,15 +67,31 @@ public abstract class AbstractDevopsCiStepHandler {
     @Transactional
     public void save(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
         // 保存步骤
+        DevopsCiStepDTO devopsCiStepDTO = saveStep(projectId, devopsCiJobId, devopsCiStepVO);
+        // 保存任务配置
+        saveConfig(devopsCiStepDTO.getId(), devopsCiStepVO);
+    }
+
+    /**
+     * 保存任务配置，如果需要的话，子类负责实现
+     *
+     * @param stepId         步骤id
+     * @param devopsCiStepVO 步骤信息
+     */
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+        // do nothing
+    }
+
+    @NotNull
+    private DevopsCiStepDTO saveStep(Long projectId, Long devopsCiJobId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiStepDTO devopsCiStepDTO = ConvertUtils.convertObject(devopsCiStepVO, DevopsCiStepDTO.class);
         devopsCiStepDTO.setId(null);
         devopsCiStepDTO.setProjectId(projectId);
         devopsCiStepDTO.setDevopsCiJobId(devopsCiJobId);
         devopsCiStepService.baseCreate(devopsCiStepDTO);
-
-        // 保存任务配置
-        saveConfig(devopsCiStepDTO.getId(), devopsCiStepVO);
+        return devopsCiStepDTO;
     }
+
 
     /**
      * 根据配置信息构建gitlab-ci脚本
@@ -101,15 +118,6 @@ public abstract class AbstractDevopsCiStepHandler {
         batchDeleteConfig(ids);
     }
 
-    /**
-     * 保存任务配置，如果需要的话，子类负责实现
-     *
-     * @param stepId         步骤id
-     * @param devopsCiStepVO 步骤信息
-     */
-    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        // do nothing
-    }
 
     /**
      * 批量删除步骤关联的配置（如果有关联的配置，子类则实现相关删除逻辑，没有则不做任何处理）
