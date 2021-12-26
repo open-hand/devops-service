@@ -7,6 +7,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiPipelineChartService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineChartDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineChartMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -24,14 +25,14 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
 
 
     @Override
-    public DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+    public DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, PipelineCheckConstant.ERROR_JOB_NAME_IS_NULL);
 
         DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = new DevopsCiPipelineChartDTO();
         devopsCiPipelineChartDTO.setGitlabPipelineId(gitlabPipelineId);
-        devopsCiPipelineChartDTO.setDevopsPipelineId(devopsPipelineId);
+        devopsCiPipelineChartDTO.setAppServiceId(appServiceId);
         devopsCiPipelineChartDTO.setJobName(jobName);
         return devopsCiPipelineChartMapper.selectOne(devopsCiPipelineChartDTO);
     }

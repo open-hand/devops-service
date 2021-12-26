@@ -37,9 +37,8 @@ public class DevopsCiPipelineChartDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty("devops流水线id")
-    @NotNull
-    private Long devopsPipelineId;
+    @ApiModelProperty("应用服务id")
+    private Long appServiceId;
     @ApiModelProperty(value = "gitlabPipelineId", required = true)
     @NotNull
     private Long gitlabPipelineId;
@@ -60,24 +59,24 @@ public class DevopsCiPipelineChartDTO extends AuditDomain {
     public DevopsCiPipelineChartDTO() {
     }
 
-    public DevopsCiPipelineChartDTO(@NotNull Long devopsPipelineId,
+    public DevopsCiPipelineChartDTO(@NotNull Long appServiceId,
                                     @NotNull Long gitlabPipelineId,
                                     @NotBlank String jobName,
                                     @NotBlank String chartVersion,
                                     @NotNull Long appServiceVersionId) {
-        this.devopsPipelineId = devopsPipelineId;
+        this.appServiceId = appServiceId;
         this.gitlabPipelineId = gitlabPipelineId;
         this.jobName = jobName;
         this.chartVersion = chartVersion;
         this.appServiceVersionId = appServiceVersionId;
     }
 
-    public Long getDevopsPipelineId() {
-        return devopsPipelineId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setDevopsPipelineId(Long devopsPipelineId) {
-        this.devopsPipelineId = devopsPipelineId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getId() {
