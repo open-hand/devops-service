@@ -83,7 +83,7 @@ public class DevopsCiJobVO {
     private String script;
 
     @ApiModelProperty("任务信息是否完整")
-    private Boolean completed;
+    private Boolean completed = true;
 
 
     public Boolean getCompleted() {
