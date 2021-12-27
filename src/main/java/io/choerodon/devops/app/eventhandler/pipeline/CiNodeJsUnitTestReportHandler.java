@@ -18,6 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.CiNodeJsReportVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.infra.enums.CiUnitTestTypeEnum;
+import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
@@ -37,10 +38,10 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
 
     @Override
     public DevopsCiUnitTestResultVO analyseReport(MultipartFile file) {
-        File file1 = new File("D:/mochawesome-report.zip");
+        File file1 = new File("report.zip");
 
         try {
-
+            file.transferTo(file1);
             ZipFile zipFile = new ZipFile(file1);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             String resultJson = "";
@@ -58,6 +59,8 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
 
         } catch (IOException e) {
             throw new CommonException("analyse.report.failed");
+        } finally {
+            FileUtil.deleteDirectory(file1);
         }
     }
 
