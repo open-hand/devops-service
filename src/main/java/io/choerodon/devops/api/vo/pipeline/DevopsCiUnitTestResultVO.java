@@ -24,6 +24,9 @@ public class DevopsCiUnitTestResultVO {
     @NotNull
     private Long skipped;
 
+    public DevopsCiUnitTestResultVO() {
+    }
+
     public DevopsCiUnitTestResultVO(@NotNull Long tests, @NotNull Long failures, @NotNull Long skipped) {
         this.tests = tests;
         this.failures = failures;
