@@ -92,17 +92,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsCdPipelineService devopsCdPipelineService;
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
-    private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-    private final AppServiceVersionMapper appServiceVersionMapper;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
-
-    @Autowired
-    private CiPipelineMavenMapper ciPipelineMavenMapper;
 
     @Autowired
     private CiPipelineImageMapper ciPipelineImageMapper;
@@ -129,6 +124,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private CiPipelineMavenService ciPipelineMavenService;
     @Autowired
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
+    @Autowired
+    private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
 
     @Value("${services.gateway.url}")
     private String api;
@@ -156,8 +153,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              @Lazy DevopsCdPipelineService devopsCdPipelineService,
                                              @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
                                              @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
-                                             DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
-                                             AppServiceVersionMapper appServiceVersionMapper,
                                              SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -178,8 +173,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
-        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
-        this.appServiceVersionMapper = appServiceVersionMapper;
         this.sendNotificationService = sendNotificationService;
     }
 
@@ -547,6 +540,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
 
+
         ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
@@ -559,8 +553,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 添加提交信息
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsPipelineId);
+        Long appServiceId = ciCdPipelineVO.getAppServiceId();
+
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
-        addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+        addCommitInfo(appServiceId, devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -585,15 +581,16 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
 
                 // 添加chart版本信息
-                fillChartInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillChartInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加Sonar扫描信息
-                fillSonarInfo(projectId, ciCdPipelineVO.getAppServiceId(), devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillSonarInfo(projectId, appServiceId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
                 fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
                 //是否本次流水线有镜像的扫描结果 有则展示
                 fillImageScanInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillUnitTestInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 // todo 待删除
 //                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
@@ -679,6 +676,19 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
+    }
+
+    /**
+     * 填充单元测试信息
+     *
+     * @param appServiceId
+     * @param gitlabPipelineId
+     * @param devopsCiJobRecordVO
+     */
+    private void fillUnitTestInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        devopsCiJobRecordVO.setDevopsCiUnitTestReportInfoList(devopsCiUnitTestReportService.listByJobName(appServiceId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName()));
     }
 
     private void fillImageScanInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {

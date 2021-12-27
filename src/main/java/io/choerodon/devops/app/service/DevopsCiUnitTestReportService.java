@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.devops.infra.dto.DevopsCiUnitTestReportDTO;
@@ -27,12 +29,14 @@ public interface DevopsCiUnitTestReportService {
     /**
      * 根据唯一索引查询测试报告
      *
-     * @param devopsPipelineId
+     * @param appServiceId
      * @param jobName
      * @param type
      * @return
      */
-    DevopsCiUnitTestReportDTO queryByUniqueIndex(Long devopsPipelineId, Long gitlabPipelineId, String jobName, String type);
+    DevopsCiUnitTestReportDTO queryByUniqueIndex(Long appServiceId, Long gitlabPipelineId, String jobName, String type);
+
+    List<DevopsCiUnitTestReportDTO> listByJobName(Long appServiceId, Long gitlabPipelineId, String jobName);
 
     void baseCreate(DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO);
 

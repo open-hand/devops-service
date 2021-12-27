@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,6 +85,20 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
         devopsCiUnitTestReportDTO.setType(type);
 
         return devopsCiUnitTestReportMapper.selectOne(devopsCiUnitTestReportDTO);
+    }
+
+    @Override
+    public List<DevopsCiUnitTestReportDTO> listByJobName(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
+
+        DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = new DevopsCiUnitTestReportDTO();
+        devopsCiUnitTestReportDTO.setAppServiceId(appServiceId);
+        devopsCiUnitTestReportDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsCiUnitTestReportDTO.setJobName(jobName);
+
+        return devopsCiUnitTestReportMapper.select(devopsCiUnitTestReportDTO);
     }
 
     @Override
