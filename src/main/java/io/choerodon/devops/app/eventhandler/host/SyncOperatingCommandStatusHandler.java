@@ -8,12 +8,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
-import org.springframework.util.CollectionUtils;
 
 /**
  * 〈功能简述〉
