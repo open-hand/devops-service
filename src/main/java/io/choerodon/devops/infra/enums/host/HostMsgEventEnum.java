@@ -32,12 +32,7 @@ public enum HostMsgEventEnum {
     /**
      * 更新长时间状态未更新的记录状态
      */
-    SYNC_COMMAND_STATUS("sync_command_status"),
-
-    /**
-     * agent启动初始化
-     */
-    INIT("init");
+    SYNC_COMMAND_STATUS("sync_command_status");
 
     private final String value;
 
