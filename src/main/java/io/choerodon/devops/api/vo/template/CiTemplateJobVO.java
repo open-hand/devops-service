@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -45,8 +46,13 @@ public class CiTemplateJobVO {
     @ApiModelProperty("创建者信息")
     private IamUserDTO creatorInfo;
 
-    @ApiModelProperty(value = "任务模板下面的步骤模板")
-    private List<CiTemplateStepVO> ciTemplateStepVOS;
+//    @ApiModelProperty(value = "任务模板下面的步骤模板")
+//    private List<CiTemplateStepVO> ciTemplateStepVOS;
+
+    @ApiModelProperty("任务中的步骤列表")
+    private List<CiTemplateStepVO> devopsCiStepVOList;
+
+
     @ApiModelProperty("所属任务分组名称")
     private String groupName;
 
@@ -68,12 +74,13 @@ public class CiTemplateJobVO {
         this.script = script;
     }
 
-    public List<CiTemplateStepVO> getCiTemplateStepVOS() {
-        return ciTemplateStepVOS;
+
+    public List<CiTemplateStepVO> getDevopsCiStepVOList() {
+        return devopsCiStepVOList;
     }
 
-    public void setCiTemplateStepVOS(List<CiTemplateStepVO> ciTemplateStepVOS) {
-        this.ciTemplateStepVOS = ciTemplateStepVOS;
+    public void setDevopsCiStepVOList(List<CiTemplateStepVO> devopsCiStepVOList) {
+        this.devopsCiStepVOList = devopsCiStepVOList;
     }
 
     public Long getRelateStageId() {
