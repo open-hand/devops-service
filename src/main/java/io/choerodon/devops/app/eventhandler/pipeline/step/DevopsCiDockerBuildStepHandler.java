@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.service.impl;
+package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import java.util.List;
 import java.util.Objects;
@@ -11,7 +11,6 @@ import org.springframework.util.StringUtils;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateDockerService;
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
 import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;

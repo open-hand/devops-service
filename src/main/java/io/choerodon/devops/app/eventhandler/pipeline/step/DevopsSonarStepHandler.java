@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.service.impl;
+package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
@@ -15,7 +15,6 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateSonarService;
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.app.service.DevopsConfigService;

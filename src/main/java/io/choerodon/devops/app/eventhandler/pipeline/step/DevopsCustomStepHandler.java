@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.service;
+package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import org.springframework.stereotype.Service;
 
@@ -9,13 +9,13 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
  * 〈〉
  *
  * @author wanghao
- * @since 2021/12/14 17:52
+ * @since 2021/11/29 17:46
  */
 @Service
-public class DevopsCiMavenUnitTestStepHandler extends AbstractDevopsCiStepHandler {
+public class DevopsCustomStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public DevopsCiStepTypeEnum getType() {
-        return DevopsCiStepTypeEnum.MAVEN_UNIT_TEST;
+        return DevopsCiStepTypeEnum.CUSTOM;
     }
 }

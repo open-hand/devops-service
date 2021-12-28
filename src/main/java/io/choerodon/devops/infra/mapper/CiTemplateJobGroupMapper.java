@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -10,6 +12,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2021-12-01 15:58:16
  */
 public interface CiTemplateJobGroupMapper extends BaseMapper<CiTemplateJobGroupDTO> {
+
+    List<CiTemplateJobGroupDTO> listNonEmptyGroups();
 
 }
 

@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
-import io.choerodon.devops.app.eventhandler.pipeline.CiUnitTestReportHandler;
-import io.choerodon.devops.app.eventhandler.pipeline.CiUnitTestReportOperator;
+import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportOperator;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiUnitTestReportService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
