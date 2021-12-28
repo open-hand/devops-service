@@ -131,7 +131,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                                                        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO,
                                                        DevopsCiStepDTO devopsCiStepDTO,
                                                        List<MavenRepoVO> targetRepoContainer) {
-//        MavenDeployRepoSettings mavenDeployRepoSettings = devopsCiMavenPublishConfigVO.getMavenDeployRepoSettings();
         Long sequence = devopsCiStepDTO.getSequence();
         Set<Long> dependencyRepoIds = devopsCiMavenPublishConfigVO.getNexusMavenRepoIds();
         List<MavenRepoVO> dependencyRepos = devopsCiMavenPublishConfigVO.getRepos();
@@ -172,8 +171,16 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
         // 生成settings文件内容
         String settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
-        MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO1 = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
+        devopsCiMavenSettingsDTO1.setMavenSettings(settings);
+
+        if (devopsCiMavenSettingsDTO1 == null) {
+            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        } else {
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        }
+
         return true;
     }
 

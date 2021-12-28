@@ -37,6 +37,10 @@ public class DevopsCiMavenSettingsDTO extends AuditDomain {
     public DevopsCiMavenSettingsDTO() {
     }
 
+    public DevopsCiMavenSettingsDTO(Long ciJobId, Long sequence) {
+        this.ciJobId = ciJobId;
+        this.sequence = sequence;
+    }
 
     public DevopsCiMavenSettingsDTO(Long ciJobId, Long sequence, String mavenSettings) {
         this.ciJobId = ciJobId;
