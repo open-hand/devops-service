@@ -89,8 +89,8 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     }
 
     @Override
-    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
-        CiTemplateDockerDTO dockerBuildConfig = ciTemplateStepVO.getDockerBuildConfig();
+    protected Boolean isConfigComplete(DevopsCiStepVO devopsCiStepVO) {
+        DevopsCiDockerBuildConfigDTO dockerBuildConfig = devopsCiStepVO.getDockerBuildConfig();
         if (dockerBuildConfig == null) {
             return false;
         }

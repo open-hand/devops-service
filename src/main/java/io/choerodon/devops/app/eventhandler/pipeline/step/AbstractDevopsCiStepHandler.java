@@ -136,17 +136,17 @@ public abstract class AbstractDevopsCiStepHandler {
      */
     public abstract DevopsCiStepTypeEnum getType();
 
-    public Boolean isComplete(CiTemplateStepVO ciTemplateStepVO) {
-        if (!StringUtils.hasText(ciTemplateStepVO.getName())) {
+    public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
+        if (!StringUtils.hasText(devopsCiStepVO.getName())) {
             return false;
         }
-        if (!StringUtils.hasText(ciTemplateStepVO.getType())) {
+        if (!StringUtils.hasText(devopsCiStepVO.getType())) {
             return false;
         }
-        return isConfigComplete(ciTemplateStepVO);
+        return isConfigComplete(devopsCiStepVO);
     }
 
-    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+    protected Boolean isConfigComplete(DevopsCiStepVO devopsCiStepVO) {
         return true;
     }
 }
