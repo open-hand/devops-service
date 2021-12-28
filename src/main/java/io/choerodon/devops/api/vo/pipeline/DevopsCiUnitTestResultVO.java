@@ -16,6 +16,10 @@ public class DevopsCiUnitTestResultVO {
     @NotNull
     private Long tests;
 
+    @ApiModelProperty(value = "成功用例总数", required = true)
+    @NotNull
+    private Long passes;
+
     @ApiModelProperty(value = "失败用例总数", required = true)
     @NotNull
     private Long failures;
@@ -27,10 +31,19 @@ public class DevopsCiUnitTestResultVO {
     public DevopsCiUnitTestResultVO() {
     }
 
-    public DevopsCiUnitTestResultVO(@NotNull Long tests, @NotNull Long failures, @NotNull Long skipped) {
+    public DevopsCiUnitTestResultVO(@NotNull Long tests, @NotNull Long passes, @NotNull Long failures, @NotNull Long skipped) {
         this.tests = tests;
+        this.passes = passes;
         this.failures = failures;
         this.skipped = skipped;
+    }
+
+    public Long getPasses() {
+        return passes;
+    }
+
+    public void setPasses(Long passes) {
+        this.passes = passes;
     }
 
     public Long getTests() {

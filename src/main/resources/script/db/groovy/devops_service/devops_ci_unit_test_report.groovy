@@ -21,6 +21,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_unit_test_report.groovy') {
             column(name: "tests", type: "BIGINT UNSIGNED", remarks: "测试用例总数") {
                 constraints(nullable: false)
             }
+            column(name: "passes", type: "BIGINT UNSIGNED", remarks: "成功用例总数") {
+                constraints(nullable: false)
+            }
             column(name: "failures", type: "BIGINT UNSIGNED", remarks: "失败用例总数") {
                 constraints(nullable: false)
             }

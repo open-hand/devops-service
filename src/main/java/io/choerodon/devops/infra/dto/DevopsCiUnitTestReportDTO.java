@@ -61,6 +61,10 @@ public class DevopsCiUnitTestReportDTO extends AuditDomain {
     @NotNull
     private Long tests;
 
+    @ApiModelProperty(value = "成功用例总数", required = true)
+    @NotNull
+    private Long passes;
+
     @ApiModelProperty(value = "失败用例总数", required = true)
     @NotNull
     private Long failures;
@@ -72,6 +76,13 @@ public class DevopsCiUnitTestReportDTO extends AuditDomain {
     @ApiModelProperty(value = "测试报告地址")
     private String reportUrl;
 
+    public Long getPasses() {
+        return passes;
+    }
+
+    public void setPasses(Long passes) {
+        this.passes = passes;
+    }
 
     public Long getId() {
         return id;
