@@ -49,7 +49,10 @@ public class CiMavenUnitTestReportHandler implements CiUnitTestReportHandler {
         Long failures = Long.valueOf(b.getElementsByTag("td").get(2).text());
         Long skipped = Long.valueOf(b.getElementsByTag("td").get(3).text());
 
+        Long passes = tests - errors - failures - skipped;
+
         return new DevopsCiUnitTestResultVO(tests,
+                passes,
                 errors + failures,
                 skipped);
     }
