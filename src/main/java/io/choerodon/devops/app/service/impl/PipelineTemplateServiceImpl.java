@@ -13,7 +13,10 @@ import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
+import io.choerodon.devops.infra.dto.PipelineTemplateDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.enums.StageType;
@@ -156,10 +159,6 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
         ciCdPipelineVO.setVersionName(pipelineTemplateDTO.getVersionName());
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOList);
 
-        // 设置流水线变量
-        List<CiTemplateVariableDTO> ciTemplateVariableDTOS = ciTemplateVariableService.listByTemplateId(templateId);
-        List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOS = ConvertUtils.convertList(ciTemplateVariableDTOS, DevopsCiPipelineVariableDTO.class);
-        ciCdPipelineVO.setDevopsCiPipelineVariableDTOList(devopsCiPipelineVariableDTOS);
         return ciCdPipelineVO;
     }
 
