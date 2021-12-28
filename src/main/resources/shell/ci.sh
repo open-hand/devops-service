@@ -37,7 +37,7 @@ mkdir -p $DOCKER_CONFIG
 echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
 
 # 获取commit时间
-C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci" | awk '{print $1$2}' | sed 's/[-:]//g')
+C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
 C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
 C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
 C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
