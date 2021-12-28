@@ -339,7 +339,7 @@ function uploadMavenUnitTestReport() {
 }
 # 上传go单元测试报告
 function uploadGoUnitTestReport() {
-    uploadUnitTestReport go_unit_test target/site/surefire-report.html
+    uploadUnitTestReport go_unit_test result.xml
 }
 # 上传nodeJs单元测试报告
 function uploadNodeJsUnitTestReport() {
