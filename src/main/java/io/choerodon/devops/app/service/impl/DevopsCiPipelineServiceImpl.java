@@ -674,17 +674,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private List<DevopsCiStageVO> handleCiStage(Long pipelineId) {
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);
+        if (CollectionUtils.isEmpty(devopsCiStageDTOList)) {
+            return new ArrayList<>();
+        }
         //处理ci流水线Job
         Map<Long, List<DevopsCiJobVO>> ciJobMap = handleCiJob(pipelineId);
         //处理CI流水线stage
-        List<DevopsCiStageVO> devopsCiStageVOS = getDevopsCiStageVOS(pipelineId, ciJobMap);
+        List<DevopsCiStageVO> devopsCiStageVOS = getDevopsCiStageVOS(devopsCiStageDTOList, ciJobMap);
         //ci stage排序
         devopsCiStageVOS = ciStageSort(devopsCiStageVOS);
         return devopsCiStageVOS;
     }
 
-    private List<DevopsCiStageVO> getDevopsCiStageVOS(Long pipelineId, Map<Long, List<DevopsCiJobVO>> ciJobMap) {
-        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);
+    private List<DevopsCiStageVO> getDevopsCiStageVOS(List<DevopsCiStageDTO> devopsCiStageDTOList, Map<Long, List<DevopsCiJobVO>> ciJobMap) {
         List<DevopsCiStageVO> devopsCiStageVOS = ConvertUtils.convertList(devopsCiStageDTOList, DevopsCiStageVO.class);
         devopsCiStageVOS.forEach(devopsCiStageVO -> {
             List<DevopsCiJobVO> ciJobVOS = ciJobMap.getOrDefault(devopsCiStageVO.getId(), Collections.emptyList());
@@ -704,6 +707,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private Map<Long, List<DevopsCiJobVO>> handleCiJob(Long pipelineId) {
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(pipelineId);
+        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
+            return new HashMap<>();
+        }
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
 //        devopsCiJobVOS.forEach(this::processBeforeQueryJob);
         // 封装CI对象
