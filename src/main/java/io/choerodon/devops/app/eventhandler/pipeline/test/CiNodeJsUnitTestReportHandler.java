@@ -42,13 +42,15 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
 
         try {
             file.transferTo(file1);
-            ZipFile zipFile = new ZipFile(file1);
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            String resultJson = "";
-            while (entries.hasMoreElements()) {
-                ZipEntry zipEntry = entries.nextElement();
-                if (MOCHAWESOME_JSON_PATH.equals(zipEntry.getName())) {
-                    resultJson = IOUtils.toString(zipFile.getInputStream(zipEntry), StandardCharsets.UTF_8);
+            String resultJson;
+            try (ZipFile zipFile = new ZipFile(file1)) {
+                Enumeration<? extends ZipEntry> entries = zipFile.entries();
+                resultJson = "";
+                while (entries.hasMoreElements()) {
+                    ZipEntry zipEntry = entries.nextElement();
+                    if (MOCHAWESOME_JSON_PATH.equals(zipEntry.getName())) {
+                        resultJson = IOUtils.toString(zipFile.getInputStream(zipEntry), StandardCharsets.UTF_8);
+                    }
                 }
             }
             if (!StringUtils.hasText(resultJson)) {
