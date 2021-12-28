@@ -9,20 +9,20 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_step.groovy') {
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
 
             column(name: 'name', type: 'VARCHAR(255)', remarks: '步骤名称') {
-                constraints(nullable: true)
+                constraints(nullable: false)
             }
             column(name: 'devops_ci_job_id', type: 'BIGINT UNSIGNED', remarks: 'devops流水线任务id') {
-                constraints(nullable: true)
+                constraints(nullable: false)
             }
 
             column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 build 构建，sonar 代码检查, chart chart发布, custom 自定义') {
-                constraints(nullable: true)
+                constraints(nullable: false)
             }
 
             column(name: 'script', type: 'TEXT', remarks: '步骤中包含的脚本')
 
             column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '步骤的顺序') {
-                constraints(nullable: true)
+                constraints(nullable: false)
             }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

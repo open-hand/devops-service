@@ -1668,9 +1668,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private GitlabCi buildGitLabCiObject(CiCdPipelineDTO ciCdPipelineDTO) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
-        Long projectId = projectDTO.getId();
-        Long organizationId = projectDTO.getOrganizationId();
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
+//        Long projectId = projectDTO.getId();
+//        Long organizationId = projectDTO.getOrganizationId();
+
+        Long projectId = 1L;
+        Long organizationId = 1L;
         Long pipelineId = ciCdPipelineDTO.getId();
 
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
