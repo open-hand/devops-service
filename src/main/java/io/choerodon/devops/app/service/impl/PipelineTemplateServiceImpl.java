@@ -125,6 +125,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
                         CiTemplateJobGroupDTO ciTemplateJobGroupDTO = groupMap.get(stageTemplateJobVO.getGroupId());
                         devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+                        devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO.getType());
                         devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
 
                         // 组装步骤信息
