@@ -1934,7 +1934,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (CollectionUtils.isEmpty(devopsCiStepDTOS)) {
             return null;
         }
-
         // 最后生成的所有script集合
         List<String> result = new ArrayList<>();
         devopsCiStepDTOS
