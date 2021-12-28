@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateStepCategoryService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;

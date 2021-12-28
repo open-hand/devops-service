@@ -1,10 +1,9 @@
-package io.choerodon.devops.app.service.impl;
+package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ArrayUtil;

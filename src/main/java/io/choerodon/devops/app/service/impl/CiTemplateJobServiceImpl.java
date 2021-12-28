@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.CiTemplateStepService;

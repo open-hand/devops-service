@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.eventhandler.pipeline;
+package io.choerodon.devops.app.eventhandler.pipeline.test;
 
 import org.springframework.web.multipart.MultipartFile;
 

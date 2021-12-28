@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.AbstractDevopsCiStepHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 
 /**
  * 〈功能简述〉
