@@ -78,6 +78,8 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateParallel(job);
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        validateJobStep(job);
+
                     });
                 });
         ciCdPipelineVO.getDevopsCdStageVOS()
@@ -95,6 +97,15 @@ public class DevopsCiPipelineAdditionalValidator {
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
                     });
                 });
+    }
+
+    private static void validateJobStep(DevopsCiJobVO job) {
+        if (CiJobTypeEnum.NORMAL.value().equals(job.getType())) {
+            List<DevopsCiStepVO> devopsCiStepVOList = job.getDevopsCiStepVOList();
+            if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
+                throw new CommonException("error.job.step.is.empty");
+            }
+        }
     }
 
     /**
