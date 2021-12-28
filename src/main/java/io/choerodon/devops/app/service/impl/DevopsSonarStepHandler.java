@@ -80,7 +80,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         // sonar配置转化为gitlab-ci配置
         List<String> scripts = new ArrayList<>();
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.baseQuery(devopsCiStepDTO.getId());
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepDTO.getId());
 
         if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
