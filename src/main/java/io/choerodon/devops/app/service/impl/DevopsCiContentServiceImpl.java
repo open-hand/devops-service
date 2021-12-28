@@ -82,7 +82,8 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         // 需要重新生成yaml的情况有两种
         // 1. 流水线有修改
         // 2. devops的渲染规则有变动
-        if (devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
+        if (devopsCiContentDTO == null
+                || devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
                 || devopsCiContentDTO.getDevopsDefaultRuleNumber() < defaultRuleNumber) {
             ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
         } else {
