@@ -134,8 +134,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
-    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
-        CiTemplateSonarDTO sonarConfig = ciTemplateStepVO.getSonarConfig();
+    protected Boolean isConfigComplete(DevopsCiStepVO ciTemplateStepVO) {
+        DevopsCiSonarConfigDTO sonarConfig = ciTemplateStepVO.getSonarConfig();
         if (sonarConfig == null) {
             return false;
         }

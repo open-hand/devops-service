@@ -137,13 +137,15 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                         List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
                         ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
                             // 添加步骤关联的配置信息
+                            DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
                             AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
-                            ciTemplateStepHandler.fillTemplateStepConfigInfo(ciTemplateStepVO);
-                            if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(ciTemplateStepVO))) {
+                            ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+
+                            if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(devopsCiStepVO))) {
                                 devopsCiJobVO.setCompleted(false);
                             }
 
-                            devopsCiStepVOList.add(ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class));
+                            devopsCiStepVOList.add(devopsCiStepVO);
                         });
                         devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
                         devopsCiJobVOList.add(devopsCiJobVO);

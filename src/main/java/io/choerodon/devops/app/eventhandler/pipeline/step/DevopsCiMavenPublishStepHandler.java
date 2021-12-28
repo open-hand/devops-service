@@ -309,7 +309,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
-    protected Boolean isConfigComplete(CiTemplateStepVO ciTemplateStepVO) {
+    protected Boolean isConfigComplete(DevopsCiStepVO ciTemplateStepVO) {
         return false;
     }
 }
