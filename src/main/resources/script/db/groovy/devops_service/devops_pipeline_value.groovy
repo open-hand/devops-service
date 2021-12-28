@@ -28,8 +28,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_value.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'app_service_id', oldColumnName: 'app_id', tableName: 'devops_deploy_value')
     }
 
-    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
-        dropTable(tableName: "devops_deploy_value")
-    }
-
 }
