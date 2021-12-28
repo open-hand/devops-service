@@ -19,11 +19,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_sonar.groovy') {
 
             column(name: 'sources', type: 'VARCHAR(1024)', remarks: '要扫描的文件目录，多个文件夹使用,隔开')
 
-            column(name: 'sonar_url', type: 'VARCHAR(2000)', remarks: '外部sonar地址')
-            column(name: 'auth_type', type: 'VARCHAR(2000)', remarks: '外部sonar认证类型')
-            column(name: 'username', type: 'VARCHAR(2000)', remarks: '外部sonar认证的用户名')
-            column(name: 'password', type: 'VARCHAR(2000)', remarks: '外部sonar认证的密码')
-            column(name: 'token', type: 'VARCHAR(2000)', remarks: '外部sonar认证的token')
+            column(name: 'sources', type: 'VARCHAR(512)', remarks: '要扫描的文件目录，多个文件夹使用,隔开')
+            column(name: 'sonar_url', type: 'VARCHAR(512)', remarks: '外部sonar地址')
+            column(name: 'auth_type', type: 'VARCHAR(32)', remarks: '外部sonar认证类型')
+            column(name: 'username', type: 'VARCHAR(512)', remarks: '外部sonar认证的用户名')
+            column(name: 'password', type: 'VARCHAR(512)', remarks: '外部sonar认证的密码')
+            column(name: 'token', type: 'VARCHAR(64)', remarks: '外部sonar认证的token')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
