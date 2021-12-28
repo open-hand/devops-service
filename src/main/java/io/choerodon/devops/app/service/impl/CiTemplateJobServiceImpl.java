@@ -21,6 +21,7 @@ import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+import io.choerodon.devops.infra.enums.CiTriggerType;
 import io.choerodon.devops.infra.mapper.CiTemplateJobMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -80,7 +81,7 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
         Map<Long, List<CiTemplateStepVO>> jobStepsMap = ciTemplateStepVOS.stream().collect(Collectors.groupingBy(CiTemplateStepVO::getCiTemplateJobId));
         ciTemplateJobVOList.forEach(templateJobVO -> {
             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(templateJobVO, DevopsCiJobVO.class);
-
+            devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
             // 填充步骤信息
             List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
             if (!CollectionUtils.isEmpty(ciTemplateStepVOList)) {
