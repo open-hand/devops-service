@@ -18,5 +18,7 @@ public interface CiTemplateJobGroupService {
     List<CiTemplateJobGroupDTO> listByIds(Set<Long> groupIds);
 
     List<CiTemplateJobGroupDTO> listAllGroups();
+
+    List<CiTemplateJobGroupDTO> listNonEmptyGroups();
 }
 

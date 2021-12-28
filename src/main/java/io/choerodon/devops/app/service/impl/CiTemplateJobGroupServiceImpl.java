@@ -38,5 +38,10 @@ public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService 
     public List<CiTemplateJobGroupDTO> listAllGroups() {
         return ciTemplateJobGroupMapper.selectAll();
     }
+
+    @Override
+    public List<CiTemplateJobGroupDTO> listNonEmptyGroups() {
+        return ciTemplateJobGroupMapper.listNonEmptyGroups();
+    }
 }
 
