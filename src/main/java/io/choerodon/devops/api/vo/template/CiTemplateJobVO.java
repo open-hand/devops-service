@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
@@ -29,9 +30,12 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "层级Id", required = true)
     private Long sourceId;
     @ApiModelProperty(value = "是否上传到共享目录", required = true)
-    private Long toUpload;
+    @NotNull
+    private Boolean toUpload;
+
     @ApiModelProperty(value = "是否下载到共享目录", required = true)
-    private Long toDownload;
+    @NotNull
+    private Boolean toDownload;
     @ApiModelProperty(value = "任务镜像", required = true)
     private String image;
 
@@ -155,19 +159,19 @@ public class CiTemplateJobVO {
         this.sourceId = sourceId;
     }
 
-    public Long getToUpload() {
+    public Boolean getToUpload() {
         return toUpload;
     }
 
-    public void setToUpload(Long toUpload) {
+    public void setToUpload(Boolean toUpload) {
         this.toUpload = toUpload;
     }
 
-    public Long getToDownload() {
+    public Boolean getToDownload() {
         return toDownload;
     }
 
-    public void setToDownload(Long toDownload) {
+    public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
     }
 

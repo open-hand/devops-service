@@ -69,11 +69,11 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否上传到共享目录", required = true)
     @NotNull
-    private Long toUpload;
+    private Boolean toUpload;
 
     @ApiModelProperty(value = "是否下载到共享目录", required = true)
     @NotNull
-    private Long toDownload;
+    private Boolean toDownload;
 
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
@@ -156,19 +156,20 @@ public class CiTemplateJobDTO extends AuditDomain {
         this.type = type;
     }
 
-    public Long getToUpload() {
+
+    public Boolean getToUpload() {
         return toUpload;
     }
 
-    public void setToUpload(Long toUpload) {
+    public void setToUpload(Boolean toUpload) {
         this.toUpload = toUpload;
     }
 
-    public Long getToDownload() {
+    public Boolean getToDownload() {
         return toDownload;
     }
 
-    public void setToDownload(Long toDownload) {
+    public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
     }
 }
