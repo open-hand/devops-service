@@ -41,7 +41,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 @Service
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
-    private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo";
+    private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -123,7 +123,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         } else {
             throw new CommonException(ResourceCheckConstant.ERROR_SONAR_SCANNER_TYPE_INVALID);
         }
-        scripts.add(SAVE_SONAR_INFO_FUNCTION);
+        scripts.add(String.format(SAVE_SONAR_INFO_FUNCTION, devopsCiSonarConfigDTO.getScannerType()));
         return scripts;
     }
 

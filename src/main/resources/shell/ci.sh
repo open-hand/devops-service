@@ -279,12 +279,14 @@ function saveJarMetadata() {
 }
 
 ############################### 存储sonar扫描的信息 ################################
+$1 scanner_type 扫描器类型
 function saveSonarInfo() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "token=${Token}" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
+    -F "scanner_type=$1" \
     "${CHOERODON_URL}/devops/ci/save_sonar_info" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
