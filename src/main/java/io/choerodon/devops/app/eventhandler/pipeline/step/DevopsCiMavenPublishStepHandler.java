@@ -174,11 +174,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         String settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO1 = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
-        devopsCiMavenSettingsDTO1.setMavenSettings(settings);
 
         if (devopsCiMavenSettingsDTO1 == null) {
-            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
+            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
         } else {
+            devopsCiMavenSettingsDTO1.setMavenSettings(settings);
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
         }
 
