@@ -310,6 +310,8 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 LOGGER.info("Cluster info: {}", msg);
                 agentMsgHandlerService.handleClusterInfo(msg);
                 break;
+            case DELETE_POD:
+                agentMsgHandlerService.handleDeletePod(Long.parseLong(msg.getClusterId()), msg.getPayload());
             default:
                 LOGGER.warn("UnExpected message type {}", msg.getType());
                 break;

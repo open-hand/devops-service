@@ -55,6 +55,9 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
+
+
     public static final String EVICTED = "Evicted";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
@@ -1146,6 +1149,21 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     public void workloadPodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
+    }
+
+    @Override
+    public void handleDeletePod(Long clusterId, String payload) {
+        DeletePodVO deletePodVO = JsonHelper.unmarshalByJackson(payload, DeletePodVO.class);
+        if (deletePodVO.getStatus().equals("failed")) {
+            LOGGER.info("failed to delete pod {} namespace {}", deletePodVO.getPodName(), deletePodVO.getNamespace());
+        } else {
+            devopsEnvPodService.baseDeleteByName(deletePodVO.getPodName(), deletePodVO.getNamespace());
+            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, deletePodVO.getNamespace());
+            devopsEnvResourceService.deleteByEnvIdAndKindAndName(
+                    devopsEnvironmentDTO.getId(),
+                    ResourceType.POD.getType(),
+                    deletePodVO.getPodName());
+        }
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
