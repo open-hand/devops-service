@@ -106,10 +106,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     @Transactional
-    public void deleteByGitlabProjectId(Long gitlabProjectId) {
-        Objects.requireNonNull(gitlabProjectId);
+    public void deleteByAppServiceId(Long appServiceId) {
+        Objects.requireNonNull(appServiceId);
         DevopsCiJobRecordDTO jobRecordDTO = new DevopsCiJobRecordDTO();
-        jobRecordDTO.setGitlabProjectId(gitlabProjectId);
+        jobRecordDTO.setAppServiceId(appServiceId);
         devopsCiJobRecordMapper.delete(jobRecordDTO);
     }
 

@@ -43,9 +43,8 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
 
         // 异常包装
         ExceptionUtil.wrapExWithCiEx(() -> {
-            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
 
-            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(ciCdPipelineDTO.getId(), ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
+            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(appServiceDTO.getId(), ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
             if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
                 CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
                 BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
@@ -62,10 +61,10 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     }
 
     @Override
-    public CiPipelineImageDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
+    public CiPipelineImageDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(gitlabPipelineId);
-        ciPipelineImageDTO.setDevopsPipelineId(devopsPipelineId);
+        ciPipelineImageDTO.setAppServiceId(appServiceId);
         ciPipelineImageDTO.setJobName(jobName);
         return ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
     }

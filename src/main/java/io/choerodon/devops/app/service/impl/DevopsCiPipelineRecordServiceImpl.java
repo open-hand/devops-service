@@ -947,7 +947,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return;
         }
         //删除镜像扫描记录
-        devopsImageScanResultMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
+//        devopsImageScanResultMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
     }
 
     @Override
