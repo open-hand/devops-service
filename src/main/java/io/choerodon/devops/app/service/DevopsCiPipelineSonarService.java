@@ -12,7 +12,7 @@ public interface DevopsCiPipelineSonarService {
 
     void saveSonarInfo(Long gitlabPipelineId, String jobName, String token, String scannerType);
 
-    DevopsCiPipelineSonarDTO queryByPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName);
+    DevopsCiPipelineSonarDTO queryByPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
     void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO);
 }

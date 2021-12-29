@@ -585,7 +585,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 // 添加chart版本信息
                 fillChartInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加Sonar扫描信息
-                fillSonarInfo(projectId, appServiceId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillSonarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
                 fillJarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
@@ -714,8 +714,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillSonarInfo(Long projectId, Long appServiceId, Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO.getName());
+    private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
         if (devopsCiPipelineSonarDTO != null) {
             SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
             if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
