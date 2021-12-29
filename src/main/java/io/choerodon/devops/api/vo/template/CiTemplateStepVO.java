@@ -45,10 +45,8 @@ public class CiTemplateStepVO {
 
 
     @ApiModelProperty(value = "所属任务id", required = true)
-    @NotNull
     private Long ciTemplateJobId;
     @ApiModelProperty(value = "任务中的顺序", required = true)
-    @NotNull
     private Long sequence;
 
     @ApiModelProperty("创建者")
