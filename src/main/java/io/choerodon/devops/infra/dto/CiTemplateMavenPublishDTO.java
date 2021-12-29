@@ -27,7 +27,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_template_maven_publish")
 public class CiTemplateMavenPublishDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_NEXUS_MAVEN_REPO_ID_STR = "nexusMavenRepoIdStr";
     public static final String FIELD_REPO_STR = "repoStr";
     public static final String FIELD_MAVEN_SETTINGS = "mavenSettings";
     public static final String FIELD_NEXUS_REPO_ID = "nexusRepoId";
@@ -37,8 +36,6 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "项目下已有的maven仓库id列表")
-    private String nexusMavenRepoIdStr;
 
     @ApiModelProperty(value = "表单填写的Maven的依赖仓库")
     private String repoStr;
@@ -59,13 +56,6 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getNexusMavenRepoIdStr() {
-        return nexusMavenRepoIdStr;
-    }
-
-    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
-        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
-    }
 
     public String getRepoStr() {
         return repoStr;
