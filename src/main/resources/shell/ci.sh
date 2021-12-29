@@ -279,7 +279,7 @@ function saveJarMetadata() {
 }
 
 ############################### 存储sonar扫描的信息 ################################
-$1 scanner_type 扫描器类型
+# $1 scanner_type 扫描器类型
 function saveSonarInfo() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
