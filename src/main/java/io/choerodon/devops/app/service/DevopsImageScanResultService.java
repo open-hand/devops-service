@@ -20,4 +20,6 @@ public interface DevopsImageScanResultService {
     Page<DevopsImageScanResultVO> pageByOptions(Long projectId, Long gitlabPipelineId, PageRequest pageRequest, String options);
 
     ImageScanResultVO queryImageInfo(Long projectId, Long gitlabPipelineId);
+
+    void deleteByAppServiceId(Long appServiceId);
 }

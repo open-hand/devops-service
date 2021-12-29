@@ -26,6 +26,7 @@ import io.choerodon.devops.app.service.CiPipelineMavenService;
 import io.choerodon.devops.app.service.DevopsCiStepService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
@@ -84,7 +85,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void createOrUpdate(CiPipelineMavenDTO ciPipelineMavenDTO) {
-        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getDevopsPipelineId(), ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
+        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getAppServiceId(), ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
         if (oldCiPipelineMavenDTO == null) {
             if (ciPipelineMavenMapper.insertSelective(ciPipelineMavenDTO) != 1) {
                 throw new CommonException("error.create.maven.record");
@@ -113,8 +114,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } catch (Exception e) {
                 throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
             }
-            CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-            ciPipelineMavenDTO.setDevopsPipelineId(Objects.requireNonNull(ciCdPipelineDTO.getId()));
+            ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
@@ -206,14 +206,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     }
 
     @Override
-    public CiPipelineMavenDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+    public CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
-        ciPipelineMavenDTO.setDevopsPipelineId(devopsPipelineId);
+        ciPipelineMavenDTO.setAppServiceId(appServiceId);
         ciPipelineMavenDTO.setJobName(jobName);
         return ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
     }

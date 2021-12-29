@@ -31,5 +31,5 @@ public interface CiPipelineMavenService {
                         String token,
                         MultipartFile file);
 
-    CiPipelineMavenDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName);
+    CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 }

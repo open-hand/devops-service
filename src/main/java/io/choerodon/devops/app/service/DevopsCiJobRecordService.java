@@ -26,7 +26,7 @@ public interface DevopsCiJobRecordService {
     /**
      * 根据gitlab_project_id删除job record
      */
-    void deleteByGitlabProjectId(Long gitlabProjectId);
+    void deleteByAppServiceId(Long appServiceId);
 
     /**
      * 保存多条job记录

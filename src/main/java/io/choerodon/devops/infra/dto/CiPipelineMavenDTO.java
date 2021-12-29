@@ -24,9 +24,9 @@ public class CiPipelineMavenDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ApiModelProperty("devops流水线id")
+    @ApiModelProperty("应用服务id")
     @Encrypt
-    private Long devopsPipelineId;
+    private Long appServiceId;
     private Long gitlabPipelineId;
     private String jobName;
     private String groupId;
@@ -34,12 +34,12 @@ public class CiPipelineMavenDTO extends AuditDomain {
     private String version;
     private Long nexusRepoId;
 
-    public Long getDevopsPipelineId() {
-        return devopsPipelineId;
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-    public void setDevopsPipelineId(Long devopsPipelineId) {
-        this.devopsPipelineId = devopsPipelineId;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getId() {

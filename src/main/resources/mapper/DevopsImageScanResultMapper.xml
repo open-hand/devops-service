@@ -14,7 +14,7 @@
 
         delete from
         devops_image_scan_result
-        where GITLAB_PIPELINE_ID IN
+        where app_service_id = #{appServiceId} and GITLAB_PIPELINE_ID IN
         <foreach collection="gitlabPipelineIds" item="id" index="no" open="("
                  separator="," close=")">
             #{id}
@@ -24,13 +24,13 @@
 
     <insert id="insertScanResultBatch" parameterType="java.util.List">
         insert ignore into devops_image_scan_result
-        (VULNERABILITY_CODE, devops_pipeline_id, GITLAB_PIPELINE_ID, job_name, START_DATE,
+        (VULNERABILITY_CODE, app_service_id, GITLAB_PIPELINE_ID, job_name, START_DATE,
         END_DATE,SEVERITY,PKG_NAME,INSTALLED_VERSION,FIXED_VERSION,DESCRIPTION,TARGET)
         values
         <foreach collection="devopsImageScanResultDTOS" item="item" index="index" separator=",">
             (
             #{item.vulnerabilityCode},
-            #{item.devopsPipelineId},
+            #{item.appServiceId},
             #{jobName},
             #{item.gitlabPipelineId},
             #{item.startDate},
@@ -51,7 +51,7 @@
         SET START_DATE=#{startDate},
             END_DATE=#{endDate}
         WHERE GITLAB_PIPELINE_ID = #{gitlabPipelineId}
-          and devops_pipeline_id = #{devopsPipelineId}
+          and app_service_id = #{appServiceId}
           and job_name = #{jobName};
     </update>
 </mapper>
