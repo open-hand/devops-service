@@ -115,4 +115,6 @@ public interface DevopsCiPipelineService {
     List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
     List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
+
+    List<String> listPipelineNameReferenceByConfigId(Long projectId, Long configId);
 }
