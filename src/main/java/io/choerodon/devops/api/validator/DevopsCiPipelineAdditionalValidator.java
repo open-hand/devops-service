@@ -300,16 +300,10 @@ public class DevopsCiPipelineAdditionalValidator {
         if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
-
-        // 解密自定义任务的元数据
-        String metadata = Base64Util.getBase64DecodedString(devopsCiJobVO.getMetadata());
-        // 解密数据放入对象
-        devopsCiJobVO.setMetadata(metadata);
-
         Yaml yaml = new Yaml();
         Object load;
         try {
-            load = yaml.load(metadata);
+            load = yaml.load(devopsCiJobVO.getScript());
         } catch (Exception ex) {
             throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
         }
