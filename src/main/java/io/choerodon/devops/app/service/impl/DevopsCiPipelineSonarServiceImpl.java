@@ -41,7 +41,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
             Long appServiceId = appServiceDTO.getId();
             DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = queryByPipelineId(appServiceId, gitlabPipelineId, jobName);
             if (devopsCiPipelineSonarDTO == null) {
-                baseCreate(new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName));
+                baseCreate(new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName, scannerType));
             }
         });
     }
