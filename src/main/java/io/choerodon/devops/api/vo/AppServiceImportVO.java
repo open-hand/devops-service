@@ -16,6 +16,12 @@ public class AppServiceImportVO extends AppServiceReqVO {
     @ApiModelProperty("外部代码库的平台类型")
     private String platformType;
 
+    @ApiModelProperty("导入需要的用户名")
+    private String username;
+
+    @ApiModelProperty("导入需要的密码")
+    private String password;
+
     /**
      * 不是原本写死的直接从github获取的模板
      */
@@ -53,5 +59,21 @@ public class AppServiceImportVO extends AppServiceReqVO {
 
     public void setDevopsAppTemplateId(Long devopsAppTemplateId) {
         this.devopsAppTemplateId = devopsAppTemplateId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

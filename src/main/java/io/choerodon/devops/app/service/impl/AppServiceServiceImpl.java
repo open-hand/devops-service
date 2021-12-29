@@ -1102,7 +1102,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
         } else {
-            Git repositoryGit = externalGitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+            Git repositoryGit = externalGitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken(), devOpsAppServiceImportPayload.getUsername(), devOpsAppServiceImportPayload.getPassword());
             // 设置Application对应的gitlab项目的仓库地址
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
@@ -1317,10 +1317,30 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public Boolean validateRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String username, String password) {
+        if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
+            return Boolean.FALSE;
+        }
+        return GitUtil.validRepositoryUrl(repositoryUrl, username, password);
+    }
+
+    @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
+        return saveAppService(projectId, appServiceImportVO, isTemplate, false);
+    }
+
+    @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+            description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
+        return saveAppService(projectId, appServiceImportVO, null, true);
+    }
+
+    private AppServiceRepVO saveAppService(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate, Boolean importFromGeneralGit) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
@@ -1341,7 +1361,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setCode(appServiceImportVO.getCode());
 
         // 校验repository（和token） 地址是否有效
-        if (isTemplate == null || !isTemplate) {
+        if (importFromGeneralGit) {
+            checkRepositoryUrlAndUsernameAndPassword(appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getUsername(), appServiceImportVO.getPassword());
+        } else if (isTemplate == null || !isTemplate) {
             GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
             checkRepositoryUrlAndToken(gitPlatformType, appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getAccessToken());
         }
@@ -1391,7 +1413,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppImportServicePayload.setAccessToken(appServiceImportVO.getAccessToken());
         devOpsAppImportServicePayload.setDevopsAppTemplateId(appServiceImportVO.getDevopsAppTemplateId());
         devOpsAppImportServicePayload.setTemplate(isTemplate);
-
+        devOpsAppImportServicePayload.setUsername(appServiceImportVO.getUsername());
+        devOpsAppImportServicePayload.setPassword(appServiceImportVO.getPassword());
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -2909,6 +2932,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
         if (Boolean.FALSE.equals(validationResult)) {
             throw new CommonException("error.repository.token.invalid");
+        } else if (validationResult == null) {
+            throw new CommonException("error.repository.empty");
+        }
+    }
+
+    private void checkRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String userName, String password) {
+        Boolean validationResult = validateRepositoryUrlAndUsernameAndPassword(repositoryUrl, userName, password);
+        if (Boolean.FALSE.equals(validationResult)) {
+            throw new CommonException("error.repository.account.invalid");
         } else if (validationResult == null) {
             throw new CommonException("error.repository.empty");
         }
