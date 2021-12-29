@@ -705,8 +705,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillChartInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(devopsPipelineId,
+    private void fillChartInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(appServiceId,
                 gitlabPipelineId,
                 devopsCiJobRecordVO.getName());
         if (devopsCiPipelineChartDTO != null) {
@@ -722,7 +722,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
                 List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
                         || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
 
                 sonarContents.forEach(v -> {
                     if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
