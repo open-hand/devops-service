@@ -15,11 +15,20 @@ public class CiJobWebHookVO {
     private String name;
     private String status;
     private String type;
+    private String groupType;
     private Date createdAt;
     private Date startedAt;
     private Date finishedAt;
     private GitlabWebHookUserVO user;
     private String metadata;
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
 
     public Long getId() {
         return id;
