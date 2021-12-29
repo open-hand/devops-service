@@ -36,7 +36,7 @@ public class ProjectCiTemplateJobGroupController {
     public ResponseEntity<List<CiTemplateJobGroupDTO>> listGroups(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return ResponseEntity.ok(ciTemplateJobGroupService.listAllGroups());
+        return ResponseEntity.ok(ciTemplateJobGroupService.listNonEmptyGroups());
     }
 }
 
