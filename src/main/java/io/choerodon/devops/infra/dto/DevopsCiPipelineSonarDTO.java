@@ -57,6 +57,13 @@ public class DevopsCiPipelineSonarDTO extends AuditDomain {
         this.jobName = jobName;
     }
 
+    public DevopsCiPipelineSonarDTO(Long appServiceId, @NotNull Long gitlabPipelineId, @NotBlank String jobName, @NotBlank String scannerType) {
+        this.appServiceId = appServiceId;
+        this.gitlabPipelineId = gitlabPipelineId;
+        this.jobName = jobName;
+        this.scannerType = scannerType;
+    }
+
     public Long getAppServiceId() {
         return appServiceId;
     }
