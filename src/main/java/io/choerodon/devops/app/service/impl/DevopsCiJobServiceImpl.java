@@ -18,6 +18,7 @@ import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.*;
@@ -156,14 +157,15 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
-    public List<DevopsCiJobDTO> listCustomByPipelineId(Long ciPipelineId) {
+    public List<DevopsCiJobVO> listCustomByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
+
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         devopsCiJobDTO.setType(CiJobTypeEnum.CUSTOM.value());
-        return devopsCiJobMapper.select(devopsCiJobDTO);
+        return devopsCiJobMapper.listCustomByPipelineId(ciPipelineId);
     }
 
     @Override

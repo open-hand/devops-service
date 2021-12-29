@@ -25,6 +25,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -449,14 +451,37 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
 
-        List<DevopsCiJobDTO> devopsCiCustomJobDTOList = devopsCiJobService.listCustomByPipelineId(pipelineId);
+        List<DevopsCiJobVO> devopsCiCustomJobDTOList = devopsCiJobService.listCustomByPipelineId(pipelineId);
         // 拼接自定义job
         if (!CollectionUtils.isEmpty(devopsCiCustomJobDTOList)) {
-            for (DevopsCiJobDTO job : devopsCiCustomJobDTOList) {
-                gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
+            for (DevopsCiJobVO job : devopsCiCustomJobDTOList) {
+                gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(replaceStageName(job));
             }
         }
         return gitlabCiYaml.toString();
+    }
+
+    private String replaceStageName(DevopsCiJobVO job) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(options);
+        Object data = yaml.load(job.getScript());
+        JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+        try {
+
+            Iterator<Object> iterator = jsonObject.values().iterator();
+            Map<String, Object> value = (Map<String, Object>) iterator.next();
+            if (value.containsKey("stage")) {
+                value.remove("stage");
+            }
+            value.put("stage", "test");
+            return yaml.dump(jsonObject);
+
+        } catch (Exception e) {
+            throw new CommonException("error.yaml.format.invalid", e);
+        }
     }
 
     private void saveCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {

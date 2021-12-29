@@ -85,6 +85,15 @@ public class DevopsCiJobVO {
     @ApiModelProperty("任务信息是否完整")
     private Boolean completed = true;
 
+    private String stageName;
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
 
     public Boolean getCompleted() {
         return completed;

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -47,10 +48,11 @@ public interface DevopsCiJobService {
 
     /**
      * 查询流水线中的自定义任务
+     *
      * @param ciPipelineId
      * @return
      */
-    List<DevopsCiJobDTO> listCustomByPipelineId(Long ciPipelineId);
+    List<DevopsCiJobVO> listCustomByPipelineId(Long ciPipelineId);
 
     /**
      * 根据stage查询job列表
