@@ -96,10 +96,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case PIPELINE_CONTENT_FIX:
                 pipelineContentFix();
-                devopsCiPipelineDataFix();
                 break;
             case FIX_PIPELINE_DATA:
                 pipelineDataFix();
+                devopsCiPipelineDataFix();
                 break;
             default:
                 LOGGER.info("version not matched");
