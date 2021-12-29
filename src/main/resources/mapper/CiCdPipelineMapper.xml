@@ -35,4 +35,11 @@
         ORDER BY dcp.id DESC
     </select>
 
+    <select id="listPipelineNameByTaskConfigId" resultType="java.lang.String">
+        SELECT dp.name
+        FROM devops_cicd_pipeline dp
+                     JOIN devops_cd_job dcj ON dp.id = dcj.pipeline_id
+                     JOIN devops_cd_api_test_info dcati ON dcati.id = dcj.deploy_info_id
+        WHERE dcati.api_test_config_id = #{taskConfigId}
+    </select>
 </mapper>

@@ -52,6 +52,7 @@ public class CiCdPipelineController {
         this.ciCdPipelineRecordService = ciCdPipelineRecordService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
     }
+
     @Autowired
     private DevopsCdJobService devopsCdJobService;
 
@@ -298,6 +299,15 @@ public class CiCdPipelineController {
             @Encrypt
             @RequestBody Set<Long> taskIds) {
         return ResponseEntity.ok(devopsCiPipelineService.listTaskReferencePipelineInfo(projectId, taskIds));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "列出所有任务配置关联的流水线名称")
+    @GetMapping(value = "/list_pipeline_name_reference_by_config_id")
+    public ResponseEntity<List<String>> listPipelineNameReferenceByConfigId(@ApiParam(value = "项目 ID", required = true)
+                                                                            @PathVariable(value = "project_id") Long projectId,
+                                                                            @RequestParam("taskConfigId") Long taskConfigId) {
+        return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
 

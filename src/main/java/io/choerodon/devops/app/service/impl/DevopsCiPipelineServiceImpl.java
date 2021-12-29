@@ -544,6 +544,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     /**
      * 保存步骤的配置信息
+     *
      * @param projectId
      * @param jobId
      * @param devopsCiStepVOList
@@ -1301,6 +1302,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiPipelineFunctionDTOList;
     }
 
+    @Override
+    public List<String> listPipelineNameReferenceByConfigId(Long projectId, Long taskConfigId) {
+        return ciCdPipelineMapper.listPipelineNameByTaskConfigId(taskConfigId);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
@@ -1876,6 +1882,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         }
     }
+
     /**
      * 处理job的触发方式
      *
@@ -1945,7 +1952,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      *
      * @param organizationId 组织id
      * @param projectId      项目id
-     * @param devopsCiJobDTO          生成脚本
+     * @param devopsCiJobDTO 生成脚本
      * @return 生成的脚本列表
      */
     private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
@@ -2168,6 +2175,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return null;
         }
     }
+
     @Nullable
     private Cache buildJobCache(DevopsCiJobDTO jobConfig) {
         boolean isToUpload = Boolean.TRUE.equals(jobConfig.getToUpload());
