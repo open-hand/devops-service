@@ -400,6 +400,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private void saveBranchRel(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         ciCdPipelineVO.getRelatedBranches().forEach(branch -> {
             DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
+            devopsPipelineBranchRelDTO.setId(null);
             devopsPipelineBranchRelDTO.setBranch(branch);
             devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
             MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");

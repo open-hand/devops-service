@@ -55,6 +55,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         // 保存任务配置
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getSonarConfig();
         devopsCiSonarConfigDTO.setStepId(stepId);
+        devopsCiSonarConfigDTO.setId(null);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
     }
 

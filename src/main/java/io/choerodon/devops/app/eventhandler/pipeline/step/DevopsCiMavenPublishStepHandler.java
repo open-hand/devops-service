@@ -58,6 +58,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         if (devopsCiStepVO.getMavenPublishConfig() != null) {
             DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = voToDto(devopsCiStepVO.getMavenPublishConfig());
+            devopsCiMavenPublishConfigDTO.setId(null);
             devopsCiMavenPublishConfigDTO.setStepId(stepId);
 
             devopsCiMavenPublishConfigService.baseCreate(devopsCiMavenPublishConfigDTO);
