@@ -8,4 +8,11 @@
         where dcj.old_type = #{type}
           and dcj.type is null
     </select>
+    <select id="listCustomByPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiJobVO">
+        select dcj.*, dcs.name as stage_name
+        from devops_ci_job dcj
+                 left join devops_ci_stage dcs on dcs.id = dcj.ci_stage_id
+        where dcj.ci_pipeline_id = #{ciPipelineId}
+          and dcj.type = 'custom';
+    </select>
 </mapper>
