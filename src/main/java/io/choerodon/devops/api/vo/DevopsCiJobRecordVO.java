@@ -72,7 +72,7 @@ public class DevopsCiJobRecordVO {
     /**
      * ci生成jar包地址
      */
-    private PipelineJarInfoVO pipelineJarInfoVO;
+    private PipelineJarInfoVO pipelineJarInfo;
 
     /**
      * 是否有镜像扫描
@@ -138,12 +138,12 @@ public class DevopsCiJobRecordVO {
         this.imageScan = imageScan;
     }
 
-    public PipelineJarInfoVO getPipelineJarInfoVO() {
-        return pipelineJarInfoVO;
+    public PipelineJarInfoVO getPipelineJarInfo() {
+        return pipelineJarInfo;
     }
 
-    public void setPipelineJarInfoVO(PipelineJarInfoVO pipelineJarInfoVO) {
-        this.pipelineJarInfoVO = pipelineJarInfoVO;
+    public void setPipelineJarInfo(PipelineJarInfoVO pipelineJarInfo) {
+        this.pipelineJarInfo = pipelineJarInfo;
     }
 
     public String getDownloadImage() {

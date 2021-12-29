@@ -786,7 +786,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 pipelineJarInfoVO.setArtifactId(pipelineMavenDTO.getArtifactId());
                 pipelineJarInfoVO.setVersion(pipelineMavenDTO.getVersion());
                 pipelineJarInfoVO.setServer(server);
-                devopsCiJobRecordVO.setPipelineJarInfoVO(pipelineJarInfoVO);
+                devopsCiJobRecordVO.setPipelineJarInfo(pipelineJarInfoVO);
             } else {
                 LOGGER.error("error.query.repo.nexus.is.null");
             }

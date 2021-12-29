@@ -53,6 +53,9 @@ public class DevopsCiUnitTestReportDTO extends AuditDomain {
     @NotBlank
     private String jobName;
 
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiUnitTestTypeEnum}
+     */
     @ApiModelProperty(value = "测试类型", required = true)
     @NotBlank
     private String type;
