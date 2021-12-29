@@ -156,17 +156,15 @@ public class CiController {
     @ApiOperation(value = "存储sonar信息")
     @PostMapping("/save_sonar_info")
     public ResponseEntity<Void> saveSonarInfo(
-            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
-            @RequestParam("job_id") Long jobId,
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "job_name", required = true)
             @RequestParam(value = "job_name") String jobName,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
-            @ApiParam(value = "token", required = true)
+            @ApiParam(value = "scanner_type", required = true)
             @RequestParam(value = "scanner_type") String scannerType) {
-        devopsCiPipelineSonarService.saveSonarInfo(jobId, gitlabPipelineId, jobName, token, scannerType);
+        devopsCiPipelineSonarService.saveSonarInfo(gitlabPipelineId, jobName, token, scannerType);
         return ResponseEntity.ok().build();
     }
 
