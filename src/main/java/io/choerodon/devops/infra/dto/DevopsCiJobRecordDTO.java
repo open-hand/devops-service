@@ -37,6 +37,9 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     private Long gitlabProjectId;
     @ApiModelProperty("阶段名称")
     private String stage;
+
+    @ApiModelProperty("分组类型")
+    private String groupType;
     @ApiModelProperty("触发用户")
     private Long triggerUserId;
     @ApiModelProperty("名称")
@@ -58,6 +61,14 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
      * maven Setting Id
      */
     private Long mavenSettingId;
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

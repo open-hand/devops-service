@@ -97,4 +97,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
                 constraintName: 'uk_gitlab_job_app_service_id', columnNames: 'gitlab_job_id, app_service_id')
     }
 
+    changeSet(author: 'wanghao', id: '2021-12-29-add-column') {
+
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'group_type', type: 'VARCHAR(20)', remarks: '分组类型', afterColumn: 'stage')
+        }
+    }
+
 }

@@ -202,6 +202,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 return;
             } else {
                 job.setType(devopsCiJobDTO.getType());
+                job.setGroupType(devopsCiJobDTO.getGroupType());
                 job.setMetadata(devopsCiJobDTO.getMetadata());
             }
         }
@@ -308,6 +309,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStage(ciJobWebHookVO.getStage());
                 devopsCiJobRecordDTO.setType(ciJobWebHookVO.getType());
+                devopsCiJobRecordDTO.setGroupType(ciJobWebHookVO.getGroupType());
                 devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
