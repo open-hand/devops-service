@@ -552,6 +552,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param devopsCiStepVOList
      */
     private void batchSaveStep(Long projectId, Long jobId, List<DevopsCiStepVO> devopsCiStepVOList) {
+        if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
+            return;
+        }
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
@@ -1616,7 +1619,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         devopsCiJobDTO.setCiStageId(devopsCiStageVO.getId());
                         devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
                         devopsCiJobService.create(devopsCiJobDTO);
-
                         batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
