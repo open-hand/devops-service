@@ -12,7 +12,6 @@ import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.CiPipelineImageMapper;
@@ -37,6 +36,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Override
     public void createOrUpdate(CiPipelineImageVO ciPipelineImageVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(ciPipelineImageVO.getToken());
+        Long appServiceId = appServiceDTO.getId();
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException("error.token.invalid");
         }
@@ -44,10 +44,11 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         // 异常包装
         ExceptionUtil.wrapExWithCiEx(() -> {
 
-            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(appServiceDTO.getId(), ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
+            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(appServiceId, ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
             if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
                 CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
                 BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
+                ciPipelineImageDTO.setAppServiceId(appServiceId);
                 if (ciPipelineImageMapper.insertSelective(ciPipelineImageDTO) != 1) {
                     throw new CommonException("error.create.image.record");
                 }
