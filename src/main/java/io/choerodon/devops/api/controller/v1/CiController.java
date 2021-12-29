@@ -104,9 +104,9 @@ public class CiController {
             @ApiParam(value = "commit", required = true)
             @RequestParam String commit,
             @ApiParam(value = "GitLab流水线id")
-            @RequestParam(value = "gitlab_pipeline_id", required = false) Long gitlabPipelineId,
+            @RequestParam(value = "gitlabPipelineId", required = false) Long gitlabPipelineId,
             @ApiParam(value = "job_name")
-            @RequestParam(value = "job_name", required = false) String jobName,
+            @RequestParam(value = "jobName", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
             @RequestParam String ref) {
