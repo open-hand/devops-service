@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
@@ -122,34 +123,35 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                     devopsCiStageVO.setSequence(ciTemplateStageDTO.getSequence());
                     devopsCiStageVO.setType(StageType.CI.getType());
                     List<CiTemplateJobVO> stageTemplateJobVOList = stageJobListMap.get(ciTemplateStageDTO.getId());
-
                     List<DevopsCiJobVO> devopsCiJobVOList = new ArrayList<>();
-                    stageTemplateJobVOList.forEach(stageTemplateJobVO -> {
-                        DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(stageTemplateJobVO, DevopsCiJobVO.class);
+                    if (!CollectionUtils.isEmpty(stageTemplateJobVOList)) {
+                        stageTemplateJobVOList.forEach(stageTemplateJobVO -> {
+                            DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(stageTemplateJobVO, DevopsCiJobVO.class);
 
-                        CiTemplateJobGroupDTO ciTemplateJobGroupDTO = groupMap.get(stageTemplateJobVO.getGroupId());
-                        devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
-                        devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO.getType());
-                        devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+                            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = groupMap.get(stageTemplateJobVO.getGroupId());
+                            devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+                            devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO.getType());
+                            devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
 
-                        // 组装步骤信息
-                        List<CiTemplateStepVO> ciTemplateStepVOS = jobStepMap.get(stageTemplateJobVO.getId());
-                        List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                        ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
-                            // 添加步骤关联的配置信息
-                            DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                            AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
-                            ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+                            // 组装步骤信息
+                            List<CiTemplateStepVO> ciTemplateStepVOS = jobStepMap.get(stageTemplateJobVO.getId());
+                            List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
+                            ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
+                                // 添加步骤关联的配置信息
+                                DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
+                                AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
+                                ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
 
-                            if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(devopsCiStepVO))) {
-                                devopsCiJobVO.setCompleted(false);
-                            }
+                                if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(devopsCiStepVO))) {
+                                    devopsCiJobVO.setCompleted(false);
+                                }
 
-                            devopsCiStepVOList.add(devopsCiStepVO);
+                                devopsCiStepVOList.add(devopsCiStepVO);
+                            });
+                            devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+                            devopsCiJobVOList.add(devopsCiJobVO);
                         });
-                        devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
-                        devopsCiJobVOList.add(devopsCiJobVO);
-                    });
+                    }
 
                     devopsCiStageVO.setJobList(devopsCiJobVOList);
                     devopsCiStageVOList.add(devopsCiStageVO);
