@@ -59,6 +59,15 @@ public class CiTemplatePipelineVO {
     @ApiModelProperty("流水线模板的阶段模板")
     private List<CiTemplateStageVO> templateStageVOS;
 
+    private List<CiTemplateVariableVO> ciTemplateVariableVOS;
+
+    public List<CiTemplateVariableVO> getCiTemplateVariableVOS() {
+        return ciTemplateVariableVOS;
+    }
+
+    public void setCiTemplateVariableVOS(List<CiTemplateVariableVO> ciTemplateVariableVOS) {
+        this.ciTemplateVariableVOS = ciTemplateVariableVOS;
+    }
 
     public List<CiTemplateStageVO> getTemplateStageVOS() {
         return templateStageVOS;
