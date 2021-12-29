@@ -35,7 +35,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     @Override
     @Transactional
-    public void saveSonarInfo(Long jobId, Long gitlabPipelineId, String jobName, String token, String scannerType) {
+    public void saveSonarInfo(Long gitlabPipelineId, String jobName, String token, String scannerType) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
             Long appServiceId = appServiceDTO.getId();

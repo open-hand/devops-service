@@ -279,14 +279,10 @@ function saveJarMetadata() {
 }
 
 ############################### 存储sonar扫描的信息 ################################
-# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
-# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
 function saveSonarInfo() {
   result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
     -F "token=${Token}" \
-    -F "job_id=$1" \
-    -F "sequence=$2" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
     "${CHOERODON_URL}/devops/ci/save_sonar_info" \

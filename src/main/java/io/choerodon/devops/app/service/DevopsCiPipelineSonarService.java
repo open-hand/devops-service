@@ -10,7 +10,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineSonarDTO;
  */
 public interface DevopsCiPipelineSonarService {
 
-    void saveSonarInfo(Long jobId, Long gitlabPipelineId, String jobName, String token, String scannerType);
+    void saveSonarInfo(Long gitlabPipelineId, String jobName, String token, String scannerType);
 
     DevopsCiPipelineSonarDTO queryByPipelineId(Long devopsPipelineId, Long gitlabPipelineId, String jobName);
 
