@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -103,6 +104,25 @@ public class GitUtil {
         if (!StringUtils.isEmpty(token)) {
             lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", token));
         }
+        try {
+            int size = lsRemoteCommand.call().size();
+            if (size == 0) {
+                return null;
+            } else {
+                return Boolean.TRUE;
+            }
+        } catch (GitAPIException e) {
+            return Boolean.FALSE;
+        }
+    }
+
+    public static Boolean validRepositoryUrl(String repositoryUrl, String username, String password) {
+        LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
+        lsRemoteCommand.setRemote(repositoryUrl);
+        if (ObjectUtils.isEmpty(username) || ObjectUtils.isEmpty(password)) {
+            throw new CommonException("error.general.git.username.or.password.empty");
+        }
+        lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
         try {
             int size = lsRemoteCommand.call().size();
             if (size == 0) {
@@ -487,7 +507,7 @@ public class GitUtil {
      * @param git         Git对象
      * @param repoUrl     仓库地址
      * @param accessToken 访问token
-     * @param tagName  要推送的tag名
+     * @param tagName     要推送的tag名
      */
     public void pushLocalTag(Git git, String repoUrl, String accessToken, String tagName) {
         try {
@@ -540,7 +560,7 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken,Boolean deleteFile) {
+    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken, Boolean deleteFile) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
