@@ -24,7 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_image.groovy') {
 
     changeSet(author: 'wanghao', id: '2021-12-15-add-column') {
         addColumn(tableName: 'devops_ci_pipeline_image') {
-            column(name: "devops_pipeline_id", type: "BIGINT UNSIGNED")
+            column(name: "app_service_id", type: "BIGINT UNSIGNED")
         }
     }
     changeSet(author: 'wanghao', id: '2021-12-15-fix-data') {
@@ -33,9 +33,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_image.groovy') {
         }
         sql("""
             update devops_ci_pipeline_image dcpi
-            SET dcpi.devops_pipeline_id = 
-            (SELECT dcpr.ci_pipeline_id 
+            SET dcpi.app_service_id = 
+            (SELECT dcp.app_service_id 
                 FROM devops_ci_pipeline_record dcpr 
+                JOIN devops_cicd_pipeline dcp on dcpr.ci_pipeline_id = dcp.id
                 WHERE dcpr.gitlab_pipeline_id = dcpi.gitlab_pipeline_id 
                 limit 1)
         """)
@@ -44,6 +45,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_image.groovy') {
         dropUniqueConstraint(tableName: 'devops_ci_pipeline_image',
                 constraintName: 'uk_gitlab_pipeline_id')
         addUniqueConstraint(tableName: 'devops_ci_pipeline_image',
-                constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'devops_pipeline_id,gitlab_pipeline_id,job_name')
+                constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'app_service_id,gitlab_pipeline_id,job_name')
     }
 }

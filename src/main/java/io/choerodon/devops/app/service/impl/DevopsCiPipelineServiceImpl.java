@@ -161,6 +161,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private DevopsPipelineBranchRelMapper devopsPipelineBranchRelMapper;
+    @Autowired
+    private DevopsImageScanResultService devopsImageScanResultService;
 
     public DevopsCiPipelineServiceImpl(
             @Lazy DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
@@ -881,10 +883,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
         // 删除 ci job记录
-        devopsCiJobRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        devopsCiJobRecordService.deleteByAppServiceId(appServiceDTO.getId());
 
         // 删除pipeline记录
-        devopsCiPipelineRecordService.deleteByGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        devopsCiPipelineRecordService.deleteByPipelineId(pipelineId);
+
+        // 删除镜像扫描数据
+        devopsImageScanResultService.deleteByAppServiceId(appServiceDTO.getId());
         //删除 cd  pipeline记录 stage记录 以及Job记录
 
         // 删除content file

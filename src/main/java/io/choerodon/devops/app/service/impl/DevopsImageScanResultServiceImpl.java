@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,8 +24,8 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
 import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
@@ -79,10 +80,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             return;
         }
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
-        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-
-        Long devopsPipelineId = ciCdPipelineDTO.getId();
-
+        Long appServiceId = appServiceDTO.getId();
 
         imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
         });
@@ -92,12 +90,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         }
         //查询数据库是否存在，不存在则插入
         DevopsImageScanResultDTO existScanResult = new DevopsImageScanResultDTO();
-        existScanResult.setDevopsPipelineId(devopsPipelineId);
+        existScanResult.setAppServiceId(appServiceId);
         existScanResult.setGitlabPipelineId(gitlabPipelineId);
         existScanResult.setJobName(jobName);
         if (devopsImageScanResultMapper.selectCount(existScanResult) > 0) {
             //批量更新
-            devopsImageScanResultMapper.updateScanDate(startDate, endDate, devopsPipelineId, gitlabPipelineId, jobName);
+            devopsImageScanResultMapper.updateScanDate(startDate, endDate, appServiceId, gitlabPipelineId, jobName);
         } else {
             //批量插入
             ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
@@ -107,7 +105,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             vulnerabilities.forEach(vulnerabilitieVO -> {
                 DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
                 devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
-                devopsImageScanResultDTO.setDevopsPipelineId(devopsPipelineId);
+                devopsImageScanResultDTO.setAppServiceId(appServiceId);
                 devopsImageScanResultDTO.setJobName(jobName);
                 devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
                 BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
@@ -252,6 +250,17 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         imageScanResultVO.setSpendTime(scanResultDTO.getEndDate().getTime() - scanResultDTO.getStartDate().getTime());
         imageScanResultVO.setStartDate(scanResultDTO.getStartDate());
         return imageScanResultVO;
+    }
+
+    @Override
+    @Transactional
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+        devopsImageScanResultDTO.setAppServiceId(appServiceId);
+
+        devopsImageScanResultMapper.delete(devopsImageScanResultDTO);
     }
 
     private void handLoophole(List<DevopsImageScanResultDTO> devopsImageScanResultDTOS, ImageScanResultVO imageScanResultVO) {
