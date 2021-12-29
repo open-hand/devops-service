@@ -41,7 +41,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 @Service
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
-    private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo '%s'";
+    private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
