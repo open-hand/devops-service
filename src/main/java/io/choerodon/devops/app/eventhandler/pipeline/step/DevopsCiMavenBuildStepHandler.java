@@ -68,6 +68,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         if (mavenBuildConfig != null) {
             DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
             devopsCiMavenBuildConfigDTO.setStepId(stepId);
+            devopsCiMavenBuildConfigDTO.setId(null);
             devopsCiMavenBuildConfigService.baseCreate(devopsCiMavenBuildConfigDTO);
         }
 

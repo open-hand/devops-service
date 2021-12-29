@@ -73,6 +73,7 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDockerBuildConfig();
+        devopsCiDockerBuildConfigDTO.setId(null);
         devopsCiDockerBuildConfigDTO.setStepId(stepId);
         devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
     }
