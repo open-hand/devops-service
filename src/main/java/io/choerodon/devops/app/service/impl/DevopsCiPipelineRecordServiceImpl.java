@@ -588,10 +588,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 fillSonarInfo(projectId, appServiceId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
-                fillJarInfo(projectId, devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
-                fillDockerInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillJarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillDockerInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 //是否本次流水线有镜像的扫描结果 有则展示
-                fillImageScanInfo(devopsPipelineId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillImageScanInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 fillUnitTestInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
                 // todo 待删除
@@ -693,9 +693,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordVO.getName()));
     }
 
-    private void fillImageScanInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+    private void fillImageScanInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-        devopsImageScanResultDTO.setDevopsPipelineId(devopsPipelineId);
+        devopsImageScanResultDTO.setAppServiceId(appServiceId);
         devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsImageScanResultDTO.setJobName(devopsCiJobRecordVO.getName());
         if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
@@ -734,8 +734,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillDockerInfo(Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsPipelineId,
+    private void fillDockerInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
                 gitlabPipelineId,
                 devopsCiJobRecordVO.getName());
         if (pipelineImageDTO == null) {
@@ -745,8 +745,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 "docker pull " + pipelineImageDTO.getImageTag()));
     }
 
-    private void fillJarInfo(Long projectId, Long devopsPipelineId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsPipelineId,
+    private void fillJarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceId,
                 gitlabPipelineId,
                 devopsCiJobRecordVO.getName());
         if (Objects.isNull(pipelineMavenDTO)) {
