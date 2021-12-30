@@ -1,12 +1,10 @@
 package io.choerodon.devops.app.eventhandler.pipeline.test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.io.IOUtils;
 import org.hzero.boot.file.FileClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.CiNodeJsReportVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.infra.enums.CiUnitTestTypeEnum;
-import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
@@ -37,20 +34,20 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
     private FileClient fileClient;
 
     @Override
-    public DevopsCiUnitTestResultVO analyseReport(MultipartFile file) {
-        File file1 = new File("report.zip");
-
+    public DevopsCiUnitTestResultVO analyseReport(MultipartFile multfile) {
+        // 获取文件名
         try {
-            file.transferTo(file1);
-            String resultJson;
-            try (ZipFile zipFile = new ZipFile(file1)) {
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                resultJson = "";
-                while (entries.hasMoreElements()) {
-                    ZipEntry zipEntry = entries.nextElement();
-                    if (MOCHAWESOME_JSON_PATH.equals(zipEntry.getName())) {
-                        resultJson = IOUtils.toString(zipFile.getInputStream(zipEntry), StandardCharsets.UTF_8);
-                    }
+            TarArchiveInputStream fin = new TarArchiveInputStream(multfile.getInputStream());
+            TarArchiveEntry entry;
+            // 将 tar 文件解压到 extractPath 目录下
+            String resultJson = "";
+            while ((entry = fin.getNextTarEntry()) != null) {
+                if (entry.isDirectory()) {
+                    continue;
+                }
+                if (MOCHAWESOME_JSON_PATH.equals(entry.getName())) {
+                    resultJson = IOUtils.toString(fin, StandardCharsets.UTF_8);
+
                 }
             }
             if (!StringUtils.hasText(resultJson)) {
@@ -61,8 +58,6 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
 
         } catch (IOException e) {
             throw new CommonException("analyse.report.failed");
-        } finally {
-            FileUtil.deleteDirectory(file1);
         }
     }
 
