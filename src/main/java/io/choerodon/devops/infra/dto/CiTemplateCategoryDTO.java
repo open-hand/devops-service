@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -47,6 +48,20 @@ public class CiTemplateCategoryDTO extends AuditDomain {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
+
+
+    @ApiModelProperty(value = "关联模板的总数")
+    @Transient
+    private Long templateNumber;
+
+
+    public Long getTemplateNumber() {
+        return templateNumber;
+    }
+
+    public void setTemplateNumber(Long templateNumber) {
+        this.templateNumber = templateNumber;
+    }
 
     public Boolean getBuiltIn() {
         return builtIn;
