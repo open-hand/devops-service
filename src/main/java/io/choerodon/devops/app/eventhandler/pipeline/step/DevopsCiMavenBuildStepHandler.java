@@ -107,13 +107,14 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
         // 处理settings文件
         DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryUnmarshalByStepId(devopsCiStepDTO.getId());
-
-
-        DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);
-        boolean hasSettings = buildAndSaveMavenSettings(projectId,
-                devopsCiJobId,
-                devopsCiStepDTO.getSequence(),
-                devopsCiMavenBuildConfigVO);
+        boolean hasSettings = false;
+        if (devopsCiMavenBuildConfigVO != null) {
+            DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);
+            hasSettings = buildAndSaveMavenSettings(projectId,
+                    devopsCiJobId,
+                    devopsCiStepDTO.getSequence(),
+                    devopsCiMavenBuildConfigVO);
+        }
 
         return buildMavenScripts(projectId,
                 devopsCiJobId,
