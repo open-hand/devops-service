@@ -118,7 +118,6 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         return buildMavenScripts(projectId,
                 devopsCiJobId,
                 devopsCiStepDTO,
-                devopsCiMavenBuildConfigVO,
                 hasSettings);
     }
 
@@ -177,14 +176,13 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     /**
      * 生成maven构建相关的脚本
      *
-     * @param projectId          项目id
-     * @param jobId              job id
+     * @param projectId       项目id
+     * @param jobId           job id
      * @param devopsCiStepDTO
-     * @param devopsCiMavenBuildConfigVO maven构建阶段的信息
-     * @param hasSettings        这个阶段是否有配置settings
+     * @param hasSettings     这个阶段是否有配置settings
      * @return 生成的shell脚本
      */
-    private List<String> buildMavenScripts(final Long projectId, final Long jobId, DevopsCiStepDTO devopsCiStepDTO, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO, boolean hasSettings) {
+    private List<String> buildMavenScripts(final Long projectId, final Long jobId, DevopsCiStepDTO devopsCiStepDTO, boolean hasSettings) {
         List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
         if (hasSettings) {
             // 插入shell指令将配置的settings文件下载到项目目录下
