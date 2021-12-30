@@ -1,17 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,14 +21,18 @@ import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.CiConfigTemplateVO;
-import io.choerodon.devops.api.vo.CiConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineMavenService;
+import io.choerodon.devops.app.service.DevopsCiStepService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
@@ -60,9 +64,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     private CiPipelineMavenMapper ciPipelineMavenMapper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private DevopsCiStepService devopsCiStepService;
 
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
@@ -76,7 +85,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void createOrUpdate(CiPipelineMavenDTO ciPipelineMavenDTO) {
-        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
+        CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getAppServiceId(), ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
         if (oldCiPipelineMavenDTO == null) {
             if (ciPipelineMavenMapper.insertSelective(ciPipelineMavenDTO) != 1) {
                 throw new CommonException("error.create.maven.record");
@@ -105,6 +114,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } catch (Exception e) {
                 throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
             }
+            ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
@@ -116,16 +126,18 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             if (!StringUtils.isEmpty(devopsCiJobDTO.getMetadata())) {
                 logger.debug(">>>>>>>>>>>>>>>>>1. >>>>>>>>>>>>>>>>>>>>ci job Metadata {}", devopsCiJobDTO.getMetadata());
-                CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
-                List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+                List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(jobId);
                 // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
-                List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
-                        (StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                                || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
-                                && ciConfigTemplateVO.getSequence().longValue() == sequence.longValue()).collect(Collectors.toList());
+                List<DevopsCiStepDTO> ciStepDTOS = devopsCiStepDTOS.stream()
+                        .filter(devopsCiStepDTO ->
+                                StringUtils.equalsIgnoreCase(devopsCiStepDTO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+                                        || StringUtils.equalsIgnoreCase(devopsCiStepDTO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType())
+                                        && devopsCiStepDTO.getSequence().longValue() == sequence.longValue())
+                        .collect(Collectors.toList());
+
                 //如果一个job里面 有多次jar上传 会只保留最新的版本
-                if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-                    logger.debug(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciConfigTemplateVOS));
+                if (!CollectionUtils.isEmpty(ciStepDTOS)) {
+                    logger.debug(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciStepDTOS));
                     //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
                     String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
                     // 将maven的setting文件转换为java对象
@@ -194,12 +206,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     }
 
     @Override
-    public CiPipelineMavenDTO queryByGitlabPipelineId(Long gitlabPipelineId, String jobName) {
+    public CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+        ciPipelineMavenDTO.setAppServiceId(appServiceId);
         ciPipelineMavenDTO.setJobName(jobName);
         return ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
     }

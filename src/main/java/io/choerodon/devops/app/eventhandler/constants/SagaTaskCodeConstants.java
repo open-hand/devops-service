@@ -85,6 +85,10 @@ public class SagaTaskCodeConstants {
      * 处理API测试任务执行完成后逻辑
      */
     public static final String HANDLE_API_TEST_TASK_COMPLETE_EVENT = "handle-api-test-task-complete-event";
+    /**
+     * 处理API测试套件执行完成后逻辑
+     */
+    public static final String HANDLE_API_TEST_SUITE_COMPLETE_EVENT = "handle-api-test-suite-complete-event";
 
     /**
      * 创建流水线环境自动部署实例

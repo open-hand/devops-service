@@ -52,4 +52,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
 
         """)
     }
+
+    changeSet(author: 'wanghao', id: '2021-11-30-add-column') {
+        addColumn(tableName: 'devops_ci_content') {
+            column(name: 'pipeline_version_number', type: 'BIGINT UNSIGNED', defaultValue: "1", remarks: '流水线版本号', afterColumn: 'ci_pipeline_id')
+            column(name: 'devops_default_rule_number', type: 'BIGINT UNSIGNED', defaultValue: "1", remarks: 'devops默认渲染规则版本号', afterColumn: 'pipeline_version_number')
+        }
+    }
 }

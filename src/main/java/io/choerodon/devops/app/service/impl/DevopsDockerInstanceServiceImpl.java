@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
@@ -29,7 +27,6 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -37,20 +34,13 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
 import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
-import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
-import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
-import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
-import io.choerodon.devops.infra.mapper.DevopsHostAppInstanceRelMapper;
-import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -88,13 +78,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
-    @Autowired
     private AppServiceService appServiceService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
-    @Autowired
-    private DevopsHostAppInstanceRelService devopsHostAppInstanceRelService;
 
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
@@ -217,8 +203,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
-            // 保存应用实例关系
-            saveHostInstanceRel(projectId, dockerDeployVO, hostDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         }
@@ -262,17 +246,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return devopsHostCommandDTO;
     }
 
-    private void saveHostInstanceRel(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostDTO hostDTO, Long appServiceId, String serviceName, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
-        if (appServiceId != null) {
-            devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
-                    hostDTO.getId(),
-                    appServiceId,
-                    dockerDeployVO.getSourceType(),
-                    devopsDockerInstanceDTO.getId(),
-                    HostInstanceType.DOCKER_PROCESS.value(), serviceName);
-        }
-    }
-
     private DockerPullAccountDTO initDockerPullAccountDTO(MarketHarborConfigVO marketHarborConfigVO) {
         DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO()
                 .setHarborUrl(marketHarborConfigVO.getRepoUrl())
@@ -291,15 +264,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 .setType(dockerDeployVO.getSourceType())
                 .setProjectName(projectDTO.getName());
         return deploySourceVO;
-    }
-
-    private void checkHostExist(DevopsHostDTO hostDTO) {
-        AssertUtils.notNull(hostDTO, "error.host.not.exist");
-    }
-
-    private DevopsHostDTO getHost(Long hostId) {
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-        return devopsHostDTO;
     }
 
     @Override

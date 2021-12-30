@@ -42,4 +42,29 @@ databaseChangeLog(logicalFilePath: 'dba/devops_image_scan_result.groovy') {
         """)
 
     }
+    changeSet(author: 'wanghao', id: '2021-12-15-add-column') {
+        addColumn(tableName: 'devops_image_scan_result') {
+            column(name: "app_service_id", type: "BIGINT UNSIGNED", afterColumn: 'VULNERABILITY_CODE')
+            column(name: "job_name", type: "VARCHAR(255)", remarks: "任务名称")
+        }
+    }
+    changeSet(author: 'wanghao', id: '2021-12-15-fix-data') {
+        preConditions(onFail: "MARK_RAN") {
+            tableExists(tableName: "devops_ci_pipeline_record")
+        }
+        sql("""
+            update devops_image_scan_result disr
+            SET disr.app_service_id = 
+            (SELECT dcp.app_service_id 
+                FROM devops_ci_pipeline_record dcpr 
+                JOIN devops_cicd_pipeline dcp on dcpr.ci_pipeline_id = dcp.id
+                WHERE dcpr.gitlab_pipeline_id = disr.gitlab_pipeline_id 
+                limit 1)
+        """)
+    }
+    changeSet(author: 'wanghao', id: '2021-12-15-modify-unique-index') {
+        addUniqueConstraint(tableName: 'devops_image_scan_result',
+                constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'app_service_id,gitlab_pipeline_id,job_name')
+    }
+
 }

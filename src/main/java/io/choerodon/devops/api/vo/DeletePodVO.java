@@ -13,6 +13,8 @@ public class DeletePodVO {
     private String podName;
     @ApiModelProperty("pod所在的namespace")
     private String namespace;
+    @ApiModelProperty("执行状态")
+    private String status;
 
     public DeletePodVO() {
     }
@@ -38,11 +40,20 @@ public class DeletePodVO {
         this.namespace = namespace;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return "DeletePodVO{" +
                 "podName='" + podName + '\'' +
                 ", namespace='" + namespace + '\'' +
+                ", status='" + status + '\'' +
                 '}';
     }
 }

@@ -230,9 +230,17 @@ public interface SendNotificationService {
 
     /**
      * 发送API测试告警通知
-     * @param type
+     *
      * @param userIds
      * @param params
      */
     void sendApiTestWarningMessage(Set<Long> userIds, Map<String, String> params, Long projectId);
+
+    /**
+     * 发送API测试套件告警通知
+     *
+     * @param userIds
+     * @param params
+     */
+    void sendApiTestSuiteWarningMessage(Set<Long> userIds, Map<String, String> params, Long projectId);
 }

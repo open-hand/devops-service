@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiStepMapper">
+    <delete id="batchDeleteByIds">
+        delete
+        from devops_ci_step
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiStepDTO">
+        select *
+        from devops_ci_step dcs
+        where dcs.devops_ci_job_id in
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
+</mapper>

@@ -14,8 +14,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -245,8 +243,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private DevopsEnvApplicationService devopsEnvApplicationService;
-    @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
@@ -729,13 +725,14 @@ public class AppServiceServiceImpl implements AppServiceService {
             userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
 
-            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
-            List<IamUserDTO> userResult;
-            try {
-                userResult = userFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
-                throw new CommonException("Failed to get user", e);
-            }
+//            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
+//            List<IamUserDTO> userResult;
+//            try {
+//                userResult = userFuture.get();
+//            } catch (InterruptedException | ExecutionException e) {
+//                throw new CommonException("Failed to get user", e);
+//            }
+            List<IamUserDTO> userResult = baseServiceClientOperator.listUsersByIds(distinctIds);
 
             Map<Long, IamUserDTO> users = userResult.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
             // 收集失败的应用服务的id
@@ -1105,7 +1102,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 保存devops_branch信息
             initBranch(devOpsAppServiceImportPayload, appServiceDTO, GitOpsConstants.MASTER);
         } else {
-            Git repositoryGit = externalGitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken());
+            Git repositoryGit = externalGitUtil.cloneRepository(applicationDir, devOpsAppServiceImportPayload.getRepositoryUrl(), devOpsAppServiceImportPayload.getAccessToken(), devOpsAppServiceImportPayload.getUsername(), devOpsAppServiceImportPayload.getPassword());
             // 设置Application对应的gitlab项目的仓库地址
             String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             appServiceDTO.setRepoUrl(repoUrl + organizationDTO.getTenantNum()
@@ -1256,18 +1253,20 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
+            StringBuilder stringBuilder = new StringBuilder(ciStr);
 
             // 查询应用服务关联的流水线, 添加自定义函数
             CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.queryByAppSvcId(appServiceDTO.getId());
-            List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
-            List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
-            List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
-            functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
-            functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
-            StringBuilder stringBuilder = new StringBuilder(ciStr);
-            stringBuilder.append(System.lineSeparator());
-            if (!CollectionUtils.isEmpty(functionDTOS)) {
-                functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+            if (ciCdPipelineDTO != null) {
+                List<DevopsCiPipelineFunctionDTO> functionDTOS = new ArrayList<>();
+                List<DevopsCiPipelineFunctionDTO> defaultCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(PipelineConstants.DEFAULT_CI_PIPELINE_FUNCTION_ID);
+                List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOS = devopsCiPipelineFunctionService.listFunctionsByDevopsPipelineId(ciCdPipelineDTO.getId());
+                functionDTOS.addAll(defaultCiPipelineFunctionDTOS);
+                functionDTOS.addAll(devopsCiPipelineFunctionDTOS);
+                stringBuilder.append(System.lineSeparator());
+                if (!CollectionUtils.isEmpty(functionDTOS)) {
+                    functionDTOS.forEach(functionDTO -> stringBuilder.append(functionDTO.getScript()).append(System.lineSeparator()));
+                }
             }
             return stringBuilder.toString();
         } catch (CommonException e) {
@@ -1318,10 +1317,30 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public Boolean validateRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String username, String password) {
+        if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
+            return Boolean.FALSE;
+        }
+        return GitUtil.validRepositoryUrl(repositoryUrl, username, password);
+    }
+
+    @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
+        return saveAppService(projectId, appServiceImportVO, isTemplate, false);
+    }
+
+    @Override
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+            description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
+        return saveAppService(projectId, appServiceImportVO, null, true);
+    }
+
+    private AppServiceRepVO saveAppService(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate, Boolean importFromGeneralGit) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectDTO.getOrganizationId(), projectId, 1);
@@ -1342,7 +1361,9 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setCode(appServiceImportVO.getCode());
 
         // 校验repository（和token） 地址是否有效
-        if (isTemplate == null || !isTemplate) {
+        if (importFromGeneralGit) {
+            checkRepositoryUrlAndUsernameAndPassword(appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getUsername(), appServiceImportVO.getPassword());
+        } else if (isTemplate == null || !isTemplate) {
             GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
             checkRepositoryUrlAndToken(gitPlatformType, appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getAccessToken());
         }
@@ -1392,7 +1413,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppImportServicePayload.setAccessToken(appServiceImportVO.getAccessToken());
         devOpsAppImportServicePayload.setDevopsAppTemplateId(appServiceImportVO.getDevopsAppTemplateId());
         devOpsAppImportServicePayload.setTemplate(isTemplate);
-
+        devOpsAppImportServicePayload.setUsername(appServiceImportVO.getUsername());
+        devOpsAppImportServicePayload.setPassword(appServiceImportVO.getPassword());
         producer.applyAndReturn(
                 StartSagaBuilder
                         .newBuilder()
@@ -2397,17 +2419,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             type = AppSourceType.CURRENT_PROJECT.getValue();
         }
         String finalType = type;
-        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
-        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
-            return new Page<>();
-        }
-        handAppServices(projectId, serviceRepVOPage);
-        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
-            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
-                appServiceRepVO.setSource("project");
-            }
-        });
-        return serviceRepVOPage;
+        // todo delete?
+//        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
+//        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
+//            return new Page<>();
+//        }
+//        handAppServices(projectId, serviceRepVOPage);
+//        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
+//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
+//                appServiceRepVO.setSource("project");
+//            }
+//        });
+        return new Page<>();
+
     }
 
 
@@ -2908,6 +2932,15 @@ public class AppServiceServiceImpl implements AppServiceService {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
         if (Boolean.FALSE.equals(validationResult)) {
             throw new CommonException("error.repository.token.invalid");
+        } else if (validationResult == null) {
+            throw new CommonException("error.repository.empty");
+        }
+    }
+
+    private void checkRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String userName, String password) {
+        Boolean validationResult = validateRepositoryUrlAndUsernameAndPassword(repositoryUrl, userName, password);
+        if (Boolean.FALSE.equals(validationResult)) {
+            throw new CommonException("error.repository.account.invalid");
         } else if (validationResult == null) {
             throw new CommonException("error.repository.empty");
         }

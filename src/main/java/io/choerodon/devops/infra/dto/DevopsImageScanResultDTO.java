@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -17,7 +18,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_image_scan_result")
-public class  DevopsImageScanResultDTO extends AuditDomain {
+public class DevopsImageScanResultDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -27,8 +28,14 @@ public class  DevopsImageScanResultDTO extends AuditDomain {
     @ApiModelProperty("漏洞码")
     private String vulnerabilityCode;
 
+    @ApiModelProperty("appServiceId")
+    private Long appServiceId;
+
     @ApiModelProperty("GITLAB_PIPELINE_ID")
     private Long gitlabPipelineId;
+
+    @ApiModelProperty("任务名称")
+    private String jobName;
 
     @ApiModelProperty("开始时间")
     private Date startDate;
@@ -53,6 +60,22 @@ public class  DevopsImageScanResultDTO extends AuditDomain {
 
     @ApiModelProperty("镜像名称")
     private String target;
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getJobName() {
+        return jobName;
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
 
     public String getTarget() {
         return target;

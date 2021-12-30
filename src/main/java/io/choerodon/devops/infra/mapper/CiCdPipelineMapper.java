@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 import java.util.Set;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.CiCdPipelineVO;
@@ -22,4 +23,6 @@ public interface CiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
     List<CiCdPipelineVO> queryByProjectIdAndName(@Param("projectId") Long projectId,
                                                  @Param("appServiceIds") Set<Long> appServiceIds,
                                                  @Param("searchParam") String searchParam);
+
+    List<String> listPipelineNameByTaskConfigId(@Param("taskConfigId") Long taskConfigId);
 }

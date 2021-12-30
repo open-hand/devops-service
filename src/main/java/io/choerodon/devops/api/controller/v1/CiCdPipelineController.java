@@ -52,6 +52,7 @@ public class CiCdPipelineController {
         this.ciCdPipelineRecordService = ciCdPipelineRecordService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
     }
+
     @Autowired
     private DevopsCdJobService devopsCdJobService;
 
@@ -92,6 +93,19 @@ public class CiCdPipelineController {
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询cicd流水线基础配置")
+    @GetMapping("/{pipeline_id}/basic_info")
+    public ResponseEntity<CiCdPipelineVO> queryBasicInfoById(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt(ignoreUserConflict = true)
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.queryById(pipelineId));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下流水线")
@@ -285,6 +299,15 @@ public class CiCdPipelineController {
             @Encrypt
             @RequestBody Set<Long> taskIds) {
         return ResponseEntity.ok(devopsCiPipelineService.listTaskReferencePipelineInfo(projectId, taskIds));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "列出所有任务配置关联的流水线名称")
+    @GetMapping(value = "/list_pipeline_name_reference_by_config_id")
+    public ResponseEntity<List<String>> listPipelineNameReferenceByConfigId(@ApiParam(value = "项目 ID", required = true)
+                                                                            @PathVariable(value = "project_id") Long projectId,
+                                                                            @RequestParam("taskConfigId") Long taskConfigId) {
+        return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
 

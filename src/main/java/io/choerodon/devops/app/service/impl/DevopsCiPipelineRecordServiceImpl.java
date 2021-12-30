@@ -5,7 +5,6 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +29,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
+import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -90,14 +93,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsCdPipelineService devopsCdPipelineService;
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
-    private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-    private final AppServiceVersionMapper appServiceVersionMapper;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    private CiPipelineMavenMapper ciPipelineMavenMapper;
+    private DevopsCiPipelineChartService devopsCiPipelineChartService;
 
     @Autowired
     private CiPipelineImageMapper ciPipelineImageMapper;
@@ -118,7 +119,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
-
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
+    @Autowired
+    private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
+    @Autowired
+    private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
 
     @Value("${services.gateway.url}")
     private String api;
@@ -146,8 +154,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              @Lazy DevopsCdPipelineService devopsCdPipelineService,
                                              @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
                                              @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
-                                             DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
-                                             AppServiceVersionMapper appServiceVersionMapper,
                                              SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -168,8 +174,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
-        this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
-        this.appServiceVersionMapper = appServiceVersionMapper;
         this.sendNotificationService = sendNotificationService;
     }
 
@@ -199,6 +203,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 return;
             } else {
                 job.setType(devopsCiJobDTO.getType());
+                job.setGroupType(devopsCiJobDTO.getGroupType());
                 job.setMetadata(devopsCiJobDTO.getMetadata());
             }
         }
@@ -305,6 +310,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStage(ciJobWebHookVO.getStage());
                 devopsCiJobRecordDTO.setType(ciJobWebHookVO.getType());
+                devopsCiJobRecordDTO.setGroupType(ciJobWebHookVO.getGroupType());
                 devopsCiJobRecordDTO.setName(ciJobWebHookVO.getName());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
@@ -322,12 +328,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
                 // sonar任务执行成功后，缓存sonar信息到redis
-                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
-                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
-                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
-                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                }
+                // todo v1.2待删除
+//                if (PipelineStatus.SUCCESS.toValue().equals(ciJobWebHookVO.getStatus())
+//                        && JobTypeEnum.SONAR.value().equals(devopsCiJobRecordDTO.getType())) {
+//                    DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+//                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+//                    applicationService.getSonarContent(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+//                }
             }
         });
     }
@@ -529,10 +536,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return new DevopsCiPipelineRecordVO();
         }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectByPrimaryKey(ciPipelineRecordId);
+
         if (Objects.isNull(devopsCiPipelineRecordDTO)) {
             return new DevopsCiPipelineRecordVO();
         }
-        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
+        Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
+        Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
+
+
+        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -543,9 +555,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
 
         // 添加提交信息
-        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCiPipelineRecordDTO.getCiPipelineId());
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsPipelineId);
+        Long appServiceId = ciCdPipelineVO.getAppServiceId();
+
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
-        addCommitInfo(ciCdPipelineVO.getAppServiceId(), devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+        addCommitInfo(appServiceId, devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -568,80 +582,88 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             calculateStageStatus(devopsCiStageRecordVO, statusMap);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
             latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
-                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
-                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
-                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
-                    }
-                    // 执行成功的添加sonar信息
-                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
-                        SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
-                        if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                            List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                            List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
 
-                            sonarContents.forEach(v -> {
-                                if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
-                                    devopsCiJobRecordVO.setCodeCoverage(v.getValue());
-                                }
-                            });
-                            devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
-                        }
-                    }
+                // 添加chart版本信息
+                fillChartInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                // 添加Sonar扫描信息
+                fillSonarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
-                }
-                //release阶段，添加版本的信息
-                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
-                        && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
-                    // 只有构建成功的才展示版本信息
-                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiPipelineRecordDTO.getCiPipelineId());
-                    if (!Objects.isNull(ciCdPipelineDTO)) {
-                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
-                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
-                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-                        appServiceVersionDTO.setCommit(commitSha);
-                        appServiceVersionDTO.setRef(ref);
-                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
-                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
-                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
-                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
-                        }
-                    }
-
-                }
                 //如果是构建类型 填充jar下载地址，镜像地址，扫描结果
-                if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
-                        && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
-                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
-                    List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-                    if (!CollectionUtils.isEmpty(ciConfigVOConfig)) {
-                        List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
-                        //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
-                        if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
-                            //添加job里面构建结果的下载的地址
-                            fillRepoUrl(projectId, devopsCiJobRecordVO, devopsCiPipelineRecordDTO.getGitlabPipelineId());
-                        }
-                        //填充docker 下载的命令  需要包含docker的构建命令
-                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                            fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
-                        }
-                        // 是否包含docker构建步骤
-                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
-                            //是否本次流水线有镜像的扫描结果 有则展示
-                            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                            devopsImageScanResultDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
-                            if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
-                                devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
-                            } else {
-                                devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
-                            }
-                        }
+                fillJarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillDockerInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                //是否本次流水线有镜像的扫描结果 有则展示
+                fillImageScanInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                fillUnitTestInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
-                    }
+                // todo 待删除
+//                if (JobTypeEnum.SONAR.value().equals(devopsCiJobRecordVO.getType())) {
+//                    if (StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+//                        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(devopsCiJobRecordVO.getMetadata(), SonarQubeConfigVO.class);
+//                        devopsCiJobRecordVO.setSonarScannerType(sonarQubeConfigVO.getScannerType());
+//                    }
+//                    // 执行成功的添加sonar信息
+//                    if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+//                        SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(ciCdPipelineVO.getProjectId(), ciCdPipelineVO.getAppServiceId());
+//                        if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+//                            List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+//                            List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+//                                    || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+//                                    || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+//
+//                            sonarContents.forEach(v -> {
+//                                if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+//                                    devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+//                                }
+//                            });
+//                            devopsCiJobRecordVO.setSonarContentVOS(sonarContentVOS);
+//                        }
+//                    }
+//
+//                }
+                //release阶段，添加版本的信息
+//                if (JobTypeEnum.CHART.value().equals(devopsCiJobRecordVO.getType())
+//                        && PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+//                    // 只有构建成功的才展示版本信息
+//                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsPipelineId);
+//                    if (!Objects.isNull(ciCdPipelineDTO)) {
+//                        String commitSha = devopsCiPipelineRecordVO.getCommit().getCommitSha();
+//                        String ref = devopsCiPipelineRecordVO.getCommit().getRef();
+//                        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+//                        appServiceVersionDTO.setCommit(commitSha);
+//                        appServiceVersionDTO.setRef(ref);
+//                        appServiceVersionDTO.setAppServiceId(ciCdPipelineDTO.getAppServiceId());
+//                        List<AppServiceVersionDTO> appServiceVersionDTOS = appServiceVersionMapper.select(appServiceVersionDTO);
+//                        if (!CollectionUtils.isEmpty(appServiceVersionDTOS)) {
+//                            devopsCiJobRecordVO.setChartVersion(appServiceVersionDTOS.get(0).getVersion());
+//                        }
+//                    }
+//
+//                }
 
-                }
+
+//                if (JobTypeEnum.BUILD.value().equals(devopsCiJobRecordVO.getType())
+//                        && StringUtils.isNotBlank(devopsCiJobRecordVO.getMetadata())) {
+//                    CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
+//                    List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+//                    if (!CollectionUtils.isEmpty(ciConfigVOConfig)) {
+//                        List<String> typeList = ciConfigVOConfig.stream().map(CiConfigTemplateVO::getType).collect(Collectors.toList());
+//                        //这个job是发布maven或者上传 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
+//                        if (!CollectionUtils.isEmpty(typeList) && (typeList.contains(CiJobScriptTypeEnum.MAVEN_DEPLOY.getType()) || typeList.contains(CiJobScriptTypeEnum.UPLOAD_JAR.getType()))) {
+//                            //添加job里面构建结果的下载的地址
+////                            fillJarInfo(projectId, devopsCiJobRecordVO, gitlabPipelineId);
+//                        }
+//                        //填充docker 下载的命令  需要包含docker的构建命令
+//                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+//                            fillDockerPull(devopsCiPipelineRecordDTO, devopsCiJobRecordVO);
+//                        }
+//                        // 是否包含docker构建步骤
+//                        if (!CollectionUtils.isEmpty(typeList) && typeList.contains(CiJobScriptTypeEnum.DOCKER.getType())) {
+//
+//                        }
+//
+//                    }
+//
+//                }
 
 
             });
@@ -659,6 +681,131 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsCiPipelineRecordVO;
     }
 
+    /**
+     * 填充单元测试信息
+     *
+     * @param appServiceId
+     * @param gitlabPipelineId
+     * @param devopsCiJobRecordVO
+     */
+    private void fillUnitTestInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        List<DevopsCiUnitTestReportDTO> devopsCiUnitTestReportDTOS = devopsCiUnitTestReportService.listByJobName(appServiceId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+
+        List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportVOS = devopsCiUnitTestReportDTOS.stream().map(v -> {
+            DevopsCiUnitTestReportVO devopsCiUnitTestReportVO = ConvertUtils.convertObject(v, DevopsCiUnitTestReportVO.class);
+            double successRate = 0;
+            if (devopsCiUnitTestReportVO.getTests() != 0) {
+                successRate = FractionUtil.fraction((devopsCiUnitTestReportVO.getPasses() * 1.0d / devopsCiUnitTestReportVO.getTests()), 2) * 100;
+            }
+            devopsCiUnitTestReportVO.setSuccessRate(successRate);
+            return devopsCiUnitTestReportVO;
+        }).collect(Collectors.toList());
+        devopsCiJobRecordVO.setDevopsCiUnitTestReportInfoList(devopsCiUnitTestReportVOS);
+    }
+
+    private void fillImageScanInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+        devopsImageScanResultDTO.setAppServiceId(appServiceId);
+        devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+        devopsImageScanResultDTO.setJobName(devopsCiJobRecordVO.getName());
+        if (devopsImageScanResultMapper.selectCount(devopsImageScanResultDTO) > 0) {
+            devopsCiJobRecordVO.setImageScan(Boolean.TRUE);
+        } else {
+            devopsCiJobRecordVO.setImageScan(Boolean.FALSE);
+        }
+    }
+
+    private void fillChartInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = devopsCiPipelineChartService.queryByPipelineIdAndJobName(appServiceId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (devopsCiPipelineChartDTO != null) {
+            devopsCiJobRecordVO.setPipelineChartInfo(new PipelineChartInfo(devopsCiPipelineChartDTO.getChartVersion()));
+        }
+    }
+
+    private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
+        if (devopsCiPipelineSonarDTO != null) {
+            SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
+            if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
+                        || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+
+                sonarContents.forEach(v -> {
+                    if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                        devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                    }
+                });
+                devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS));
+            }
+        }
+    }
+
+    private void fillDockerInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (pipelineImageDTO == null) {
+            return;
+        }
+        devopsCiJobRecordVO.setPipelineImageInfo(new PipelineImageInfoVO(pipelineImageDTO.getImageTag(),
+                "docker pull " + pipelineImageDTO.getImageTag()));
+    }
+
+    private void fillJarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceId,
+                gitlabPipelineId,
+                devopsCiJobRecordVO.getName());
+        if (Objects.isNull(pipelineMavenDTO)) {
+            return;
+        }
+        //返回代理地址的仓库和用户名密码
+        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
+        //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
+        if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
+            // 将maven的setting文件转换为java对象
+            Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+            if (!Objects.isNull(c7nNexusRepoDTO)) {
+                Server server = null;
+                if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+                    server = getServer(settings, c7nNexusRepoDTO);
+                }
+                //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+                //区分RELEASE 和 SNAPSHOT
+                String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+                    downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+                            pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+                            BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+                } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+                    downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                } else {
+                    // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+                    downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+                }
+                PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();
+                pipelineJarInfoVO.setDownloadUrl(downloadUrl);
+                pipelineJarInfoVO.setGroupId(pipelineMavenDTO.getGroupId());
+                pipelineJarInfoVO.setArtifactId(pipelineMavenDTO.getArtifactId());
+                pipelineJarInfoVO.setVersion(pipelineMavenDTO.getVersion());
+                pipelineJarInfoVO.setServer(server);
+                devopsCiJobRecordVO.setPipelineJarInfo(pipelineJarInfoVO);
+            } else {
+                LOGGER.error("error.query.repo.nexus.is.null");
+            }
+        }
+    }
+
     private void fillDockerPull(DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
@@ -669,63 +816,63 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private void fillRepoUrl(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
-        if (Objects.isNull(gitlabPipelineId)) {
-            return;
-        }
-        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
-        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
-        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
-        if (Objects.isNull(pipelineMavenDTO)) {
-            return;
-        }
-        //返回代理地址的仓库和用户名密码
-        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
-        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
-        List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
-                StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-                        || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
-                .collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
-            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
-            if (!Objects.isNull(devopsCiMavenSettingsDTO) && !StringUtils.isEmpty(devopsCiMavenSettingsDTO.getMavenSettings())) {
-                // 将maven的setting文件转换为java对象
-                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-                if (!Objects.isNull(c7nNexusRepoDTO)) {
-                    Server server = null;
-                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
-                        server = getServer(settings, c7nNexusRepoDTO);
-                    }
-                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-                    //区分RELEASE 和 SNAPSHOT
-                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
-                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
-                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
-                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
-                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
-                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-                    } else {
-                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
-                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-                    }
-                    DownloadMavenJarVO downloadMavenJarVO = new DownloadMavenJarVO();
-                    downloadMavenJarVO.setDownloaJar(downloadUrl);
-                    downloadMavenJarVO.setServer(server);
-                    devopsCiJobRecordVO.setDownloadMavenJarVO(downloadMavenJarVO);
-                } else {
-                    LOGGER.error("error.query.repo.nexus.is.null");
-                }
-            }
-        }
-
-
-    }
+//    private void fillJarInfo(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
+//        if (Objects.isNull(gitlabPipelineId)) {
+//            return;
+//        }
+//        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+//        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
+//        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
+//        if (Objects.isNull(pipelineMavenDTO)) {
+//            return;
+//        }
+//        //返回代理地址的仓库和用户名密码
+//        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
+//        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
+//        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
+//        List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
+//                StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
+//                        || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
+//                .collect(Collectors.toList());
+//        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
+//            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
+//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
+//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && StringUtils.hasText(devopsCiMavenSettingsDTO.getMavenSettings())) {
+//                // 将maven的setting文件转换为java对象
+//                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
+//                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+//                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
+//                if (!Objects.isNull(c7nNexusRepoDTO)) {
+//                    Server server = null;
+//                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
+//                        server = getServer(settings, c7nNexusRepoDTO);
+//                    }
+//                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+//                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
+//                    //区分RELEASE 和 SNAPSHOT
+//                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+//                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
+//                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
+//                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
+//                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
+//                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
+//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+//                    } else {
+//                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
+//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
+//                    }
+//                    PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();
+//                    pipelineJarInfoVO.setDownloadUrl(downloadUrl);
+//                    pipelineJarInfoVO.setServer(server);
+//                    devopsCiJobRecordVO.setDownloadMavenJarVO(pipelineJarInfoVO);
+//                } else {
+//                    LOGGER.error("error.query.repo.nexus.is.null");
+//                }
+//            }
+//        }
+//
+//
+//    }
 
     private String getReleaseUrl(CiPipelineMavenDTO pipelineMavenDTO, C7nNexusRepoDTO c7nNexusRepoDTO, String downloadUrl) {
         downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
@@ -813,7 +960,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return;
         }
         //删除镜像扫描记录
-        devopsImageScanResultMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
+//        devopsImageScanResultMapper.deleteByGitlabPipelineIds(gitlabPipelineIds);
     }
 
     @Override

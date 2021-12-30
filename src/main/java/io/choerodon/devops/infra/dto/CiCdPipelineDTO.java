@@ -27,8 +27,6 @@ public class CiCdPipelineDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
     private Long appServiceId;
-    @ApiModelProperty("流水线触发方式")
-    private String triggerType;
     @ApiModelProperty("是否启用")
     @Column(name = "is_enabled")
     private Boolean enabled;
@@ -79,14 +77,6 @@ public class CiCdPipelineDTO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
-    }
-
     public Boolean getEnabled() {
         return enabled;
     }
@@ -118,7 +108,6 @@ public class CiCdPipelineDTO extends AuditDomain {
                 ", name='" + name + '\'' +
                 ", projectId=" + projectId +
                 ", appServiceId=" + appServiceId +
-                ", triggerType='" + triggerType + '\'' +
                 ", enabled=" + enabled +
                 ", token='" + token + '\'' +
                 ", image='" + image + '\'' +

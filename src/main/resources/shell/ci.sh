@@ -37,7 +37,7 @@ mkdir -p $DOCKER_CONFIG
 echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
 
 # 获取commit时间
-C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci" | awk '{print $1$2}' | sed 's/[-:]//g')
+C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
 C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
 C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
 C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
@@ -129,13 +129,13 @@ function database_test() {
 }
 
 function cache_jar() {
-  mkdir -p ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
-  cp target/app.jar ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar
+  mkdir -p /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar
+  cp target/app.jar  /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar
 }
 
 #################################### 构建镜像 ####################################
 function docker_build() {
-  cp ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/app.jar ${1:-"src/main/docker"}/app.jar || true
+  cp /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar ${1:-"src/main/docker"}/app.jar || true
   cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"src/main/docker"} || true
@@ -144,7 +144,7 @@ function docker_build() {
 
 #################################### 清理缓存 ####################################
 function clean_cache() {
-  rm -rf ${HOME}/.m2/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
+  rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar
   rm -rf /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}
 }
 
@@ -159,8 +159,16 @@ function chart_build() {
   fi
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
-  # 重置values.yaml文件中image.repository属性
-  sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" ${CHART_PATH%/*}/values.yaml
+  # 重置values.yaml文件中image属性
+  if [ $(grep repository ${CHART_PATH%/*}/values.yaml -c | cat) -eq 0 ]; then
+    sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" \
+      ${CHART_PATH%/*}/values.yaml
+  else
+    which yq > /dev/null || echo "cibase不包含yq指令，请升级"
+    export DOCKER_REPOSITORY="${GROUP_NAME}/${PROJECT_NAME}"
+    yq e -i '.image.registry=strenv(DOCKER_REGISTRY)' ${CHART_PATH%/*}/values.yaml
+    yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
+  fi
   # 构建chart包，重写version与app-version为当前版本
   helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
   TEMP=${CHART_PATH%/*}
@@ -175,6 +183,8 @@ function chart_build() {
     -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
+    -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
+    -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
@@ -188,7 +198,6 @@ function chart_build() {
     exit 1
   fi
 }
-
 #################################### 下载settings文件 ####################################
 # $1 fileName   下载settings文件后保存为的文件名称
 # $2 project_id 项目id
@@ -269,6 +278,28 @@ function saveJarMetadata() {
   fi
 }
 
+############################### 存储sonar扫描的信息 ################################
+# $1 scanner_type 扫描器类型
+function saveSonarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "scanner_type=$1" \
+    "${CHOERODON_URL}/devops/ci/save_sonar_info" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 # $2 ciJobId    猪齿鱼的CI的JOB的id
 function trivyScanImage() {
@@ -282,10 +313,51 @@ function trivyScanImage() {
     -H 'Expect:' \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_id=$1" \
+    -F "token=${Token}" \
+    -F "job_name=${CI_JOB_NAME}" \
     -F "start_date=${startDate}" \
     -F "end_date=${endDate}" \
     -F "file=@results-${CI_COMMIT_TAG}.json" \
     "${CHOERODON_URL}/devops/ci/resolve_image_scan_json" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
+# 上传maven单元测试报告
+function uploadMavenUnitTestReport() {
+    uploadUnitTestReport maven_unit_test target/site/surefire-report.html
+}
+# 上传go单元测试报告
+function uploadGoUnitTestReport() {
+    uploadUnitTestReport go_unit_test result.xml
+}
+# 上传nodeJs单元测试报告
+function uploadNodeJsUnitTestReport() {
+    tar -cvf report.zip mochawesome-report/
+    uploadUnitTestReport node_js_unit_test report.zip
+}
+
+
+# 上传测试报告
+# $1 测试报告类型
+# $2 测试报告路径
+function uploadUnitTestReport() {
+    result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "token=${Token}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "type=$1" \
+    -F "file=@$2" \
+    "${CHOERODON_URL}/devops/ci/upload_unit_test" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错

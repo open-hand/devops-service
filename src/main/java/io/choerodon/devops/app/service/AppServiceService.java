@@ -242,6 +242,8 @@ public interface AppServiceService {
      */
     Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken);
 
+    Boolean validateRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String username, String password);
+
     /**
      * 从外部代码托管平台导入项目创建服务
      *
@@ -250,6 +252,15 @@ public interface AppServiceService {
      * @return response
      */
     AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate);
+
+    /**
+     * 项目下从通用git导入服务
+     *
+     * @param projectId          project id
+     * @param appServiceImportVO 导入操作的相关信息
+     * @return response
+     */
+    AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO);
 
     /**
      * 根据服务code查询服务

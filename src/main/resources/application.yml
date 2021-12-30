@@ -13,17 +13,41 @@ spring:
   redis:
     host: localhost
     database: ${SPRING_REDIS_DATABASE:1}
-  http:
-    encoding:
-      charset: UTF-8
-      force: true
-      enabled: true
+    # Redis连接超时时间
+    connect-timeout: ${SPRING_REDIS_CONNECT_TIMEOUT:2000}
+    # Redis读取超时时间
+    timeout: ${SPRING_REDIS_READ_TIMEOUT:5000}
   servlet:
     multipart:
       enabled: true
       max-request-size: 100MB
       max-file-size: 100MB
-
+  web:
+    resources:
+      # 资源缓存时间，单位秒
+      cache:
+        period: 3600
+      chain:
+        # 开启压缩
+        compressed: true
+        # 启用缓存
+        cache: true
+server:
+  undertow:
+    threads:
+      # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接
+      # 默认值为8，建议设置每个CPU核心一个线程
+      io: ${SERVER_UNDERTOW_IO_THREADS:4}
+      # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程
+      # 默认等于 io-threads*8，它的值设置取决于系统的负载，可适当调大该值
+      worker: ${SERVER_UNDERTOW_WORKER_THREADS:128}
+    # 每块buffer的空间大小，越小空间被利用越充分
+    # 不要设置太大，以免影响其他应用，合适即可
+    buffer-size: ${SERVER_UNDERTOW_BUFFER_SIZE:1024}
+    # 是否分配的直接内存(NIO直接分配的堆外内存)。默认false
+    direct-buffers: true
+    # HTTP POST请求最大的大小。默认0，无限制，可设置10M
+    max-http-post-size: 10485760
 services:
   gitlab:
     proxy-url: ${SERVICES_GITLAB_PROXY_URL:} # 代理服务地址, 可为空 (v1.1)
@@ -122,40 +146,27 @@ mybatis:
       data-center-id: 31
 
 feign:
-  hystrix:
-    shareSecurityContext: true
-    command:
+  circuitbreaker:
+    # 启用断路器
+    enabled: ${FEIGN_CIRCUITBREAKER_ENABLED:true}
+  # 请求压缩配置
+  compression:
+    request:
+      # 配置请求GZIP压缩
+      enabled: ${FEIGN_COMPRESSION_REQUEST_ENABLED:true}
+      # 配置压缩数据大小的下限
+      min-request-size: ${FEIGN_COMPRESSION_REQUEST_MIN_REQUEST_SIZE:2048}
+  # Feign客户端配置
+  client:
+    config:
+      # Feign客户端默认配置
       default:
-        execution:
-          isolation:
-            thread:
-              timeoutInMilliseconds: 30000
-    enabled: true
-hystrix:
-  shareSecurityContext: true
-  # 配置参考 https://github.com/Netflix/Hystrix/wiki/Configuration#ThreadPool
-  threadpool:
-    default:
-      # 最大排队数量
-      maxQueueSize: ${HYSTRIX_MAX_QUEUE_SIZE:300}
-      # 排队数量阈值, 超过会被拒绝, 只在maxQueueSize不等于-1时生效
-      queueSizeRejectionThreshold: ${HYSTRIX_QUEUE_SIZE_REJECTION_THRESHOLD:200}
-      # 线程池最大线程数
-      maximumSize: 30
-      # 核心线程数, 10是默认值
-      coreSize: 10
-  command:
-    default:
-      circuitBreaker:
-        sleepWindowInMilliseconds: 100000
-        forceClosed: true
-      execution:
-        isolation:
-          thread:
-            timeoutInMilliseconds: 600000
-ribbon:
-  ConnectTimeout: 50000
-  ReadTimeout: 50000
+        # 连接超时
+        connectTimeout: ${FEIGN_CLIENT_CONFIG_DEFAULT_CONNECT_TIMEOUT:2000}
+        # 读取超时
+        readTimeout: ${FEIGN_CLIENT_CONFIG_DEFAULT_READ_TIMEOUT:5000}
+        # Feign日志级别：NONE/BASIC/HEADERS/FULL
+        loggerLevel: ${FEIGN_CLIENT_CONFIG_DEFAULT_LOGGER_LEVEL:FULL}
 
 asgard-servie:
   ribbon:
@@ -164,6 +175,10 @@ asgard-servie:
 
 logging:
   level:
+    org.springframework.cloud: info
+    io.github.resilience4j: info
+    com.netflix.discovery: warn
+    org.hzero.boot.platform.lov: info
     org.apache.ibatis: ${LOG_LEVEL:info}
     io.choerodon: ${LOG_LEVEL:info}
     org.hzero: ${LOG_LEVEL:info}
@@ -185,6 +200,7 @@ devops:
   ci:
     default:
       image: ${CI_DFAULT_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}
+      rule-number: ${CI_DFAULT_RULE_NUMBER:2} # 流水线的ci生成规则版本，如果有修改则加1
     pipeline:
       sync:
         executor:

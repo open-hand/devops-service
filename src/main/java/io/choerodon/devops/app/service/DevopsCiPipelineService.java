@@ -33,6 +33,8 @@ public interface DevopsCiPipelineService {
      */
     CiCdPipelineDTO create(Long projectId, CiCdPipelineVO ciCdPipelineVO);
 
+    String generateGitlabCiYaml(CiCdPipelineDTO ciCdPipelineDTO);
+
     /**
      * 更新流水线
      */
@@ -113,4 +115,6 @@ public interface DevopsCiPipelineService {
     List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
     List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
+
+    List<String> listPipelineNameReferenceByConfigId(Long projectId, Long configId);
 }

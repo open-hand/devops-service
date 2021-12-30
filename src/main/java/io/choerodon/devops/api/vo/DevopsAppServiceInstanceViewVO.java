@@ -8,6 +8,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsAppServiceInstanceViewVO {
     @Encrypt
     private Long id;
+    private String appName;
     @Encrypt
     private Long appId;
     private String code;
@@ -62,5 +63,13 @@ public class DevopsAppServiceInstanceViewVO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }

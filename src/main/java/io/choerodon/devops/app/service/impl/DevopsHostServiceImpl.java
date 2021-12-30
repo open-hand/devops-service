@@ -19,7 +19,6 @@ import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -52,9 +51,11 @@ import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -115,8 +116,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private DevopsHostAppService devopsHostAppService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
-    @Autowired
-    private DevopsHostAppInstanceRelMapper devopsHostAppInstanceRelMapper;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
@@ -620,38 +619,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params) {
-        DevopsHostDTO devopsHostDTO = baseQuery(hostId);
-        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        return queryHostInstances(projectId, hostId, appServiceId, pageRequest, name, type, status, params);
-    }
-
-    @Override
-    public Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String name, String type, String status, String params) {
-        DevopsHostDTO devopsHostDTO = baseQuery(hostId);
-        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        Page<DevopsHostInstanceVO> devopsHostInstanceVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostId(hostId, name, type, status, params));
-        if (CollectionUtils.isEmpty(devopsHostInstanceVOPage.getContent())) {
-            return new Page<>();
-        }
-        List<DevopsHostInstanceVO> devopsHostInstanceVOS = devopsHostInstanceVOPage.getContent();
-        List<DevopsHostInstanceVO> hostInstances = new ArrayList<>();
-
-        List<DevopsHostInstanceVO> devopsDockerInstances = devopsHostInstanceVOS.stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
-        handleDockerProcess(devopsDockerInstances, hostInstances);
-
-        List<DevopsHostInstanceVO> devopsNormalInstances = devopsHostInstanceVOS.stream().filter(hostAppInstanceRelDTO -> !StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
-        handleNormalProcess(devopsNormalInstances, hostInstances);
-
-        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
-
-        //按照部署时间排序
-        List<DevopsHostInstanceVO> hostInstanceVOS = hostInstances.stream().sorted(Comparator.comparing(DevopsHostInstanceVO::getCreationDate).reversed()).collect(Collectors.toList());
-        devopsHostInstanceVOPage.setContent(hostInstanceVOS);
-        return devopsHostInstanceVOPage;
-    }
-
-    @Override
     public String disconnectionHost() {
         return HOST_UNINSTALL_SHELL;
     }
@@ -868,58 +835,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                 devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
             });
             hostInstances.addAll(devopsNormalInstanceVOS);
-        }
-    }
-
-    private Page<?> queryHostInstances(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params) {
-        Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.queryInstanceListByHostIdAndAppId(projectId, hostId, appServiceId, name, type, status, params));
-        if (CollectionUtils.isEmpty(hostAppInstanceRelDTOPage.getContent())) {
-            return new Page<>();
-        }
-        List<Object> hostInstances = new ArrayList<>();
-        handHostProcess(hostAppInstanceRelDTOPage, hostInstances);
-        UserDTOFillUtil.fillUserInfo(hostInstances, "createdBy", "deployer");
-        Page<Object> resultPage = new Page<>();
-        BeanUtils.copyProperties(hostAppInstanceRelDTOPage, resultPage);
-        resultPage.setContent(hostInstances);
-        return resultPage;
-    }
-
-
-    private void handHostProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
-        //筛选出docker进程
-        handDockerProcess(hostAppInstanceRelDTOPage, hostInstances);
-        //筛选出非docker进程
-        handNormalProcess(hostAppInstanceRelDTOPage, hostInstances);
-    }
-
-    private void handNormalProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
-        List<DevopsHostAppInstanceRelDTO> normalHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> !StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(normalHostInstances)) {
-            List<Long> normalInstanceIds = normalHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
-            List<DevopsHostAppDTO> devopsHostAppDTOS = devopsHostAppMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOS, DevopsNormalInstanceVO.class);
-            devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
-                devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
-                //加上操作状态
-                devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsNormalInstanceVOS);
-        }
-    }
-
-    private void handDockerProcess(Page<DevopsHostAppInstanceRelDTO> hostAppInstanceRelDTOPage, List<Object> hostInstances) {
-        List<DevopsHostAppInstanceRelDTO> dockerHostInstances = hostAppInstanceRelDTOPage.getContent().stream().filter(hostAppInstanceRelDTO -> StringUtils.equalsIgnoreCase(hostAppInstanceRelDTO.getInstanceType(), HostInstanceType.DOCKER_PROCESS.value())).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(dockerHostInstances)) {
-            List<Long> dockerInstanceIds = dockerHostInstances.stream().map(DevopsHostAppInstanceRelDTO::getInstanceId).collect(Collectors.toList());
-            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
-            List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
-            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
-                devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
-                //加上操作状态
-                devopsDockerInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsDockerInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsDockerInstanceVOS);
         }
     }
 

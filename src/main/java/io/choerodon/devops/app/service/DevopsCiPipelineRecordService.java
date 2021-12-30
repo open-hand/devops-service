@@ -48,7 +48,7 @@ public interface DevopsCiPipelineRecordService {
     List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId);
 
     /**
-     * 根据gitlabProjectId删除pipeline record
+     * @deprecated 根据gitlabProjectId删除pipeline record
      */
     void deleteByGitlabProjectId(Long gitlabProjectId);
 

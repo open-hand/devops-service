@@ -8,16 +8,17 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
  * @author wanghao
  * @since 2020/4/2 17:00
  */
-@WillDeleted
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiJobVO {
     @Encrypt
     @Id
@@ -30,6 +31,9 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("runner镜像地址")
     private String image;
+
+    @ApiModelProperty("分组类型")
+    private String groupType;
 
     @ApiModelProperty("job的并发数")
     private Integer parallel;
@@ -47,6 +51,7 @@ public class DevopsCiJobVO {
     private String type;
 
     @ApiModelProperty("触发类型对应的值")
+    @NotEmpty(message = "error.job.trigger.type.cannot.be.null")
     private String triggerValue;
 
     /**
@@ -68,8 +73,69 @@ public class DevopsCiJobVO {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     private Boolean toDownload;
 
+    @ApiModelProperty("任务中的步骤列表")
+    private List<DevopsCiStepVO> devopsCiStepVOList;
+
     @ApiModelProperty("ci阶段的构建类型")
     private List<String> configJobTypes;
+
+    @ApiModelProperty("脚本类型任务的自定义脚本")
+    private String script;
+
+    @ApiModelProperty("任务信息是否完整")
+    private Boolean completed = true;
+
+    private String stageName;
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
+
+    public CiTemplateJobGroupDTO getCiTemplateJobGroupDTO() {
+        return ciTemplateJobGroupDTO;
+    }
+
+    public void setCiTemplateJobGroupDTO(CiTemplateJobGroupDTO ciTemplateJobGroupDTO) {
+        this.ciTemplateJobGroupDTO = ciTemplateJobGroupDTO;
+    }
+
+    public List<DevopsCiStepVO> getDevopsCiStepVOList() {
+        return devopsCiStepVOList;
+    }
+
+    public void setDevopsCiStepVOList(List<DevopsCiStepVO> devopsCiStepVOList) {
+        this.devopsCiStepVOList = devopsCiStepVOList;
+    }
 
     public List<String> getConfigJobTypes() {
         return configJobTypes;

@@ -28,7 +28,6 @@ import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -107,10 +106,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     @Transactional
-    public void deleteByGitlabProjectId(Long gitlabProjectId) {
-        Objects.requireNonNull(gitlabProjectId);
+    public void deleteByAppServiceId(Long appServiceId) {
+        Objects.requireNonNull(appServiceId);
         DevopsCiJobRecordDTO jobRecordDTO = new DevopsCiJobRecordDTO();
-        jobRecordDTO.setGitlabProjectId(gitlabProjectId);
+        jobRecordDTO.setAppServiceId(appServiceId);
         devopsCiJobRecordMapper.delete(jobRecordDTO);
     }
 
@@ -178,6 +177,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
+            recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
             DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
             devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
             DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);

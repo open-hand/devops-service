@@ -229,4 +229,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant() {
         throw new CommonException("error.query.register.tenant");
     }
+
+    @Override
+    public ResponseEntity<Boolean> platformAdministratorOrAuditor(Long userId) {
+        throw new CommonException("error.check.user.site.access");
+    }
 }

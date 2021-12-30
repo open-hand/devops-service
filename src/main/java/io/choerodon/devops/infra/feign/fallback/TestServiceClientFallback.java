@@ -20,8 +20,18 @@ public class TestServiceClientFallback implements TestServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> executeSuite(Long projectId, Long apiTestSuiteId, Long executorId, String triggerType, Long triggerId) {
+        throw new CommonException("error.failed.to.execute.suite.task");
+    }
+
+    @Override
     public ResponseEntity<String> queryById(Long projectId, Long recordId) {
         throw new CommonException("error.failed.to.query.test.record");
+    }
+
+    @Override
+    public ResponseEntity<String> querySuitePreviewById(Long projectId, Long suiteRecordId) {
+        throw new CommonException("error.failed.to.query.suite.record");
     }
 
     @Override

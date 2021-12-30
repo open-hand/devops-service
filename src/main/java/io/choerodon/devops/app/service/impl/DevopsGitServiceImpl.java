@@ -317,6 +317,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+
+        if (applicationDTO == null) {
+            return new Page<>();
+        }
         // 外部应用服务直接从gitlab查询
         if (applicationDTO.getExternalConfigId() != null) {
             AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
@@ -349,9 +353,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
 
-        if (applicationDTO == null) {
-            return new Page<>();
-        }
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {

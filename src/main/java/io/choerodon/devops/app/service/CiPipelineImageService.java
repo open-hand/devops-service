@@ -12,6 +12,6 @@ public interface CiPipelineImageService {
 
     void createOrUpdate(CiPipelineImageVO ciPipelineImageVO);
 
-    CiPipelineImageDTO queryByGitlabPipelineId(Long gitlabPipelineId, String jobName);
+    CiPipelineImageDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
 }

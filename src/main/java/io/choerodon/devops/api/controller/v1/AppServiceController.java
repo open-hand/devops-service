@@ -140,6 +140,26 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException("error.app.service.create"));
     }
 
+    /**
+     * 项目下从通用git导入服务
+     *
+     * @param projectId          项目id
+     * @param appServiceImportVO 服务信息
+     * @return ApplicationServiceImportVO
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目下从外部代码库导入服务")
+    @PostMapping("/import/general_git")
+    public ResponseEntity<AppServiceRepVO> importFromGeneralGit(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "服务信息", required = true)
+            @RequestBody AppServiceImportVO appServiceImportVO) {
+        return Optional.ofNullable(applicationServiceService.importFromGeneralGit(projectId, appServiceImportVO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.create"));
+    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下查询用户在该组织下拥有权限的应用")
     @CustomPageRequest
@@ -927,6 +947,7 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
     }
 
+    // todo delete?
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "有主机部署的应用服务")
     @GetMapping("/app_center/host/app/list")

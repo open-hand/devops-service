@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -13,28 +14,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.enums.JobStatusEnum;
-import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitUserNameUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * 〈功能简述〉
@@ -60,9 +61,12 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+
     @Autowired
-    @Lazy
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiSonarConfigService devopsCiSonarConfigService;
+
     private DevopsCiJobMapper devopsCiJobMapper;
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     private UserAttrService userAttrService;
@@ -129,6 +133,20 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    public void deleteByStageIdCascade(Long stageId) {
+        Assert.notNull(stageId, ERROR_STAGE_ID_IS_NULL);
+
+        List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+        if (!jobIds.isEmpty()) {
+            // 删除任务下的步骤
+            devopsCiStepService.deleteByJobIds(jobIds);
+            DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+            devopsCiJobDTO.setCiStageId(stageId);
+            devopsCiJobMapper.delete(devopsCiJobDTO);
+        }
+    }
+
+    @Override
     public List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
@@ -136,6 +154,18 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         return devopsCiJobMapper.select(devopsCiJobDTO);
+    }
+
+    @Override
+    public List<DevopsCiJobVO> listCustomByPipelineId(Long ciPipelineId) {
+        if (ciPipelineId == null) {
+            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+        }
+
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobDTO.setType(CiJobTypeEnum.CUSTOM.value());
+        return devopsCiJobMapper.listCustomByPipelineId(ciPipelineId);
     }
 
     @Override
@@ -315,18 +345,26 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
     }
 
+    @Override
+    public List<DevopsCiJobDTO> listAll() {
+        return devopsCiJobMapper.selectAll();
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();
         devopsCiPipelineDTO.setAppServiceId(appServiceId);
         CiCdPipelineDTO ciPipelineDTO = devopsCiCdPipelineMapper.selectOne(devopsCiPipelineDTO);
         if (!Objects.isNull(ciPipelineDTO)) {
-            DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-            devopsCiJobDTO.setCiPipelineId(ciPipelineDTO.getId());
-            devopsCiJobDTO.setType(JobTypeEnum.SONAR.value());
-            DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
-            if (!Objects.isNull(ciJobDTO) && !StringUtils.isEmpty(ciJobDTO.getMetadata())) {
-                sonarInfoVO = JsonHelper.unmarshalByJackson(ciJobDTO.getMetadata(), SonarInfoVO.class);
+            List<DevopsCiJobDTO> devopsCiJobDTOList = listByPipelineId(ciPipelineDTO.getId());
+            List<Long> jobIds = devopsCiJobDTOList.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+            List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobIds(jobIds);
+
+            Optional<DevopsCiStepDTO> first = devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).findFirst();
+            if (first.isPresent()) {
+                DevopsCiStepDTO devopsCiStepDTO = first.get();
+                DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepDTO.getId());
+                sonarInfoVO = ConvertUtils.convertObject(devopsCiSonarConfigDTO, SonarInfoVO.class);
             }
         }
         return sonarInfoVO;

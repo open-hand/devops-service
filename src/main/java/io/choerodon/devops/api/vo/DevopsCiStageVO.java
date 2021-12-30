@@ -7,16 +7,16 @@ import javax.persistence.Id;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import io.choerodon.devops.infra.annotation.WillDeleted;
 
 /**
  *
  * @author wanghao
  * @Date 2020/4/2 17:00
  */
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiStageVO {
     @Encrypt
     @Id

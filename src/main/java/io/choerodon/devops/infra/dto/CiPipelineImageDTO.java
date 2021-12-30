@@ -5,6 +5,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -21,6 +24,9 @@ public class CiPipelineImageDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("应用服务id")
+    @Encrypt
+    private Long appServiceId;
     private Long gitlabPipelineId;
     private String jobName;
     private String imageTag;
@@ -28,6 +34,14 @@ public class CiPipelineImageDTO extends AuditDomain {
     private String repoType;
 
     public CiPipelineImageDTO() {
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
     public Long getGitlabPipelineId() {

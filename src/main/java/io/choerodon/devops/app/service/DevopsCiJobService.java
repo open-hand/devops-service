@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -31,12 +32,27 @@ public interface DevopsCiJobService {
     void deleteByStageId(Long stageId);
 
     /**
+     * 删除stage下的job、job中的步骤、步骤关联的配置
+     *
+     * @param stageId stageId
+     */
+    void deleteByStageIdCascade(Long stageId);
+
+    /**
      * 查询pipeline下的jobs
      *
      * @param ciPipelineId 流水线id
      * @return 结果
      */
     List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId);
+
+    /**
+     * 查询流水线中的自定义任务
+     *
+     * @param ciPipelineId
+     * @return
+     */
+    List<DevopsCiJobVO> listCustomByPipelineId(Long ciPipelineId);
 
     /**
      * 根据stage查询job列表
@@ -96,4 +112,5 @@ public interface DevopsCiJobService {
      */
     void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId);
 
+    List<DevopsCiJobDTO> listAll();
 }
