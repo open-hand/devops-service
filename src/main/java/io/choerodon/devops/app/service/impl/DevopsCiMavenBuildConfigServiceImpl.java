@@ -40,6 +40,9 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
     @Override
     public DevopsCiMavenBuildConfigVO queryUnmarshalByStepId(Long stepId) {
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = queryByStepId(stepId);
+        if (devopsCiMavenBuildConfigDTO == null) {
+            return null;
+        }
         DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = ConvertUtils.convertObject(devopsCiMavenBuildConfigDTO, DevopsCiMavenBuildConfigVO.class);
         if (StringUtils.isNoneBlank(devopsCiMavenBuildConfigVO.getNexusMavenRepoIdStr())) {
             devopsCiMavenBuildConfigVO
