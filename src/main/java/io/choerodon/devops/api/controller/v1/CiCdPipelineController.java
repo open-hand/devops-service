@@ -306,7 +306,7 @@ public class CiCdPipelineController {
     @GetMapping(value = "/list_pipeline_name_reference_by_config_id")
     public ResponseEntity<List<String>> listPipelineNameReferenceByConfigId(@ApiParam(value = "项目 ID", required = true)
                                                                             @PathVariable(value = "project_id") Long projectId,
-                                                                            @RequestParam("taskConfigId") Long taskConfigId) {
+                                                                            @RequestParam("config_id") Long taskConfigId) {
         return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
