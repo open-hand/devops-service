@@ -29,6 +29,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
 import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
@@ -688,9 +689,21 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
      * @param devopsCiJobRecordVO
      */
     private void fillUnitTestInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        devopsCiJobRecordVO.setDevopsCiUnitTestReportInfoList(devopsCiUnitTestReportService.listByJobName(appServiceId,
+        List<DevopsCiUnitTestReportDTO> devopsCiUnitTestReportDTOS = devopsCiUnitTestReportService.listByJobName(appServiceId,
                 gitlabPipelineId,
-                devopsCiJobRecordVO.getName()));
+                devopsCiJobRecordVO.getName());
+
+        List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportVOS = devopsCiUnitTestReportDTOS.stream().map(v -> {
+            DevopsCiUnitTestReportVO devopsCiUnitTestReportVO = ConvertUtils.convertObject(v, DevopsCiUnitTestReportVO.class);
+            double successRate = 0;
+            if (devopsCiUnitTestReportVO.getTests() != 0) {
+                successRate = (devopsCiUnitTestReportVO.getPasses() * 1.0 / devopsCiUnitTestReportVO.getTests()) * 100;
+
+            }
+            devopsCiUnitTestReportVO.setSuccessRate(String.format("%.2f", successRate));
+            return devopsCiUnitTestReportVO;
+        }).collect(Collectors.toList());
+        devopsCiJobRecordVO.setDevopsCiUnitTestReportInfoList(devopsCiUnitTestReportVOS);
     }
 
     private void fillImageScanInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
