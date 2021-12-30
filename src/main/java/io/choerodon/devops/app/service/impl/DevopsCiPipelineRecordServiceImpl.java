@@ -697,10 +697,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiUnitTestReportVO devopsCiUnitTestReportVO = ConvertUtils.convertObject(v, DevopsCiUnitTestReportVO.class);
             double successRate = 0;
             if (devopsCiUnitTestReportVO.getTests() != 0) {
-                successRate = (devopsCiUnitTestReportVO.getPasses() * 1.0 / devopsCiUnitTestReportVO.getTests()) * 100;
-
+                successRate = FractionUtil.fraction((devopsCiUnitTestReportVO.getPasses() * 1.0d / devopsCiUnitTestReportVO.getTests()), 2) * 100;
             }
-            devopsCiUnitTestReportVO.setSuccessRate(String.format("%.2f", successRate));
+            devopsCiUnitTestReportVO.setSuccessRate(successRate);
             return devopsCiUnitTestReportVO;
         }).collect(Collectors.toList());
         devopsCiJobRecordVO.setDevopsCiUnitTestReportInfoList(devopsCiUnitTestReportVOS);

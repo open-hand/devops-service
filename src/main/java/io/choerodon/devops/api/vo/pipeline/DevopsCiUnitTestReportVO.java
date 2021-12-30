@@ -68,17 +68,17 @@ public class DevopsCiUnitTestReportVO {
 
     @ApiModelProperty(value = "跳过用例总数", required = true)
     @NotNull
-    private String successRate;
+    private Double successRate;
 
     @ApiModelProperty(value = "测试报告地址")
     private String reportUrl;
 
 
-    public String getSuccessRate() {
+    public Double getSuccessRate() {
         return successRate;
     }
 
-    public void setSuccessRate(String successRate) {
+    public void setSuccessRate(Double successRate) {
         this.successRate = successRate;
     }
 
