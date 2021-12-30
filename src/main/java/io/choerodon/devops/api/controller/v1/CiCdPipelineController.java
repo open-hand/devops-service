@@ -301,7 +301,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listTaskReferencePipelineInfo(projectId, taskIds));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @ApiOperation(value = "列出所有任务配置关联的流水线名称")
     @GetMapping(value = "/list_pipeline_name_reference_by_config_id")
     public ResponseEntity<List<String>> listPipelineNameReferenceByConfigId(@ApiParam(value = "项目 ID", required = true)
