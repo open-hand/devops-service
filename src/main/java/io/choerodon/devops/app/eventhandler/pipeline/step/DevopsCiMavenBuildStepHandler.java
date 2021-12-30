@@ -163,8 +163,14 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         }
 
         // 这里存储的ci setting文件内容是解密后的
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
-        MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsRecordDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsRecordDTO);
+        if (devopsCiMavenSettingsDTO == null) {
+            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
+        } else {
+            devopsCiMavenSettingsDTO.setMavenSettings(settings);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        }
         return true;
     }
 
