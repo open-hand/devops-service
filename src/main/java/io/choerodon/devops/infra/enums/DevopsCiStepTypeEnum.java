@@ -66,6 +66,10 @@ public enum DevopsCiStepTypeEnum {
      * Node Js构建
      */
     NODE_JS_BUILD("node_js_build"),
+    /**
+     * NPM 上传
+     */
+    NPM_UPLOAD("npm_upload"),
 
     /**
      * 自定义任务
