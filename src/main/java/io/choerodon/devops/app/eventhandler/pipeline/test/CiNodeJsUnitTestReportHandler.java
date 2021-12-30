@@ -47,7 +47,7 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
                 }
                 if (MOCHAWESOME_JSON_PATH.equals(entry.getName())) {
                     resultJson = IOUtils.toString(fin, StandardCharsets.UTF_8);
-
+                    break;
                 }
             }
             if (!StringUtils.hasText(resultJson)) {
