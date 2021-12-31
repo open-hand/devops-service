@@ -2974,8 +2974,12 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{group.name}}", newGroupName);
             params.put("{{service.code}}", newServiceCode);
             params.put("the-oldService-name", oldServiceCode);
-            params.put(oldGroupName, newGroupName);
-            params.put(oldServiceCode, newServiceCode);
+            if (!ObjectUtils.isEmpty(oldGroupName)) {
+                params.put(oldGroupName, newGroupName);
+            }
+            if (!ObjectUtils.isEmpty(oldServiceCode)) {
+                params.put(oldServiceCode, newServiceCode);
+            }
             FileUtil.replaceReturnFile(file, params);
         } catch (Exception e) {
             //删除模板
