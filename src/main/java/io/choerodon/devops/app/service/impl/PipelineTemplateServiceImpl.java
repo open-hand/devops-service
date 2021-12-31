@@ -101,19 +101,25 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
         Map<Long, List<CiTemplateJobVO>> stageJobListMap = ciTemplateJobVOList.stream().collect(Collectors.groupingBy(CiTemplateJobVO::getRelateStageId));
 
         // 查询任务所属的分组
-        Set<Long> groupIds = ciTemplateJobVOList.stream().map(CiTemplateJobVO::getGroupId).collect(Collectors.toSet());
-        List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS = ciTemplateJobGroupService.listByIds(groupIds);
-        Map<Long, CiTemplateJobGroupDTO> groupMap = ciTemplateJobGroupDTOS.stream().collect(Collectors.toMap(CiTemplateJobGroupDTO::getId, Function.identity()));
+        Map<Long, CiTemplateJobGroupDTO> groupMap = new HashMap<>();
+        Map<Long, List<CiTemplateStepVO>> jobStepMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(ciTemplateJobVOList)) {
+            Set<Long> groupIds = ciTemplateJobVOList.stream().map(CiTemplateJobVO::getGroupId).collect(Collectors.toSet());
+            List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS = ciTemplateJobGroupService.listByIds(groupIds);
+            groupMap = ciTemplateJobGroupDTOS.stream().collect(Collectors.toMap(CiTemplateJobGroupDTO::getId, Function.identity()));
 
-        // 查询任务下的步骤
-        Set<Long> jobIds = ciTemplateJobVOList.stream().map(CiTemplateJobVO::getId).collect(Collectors.toSet());
-        List<CiTemplateStepVO> ciTemplateStepVOList = ciTemplateJobStepRelService.listByJobIds(jobIds);
-        Map<Long, List<CiTemplateStepVO>> jobStepMap = ciTemplateStepVOList.stream().collect(Collectors
-                .groupingBy(CiTemplateStepVO::getCiTemplateJobId));
+            // 查询任务下的步骤
+            Set<Long> jobIds = ciTemplateJobVOList.stream().map(CiTemplateJobVO::getId).collect(Collectors.toSet());
+            List<CiTemplateStepVO> ciTemplateStepVOList = ciTemplateJobStepRelService.listByJobIds(jobIds);
+            jobStepMap = ciTemplateStepVOList.stream().collect(Collectors
+                    .groupingBy(CiTemplateStepVO::getCiTemplateJobId));
+        }
 
         // 组装返回给前端的流水线对象
         List<DevopsCiStageVO> devopsCiStageVOList = new ArrayList<>();
 
+        Map<Long, CiTemplateJobGroupDTO> finalGroupMap = groupMap;
+        Map<Long, List<CiTemplateStepVO>> finalJobStepMap = jobStepMap;
         ciTemplateStageDTOS
                 .stream()
                 .sorted(Comparator.comparing(CiTemplateStageDTO::getSequence))
@@ -128,13 +134,13 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                         stageTemplateJobVOList.forEach(stageTemplateJobVO -> {
                             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(stageTemplateJobVO, DevopsCiJobVO.class);
 
-                            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = groupMap.get(stageTemplateJobVO.getGroupId());
+                            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = finalGroupMap.get(stageTemplateJobVO.getGroupId());
                             devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
                             devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO.getType());
                             devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
 
                             // 组装步骤信息
-                            List<CiTemplateStepVO> ciTemplateStepVOS = jobStepMap.get(stageTemplateJobVO.getId());
+                            List<CiTemplateStepVO> ciTemplateStepVOS = finalJobStepMap.get(stageTemplateJobVO.getId());
                             List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
                             ciTemplateStepVOS.stream()
                                     .sorted(Comparator.comparing(CiTemplateStepVO::getSequence))
