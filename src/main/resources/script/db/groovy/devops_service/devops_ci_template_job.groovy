@@ -29,11 +29,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             }
             column(name: 'script', type: 'text', remarks: '自定义步骤的脚本')
 
-            column(name: 'to_upload', type: 'TINYINT UNSIGNED', remarks: '是否上传到共享目录') {
+            column(name: 'to_upload', defaultValue: "0", type: 'TINYINT UNSIGNED', remarks: '是否上传到共享目录') {
                 constraints(nullable: false)
             }
 
-            column(name: 'to_download', type: 'TINYINT UNSIGNED', remarks: '是否下载到共享目录') {
+            column(name: 'to_download', defaultValue: "0", type: 'TINYINT UNSIGNED', remarks: '是否下载到共享目录') {
                 constraints(nullable: false)
             }
             column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数'){
