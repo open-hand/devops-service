@@ -80,6 +80,17 @@ public class CiTemplateJobDTO extends AuditDomain {
     private Boolean builtIn;
     private String script;
 
+    @ApiModelProperty("job的并发数")
+    private Integer parallel;
+
+    public Integer getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(Integer parallel) {
+        this.parallel = parallel;
+    }
+
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }

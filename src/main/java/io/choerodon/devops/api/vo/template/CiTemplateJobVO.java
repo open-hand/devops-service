@@ -70,6 +70,17 @@ public class CiTemplateJobVO {
 
     private String script;
 
+    @ApiModelProperty("job的并发数")
+    private Integer parallel;
+
+    public Integer getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(Integer parallel) {
+        this.parallel = parallel;
+    }
+
     public String getScript() {
         return script;
     }
