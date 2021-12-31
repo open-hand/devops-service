@@ -141,23 +141,26 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
                             // 组装步骤信息
                             List<CiTemplateStepVO> ciTemplateStepVOS = finalJobStepMap.get(stageTemplateJobVO.getId());
-                            List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                            ciTemplateStepVOS.stream()
-                                    .sorted(Comparator.comparing(CiTemplateStepVO::getSequence))
-                                    .collect(Collectors.toList())
-                                    .forEach(ciTemplateStepVO -> {
-                                // 添加步骤关联的配置信息
-                                DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                                AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
-                                ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+                            if (!CollectionUtils.isEmpty(ciTemplateStepVOS)) {
+                                List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
+                                ciTemplateStepVOS.stream()
+                                        .sorted(Comparator.comparing(CiTemplateStepVO::getSequence))
+                                        .collect(Collectors.toList())
+                                        .forEach(ciTemplateStepVO -> {
+                                            // 添加步骤关联的配置信息
+                                            DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
+                                            AbstractDevopsCiStepHandler ciTemplateStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
+                                            ciTemplateStepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
 
-                                if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(devopsCiStepVO))) {
-                                    devopsCiJobVO.setCompleted(false);
-                                }
+                                            if (Boolean.FALSE.equals(ciTemplateStepHandler.isComplete(devopsCiStepVO))) {
+                                                devopsCiJobVO.setCompleted(false);
+                                            }
 
-                                devopsCiStepVOList.add(devopsCiStepVO);
-                            });
-                            devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+                                            devopsCiStepVOList.add(devopsCiStepVO);
+                                        });
+                                devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+                            }
+
                             devopsCiJobVOList.add(devopsCiJobVO);
                         });
                     }
