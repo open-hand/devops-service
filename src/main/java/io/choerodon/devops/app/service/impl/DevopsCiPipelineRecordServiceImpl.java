@@ -729,21 +729,27 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private void fillSonarInfo(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = devopsCiPipelineSonarService.queryByPipelineId(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
         if (devopsCiPipelineSonarDTO != null) {
-            SonarContentsVO sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
-            if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
-                List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
-                List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
-                        || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
-                        || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
-                        || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
+            SonarContentsVO sonarContentsVO = null;
+            try {
+                sonarContentsVO = applicationService.getSonarContentFromCache(projectId, appServiceId);
+                if (!Objects.isNull(sonarContentsVO) && !CollectionUtils.isEmpty(sonarContentsVO.getSonarContents())) {
+                    List<SonarContentVO> sonarContents = sonarContentsVO.getSonarContents();
+                    List<SonarContentVO> sonarContentVOS = sonarContents.stream().filter(sonarContentVO -> SonarQubeType.BUGS.getType().equals(sonarContentVO.getKey())
+                            || SonarQubeType.CODE_SMELLS.getType().equals(sonarContentVO.getKey())
+                            || SonarQubeType.VULNERABILITIES.getType().equals(sonarContentVO.getKey())
+                            || SonarQubeType.SQALE_INDEX.getType().equals(sonarContentVO.getKey())).collect(Collectors.toList());
 
-                sonarContents.forEach(v -> {
-                    if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
-                        devopsCiJobRecordVO.setCodeCoverage(v.getValue());
-                    }
-                });
-                devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS));
+                    sonarContents.forEach(v -> {
+                        if (SonarQubeType.COVERAGE.getType().equals(v.getKey())) {
+                            devopsCiJobRecordVO.setCodeCoverage(v.getValue());
+                        }
+                    });
+                    devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS));
+                }
+            } catch (Exception e) {
+                LOGGER.error("Fill sonar info failed", e);
             }
+
         }
     }
 

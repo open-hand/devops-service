@@ -170,7 +170,7 @@ function chart_build() {
     yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
   fi
   # 构建chart包，重写version与app-version为当前版本
-  helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
+  helm package -u ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
   TEMP=${CHART_PATH%/*}
   FILE_NAME=${TEMP##*/}
   # 通过Choerodon API上传chart包到devops-service
