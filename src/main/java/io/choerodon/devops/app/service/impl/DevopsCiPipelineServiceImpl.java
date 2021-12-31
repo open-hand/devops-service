@@ -478,7 +478,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (value.containsKey("stage")) {
                 value.remove("stage");
             }
-            value.put("stage", "test");
+            value.put("stage", job.getStageName());
             return yaml.dump(jsonObject);
 
         } catch (Exception e) {
