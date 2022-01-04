@@ -475,10 +475,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             Iterator<Object> iterator = jsonObject.values().iterator();
             Map<String, Object> value = (Map<String, Object>) iterator.next();
-            if (value.containsKey("stage")) {
-                value.remove("stage");
-            }
-            value.put("stage", job.getStageName());
+            value.replace("stage", job.getStageName());
             return yaml.dump(jsonObject);
 
         } catch (Exception e) {
