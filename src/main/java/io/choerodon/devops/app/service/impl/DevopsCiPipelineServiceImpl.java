@@ -554,6 +554,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+            if (Boolean.FALSE.equals(devopsCiStepHandler.isComplete(devopsCiStepVO))) {
+                throw new CommonException("error.step.not.complete", devopsCiStepVO.getName());
+            }
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
         });
     }
