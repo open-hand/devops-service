@@ -311,6 +311,14 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     protected Boolean isConfigComplete(DevopsCiStepVO ciTemplateStepVO) {
-        return false;
+        DevopsCiMavenPublishConfigVO mavenPublishConfig = ciTemplateStepVO.getMavenPublishConfig();
+
+        if (mavenPublishConfig == null) {
+            return false;
+        }
+        if (mavenPublishConfig.getNexusRepoId() == null) {
+            return false;
+        }
+        return true;
     }
 }
