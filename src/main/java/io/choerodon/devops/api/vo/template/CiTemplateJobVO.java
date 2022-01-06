@@ -75,6 +75,17 @@ public class CiTemplateJobVO {
     @ApiModelProperty("job的并发数")
     private Integer parallel;
 
+    @ApiModelProperty("是否开启并发")
+    private Boolean openParallel;
+
+    public Boolean getOpenParallel() {
+        return openParallel;
+    }
+
+    public void setOpenParallel(Boolean openParallel) {
+        this.openParallel = openParallel;
+    }
+
     public Integer getParallel() {
         return parallel;
     }
