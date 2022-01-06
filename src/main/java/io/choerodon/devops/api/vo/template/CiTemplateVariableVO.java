@@ -21,6 +21,7 @@ public class CiTemplateVariableVO {
 
     @ApiModelProperty(value = "流水线模板id", required = true)
     @NotNull
+    @Encrypt
     private Long pipelineTemplateId;
 
     @ApiModelProperty(value = "层级", required = true)
