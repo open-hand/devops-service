@@ -44,6 +44,7 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
+    @Encrypt
     private Long relateStageId;
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
 
