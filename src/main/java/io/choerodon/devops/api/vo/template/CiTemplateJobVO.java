@@ -24,6 +24,7 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "任务名称", required = true)
     private String name;
     @ApiModelProperty(value = "任务分组id", required = true)
+    @Encrypt
     private Long groupId;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;
