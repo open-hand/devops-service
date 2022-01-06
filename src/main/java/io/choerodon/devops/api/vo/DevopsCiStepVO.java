@@ -19,6 +19,7 @@ import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiStepVO {
 
+    @Encrypt
     private Long id;
     @ApiModelProperty("步骤名称")
     private String name;

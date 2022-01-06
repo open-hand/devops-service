@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
 import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.dto.CiTemplateCategoryDTO;
 public class PipelineTemplateVO {
 
 
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "流水线模板名称", required = true)
     private String name;
@@ -24,6 +26,7 @@ public class PipelineTemplateVO {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
     @ApiModelProperty(value = "关联语言id", required = true)
+    @Encrypt
     private Long ciTemplateCategoryId;
     @ApiModelProperty(value = "是否启用", required = true)
     private Long enable;

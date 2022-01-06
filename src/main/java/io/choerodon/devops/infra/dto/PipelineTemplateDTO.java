@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -38,6 +39,7 @@ public class PipelineTemplateDTO extends AuditDomain {
     public static final String FIELD_RUNNER_IMAGES = "runnerImages";
     private static final long serialVersionUID = 358124236671616581L;
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 
@@ -59,6 +61,7 @@ public class PipelineTemplateDTO extends AuditDomain {
 
     @ApiModelProperty(value = "关联语言id", required = true)
     @NotNull
+    @Encrypt
     private Long ciTemplateCategoryId;
 
     @ApiModelProperty(value = "是否启用", required = true)

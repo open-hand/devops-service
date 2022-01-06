@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -35,11 +36,13 @@ public class CiTemplateVariableDTO extends AuditDomain {
     public static final String FIELD_VARIABLE_VALUE = "variableValue";
 
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 
     @ApiModelProperty(value = "流水线模板id", required = true)
     @NotNull
+    @Encrypt
     private Long pipelineTemplateId;
 
     @ApiModelProperty(value = "层级", required = true)
