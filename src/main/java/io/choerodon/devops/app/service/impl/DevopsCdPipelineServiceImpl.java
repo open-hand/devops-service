@@ -696,7 +696,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         devopsDeployGroupContainerConfigVOS.forEach(config -> {
             if (config.getPipelineJobName() != null) {
                 if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
-                    CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getPipelineId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+                    CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
                     HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
