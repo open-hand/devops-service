@@ -103,5 +103,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: 'group_type', type: 'VARCHAR(20)', remarks: '分组类型', afterColumn: 'stage')
         }
     }
+    changeSet(author: 'wanghao', id: '2022-1-9-fix-data') {
+        sql("""
+            UPDATE devops_ci_job_record dcjr set dcjr.type = 'normal' WHERE dcjr.type != 'custom'
+        """)
+    }
 
 }
