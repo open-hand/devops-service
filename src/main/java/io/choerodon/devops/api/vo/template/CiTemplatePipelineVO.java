@@ -33,6 +33,7 @@ public class CiTemplatePipelineVO {
 
     @ApiModelProperty("模板分类Id")
     @NotNull
+    @Encrypt
     private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")

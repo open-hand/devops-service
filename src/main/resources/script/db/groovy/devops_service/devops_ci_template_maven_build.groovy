@@ -1,7 +1,7 @@
 package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_build.groovy') {
-    changeSet(author: 'wanghao', id: '2021-11-29-create-table') {
+    changeSet(author: 'wanghao', id: '2021-11-29-create-table-devops_ci_template_maven_publish') {
         createTable(tableName: "devops_ci_template_maven_build", remarks: 'devops_ci_template_maven_build') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)

@@ -14,6 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @since 2021/11/30 17:52
  */
 public class DevopsCiMavenPublishConfigVO {
+    @Encrypt
     private Long id;
 
     @Encrypt

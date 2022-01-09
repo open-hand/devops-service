@@ -24,6 +24,7 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "任务名称", required = true)
     private String name;
     @ApiModelProperty(value = "任务分组id", required = true)
+    @Encrypt
     private Long groupId;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;
@@ -44,6 +45,7 @@ public class CiTemplateJobVO {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
+    @Encrypt
     private Long relateStageId;
     private CiTemplateJobGroupDTO ciTemplateJobGroupDTO;
 
@@ -72,6 +74,17 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("job的并发数")
     private Integer parallel;
+
+    @ApiModelProperty("是否开启并发")
+    private Boolean openParallel;
+
+    public Boolean getOpenParallel() {
+        return openParallel;
+    }
+
+    public void setOpenParallel(Boolean openParallel) {
+        this.openParallel = openParallel;
+    }
 
     public Integer getParallel() {
         return parallel;

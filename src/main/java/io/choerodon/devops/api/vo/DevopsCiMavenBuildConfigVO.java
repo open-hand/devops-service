@@ -19,6 +19,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsCiMavenBuildConfigVO {
 
     @Id
+    @Encrypt
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 

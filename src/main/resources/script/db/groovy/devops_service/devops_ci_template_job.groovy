@@ -36,9 +36,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'to_download', defaultValue: "0", type: 'TINYINT UNSIGNED', remarks: '是否下载到共享目录') {
                 constraints(nullable: false)
             }
-            column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数'){
-                constraints(nullable: false)
-            }
+            column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数')
 
 
 
