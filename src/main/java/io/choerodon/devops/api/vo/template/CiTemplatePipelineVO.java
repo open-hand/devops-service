@@ -19,7 +19,7 @@ public class CiTemplatePipelineVO {
     private Long id;
 
     @ApiModelProperty("流水线名称")
-    @NotNull
+    @NotNull(message = "流水线模板名称不能为空")
     private String name;
 
     @ApiModelProperty("层级")
