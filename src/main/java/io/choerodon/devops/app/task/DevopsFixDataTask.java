@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_APP_CENTER_DATA;
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_PIPELINE_DATA;
+import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.*;
 
 import java.util.Map;
 
@@ -49,6 +48,18 @@ public class DevopsFixDataTask {
     public void fixPipelineData(Map<String, Object> map) {
         try {
             devopsCheckLogService.checkLog(FIX_PIPELINE_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
+
+
+    @JobTask(maxRetryCount = 3, code = FIX_PIPELINE_IMAGE_SCAN_DATA, description = "修复流水线镜像扫描数据")
+    @TimedTask(name = FIX_PIPELINE_IMAGE_SCAN_DATA, description = "修复流水线镜像扫描数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixPipelineImageScanData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_PIPELINE_IMAGE_SCAN_DATA);
         } catch (Exception e) {
             logger.error("error.fix.data", e);
         }

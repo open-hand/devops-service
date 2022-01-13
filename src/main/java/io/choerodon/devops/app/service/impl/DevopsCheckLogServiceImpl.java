@@ -27,10 +27,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -42,6 +39,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
+    public static final String FIX_PIPELINE_IMAGE_SCAN_DATA = "fixPipelineImageScanData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
@@ -77,6 +75,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiJobMapper devopsCiJobMapper;
     @Autowired
     private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiDockerBuildConfigMapper devopsCiDockerBuildConfigMapper;
 
 
     @Override
@@ -101,6 +101,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 pipelineDataFix();
                 devopsCiPipelineDataFix();
                 break;
+            case FIX_PIPELINE_IMAGE_SCAN_DATA:
+                pipelineDataImageScanFix();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -108,6 +111,28 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void pipelineDataImageScanFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        List<DevopsCiDockerBuildConfigDTO> devopsCiDockerBuildConfigDTOS = devopsCiDockerBuildConfigMapper.selectAll();
+        if (CollectionUtils.isEmpty(devopsCiDockerBuildConfigDTOS)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            return;
+        }
+        devopsCiDockerBuildConfigDTOS.stream().filter(devopsCiDockerBuildConfigDTO ->
+                devopsCiDockerBuildConfigDTO.getSecurityControl() == null ||
+                        devopsCiDockerBuildConfigDTO.getSeverity() == null ||
+                        devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
+                        devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null
+        ).forEach(devopsCiDockerBuildConfigDTO -> {
+            devopsCiDockerBuildConfigDTO.setSecurityControl(null);
+            devopsCiDockerBuildConfigDTO.setSeverity(null);
+            devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);
+            devopsCiDockerBuildConfigDTO.setVulnerabilityCount(null);
+            devopsCiDockerBuildConfigMapper.updateByPrimaryKey(devopsCiDockerBuildConfigDTO);
+        });
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     /**
