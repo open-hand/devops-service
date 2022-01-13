@@ -162,6 +162,11 @@ public class HarborServiceImpl implements HarborService {
         return configDTOMap;
     }
 
+    @Override
+    public List<DevopsConfigDTO> queryHarborConfigByHarborConfigIds(Set<Long> harborConfigIds) {
+        return null;
+    }
+
     private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {
         AppServiceShareRuleDTO appServiceShareRuleDTO = new AppServiceShareRuleDTO();
         appServiceShareRuleDTO.setAppServiceId(appServiceId);
