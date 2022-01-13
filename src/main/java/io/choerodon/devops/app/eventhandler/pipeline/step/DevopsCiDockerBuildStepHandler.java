@@ -75,6 +75,16 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiStepVO.getDockerBuildConfig();
         devopsCiDockerBuildConfigDTO.setId(null);
         devopsCiDockerBuildConfigDTO.setStepId(stepId);
+        // 没有开启镜像扫描，安全控制也不应该开启
+        if (!Boolean.TRUE.equals(devopsCiDockerBuildConfigDTO.getImageScan())) {
+            devopsCiDockerBuildConfigDTO.setSecurityControl(false);
+        }
+        // 没有开启安全控制， 配置应该是空的
+        if (!Boolean.TRUE.equals(devopsCiDockerBuildConfigDTO.getSecurityControl())) {
+            devopsCiDockerBuildConfigDTO.setSeverity(null);
+            devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);
+            devopsCiDockerBuildConfigDTO.setVulnerabilityCount(null);
+        }
         devopsCiDockerBuildConfigService.baseCreate(devopsCiDockerBuildConfigDTO);
     }
 
