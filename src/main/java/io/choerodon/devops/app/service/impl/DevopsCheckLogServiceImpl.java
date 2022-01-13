@@ -121,12 +121,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             return;
         }
         devopsCiDockerBuildConfigDTOS.stream().filter(devopsCiDockerBuildConfigDTO ->
-                devopsCiDockerBuildConfigDTO.getSecurityControl() == null ||
-                        devopsCiDockerBuildConfigDTO.getSeverity() == null ||
-                        devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
-                        devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null
-        ).forEach(devopsCiDockerBuildConfigDTO -> {
-            devopsCiDockerBuildConfigDTO.setSecurityControl(null);
+                devopsCiDockerBuildConfigDTO.getSecurityControl()
+
+        ).filter(devopsCiDockerBuildConfigDTO ->
+                devopsCiDockerBuildConfigDTO.getSeverity() == null ||
+                devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
+                devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
+            devopsCiDockerBuildConfigDTO.setSecurityControl(Boolean.FALSE);
             devopsCiDockerBuildConfigDTO.setSeverity(null);
             devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);
             devopsCiDockerBuildConfigDTO.setVulnerabilityCount(null);
