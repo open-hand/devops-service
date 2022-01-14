@@ -1,10 +1,12 @@
 package io.choerodon.devops.infra.feign;
 
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.ibatis.annotations.Param;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -204,5 +206,11 @@ public interface RdupmClient {
     @ApiOperation(value = "查询默认的nexus仓库配置")
     @GetMapping("/v1/nexus-repositorys/{organizationId}/default/maven")
     ResponseEntity<NexusServerConfig> getDefaultMavenRepo(@ApiParam(value = "组织ID", required = true) @PathVariable(name = "organizationId") Long organizationId);
+
+
+    @ApiOperation(value = "根据仓库id集合查询仓库列表")
+    @PostMapping("/v1/harbor-choerodon-repos/harbor_repo_config/by_ids")
+    ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(@RequestBody Set<Long> harborConfigIds);
+
 
 }
