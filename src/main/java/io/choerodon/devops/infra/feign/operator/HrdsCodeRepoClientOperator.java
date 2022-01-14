@@ -2,7 +2,7 @@ package io.choerodon.devops.infra.feign.operator;
 
 import java.util.List;
 import java.util.Objects;
-
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
@@ -23,6 +24,8 @@ import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
 public class HrdsCodeRepoClientOperator {
     @Autowired
     private HrdsCodeRepoClient rdupmClient;
+    @Autowired
+    private HrdsCodeRepoClient hrdsCodeRepoClient;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
 
@@ -44,6 +47,18 @@ public class HrdsCodeRepoClientOperator {
                 queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, false);
         if (response == null) {
             throw new CommonException("error.list.code.app.user.list", projectId, queryDTO);
+        }
+        return response.getBody();
+    }
+
+    public List<MemberPrivilegeViewDTO> selfPrivilege(Long organizationId, Long projectId, Set<Long> repositoryIds) {
+        if (organizationId == null) {
+            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+                    .getOrganizationId();
+        }
+        ResponseEntity<List<MemberPrivilegeViewDTO>> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);
+        if (response == null) {
+            throw new CommonException("error.member.privilege.list");
         }
         return response.getBody();
     }

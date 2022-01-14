@@ -45,6 +45,9 @@
                 AND NOT EXISTS(SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id)
             </if>
         </if>
+        <if test="excludeFailed != null">
+                and da.is_failed=0
+        </if>
         <include refid="sqlparam"/>
         <if test="index != ''">
             ORDER BY da.is_active DESC,
@@ -99,6 +102,9 @@
                          open="(" close=")" separator=",">
                     #{appServiceId}
                 </foreach>
+            </if>
+            <if test="excludeFailed != null or excludeFailed !=false">
+                    and da.is_failed=0
             </if>
             <include refid="sqlparam"/>
         </where>

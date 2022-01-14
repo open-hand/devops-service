@@ -64,6 +64,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
+import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
@@ -393,7 +394,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, null, null, null,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), true)),
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), true, null)),
                 this::dtoToRepVoWithoutIamUserFill);
     }
 
@@ -706,14 +707,14 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Page<AppServiceRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                               Boolean appMarket,
                                                String type, Boolean doPage,
                                                PageRequest pageable,
                                                String params,
                                                Boolean checkMember,
-                                               Boolean includeExternal) {
+                                               Boolean includeExternal,
+                                               Boolean excludeFailed) {
 
-        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember, includeExternal);
+        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, excludeFailed);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectId, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -738,7 +739,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 收集失败的应用服务的id
             List<String> refIds = applicationServiceDTOS.getContent().stream().filter(app -> Boolean.TRUE.equals(app.getFailed())).map(appServiceDTO -> String.valueOf(appServiceDTO.getId())).collect(toList());
             List<AppServiceRepVO> appServiceRepVOS = applicationServiceDTOS.getContent().stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
-            if (!CollectionUtils.isEmpty(refIds)) {
+            if (!CollectionUtils.isEmpty(refIds) && (excludeFailed == null || !excludeFailed)) {
                 Map<String, SagaInstanceDetails> stringSagaInstanceDetailsMap = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APPSERVICE, refIds, SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE));
                 Map<String, SagaInstanceDetails> sagaInstanceDetailsMapImport = SagaInstanceUtils.listToMap(asgardServiceClientOperator.queryByRefTypeAndRefIds(APP, refIds, SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT));
                 appServiceRepVOS.forEach(appServiceRepVO -> {
@@ -756,6 +757,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             destination.setContent(new ArrayList<>());
         }
         return destination;
+    }
+
+    @Override
+    public Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
+                                                                      PageRequest pageable,
+                                                                      String params) {
+        Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, params, true, false, true);
+        Set<Long> appServiceIds = appServiceRepVOS.getContent().stream().map(AppServiceRepVO::getId).collect(toSet());
+        Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
+        appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
+            appServiceRepVO.setAccessLevel(memberPrivilegeViewDTOMap.get(appServiceRepVO.getId()).getAccessLevel());
+        });
+        return appServiceRepVOS;
     }
 
     @Override
@@ -2579,13 +2593,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceDTO> basePageByOptions(Long projectId,
                                                  Boolean isActive,
                                                  Boolean hasVersion,
-                                                 Boolean appMarket,
                                                  String type,
                                                  Boolean doPage,
                                                  PageRequest pageable,
                                                  String params,
                                                  Boolean checkMember,
-                                                 Boolean includeExternal) {
+                                                 Boolean includeExternal,
+                                                 Boolean excludeFailed) {
 
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
@@ -2600,12 +2614,16 @@ public class AppServiceServiceImpl implements AppServiceService {
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
-                                includeExternal)
+                                includeExternal,
+                                excludeFailed)
                 );
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), PageRequestUtil.checkSortIsEmpty(pageable), includeExternal);
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        PageRequestUtil.checkSortIsEmpty(pageable),
+                        includeExternal,
+                        excludeFailed);
             }
         } else {
             // 是否需要进行项目成员gitlab角色校验
@@ -2625,11 +2643,17 @@ public class AppServiceServiceImpl implements AppServiceService {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                                 TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId));
+                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                                pageable.getSort() == null,
+                                userId,
+                                excludeFailed));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
                         TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)), pageable.getSort() == null, userId);
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        pageable.getSort() == null,
+                        userId,
+                        excludeFailed);
             }
         }
 
@@ -2850,7 +2874,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         switch (type) {
             case NORMAL_SERVICE: {
-                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
+                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal, null);
                 AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
                 appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
                 return ArrayUtil.singleAsList(appServiceGroupVO);
@@ -3115,7 +3139,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable) {
         // 如果没指定应用服务id，按照普通分页处理
         if (CollectionUtils.isEmpty(ids)) {
-            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, null, doPage, pageable, null, false, true), AppServiceVO.class);
+            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, null, false, true, null), AppServiceVO.class);
         } else {
             // 指定应用服务id，从这些id中根据参数决定是否分页
             // 如果不分页
