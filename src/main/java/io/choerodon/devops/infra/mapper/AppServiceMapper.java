@@ -25,7 +25,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("params") List<String> params,
                              @Param("index") String index,
-                             @Param("includeExternal") Boolean includeExternal);
+                             @Param("includeExternal") Boolean includeExternal,
+                             @Param("excludeFailed") Boolean excludeFailed);
 
     List<AppServiceDTO> listByProjectId(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
@@ -111,7 +112,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                      @Param("searchParam") Map<String, Object> searchParam,
                                                      @Param("params") List<String> params,
                                                      @Param("doSort") Boolean doSort,
-                                                     @Param("userId") Long userId);
+                                                     @Param("userId") Long userId,
+                                                     @Param("excludeFailed") Boolean excludeFailed);
 
 
     List<AppServiceDTO> listAppServiceByIds(@Param("ids") Set<Long> ids,
@@ -149,7 +151,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     int updateIsActiveNullToTrue();
 
-    List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("envId") Long envId,@Param("appServiceName") String appServiceName);
+    List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceName") String appServiceName);
 
     List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 

@@ -86,21 +86,22 @@ public interface AppServiceService {
      * @param projectId       项目id
      * @param isActive        是否启用
      * @param hasVersion      是否存在版本
-     * @param appMarket       服务市场导入
      * @param pageable        分页参数
      * @param params          参数
      * @param includeExternal
+     * @param excludeFailed   排除掉创建失败的应用
      * @return Page
      */
     Page<AppServiceRepVO> pageByOptions(Long projectId,
-                                        Boolean isActive,
-                                        Boolean hasVersion,
-                                        Boolean appMarket,
-                                        String type,
-                                        Boolean doPage,
-                                        PageRequest pageable,
-                                        String params,
-                                        Boolean checkMember, Boolean includeExternal);
+                                            Boolean isActive,
+                                            Boolean hasVersion,
+                                            String type,
+                                            Boolean doPage,
+                                            PageRequest pageable,
+                                            String params,
+                                            Boolean checkMember,
+                                            Boolean includeExternal,
+                                            Boolean excludeFailed);
 
     /**
      * 处理服务创建逻辑
@@ -155,6 +156,10 @@ public interface AppServiceService {
      * @return baseList of ApplicationRepDTO
      */
     Page<AppServiceCodeVO> pageByIds(Long projectId, Long envId, Long appServiceId, PageRequest pageable);
+
+    Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
+                                                               PageRequest pageable,
+                                                               String params);
 
     /**
      * 项目下查询所有已经启用的服务
@@ -365,9 +370,16 @@ public interface AppServiceService {
 
     AppServiceDTO baseQuery(Long appServiceId);
 
-    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params,
-                                          Boolean checkMember, Boolean includeExternal);
+    Page<AppServiceDTO> basePageByOptions(Long projectId,
+                                          Boolean isActive,
+                                          Boolean hasVersion,
+                                          String type,
+                                          Boolean doPage,
+                                          PageRequest pageable,
+                                          String params,
+                                          Boolean checkMember,
+                                          Boolean includeExternal,
+                                          Boolean excludeFailed);
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
