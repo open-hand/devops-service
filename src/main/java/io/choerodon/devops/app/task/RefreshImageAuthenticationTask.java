@@ -50,43 +50,55 @@ public class RefreshImageAuthenticationTask {
     public void refreshImageAuth(Map<String, Object> map) {
         try {
             //1.查询默认仓库的secret
-            DevopsRegistrySecretDTO recordDevopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-            recordDevopsRegistrySecretDTO.setRepoType(HarborRepoConstants.DEFAULT_REPO);
-            List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = devopsRegistrySecretMapper.select(recordDevopsRegistrySecretDTO);
-            if (CollectionUtils.isEmpty(devopsRegistrySecretDTOS)) {
-                return;
-            }
-            List<List<DevopsRegistrySecretDTO>> lists = ListUtils.partition(devopsRegistrySecretDTOS, BaseConstants.PAGE_SIZE);
-            lists.forEach(devopsRegistrySecretDTOS1 -> {
-                //2.根据harborconfigId 查询仓库配置（查询的及有效的）
-                Set<Long> harborConfigIds = devopsRegistrySecretDTOS1.stream().map(DevopsRegistrySecretDTO::getConfigId).collect(Collectors.toSet());
-
-                List<DevopsConfigDTO> devopsConfigDTOS = harborService.queryHarborConfigByHarborConfigIds(harborConfigIds);
-                if (CollectionUtils.isEmpty(devopsConfigDTOS)) {
-                    return;
-                }
-                Map<Long, DevopsConfigDTO> devopsConfigDTOMap = devopsConfigDTOS.stream().collect(Collectors.toMap(DevopsConfigDTO::getId, Function.identity()));
-                devopsRegistrySecretDTOS1.forEach(devopsRegistrySecretDTO -> {
-                    DevopsConfigDTO devopsConfigDTO = devopsConfigDTOMap.get(devopsRegistrySecretDTO.getConfigId());
-                    if (devopsConfigDTO == null) {
-                        return;
-                    }
-                    //3.跟新进数据库
-                    String secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
-                    ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-                    devopsRegistrySecretDTO.setSecretCode(secretCode);
-                    devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
-                    devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
-                    //4.跟新到agent
-                    agentCommandService.operateSecret(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), secretCode, configVO);
-                });
-
-            });
-
-
+            refresh();
         } catch (Exception e) {
             logger.error("error.refresh.image.auth", e);
         }
+    }
+
+    private void refresh() {
+        List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS = getDevopsRegistrySecretDTOS();
+        if (CollectionUtils.isEmpty(devopsRegistrySecretDTOS)) {
+            return;
+        }
+        List<List<DevopsRegistrySecretDTO>> lists = ListUtils.partition(devopsRegistrySecretDTOS, BaseConstants.PAGE_SIZE);
+        lists.forEach(devopsRegistrySecretDTOS1 -> {
+            //2.根据harborconfigId 查询仓库配置（查询的及有效的）
+            Set<Long> harborConfigIds = devopsRegistrySecretDTOS1.stream().filter(devopsRegistrySecretDTO -> devopsRegistrySecretDTO.getConfigId() != null).map(DevopsRegistrySecretDTO::getConfigId).collect(Collectors.toSet());
+            if (CollectionUtils.isEmpty(harborConfigIds)) {
+                return;
+            }
+            List<DevopsConfigDTO> devopsConfigDTOS = harborService.queryHarborConfigByHarborConfigIds(harborConfigIds);
+            if (CollectionUtils.isEmpty(devopsConfigDTOS)) {
+                return;
+            }
+            Map<Long, DevopsConfigDTO> devopsConfigDTOMap = devopsConfigDTOS.stream().collect(Collectors.toMap(DevopsConfigDTO::getId, Function.identity()));
+            persistenceSecret(devopsRegistrySecretDTOS1, devopsConfigDTOMap);
+        });
+        return;
+    }
+
+    private void persistenceSecret(List<DevopsRegistrySecretDTO> devopsRegistrySecretDTOS1, Map<Long, DevopsConfigDTO> devopsConfigDTOMap) {
+        devopsRegistrySecretDTOS1.forEach(devopsRegistrySecretDTO -> {
+            DevopsConfigDTO devopsConfigDTO = devopsConfigDTOMap.get(devopsRegistrySecretDTO.getConfigId());
+            if (devopsConfigDTO == null) {
+                return;
+            }
+            //3.跟新进数据库
+            String secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
+            ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            devopsRegistrySecretDTO.setSecretCode(secretCode);
+            devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
+            devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
+            //4.跟新到agent
+            agentCommandService.operateSecret(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), secretCode, configVO);
+        });
+    }
+
+    private List<DevopsRegistrySecretDTO> getDevopsRegistrySecretDTOS() {
+        DevopsRegistrySecretDTO recordDevopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
+        recordDevopsRegistrySecretDTO.setRepoType(HarborRepoConstants.DEFAULT_REPO);
+        return devopsRegistrySecretMapper.select(recordDevopsRegistrySecretDTO);
     }
 
 
