@@ -407,7 +407,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 mavenDeploy.setDevopsCiJobId(devopsCiJobId);
                                 mavenDeploy.setName("Maven发布");
                                 mavenDeploy.setSequence(ciConfigTemplateVO.getSequence());
-                                mavenDeploy.setType(DevopsCiStepTypeEnum.MAVEN_BUILD.value());
+                                mavenDeploy.setType(DevopsCiStepTypeEnum.MAVEN_PUBLISH.value());
                                 mavenDeploy.setScript(ciConfigTemplateVO.getScript());
 
                                 DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = new DevopsCiMavenPublishConfigVO();
