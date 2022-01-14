@@ -11,4 +11,6 @@ public interface DevopsCheckLogService {
 
     void devopsCiPipelineDataFix();
 
+    void pipelineDataMavenPublishFix();
+
 }
