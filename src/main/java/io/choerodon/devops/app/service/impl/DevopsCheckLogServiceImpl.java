@@ -170,10 +170,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             return;
         }
-        devopsCiDockerBuildConfigDTOS.stream().filter(devopsCiDockerBuildConfigDTO ->
-                devopsCiDockerBuildConfigDTO.getSecurityControl()
-
-        ).filter(devopsCiDockerBuildConfigDTO ->
+        devopsCiDockerBuildConfigDTOS.stream()
+                .filter(devopsCiDockerBuildConfigDTO ->
                 devopsCiDockerBuildConfigDTO.getSeverity() == null ||
                 devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
                 devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
