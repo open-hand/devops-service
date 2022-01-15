@@ -290,6 +290,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     devopsEnvPodDTORecord.setResourceVersion(resourceVersion);
                     devopsEnvPodDTORecord.setReady(getReadyValue(status, v1Pod));
                     devopsEnvPodDTORecord.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+                    devopsEnvPodDTORecord.setNodeName(v1Pod.getSpec().getNodeName());
                     devopsEnvPodService.baseUpdate(devopsEnvPodDTORecord);
                 }
 
