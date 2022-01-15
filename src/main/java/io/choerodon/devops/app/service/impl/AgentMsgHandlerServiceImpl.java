@@ -81,6 +81,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(AgentMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
+    private static final String INIT_JOB_NAME_SUFFIX = "-init-db";
     private static final Integer MAX_LOG_MSG_LENGTH = 60000;
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -542,7 +543,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
             // 保存chart内资源信息到对应资源表
             ChartResourceOperatorService chartResourceOperatorService = chartResourceOperator.getOperatorMap().get(resourceType.getType());
-            if (chartResourceOperatorService != null && appServiceInstanceDTO != null) {
+            // 如果resourceType是job，且名称以-init-db结尾，那么认为是init-job的资源，不保存到工作负载中
+            if (chartResourceOperatorService != null && appServiceInstanceDTO != null && !(ResourceType.JOB.equals(resourceType) && devopsEnvResourceDTO.getName().endsWith(INIT_JOB_NAME_SUFFIX))) {
                 chartResourceOperatorService.saveOrUpdateChartResource(msg, appServiceInstanceDTO);
             }
 
@@ -823,11 +825,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
             return;
         }
-        String kind=KeyParseUtil.getResourceType(key);
+        String kind = KeyParseUtil.getResourceType(key);
         String podName = KeyParseUtil.getResourceName(key);
         String podNameSpace = KeyParseUtil.getNamespace(key);
         // 这个表示为init-job，不需要删除
-        if (ResourceType.JOB.getType().equals(kind)&&podName.endsWith("-init-db")) {
+        if (ResourceType.JOB.getType().equals(kind) && podName.endsWith(INIT_JOB_NAME_SUFFIX)) {
             return;
         }
         if (KeyParseUtil.getResourceType(key).equals(ResourceType.POD.getType())) {
