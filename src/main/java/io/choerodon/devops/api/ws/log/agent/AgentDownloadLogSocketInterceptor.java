@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.ws.log.agent;
 
 import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.AGENT_DOWNLOAD_LOG;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.INSTANCE_ID;
 
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.springframework.web.socket.WebSocketHandler;
 
 import io.choerodon.devops.api.ws.AbstractSocketInterceptor;
 import io.choerodon.devops.api.ws.AgentExecAndLogSocketHandler;
+import io.choerodon.devops.infra.util.EurekaInstanceUtil;
 
 @Component
 public class AgentDownloadLogSocketInterceptor extends AbstractSocketInterceptor {
@@ -25,6 +27,12 @@ public class AgentDownloadLogSocketInterceptor extends AbstractSocketInterceptor
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
+        String expectInstanceId = attributes.get(INSTANCE_ID).toString();
+        // 校验当前实例否是为agent期望建立连接的pod，如果不是返回false
+        if (!EurekaInstanceUtil.getInstanceId().equals(expectInstanceId)) {
+            return false;
+        }
+
         return agentExecAndLogSocketHandler.beforeHandshake(request, response, attributes);
     }
 }

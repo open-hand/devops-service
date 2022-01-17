@@ -9,14 +9,16 @@ public class PipeRequestVO {
     private String containerName;
     private String pipeID;
     private String namespace;
+    private String instanceId;
     private Boolean previous;
 
 
-    public PipeRequestVO(String podName, String containerName, String pipeID, String namespace, Boolean previous) {
+    public PipeRequestVO(String podName, String containerName, String pipeID, String namespace, String instanceId, Boolean previous) {
         this.podName = podName;
         this.containerName = containerName;
         this.pipeID = pipeID;
         this.namespace = namespace;
+        this.instanceId = instanceId;
         this.previous = previous;
     }
 
@@ -57,8 +59,15 @@ public class PipeRequestVO {
         return previous;
     }
 
-    public PipeRequestVO setPrevious(Boolean previous) {
+    public void setPrevious(Boolean previous) {
         this.previous = previous;
-        return this;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 }
