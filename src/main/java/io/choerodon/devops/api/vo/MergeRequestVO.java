@@ -6,7 +6,6 @@ import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.iam.UserVO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * GitLabDTO 合并请求
@@ -33,6 +32,7 @@ public class MergeRequestVO {
     private String title;
     private Date updatedAt;
     private String webUrl;
+    private String gitlabMergeRequestId;
 
     @Encrypt
     private Long appServiceId;
@@ -251,5 +251,13 @@ public class MergeRequestVO {
 
     public void setIamAssignee(UserVO iamAssignee) {
         this.iamAssignee = iamAssignee;
+    }
+
+    public String getGitlabMergeRequestId() {
+        return gitlabMergeRequestId;
+    }
+
+    public void setGitlabMergeRequestId(String gitlabMergeRequestId) {
+        this.gitlabMergeRequestId = gitlabMergeRequestId;
     }
 }
