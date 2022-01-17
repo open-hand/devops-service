@@ -605,6 +605,8 @@ public interface AppServiceService {
 
     OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO);
 
+    List<AppServiceDTO> listNamesByIds(Set<Long> ids);
+
     String getPrivateToken(Long projectId, String serviceCode, String email);
 
     String getSshUrl(Long projectId, String orgCode, String projectCode, String serviceCode);

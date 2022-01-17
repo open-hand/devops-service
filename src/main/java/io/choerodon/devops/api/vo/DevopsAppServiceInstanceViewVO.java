@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -11,6 +12,9 @@ public class DevopsAppServiceInstanceViewVO {
     private String name;
     @Encrypt
     private Long appId;
+    @JsonIgnore
+    private Long appServiceId;
+    private String appServiceName;
     private String code;
     private Long podCount;
     private Long podRunningCount;
@@ -71,5 +75,21 @@ public class DevopsAppServiceInstanceViewVO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
     }
 }
