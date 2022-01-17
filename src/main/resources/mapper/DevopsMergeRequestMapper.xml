@@ -104,6 +104,7 @@
         SELECT dmr.title,
                dmr.author_id,
                dmr.assignee_id,
+               dmr.created_at,
                das.id   AS app_service_id,
                das.name AS app_service_name,
                das.code AS app_service_code
