@@ -16,6 +16,7 @@ import org.springframework.web.socket.WebSocketSession;
 import io.choerodon.devops.api.vo.PipeRequestVO;
 import io.choerodon.devops.app.service.AgentCommandService;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
+import io.choerodon.devops.infra.util.EurekaInstanceUtil;
 
 /**
  * Created by Sheep on 2019/7/25.
@@ -71,6 +72,7 @@ public class DevopsExecAndLogSocketHandler {
                 attribute.get(CONTAINER_NAME).toString(),
                 attribute.get(LOG_ID).toString(),
                 attribute.get(ENV).toString(),
+                EurekaInstanceUtil.getInstanceId(),
                 attribute.get(PREVIOUS) != null && Boolean.parseBoolean(attribute.get(PREVIOUS).toString()));
 
         Long clusterId = WebSocketTool.getClusterId(webSocketSession);
