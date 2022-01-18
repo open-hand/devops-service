@@ -31,6 +31,7 @@ public class AgentDownloadLogSocketInterceptor extends AbstractSocketInterceptor
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) {
         String expectInstanceId = attributes.get(INSTANCE_ID).toString();
+        LOGGER.info("establishing websocket connection. current: {} , expect: {}.", EurekaInstanceUtil.getInstanceId(), expectInstanceId);
         // 校验当前实例否是为agent期望建立连接的pod，如果不是返回false
         if (!EurekaInstanceUtil.getInstanceId().equals(expectInstanceId)) {
             LOGGER.info("refuse to established websocket connection. current: {} , expect: {}.", EurekaInstanceUtil.getInstanceId(), expectInstanceId);

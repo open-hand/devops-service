@@ -55,6 +55,7 @@ public class LogMessageHandler {
             case "downloadLog":
                 LOGGER.debug("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
                 destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
+                LOGGER.info("======log content:\n{}\n", bytesArray);
                 keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
                 break;
         }
