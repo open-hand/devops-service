@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,6 +46,7 @@ public class ProjectPipelineTemplateController {
     public ResponseEntity<CiCdPipelineVO> queryPipelineInfoByTemplateId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "模板ID", required = true)
             @PathVariable(value = "template_id") Long templateId) {
         return ResponseEntity.ok(pipelineTemplateService.queryPipelineInfoByTemplateId(projectId, templateId));
@@ -56,6 +58,7 @@ public class ProjectPipelineTemplateController {
     public ResponseEntity<PipelineTemplateDTO> queryBasicInfoById(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "模板ID", required = true)
             @PathVariable(value = "template_id") Long templateId) {
         return ResponseEntity.ok(pipelineTemplateService.baseQuery(templateId));

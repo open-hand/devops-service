@@ -7,6 +7,7 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -25,6 +26,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCiSonarConfigDTO extends AuditDomain {
     @Id
+    @Encrypt
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("外部sonar地址")

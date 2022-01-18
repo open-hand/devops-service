@@ -104,7 +104,9 @@
         SELECT dmr.title,
                dmr.author_id,
                dmr.assignee_id,
-               das.id   AS app_service_id,
+               dmr.created_at,
+               dmr.gitlab_merge_request_id,
+               das.id AS app_service_id,
                das.name AS app_service_name,
                das.code AS app_service_code
         FROM devops_merge_request dmr

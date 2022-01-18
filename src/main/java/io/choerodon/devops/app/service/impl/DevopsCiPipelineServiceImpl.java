@@ -475,10 +475,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
             Iterator<Object> iterator = jsonObject.values().iterator();
             Map<String, Object> value = (Map<String, Object>) iterator.next();
-            if (value.containsKey("stage")) {
-                value.remove("stage");
-            }
-            value.put("stage", "test");
+            value.replace("stage", job.getStageName());
             return yaml.dump(jsonObject);
 
         } catch (Exception e) {
@@ -557,6 +554,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+            if (Boolean.FALSE.equals(devopsCiStepHandler.isComplete(devopsCiStepVO))) {
+                throw new CommonException("error.step.not.complete", devopsCiStepVO.getName());
+            }
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
         });
     }
@@ -1006,7 +1006,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 variables);
         // 保存执行记录
         try {
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.create(pipelineId, gitlabProjectId, pipeline);
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = createCiPipelineRecord(pipelineId, gitlabProjectId, pipeline);
             // 保存流水线记录关系
             DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
             devopsPipelineRecordRelDTO.setPipelineId(ciCdPipelineDTO.getId());
@@ -1023,6 +1023,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         } catch (Exception e) {
             LOGGER.info("save pipeline Records failed.", e);
         }
+    }
+
+    private DevopsCiPipelineRecordDTO createCiPipelineRecord(Long pipelineId, Long gitlabProjectId, Pipeline pipeline) {
+        DevopsCiPipelineRecordDTO recordDTO = new DevopsCiPipelineRecordDTO();
+        recordDTO.setGitlabPipelineId(pipeline.getId().longValue());
+        recordDTO.setCiPipelineId(pipelineId);
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
+        if (devopsCiPipelineRecordDTO == null) {
+            return devopsCiPipelineRecordService.create(pipelineId, gitlabProjectId, pipeline);
+        }
+        return devopsCiPipelineRecordDTO;
     }
 
     @Override

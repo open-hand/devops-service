@@ -317,8 +317,6 @@ public class AppServiceController {
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "服务是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
-            @ApiParam(value = "服务是否市场导入")
-            @RequestParam(value = "app_market", required = false) Boolean appMarket,
             @ApiParam(value = "是否包含外部应用服务")
             @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal,
             @ApiParam(value = "服务类型")
@@ -332,7 +330,32 @@ public class AppServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, appMarket, type, doPage, pageable, params, checkMember, includeExternal))
+                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, null))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.service.baseList"));
+    }
+
+    /**
+     * 项目下分页查询带有权限的内部服务
+     *
+     * @param projectId 项目id
+     * @param pageable  分页参数
+     * @param params    参数
+     * @return Page
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "项目下分页查询带有权限的内部服务")
+    @CustomPageRequest
+    @PostMapping("/page_internal_by_options")
+    public ResponseEntity<Page<AppServiceRepVO>> pageInternalByOptions(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(
+                applicationServiceService.pageInternalByOptionsWithAccessLevel(projectId, pageable, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList"));
     }
@@ -427,7 +450,7 @@ public class AppServiceController {
             @ApiParam(value = "搜索参数")
             @RequestParam(name = "param", required = false) String param,
             @RequestParam("target_project_id") Long targetProjectId,
-            @Encrypt @RequestParam(value = "target_app_service_id",required = false) Long targetAppServiceId
+            @Encrypt @RequestParam(value = "target_app_service_id", required = false) Long targetAppServiceId
     ) {
         return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, targetAppServiceId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -465,7 +488,7 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceRepVO>> listAll(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @RequestParam(value = "env_id",required = false) Long envId) {
+            @Encrypt @RequestParam(value = "env_id", required = false) Long envId) {
         return Optional.ofNullable(applicationServiceService.listAll(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.service.baseList.all"));

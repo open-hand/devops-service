@@ -4,11 +4,11 @@ package io.choerodon.devops.api.vo.template;
  * Created by wangxiang on 2021/12/3
  */
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-
 import java.util.List;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -19,7 +19,7 @@ public class CiTemplatePipelineVO {
     private Long id;
 
     @ApiModelProperty("流水线名称")
-    @NotNull
+    @NotNull(message = "流水线模板名称不能为空")
     private String name;
 
     @ApiModelProperty("层级")
@@ -33,6 +33,7 @@ public class CiTemplatePipelineVO {
 
     @ApiModelProperty("模板分类Id")
     @NotNull
+    @Encrypt
     private Long ciTemplateCategoryId;
 
     @ApiModelProperty("是否启用")
@@ -60,6 +61,9 @@ public class CiTemplatePipelineVO {
     private List<CiTemplateStageVO> templateStageVOS;
 
     private List<CiTemplateVariableVO> ciTemplateVariableVOS;
+
+    @ApiModelProperty("版本策略 false 平台默认 true 自定义")
+    private Boolean versionStrategy;
 
     public List<CiTemplateVariableVO> getCiTemplateVariableVOS() {
         return ciTemplateVariableVOS;
@@ -181,5 +185,13 @@ public class CiTemplatePipelineVO {
 
     public void setCreator(IamUserDTO creator) {
         this.creator = creator;
+    }
+
+    public Boolean getVersionStrategy() {
+        return versionStrategy;
+    }
+
+    public void setVersionStrategy(Boolean versionStrategy) {
+        this.versionStrategy = versionStrategy;
     }
 }

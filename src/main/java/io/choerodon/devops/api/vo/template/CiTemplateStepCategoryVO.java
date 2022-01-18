@@ -33,11 +33,6 @@ public class CiTemplateStepCategoryVO {
     @NotNull
     private Boolean builtIn;
 
-    public Boolean getBuiltIn() {
-        return builtIn;
-    }
-
-
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
 
@@ -50,6 +45,10 @@ public class CiTemplateStepCategoryVO {
 
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
+
+    public Boolean getBuiltIn() {
+        return builtIn;
+    }
 
     private List<CiTemplateStepVO> ciTemplateStepVOList;
 

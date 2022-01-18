@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ public class ProjectCiTemplateJobController extends BaseController {
     public ResponseEntity<List<DevopsCiJobVO>> listJobsByGroupId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @RequestParam(value = "group_id") Long groupId) {
         return ResponseEntity.ok(ciTemplateJobService.listJobsByGroupId(projectId, groupId));
     }

@@ -31,4 +31,12 @@ public class DevopsDataFixController {
         devopsCheckLogService.devopsCiPipelineDataFix();
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "主机部署")
+    @PostMapping("/v_1_2_pipeline_data_maven_publish_fix")
+    public ResponseEntity<Void> mavenPublishFix() {
+        devopsCheckLogService.pipelineDataMavenPublishFix();
+        return ResponseEntity.noContent().build();
+    }
 }

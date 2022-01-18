@@ -34,4 +34,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record_rel.groovy') {
         dropIndex(indexName: "idx_pipeline_id", tableName: "devops_pipeline_record_rel")
     }
 
+    changeSet(author: 'wx', id: '2022-1-17-add-index') {
+        createIndex(indexName: "idx_cd_pipeline_record_id`", tableName: "devops_pipeline_record_rel") {
+            column(name: "cd_pipeline_record_id")
+        }
+    }
+
 }

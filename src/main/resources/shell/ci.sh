@@ -160,7 +160,7 @@ function chart_build() {
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
   # 重置values.yaml文件中image属性
-  if [ $(grep repository ${CHART_PATH%/*}/values.yaml -c | cat) -eq 0 ]; then
+  if [ $(grep registry: ${CHART_PATH%/*}/values.yaml -c | cat) -eq 0 ]; then
     sed -i "s,repository:.*$,repository: ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME},g" \
       ${CHART_PATH%/*}/values.yaml
   else

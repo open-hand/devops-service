@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -125,6 +126,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             }
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
     }
@@ -494,6 +496,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setIp(pod.getStatus().getPodIP());
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
 
@@ -517,7 +520,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             pageable.setSort(new Sort(newOrder));
         }
         Page<DevopsEnvPodDTO> devopsEnvPodDOPage;
-        if (!StringUtils.isEmpty(searchParam)) {
+        if (!ObjectUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             devopsEnvPodDOPage = PageHelper.doPageAndSort(pageable, () -> devopsEnvPodMapper.listPodByKind(
                     envId,

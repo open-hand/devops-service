@@ -10,7 +10,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_category.groovy') {
                 constraints(nullable: false)
             }
 
-            column(name: 'image', type: 'TEXT', remarks: '分类的图表：base64格式')
+            column(name: 'image', type: 'LONGTEXT', remarks: '分类的图表：base64格式')
 
 
             column(name: 'built_in', type: 'TINYINT UNSIGNED', remarks: '是否预置，1:预置，0:自定义') {

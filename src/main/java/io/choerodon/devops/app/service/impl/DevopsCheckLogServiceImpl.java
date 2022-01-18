@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.hzero.core.base.BaseConstants;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -42,6 +40,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
+    public static final String FIX_PIPELINE_IMAGE_SCAN_DATA = "fixPipelineImageScanData";
+    public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
@@ -77,6 +77,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiJobMapper devopsCiJobMapper;
     @Autowired
     private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiDockerBuildConfigMapper devopsCiDockerBuildConfigMapper;
+    @Autowired
+    private DevopsCiStepMapper devopsCiStepMapper;
+    @Autowired
+    private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
+    @Autowired
+    private DevopsCiMavenPublishConfigMapper devopsCiMavenPublishConfigMapper;
 
 
     @Override
@@ -101,6 +109,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 pipelineDataFix();
                 devopsCiPipelineDataFix();
                 break;
+            case FIX_PIPELINE_IMAGE_SCAN_DATA:
+                pipelineDataImageScanFix();
+                break;
+            case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
+                pipelineDataMavenPublishFix();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -108,6 +122,68 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    public void pipelineDataMavenPublishFix() {
+        DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
+        devopsCiStepDTO.setType(DevopsCiStepTypeEnum.MAVEN_PUBLISH.value());
+        List<DevopsCiStepDTO> devopsCiStepDTOList = devopsCiStepMapper.select(devopsCiStepDTO);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>Start fix maven deploy data<<<<<<<<<<<<<<<<<<<<<<<");
+        devopsCiStepDTOList.forEach(devopsCiStepDTO1 -> {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>Start fix maven deploy data, id {}<<<<<<<<<<<<<<<<<<<<<<<", devopsCiStepDTO1.getId());
+            DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepDTO1.getId());
+            // 缺失配置的才修复
+            if (devopsCiMavenPublishConfigDTO == null) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>maven deploy data is empty, fix it, id {}<<<<<<<<<<<<<<<<<<<<<<<", devopsCiStepDTO1.getId());
+
+                DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(devopsCiStepDTO1.getDevopsCiJobId());
+                CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
+                List<CiConfigTemplateVO> config = ciConfigVO.getConfig();
+
+                for (CiConfigTemplateVO ciConfigTemplateVO : config) {
+                    try {
+                        if (CiJobScriptTypeEnum.MAVEN_DEPLOY.getType().equals(ciConfigTemplateVO.getType().toLowerCase())) {
+                            DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = new DevopsCiMavenPublishConfigVO();
+                            devopsCiMavenPublishConfigVO.setRepos(ciConfigTemplateVO.getRepos());
+                            devopsCiMavenPublishConfigVO.setMavenSettings(ciConfigTemplateVO.getMavenSettings());
+                            devopsCiMavenPublishConfigVO.setNexusMavenRepoIds(ciConfigTemplateVO.getNexusMavenRepoIds());
+                            devopsCiMavenPublishConfigVO.setNexusRepoId(ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds());
+
+                            DevopsCiMavenPublishConfigDTO newDevopsCiMavenPublishConfigDTO = voToDto(devopsCiMavenPublishConfigVO);
+                            newDevopsCiMavenPublishConfigDTO.setStepId(devopsCiStepDTO1.getId());
+
+                            devopsCiMavenPublishConfigService.baseCreate(newDevopsCiMavenPublishConfigDTO);
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error(">>>>>>>>>>>>> fix step error , step id {}<<<<<<<<<<<<<<<<<<<<<", devopsCiStepDTO1.getId());
+                    }
+                }
+            }
+        });
+
+    }
+
+    private void pipelineDataImageScanFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+        List<DevopsCiDockerBuildConfigDTO> devopsCiDockerBuildConfigDTOS = devopsCiDockerBuildConfigMapper.selectAll();
+        if (CollectionUtils.isEmpty(devopsCiDockerBuildConfigDTOS)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+            return;
+        }
+        devopsCiDockerBuildConfigDTOS.stream().filter(devopsCiDockerBuildConfigDTO ->
+                devopsCiDockerBuildConfigDTO.getSecurityControl()
+
+        ).filter(devopsCiDockerBuildConfigDTO ->
+                devopsCiDockerBuildConfigDTO.getSeverity() == null ||
+                devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
+                devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
+            devopsCiDockerBuildConfigDTO.setSecurityControl(Boolean.FALSE);
+            devopsCiDockerBuildConfigDTO.setSeverity(null);
+            devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);
+            devopsCiDockerBuildConfigDTO.setVulnerabilityCount(null);
+            devopsCiDockerBuildConfigMapper.updateByPrimaryKey(devopsCiDockerBuildConfigDTO);
+        });
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     /**
@@ -119,154 +195,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         fixSonarJob();
         fixChartJob();
         fixCustomJob();
-//        List<DevopsCiJobDTO> devopsCiJobDTOList = devopsCiJobMapper.listOldDataByType();
-//        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline ci job data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-//        Set<Long> errorJobIds = new HashSet<>();
-//        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOList) {
-//            try {
-//                if (devopsCiJobDTO != null) {
-//                    CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(devopsCiJobDTO.getCiPipelineId());
-//                    Long devopsCiJobId = devopsCiJobDTO.getId();
-//                    Long projectId = ciCdPipelineVO.getProjectId();
-//
-//                    // 需要修复的内容
-//                    // 1. job的所属分组信息
-//                    // 将构建任务拆分为单步骤的任务
-//                    List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-//                    if (JobTypeEnum.BUILD.value().equals(devopsCiJobDTO.getType())) {
-//                        CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
-//                        List<CiConfigTemplateVO> config = ciConfigVO.getConfig();
-//
-//
-//                        for (CiConfigTemplateVO ciConfigTemplateVO : config) {
-//                            if (CiJobScriptTypeEnum.NPM.getType().equals(ciConfigTemplateVO.getType())) {
-//                                DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
-//                                devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
-//                                devopsCiStepVO.setName("Npm构建");
-//                                devopsCiStepVO.setSequence(ciConfigTemplateVO.getSequence());
-//                                devopsCiStepVO.setType(DevopsCiStepTypeEnum.NPM_BUILD.value());
-//                                devopsCiStepVO.setScript(ciConfigTemplateVO.getScript());
-//
-//                                devopsCiStepVOList.add(devopsCiStepVO);
-//
-//                                devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-//                            } else if (CiJobScriptTypeEnum.MAVEN.getType().equals(ciConfigTemplateVO.getType())) {
-//                                DevopsCiStepVO mavenStep = new DevopsCiStepVO();
-//                                mavenStep.setDevopsCiJobId(devopsCiJobId);
-//                                mavenStep.setName("Maven构建");
-//                                mavenStep.setSequence(ciConfigTemplateVO.getSequence());
-//                                mavenStep.setType(DevopsCiStepTypeEnum.MAVEN_BUILD.value());
-//                                mavenStep.setScript(ciConfigTemplateVO.getScript());
-//                                DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = new DevopsCiMavenBuildConfigVO();
-//                                devopsCiMavenBuildConfigVO.setRepos(ciConfigTemplateVO.getRepos());
-//                                devopsCiMavenBuildConfigVO.setMavenSettings(ciConfigTemplateVO.getMavenSettings());
-//                                devopsCiMavenBuildConfigVO.setNexusMavenRepoIds(ciConfigTemplateVO.getNexusMavenRepoIds());
-//                                mavenStep.setMavenBuildConfig(devopsCiMavenBuildConfigVO);
-//
-//                                devopsCiStepVOList.add(mavenStep);
-//
-//                                devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-//
-//                            } else if (CiJobScriptTypeEnum.DOCKER.getType().equals(ciConfigTemplateVO.getType())) {
-//                                DevopsCiStepVO dockerStep = new DevopsCiStepVO();
-//                                dockerStep.setDevopsCiJobId(devopsCiJobId);
-//                                dockerStep.setName("Docker构建");
-//                                dockerStep.setSequence(ciConfigTemplateVO.getSequence());
-//                                dockerStep.setType(DevopsCiStepTypeEnum.DOCKER_BUILD.value());
-//                                dockerStep.setScript(ciConfigTemplateVO.getScript());
-//
-//                                DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = ConvertUtils.convertObject(ciConfigTemplateVO, DevopsCiDockerBuildConfigDTO.class);
-//                                SecurityConditionConfigVO securityCondition = ciConfigTemplateVO.getSecurityCondition();
-//
-//                                devopsCiDockerBuildConfigDTO.setSeverity(securityCondition.getLevel());
-//                                devopsCiDockerBuildConfigDTO.setSecurityControlConditions(securityCondition.getSymbol());
-//                                devopsCiDockerBuildConfigDTO.setVulnerabilityCount(securityCondition.getCondition());
-//                                dockerStep.setDockerBuildConfig(devopsCiDockerBuildConfigDTO);
-//                                devopsCiStepVOList.add(dockerStep);
-//
-//                                devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.DOCKER_BUILD.value());
-//                            } else if (CiJobScriptTypeEnum.UPLOAD_JAR.getType().equals(ciConfigTemplateVO.getType())) {
-//                                DevopsCiStepVO uploadJar = new DevopsCiStepVO();
-//                                uploadJar.setDevopsCiJobId(devopsCiJobId);
-//                                uploadJar.setName("上传Jar包至制品库");
-//                                uploadJar.setSequence(ciConfigTemplateVO.getSequence());
-//                                uploadJar.setType(DevopsCiStepTypeEnum.UPLOAD_JAR.value());
-//                                uploadJar.setScript(ciConfigTemplateVO.getScript());
-//
-//                                DevopsCiMavenPublishConfigVO uploadJarConfig = new DevopsCiMavenPublishConfigVO();
-//                                uploadJarConfig.setRepos(ciConfigTemplateVO.getRepos());
-//                                uploadJarConfig.setMavenSettings(ciConfigTemplateVO.getMavenSettings());
-//                                uploadJarConfig.setNexusMavenRepoIds(ciConfigTemplateVO.getNexusMavenRepoIds());
-//                                uploadJarConfig.setNexusRepoId(ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds());
-//                                uploadJar.setMavenPublishConfig(uploadJarConfig);
-//
-//                                devopsCiStepVOList.add(uploadJar);
-//
-//                                devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-//                            } else if (CiJobScriptTypeEnum.MAVEN_DEPLOY.getType().equals(ciConfigTemplateVO.getType())) {
-//                                DevopsCiStepVO mavenDeploy = new DevopsCiStepVO();
-//                                mavenDeploy.setDevopsCiJobId(devopsCiJobId);
-//                                mavenDeploy.setName("Maven发布");
-//                                mavenDeploy.setSequence(ciConfigTemplateVO.getSequence());
-//                                mavenDeploy.setType(DevopsCiStepTypeEnum.MAVEN_BUILD.value());
-//                                mavenDeploy.setScript(ciConfigTemplateVO.getScript());
-//
-//                                DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = new DevopsCiMavenPublishConfigVO();
-//                                devopsCiMavenPublishConfigVO.setRepos(ciConfigTemplateVO.getRepos());
-//                                devopsCiMavenPublishConfigVO.setMavenSettings(ciConfigTemplateVO.getMavenSettings());
-//                                devopsCiMavenPublishConfigVO.setNexusMavenRepoIds(ciConfigTemplateVO.getNexusMavenRepoIds());
-//                                devopsCiMavenPublishConfigVO.setNexusRepoId(ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds());
-//                                mavenDeploy.setMavenPublishConfig(devopsCiMavenPublishConfigVO);
-//
-//                                devopsCiStepVOList.add(mavenDeploy);
-//
-//                                devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-//                            }
-//                        }
-//                    } else if (JobTypeEnum.SONAR.value().equals(devopsCiJobDTO.getType())) {
-//                        SonarQubeConfigVO sonarQubeConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), SonarQubeConfigVO.class);
-//                        DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
-//                        devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
-//                        devopsCiStepVO.setName("SonarQube代码检查");
-//                        devopsCiStepVO.setSequence(0L);
-//                        devopsCiStepVO.setType(DevopsCiStepTypeEnum.SONAR.value());
-//                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(sonarQubeConfigVO, DevopsCiSonarConfigDTO.class);
-//                        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigDTO);
-//                        devopsCiStepVOList.add(devopsCiStepVO);
-//
-//                        devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.CODE_SCAN.value());
-//
-//                    } else if (JobTypeEnum.CHART.value().equals(devopsCiJobDTO.getType())) {
-//                        DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
-//                        devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
-//                        devopsCiStepVO.setName("上传Chart至猪齿鱼");
-//                        devopsCiStepVO.setSequence(0L);
-//                        devopsCiStepVO.setType(DevopsCiStepTypeEnum.UPLOAD_CHART.value());
-//                        devopsCiStepVOList.add(devopsCiStepVO);
-//
-//                        devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.BUILD.value());
-//                    } else if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobDTO.getType())) {
-//                        devopsCiJobDTO.setScript(devopsCiJobDTO.getMetadata());
-//
-//                        devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.OTHER.value());
-//                    }
-//
-//                    // 更新job step信息
-//                    if (!CollectionUtils.isEmpty(devopsCiStepVOList)) {
-//                        for (DevopsCiStepVO devopsCiStepVO : devopsCiStepVOList) {
-//                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
-//                            handler.save(projectId, devopsCiJobId, devopsCiStepVO);
-//                        }
-//                    }
-//                    // 更新job信息
-//                    devopsCiJobMapper.updateByPrimaryKeySelective(devopsCiJobDTO);
-//                }
-//            } catch (Exception e) {
-//                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline ci job data : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCiJobDTO.getId());
-//                errorJobIds.add(devopsCiJobDTO.getId());
-//            }
-//        }
+    }
 
+    @Nullable
+    private DevopsCiMavenPublishConfigDTO voToDto(DevopsCiMavenPublishConfigVO mavenPublishConfig) {
+        DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = ConvertUtils.convertObject(mavenPublishConfig, DevopsCiMavenPublishConfigDTO.class);
+        if (!CollectionUtils.isEmpty(mavenPublishConfig.getNexusMavenRepoIds())) {
+            devopsCiMavenPublishConfigDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(mavenPublishConfig.getNexusMavenRepoIds()));
+        }
+        if (!CollectionUtils.isEmpty(mavenPublishConfig.getRepos())) {
+            devopsCiMavenPublishConfigDTO.setRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getRepos()));
+        }
+        return devopsCiMavenPublishConfigDTO;
     }
 
     private void fixCustomJob() {
@@ -529,7 +469,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 mavenDeploy.setDevopsCiJobId(devopsCiJobId);
                                 mavenDeploy.setName("Maven发布");
                                 mavenDeploy.setSequence(ciConfigTemplateVO.getSequence());
-                                mavenDeploy.setType(DevopsCiStepTypeEnum.MAVEN_BUILD.value());
+                                mavenDeploy.setType(DevopsCiStepTypeEnum.MAVEN_PUBLISH.value());
                                 mavenDeploy.setScript(ciConfigTemplateVO.getScript());
 
                                 DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = new DevopsCiMavenPublishConfigVO();

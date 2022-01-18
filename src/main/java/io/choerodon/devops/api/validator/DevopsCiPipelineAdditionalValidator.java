@@ -312,15 +312,15 @@ public class DevopsCiPipelineAdditionalValidator {
         }
 
         // 校验自定义yaml的 job name和stage name 是否匹配
-//        ((Map<String, Object>) load).forEach((key, value) -> {
-//            if (org.apache.commons.lang3.StringUtils.isBlank(key)) {
-//                throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
-//            }
-//            devopsCiJobVO.setName(key);
+        ((Map<String, Object>) load).forEach((key, value) -> {
+            if (org.apache.commons.lang3.StringUtils.isBlank(key)) {
+                throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
+            }
+            devopsCiJobVO.setName(key);
 //            JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
 //            String stageNameDefinedInJob = jsonObject.getString(GitOpsConstants.STAGE);
 //            CommonExAssertUtil.assertTrue(stageName.equals(stageNameDefinedInJob), ERROR_CUSTOM_JOB_STAGE_NOT_MATCH, stageNameDefinedInJob, stageName);
-//        });
+        });
     }
 
     /**
