@@ -5,17 +5,8 @@ package io.choerodon.devops.api.vo.sonar;
  */
 public class Period {
 
-    private Long index;
     private String value;
-
-
-    public Long getIndex() {
-        return index;
-    }
-
-    public void setIndex(Long index) {
-        this.index = index;
-    }
+    private Boolean bestValue;
 
     public String getValue() {
         return value;
@@ -23,5 +14,13 @@ public class Period {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Boolean getBestValue() {
+        return bestValue;
+    }
+
+    public void setBestValue(Boolean bestValue) {
+        this.bestValue = bestValue;
     }
 }
