@@ -2866,7 +2866,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
         } else {
             AppServiceDTO appServiceSearchDTO = new AppServiceDTO();
-            appServiceSearchDTO.setProjectId(projectId);
             appServiceSearchDTO.setId(appServiceId);
             AppServiceDTO appServiceDTO = appServiceMapper.selectOne(appServiceSearchDTO);
             if (appServiceDTO == null) {
