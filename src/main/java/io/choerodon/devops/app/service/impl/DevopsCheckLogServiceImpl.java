@@ -112,9 +112,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_IMAGE_SCAN_DATA:
                 pipelineDataImageScanFix();
                 break;
-            case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
-                pipelineDataMavenPublishFix();
-                break;
             default:
                 LOGGER.info("version not matched");
                 return;

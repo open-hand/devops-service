@@ -64,13 +64,4 @@ public class DevopsFixDataTask {
         }
     }
 
-    @JobTask(maxRetryCount = 3, code = FIX_PIPELINE_MAVEN_PUBLISH_DATA, description = "修复流水线maven 发布数据")
-    @TimedTask(name = FIX_PIPELINE_MAVEN_PUBLISH_DATA, description = "修复流水线maven 发布数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
-    public void fixPipelineMavenPublishData(Map<String, Object> map) {
-        try {
-            devopsCheckLogService.checkLog(FIX_PIPELINE_MAVEN_PUBLISH_DATA);
-        } catch (Exception e) {
-            logger.error("error.fix.data", e);
-        }
-    }
 }
