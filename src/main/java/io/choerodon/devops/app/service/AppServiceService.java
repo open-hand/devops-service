@@ -406,7 +406,7 @@ public interface AppServiceService {
      * @param param
      * @return
      */
-    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType, Boolean includeExternal);
+    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType, Long appServiceId, Boolean includeExternal);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 

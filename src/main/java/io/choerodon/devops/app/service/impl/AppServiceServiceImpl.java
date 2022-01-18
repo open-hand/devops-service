@@ -134,6 +134,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String DUPLICATE = "duplicate";
     private static final String NORMAL_SERVICE = "normal_service";
     private static final String SHARE_SERVICE = "share_service";
+    private static final String ALL = "all";
     private static final String TEMP_MODAL = "\\?version=";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
@@ -2843,24 +2844,43 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType, Boolean includeExternal) {
+    public List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType, Long appServiceId, Boolean includeExternal) {
         List<String> params = new ArrayList<>();
-        if (!StringUtils.isEmpty(param)) {
+        if (!ObjectUtils.isEmpty(param)) {
             params.add(param);
         }
-        switch (type) {
-            case NORMAL_SERVICE: {
-                List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
-                AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
-                appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
-                return ArrayUtil.singleAsList(appServiceGroupVO);
+        if (appServiceId == null) {
+            switch (type) {
+                case NORMAL_SERVICE: {
+                    List<AppServiceDTO> list = appServiceMapper.list(projectId, Boolean.TRUE, true, serviceType, null, params, "", includeExternal);
+                    AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+                    appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(list, this::dtoToGroupInfoVO));
+                    return ArrayUtil.singleAsList(appServiceGroupVO);
+                }
+                case SHARE_SERVICE: {
+                    return listAllAppServicesHavingVersion(projectId, params, serviceType, includeExternal);
+                }
+                default: {
+                    throw new CommonException("error.list.deploy.app.service.type");
+                }
             }
-            case SHARE_SERVICE: {
-                return listAllAppServicesHavingVersion(projectId, params, serviceType, includeExternal);
+        } else {
+            AppServiceDTO appServiceSearchDTO = new AppServiceDTO();
+            appServiceSearchDTO.setProjectId(projectId);
+            appServiceSearchDTO.setId(appServiceId);
+            AppServiceDTO appServiceDTO = appServiceMapper.selectOne(appServiceSearchDTO);
+            if (appServiceDTO == null) {
+                // 如果appServiceDTO为null，表示该应用不在本项目下或其它项目共享应用，则最后来源是市场应用
+                MarketServiceVO marketServiceVO = marketServiceClientOperator.queryMarketService(projectId, appServiceId);
+                if (marketServiceVO == null) {
+                    // 市场应用也不存在，返回空
+                    return new ArrayList<>();
+                }
+                appServiceDTO.setName(marketServiceVO.getMarketServiceName());
             }
-            default: {
-                throw new CommonException("error.list.deploy.app.service.type");
-            }
+            AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
+            appServiceGroupVO.setAppServiceList(ConvertUtils.convertList(Collections.singletonList(appServiceDTO), this::dtoToGroupInfoVO));
+            return ArrayUtil.singleAsList(appServiceGroupVO);
         }
     }
 
