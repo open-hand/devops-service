@@ -126,6 +126,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             }
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
     }
@@ -495,6 +496,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             devopsEnvPodVO.setIp(pod.getStatus().getPodIP());
             devopsEnvPodVO.setContainers(result);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodVO.getName());
         }
 
