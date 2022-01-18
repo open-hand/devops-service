@@ -615,26 +615,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             views = devopsEnvironmentMapper.listMemberResourceEnvTree(projectId, DetailsHelper.getUserDetails().getUserId());
         }
 
-        // 实例关联的应用id，包括本项目下应用、其它项目共享应用、应用市场应用
-        Set<Long> instanceRelatedServiceIds = views.stream().map(DevopsResourceEnvOverviewDTO::getInstances).flatMap(List::stream).map(DevopsAppServiceInstanceViewVO::getAppServiceId).collect(Collectors.toSet());
-        List<AppServiceDTO> appServiceDTOS = appServiceService.listNamesByIds(instanceRelatedServiceIds);
-        // 本项目下应用、其它项目共享应用
-        Set<Long> appServiceIds = appServiceDTOS.stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
-        // 应用市场应用
-        Set<Long> marketServiceIds = instanceRelatedServiceIds.stream().filter(id -> !appServiceIds.contains(id)).collect(Collectors.toSet());
-
-        Map<Long, String> appServiceMapName = appServiceDTOS.stream().collect(Collectors.toMap(AppServiceDTO::getId, AppServiceDTO::getName));
-
-        if (!CollectionUtils.isEmpty(marketServiceIds)) {
-            appServiceMapName.putAll(marketServiceClientOperator.queryMarketServiceByIds(projectId, marketServiceIds).stream().collect(Collectors.toMap(MarketServiceVO::getId, MarketServiceVO::getMarketServiceName)));
-        }
-
         views.forEach(e -> {
-            // 设置应用名称
-            e.getInstances().forEach(i -> {
-                i.setAppServiceName(appServiceMapName.get(i.getAppServiceId()));
-                i.setAppServiceId(null);
-            });
             // 应前端要求返回该字段的空数组
             e.setPvcs(new ArrayList<>());
             // 将DTO层对象转为VO

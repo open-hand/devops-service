@@ -3752,14 +3752,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public List<AppServiceDTO> listNamesByIds(Set<Long> ids) {
-        if (CollectionUtils.isEmpty(ids)) {
-            return new ArrayList<>();
-        }
-        return appServiceMapper.listNamesByIds(ids);
-    }
-
-    @Override
     public String getPrivateToken(Long projectId, String serviceCode, String email) {
         AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
         if (appServiceDTO.getGitlabProjectId() == null) {

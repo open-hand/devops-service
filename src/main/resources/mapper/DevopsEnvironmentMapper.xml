@@ -38,7 +38,6 @@
             <result property="podCount" column="pod_count"/>
             <result property="appId" column="app_id"/>
             <result property="name" column="name"/>
-            <result property="appServiceId" column="app_service_id"/>
         </collection>
         <collection property="services" ofType="io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO"
                     select="listServices" fetchType="eager" column="env_id">
@@ -350,16 +349,15 @@
     </select>
 
     <select id="listAllResourceEnvTree" resultMap="resourceEnvTree">
-        SELECT any_value(env.id)             as env_id,
-               any_value(env.name)           as env_name,
-               any_value(env.code)           as env_code,
-               any_value(ins.id)             as ins_id,
-               any_value(ins.app_service_id) as app_service_id,
-               any_value(ddace.id)           as app_id,
-               any_value(ins.status)         as ins_status,
-               any_value(ins.code)           as ins_code,
-               any_value(env.cluster_id)     as cluster_id,
-               any_value(ddace.name)         as name,
+        SELECT any_value(env.id)         as env_id,
+               any_value(env.name)       as env_name,
+               any_value(env.code)       as env_code,
+               any_value(ins.id)         as ins_id,
+               any_value(ddace.id)       as app_id,
+               any_value(ins.status)     as ins_status,
+               any_value(ins.code)       as ins_code,
+               any_value(env.cluster_id) as cluster_id,
+               any_value(ddace.name)     as name,
                SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
                SUM(CASE
                        WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
