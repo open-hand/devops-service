@@ -346,7 +346,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             devopsEnvPodDTO.setId(pod.getId());
                             devopsEnvPodDTO.setInstanceId(pod.getInstanceId());
                             devopsEnvPodDTO.setObjectVersionNumber(pod.getObjectVersionNumber());
-                            devopsEnvPodDTO.setNamespace(pod.getNodeName());
+                            devopsEnvPodDTO.setNodeName(v1Pod.getSpec().getNodeName());
                             devopsEnvPodService.baseUpdate(devopsEnvPodDTO);
                         }
                         flag = true;
