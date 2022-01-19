@@ -1513,7 +1513,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             //初始化查询参数
             Map<String, String> queryContentMap = new HashMap<>();
             queryContentMap.put("additionalFields", "metrics,periods");
-            queryContentMap.put("componentKey", key);
+            queryContentMap.put("component", key);
             queryContentMap.put("metricKeys", "quality_gate_details,bugs,vulnerabilities,new_bugs,new_vulnerabilities,sqale_index,code_smells,new_technical_debt,new_code_smells,coverage,tests,new_coverage,duplicated_lines_density,duplicated_blocks,new_duplicated_lines_density,ncloc,ncloc_language_distribution");
 
             //根据project-key查询sonarqube项目内容
