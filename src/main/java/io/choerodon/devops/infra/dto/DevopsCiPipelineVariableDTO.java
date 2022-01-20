@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -34,10 +35,12 @@ public class DevopsCiPipelineVariableDTO extends AuditDomain {
     private static final long serialVersionUID = -56116170534172667L;
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "流水线id", required = true)
     @NotNull
+    @Encrypt
     private Long devopsPipelineId;
 
     @ApiModelProperty(value = "变量名", required = true)

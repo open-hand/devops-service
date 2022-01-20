@@ -31,8 +31,8 @@
             (
             #{item.vulnerabilityCode},
             #{item.appServiceId},
-            #{jobName},
             #{item.gitlabPipelineId},
+            #{item.jobName},
             #{item.startDate},
             #{item.endDate},
             #{item.severity},

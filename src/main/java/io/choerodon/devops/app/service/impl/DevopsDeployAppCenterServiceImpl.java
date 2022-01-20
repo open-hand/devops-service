@@ -194,6 +194,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO == null) {
+            return new AppCenterEnvDetailVO();
+        }
         AppCenterEnvDetailVO detailVO = ConvertUtils.convertObject(centerEnvDTO, AppCenterEnvDetailVO.class);
         detailVO.setId(appCenterId);
         detailVO.setDeployWay(AppCenterDeployWayEnum.CONTAINER.getValue());
@@ -313,6 +316,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public List<InstanceEventVO> envAppEvent(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO == null) {
+            return Collections.EMPTY_LIST;
+        }
         if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             return devopsEnvResourceService.listInstancePodEvent(centerEnvDTO.getObjectId());
         } else {
@@ -335,6 +341,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public DevopsEnvResourceVO envAppRelease(Long projectId, Long appCenterId) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO == null) {
+            return new DevopsEnvResourceVO();
+        }
         if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             return appServiceInstanceService.listResourcesInHelmRelease(centerEnvDTO.getObjectId());
         } else {
@@ -345,6 +354,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public Page<DevopsServiceVO> envChartService(Long projectId, Long appCenterId, PageRequest pageRequest, String searchParam) {
         DevopsDeployAppCenterEnvDTO centerEnvDTO = appCenterEnvMapper.selectByPrimaryKey(appCenterId);
+        if (centerEnvDTO == null) {
+            return new Page<>();
+        }
         if (centerEnvDTO.getRdupmType().equals(RdupmTypeEnum.CHART.value())) {
             AppServiceInstanceDTO instanceDTO = instanceService.baseQuery(centerEnvDTO.getObjectId());
             return devopsServiceService.pageByInstance(projectId, instanceDTO.getEnvId(), centerEnvDTO.getObjectId(), pageRequest, instanceDTO.getAppServiceId(), searchParam);
@@ -519,7 +531,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (CollectionUtils.isEmpty(appServiceIds)) {
             return new ArrayList<>();
         }
-       return devopsDeployAppCenterEnvMapper.listByAppServiceIds(envId, appServiceIds);
+        return devopsDeployAppCenterEnvMapper.listByAppServiceIds(envId, appServiceIds);
     }
 
     @Transactional

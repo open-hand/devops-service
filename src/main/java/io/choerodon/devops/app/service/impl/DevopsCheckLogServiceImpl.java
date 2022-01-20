@@ -112,9 +112,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_IMAGE_SCAN_DATA:
                 pipelineDataImageScanFix();
                 break;
-            case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
-                pipelineDataMavenPublishFix();
-                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -170,10 +167,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>end fix pipeline image scan data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
             return;
         }
-        devopsCiDockerBuildConfigDTOS.stream().filter(devopsCiDockerBuildConfigDTO ->
-                devopsCiDockerBuildConfigDTO.getSecurityControl()
-
-        ).filter(devopsCiDockerBuildConfigDTO ->
+        devopsCiDockerBuildConfigDTOS.stream()
+                .filter(devopsCiDockerBuildConfigDTO ->
                 devopsCiDockerBuildConfigDTO.getSeverity() == null ||
                 devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
                 devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {

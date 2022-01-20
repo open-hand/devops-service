@@ -17,5 +17,11 @@
             #{stageId}
         </foreach>
     </select>
+    <select id="listByTenantIdAndGroupId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
+        select * from devops_ci_template_job dctj
+        where dctj.group_id = #{groupId}
+        and ((dctj.source_type = 'site' and dctj.source_id = 0)
+        or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId}))
+    </select>
 </mapper>
 

@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,7 +31,8 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     private static final String UP = "up";
     private static final String DOWN = "down";
-    private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    // 创建 DateTimeFormatter 对象
+    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -110,7 +114,10 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         }
         List<Date> dateList = devopsGitlabCommitMapper.queryCountByProjectIdAndDate(projectId, new java.sql.Date(sprintDTO.getStartDate().getTime()), new java.sql.Date(sprintDTO.getEndDate().getTime()));
 
-        Map<String, Long> dateCount = dateList.stream().map(simpleDateFormat::format)
+        Map<String, Long> dateCount = dateList.stream().map(date -> {
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+            return dateTimeFormatter.format(localDateTime);
+        })
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
 
@@ -198,7 +205,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
             return new CountVO();
         }
-        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsPipelineRecordRelDTO::getCreationDate).map(simpleDateFormat::format)
+        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsPipelineRecordRelDTO::getCreationDate)
+                .map(date -> {
+                    LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+                    return dateTimeFormatter.format(localDateTime);
+                })
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.groupingBy(t -> t, Collectors.counting()));
 

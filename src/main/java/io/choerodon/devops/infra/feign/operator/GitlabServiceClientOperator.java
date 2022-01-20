@@ -1447,12 +1447,17 @@ public class GitlabServiceClientOperator {
 
     public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid, AppExternalConfigDTO appExternalConfigDTO) {
         if (appExternalConfigDTO == null) {
-            return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
+            ResponseEntity<String> responseEntity = gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
                     null,
                     null,
                     null,
                     null,
-                    null).getBody();
+                    null);
+            if (responseEntity != null) {
+                return responseEntity.getBody();
+            } else {
+                return "";
+            }
         } else {
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
