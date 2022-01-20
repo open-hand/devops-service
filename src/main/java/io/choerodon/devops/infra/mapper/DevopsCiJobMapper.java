@@ -19,4 +19,7 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
     List<DevopsCiJobDTO> listOldDataByType(String type);
 
     List<DevopsCiJobVO> listCustomByPipelineId(@Param("ciPipelineId") Long ciPipelineId);
+
+    void updateImageByIds(@Param("ids") List<Long> longList, @Param("image") String sonarImage);
+
 }

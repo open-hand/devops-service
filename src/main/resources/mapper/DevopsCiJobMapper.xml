@@ -15,4 +15,14 @@
         where dcj.ci_pipeline_id = #{ciPipelineId}
           and dcj.type = 'custom';
     </select>
+
+    <update id="updateImageByIds">
+        UPDATE devops_ci_job
+        SET image = #{image,jdbcType=VARCHAR}
+        WHERE id in
+        <foreach collection="ids" item="id" index="index"
+                              open="(" close=")" separator=",">
+        #{id,jdbcType=BIGINT}
+    </foreach>
+    </update>
 </mapper>

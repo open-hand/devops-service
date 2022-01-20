@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.common.base.Joiner;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -43,6 +45,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_PIPELINE_IMAGE_SCAN_DATA = "fixPipelineImageScanData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
+    private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @Value("${nexus.proxy.url:nexus.proxy.url}")
@@ -50,6 +53,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Value("${nexus.default.url:nexus.default.url}")
     private String nexusDefaultUrl;
+
+    @Value("${sonar.fix.image:sonar.fix.image}")
+    private String sonarImage;
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
@@ -112,6 +118,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_IMAGE_SCAN_DATA:
                 pipelineDataImageScanFix();
                 break;
+            case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
+                pipelineDataMavenPublishFix();
+                break;
+            case PIPELINE_SONAR_IMAGE_FIX:
+                pipelineSonarImageFix();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -119,6 +131,32 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void pipelineSonarImageFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>end fix sonar data<<<<<<<<<<<<<<<<<<<<<<<");
+        //1.查询所有流水线的sonar步骤
+        DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
+        devopsCiStepDTO.setType(DevopsCiStepTypeEnum.SONAR.value());
+        List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepMapper.select(devopsCiStepDTO);
+        if (CollectionUtils.isEmpty(devopsCiStepDTOS)) {
+            return;
+        }
+        Set<Long> jobIds = devopsCiStepDTOS.stream().map(DevopsCiStepDTO::getDevopsCiJobId).collect(Collectors.toSet());
+        //2.找到jobId
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(jobIds));
+        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
+            return;
+        }
+
+        //3.更改jobId的镜像 每次更新50条
+        List<List<DevopsCiJobDTO>> partition = ListUtils.partition(devopsCiJobDTOS, 50);
+        partition.forEach(devopsCiJobDTOS1 -> {
+            List<Long> longList = devopsCiJobDTOS1.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
+            devopsCiJobMapper.updateImageByIds(longList, sonarImage);
+        });
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>end fix sonar data<<<<<<<<<<<<<<<<<<<<<<<");
     }
 
     public void pipelineDataMavenPublishFix() {
@@ -170,8 +208,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCiDockerBuildConfigDTOS.stream()
                 .filter(devopsCiDockerBuildConfigDTO ->
                 devopsCiDockerBuildConfigDTO.getSeverity() == null ||
-                devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
-                devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
+                        devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
+                        devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
             devopsCiDockerBuildConfigDTO.setSecurityControl(Boolean.FALSE);
             devopsCiDockerBuildConfigDTO.setSeverity(null);
             devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);

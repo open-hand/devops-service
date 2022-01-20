@@ -22,6 +22,8 @@ public class PipelineFixDataTask {
 
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
 
+    private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
+
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 
@@ -32,6 +34,18 @@ public class PipelineFixDataTask {
         //试用组织，Saas组织流水线里面使用到的nexus 替换
         try {
             devopsCheckLogService.checkLog(PIPELINE_CONTENT_FIX);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
+
+    @JobTask(maxRetryCount = 3, code = PIPELINE_SONAR_IMAGE_FIX, description = "修复流水线镜像")
+    @TimedTask(name = PIPELINE_SONAR_IMAGE_FIX, description = "修复流水线镜像", oneExecution = true,
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void pipelineSonarImageFix(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(PIPELINE_SONAR_IMAGE_FIX);
         } catch (Exception e) {
             logger.error("error.fix.data", e);
         }
