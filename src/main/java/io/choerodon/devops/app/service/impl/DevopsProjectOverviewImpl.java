@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.api.vo.MergeRequestVO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
@@ -185,13 +185,13 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Override
     public CountVO getCiCount(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
+        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getTenantId());
         if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
         //根据项目的id查询项目下所有的流水线的id
-        List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsCiCdPipelineMapper.selectPipelineByProjectId(projectDTO.getId());
+        List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsCiCdPipelineMapper.selectPipelineByProjectId(projectId);
         if (CollectionUtils.isEmpty(ciCdPipelineDTOS)) {
             return new CountVO();
         }
