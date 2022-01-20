@@ -52,6 +52,17 @@ public class CiTemplateStepCategoryVO {
 
     private List<CiTemplateStepVO> ciTemplateStepVOList;
 
+    @ApiModelProperty("job的镜像")
+    private String image;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public List<CiTemplateStepVO> getCiTemplateStepVOList() {
         return ciTemplateStepVOList;
     }
