@@ -10,6 +10,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,8 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.enums.MergeRequestState;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -47,6 +50,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMergeRequestServiceImpl.class);
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
@@ -198,14 +203,20 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
                 gitlabUserIds.add(mergeRequestVO.getAssigneeId());
             }
         });
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<UserAttrDTO> userAttrDTOS = userAttrService.baseListByGitlabUserIds(new ArrayList<>(gitlabUserIds));
         List<Long> iamUserIds = userAttrDTOS.stream().map(UserAttrDTO::getIamUserId).collect(Collectors.toList());
         Map<Long, Long> gitlabIamUserIdMap = userAttrDTOS.stream().collect(Collectors.toMap(UserAttrDTO::getGitlabUserId, UserAttrDTO::getIamUserId));
         List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
         Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            String mergeRequestUrl = String.format("%s%s%s-%s/%s/merge_requests/%s",
+                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getCode(), mergeRequestVO.getAppServiceCode(),mergeRequestVO.getGitlabMergeRequestId());
             mergeRequestVO.setIamAuthor(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAuthorId())), UserVO.class));
             mergeRequestVO.setIamAssignee(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAssigneeId())), UserVO.class));
+            mergeRequestVO.setGitlabUrl(mergeRequestUrl);
         });
         return mergeRequestVOPage;
     }
