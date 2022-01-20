@@ -23,5 +23,15 @@
         and ((dctj.source_type = 'site' and dctj.source_id = 0)
         or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId}))
     </select>
+
+    <update id="updateImageByIds">
+        UPDATE devops_ci_template_job
+        SET image = #{image,jdbcType=VARCHAR}
+        WHERE id in
+        <foreach collection="ids" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
 </mapper>
 
