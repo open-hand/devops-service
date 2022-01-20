@@ -59,4 +59,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
             column(name: 'devops_default_rule_number', type: 'BIGINT UNSIGNED', defaultValue: "1", remarks: 'devops默认渲染规则版本号', afterColumn: 'pipeline_version_number')
         }
     }
+
+    createIndex(indexName: "idx_pipeline_id", tableName: "devops_ci_content") {
+        column(name: "ci_pipeline_id")
+    }
 }
