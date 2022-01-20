@@ -112,6 +112,7 @@
         FROM devops_merge_request dmr
                      INNER JOIN devops_app_service das ON das.gitlab_project_id = dmr.gitlab_project_id
                 WHERE das.project_id = #{projectId}
+        AND dmr.state='opened'
         <if test="appServiceIds != null">
             AND das.id IN
             <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
