@@ -83,6 +83,10 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);
+        if (applicationDTO == null) {
+            LOGGER.info("application not exist:{}", token);
+            return;
+        }
         if (applicationDTO.getExternalConfigId() != null) {
             return;
         }

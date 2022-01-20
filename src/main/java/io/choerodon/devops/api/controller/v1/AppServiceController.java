@@ -770,16 +770,16 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "类型", required = true)
             @RequestParam(value = "type") String type,
-            @ApiParam(value = "查询参数", required = false)
+            @ApiParam(value = "查询参数")
             @RequestParam(value = "param", required = false) String param,
-            @ApiParam(value = "是否仅部署", required = true)
-            @RequestParam(value = "deploy_only", required = true) Boolean deployOnly,
-            @ApiParam(value = "应用服务类型", required = false)
+            @ApiParam(value = "应用服务类型")
             @RequestParam(value = "service_type", required = false) String serviceType,
+            @ApiParam(value = "应用服务id")
+            @RequestParam(value = "app_service_id", required = false) @Encrypt Long appServiceId,
             @ApiParam(value = "是否包含外部应用服务")
             @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
         return Optional.ofNullable(
-                applicationServiceService.listAllAppServices(projectId, type, param, deployOnly, serviceType, includeExternal))
+                applicationServiceService.listAllAppServices(projectId, type, param, serviceType, appServiceId, includeExternal))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
     }

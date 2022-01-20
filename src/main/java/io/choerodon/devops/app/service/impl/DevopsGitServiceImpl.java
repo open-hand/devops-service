@@ -1248,6 +1248,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             // 此情况是分支已被删除，需要用另一种方式获取分支名称
             List<Long> relatedCommitIds = devopsIssueRelService.listCommitRelationByBranchId(branchId);
             // 因为所有的commit都属于同一个分支，因此默认取第1个commitId来查询分支名称
+            if (CollectionUtils.isEmpty(relatedCommitIds)){
+                return;
+            }
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.selectByPrimaryKey(relatedCommitIds.get(0));
             // 这里的操作是查出之前被删除的同名分支id
             List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitService.baseListByAppIdAndBranch(appServiceId, devopsGitlabCommitDTO.getRef(), null);

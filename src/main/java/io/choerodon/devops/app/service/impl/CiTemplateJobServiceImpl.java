@@ -21,7 +21,9 @@ import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.CiTriggerType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiTemplateJobMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -41,6 +43,8 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
     private DevopsCiStepOperator devopsCiStepOperator;
     @Autowired
     private CiTemplateStepService ciTemplateStepService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -65,13 +69,13 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
 
     @Override
     public List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId) {
-        CiTemplateJobDTO ciTemplateJobDTO = new CiTemplateJobDTO();
-        ciTemplateJobDTO.setGroupId(groupId);
-        List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobmapper.select(ciTemplateJobDTO);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobmapper.listByTenantIdAndGroupId(projectDTO.getOrganizationId(), groupId);
 
         if (CollectionUtils.isEmpty(templateJobDTOS)) {
             return new ArrayList<>();
         }
+
         List<DevopsCiJobVO> devopsCiJobVOList = new ArrayList<>();
 
         List<CiTemplateJobVO> ciTemplateJobVOList = ConvertUtils.convertList(templateJobDTOS, CiTemplateJobVO.class);

@@ -56,9 +56,9 @@
                  left join devops_ci_template_stage dcts on dcts.pipeline_template_id = dpt.id
                  left join devops_ci_template_stage_job_rel dctsjr on dctsjr.ci_template_stage_id = dcts.id
                  left join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
-        where dpt.enable = 1 and
-              (dpt.source_type = 'site' and dpt.source_id = 0)
-           or (dpt.source_type = 'organization' and dpt.source_id = #{organizationId})
+        where dpt.enable = 1
+          and ((dpt.source_type = 'site' and dpt.source_id = 0)
+            or (dpt.source_type = 'organization' and dpt.source_id = #{organizationId}))
         order by dpt.ci_template_category_id
     </select>
 </mapper>

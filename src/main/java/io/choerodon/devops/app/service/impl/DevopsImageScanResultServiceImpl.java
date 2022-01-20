@@ -47,8 +47,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
+
     @Autowired
     private AppServiceService appServiceService;
 
@@ -89,36 +88,12 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             return;
         }
         //查询数据库是否存在，不存在则插入
-        DevopsImageScanResultDTO existScanResult = new DevopsImageScanResultDTO();
-        existScanResult.setAppServiceId(appServiceId);
-        existScanResult.setGitlabPipelineId(gitlabPipelineId);
-        existScanResult.setJobName(jobName);
-        if (devopsImageScanResultMapper.selectCount(existScanResult) > 0) {
-            //批量更新
-            devopsImageScanResultMapper.updateScanDate(startDate, endDate, appServiceId, gitlabPipelineId, jobName);
-        } else {
-            //批量插入
-            ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
-            List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
-            List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = new ArrayList<>();
-
-            vulnerabilities.forEach(vulnerabilitieVO -> {
-                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
-                devopsImageScanResultDTO.setAppServiceId(appServiceId);
-                devopsImageScanResultDTO.setJobName(jobName);
-                devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
-                BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
-                devopsImageScanResultDTO.setStartDate(startDate);
-                devopsImageScanResultDTO.setEndDate(endDate);
-                devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-                devopsImageScanResultDTOS.add(devopsImageScanResultDTO);
-            });
-            devopsImageScanResultMapper.insertScanResultBatch(devopsImageScanResultDTOS);
-        }
-
-
+        insertOrUpdateData(gitlabPipelineId, startDate, endDate, jobName, imageScanResultVOS, appServiceId);
         //检查门禁条件
+        checkSecurityCondition(gitlabPipelineId, jobId);
+    }
+
+    private void checkSecurityCondition(Long gitlabPipelineId, Long jobId) {
         if (!Objects.isNull(jobId) && jobId > 0) {
             DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
             if (Objects.isNull(devopsCiJobDTO)) {
@@ -129,41 +104,76 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
             List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
             //一个job一个docker构建
             CiConfigTemplateVO configTemplateVO = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(CiJobScriptTypeEnum.DOCKER.getType(), ciConfigTemplateVO.getType().trim())).collect(Collectors.toList()).get(0);
-
-            if (!Objects.isNull(configTemplateVO.getSecurityControl()) && configTemplateVO.getSecurityControl()) {
-                SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityCondition();
-
-                DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-                devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-                List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
-                if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
-                    return;
-                }
-                switch (ImageSecurityEnum.valueOf(securityConditionConfigVO.getLevel())) {
-                    case HIGH:
-                        Integer highCount = getHighCount(devopsImageScanResultDTOS);
-                        securityMonitor(highCount, securityConditionConfigVO);
-                        break;
-                    case CRITICAL:
-                        Integer criticalCount = getCriticalCount(devopsImageScanResultDTOS);
-                        securityMonitor(criticalCount, securityConditionConfigVO);
-                        break;
-                    case MEDIUM:
-                        Integer mediumCount = getMediumCount(devopsImageScanResultDTOS);
-                        securityMonitor(mediumCount, securityConditionConfigVO);
-                        break;
-                    case LOW:
-                        Integer lowCount = getLowCount(devopsImageScanResultDTOS);
-                        securityMonitor(lowCount, securityConditionConfigVO);
-                        break;
-                    default:
-                        throw new DevopsCiInvalidException("security level not exist: {}", securityConditionConfigVO.getLevel());
-                }
-            }
+            check(gitlabPipelineId, configTemplateVO);
 
         }
+    }
 
+    private void check(Long gitlabPipelineId, CiConfigTemplateVO configTemplateVO) {
+        if (!Objects.isNull(configTemplateVO.getSecurityControl()) && configTemplateVO.getSecurityControl()) {
+            SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityCondition();
 
+            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
+            if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
+                return;
+            }
+            switch (ImageSecurityEnum.valueOf(securityConditionConfigVO.getLevel())) {
+                case HIGH:
+                    Integer highCount = getHighCount(devopsImageScanResultDTOS);
+                    securityMonitor(highCount, securityConditionConfigVO);
+                    break;
+                case CRITICAL:
+                    Integer criticalCount = getCriticalCount(devopsImageScanResultDTOS);
+                    securityMonitor(criticalCount, securityConditionConfigVO);
+                    break;
+                case MEDIUM:
+                    Integer mediumCount = getMediumCount(devopsImageScanResultDTOS);
+                    securityMonitor(mediumCount, securityConditionConfigVO);
+                    break;
+                case LOW:
+                    Integer lowCount = getLowCount(devopsImageScanResultDTOS);
+                    securityMonitor(lowCount, securityConditionConfigVO);
+                    break;
+                default:
+                    throw new DevopsCiInvalidException("security level not exist: {}", securityConditionConfigVO.getLevel());
+            }
+        }
+    }
+
+    private void insertOrUpdateData(Long gitlabPipelineId, Date startDate, Date endDate, String jobName, List<ImageScanResultVO> imageScanResultVOS, Long appServiceId) {
+        DevopsImageScanResultDTO existScanResult = new DevopsImageScanResultDTO();
+        existScanResult.setAppServiceId(appServiceId);
+        existScanResult.setGitlabPipelineId(gitlabPipelineId);
+        existScanResult.setJobName(jobName);
+        if (devopsImageScanResultMapper.selectCount(existScanResult) > 0) {
+            //批量更新
+            devopsImageScanResultMapper.updateScanDate(startDate, endDate, appServiceId, gitlabPipelineId, jobName);
+        } else {
+            //批量插入
+            batchInsertData(gitlabPipelineId, startDate, endDate, jobName, imageScanResultVOS, appServiceId);
+        }
+    }
+
+    private void batchInsertData(Long gitlabPipelineId, Date startDate, Date endDate, String jobName, List<ImageScanResultVO> imageScanResultVOS, Long appServiceId) {
+        ImageScanResultVO imageScanResultVO = imageScanResultVOS.get(0);
+        List<VulnerabilitieVO> vulnerabilities = imageScanResultVO.getVulnerabilities();
+        List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = new ArrayList<>();
+
+        vulnerabilities.forEach(vulnerabilitieVO -> {
+            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+            devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+            devopsImageScanResultDTO.setAppServiceId(appServiceId);
+            devopsImageScanResultDTO.setJobName(jobName);
+            devopsImageScanResultDTO.setTarget(imageScanResultVO.getTarget());
+            BeanUtils.copyProperties(vulnerabilitieVO, devopsImageScanResultDTO);
+            devopsImageScanResultDTO.setStartDate(startDate);
+            devopsImageScanResultDTO.setEndDate(endDate);
+            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            devopsImageScanResultDTOS.add(devopsImageScanResultDTO);
+        });
+        devopsImageScanResultMapper.insertScanResultBatch(devopsImageScanResultDTOS);
     }
 
     private void handEmptyScanResult(Long gitlabPipelineId, Date startDate, Date endDate) {
