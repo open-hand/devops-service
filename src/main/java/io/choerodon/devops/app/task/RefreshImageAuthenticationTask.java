@@ -85,13 +85,11 @@ public class RefreshImageAuthenticationTask {
                 return;
             }
             //3.跟新进数据库
-            String secretCode = String.format("%s%s", "secret-", GenerateUUID.generateUUID().substring(0, 20));
             ConfigVO configVO = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-            devopsRegistrySecretDTO.setSecretCode(secretCode);
             devopsRegistrySecretDTO.setSecretDetail(gson.toJson(configVO));
             devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
             //4.跟新到agent
-            agentCommandService.operateSecret(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), secretCode, configVO);
+            agentCommandService.operateSecret(devopsRegistrySecretDTO.getClusterId(), devopsRegistrySecretDTO.getNamespace(), devopsRegistrySecretDTO.getSecretCode(), configVO);
         });
     }
 
