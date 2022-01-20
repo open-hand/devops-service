@@ -107,8 +107,8 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Override
     public CountVO getCommitCount(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getOrganizationId());
+        ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
+        SprintDTO sprintDTO = agileServiceClientOperator.getActiveSprint(projectId, projectDTO.getTenantId());
         if (sprintDTO == null || sprintDTO.getSprintId() == null) {
             return new CountVO();
         }
