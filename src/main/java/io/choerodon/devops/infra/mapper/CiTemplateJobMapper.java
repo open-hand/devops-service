@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.core.parameters.P;
 
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
@@ -22,5 +23,8 @@ public interface CiTemplateJobMapper extends BaseMapper<CiTemplateJobDTO> {
     List<CiTemplateJobVO> listByStageIds(@Param("stageIds") Set<Long> stageIds);
 
     List<CiTemplateJobDTO> listByTenantIdAndGroupId(@Param("organizationId") Long organizationId, @Param("groupId") Long groupId);
+
+    void updateImageByIds(@Param("ids") Set<Long> jobIds, @Param("image") String sonarImage);
+
 }
 

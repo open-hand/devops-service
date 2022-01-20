@@ -23,6 +23,6 @@
         <foreach collection="ids" item="id" index="index"
                               open="(" close=")" separator=",">
         #{id,jdbcType=BIGINT}
-    </foreach>
+        </foreach>
     </update>
 </mapper>

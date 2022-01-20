@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.mybatis.domian.Condition;
+import org.hzero.mybatis.util.Sqls;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +93,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
     @Autowired
     private DevopsCiMavenPublishConfigMapper devopsCiMavenPublishConfigMapper;
+    @Autowired
+    private CiTemplateStepMapper ciTemplateStepMapper;
+    @Autowired
+    private CiTemplateJobStepRelMapper ciTemplateJobStepRelMapper;
+    @Autowired
+    private CiTemplateJobMapper ciTemplateJobMapper;
 
 
     @Override
@@ -123,6 +131,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case PIPELINE_SONAR_IMAGE_FIX:
                 pipelineSonarImageFix();
+                pipelineSonarTemplateImageFix();
                 break;
             default:
                 LOGGER.info("version not matched");
@@ -133,8 +142,29 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
     }
 
+    private void pipelineSonarTemplateImageFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>start fix sonar template data<<<<<<<<<<<<<<<<<<<<<<<");
+        CiTemplateStepDTO ciTemplateStepDTO = new CiTemplateStepDTO();
+        ciTemplateStepDTO.setType(DevopsCiStepTypeEnum.SONAR.value());
+        List<CiTemplateStepDTO> ciTemplateStepDTOS = ciTemplateStepMapper.select(ciTemplateStepDTO);
+        if (CollectionUtils.isEmpty(ciTemplateStepDTOS)) {
+            return;
+        }
+        Set<Long> stepIds = ciTemplateStepDTOS.stream().map(CiTemplateStepDTO::getId).collect(Collectors.toSet());
+        Condition condition = Condition.builder(CiTemplateJobStepRelDTO.class).where(Sqls.custom()
+                .andIn("ciTemplateStepId", stepIds)).build();
+        List<CiTemplateJobStepRelDTO> ciTemplateJobStepRelDTOS = ciTemplateJobStepRelMapper.selectByCondition(condition);
+        if (CollectionUtils.isEmpty(ciTemplateJobStepRelDTOS)){
+            return;
+        }
+
+        Set<Long> jobIds = ciTemplateJobStepRelDTOS.stream().map(CiTemplateJobStepRelDTO::getCiTemplateJobId).collect(Collectors.toSet());
+        ciTemplateJobMapper.updateImageByIds(jobIds, sonarImage);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>end fix sonar template data<<<<<<<<<<<<<<<<<<<<<<<");
+    }
+
     private void pipelineSonarImageFix() {
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>end fix sonar data<<<<<<<<<<<<<<<<<<<<<<<");
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>start fix sonar data<<<<<<<<<<<<<<<<<<<<<<<");
         //1.查询所有流水线的sonar步骤
         DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
         devopsCiStepDTO.setType(DevopsCiStepTypeEnum.SONAR.value());
@@ -207,9 +237,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
         devopsCiDockerBuildConfigDTOS.stream()
                 .filter(devopsCiDockerBuildConfigDTO ->
-                devopsCiDockerBuildConfigDTO.getSeverity() == null ||
-                        devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
-                        devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
+                        devopsCiDockerBuildConfigDTO.getSeverity() == null ||
+                                devopsCiDockerBuildConfigDTO.getSecurityControlConditions() == null ||
+                                devopsCiDockerBuildConfigDTO.getVulnerabilityCount() == null).forEach(devopsCiDockerBuildConfigDTO -> {
             devopsCiDockerBuildConfigDTO.setSecurityControl(Boolean.FALSE);
             devopsCiDockerBuildConfigDTO.setSeverity(null);
             devopsCiDockerBuildConfigDTO.setSecurityControlConditions(null);
