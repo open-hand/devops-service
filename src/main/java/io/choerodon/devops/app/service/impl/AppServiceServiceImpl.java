@@ -1440,6 +1440,10 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
+        if (!url.endsWith("/")) {
+            throw new CommonException("error.base.url.must.end");
+        }
+        url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
         configurationProperties.setType(CHART);
@@ -1447,14 +1451,20 @@ public class AppServiceServiceImpl implements AppServiceService {
             configurationProperties.setUsername(username);
             configurationProperties.setPassword(password);
         }
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        ChartClient chartClient = retrofit.create(ChartClient.class);
+        ChartClient chartClient = null;
+
         try {
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+            chartClient = retrofit.create(ChartClient.class);
             // 获取健康检查信息是不需要认证信息的
             Call<Object> getHealth = chartClient.getHealth();
             getHealth.execute();
         } catch (Exception e) {
-            throw new CommonException("error.chart.not.available");
+            if (e instanceof IllegalArgumentException) {
+                throw new CommonException("error.chart.url.base", e.getMessage());
+            } else {
+                throw new CommonException("error.chart.not.available", e.getMessage());
+            }
         }
 
         // 验证用户名密码
