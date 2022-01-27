@@ -277,7 +277,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectHookDTO> createExternalProjectHook(Integer projectId, ProjectHookDTO projectHookDTO, String gitlabUrl, String authType, String accessToken, String username, String password) {
+    public ResponseEntity<String> createExternalProjectHook(Integer projectId, ProjectHookDTO projectHookDTO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.projecthook.create");
     }
 

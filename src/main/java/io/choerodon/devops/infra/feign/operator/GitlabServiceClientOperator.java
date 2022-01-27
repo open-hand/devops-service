@@ -543,13 +543,14 @@ public class GitlabServiceClientOperator {
             AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
             GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
             appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
-            return gitlabServiceClient.createExternalProjectHook(projectId,
+            String response = gitlabServiceClient.createExternalProjectHook(projectId,
                     projectHookDTO,
                     appExternalConfigVO.getGitlabUrl(),
                     appExternalConfigVO.getAuthType(),
                     appExternalConfigVO.getAccessToken(),
                     appExternalConfigVO.getUsername(),
                     appExternalConfigVO.getPassword()).getBody();
+            return JsonHelper.unmarshalByJackson(response, ProjectHookDTO.class);
         } catch (Exception e) {
             throw new CommonException("error.projecthook.create", e);
 

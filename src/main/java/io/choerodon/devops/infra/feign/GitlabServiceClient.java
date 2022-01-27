@@ -471,7 +471,7 @@ public interface GitlabServiceClient {
             @RequestBody ProjectHookDTO projectHookDTO);
 
     @PostMapping("/v1/external_projects/hook")
-    ResponseEntity<ProjectHookDTO> createExternalProjectHook(
+    ResponseEntity<String> createExternalProjectHook(
             @RequestParam("projectId") Integer projectId,
             @RequestBody ProjectHookDTO projectHookDTO,
             @RequestParam(value = "gitlabUrl") String gitlabUrl,
