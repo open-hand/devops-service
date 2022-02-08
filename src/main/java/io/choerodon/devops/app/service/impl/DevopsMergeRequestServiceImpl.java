@@ -213,6 +213,9 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         }
 
         Set<Long> finalAppServiceIdsToSearch = appServiceIdsToSearch;
+        if (CollectionUtils.isEmpty(finalAppServiceIdsToSearch)) {
+            return new Page<>();
+        }
         Page<MergeRequestVO> mergeRequestVOPage = PageHelper.doPage(pageRequest, () -> devopsMergeRequestMapper.listMergeRequestToBeChecked(projectId, finalAppServiceIdsToSearch, param));
         Set<Long> gitlabUserIds = new HashSet<>();
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
