@@ -205,7 +205,8 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
             Set<Long> idSet = memberPrivilegeViewDTOMap.keySet();
             for (Long id : idSet) {
-                if (memberPrivilegeViewDTOMap.get(id).getAccessLevel() > 20) {
+                MemberPrivilegeViewDTO memberPrivilegeViewDTO = memberPrivilegeViewDTOMap.get(id);
+                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
                     appServiceIdsToSearch.add(id);
                 }
             }
