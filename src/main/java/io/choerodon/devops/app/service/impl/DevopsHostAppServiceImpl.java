@@ -247,8 +247,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
             appFile = workDir + appFileName;
-            downloadCommand = HostDeployUtil.genDownloadCommand("none",
-                    "none",
+            downloadCommand = HostDeployUtil.genDownloadCommand(null,
+                    null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
                     workDir,
                     appFile);

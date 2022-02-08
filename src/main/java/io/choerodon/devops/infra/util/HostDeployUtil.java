@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -65,7 +66,7 @@ public class HostDeployUtil {
 
 
     public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String workingPath, String appFile) {
-        if (!StringUtils.isEmpty(pullUserId) && !StringUtils.isEmpty(pullUserPassword)) {
+        if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
             return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
             return String.format(FILE_DOWNLOAD_COMMAND, appFile, downloadUrl);
