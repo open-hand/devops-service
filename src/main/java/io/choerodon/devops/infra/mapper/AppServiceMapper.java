@@ -221,5 +221,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceSimpleVO> listByProjectIdsAndCodes(@Param("projectIds") List<Long> projectIds, @Param("codes") List<String> codes);
 
     List<AppServiceRepVO> queryApplicationCenter(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("type") String type, @Param("params") String params);
+
+    Set<Long> listAllIdsByProjectId(@Param("projectId") Long projectId);
 }
 

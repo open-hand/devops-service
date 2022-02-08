@@ -721,7 +721,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Page<AppServiceRepVO> destination = new Page<>();
         BeanUtils.copyProperties(applicationServiceDTOS, destination, "content");
-        if (applicationServiceDTOS.getContent() != null) {
+        if (!ObjectUtils.isEmpty(applicationServiceDTOS.getContent())) {
             List<AppServiceDTO> appServiceDTOList = applicationServiceDTOS.getContent();
             List<Long> userIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
             userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
@@ -3932,5 +3932,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listProjectMembersAppServiceByActiveOrderByTargetAppServiceId(targetProjectId, targetAppServiceId, appServiceIds, userId, param));
         }
         return ConvertUtils.convertPage(appServiceDTOPage, AppServiceVO.class);
+    }
+
+    @Override
+    public Set<Long> listAllIdsByProjectId(Long projectId) {
+        return appServiceMapper.listAllIdsByProjectId(projectId);
     }
 }

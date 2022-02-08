@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.*;
 import java.util.function.Function;
@@ -23,6 +24,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.api.vo.MergeRequestVO;
+import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;
@@ -37,6 +39,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.enums.MergeRequestState;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
@@ -69,6 +72,8 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
 
     @Override
     public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
@@ -193,7 +198,21 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
 
     @Override
     public Page<MergeRequestVO> getMergeRequestToBeChecked(Long projectId, Set<Long> appServiceIdsToSearch, String param, PageRequest pageRequest) {
-        Page<MergeRequestVO> mergeRequestVOPage = PageHelper.doPage(pageRequest, () -> devopsMergeRequestMapper.listMergeRequestToBeChecked(projectId, appServiceIdsToSearch, param));
+        // 如果没有指定应用服务，那么查出当前项目下权限大于20的应用
+        if (CollectionUtils.isEmpty(appServiceIdsToSearch)) {
+            appServiceIdsToSearch = new HashSet<>();
+            Set<Long> appServiceIds = applicationService.listAllIdsByProjectId(projectId);
+            Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
+            Set<Long> idSet = memberPrivilegeViewDTOMap.keySet();
+            for (Long id : idSet) {
+                if (memberPrivilegeViewDTOMap.get(id).getAccessLevel() > 20) {
+                    appServiceIdsToSearch.add(id);
+                }
+            }
+        }
+
+        Set<Long> finalAppServiceIdsToSearch = appServiceIdsToSearch;
+        Page<MergeRequestVO> mergeRequestVOPage = PageHelper.doPage(pageRequest, () -> devopsMergeRequestMapper.listMergeRequestToBeChecked(projectId, finalAppServiceIdsToSearch, param));
         Set<Long> gitlabUserIds = new HashSet<>();
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
             if (mergeRequestVO.getAuthorId() != null) {
@@ -213,7 +232,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
             String mergeRequestUrl = String.format("%s%s%s-%s/%s/merge_requests/%s",
-                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getCode(), mergeRequestVO.getAppServiceCode(),mergeRequestVO.getGitlabMergeRequestId());
+                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getCode(), mergeRequestVO.getAppServiceCode(), mergeRequestVO.getGitlabMergeRequestId());
             mergeRequestVO.setIamAuthor(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAuthorId())), UserVO.class));
             mergeRequestVO.setIamAssignee(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAssigneeId())), UserVO.class));
             mergeRequestVO.setGitlabUrl(mergeRequestUrl);
