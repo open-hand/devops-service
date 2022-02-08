@@ -2660,6 +2660,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                                 TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                                 pageable.getSort() == null,
                                 userId,
+                                includeExternal,
                                 excludeFailed));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
@@ -2667,6 +2668,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
                         pageable.getSort() == null,
                         userId,
+                        includeExternal,
                         excludeFailed);
             }
         }

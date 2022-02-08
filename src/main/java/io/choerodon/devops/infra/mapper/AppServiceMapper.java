@@ -113,6 +113,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                      @Param("params") List<String> params,
                                                      @Param("doSort") Boolean doSort,
                                                      @Param("userId") Long userId,
+                                                     @Param("includeExternal") Boolean includeExternal,
                                                      @Param("excludeFailed") Boolean excludeFailed);
 
 
