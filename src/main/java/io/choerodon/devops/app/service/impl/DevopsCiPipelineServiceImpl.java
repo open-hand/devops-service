@@ -33,6 +33,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.*;
@@ -823,14 +824,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
             appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             //如果是项目成员，需要developer及以上的权限
-            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getTenantId(), projectId, userId);
             // 添加外部应用服务
             appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));
             if (CollectionUtils.isEmpty(appServiceIds)) {
