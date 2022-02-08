@@ -206,7 +206,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             Set<Long> idSet = memberPrivilegeViewDTOMap.keySet();
             for (Long id : idSet) {
                 MemberPrivilegeViewDTO memberPrivilegeViewDTO = memberPrivilegeViewDTOMap.get(id);
-                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
+                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
                     appServiceIdsToSearch.add(id);
                 }
             }
