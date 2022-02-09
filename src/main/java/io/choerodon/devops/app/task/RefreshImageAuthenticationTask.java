@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobTask;
+import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants;
 import io.choerodon.devops.app.service.AgentCommandService;
@@ -47,6 +49,7 @@ public class RefreshImageAuthenticationTask {
 
 
     @JobTask(maxRetryCount = 3, code = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证")
+    @TimedTask(name = REFRESH_IMAGE_AUTH, description = "修复流水线镜像", oneExecution = true, params = {}, cronExpression = "0 0 1 * * ?")
     public void refreshImageAuth(Map<String, Object> map) {
         try {
             //1.查询默认仓库的secret

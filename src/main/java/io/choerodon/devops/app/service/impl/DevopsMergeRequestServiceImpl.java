@@ -206,13 +206,16 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             Set<Long> idSet = memberPrivilegeViewDTOMap.keySet();
             for (Long id : idSet) {
                 MemberPrivilegeViewDTO memberPrivilegeViewDTO = memberPrivilegeViewDTOMap.get(id);
-                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
+                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
                     appServiceIdsToSearch.add(id);
                 }
             }
         }
 
         Set<Long> finalAppServiceIdsToSearch = appServiceIdsToSearch;
+        if (CollectionUtils.isEmpty(finalAppServiceIdsToSearch)) {
+            return new Page<>();
+        }
         Page<MergeRequestVO> mergeRequestVOPage = PageHelper.doPage(pageRequest, () -> devopsMergeRequestMapper.listMergeRequestToBeChecked(projectId, finalAppServiceIdsToSearch, param));
         Set<Long> gitlabUserIds = new HashSet<>();
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
