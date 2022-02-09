@@ -17,6 +17,7 @@ do_install() {
   lsb_dist=$( get_distribution )
   lsb_dist="$(echo "$lsb_dist" | tr '[:upper:]' '[:lower:]')"
   # Run setup for each distro accordingly
+  export LANG=en_US.UTF-8
   case "$lsb_dist" in
     ubuntu|debian|raspbian)
         sudo apt-get update
