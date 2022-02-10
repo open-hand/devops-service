@@ -49,7 +49,7 @@ public class RefreshImageAuthenticationTask {
 
 
     @JobTask(maxRetryCount = 3, code = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证")
-    @TimedTask(name = REFRESH_IMAGE_AUTH, description = "修复流水线镜像", oneExecution = true, params = {}, cronExpression = "0 0 1 * * ?")
+    @TimedTask(name = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证", oneExecution = true, params = {}, cronExpression = "0 0 1 * * ?")
     public void refreshImageAuth(Map<String, Object> map) {
         try {
             //1.查询默认仓库的secret
