@@ -33,10 +33,26 @@ public class DevopsDataFixController {
     }
 
     @Permission(level = ResourceLevel.SITE)
-    @ApiOperation(value = "主机部署")
+    @ApiOperation(value = "修复maven发布数据")
     @PostMapping("/v_1_2_pipeline_data_maven_publish_fix")
     public ResponseEntity<Void> mavenPublishFix() {
         devopsCheckLogService.pipelineDataMavenPublishFix();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "流水线结构调整后，数据修复任务")
+    @PostMapping("/pipeline_structure_fix")
+    public ResponseEntity<Void> pipelineStructureFix() {
+        devopsCheckLogService.pipelineStructureFix();
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.SITE)
+    @ApiOperation(value = "修复sonar镜像数据")
+    @PostMapping("/pipeline_sonar_image_fix")
+    public ResponseEntity<Void> pipelineSonarImageFix() {
+        devopsCheckLogService.pipelineSonarImageAndTemplateFix();
         return ResponseEntity.noContent().build();
     }
 }

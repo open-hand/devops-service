@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.google.common.base.Joiner;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.collections4.ListUtils;
@@ -44,7 +44,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
-    public static final String FIX_PIPELINE_IMAGE_SCAN_DATA = "fixPipelineImageScanData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
     private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
@@ -122,16 +121,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_DATA:
                 pipelineDataFix();
                 devopsCiPipelineDataFix();
-                break;
-            case FIX_PIPELINE_IMAGE_SCAN_DATA:
                 pipelineDataImageScanFix();
                 break;
             case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
                 pipelineDataMavenPublishFix();
-                break;
-            case PIPELINE_SONAR_IMAGE_FIX:
-                pipelineSonarImageFix();
-                pipelineSonarTemplateImageFix();
                 break;
             default:
                 LOGGER.info("version not matched");
@@ -226,6 +219,23 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
         });
 
+    }
+
+    @Override
+    public void pipelineStructureFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix pipeline structure >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        pipelineDataFix();
+        devopsCiPipelineDataFix();
+        pipelineDataImageScanFix();
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>enc fix pipeline structure >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+    }
+
+    @Override
+    public void pipelineSonarImageAndTemplateFix() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix pipeline sonar image and template >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        pipelineSonarImageFix();
+        pipelineSonarTemplateImageFix();
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>enc fix pipeline sonar image and template >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
 
     private void pipelineDataImageScanFix() {

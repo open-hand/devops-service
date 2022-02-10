@@ -13,4 +13,11 @@ public interface DevopsCheckLogService {
 
     void pipelineDataMavenPublishFix();
 
+    /**
+     * 流水线结构调整数据修复
+     */
+    void pipelineStructureFix();
+
+    void pipelineSonarImageAndTemplateFix();
+
 }
