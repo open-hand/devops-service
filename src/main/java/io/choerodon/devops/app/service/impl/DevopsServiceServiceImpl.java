@@ -1263,7 +1263,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1Service v1Service = json.deserialize(detailsJson, V1Service.class);
 
