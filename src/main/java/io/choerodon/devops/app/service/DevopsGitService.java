@@ -233,4 +233,6 @@ public interface DevopsGitService {
     List<GroupDTO> listOwnedGroupExpectCurrent(Long projectId, String search);
 
     Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest);
+
+    Page<BranchVO> pageBranchBasicInfoByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params);
 }

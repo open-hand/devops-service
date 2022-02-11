@@ -60,7 +60,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_content.groovy') {
         }
     }
 
-    createIndex(indexName: "idx_pipeline_id", tableName: "devops_ci_content") {
-        column(name: "ci_pipeline_id")
+    changeSet(author: 'wanghao', id: '2021-11-30-add-index') {
+        createIndex(indexName: "idx_pipeline_id", tableName: "devops_ci_content") {
+            column(name: "ci_pipeline_id")
+        }
     }
+
 }

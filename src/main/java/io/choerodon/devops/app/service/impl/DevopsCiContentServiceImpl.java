@@ -82,17 +82,29 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         // 需要重新生成yaml的情况有两种
         // 1. 流水线有修改
         // 2. devops的渲染规则有变动
-        if (devopsCiContentDTO == null
-                || devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
+        if (devopsCiContentDTO == null) {
+            ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
+
+            // 缓存配置
+            devopsCiContentDTO = new DevopsCiContentDTO();
+            devopsCiContentDTO.setCiContentFile(ciContent);
+            devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
+            devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
+            MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,
+                    devopsCiContentDTO,
+                    "error.save.content.failed");
+        } else if (devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
                 || devopsCiContentDTO.getDevopsDefaultRuleNumber() < defaultRuleNumber) {
             ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
-        } else {
-            ciContent = devopsCiContentDTO.getCiContentFile();
+
+            devopsCiContentDTO.setCiContentFile(ciContent);
             devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiContentMapper,
                     devopsCiContentDTO,
                     "error.update.content.failed");
+        } else {
+            ciContent = devopsCiContentDTO.getCiContentFile();
         }
 
         Map<String, String> params = new HashMap<>();

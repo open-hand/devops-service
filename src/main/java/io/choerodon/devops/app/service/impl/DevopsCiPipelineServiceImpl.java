@@ -744,7 +744,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return new HashMap<>();
         }
         List<DevopsCiJobVO> devopsCiJobVOS = ConvertUtils.convertList(devopsCiJobDTOS, DevopsCiJobVO.class);
-//        devopsCiJobVOS.forEach(this::processBeforeQueryJob);
         // 封装CI对象
         List<Long> jobIds = devopsCiJobVOS.stream().map(DevopsCiJobVO::getId).collect(Collectors.toList());
         List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobIds(jobIds);
@@ -763,7 +762,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private void fillEditPipelinePermission(Long projectId, CiCdPipelineVO ciCdPipelineVO, AppServiceDTO appServiceDTO) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         //当前用户是否对这条流水线有修改的权限
         Set<Long> memberAppServiceIds = appServiceService.getMemberAppServiceIdsByAccessLevel(projectDTO.getOrganizationId(), projectId, DetailsHelper.getUserDetails().getUserId(), AccessLevel.DEVELOPER.value, appServiceDTO.getId());
         if (!CollectionUtils.isEmpty(memberAppServiceIds) && memberAppServiceIds.contains(appServiceDTO.getId())) {
@@ -781,7 +780,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
         ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
         ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
-        ciCdPipelineVO.setAppServiceName(appServiceDTO.getName());
         return appServiceDTO;
     }
 
@@ -790,22 +788,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, "error.pipeline.not.exist", pipelineId);
         return ConvertUtils.convertObject(ciCdPipelineDTO, CiCdPipelineVO.class);
     }
-
-//    private void processBeforeQueryJob(DevopsCiJobVO devopsCiJobVO) {
-//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-//            // 反序列化
-//            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-//                // 将script字段加密
-//                ciConfigVO.getConfig().stream().filter(e -> !Objects.isNull(e.getScript())).forEach(c -> c.setScript(Base64Util.getBase64EncodedString(c.getScript())));
-//                // 序列化
-//                devopsCiJobVO.setMetadata(JsonHelper.singleQuoteWrapped(JSONObject.toJSONString(ciConfigVO)));
-//            }
-//        } else if (JobTypeEnum.CUSTOM.value().equals(devopsCiJobVO.getType())) {
-//            // 加密自定义任务的元数据
-//            devopsCiJobVO.setMetadata(Base64Util.getBase64EncodedString(devopsCiJobVO.getMetadata()));
-//        }
-//    }
 
     @Override
     public CiCdPipelineDTO queryByAppSvcId(Long id) {

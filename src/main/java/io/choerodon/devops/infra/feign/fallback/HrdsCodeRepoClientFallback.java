@@ -20,7 +20,7 @@ import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
 @Component
 public class HrdsCodeRepoClientFallback implements HrdsCodeRepoClient {
     @Override
-    public ResponseEntity<List<MemberPrivilegeViewDTO>> selfPrivilege(Long organizationId, Long projectId, Set<Long> repositoryIds) {
+    public ResponseEntity<String> selfPrivilege(Long organizationId, Long projectId, Set<Long> repositoryIds) {
         throw new CommonException("error.get.gitlab.accessLevel");
     }
 

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,7 @@ import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.HrdsCodeRepoClient;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * @author scp
@@ -56,11 +58,11 @@ public class HrdsCodeRepoClientOperator {
             organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
-        ResponseEntity<List<MemberPrivilegeViewDTO>> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);
+        ResponseEntity<String> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);
         if (response == null) {
             throw new CommonException("error.member.privilege.list");
         }
-        return response.getBody();
+        return JsonHelper.unmarshalByJackson(response.getBody(), new TypeReference<List<MemberPrivilegeViewDTO>>() {
+        });
     }
-
 }

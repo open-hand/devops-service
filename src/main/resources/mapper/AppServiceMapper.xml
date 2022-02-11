@@ -77,6 +77,9 @@
         FROM devops_app_service da
         <where>
             da.project_id = #{projectId}
+            <if test="!includeExternal">
+                AND da.external_config_id IS NULL
+            </if>
             <if test="isActive != null">
                 <if test="isActive">
                     AND da.is_active = TRUE
@@ -1010,5 +1013,10 @@
         FROM devops_app_service da
         WHERE da.is_active
         AND da.project_id=#{projectId,jdbcType=BIGINT} and da.external_config_id is not null
+    </select>
+
+    <select id="listAllIdsByProjectId" resultType="java.lang.Long">
+        SELECT id FROM devops_app_service
+        WHERE project_id=#{projectId}
     </select>
 </mapper>

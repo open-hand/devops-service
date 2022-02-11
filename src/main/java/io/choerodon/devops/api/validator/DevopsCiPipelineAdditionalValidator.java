@@ -80,21 +80,24 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     });
                 });
-        ciCdPipelineVO.getDevopsCdStageVOS()
-                .stream()
-                .forEach(stage -> {
-                    if (CollectionUtils.isEmpty(stage.getJobList())) {
-                        return;
-                    }
+        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+            ciCdPipelineVO.getDevopsCdStageVOS()
+                    .stream()
+                    .forEach(stage -> {
+                        if (CollectionUtils.isEmpty(stage.getJobList())) {
+                            throw new CommonException("error.cd.job.is.empty", stage.getName());
+                        }
 
-                    // 校验stage名称唯一
-                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+                        // 校验stage名称唯一
+                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
-                    stage.getJobList().forEach(job -> {
-                        validateTriggerRefRegex(job);
-                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        stage.getJobList().forEach(job -> {
+                            validateTriggerRefRegex(job);
+                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        });
                     });
-                });
+        }
+
     }
 
     private static void validateJobStep(DevopsCiJobVO job) {
