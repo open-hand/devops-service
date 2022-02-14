@@ -39,7 +39,12 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void uploadUnitTest(Long gitlabPipelineId, String jobName, String token, String type, MultipartFile file) {
+    public void uploadUnitTest(Long gitlabPipelineId,
+                               String jobName,
+                               String token,
+                               String type,
+                               MultipartFile file,
+                               DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
         if (appServiceDTO == null) {
             throw new CommonException("error.app.svc.not.found");
@@ -47,7 +52,9 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
         Long appServiceId = appServiceDTO.getId();
         // 解析测试报告
         CiUnitTestReportHandler handlerByType = ciUnitTestReportOperator.getHandlerByType(type);
-        DevopsCiUnitTestResultVO devopsCiUnitTestResultVO = handlerByType.analyseReport(file);
+        if (devopsCiUnitTestResultVO == null || devopsCiUnitTestResultVO.getTests() == null) {
+            devopsCiUnitTestResultVO = handlerByType.analyseReport(file);
+        }
 
         // 上传测试报告
         String reportUrl = handlerByType.uploadReport(appServiceId, gitlabPipelineId, jobName, type, file);
