@@ -345,10 +345,24 @@ function uploadNodeJsUnitTestReport() {
     uploadUnitTestReport node_js_unit_test report.zip
 }
 
+# 上传通用单元测试报告
+# $1 测试报告路径
+# $2 测试用例总数
+# $3 测试用例通过数
+# $4 测试用例失败数
+# $5 测试用例跳过数
+function uploadGeneralUnitTestReport() {
+    uploadUnitTestReport general_unit_test $1 $2 $3 $4 $5
+}
+
 
 # 上传测试报告
 # $1 测试报告类型
 # $2 测试报告路径
+# $3 测试用例总数
+# $4 测试用例通过数
+# $5 测试用例失败数
+# $6 测试用例跳过数
 function uploadUnitTestReport() {
     result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
@@ -357,6 +371,10 @@ function uploadUnitTestReport() {
     -F "job_name=${CI_JOB_NAME}" \
     -F "type=$1" \
     -F "file=@$2" \
+    -F "tests=@$3" \
+    -F "passes=@$4" \
+    -F "failures=@$5" \
+    -F "skipped=@$6" \
     "${CHOERODON_URL}/devops/ci/upload_unit_test" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
