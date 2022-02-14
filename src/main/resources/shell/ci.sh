@@ -371,10 +371,10 @@ function uploadUnitTestReport() {
     -F "job_name=${CI_JOB_NAME}" \
     -F "type=$1" \
     -F "file=@$2" \
-    -F "tests=@$3" \
-    -F "passes=@$4" \
-    -F "failures=@$5" \
-    -F "skipped=@$6" \
+    -F "tests=$3" \
+    -F "passes=$4" \
+    -F "failures=$5" \
+    -F "skipped=$6" \
     "${CHOERODON_URL}/devops/ci/upload_unit_test" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
