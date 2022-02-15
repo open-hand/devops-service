@@ -23,7 +23,7 @@ public enum HostCommandEnum {
     START_DOCKER("start_docker"),
     STOP_DOCKER("stop_docker"),
     REMOVE_DOCKER("remove_docker"),
-    DEPLOY_INSTANCE("deploy_instance"),
+    OPERATE_INSTANCE("operate_instance"),
     KILL_INSTANCE("kill_instance"),
     KILL_MIDDLEWARE("kill_middleware"),
     INIT_AGENT("init_agent"),

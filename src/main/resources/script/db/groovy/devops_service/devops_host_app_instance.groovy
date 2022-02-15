@@ -59,10 +59,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance.groovy') {
         dropColumn(columnName: "ports", tableName: "devops_host_app_instance")
     }
 
-    changeSet(author: 'lihao',id: '2022-02-15-add-column'){
+    changeSet(author: 'lihao', id: '2022-02-15-add-column') {
         addColumn(tableName: 'devops_host_app_instance') {
             column(name: "kill_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
-            column(name: "health_prob",type: "TEXT",remarks: "健康探针",afterColumn: "kill_command")
+            column(name: "health_prob", type: "TEXT", remarks: "健康探针", afterColumn: "kill_command")
+            column(name: "ready", type: "tinyint", remarks: "是否继续", defaultValue: "0", afterColumn: "health_prob")
         }
     }
 }

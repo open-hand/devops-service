@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -36,8 +33,6 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
     private String code;
     @ApiModelProperty("部署来源")
     private String sourceType;
-    @ApiModelProperty("进程状态")
-    private String status;
     @ApiModelProperty("来源配置")
     private String sourceConfig;
     @ApiModelProperty("前置命令")
@@ -59,7 +54,9 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
     @ApiModelProperty("健康探针")
     private String healthProb;
     @ApiModelProperty("操作类型 create/update")
+    @Transient
     private String operate;
+
     public DevopsHostAppInstanceDTO() {
     }
 
@@ -122,14 +119,6 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getSourceConfig() {
