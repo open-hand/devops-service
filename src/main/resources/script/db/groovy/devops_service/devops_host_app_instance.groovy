@@ -32,9 +32,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance.groovy') {
 
             column(name: 'ports', type: 'VARCHAR(128)', remarks: '占用端口')
 
-            column(name: 'group_id', type:  'varchar(512)', remarks: 'groupId')
-            column(name: 'artifact_id', type:  'varchar(512)', remarks: 'artifactId')
-            column(name: 'version', type:  'varchar(512)', remarks: 'version')
+            column(name: 'group_id', type: 'varchar(512)', remarks: 'groupId')
+            column(name: 'artifact_id', type: 'varchar(512)', remarks: 'artifactId')
+            column(name: 'version', type: 'varchar(512)', remarks: 'version')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -51,6 +51,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance.groovy') {
         }
         createIndex(indexName: "idx_project_id", tableName: "devops_host_app_instance") {
             column(name: "project_id")
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2022-02-15-drop-column') {
+        dropColumn(columnName: "pid", tableName: "devops_host_app_instance")
+        dropColumn(columnName: "ports", tableName: "devops_host_app_instance")
+    }
+
+    changeSet(author: 'lihao',id: '2022-02-15-add-column'){
+        addColumn(tableName: 'devops_host_app_instance') {
+            column(name: "kill_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
+            column(name: "health_prob",type: "TEXT",remarks: "健康探针",afterColumn: "kill_command")
         }
     }
 }

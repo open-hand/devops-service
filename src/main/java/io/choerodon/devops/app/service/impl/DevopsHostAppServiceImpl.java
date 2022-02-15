@@ -38,7 +38,7 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
-import io.choerodon.devops.infra.dto.repo.JavaDeployDTO;
+import io.choerodon.devops.infra.dto.repo.InstanceDeployOptions;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
 import io.choerodon.devops.infra.enums.AppSourceType;
@@ -187,14 +187,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
-
-            deployObjectKey = new StringBuilder()
-                    .append(nexusRepoId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(groupId)
-                    .append(BaseConstants.Symbol.COLON)
-                    .append(artifactId)
-                    .toString();
         }
 
         // 2.保存记录
@@ -265,14 +257,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         params.put("{{ APP_FILE }}", appFile);
 
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 jarDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
-                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
-                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
+                jarDeployVO.getOperate());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
@@ -283,7 +277,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         // 保存执行记录
-        Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
+        devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 devopsHostCommandDTO.getId(),
@@ -304,7 +298,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -433,23 +427,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Override
     public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
-//        if (queryPipelineReferenceHostApp(projectId, appId) != null) {
-//          throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
-//        }
+        if (queryPipelineReferenceHostApp(projectId, appId) != null) {
+          throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+        }
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(appId);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
-        if (devopsHostAppInstanceDTO.getPid() == null) {
-            if (devopsHostAppDTO != null) {
-                devopsHostAppMapper.deleteByPrimaryKey(appId);
-            }
-            devopsHostAppInstanceService.baseDelete(devopsHostAppInstanceDTO.getId());
-            if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                devopsMiddlewareService.deleteByInstanceId(devopsHostAppInstanceDTO.getId());
-            }
-            return;
-        }
 
         // 走中间件删除逻辑
         if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
@@ -471,10 +454,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
 
-            InstanceProcessInfoVO instanceProcessInfoVO = new InstanceProcessInfoVO();
-            instanceProcessInfoVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            instanceProcessInfoVO.setPid(devopsHostAppInstanceDTO.getPid());
-            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceProcessInfoVO));
+            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+            instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            instanceDeployOptions.setKillCommand(devopsHostAppInstanceDTO.getKillCommand());
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
@@ -558,14 +541,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     appFile);
         }
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 customDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                StringUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPreCommand())),
-                StringUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(customDeployVO.getRunCommand())),
-                StringUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
+                ObjectUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(customDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getHealthProb())),
+                customDeployVO.getOperate());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
@@ -576,7 +561,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         // 保存执行记录
-        Long devopsDeployRecordId = devopsDeployRecordService.saveRecord(
+        devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
                 devopsHostCommandDTO.getId(),
@@ -597,7 +582,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
