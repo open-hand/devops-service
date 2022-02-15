@@ -10,6 +10,7 @@ package io.choerodon.devops.infra.enums;
 public enum DevopsCiStepTypeEnum {
 
     // 单元测试相关
+    GENERAL_UNIT_TEST("general_unit_test"),
     /**
      * Maven单元测试
      */
