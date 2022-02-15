@@ -236,12 +236,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFile;
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
-            appFileName = jarDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+            appFileName = jarDeployVO.getFileInfoVO().getFileName();
             appFile = workDir + appFileName;
             downloadCommand = HostDeployUtil.genDownloadCommand(null,
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
-                    workDir,
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName() + System.currentTimeMillis();
@@ -249,7 +248,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             downloadCommand = HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
-                    workDir,
                     appFile);
         }
         params.put("{{ APP_FILE_NAME }}", appFileName);
@@ -525,7 +523,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
-        String appFileName = customDeployVO.getFileInfoVO().getFileName() + System.currentTimeMillis();
+        String appFileName = customDeployVO.getFileInfoVO().getFileName();
         String appFile = workDir + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", appFileName);
@@ -536,7 +534,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             downloadCommand = HostDeployUtil.genDownloadCommand(null,
                     null,
                     customDeployVO.getFileInfoVO().getUploadUrl(),
-                    workDir,
                     appFile);
         }
 

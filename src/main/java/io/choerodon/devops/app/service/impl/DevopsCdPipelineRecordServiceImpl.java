@@ -660,7 +660,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                         mavenRepoDTOList.get(0).getNePullUserPassword(),
                         c7nNexusComponentDTO.getDownloadUrl(),
-                        workDir,
                         appFile),
                 ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
