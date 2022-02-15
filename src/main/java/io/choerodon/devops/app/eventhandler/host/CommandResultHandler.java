@@ -63,7 +63,7 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsHostAppInstanceDTO.setReady(processInfoVO.getReady());
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         };
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_INSTANCE.value(), deploy_instance);
+        resultHandlerMap.put(HostCommandEnum.OPERATE_INSTANCE.value(), deploy_instance);
         resultHandlerMap.put(HostCommandEnum.DEPLOY_MIDDLEWARE.value(), deploy_instance);
 
 //        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {

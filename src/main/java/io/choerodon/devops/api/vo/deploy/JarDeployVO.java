@@ -42,7 +42,7 @@ public class JarDeployVO {
     @ApiModelProperty("健康探针")
     private String healthProb;
     @ApiModelProperty("操作类型 create/update")
-    private String operate;
+    private String operation;
 
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
@@ -197,11 +197,11 @@ public class JarDeployVO {
         this.killCommand = killCommand;
     }
 
-    public String getOperate() {
-        return operate;
+    public String getOperation() {
+        return operation;
     }
 
-    public void setOperate(String operate) {
-        this.operate = operate;
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 }

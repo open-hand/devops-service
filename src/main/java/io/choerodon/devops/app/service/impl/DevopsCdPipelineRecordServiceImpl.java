@@ -454,10 +454,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
-                devopsCdHostDeployInfoDTO.getOperate());
+                devopsCdHostDeployInfoDTO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
@@ -491,7 +491,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
@@ -667,9 +667,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
-                jarDeployVO.getOperate());
+                jarDeployVO.getOperation());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
@@ -704,7 +704,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 

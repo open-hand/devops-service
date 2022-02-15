@@ -26,7 +26,6 @@ import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
@@ -266,10 +265,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
-                jarDeployVO.getOperate());
+                jarDeployVO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
@@ -296,7 +295,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
@@ -428,7 +427,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
-          throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
         List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
@@ -550,10 +549,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getPostCommand())),
                 ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getKillCommand())),
                 ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(customDeployVO.getHealthProb())),
-                customDeployVO.getOperate());
+                customDeployVO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
         devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
@@ -580,7 +579,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
@@ -591,6 +590,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+        throw new CommonException("tet");
     }
 
     @Override

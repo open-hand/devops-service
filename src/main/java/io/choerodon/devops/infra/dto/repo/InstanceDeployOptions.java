@@ -27,12 +27,12 @@ public class InstanceDeployOptions {
     @ApiModelProperty("健康探针")
     private String healthProb;
     @ApiModelProperty("操作类型 create/update")
-    private String operate;
+    private String operation;
 
     public InstanceDeployOptions() {
     }
 
-    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operate) {
+    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operation) {
         this.instanceName = instanceName;
         this.instanceId = instanceId;
         this.downloadCommand = downloadCommand;
@@ -41,7 +41,7 @@ public class InstanceDeployOptions {
         this.postCommand = postCommand;
         this.killCommand = killCommand;
         this.healthProb = healthProb;
-        this.operate = operate;
+        this.operation = operation;
     }
 
     public String getDownloadCommand() {
@@ -108,11 +108,11 @@ public class InstanceDeployOptions {
         this.healthProb = healthProb;
     }
 
-    public String getOperate() {
-        return operate;
+    public String getOperation() {
+        return operation;
     }
 
-    public void setOperate(String operate) {
-        this.operate = operate;
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 }
