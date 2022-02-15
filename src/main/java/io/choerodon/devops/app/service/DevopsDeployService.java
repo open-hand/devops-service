@@ -11,15 +11,6 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
  * @since 2020/10/19 16:04
  */
 public interface DevopsDeployService {
-
-    /**
-     * 主机部署
-     *
-     * @param projectId
-     * @param deployConfigVO
-     */
-    void hostDeploy(Long projectId, DeployConfigVO deployConfigVO);
-
     /**
      * 按顺序部署hzero应用
      * @param projectId

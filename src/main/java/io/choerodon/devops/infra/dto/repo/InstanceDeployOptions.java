@@ -9,14 +9,11 @@ import io.swagger.annotations.ApiModelProperty;
  * @author wanghao
  * @Date 2021/7/1 10:24
  */
-public class JavaDeployDTO {
+public class InstanceDeployOptions {
     @ApiModelProperty("实例名称")
     private String instanceName;
     @ApiModelProperty("当前部署实例id")
     private String instanceId;
-    @ApiModelProperty("当前进程id，不为空则表示更新，agent会先kill 进程再部署")
-    private String pid;
-
     @ApiModelProperty("下载命令")
     private String downloadCommand;
     @ApiModelProperty("前置命令")
@@ -25,16 +22,26 @@ public class JavaDeployDTO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("操作类型 create/update")
+    private String operate;
 
+    public InstanceDeployOptions() {
+    }
 
-    public JavaDeployDTO(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String pid) {
+    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operate) {
         this.instanceName = instanceName;
         this.instanceId = instanceId;
         this.downloadCommand = downloadCommand;
         this.preCommand = preCommand;
         this.runCommand = runCommand;
         this.postCommand = postCommand;
-        this.pid = pid;
+        this.killCommand = killCommand;
+        this.healthProb = healthProb;
+        this.operate = operate;
     }
 
     public String getDownloadCommand() {
@@ -69,14 +76,6 @@ public class JavaDeployDTO {
         this.postCommand = postCommand;
     }
 
-    public String getPid() {
-        return pid;
-    }
-
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
     public String getInstanceId() {
         return instanceId;
     }
@@ -91,5 +90,29 @@ public class JavaDeployDTO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getOperate() {
+        return operate;
+    }
+
+    public void setOperate(String operate) {
+        this.operate = operate;
     }
 }

@@ -34,10 +34,6 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
     private Long appId;
     @ApiModelProperty("实例编码")
     private String code;
-    @ApiModelProperty("进程id")
-    private String pid;
-    @ApiModelProperty("占用端口")
-    private String ports;
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("进程状态")
@@ -56,7 +52,14 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
     private String artifactId;
     @ApiModelProperty("version")
     private String version;
-
+    @ApiModelProperty("应用是否就绪")
+    private Boolean ready;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("操作类型 create/update")
+    private String operate;
     public DevopsHostAppInstanceDTO() {
     }
 
@@ -71,7 +74,6 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
         this.runCommand = runCommand;
         this.postCommand = postCommand;
     }
-
 
 
     public Long getId() {
@@ -112,22 +114,6 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public String getPid() {
-        return pid;
-    }
-
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
     }
 
     public String getSourceType() {
@@ -200,5 +186,37 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Boolean getReady() {
+        return ready;
+    }
+
+    public void setReady(Boolean ready) {
+        this.ready = ready;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getOperate() {
+        return operate;
+    }
+
+    public void setOperate(String operate) {
+        this.operate = operate;
     }
 }

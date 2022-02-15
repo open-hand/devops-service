@@ -550,7 +550,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         MiddlewareHostCommandVO middlewareHostCommandVO = new MiddlewareHostCommandVO();
         middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
         middlewareHostCommandVO.setShell(uninstallShell);
-        middlewareHostCommandVO.setPid(devopsHostAppInstanceDTO.getPid());
 
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostIdForConnection));

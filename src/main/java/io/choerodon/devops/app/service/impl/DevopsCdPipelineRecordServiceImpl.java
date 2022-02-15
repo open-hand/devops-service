@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
@@ -446,14 +445,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
+                devopsCdHostDeployInfoDTO.getOperate());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
@@ -492,7 +493,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -528,7 +529,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
             return;
         }
-
 
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
@@ -654,7 +654,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
         params.put("{{ APP_FILE }}", appFile);
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
@@ -662,11 +662,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         c7nNexusComponentDTO.getDownloadUrl(),
                         workDir,
                         appFile),
-                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
-                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
-                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
-
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
+                jarDeployVO.getOperate());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -705,7 +706,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -1116,7 +1117,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             cdAuto.setDeployType(ENV);
                             cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
                             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId() ,devopsDeployAppCenterEnvDTO.getObjectId());
+                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId(), devopsDeployAppCenterEnvDTO.getObjectId());
                                 if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
                                     cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                     cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());

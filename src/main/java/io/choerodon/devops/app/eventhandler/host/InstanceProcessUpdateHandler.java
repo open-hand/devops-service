@@ -38,21 +38,19 @@ public class InstanceProcessUpdateHandler implements HostMsgHandler {
         if (CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
             return;
         }
-        Map<Long, DevopsHostAppInstanceDTO> devopsJavaInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getId, Function.identity()));
+        Map<Long, DevopsHostAppInstanceDTO> devopsInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getId, Function.identity()));
 
         // 处理更新的数据
         List<InstanceProcessInfoVO> updateProcessInfos = instanceProcessUpdatePayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(updateProcessInfo -> {
-                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsJavaInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
+                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsInstanceDTOMap.get(Long.valueOf(updateProcessInfo.getInstanceId()));
                 if (devopsHostAppInstanceDTO != null) {
-                    devopsHostAppInstanceDTO.setStatus(updateProcessInfo.getStatus());
-                    devopsHostAppInstanceDTO.setPorts(updateProcessInfo.getPorts());
+                    devopsHostAppInstanceDTO.setReady(updateProcessInfo.getReady());
                     devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
                 }
             });
         }
-
     }
 
     @Override

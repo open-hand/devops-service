@@ -282,7 +282,7 @@ public class DevopsHostController {
             HttpServletResponse res) {
         return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+                .orElseThrow(() -> new CommonException("error.devops.host.sh.download"));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
