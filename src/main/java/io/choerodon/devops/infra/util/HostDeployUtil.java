@@ -65,7 +65,7 @@ public class HostDeployUtil {
     }
 
 
-    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String workingPath, String appFile) {
+    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
         if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
             return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
