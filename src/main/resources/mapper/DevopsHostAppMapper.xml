@@ -10,9 +10,21 @@
     </select>
 
     <select id="listByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*, dh.name as host_name,
-               dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
-               dhai.pre_command, dhai.run_command, dhai.post_command, dhai.ready, dhai.group_id, dhai.artifact_id, dhai.version,dhai.id as instanceId
+        select dha.*,
+               dh.name as host_name,
+               dhai.app_id,
+               dhai.code,
+               dhai.source_type,
+               dhai.source_config,
+               dhai.pre_command,
+               dhai.run_command,
+               dhai.post_command,
+               dhai.kill_command,
+               dhai.ready,
+               dhai.group_id,
+               dhai.artifact_id,
+               dhai.version,
+               dhai.id as instanceId
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_app_instance dhai on dhai.app_id = dha.id
@@ -39,18 +51,44 @@
     </delete>
 
     <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*, dh.name as host_name,
-               dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
-               dhai.pre_command, dhai.run_command, dhai.post_command, dhai.ready, dhai.group_id, dhai.artifact_id, dhai.version,dhai.id as instanceId
+        select dha.*,
+               dh.name as host_name,
+               dhai.app_id,
+               dhai.code,
+               dhai.source_type,
+               dhai.source_config,
+               dhai.pre_command,
+               dhai.run_command,
+               dhai.post_command,
+               dhai.kill_command,
+               dhai.health_prob,
+               dhai.ready,
+               dhai.group_id,
+               dhai.artifact_id,
+               dhai.version,
+               dhai.id as instanceId
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_app_instance dhai on dhai.app_id = dha.id
         where dha.id = #{id}
     </select>
     <select id="listOwnedByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*, dh.name as host_name,
-        dhai.app_id, dhai.code, dhai.source_type, dhai.source_config,
-        dhai.pre_command, dhai.run_command, dhai.post_command, dhai.ready, dhai.group_id, dhai.artifact_id, dhai.version,dhai.id as instanceId
+        select dha.*,
+               dh.name as host_name,
+               dhai.app_id,
+               dhai.code,
+               dhai.source_type,
+               dhai.source_config,
+               dhai.pre_command,
+               dhai.run_command,
+               dhai.post_command,
+               dhai.kill_command,
+               dhai.health_prob,
+               dhai.ready,
+               dhai.group_id,
+               dhai.artifact_id,
+               dhai.version,
+               dhai.id as instanceId
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
