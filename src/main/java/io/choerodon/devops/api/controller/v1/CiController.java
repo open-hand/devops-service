@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -218,8 +219,10 @@ public class CiController {
             @ApiParam(value = "token", required = true)
             @RequestParam(value = "type") String type,
             @ApiParam(value = "测试报告", required = true)
-            @RequestParam MultipartFile file) {
-        devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file);
+            @RequestParam MultipartFile file,
+            @ApiParam(value = "测试结果（如果传了则使用用户上传的结果）")
+                    DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
+        devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
         return ResponseEntity.ok().build();
     }
 

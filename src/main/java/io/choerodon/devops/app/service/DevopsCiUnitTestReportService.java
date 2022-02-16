@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.infra.dto.DevopsCiUnitTestReportDTO;
 
 /**
@@ -22,8 +23,14 @@ public interface DevopsCiUnitTestReportService {
      * @param token
      * @param type
      * @param file
+     * @param devopsCiUnitTestResultVO
      */
-    void uploadUnitTest(Long gitlabPipelineId, String jobName, String token, String type, MultipartFile file);
+    void uploadUnitTest(Long gitlabPipelineId,
+                        String jobName,
+                        String token,
+                        String type,
+                        MultipartFile file,
+                        DevopsCiUnitTestResultVO devopsCiUnitTestResultVO);
 
 
     /**

@@ -37,6 +37,12 @@ public class JarDeployVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("操作类型 create/update")
+    private String operation;
 
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
@@ -173,5 +179,29 @@ public class JarDeployVO {
 
     public void setDeployObjectId(Long deployObjectId) {
         this.deployObjectId = deployObjectId;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 }
