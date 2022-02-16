@@ -59,7 +59,6 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
-import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -458,7 +457,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
@@ -467,11 +466,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
-                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
-                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
-                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
-                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
                 devopsCdHostDeployInfoDTO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -666,7 +665,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.genWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
         String appFile = workDir + c7nNexusComponentDTO.getName();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
@@ -675,15 +674,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
-                HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
+                HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                         mavenRepoDTOList.get(0).getNePullUserPassword(),
                         c7nNexusComponentDTO.getDownloadUrl(),
                         appFile),
-                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
                 jarDeployVO.getOperation());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -862,7 +861,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setName(imageDeploy.getContainerName());
         try {
-            dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
+            dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO,
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new CommonException(e);

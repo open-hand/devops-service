@@ -9,7 +9,10 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
@@ -36,7 +39,7 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
+    public static String getDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
@@ -54,12 +57,12 @@ public class HostDeployUtil {
         return dockerRunExec.toString();
     }
 
-    public static String genWorkingDir(Long instanceId) {
+    public static String getWorkingDir(Long instanceId) {
         return "$HOME/choerodon/" + instanceId + "/";
     }
 
 
-    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
+    public static String getDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
         if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
             return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
@@ -75,7 +78,7 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genCommand(Map<String, String> params, String command) {
+    public static String getCommand(Map<String, String> params, String command) {
         params.put("{{ COMMAND }}", removeComments(command));
         return FileUtil.replaceReturnString(HOST_COMMAND_TEMPLATE, params);
     }

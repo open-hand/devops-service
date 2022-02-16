@@ -24,6 +24,7 @@ public enum HostCommandEnum {
     STOP_DOCKER("stop_docker"),
     REMOVE_DOCKER("remove_docker"),
     OPERATE_INSTANCE("operate_instance"),
+    UPDATE_PROB_COMMAND("update_prob_command"),
     KILL_INSTANCE("kill_instance"),
     KILL_MIDDLEWARE("kill_middleware"),
     INIT_AGENT("init_agent"),
