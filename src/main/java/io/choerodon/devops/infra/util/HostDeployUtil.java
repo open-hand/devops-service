@@ -94,4 +94,8 @@ public class HostDeployUtil {
             return commandSB.toString();
         }
     }
+
+    public static Boolean checkKillCommandExist(String deleteCommand) {
+        return !ObjectUtils.isEmpty(removeComments(deleteCommand));
+    }
 }

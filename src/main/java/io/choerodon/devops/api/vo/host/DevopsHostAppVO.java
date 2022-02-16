@@ -63,6 +63,10 @@ public class DevopsHostAppVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("删除命令是否存在")
+    private Boolean killCommandExist;
 
     public String getPreCommand() {
         return preCommand;
@@ -360,5 +364,21 @@ public class DevopsHostAppVO {
 
     public void setMiddlewareVersion(String middlewareVersion) {
         this.middlewareVersion = middlewareVersion;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public Boolean getKillCommandExist() {
+        return killCommandExist;
+    }
+
+    public void setKillCommandExist(Boolean killCommandExist) {
+        this.killCommandExist = killCommandExist;
     }
 }
