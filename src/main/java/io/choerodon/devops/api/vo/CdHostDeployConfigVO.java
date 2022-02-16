@@ -139,18 +139,14 @@ public class CdHostDeployConfigVO {
     }
 
     public static class ImageDeploy {
-
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
         private String deploySource;
 
         @ApiModelProperty("流水线部署 流水线任务名称")
         private String pipelineTask;
 
-        @ApiModelProperty("服务名")
-        private String serverName;
-
-        @ApiModelProperty("容器名称")
-        private String containerName;
+        @ApiModelProperty("仓库名")
+        private String repoName;
 
         @ApiModelProperty("仓库类型")
         private String repoType;
@@ -162,9 +158,53 @@ public class CdHostDeployConfigVO {
         @ApiModelProperty("镜像名称")
         private String imageName;
 
+        @Encrypt
+        @ApiModelProperty("镜像Id")
+        private Long imageId;
+
+        @ApiModelProperty("匹配类型")
+        private String matchType;
+
+        @ApiModelProperty("匹配内容")
+        private String matchContent;
+
         @ApiModelProperty("部署values")
-        @NotNull(message = "error.value.is.null")
         private String value;
+
+        @ApiModelProperty("容器名称")
+        private String containerName;
+
+        public String getRepoName() {
+            return repoName;
+        }
+
+        public void setRepoName(String repoName) {
+            this.repoName = repoName;
+        }
+
+        public Long getImageId() {
+            return imageId;
+        }
+
+        public void setImageId(Long imageId) {
+            this.imageId = imageId;
+        }
+
+        public String getMatchType() {
+            return matchType;
+        }
+
+        public void setMatchType(String matchType) {
+            this.matchType = matchType;
+        }
+
+        public String getMatchContent() {
+            return matchContent;
+        }
+
+        public void setMatchContent(String matchContent) {
+            this.matchContent = matchContent;
+        }
 
         public String getValue() {
             return value;
@@ -212,14 +252,6 @@ public class CdHostDeployConfigVO {
 
         public void setPipelineTask(String pipelineTask) {
             this.pipelineTask = pipelineTask;
-        }
-
-        public String getServerName() {
-            return serverName;
-        }
-
-        public void setServerName(String serverName) {
-            this.serverName = serverName;
         }
 
         public String getContainerName() {
