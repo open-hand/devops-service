@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -905,7 +906,29 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
-        return null;
+        String regexStr = null;
+        if (!org.springframework.util.StringUtils.isEmpty(imageDeploy.getMatchType())
+                && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
+            CiTriggerType ciTriggerType = CiTriggerType.forValue(imageDeploy.getMatchType());
+            if (ciTriggerType != null) {
+                String triggerValue = imageDeploy.getMatchContent();
+                switch (ciTriggerType) {
+                    case REFS:
+                        regexStr = "^.*" + triggerValue + ".*$";
+                        break;
+                    case EXACT_MATCH:
+                        regexStr = "^" + triggerValue + "$";
+                        break;
+                    case REGEX_MATCH:
+                        regexStr = triggerValue;
+                        break;
+                    case EXACT_EXCLUDE:
+                        regexStr = "^(?!.*" + triggerValue + ").*$";
+                        break;
+                }
+            }
+        }
+        return regexStr;
     }
 
     private void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
