@@ -587,7 +587,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-        throw new CommonException("tet");
     }
 
     @Override
