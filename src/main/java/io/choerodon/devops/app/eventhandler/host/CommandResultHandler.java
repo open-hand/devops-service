@@ -60,12 +60,10 @@ public class CommandResultHandler implements HostMsgHandler {
         Consumer<String> deploy_instance = (payload) -> {
             InstanceProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, InstanceProcessInfoVO.class);
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
-            devopsHostAppInstanceDTO.setStatus(processInfoVO.getStatus());
-            devopsHostAppInstanceDTO.setPid(processInfoVO.getPid());
-            devopsHostAppInstanceDTO.setPorts(processInfoVO.getPorts());
+            devopsHostAppInstanceDTO.setReady(processInfoVO.getReady());
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         };
-        resultHandlerMap.put(HostCommandEnum.DEPLOY_INSTANCE.value(), deploy_instance);
+        resultHandlerMap.put(HostCommandEnum.OPERATE_INSTANCE.value(), deploy_instance);
         resultHandlerMap.put(HostCommandEnum.DEPLOY_MIDDLEWARE.value(), deploy_instance);
 
 //        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {

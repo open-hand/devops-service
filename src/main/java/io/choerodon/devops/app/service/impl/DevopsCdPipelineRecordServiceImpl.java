@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -26,6 +28,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
@@ -35,6 +38,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
+import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -44,6 +48,7 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
@@ -54,6 +59,7 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
+import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -83,6 +89,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    private static final String CUSTOM_REPO = "CUSTOM_REPO";
+    private static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
@@ -170,6 +178,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
+    @Autowired
+    private DevopsHostService devopsHostService;
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
@@ -351,10 +368,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         try {
             if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
-//                ApplicationContextHelper
-//                        .getSpringFactory()
-//                        .getBean(DevopsCdPipelineRecordService.class)
-//                        .pipelineDeployImage(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                ApplicationContextHelper
+                        .getSpringFactory()
+                        .getBean(DevopsCdPipelineRecordService.class)
+                        .pipelineDeployImage(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
                 ApplicationContextHelper
                         .getSpringFactory()
@@ -446,17 +463,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
-                StringUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPreCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
+                ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
+                devopsCdHostDeployInfoDTO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
@@ -490,9 +509,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -528,7 +547,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
             return;
         }
-
 
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
@@ -654,21 +672,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
         params.put("{{ APP_FILE }}", appFile);
 
-        JavaDeployDTO javaDeployDTO = new JavaDeployDTO(
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 HostDeployUtil.genDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                         mavenRepoDTOList.get(0).getNePullUserPassword(),
                         c7nNexusComponentDTO.getDownloadUrl(),
-                        workDir,
                         appFile),
-                StringUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
-                StringUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genRunCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
-                StringUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
-                devopsHostAppInstanceDTO.getPid());
-
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.genCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
+                jarDeployVO.getOperation());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
@@ -703,9 +721,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(javaDeployDTO));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -717,109 +735,109 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-//    @Transactional(propagation = Propagation.REQUIRES_NEW)
-//    public void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
-//        LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-//
-//        String deployVersion = null;
-//        String deployObjectName = null;
-//        String image = null;
-//        Long appServiceId = null;
-//        String serviceName = null;
-//
-//        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
-//
-//        DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
-//        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
-//        Long projectId = projectDTO.getId();
-//
-//        CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-//        CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
-//
-//        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
-//        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-//
-//        // 0.2
-//        if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
-//            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), null);
-//            List<HarborC7nImageTagVo> filterImageTagVoList;
-//            if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
-//                LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-//                updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
-//                return;
-//            } else {
-//                String pattern = getRegexStr(imageDeploy);
-//                if (LOGGER.isInfoEnabled()) {
-//                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
-//                }
-//                filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
-//                if (CollectionUtils.isEmpty(filterImageTagVoList)) {
-//                    if (LOGGER.isInfoEnabled()) {
-//                        LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-//                    }
-//                    updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
-//                    return;
-//                }
-//            }
-//            image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
-//            // 设置拉取账户
-//            dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-//                    imageTagVo.getHarborUrl(),
-//                    imageTagVo.getPullAccount(),
-//                    imageTagVo.getPullPassword()));
-//
-//            deployVersion = filterImageTagVoList.get(0).getTagName();
-//            deployObjectName = imageDeploy.getImageName();
-//            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, imageDeploy.getImageName());
-//            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
-//        } else {
-//            if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
-//                throw new CommonException("error.no.gitlab.pipeline.id");
-//            }
-//            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
-//            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
-//
-//            // 设置拉取账户
-//            if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
-//                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-//                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
-//                        harborRepoDTO.getHarborRepoConfig().getLoginName(),
-//                        harborRepoDTO.getHarborRepoConfig().getPassword()));
-//            } else {
-//                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-//                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
-//                        harborRepoDTO.getPullRobot().getName(),
-//                        harborRepoDTO.getPullRobot().getToken()));
-//            }
-//
-//            // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
-//            String imageTag = ciPipelineImageDTO.getImageTag();
-//            int indexOf = imageTag.lastIndexOf(":");
-//            String imageVersion = imageTag.substring(indexOf);
-//            String repoImageName = imageTag.substring(0, indexOf);
-//
-//            image = ciPipelineImageDTO.getImageTag();
-//            deployVersion = imageVersion;
-//            deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
-//            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, deployObjectName);
-//            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
-//            serviceName = appServiceRepVO == null ? null : appServiceRepVO.getServiceName();
-//        }
-//
-//        // 1. 更新状态 记录镜像信息
-//        // 2.保存记录
-//        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
-//
-//        if (devopsDockerInstanceDTO == null) {
-//            // 新建实例
-//            devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
-//                    imageDeploy.getContainerName(),
-//                    image,
-//                    DockerInstanceStatusEnum.OPERATING.value(),
-//                    AppSourceType.CURRENT_PROJECT.getValue());
-//            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
-//            // 保存应用实例关系
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+
+        String deployVersion = null;
+        String deployObjectName = null;
+        String image = null;
+        Long appServiceId = null;
+        String serviceName = null;
+
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
+
+        DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        Long projectId = projectDTO.getId();
+
+        CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
+        CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
+
+        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+
+        // 0.2
+        if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
+            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), null);
+            List<HarborC7nImageTagVo> filterImageTagVoList;
+            if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
+                LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                return;
+            } else {
+                String pattern = getRegexStr(imageDeploy);
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
+                }
+                filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(filterImageTagVoList)) {
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                    }
+                    updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
+                    return;
+                }
+            }
+            image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
+            // 设置拉取账户
+            dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
+                    imageTagVo.getHarborUrl(),
+                    imageTagVo.getPullAccount(),
+                    imageTagVo.getPullPassword()));
+
+            deployVersion = filterImageTagVoList.get(0).getTagName();
+            deployObjectName = imageDeploy.getImageName();
+            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, imageDeploy.getImageName());
+            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
+        } else {
+            if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
+                throw new CommonException("error.no.gitlab.pipeline.id");
+            }
+            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
+            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
+
+            // 设置拉取账户
+            if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
+                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
+                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
+                        harborRepoDTO.getHarborRepoConfig().getLoginName(),
+                        harborRepoDTO.getHarborRepoConfig().getPassword()));
+            } else {
+                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
+                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
+                        harborRepoDTO.getPullRobot().getName(),
+                        harborRepoDTO.getPullRobot().getToken()));
+            }
+
+            // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
+            String imageTag = ciPipelineImageDTO.getImageTag();
+            int indexOf = imageTag.lastIndexOf(":");
+            String imageVersion = imageTag.substring(indexOf);
+            String repoImageName = imageTag.substring(0, indexOf);
+
+            image = ciPipelineImageDTO.getImageTag();
+            deployVersion = imageVersion;
+            deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
+            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, deployObjectName);
+            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
+            serviceName = appServiceRepVO == null ? null : appServiceRepVO.getServiceName();
+        }
+
+        // 1. 更新状态 记录镜像信息
+        // 2.保存记录
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
+
+        if (devopsDockerInstanceDTO == null) {
+            // 新建实例
+            devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
+                    imageDeploy.getContainerName(),
+                    image,
+                    DockerInstanceStatusEnum.OPERATING.value(),
+                    AppSourceType.CURRENT_PROJECT.getValue());
+            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+            // 保存应用实例关系
 //            if (appServiceId != null) {
 //                devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
 //                        hostId,
@@ -828,62 +846,90 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //                        devopsDockerInstanceDTO.getId(),
 //                        HostInstanceType.DOCKER_PROCESS.value(), serviceName);
 //            }
-//        } else {
-//            dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
-//        }
-//
-//        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-//        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_DOCKER.value());
-//        devopsHostCommandDTO.setHostId(hostId);
-//        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
-//        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
-//        devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
-//        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-//        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-//
-//        dockerDeployDTO.setImage(image);
-//        dockerDeployDTO.setName(imageDeploy.getContainerName());
-//        try {
-//            dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
-//                    new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
-//        } catch (IOException e) {
-//            throw new CommonException(e);
-//        }
-//        dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
-//
-//        // 3. 保存部署记录
-//        devopsDeployRecordService.saveRecord(
-//                devopsCdPipelineRecordDTO.getProjectId(),
-//                DeployType.MANUAL,
-//                null,
-//                DeployModeEnum.HOST,
-//                devopsHostDTO.getId(),
-//                devopsHostDTO.getName(),
-//                PipelineStatus.SUCCESS.toValue(),
-//                DeployObjectTypeEnum.IMAGE,
-//                deployObjectName,
-//                deployVersion,
-//                null,
-//                new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
-//
-//        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-//
-//        // 4. 发送部署指令给agent
-//        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-//        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-//        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
-//        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-//        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
-//
-//        if (LOGGER.isInfoEnabled()) {
-//            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
-//        }
-//
-//        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-//                String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
-//                JsonHelper.marshalByJackson(hostAgentMsgVO));
-//
-//    }
+        } else {
+            dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        }
+
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+        devopsHostCommandDTO.setCommandType(HostCommandEnum.DEPLOY_DOCKER.value());
+        devopsHostCommandDTO.setHostId(hostId);
+        devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_PROCESS.value());
+        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
+        devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
+        devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+        dockerDeployDTO.setImage(image);
+        dockerDeployDTO.setName(imageDeploy.getContainerName());
+        try {
+            dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO,
+                    new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
+        dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
+
+        // 3. 保存部署记录
+        devopsDeployRecordService.saveRecord(
+                devopsCdPipelineRecordDTO.getProjectId(),
+                DeployType.MANUAL,
+                null,
+                DeployModeEnum.HOST,
+                devopsHostDTO.getId(),
+                devopsHostDTO.getName(),
+                PipelineStatus.SUCCESS.toValue(),
+                DeployObjectTypeEnum.IMAGE,
+                deployObjectName,
+                deployVersion,
+                null,
+                null,
+                appServiceId,
+                new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
+
+        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
+
+        // 4. 发送部署指令给agent
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
+                JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
+        String regexStr = null;
+        if (!org.springframework.util.StringUtils.isEmpty(imageDeploy.getMatchType())
+                && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
+            CiTriggerType ciTriggerType = CiTriggerType.forValue(imageDeploy.getMatchType());
+            if (ciTriggerType != null) {
+                String triggerValue = imageDeploy.getMatchContent();
+                switch (ciTriggerType) {
+                    case REFS:
+                        regexStr = "^.*" + triggerValue + ".*$";
+                        break;
+                    case EXACT_MATCH:
+                        regexStr = "^" + triggerValue + "$";
+                        break;
+                    case REGEX_MATCH:
+                        regexStr = triggerValue;
+                        break;
+                    case EXACT_EXCLUDE:
+                        regexStr = "^(?!.*" + triggerValue + ").*$";
+                        break;
+                }
+            }
+        }
+        return regexStr;
+    }
 
     private void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         Long cdJobRecordId = devopsCdJobRecordDTO.getId();
@@ -1116,7 +1162,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                             cdAuto.setDeployType(ENV);
                             cdAuto.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
                             if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId() ,devopsDeployAppCenterEnvDTO.getObjectId());
+                                AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId(), devopsDeployAppCenterEnvDTO.getObjectId());
                                 if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
                                     cdAuto.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
                                     cdAuto.setStatus(appServiceInstanceInfoVO.getStatus());

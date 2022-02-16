@@ -22,7 +22,6 @@ import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 public class HostDeployUtil {
 
     private static final String HOST_COMMAND_TEMPLATE;
-    private static final String HOST_RUN_COMMAND_TEMPLATE;
     private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -fsSLo %s -u %s:%s %s";
     private static final String FILE_DOWNLOAD_COMMAND = "curl -fsSLo %s %s";
 
@@ -32,11 +31,6 @@ public class HostDeployUtil {
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_command_template.sh")) {
             HOST_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CommonException("error.load.install.deploy.sh");
-        }
-        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_run_command_template.sh")) {
-            HOST_RUN_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CommonException("error.load.install.deploy.sh");
         }
@@ -65,7 +59,7 @@ public class HostDeployUtil {
     }
 
 
-    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String workingPath, String appFile) {
+    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
         if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
             return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
@@ -84,11 +78,6 @@ public class HostDeployUtil {
     public static String genCommand(Map<String, String> params, String command) {
         params.put("{{ COMMAND }}", removeComments(command));
         return FileUtil.replaceReturnString(HOST_COMMAND_TEMPLATE, params);
-    }
-
-    public static String genRunCommand(Map<String, String> params, String runCommand) {
-        params.put("{{ COMMAND }}", removeComments(runCommand));
-        return FileUtil.replaceReturnString(HOST_RUN_COMMAND_TEMPLATE, params);
     }
 
     private static String removeComments(String rawCommand) {
