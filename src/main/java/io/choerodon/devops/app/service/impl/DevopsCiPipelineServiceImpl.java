@@ -102,7 +102,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
+    @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
+    private String cibase;
+
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+
+    @Autowired
+    private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
     private final DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
     private final DevopsCiJobMapper devopsCiJobMapper;
@@ -1751,6 +1757,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     if (devopsCiStepDTOS.stream().anyMatch(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType()))) {
                         CiJobServices ciJobServices = new CiJobServices();
                         ciJobServices.setName(defaultCiImage);
+                        ciJobServices.setAlias("kaniko");
+                        ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
+                    }
+                    if (devopsCiStepDTOS.stream().filter(v -> DevopsCiStepTypeEnum.SONAR.value().equals(v.getType())).anyMatch(s -> {
+                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(s.getId());
+                        return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
+                    })) {
+                        CiJobServices ciJobServices = new CiJobServices();
+                        ciJobServices.setName(cibase);
                         ciJobServices.setAlias("kaniko");
                         ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
                     }

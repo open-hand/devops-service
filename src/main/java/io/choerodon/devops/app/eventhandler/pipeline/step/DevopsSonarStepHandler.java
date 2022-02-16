@@ -42,6 +42,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
+    private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -107,7 +108,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                 // 查询默认的sonarqube配置
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
                 CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarCommand(devopsCiSonarConfigDTO.getSkipTests()));
+                scripts.add(String.format(MVN_COMPILE_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
+                scripts.add("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY}");
             } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
                     throw new CommonException("error.sonar.url.is.null");
