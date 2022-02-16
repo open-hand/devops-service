@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -36,6 +37,9 @@ public class CdHostDeployConfigVO {
 
     @ApiModelProperty("jar部署详情")
     private JarDeploy jarDeploy;
+
+    @ApiModelProperty("jar部署详情")
+    private ImageDeploy imageDeploy;
 
     @ApiModelProperty("前置命令")
     private String preCommand;
@@ -134,6 +138,99 @@ public class CdHostDeployConfigVO {
         }
     }
 
+    public static class ImageDeploy {
+
+        @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
+        private String deploySource;
+
+        @ApiModelProperty("流水线部署 流水线任务名称")
+        private String pipelineTask;
+
+        @ApiModelProperty("服务名")
+        private String serverName;
+
+        @ApiModelProperty("容器名称")
+        private String containerName;
+
+        @ApiModelProperty("仓库类型")
+        private String repoType;
+
+        @Encrypt
+        @ApiModelProperty("仓库Id")
+        private String repoId;
+
+        @ApiModelProperty("镜像名称")
+        private String imageName;
+
+        @ApiModelProperty("部署values")
+        @NotNull(message = "error.value.is.null")
+        private String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public String getRepoId() {
+            return repoId;
+        }
+
+        public void setRepoId(String repoId) {
+            this.repoId = repoId;
+        }
+
+        public String getImageName() {
+            return imageName;
+        }
+
+        public void setImageName(String imageName) {
+            this.imageName = imageName;
+        }
+
+        public String getRepoType() {
+            return repoType;
+        }
+
+        public void setRepoType(String repoType) {
+            this.repoType = repoType;
+        }
+
+        public String getDeploySource() {
+            return deploySource;
+        }
+
+        public void setDeploySource(String deploySource) {
+            this.deploySource = deploySource;
+        }
+
+        public String getPipelineTask() {
+            return pipelineTask;
+        }
+
+        public void setPipelineTask(String pipelineTask) {
+            this.pipelineTask = pipelineTask;
+        }
+
+        public String getServerName() {
+            return serverName;
+        }
+
+        public void setServerName(String serverName) {
+            this.serverName = serverName;
+        }
+
+        public String getContainerName() {
+            return containerName;
+        }
+
+        public void setContainerName(String containerName) {
+            this.containerName = containerName;
+        }
+    }
+
 
     public String getDeployType() {
         return deployType;
@@ -221,5 +318,13 @@ public class CdHostDeployConfigVO {
 
     public void setHostConnectionVO(HostConnectionVO hostConnectionVO) {
         this.hostConnectionVO = hostConnectionVO;
+    }
+
+    public ImageDeploy getImageDeploy() {
+        return imageDeploy;
+    }
+
+    public void setImageDeploy(ImageDeploy imageDeploy) {
+        this.imageDeploy = imageDeploy;
     }
 }
