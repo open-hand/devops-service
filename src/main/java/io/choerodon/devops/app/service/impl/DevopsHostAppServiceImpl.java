@@ -333,7 +333,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (customDeployVO.getOperation().equals(MiscConstants.CREATE_TYPE)) {
             deployCustomInstance(projectId, devopsHostDTO, null, null, customDeployVO);
         } else {
-            // 需要执行部署操作
+            // 根据字段变化执行对应操作
             DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, customDeployVO.getAppCode());
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
@@ -353,8 +353,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             // 更新健康探针
             if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
                 devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
-                // 通知agent更新探针
-                // 3. 发送部署指令给agent
+                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                // 发送指令给agent
                 InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                 instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
                 HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
