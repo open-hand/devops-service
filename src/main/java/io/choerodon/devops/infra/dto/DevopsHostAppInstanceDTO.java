@@ -72,6 +72,7 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
         this.postCommand = postCommand;
         this.killCommand = killCommand;
         this.healthProb = healthProb;
+        this.ready = false;
     }
 
 
