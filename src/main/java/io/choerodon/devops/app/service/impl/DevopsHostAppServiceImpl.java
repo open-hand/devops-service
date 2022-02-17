@@ -128,13 +128,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand())) {
                 deployJavaInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, jarDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(jarDeployVO.getAppName())) {
-                devopsHostAppDTO.setObjectVersionNumber(devopsHostAppDTO.getObjectVersionNumber());
+                devopsHostAppDTO.setName(devopsHostAppDTO.getName());
                 devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
             }
             // 更新删除命令
             if (!devopsHostAppInstanceDTO.getKillCommand().equals(jarDeployVO.getKillCommand())) {
                 devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
-                devopsHostAppInstanceDTO.setObjectVersionNumber(devopsHostAppInstanceDTO.getObjectVersionNumber() + 1);
                 devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
             }
             // 更新健康探针
@@ -343,17 +342,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     !devopsHostAppInstanceDTO.getPostCommand().equals(customDeployVO.getPostCommand())) {
                 deployCustomInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, customDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(customDeployVO.getAppName())) {
-                devopsHostAppDTO.setObjectVersionNumber(devopsHostAppDTO.getObjectVersionNumber());
+                devopsHostAppDTO.setName(customDeployVO.getAppName());
                 devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
             }
             // 更新删除命令
-            if (!devopsHostAppInstanceDTO.getKillCommand().equals(customDeployVO.getKillCommand())) {
+            if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), customDeployVO.getKillCommand())) {
                 devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
-                devopsHostAppInstanceDTO.setObjectVersionNumber(devopsHostAppInstanceDTO.getObjectVersionNumber() + 1);
                 devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
             }
             // 更新健康探针
-            if (!devopsHostAppInstanceDTO.getHealthProb().equals(customDeployVO.getHealthProb())) {
+            if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
                 devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
                 // 通知agent更新探针
                 // 3. 发送部署指令给agent
