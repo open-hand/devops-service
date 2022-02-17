@@ -309,7 +309,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            instanceDeployOptions.setKillCommand(devopsHostAppInstanceDTO.getKillCommand());
+            instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
