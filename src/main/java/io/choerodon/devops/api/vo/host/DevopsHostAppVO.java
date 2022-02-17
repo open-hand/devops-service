@@ -29,10 +29,6 @@ public class DevopsHostAppVO {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
-    @ApiModelProperty("进程id")
-    private String pid;
-    @ApiModelProperty("占用端口")
-    private String ports;
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("进程状态")
@@ -69,6 +65,8 @@ public class DevopsHostAppVO {
     private Boolean killCommandExist;
     @ApiModelProperty("健康探针")
     private String healthProb;
+    @ApiModelProperty("应用是否准备好")
+    private Boolean ready;
 
     public String getPreCommand() {
         return preCommand;
@@ -271,22 +269,6 @@ public class DevopsHostAppVO {
         this.code = code;
     }
 
-    public String getPid() {
-        return pid;
-    }
-
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
-    }
-
     public String getSourceType() {
         return sourceType;
     }
@@ -390,5 +372,13 @@ public class DevopsHostAppVO {
 
     public void setHealthProb(String healthProb) {
         this.healthProb = healthProb;
+    }
+
+    public Boolean getReady() {
+        return ready;
+    }
+
+    public void setReady(Boolean ready) {
+        this.ready = ready;
     }
 }
