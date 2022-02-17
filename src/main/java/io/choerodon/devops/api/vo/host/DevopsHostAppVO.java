@@ -31,8 +31,6 @@ public class DevopsHostAppVO {
     private String code;
     @ApiModelProperty("部署来源")
     private String sourceType;
-    @ApiModelProperty("进程状态")
-    private String status;
     @ApiModelProperty("制品类型")
     private String rdupmType;
     /**
