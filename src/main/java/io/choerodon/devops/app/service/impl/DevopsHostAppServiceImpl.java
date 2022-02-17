@@ -414,7 +414,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null,
                     customDeployVO.getPreCommand(),
                     customDeployVO.getRunCommand(),
-                    customDeployVO.getPostCommand());
+                    customDeployVO.getPostCommand(),
+                    customDeployVO.getKillCommand(),
+                    customDeployVO.getHealthProb());
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
@@ -590,7 +592,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     calculateSourceConfig(jarDeployVO),
                     jarDeployVO.getPreCommand(),
                     jarDeployVO.getRunCommand(),
-                    jarDeployVO.getPostCommand());
+                    jarDeployVO.getPostCommand(),
+                    jarDeployVO.getKillCommand(),
+                    jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setGroupId(groupId);
             devopsHostAppInstanceDTO.setArtifactId(artifactId);
             devopsHostAppInstanceDTO.setVersion(version);

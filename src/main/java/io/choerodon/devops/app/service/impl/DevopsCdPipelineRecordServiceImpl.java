@@ -435,7 +435,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     null,
                     devopsCdHostDeployInfoDTO.getPreCommand(),
                     devopsCdHostDeployInfoDTO.getRunCommand(),
-                    devopsCdHostDeployInfoDTO.getPostCommand());
+                    devopsCdHostDeployInfoDTO.getPostCommand(),
+                    devopsCdHostDeployInfoDTO.getKillCommand(),
+                    devopsCdHostDeployInfoDTO.getHealthProb());
 
             devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
             devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
@@ -629,7 +631,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsHostAppService.calculateSourceConfig(jarDeployVO),
                     jarDeployVO.getPreCommand(),
                     jarDeployVO.getRunCommand(),
-                    jarDeployVO.getPostCommand());
+                    jarDeployVO.getPostCommand(),
+                    jarDeployVO.getKillCommand(),
+                    jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setGroupId(groupId);
             devopsHostAppInstanceDTO.setArtifactId(artifactId);
             devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
