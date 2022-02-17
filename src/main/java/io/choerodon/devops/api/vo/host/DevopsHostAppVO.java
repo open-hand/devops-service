@@ -67,6 +67,8 @@ public class DevopsHostAppVO {
     private String killCommand;
     @ApiModelProperty("删除命令是否存在")
     private Boolean killCommandExist;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
 
     public String getPreCommand() {
         return preCommand;
@@ -380,5 +382,13 @@ public class DevopsHostAppVO {
 
     public void setKillCommandExist(Boolean killCommandExist) {
         this.killCommandExist = killCommandExist;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
     }
 }
