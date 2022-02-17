@@ -60,7 +60,7 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
     public DevopsHostAppInstanceDTO() {
     }
 
-    public DevopsHostAppInstanceDTO(Long projectId, Long hostId, Long appId, String code, String sourceType, String sourceConfig, String preCommand, String runCommand, String postCommand) {
+    public DevopsHostAppInstanceDTO(Long projectId, Long hostId, Long appId, String code, String sourceType, String sourceConfig, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb) {
         this.projectId = projectId;
         this.hostId = hostId;
         this.appId = appId;
@@ -70,6 +70,8 @@ public class DevopsHostAppInstanceDTO extends AuditDomain {
         this.preCommand = preCommand;
         this.runCommand = runCommand;
         this.postCommand = postCommand;
+        this.killCommand = killCommand;
+        this.healthProb = healthProb;
     }
 
 
