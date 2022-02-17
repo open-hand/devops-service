@@ -303,13 +303,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(hostId));
-            hostAgentMsgVO.setType(HostCommandEnum.KILL_INSTANCE.value());
+            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
 
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
             instanceDeployOptions.setKillCommand(devopsHostAppInstanceDTO.getKillCommand());
+            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
