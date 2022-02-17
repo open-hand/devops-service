@@ -9,10 +9,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
-import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
@@ -99,6 +96,9 @@ public class HostDeployUtil {
     }
 
     public static Boolean checkKillCommandExist(String deleteCommand) {
+        if (ObjectUtils.isEmpty(deleteCommand)) {
+            return false;
+        }
         return !ObjectUtils.isEmpty(removeComments(deleteCommand));
     }
 }
