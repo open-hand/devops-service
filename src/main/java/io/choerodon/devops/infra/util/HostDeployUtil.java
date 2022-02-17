@@ -101,4 +101,22 @@ public class HostDeployUtil {
         }
         return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
     }
+
+    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
+        String[] strings = value.split("\n");
+        String values = "";
+        for (String s : strings) {
+            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+                values = s;
+            }
+        }
+        if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
+            throw new CommonException("error.instruction");
+        }
+
+        // 判断镜像是否存在 存在删除 部署
+        StringBuilder dockerRunExec = new StringBuilder();
+        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
+        return dockerRunExec.toString();
+    }
 }
