@@ -99,6 +99,6 @@ public class HostDeployUtil {
         if (ObjectUtils.isEmpty(deleteCommand)) {
             return false;
         }
-        return !ObjectUtils.isEmpty(removeComments(deleteCommand));
+        return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
     }
 }
