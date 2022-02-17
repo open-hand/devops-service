@@ -116,7 +116,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         // 校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        if (jarDeployVO.getOperation().equals(MiscConstants.UPDATE_TYPE)) {
+        if (jarDeployVO.getOperation().equals(MiscConstants.CREATE_TYPE)) {
             deployJavaInstance(projectId, devopsHostDTO, null, null, jarDeployVO);
         } else {
             // 需要执行部署操作
@@ -330,7 +330,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         // 校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        if (customDeployVO.getOperation().equals(MiscConstants.UPDATE_TYPE)) {
+        if (customDeployVO.getOperation().equals(MiscConstants.CREATE_TYPE)) {
             deployCustomInstance(projectId, devopsHostDTO, null, null, customDeployVO);
         } else {
             // 需要执行部署操作
