@@ -139,6 +139,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             // 更新健康探针
             if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
                 devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
+                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
                 // 发送指令给agent
                 InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                 instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
