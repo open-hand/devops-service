@@ -119,7 +119,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (jarDeployVO.getOperation().equals(MiscConstants.CREATE_TYPE)) {
             deployJavaInstance(projectId, devopsHostDTO, null, null, jarDeployVO);
         } else {
-            // 需要执行部署操作
+            // 根据字段变化执行对应操作
             DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
@@ -128,19 +128,18 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand())) {
                 deployJavaInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, jarDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(jarDeployVO.getAppName())) {
-                devopsHostAppDTO.setName(devopsHostAppDTO.getName());
+                devopsHostAppDTO.setName(jarDeployVO.getAppName());
                 devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
             }
             // 更新删除命令
-            if (!devopsHostAppInstanceDTO.getKillCommand().equals(jarDeployVO.getKillCommand())) {
+            if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
                 devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
                 devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
             }
             // 更新健康探针
-            if (!devopsHostAppInstanceDTO.getHealthProb().equals(jarDeployVO.getHealthProb())) {
+            if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
                 devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
-                // 通知agent更新探针
-                // 3. 发送部署指令给agent
+                // 发送指令给agent
                 InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                 instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
                 HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
@@ -517,7 +516,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String deployObjectName = null;
         String deployVersion = null;
 
-        // 0.3 获取并记录信息
+        // 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
         List<NexusMavenRepoDTO> mavenRepoDTOList = new ArrayList<>();
 
@@ -675,7 +674,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppDTO.getId(),
                 deploySourceVO);
 
-        // 3. 发送部署指令给agent
+        // 发送部署指令给agent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
