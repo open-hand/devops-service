@@ -57,6 +57,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app_instance.groovy') {
     changeSet(author: 'lihao', id: '2022-02-15-drop-column') {
         dropColumn(columnName: "pid", tableName: "devops_host_app_instance")
         dropColumn(columnName: "ports", tableName: "devops_host_app_instance")
+        dropColumn(columnName: "status",tableName: "devops_host_app_instance")
     }
 
     changeSet(author: 'lihao', id: '2022-02-15-add-column') {
