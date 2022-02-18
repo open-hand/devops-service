@@ -217,6 +217,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         page.getContent().forEach(devopsHostAppVO -> {
             compoundDevopsHostAppVO(devopsHostAppVO);
             devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
+            devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
         });
         return page;
     }
