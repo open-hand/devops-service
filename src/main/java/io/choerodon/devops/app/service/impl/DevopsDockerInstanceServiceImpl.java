@@ -129,7 +129,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
         devopsHostAppDTO.setProjectId(projectId);
         devopsHostAppDTO.setHostId(hostDTO.getId());
-        devopsHostAppDTO.setName(dockerDeployVO.getName());
+        devopsHostAppDTO.setName(dockerDeployVO.getAppName());
         devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
         devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
         devopsHostAppMapper.insertSelective(devopsHostAppDTO);
