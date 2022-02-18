@@ -135,7 +135,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         devopsHostAppMapper.insertSelective(devopsHostAppDTO);
 
         //保存docker实例的信息
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getName());
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getContainerName());
         devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, hostDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
         String values = getDeValues(dockerDeployVO);
