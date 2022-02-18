@@ -290,6 +290,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
             devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
         } else {
+            if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
+                throw new CommonException("error.host.instance.kill.command.exist");
+            }
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
             devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
