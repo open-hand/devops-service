@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -47,6 +46,10 @@ public class CdHostDeployConfigVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
 
     public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
@@ -358,5 +361,21 @@ public class CdHostDeployConfigVO {
 
     public void setImageDeploy(ImageDeploy imageDeploy) {
         this.imageDeploy = imageDeploy;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
     }
 }
