@@ -130,31 +130,31 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else if (!devopsHostAppDTO.getName().equals(jarDeployVO.getAppName())) {
                 devopsHostAppDTO.setName(jarDeployVO.getAppName());
                 devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
-            }
-            // 更新删除命令
-            if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
-                devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-            }
-            // 更新健康探针
-            if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
-                devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-                // 发送指令给agent
-                InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
-                instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-                HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-                hostAgentMsgVO.setHostId(String.valueOf(hostId));
-                hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
-                hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
-
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+            } else {
+                // 更新删除命令
+                if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
+                    devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
+                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
                 }
+                // 更新健康探针
+                if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
+                    devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
+                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    // 发送指令给agent
+                    InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+                    instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
+                    hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
+                    hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
-                webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                        String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
-                        JsonHelper.marshalByJackson(hostAgentMsgVO));
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+                    }
+                    webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                            String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
+                            JsonHelper.marshalByJackson(hostAgentMsgVO));
+                }
             }
         }
     }
@@ -347,31 +347,32 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else if (!devopsHostAppDTO.getName().equals(customDeployVO.getAppName())) {
                 devopsHostAppDTO.setName(customDeployVO.getAppName());
                 devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
-            }
-            // 更新删除命令
-            if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), customDeployVO.getKillCommand())) {
-                devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-            }
-            // 更新健康探针
-            if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
-                devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
-                devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
-                // 发送指令给agent
-                InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
-                instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-                HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-                hostAgentMsgVO.setHostId(String.valueOf(hostId));
-                hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
-                hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
-
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+            } else {
+                // 更新删除命令
+                if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), customDeployVO.getKillCommand())) {
+                    devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
+                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
                 }
+                // 更新健康探针
+                if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
+                    devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
+                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    // 发送指令给agent
+                    InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+                    instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
+                    hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
+                    hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
-                webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                        String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
-                        JsonHelper.marshalByJackson(hostAgentMsgVO));
+                    if (LOGGER.isInfoEnabled()) {
+                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+                    }
+
+                    webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                            String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
+                            JsonHelper.marshalByJackson(hostAgentMsgVO));
+                }
             }
         }
     }
@@ -428,6 +429,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppInstanceDTO.setPreCommand(customDeployVO.getPreCommand());
             devopsHostAppInstanceDTO.setRunCommand(customDeployVO.getRunCommand());
             devopsHostAppInstanceDTO.setPostCommand(customDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
+            devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setSourceType(customDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null);
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
@@ -612,6 +615,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
             devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
             devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
+            devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
             devopsHostAppInstanceDTO.setVersion(version);
