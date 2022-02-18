@@ -864,7 +864,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
         dockerDeployDTO.setImage(image);
-        dockerDeployDTO.setName(imageDeploy.getContainerName());
+        dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         try {
             dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO,
                     new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
