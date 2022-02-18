@@ -49,13 +49,11 @@ public class HostDeployUtil {
         }
 
         // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
+        return values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage());
     }
 
     public static String getWorkingDir(Long instanceId) {
-        return "$HOME/choerodon/" + instanceId + "/";
+        return "$HOME/choerodon/" + instanceId;
     }
 
 
