@@ -133,13 +133,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else {
                 // 更新删除命令
                 if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
-                    devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
-                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), devopsHostAppInstanceDTO.getKillCommand());
                 }
                 // 更新健康探针
                 if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
-                    devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
-                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), devopsHostAppInstanceDTO.getHealthProb());
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
@@ -350,13 +348,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else {
                 // 更新删除命令
                 if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), customDeployVO.getKillCommand())) {
-                    devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
-                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), customDeployVO.getKillCommand());
                 }
                 // 更新健康探针
                 if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
                     devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
-                    devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
+                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), customDeployVO.getHealthProb());
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
