@@ -18,7 +18,7 @@ public class DockerDeployVO {
     @ApiModelProperty("主机id")
     private Long hostId;
     @ApiModelProperty("容器名")
-    private String name;
+    private String containerName;
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("制品库镜像信息")
@@ -88,12 +88,12 @@ public class DockerDeployVO {
         this.hostId = hostId;
     }
 
-    public String getName() {
-        return name;
+    public String getContainerName() {
+        return containerName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
     }
 
     public String getSourceType() {
