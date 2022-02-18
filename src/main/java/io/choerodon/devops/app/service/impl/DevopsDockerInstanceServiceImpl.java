@@ -136,7 +136,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         //保存docker实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getContainerName());
-        devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, hostDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
+        devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, devopsHostAppDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
         String values = getDeValues(dockerDeployVO);
 
@@ -211,11 +211,12 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return dockerDeployDTO;
     }
 
-    private DevopsDockerInstanceDTO saveDevopsDockerInstanceDTO(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostDTO hostDTO, DockerDeployDTO dockerDeployDTO, Long appServiceId, String serviceName, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
+    private DevopsDockerInstanceDTO saveDevopsDockerInstanceDTO(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostAppDTO devopsHostAppDTO, DockerDeployDTO dockerDeployDTO, Long appServiceId, String serviceName, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
         if (devopsDockerInstanceDTO == null) {
             devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
             devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());

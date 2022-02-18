@@ -833,13 +833,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
 
+        // TODO: 2022/2/18  
         if (devopsDockerInstanceDTO == null) {
             // 新建实例
             devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
                     imageDeploy.getContainerName(),
                     image,
                     DockerInstanceStatusEnum.OPERATING.value(),
-                    AppSourceType.CURRENT_PROJECT.getValue());
+                    AppSourceType.CURRENT_PROJECT.getValue(), null);
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
 //            if (appServiceId != null) {

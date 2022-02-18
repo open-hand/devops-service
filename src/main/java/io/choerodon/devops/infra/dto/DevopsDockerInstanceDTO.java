@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -26,6 +27,7 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Encrypt
     @ApiModelProperty("主机id")
     private Long hostId;
     @ApiModelProperty("容器名")
@@ -46,6 +48,16 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
      */
     @ApiModelProperty("部署来源")
     private String sourceType;
+    @Encrypt
+    private Long appId;
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public DevopsDockerInstanceDTO() {
     }
@@ -55,12 +67,13 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
         this.name = name;
     }
 
-    public DevopsDockerInstanceDTO(Long hostId, String name, String image, String status, String sourceType) {
+    public DevopsDockerInstanceDTO(Long hostId, String name, String image, String status, String sourceType, Long appId) {
         this.hostId = hostId;
         this.name = name;
         this.image = image;
         this.status = status;
         this.sourceType = sourceType;
+        this.appId = appId;
     }
 
     public String getPorts() {
