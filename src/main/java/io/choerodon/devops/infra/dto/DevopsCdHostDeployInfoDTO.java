@@ -48,8 +48,6 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
     private String killCommand;
     @ApiModelProperty("健康探针")
     private String healthProb;
-    @ApiModelProperty("操作类型 create/update")
-    private String operation;
 
     public Long getId() {
         return id;
@@ -153,13 +151,5 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
 
     public void setHealthProb(String healthProb) {
         this.healthProb = healthProb;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
     }
 }
