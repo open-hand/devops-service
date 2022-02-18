@@ -59,7 +59,7 @@ public class JarDeployVO {
     public JarDeployVO() {
     }
 
-    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO) {
+    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO, String operation) {
         this.appCode = appCode;
         this.appName = appName;
         this.sourceType = sourceType;
@@ -67,6 +67,7 @@ public class JarDeployVO {
         this.preCommand = preCommand;
         this.runCommand = runCommand;
         this.postCommand = postCommand;
+        this.operation = operation;
     }
 
     public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {

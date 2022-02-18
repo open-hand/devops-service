@@ -473,7 +473,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getPostCommand())),
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getKillCommand())),
                 ObjectUtils.isEmpty(devopsCdHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getHealthProb())),
-                devopsCdHostDeployInfoDTO.getOperation());
+                devopsCdHostDeployInfoDTO.getDeployType());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -603,7 +603,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         nexusRepoId,
                         groupId,
                         artifactId,
-                        c7nNexusComponentDTO.getVersion()));
+                        c7nNexusComponentDTO.getVersion()),
+                devopsCdHostDeployInfoDTO.getDeployType());
 
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
