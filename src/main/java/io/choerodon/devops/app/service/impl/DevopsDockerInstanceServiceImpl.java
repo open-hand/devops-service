@@ -214,6 +214,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsDockerInstanceDTO saveDevopsDockerInstanceDTO(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostDTO hostDTO, DockerDeployDTO dockerDeployDTO, Long appServiceId, String serviceName, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
         if (devopsDockerInstanceDTO == null) {
             devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
+            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         } else {
