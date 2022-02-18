@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import io.choerodon.devops.api.vo.harbor.ExternalImageInfo;
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -39,6 +41,28 @@ public class DockerDeployVO {
 
     @ApiModelProperty("主机应用的code")
     private String appCode;
+
+    @ApiModelProperty("部署类型")
+    private String deployType;
+
+    @ApiModelProperty("外部自定义仓库信息")
+    private ExternalImageInfo externalImageInfo;
+
+    public ExternalImageInfo getExternalImageInfo() {
+        return externalImageInfo;
+    }
+
+    public void setExternalImageInfo(ExternalImageInfo externalImageInfo) {
+        this.externalImageInfo = externalImageInfo;
+    }
+
+    public String getDeployType() {
+        return deployType;
+    }
+
+    public void setDeployType(String deployType) {
+        this.deployType = deployType;
+    }
 
     public String getAppName() {
         return appName;

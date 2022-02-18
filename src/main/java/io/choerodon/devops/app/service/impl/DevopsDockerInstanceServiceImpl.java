@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.enums.host.DevopsHostDeployType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
@@ -114,8 +115,16 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
 
         //目前只支持项目下的部署
-        HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-        dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
+        // 从制品库找到的镜像
+        if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getDeployType())) {
+            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
+            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
+        } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getDeployType())) {
+            dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployVO);
+        } else {
+            throw new CommonException("error.unsupported.image.source");
+        }
+
 
         deployVersion = dockerDeployVO.getImageInfo().getTag();
         deployObjectName = dockerDeployVO.getImageInfo().getImageName();
@@ -165,6 +174,16 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
 
+    }
+
+    private DockerDeployDTO initCustomDockerDeployDTO(DockerDeployVO dockerDeployVO) {
+        DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
+        dockerDeployDTO.setImage(dockerDeployVO.getExternalImageInfo().getImageUrl());
+        dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(dockerDeployVO.getExternalImageInfo().getImageUrl(),
+                dockerDeployVO.getExternalImageInfo().getUsername(),
+                dockerDeployVO.getExternalImageInfo().getPassword()));
+
+        return dockerDeployDTO;
     }
 
 
