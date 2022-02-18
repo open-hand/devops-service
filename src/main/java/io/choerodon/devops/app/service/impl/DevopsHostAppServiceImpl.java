@@ -133,11 +133,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else {
                 // 更新删除命令
                 if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
-                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), devopsHostAppInstanceDTO.getKillCommand());
+                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), jarDeployVO.getKillCommand());
                 }
                 // 更新健康探针
                 if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
-                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), devopsHostAppInstanceDTO.getHealthProb());
+                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), jarDeployVO.getHealthProb());
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
