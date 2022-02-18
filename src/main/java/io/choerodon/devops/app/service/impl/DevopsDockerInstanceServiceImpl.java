@@ -29,10 +29,7 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
@@ -41,6 +38,8 @@ import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
@@ -48,6 +47,7 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -89,13 +89,15 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private AppServiceService appServiceService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsHostAppMapper devopsHostAppMapper;
 
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deployDockerInstance(Long projectId, DockerDeployVO dockerDeployVO) {
         //1.获取项目信息
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
@@ -112,36 +114,28 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
 
-        if (isMarketOrHzero(dockerDeployVO)) {
-            MarketServiceDeployObjectVO marketServiceDeployObjectVO = getMarketServiceDeployObjectVO(projectId, dockerDeployVO);
-            MarketHarborConfigVO marketHarborConfigVO = marketServiceDeployObjectVO.getMarketHarborConfigVO();
-            DockerPullAccountDTO dockerPullAccountDTO = initDockerPullAccountDTO(marketHarborConfigVO);
-            dockerDeployDTO = initMarketDockerDeployDTO(dockerDeployDTO, dockerPullAccountDTO, marketServiceDeployObjectVO);
-            appServiceId = marketServiceDeployObjectVO.getMarketServiceId();
-            if (AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType())) {
-                deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();
-                deployVersion = marketServiceDeployObjectVO.getMarketServiceVersion();
-            } else {
-                //部署对象的名称
-                deployObjectName = marketServiceDeployObjectVO.getDevopsAppServiceName();
-                deployVersion = marketServiceDeployObjectVO.getDevopsAppServiceVersion();
-            }
-            serviceName = marketServiceDeployObjectVO.getMarketServiceName();
-            fillDeploySource(deploySourceVO, marketServiceDeployObjectVO);
-            //如果是市场部署将部署人员添加为应用的订阅人员
-            marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
-        } else if (AppSourceType.CURRENT_PROJECT.getValue().equals(dockerDeployVO.getSourceType())) {
-            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
+        //目前只支持项目下的部署
+        HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
+        dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
 
-            deployVersion = dockerDeployVO.getImageInfo().getTag();
-            deployObjectName = dockerDeployVO.getImageInfo().getImageName();
-            AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
-            appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
-            serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
-        }
+        deployVersion = dockerDeployVO.getImageInfo().getTag();
+        deployObjectName = dockerDeployVO.getImageInfo().getImageName();
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
+        appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
+        serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
 
         // 2.保存记录
+        // 保存 应用服务与主机之间的关系
+        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
+        devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+        devopsHostAppDTO.setProjectId(projectId);
+        devopsHostAppDTO.setHostId(hostDTO.getId());
+        devopsHostAppDTO.setName(dockerDeployVO.getName());
+        devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
+        devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
+        devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+
+        //保存docker实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getName());
         devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, hostDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
@@ -175,14 +169,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
 
-
-
-
-
-
     private void checkHostExist(DevopsHostDTO hostDTO) {
         AssertUtils.notNull(hostDTO, "error.host.not.exist");
     }
+
     private DevopsHostDTO getHost(Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         return devopsHostDTO;

@@ -34,6 +34,28 @@ public class DockerDeployVO {
     @NotNull(message = "error.value.is.null")
     private String value;
 
+    @ApiModelProperty("主机应用的名称")
+    private String appName;
+
+    @ApiModelProperty("主机应用的code")
+    private String appCode;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
     public String getValue() {
         return value;
     }
