@@ -63,6 +63,8 @@ public class DevopsHostAppVO {
     private Boolean killCommandExist;
     @ApiModelProperty("健康探针")
     private String healthProb;
+    @ApiModelProperty("健康探针是否存在")
+    private Boolean healthProbExist;
     @ApiModelProperty("应用是否准备好")
     private Boolean ready;
 
@@ -370,5 +372,13 @@ public class DevopsHostAppVO {
 
     public void setReady(Boolean ready) {
         this.ready = ready;
+    }
+
+    public Boolean getHealthProbExist() {
+        return healthProbExist;
+    }
+
+    public void setHealthProbExist(Boolean healthProbExist) {
+        this.healthProbExist = healthProbExist;
     }
 }

@@ -117,4 +117,11 @@ public class HostDeployUtil {
         dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage()));
         return dockerRunExec.toString();
     }
+
+    public static Boolean checkHealthProbExit(String deleteCommand) {
+        if (ObjectUtils.isEmpty(deleteCommand)) {
+            return false;
+        }
+        return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
+    }
 }
