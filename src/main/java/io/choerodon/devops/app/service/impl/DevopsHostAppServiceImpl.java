@@ -236,6 +236,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
         devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
+        devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
             DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
