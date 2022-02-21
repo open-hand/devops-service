@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -332,8 +334,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //    }
 
     private String getMavenVersion(String version) {
-        if (version.contains(BaseConstants.Symbol.SLASH)) {
-            return version.split(BaseConstants.Symbol.SLASH)[0];
+        if (version.contains(SLASH)) {
+            return version.split(SLASH)[0];
         } else {
             return version;
         }
@@ -671,7 +673,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
-        String appFile = workDir + c7nNexusComponentDTO.getName();
+        String appFile = workDir + SLASH+ c7nNexusComponentDTO.getName();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
         params.put("{{ APP_FILE }}", appFile);
