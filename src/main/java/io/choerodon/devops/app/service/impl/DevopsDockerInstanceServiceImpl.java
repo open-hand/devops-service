@@ -118,7 +118,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         // 从制品库找到的镜像
         if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getDeployType())) {
             HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
+            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo, dockerDeployVO);
         } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getDeployType())) {
             dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
         } else {
@@ -181,7 +181,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(dockerDeployVO.getExternalImageInfo().getImageUrl(),
                 dockerDeployVO.getExternalImageInfo().getUsername(),
                 dockerDeployVO.getExternalImageInfo().getPassword()));
-
+        dockerDeployDTO.setRepoType("custom");
         return dockerDeployDTO;
     }
 
@@ -216,10 +216,12 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return imageTagVo;
     }
 
-    private DockerDeployDTO initProjectDockerDeployDTO(DockerDeployDTO dockerDeployDTO, HarborC7nRepoImageTagVo imageTagVo) {
+    private DockerDeployDTO initProjectDockerDeployDTO(DockerDeployDTO dockerDeployDTO, HarborC7nRepoImageTagVo imageTagVo, DockerDeployVO dockerDeployVO) {
 
         dockerDeployDTO.setDockerPullAccountDTO(ConvertUtils.convertObject(imageTagVo, DockerPullAccountDTO.class));
         dockerDeployDTO.setImage(imageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", ""));
+        dockerDeployDTO.setRepoName(dockerDeployVO.getImageInfo().getRepoName());
+        dockerDeployDTO.setRepoType("default");
         return dockerDeployDTO;
     }
 
@@ -235,6 +237,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
             devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
             devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
+            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());

@@ -21,6 +21,26 @@ public class DockerDeployDTO {
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
 
+    private String repoName;
+
+    private String repoType;
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
+
     public String getContainerId() {
         return containerId;
     }
