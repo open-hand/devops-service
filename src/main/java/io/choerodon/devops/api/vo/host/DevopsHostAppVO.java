@@ -67,6 +67,8 @@ public class DevopsHostAppVO {
     private Boolean healthProbExist;
     @ApiModelProperty("应用是否准备好")
     private Boolean ready;
+    @ApiModelProperty("docker容器的状态")
+    private String status;
 
     private DevopsDockerInstanceVO devopsDockerInstanceVO;
 
@@ -399,5 +401,13 @@ public class DevopsHostAppVO {
 
     public void setHealthProbExist(Boolean healthProbExist) {
         this.healthProbExist = healthProbExist;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
