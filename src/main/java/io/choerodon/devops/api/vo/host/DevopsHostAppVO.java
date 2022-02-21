@@ -120,6 +120,9 @@ public class DevopsHostAppVO {
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
 
+    private IamUserDTO creator;
+    private IamUserDTO updater;
+
     @ApiModelProperty("操作命令")
     private DevopsHostCommandDTO devopsHostCommandDTO;
 
@@ -154,8 +157,6 @@ public class DevopsHostAppVO {
     public void setVersion(String version) {
         this.version = version;
     }
-
-    private IamUserDTO creator;
 
     public FileInfoVO getFileInfoVO() {
         return fileInfoVO;
@@ -235,6 +236,14 @@ public class DevopsHostAppVO {
 
     public void setCreator(IamUserDTO creator) {
         this.creator = creator;
+    }
+
+    public IamUserDTO getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(IamUserDTO updater) {
+        this.updater = updater;
     }
 
     public Long getProjectId() {
