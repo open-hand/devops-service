@@ -166,20 +166,19 @@
         UNION
         select dha.*,
         dh.name as host_name,
-        dhai.app_id,
-
-        dhai.source_type,
-        dhai.source_config,
-        dhai.pre_command,
-        dhai.run_command,
-        dhai.post_command,
-        dhai.kill_command,
-        dhai.health_prob,
-        dhai.ready,
-        dhai.group_id,
-        dhai.artifact_id,
-        dhai.version,
-        dhai.id as instanceId
+        ddi.app_id,
+        ddi.source_type,
+        ddi.id as instanceId,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id

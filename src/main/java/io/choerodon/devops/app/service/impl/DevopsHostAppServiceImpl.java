@@ -233,7 +233,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         List<DevopsHostAppVO> devopsHostAppVOS = new ArrayList<>();
         devopsHostAppVOS.add(devopsHostAppVO);
         UserDTOFillUtil.fillUserInfo(devopsHostAppVOS, "createdBy", "creator");
-        UserDTOFillUtil.fillUserInfo(devopsHostAppVOS,"lastUpdatedBy","updater");
+        UserDTOFillUtil.fillUserInfo(devopsHostAppVOS, "lastUpdatedBy", "updater");
         devopsHostAppVO = devopsHostAppVOS.get(0);
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
