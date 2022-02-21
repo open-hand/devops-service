@@ -26,6 +26,7 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
+import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
@@ -331,7 +332,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-                    HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
+                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
+                    hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+                    hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
 
 
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
@@ -349,11 +354,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private void sendHostDockerAgentMsg(Long hostId, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
         HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
 
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(dockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
         instanceDeployOptions.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
         instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
-        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
@@ -362,7 +370,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private HostAgentMsgVO getHostAgentMsgVO(Long hostId, DevopsHostCommandDTO devopsHostCommandDTO) {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+        hostAgentMsgVO.setType(HostCommandEnum.REMOVE_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         return hostAgentMsgVO;
     }
@@ -537,7 +545,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppDTO.getId(),
                 deploySourceVO);
 
-        HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
@@ -727,7 +738,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 deploySourceVO);
 
         // 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {

@@ -830,10 +830,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         // 1. 更新状态 记录镜像信息
+        // 保存 应用服务与主机之间的关系
+        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
+        devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+        devopsHostAppDTO.setProjectId(projectId);
+        devopsHostAppDTO.setHostId(hostId);
+        devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
+        devopsHostAppDTO.setCode(cdHostDeployConfigVO.getAppCode());
+        devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
+        devopsHostAppMapper.insertSelective(devopsHostAppDTO);
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
 
-        // TODO: 2022/2/18  
         if (devopsDockerInstanceDTO == null) {
             // 新建实例
             devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
