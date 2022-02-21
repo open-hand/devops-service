@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
 import java.util.*;
 
 import org.hzero.core.base.BaseConstants;
@@ -339,7 +341,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
 
-
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
                     instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
@@ -497,7 +498,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             customDeployVO.getFileInfoVO().setFileName("");
         }
         String appFileName = customDeployVO.getFileInfoVO().getFileName();
-        String appFile = workDir + appFileName;
+        String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", appFileName);
         params.put("{{ APP_FILE }}", appFile);
@@ -686,14 +687,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName();
-            appFile = workDir + appFileName;
+            appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(null,
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName() + System.currentTimeMillis();
-            appFile = workDir + appFileName;
+            appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
