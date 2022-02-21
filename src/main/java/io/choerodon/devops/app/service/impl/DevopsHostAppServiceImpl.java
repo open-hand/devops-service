@@ -224,6 +224,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             compoundDevopsHostAppVO(devopsHostAppVO);
             devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
             devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
+            devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
         });
         return page;
     }
