@@ -72,7 +72,7 @@ public class DevopsHostAppController {
                                            @Encrypt
                                            @ApiParam(value = "主机应用id", required = true)
                                            @PathVariable("app_id") Long appId,
-                                           @RequestParam(value = "host_deploy_type", defaultValue = "image") String hostDeployType) {
+                                           @RequestParam(value = "host_deploy_type") String hostDeployType) {
         devopsHostAppService.deleteById(projectId, hostId, appId, hostDeployType);
         return ResponseEntity.noContent().build();
     }
