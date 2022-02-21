@@ -68,6 +68,16 @@ public class DevopsHostAppVO {
     @ApiModelProperty("应用是否准备好")
     private Boolean ready;
 
+    private DevopsDockerInstanceVO devopsDockerInstanceVO;
+
+    public DevopsDockerInstanceVO getDevopsDockerInstanceVO() {
+        return devopsDockerInstanceVO;
+    }
+
+    public void setDevopsDockerInstanceVO(DevopsDockerInstanceVO devopsDockerInstanceVO) {
+        this.devopsDockerInstanceVO = devopsDockerInstanceVO;
+    }
+
     public String getPreCommand() {
         return preCommand;
     }

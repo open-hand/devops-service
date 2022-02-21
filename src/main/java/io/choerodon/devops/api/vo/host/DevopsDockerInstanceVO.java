@@ -36,6 +36,26 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
     private IamUserDTO deployer;
     private Long createdBy;
 
+    private String repoType;
+
+    private String repoName;
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
+
     public Long getCreatedBy() {
         return createdBy;
     }
