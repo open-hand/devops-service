@@ -242,6 +242,15 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO = devopsHostAppVOS.get(0);
         compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
+        if (org.apache.commons.lang3.StringUtils.equals(devopsHostAppVO.getRdupmType(), RdupmTypeEnum.DOCKER.value())) {
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+            devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
+            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+            if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+                List<DevopsDockerInstanceDTO> dockerInstanceDTOS = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList());
+                devopsHostAppVO.setInstanceId(dockerInstanceDTOS.get(0).getId());
+            }
+        }
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
         devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
         devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
