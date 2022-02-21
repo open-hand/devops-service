@@ -51,6 +51,26 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     @Encrypt
     private Long appId;
 
+    private String repoType;
+
+    private String repoName;
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
     public Long getAppId() {
         return appId;
     }

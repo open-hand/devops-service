@@ -36,8 +36,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_instance.groovy') {
 
     changeSet(author: 'wx', id: '2022-02-18-add-app-id') {
         addColumn(tableName: 'devops_docker_instance') {
-            column(name: 'app_id', type: "BIGINT UNSIGNED", defaultValue: '0', remarks: '主机应用id', afterColumn: 'container_id'){
+            column(name: 'app_id', type: "BIGINT UNSIGNED", defaultValue: '0', remarks: '主机应用id', afterColumn: 'container_id') {
                 constraints(nullable: false)
+            }
+        }
+    }
+
+    changeSet(author: 'wx', id: '2022-02-21-add-column') {
+        addColumn(tableName: 'devops_docker_instance') {
+            column(name: 'repoType', type: 'VARCHAR(128)', remarks: '仓库类型  自定义的还是默认的', afterColumn: 'app_id') {
+                constraints(nullable: false)
+            }
+
+            column(name: 'repoName', type: 'VARCHAR(256)', remarks: '仓库名称', afterColumn: 'app_id') {
             }
         }
     }

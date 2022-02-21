@@ -4,6 +4,7 @@ import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.util.*;
 
+import java.util.stream.Collectors;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +28,7 @@ import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
@@ -247,6 +249,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
+        }
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+        if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+            DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+            devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
         }
         return devopsHostAppVO;
     }
