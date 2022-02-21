@@ -712,7 +712,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
                     appFile);
         } else {
-            appFileName = nexusComponentDTOList.get(0).getName() + System.currentTimeMillis();
+            appFileName = nexusComponentDTOList.get(0).getName();
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
