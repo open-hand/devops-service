@@ -15,7 +15,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.apache.commons.lang.BooleanUtils;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -457,6 +456,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceDTO.setPreCommand(devopsCdHostDeployInfoDTO.getPreCommand());
             devopsHostAppInstanceDTO.setRunCommand(devopsCdHostDeployInfoDTO.getRunCommand());
             devopsHostAppInstanceDTO.setPostCommand(devopsCdHostDeployInfoDTO.getPostCommand());
+            devopsHostAppInstanceDTO.setKillCommand(devopsCdHostDeployInfoDTO.getKillCommand());
+            devopsHostAppInstanceDTO.setHealthProb(devopsCdHostDeployInfoDTO.getHealthProb());
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
@@ -601,6 +602,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdHostDeployInfoDTO.getPreCommand(),
                 devopsCdHostDeployInfoDTO.getRunCommand(),
                 devopsCdHostDeployInfoDTO.getPostCommand(),
+                devopsCdHostDeployInfoDTO.getKillCommand(),
+                devopsCdHostDeployInfoDTO.getHealthProb(),
                 new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
                         nexusRepoId,
                         groupId,
@@ -665,6 +668,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
             devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
             devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
+            devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(devopsHostAppService.calculateSourceConfig(jarDeployVO));
             devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
@@ -673,7 +678,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
-        String appFile = workDir + SLASH+ c7nNexusComponentDTO.getName();
+        String appFile = workDir + SLASH + c7nNexusComponentDTO.getName();
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
         params.put("{{ APP_FILE }}", appFile);
