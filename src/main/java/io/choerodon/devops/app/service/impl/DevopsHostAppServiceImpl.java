@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,22 +301,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostCommandDTO.setInstanceId(dockerInstanceDTO.getId());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-
-            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-            hostAgentMsgVO.setHostId(String.valueOf(hostId));
-            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-
-
-            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
-            instanceDeployOptions.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
-            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
-            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
-
-            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
-
-
+            sendHostDockerAgentMsg(hostId, dockerInstanceDTO, devopsHostCommandDTO);
         } else {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
@@ -345,10 +331,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
 
-                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
-                    hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-                    hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+                    HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
 
 
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
@@ -361,6 +344,27 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 }
             }
         }
+    }
+
+    private void sendHostDockerAgentMsg(Long hostId, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
+        HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
+
+
+        InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+        instanceDeployOptions.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
+        instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+        hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
+
+    @NotNull
+    private HostAgentMsgVO getHostAgentMsgVO(Long hostId, DevopsHostCommandDTO devopsHostCommandDTO) {
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+        hostAgentMsgVO.setHostId(String.valueOf(hostId));
+        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        return hostAgentMsgVO;
     }
 
     @Override
@@ -533,10 +537,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppDTO.getId(),
                 deploySourceVO);
 
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
@@ -726,10 +727,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 deploySourceVO);
 
         // 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-        hostAgentMsgVO.setHostId(String.valueOf(hostId));
-        hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-        hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+        HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
         if (LOGGER.isInfoEnabled()) {
