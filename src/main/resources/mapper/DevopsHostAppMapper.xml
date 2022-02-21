@@ -19,7 +19,6 @@
            dha.*,
            dh.NAME AS host_name,
            dhai.app_id,
-
            dhai.source_type,
            dhai.source_config,
            dhai.pre_command,
@@ -30,7 +29,8 @@
            dhai.group_id,
            dhai.artifact_id,
            dhai.version,
-           dhai.id AS instanceId
+           dhai.id AS instanceId,
+           null AS status
         FROM
           devops_host_app dha
         LEFT JOIN devops_host dh ON dh.id = dha.host_id
@@ -56,7 +56,6 @@
            dha.*,
            dh.NAME AS host_name,
            ddi.app_id,
-
            NULL,
            NULL,
            NULL,
@@ -67,7 +66,8 @@
            NULL,
            NULL,
            NULL,
-           ddi.id AS instanceId
+           ddi.id AS instanceId,
+           ddi.status AS status
         FROM
            devops_host_app dha
         LEFT JOIN devops_host dh ON dh.id = dha.host_id
@@ -142,7 +142,8 @@
         dhai.group_id,
         dhai.artifact_id,
         dhai.version,
-        dhai.id as instanceId
+        dhai.id as instanceId,
+        null as status
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
@@ -178,7 +179,8 @@
         NULL,
         NULL,
         NULL,
-        NULL
+        NULL,
+        ddi.status AS status
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
