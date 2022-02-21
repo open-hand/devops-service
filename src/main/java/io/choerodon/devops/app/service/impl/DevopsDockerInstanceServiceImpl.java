@@ -120,7 +120,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
             dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo);
         } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getDeployType())) {
-            dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployVO);
+            dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
         } else {
             throw new CommonException("error.unsupported.image.source");
         }
@@ -176,8 +176,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     }
 
-    private DockerDeployDTO initCustomDockerDeployDTO(DockerDeployVO dockerDeployVO) {
-        DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
+    private DockerDeployDTO initCustomDockerDeployDTO(DockerDeployDTO dockerDeployDTO, DockerDeployVO dockerDeployVO) {
         dockerDeployDTO.setImage(dockerDeployVO.getExternalImageInfo().getImageUrl());
         dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(dockerDeployVO.getExternalImageInfo().getImageUrl(),
                 dockerDeployVO.getExternalImageInfo().getUsername(),
