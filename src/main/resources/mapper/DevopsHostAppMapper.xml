@@ -75,6 +75,12 @@
             <where>
                 dha.project_id = #{projectId}
                 AND rdupm_type = 'docker'
+                AND ddi.id IN (SELECT
+                MAX( ddix.id )
+                FROM
+                devops_docker_instance ddix
+                WHERE
+                ddix.app_id = dha.id)
                 <if test="hostId != null">
                     and dha.host_id = #{hostId}
                 </if>
@@ -188,6 +194,12 @@
         <where>
             dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
             AND rdupm_type != 'docker'
+            AND ddi.id IN (SELECT
+            MAX( ddix.id )
+            FROM
+            devops_docker_instance ddix
+            WHERE
+            ddix.app_id = dha.id)
             <if test="hostId != null">
                 and dha.host_id = #{hostId}
             </if>
