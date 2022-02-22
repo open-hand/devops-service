@@ -147,9 +147,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getContainerName());
         devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, devopsHostAppDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
-        String values = getDeValues(dockerDeployVO);
+//        String values = getDeValues(dockerDeployVO);
 
-        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, values));
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, devopsDockerInstanceDTO.getDockerCommand()));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
@@ -182,6 +182,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 dockerDeployVO.getExternalImageInfo().getUsername(),
                 dockerDeployVO.getExternalImageInfo().getPassword()));
         dockerDeployDTO.setRepoType("custom");
+        dockerDeployDTO.setPrivateRepository(dockerDeployVO.getExternalImageInfo().getPrivateRepository());
+        dockerDeployDTO.setUserName(dockerDeployVO.getExternalImageInfo().getUsername());
+        dockerDeployDTO.setPassWord(dockerDeployVO.getExternalImageInfo().getPassword());
         return dockerDeployDTO;
     }
 
@@ -222,6 +225,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         dockerDeployDTO.setImage(imageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", ""));
         dockerDeployDTO.setRepoName(dockerDeployVO.getImageInfo().getRepoName());
         dockerDeployDTO.setRepoType("default");
+        dockerDeployDTO.setRepoId(dockerDeployVO.getImageInfo().getRepoId());
+        dockerDeployDTO.setImageName(dockerDeployVO.getImageInfo().getImageName());
+        dockerDeployDTO.setTag(dockerDeployVO.getImageInfo().getTag());
         return dockerDeployDTO;
     }
 
@@ -239,6 +245,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
             devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
             devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
+            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
+            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
+            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
+            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
+            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
+            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
+            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());

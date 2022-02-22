@@ -46,14 +46,95 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
-    @ApiModelProperty("部署来源")
+    @ApiModelProperty("部署来源,当前项目还是其他来源")
     private String sourceType;
+
+    @ApiModelProperty("主机应用id")
     @Encrypt
     private Long appId;
 
+    @ApiModelProperty("镜像仓库的类型，默认的还是自定义的")
     private String repoType;
 
+    @ApiModelProperty("仓库的名称，默认的才有")
     private String repoName;
+
+    @ApiModelProperty("仓库的id,默认的才有")
+    private Long repoId;
+
+    @ApiModelProperty("自定义仓库的用户名")
+    private String userName;
+
+    @ApiModelProperty("自定义仓库的密码")
+    private String passWord;
+
+    @ApiModelProperty("自定义仓库是否是私库")
+    private Boolean privateRepository;
+
+    @ApiModelProperty("默认仓库的镜像名称")
+    private String imageName;
+
+    @ApiModelProperty("默认仓库的镜像版本")
+    private String tag;
+
+    @ApiModelProperty("命令框的命令")
+    private String dockerCommand;
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassWord() {
+        return passWord;
+    }
+
+    public void setPassWord(String passWord) {
+        this.passWord = passWord;
+    }
+
+    public Boolean getPrivateRepository() {
+        return privateRepository;
+    }
+
+    public void setPrivateRepository(Boolean privateRepository) {
+        this.privateRepository = privateRepository;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public Long getRepoId() {
+        return repoId;
+    }
+
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
 
     public String getRepoType() {
         return repoType;
