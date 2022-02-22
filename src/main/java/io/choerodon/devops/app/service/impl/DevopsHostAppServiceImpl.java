@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.util.*;
-
 import java.util.stream.Collectors;
+
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.jetbrains.annotations.NotNull;
@@ -249,6 +249,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
                 List<DevopsDockerInstanceDTO> dockerInstanceDTOS = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList());
                 devopsHostAppVO.setInstanceId(dockerInstanceDTOS.get(0).getId());
+                devopsHostAppVO.setStatus(dockerInstanceDTOS.get(0).getStatus());
+                devopsHostAppVO.setPorts(dockerInstanceDTOS.get(0).getPorts());
             }
         }
         devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
