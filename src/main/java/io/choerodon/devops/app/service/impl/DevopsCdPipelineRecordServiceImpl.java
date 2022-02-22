@@ -856,6 +856,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     image,
                     DockerInstanceStatusEnum.OPERATING.value(),
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
+
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
 //            if (appServiceId != null) {
