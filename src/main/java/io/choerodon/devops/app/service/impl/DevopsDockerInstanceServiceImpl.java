@@ -116,10 +116,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         //目前只支持项目下的部署
         // 从制品库找到的镜像
-        if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getDeployType())) {
+        if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getRepoType())) {
             HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
             dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo, dockerDeployVO);
-        } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getDeployType())) {
+        } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getRepoType())) {
             dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
         } else {
             throw new CommonException("error.unsupported.image.source");

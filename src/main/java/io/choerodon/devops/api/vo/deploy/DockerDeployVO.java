@@ -42,8 +42,8 @@ public class DockerDeployVO {
     @ApiModelProperty("主机应用的code")
     private String appCode;
 
-    @ApiModelProperty("部署类型")
-    private String deployType;
+    @ApiModelProperty("仓库类型(自定义的还是默认的)")
+    private String repoType;
 
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
@@ -56,12 +56,12 @@ public class DockerDeployVO {
         this.externalImageInfo = externalImageInfo;
     }
 
-    public String getDeployType() {
-        return deployType;
+    public String getRepoType() {
+        return repoType;
     }
 
-    public void setDeployType(String deployType) {
-        this.deployType = deployType;
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
     }
 
     public String getAppName() {
