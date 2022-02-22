@@ -72,6 +72,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private static final String ERROR_UPDATE_DOCKER_INSTANCE_FAILED = "error.update.docker.instance.failed";
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
 
+    private static final String CREATE = "create";
+    private static final String UPDATE = "update";
+
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
@@ -200,7 +203,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
     private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DockerDeployVO dockerDeployVO, Long hostId) {
-        if (StringUtils.equals(OperationTypeEnum.CREATE_APP.value(), dockerDeployVO.getOperation())) {
+        if (StringUtils.equals(CREATE, dockerDeployVO.getOperation())) {
             //插入主机应用实例
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
