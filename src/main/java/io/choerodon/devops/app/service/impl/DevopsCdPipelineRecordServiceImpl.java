@@ -557,7 +557,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
-        CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
+        CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
 
 
         // 0.1 从制品库获取仓库信息

@@ -724,8 +724,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 加密json中主键
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         CdHostDeployConfigVO cdHostDeployConfigVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, CdHostDeployConfigVO.class);
-        if (devopsCdHostDeployInfoDTO.getJarDeployJson() != null) {
-            cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getJarDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
+        if (devopsCdHostDeployInfoDTO.getDeployJson() != null) {
+            cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
 
         devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
@@ -2454,15 +2454,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
-            if (cdHostDeployConfigVO.getJarDeploy() != null) {
-                devopsCdHostDeployInfoDTO.setJarDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+            if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+            }
+            if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
+                devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getImageDeploy().getValue());
             }
 
             if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
                 devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
             }
-
             devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
 
