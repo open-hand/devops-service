@@ -48,7 +48,8 @@ public class DockerDeployVO {
     private String operation;
 
     @ApiModelProperty("hostAppId")
-    private String hostAppId;
+    @Encrypt
+    private Long hostAppId;
 
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
@@ -57,11 +58,11 @@ public class DockerDeployVO {
         return externalImageInfo;
     }
 
-    public String getHostAppId() {
+    public Long getHostAppId() {
         return hostAppId;
     }
 
-    public void setHostAppId(String hostAppId) {
+    public void setHostAppId(Long hostAppId) {
         this.hostAppId = hostAppId;
     }
 
