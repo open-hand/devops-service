@@ -44,6 +44,8 @@ public class DockerDeployVO {
 
     @ApiModelProperty("仓库类型(自定义的还是默认的)")
     private String repoType;
+    @ApiModelProperty("操作类型 create/update")
+    private String operation;
 
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
@@ -54,6 +56,14 @@ public class DockerDeployVO {
 
     public void setExternalImageInfo(ExternalImageInfo externalImageInfo) {
         this.externalImageInfo = externalImageInfo;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 
     public String getRepoType() {

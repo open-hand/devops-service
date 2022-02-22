@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -135,13 +136,27 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         // 2.保存记录
         // 保存 应用服务与主机之间的关系
         DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
-        devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
-        devopsHostAppDTO.setProjectId(projectId);
-        devopsHostAppDTO.setHostId(hostDTO.getId());
-        devopsHostAppDTO.setName(dockerDeployVO.getAppName());
-        devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
-        devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
-        devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+        if (StringUtils.equals(OperationTypeEnum.CREATE_APP.value(), dockerDeployVO.getOperation())) {
+
+            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            devopsHostAppDTO.setProjectId(projectId);
+            devopsHostAppDTO.setHostId(hostDTO.getId());
+            devopsHostAppDTO.setName(dockerDeployVO.getAppName());
+            devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
+            devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
+            devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+
+        } else {
+            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            devopsHostAppDTO.setProjectId(projectId);
+            devopsHostAppDTO.setHostId(hostDTO.getId());
+            devopsHostAppDTO.setName(dockerDeployVO.getAppName());
+            devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
+            devopsHostAppDTO = devopsHostAppMapper.selectOne(devopsHostAppDTO);
+        }
+        if (devopsHostAppDTO == null) {
+            return;
+        }
 
         //保存docker实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getContainerName());
@@ -256,6 +271,18 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
+            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
+            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
+            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
+            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
+            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
+            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
+            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
+            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
+            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
         }
         return devopsDockerInstanceDTO;
     }
