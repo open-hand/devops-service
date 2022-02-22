@@ -125,7 +125,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         //获取部署对象
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
 
-        //保存实例的信息（每部署一次产生一条新的实例记录）
+        //保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
 
         //保存命令
@@ -169,22 +169,39 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @NotNull
     private DevopsDockerInstanceDTO createDockerInstanceDTO(DockerDeployVO dockerDeployVO, DevopsHostAppDTO devopsHostAppDTO, DockerDeployDTO dockerDeployDTO) {
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
-        devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
-        devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
-        devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
-        devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
-        devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
-        devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
-        devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
-        devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
-        devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
-        devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
-        devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
-        devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
-        devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
-        MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
-        return devopsDockerInstanceDTO;
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(devopsHostAppDTO.getHostId(), dockerDeployVO.getContainerName());
+        if (devopsDockerInstanceDTO == null) {
+            devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
+            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
+            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
+            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
+            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
+            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
+            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
+            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
+            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
+            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
+            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+            return devopsDockerInstanceDTO;
+        } else {
+            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
+            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
+            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
+            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
+            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
+            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
+            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
+            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
+            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
+            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_UPDATE_DOCKER_INSTANCE_FAILED);
+            return devopsDockerInstanceMapper.selectByPrimaryKey(devopsDockerInstanceDTO.getId());
+        }
     }
 
     private DockerDeployDTO getDockerDeployDTO(DockerDeployVO dockerDeployVO) {
