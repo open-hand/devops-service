@@ -854,6 +854,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
             devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getImageDeploy().getValue());
             devopsDockerInstanceDTO.setRepoId(cdHostDeployConfigVO.getImageDeploy().getRepoId());
+            // TODO: 2022/2/22
+//            devopsDockerInstanceDTO.setImageName();
+//            devopsDockerInstanceDTO.setTag();
 
 
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
