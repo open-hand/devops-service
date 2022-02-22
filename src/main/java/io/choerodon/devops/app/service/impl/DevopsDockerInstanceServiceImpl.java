@@ -228,7 +228,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(dockerDeployVO.getExternalImageInfo().getImageUrl(),
                 dockerDeployVO.getExternalImageInfo().getUsername(),
                 dockerDeployVO.getExternalImageInfo().getPassword()));
-        dockerDeployDTO.setRepoType("custom");
+        dockerDeployDTO.setRepoType(DevopsHostDeployType.CUSTOM.value());
         dockerDeployDTO.setPrivateRepository(dockerDeployVO.getExternalImageInfo().getPrivateRepository());
         dockerDeployDTO.setUserName(dockerDeployVO.getExternalImageInfo().getUsername());
         dockerDeployDTO.setPassWord(dockerDeployVO.getExternalImageInfo().getPassword());
@@ -271,54 +271,13 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         dockerDeployDTO.setDockerPullAccountDTO(ConvertUtils.convertObject(imageTagVo, DockerPullAccountDTO.class));
         dockerDeployDTO.setImage(imageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", ""));
         dockerDeployDTO.setRepoName(dockerDeployVO.getImageInfo().getRepoName());
-        dockerDeployDTO.setRepoType("default");
+        dockerDeployDTO.setRepoType(DevopsHostDeployType.DEFAULT.value());
         dockerDeployDTO.setRepoId(dockerDeployVO.getImageInfo().getRepoId());
         dockerDeployDTO.setImageName(dockerDeployVO.getImageInfo().getImageName());
         dockerDeployDTO.setTag(dockerDeployVO.getImageInfo().getTag());
         return dockerDeployDTO;
     }
 
-    private DockerDeployDTO initMarketDockerDeployDTO(DockerDeployDTO dockerDeployDTO, DockerPullAccountDTO dockerPullAccountDTO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
-        dockerDeployDTO.setDockerPullAccountDTO(dockerPullAccountDTO);
-        dockerDeployDTO.setImage(marketServiceDeployObjectVO.getMarketDockerImageUrl());
-        return dockerDeployDTO;
-    }
-
-    private DevopsDockerInstanceDTO saveDevopsDockerInstanceDTO(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostAppDTO devopsHostAppDTO, DockerDeployDTO dockerDeployDTO, Long appServiceId, String serviceName, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
-        if (devopsDockerInstanceDTO == null) {
-            devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
-            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
-            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
-            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
-            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
-            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
-            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
-            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
-            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
-            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
-            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
-            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
-            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
-
-            MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
-        } else {
-            dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
-            devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
-            devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
-            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
-            devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
-            devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
-            devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
-            devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
-            devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
-            devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
-            devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
-            devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
-            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
-            baseUpdate(devopsDockerInstanceDTO);
-        }
-        return devopsDockerInstanceDTO;
-    }
 
     private void sendHostDeployMsg(DevopsHostDTO hostDTO, DevopsDockerInstanceDTO devopsDockerInstanceDTO, HostAgentMsgVO hostAgentMsgVO) {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostDTO.getId(),
