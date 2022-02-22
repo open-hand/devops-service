@@ -38,7 +38,11 @@ echo "c7n-agent downloaded successfully"
 # 4. 启动程序
 cd "${WORK_DIR}"
 chmod +x "${AGENT}"
-nohup "${AGENT}" --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" >"${AGENT_LOG}" 2>&1 &
+if [ $1 ]; then
+  nohup "${AGENT}" --previousAgentVersion=$1 --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" >"${AGENT_LOG}" 2>&1 &
+else
+  nohup "${AGENT}" --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" >"${AGENT_LOG}" 2>&1 &
+fi
 
 # 5. 保存agent进程号
 echo $! >c7n-agent.pid

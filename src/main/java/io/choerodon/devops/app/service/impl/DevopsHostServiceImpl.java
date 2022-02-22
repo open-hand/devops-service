@@ -28,6 +28,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -72,7 +73,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
-    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
+    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh %s";
     private static final String HOST_UNINSTALL_SHELL = "ps -ef|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
 
@@ -567,13 +568,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate) {
+    public String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate, String previousAgentVersion) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         // 如果是agent自动升级查询shell，那么不进行权限校验
         if (!queryForAutoUpdate) {
             devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
         }
-        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
+        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken(), ObjectUtils.isEmpty(previousAgentVersion) ? "" : previousAgentVersion);
     }
 
     @Override
@@ -590,7 +591,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return;
         }
         Map<String, String> map = new HashMap<>();
-        String command = queryShell(projectId, hostId, false);
+        String command = queryShell(projectId, hostId, false, "");
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
         automaticHost(devopsHostConnectionVO, map, redisKey, command);
     }
