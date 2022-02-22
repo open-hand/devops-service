@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
@@ -92,6 +94,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppMapper devopsHostAppMapper;
+    @Autowired
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
 
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
@@ -105,65 +109,40 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         //2.获取主机信息
         DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
         checkHostExist(hostDTO);
+        //校验主机权限
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, hostDTO, DetailsHelper.getUserDetails().getUserId());
 
-
-        String deployObjectName = null;
-        String deployVersion = null;
-        Long appServiceId = null;
-        String serviceName = null;
-        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
-
-        DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
-
-        //目前只支持项目下的部署
-        // 从制品库找到的镜像
-        if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getRepoType())) {
-            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
-            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo, dockerDeployVO);
-        } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getRepoType())) {
-            dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
-        } else {
-            throw new CommonException("error.unsupported.image.source");
-        }
-
-
-        deployVersion = dockerDeployVO.getImageInfo().getTag();
-        deployObjectName = dockerDeployVO.getImageInfo().getImageName();
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByCode(deployObjectName, projectId);
-        appServiceId = appServiceDTO == null ? null : appServiceDTO.getId();
-        serviceName = appServiceDTO == null ? null : appServiceDTO.getName();
-
-        // 2.保存记录
-        // 保存 应用服务与主机之间的关系
-        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
-        if (StringUtils.equals(OperationTypeEnum.CREATE_APP.value(), dockerDeployVO.getOperation())) {
-
-            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
-            devopsHostAppDTO.setProjectId(projectId);
-            devopsHostAppDTO.setHostId(hostDTO.getId());
-            devopsHostAppDTO.setName(dockerDeployVO.getAppName());
-            devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
-            devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
-            devopsHostAppMapper.insertSelective(devopsHostAppDTO);
-
-        } else {
-            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
-            devopsHostAppDTO.setProjectId(projectId);
-            devopsHostAppDTO.setHostId(hostDTO.getId());
-            devopsHostAppDTO.setName(dockerDeployVO.getAppName());
-            devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
-            devopsHostAppDTO = devopsHostAppMapper.selectOne(devopsHostAppDTO);
-        }
+        //获取主机应用
+        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, dockerDeployVO, hostDTO.getId());
         if (devopsHostAppDTO == null) {
             return;
         }
+        //初始化部署来源
+        DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
+        //获取部署对象
+        DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
 
-        //保存docker实例的信息
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostDTO.getId(), dockerDeployDTO.getContainerName());
-        devopsDockerInstanceDTO = saveDevopsDockerInstanceDTO(projectId, dockerDeployVO, devopsHostAppDTO, dockerDeployDTO, appServiceId, serviceName, devopsDockerInstanceDTO);
+        //保存实例的信息（每部署一次产生一条新的实例记录）
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
+
+        //保存命令
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
-//        String values = getDeValues(dockerDeployVO);
 
+        //保存部署记录
+        saveDeployRecord(projectId, dockerDeployVO, hostDTO, devopsHostAppDTO, deploySourceVO, dockerDeployDTO, devopsDockerInstanceDTO);
+
+        // 4. 发送部署指令给agent
+        HostAgentMsgVO hostAgentMsgVO = initHostAgentMsg(hostDTO, dockerDeployDTO, devopsHostCommandDTO);
+
+        sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
+
+    }
+
+    private void saveDeployRecord(Long projectId, DockerDeployVO dockerDeployVO, DevopsHostDTO hostDTO, DevopsHostAppDTO devopsHostAppDTO, DeploySourceVO deploySourceVO, DockerDeployDTO dockerDeployDTO, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
+        String deployObjectName = null;
+        String deployVersion = null;
+        deployVersion = dockerDeployVO.getImageInfo().getTag();
+        deployObjectName = dockerDeployVO.getImageInfo().getImageName();
         dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, devopsDockerInstanceDTO.getDockerCommand()));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
@@ -179,16 +158,69 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 DeployObjectTypeEnum.IMAGE,
                 deployObjectName,
                 deployVersion,
-                null,
-                null,
-                null,
+                devopsHostAppDTO.getName(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getId(),
                 deploySourceVO);
+    }
 
-        // 4. 发送部署指令给agent
-        HostAgentMsgVO hostAgentMsgVO = initHostAgentMsg(hostDTO, dockerDeployDTO, devopsHostCommandDTO);
+    @NotNull
+    private DevopsDockerInstanceDTO createDockerInstanceDTO(DockerDeployVO dockerDeployVO, DevopsHostAppDTO devopsHostAppDTO, DockerDeployDTO dockerDeployDTO) {
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO = ConvertUtils.convertObject(dockerDeployVO, DevopsDockerInstanceDTO.class);
+        devopsDockerInstanceDTO.setName(dockerDeployVO.getContainerName());
+        devopsDockerInstanceDTO.setImage(dockerDeployDTO.getImage());
+        devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+        devopsDockerInstanceDTO.setRepoName(dockerDeployDTO.getRepoName());
+        devopsDockerInstanceDTO.setRepoType(dockerDeployDTO.getRepoType());
+        devopsDockerInstanceDTO.setRepoId(dockerDeployDTO.getRepoId());
+        devopsDockerInstanceDTO.setImageName(dockerDeployDTO.getImageName());
+        devopsDockerInstanceDTO.setTag(dockerDeployDTO.getTag());
+        devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
+        devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
+        devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
+        devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+        MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+        return devopsDockerInstanceDTO;
+    }
 
-        sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
+    private DockerDeployDTO getDockerDeployDTO(DockerDeployVO dockerDeployVO) {
+        DockerDeployDTO dockerDeployDTO = ConvertUtils.convertObject(dockerDeployVO, DockerDeployDTO.class);
+        //目前只支持项目下的部署
+        // 从制品库找到的镜像
+        if (DevopsHostDeployType.DEFAULT.value().equals(dockerDeployVO.getRepoType())) {
+            HarborC7nRepoImageTagVo imageTagVo = getHarborC7nRepoImageTagVo(dockerDeployVO);
+            dockerDeployDTO = initProjectDockerDeployDTO(dockerDeployDTO, imageTagVo, dockerDeployVO);
+        } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getRepoType())) {
+            dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
+        } else {
+            throw new CommonException("error.unsupported.image.source");
+        }
+        return dockerDeployDTO;
+    }
 
+    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DockerDeployVO dockerDeployVO, Long hostId) {
+        if (StringUtils.equals(OperationTypeEnum.CREATE_APP.value(), dockerDeployVO.getOperation())) {
+            //插入主机应用实例
+            DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
+            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            devopsHostAppDTO.setProjectId(projectId);
+            devopsHostAppDTO.setHostId(hostId);
+            devopsHostAppDTO.setName(dockerDeployVO.getAppName());
+            devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
+            devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
+            devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+            return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
+        } else {
+            //查询主机应用实例
+            DevopsHostAppDTO record = new DevopsHostAppDTO();
+            record.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            record.setProjectId(projectId);
+            record.setHostId(hostId);
+            record.setName(dockerDeployVO.getAppName());
+            record.setCode(dockerDeployVO.getAppCode());
+            return devopsHostAppMapper.selectOne(record);
+        }
     }
 
     private DockerDeployDTO initCustomDockerDeployDTO(DockerDeployDTO dockerDeployDTO, DockerDeployVO dockerDeployVO) {
@@ -283,6 +315,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
             devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
             devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+            baseUpdate(devopsDockerInstanceDTO);
         }
         return devopsDockerInstanceDTO;
     }
