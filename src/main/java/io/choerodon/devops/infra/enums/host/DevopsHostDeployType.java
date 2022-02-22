@@ -7,11 +7,11 @@ public enum DevopsHostDeployType {
     /**
      * 默认仓库镜像部署
      */
-    DEFAULT("default"),
+    DEFAULT("DEFAULT_REPO"),
     /**
      * 自定义仓库镜像部署
      */
-    CUSTOM("custom");
+    CUSTOM("CUSTOM_REPO");
 
     private final String value;
 
