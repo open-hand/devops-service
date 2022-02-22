@@ -216,13 +216,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
         } else {
             //查询主机应用实例
-            DevopsHostAppDTO record = new DevopsHostAppDTO();
-            record.setRdupmType(RdupmTypeEnum.DOCKER.value());
-            record.setProjectId(projectId);
-            record.setHostId(hostId);
-            record.setName(dockerDeployVO.getAppName());
-            record.setCode(dockerDeployVO.getAppCode());
-            return devopsHostAppMapper.selectOne(record);
+            return devopsHostAppMapper.selectByPrimaryKey(dockerDeployVO.getHostAppId());
         }
     }
 

@@ -37,6 +37,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
+import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -90,6 +91,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     private static final String CUSTOM_REPO = "CUSTOM_REPO";
+    private static final String CREATE = "create";
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Autowired
@@ -838,14 +840,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         // 1. 更新状态 记录镜像信息
         // 保存 应用服务与主机之间的关系
-        DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
-        devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
-        devopsHostAppDTO.setProjectId(projectId);
-        devopsHostAppDTO.setHostId(hostId);
-        devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
-        devopsHostAppDTO.setCode(cdHostDeployConfigVO.getAppCode());
-        devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
-        devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, cdHostDeployConfigVO, hostId);
+
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
 
@@ -856,17 +852,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     image,
                     DockerInstanceStatusEnum.OPERATING.value(),
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
+            devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getImageDeploy().getValue());
+            devopsDockerInstanceDTO.setRepoId(cdHostDeployConfigVO.getImageDeploy().getRepoId());
+
 
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
-//            if (appServiceId != null) {
-//                devopsHostAppInstanceRelService.saveHostAppInstanceRel(projectId,
-//                        hostId,
-//                        appServiceId,
-//                        AppSourceType.CURRENT_PROJECT.getValue(),
-//                        devopsDockerInstanceDTO.getId(),
-//                        HostInstanceType.DOCKER_PROCESS.value(), serviceName);
-//            }
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         }
@@ -924,6 +915,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
+    }
+
+    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, CdHostDeployConfigVO cdHostDeployConfigVO, Long hostId) {
+        if (org.apache.commons.lang3.StringUtils.equals(CREATE, cdHostDeployConfigVO.getOperation())) {
+            DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
+            devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            devopsHostAppDTO.setProjectId(projectId);
+            devopsHostAppDTO.setHostId(hostId);
+            devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
+            devopsHostAppDTO.setCode(cdHostDeployConfigVO.getAppCode());
+            devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
+            devopsHostAppMapper.insertSelective(devopsHostAppDTO);
+
+            return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
+        } else {
+            //查询主机应用实例
+            DevopsHostAppDTO record = new DevopsHostAppDTO();
+            record.setRdupmType(RdupmTypeEnum.DOCKER.value());
+            record.setProjectId(projectId);
+            record.setHostId(hostId);
+            record.setName(cdHostDeployConfigVO.getAppName());
+            record.setCode(cdHostDeployConfigVO.getAppCode());
+            return devopsHostAppMapper.selectOne(record);
+        }
     }
 
     private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
