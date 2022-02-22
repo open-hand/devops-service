@@ -47,11 +47,22 @@ public class DockerDeployVO {
     @ApiModelProperty("操作类型 create/update")
     private String operation;
 
+    @ApiModelProperty("hostAppId")
+    private String hostAppId;
+
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
 
     public ExternalImageInfo getExternalImageInfo() {
         return externalImageInfo;
+    }
+
+    public String getHostAppId() {
+        return hostAppId;
+    }
+
+    public void setHostAppId(String hostAppId) {
+        this.hostAppId = hostAppId;
     }
 
     public void setExternalImageInfo(ExternalImageInfo externalImageInfo) {

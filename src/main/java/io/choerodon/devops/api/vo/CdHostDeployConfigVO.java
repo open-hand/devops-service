@@ -51,6 +51,17 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("健康探针")
     private String healthProb;
 
+    @ApiModelProperty("更新该是新建实例")
+    private String operation;
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+
     public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
         private String deploySource;
@@ -156,7 +167,7 @@ public class CdHostDeployConfigVO {
 
         @Encrypt
         @ApiModelProperty("仓库Id")
-        private String repoId;
+        private Long repoId;
 
         @ApiModelProperty("镜像名称")
         private String imageName;
@@ -217,11 +228,11 @@ public class CdHostDeployConfigVO {
             this.value = value;
         }
 
-        public String getRepoId() {
+        public Long getRepoId() {
             return repoId;
         }
 
-        public void setRepoId(String repoId) {
+        public void setRepoId(Long repoId) {
             this.repoId = repoId;
         }
 
