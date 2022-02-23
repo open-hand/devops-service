@@ -467,13 +467,15 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
-        if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
-            devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
-        } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
-                || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
-            devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
-        } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
-            devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
+        if (!RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
+            if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
+            } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
+                    || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
+            } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
+            }
         }
     }
 
