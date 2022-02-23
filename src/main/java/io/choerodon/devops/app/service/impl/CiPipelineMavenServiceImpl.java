@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -11,8 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -220,11 +220,19 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             return ciPipelineMavenDTO.getVersion();
         }
         try {
+
+            String basicInfo = userName + ":" + password;
+            String token = "Basic " + Base64.getEncoder().encodeToString(basicInfo.getBytes());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Authorization", token);
+            HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
+
             mavenRepoUrl = mavenRepoUrl +
                     ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) +
                     BaseConstants.Symbol.SLASH +
                     ciPipelineMavenDTO.getArtifactId() + "/maven-metadata.xml";
-            ResponseEntity<String> metadataXml = restTemplate.getForEntity(mavenRepoUrl, String.class);
+            ResponseEntity<String> metadataXml = restTemplate.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
 
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
