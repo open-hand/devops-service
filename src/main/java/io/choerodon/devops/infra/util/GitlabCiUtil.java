@@ -354,4 +354,9 @@ public class GitlabCiUtil {
         String rawCommand = "saveJarMetadata %s %s %s";
         return String.format(rawCommand, nexusRepoId, jobId, sequence);
     }
+
+    public static String saveCustomJarMetadata(Long jobId, Long sequence, String url, String username, String password) {
+        String rawCommand = "saveCustomJarMetadata %s %s %s %s %s";
+        return String.format(rawCommand, jobId, sequence, url, username, password);
+    }
 }

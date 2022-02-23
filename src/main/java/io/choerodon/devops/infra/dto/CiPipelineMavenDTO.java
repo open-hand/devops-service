@@ -33,6 +33,33 @@ public class CiPipelineMavenDTO extends AuditDomain {
     private String artifactId;
     private String version;
     private Long nexusRepoId;
+    private String mavenRepoUrl;
+    private String username;
+    private String password;
+
+    public String getMavenRepoUrl() {
+        return mavenRepoUrl;
+    }
+
+    public void setMavenRepoUrl(String mavenRepoUrl) {
+        this.mavenRepoUrl = mavenRepoUrl;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;
