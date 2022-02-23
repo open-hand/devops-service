@@ -132,6 +132,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             if (!devopsHostAppInstanceDTO.getPreCommand().equals(jarDeployVO.getPreCommand()) ||
                     !devopsHostAppInstanceDTO.getRunCommand().equals(jarDeployVO.getRunCommand()) ||
                     !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand())) {
+                // 执行操作前，先判断kill命令是否存在，不存在停止执行
+                if (!HostDeployUtil.checkKillCommandExist(jarDeployVO.getKillCommand())) {
+                    throw new CommonException("error.host.instance.kill.command.exist");
+                }
                 deployJavaInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, jarDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(jarDeployVO.getAppName())) {
                 devopsHostAppDTO.setName(jarDeployVO.getAppName());
@@ -421,6 +425,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             if (!devopsHostAppInstanceDTO.getPreCommand().equals(customDeployVO.getPreCommand()) ||
                     !devopsHostAppInstanceDTO.getRunCommand().equals(customDeployVO.getRunCommand()) ||
                     !devopsHostAppInstanceDTO.getPostCommand().equals(customDeployVO.getPostCommand())) {
+                if (!HostDeployUtil.checkKillCommandExist(customDeployVO.getKillCommand())) {
+                    throw new CommonException("error.host.instance.kill.command.exist");
+                }
                 deployCustomInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, customDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(customDeployVO.getAppName())) {
                 devopsHostAppDTO.setName(customDeployVO.getAppName());
