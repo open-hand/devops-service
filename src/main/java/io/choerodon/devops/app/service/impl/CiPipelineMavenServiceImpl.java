@@ -11,19 +11,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineMavenService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiStepService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -67,10 +67,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
-    @Lazy
-    private DevopsCiPipelineService devopsCiPipelineService;
-
-    @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
 
     @Autowired
@@ -78,6 +74,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -216,24 +215,28 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         }
     }
 
-    private String getCustomJarSnapshotTimestamp(String mavenRepoUrl, String userName, String password, CiPipelineMavenDTO ciPipelineMavenDTO) {
+    public String getCustomJarSnapshotTimestamp(String mavenRepoUrl, String userName, String password, CiPipelineMavenDTO ciPipelineMavenDTO) {
         if (Objects.isNull(mavenRepoUrl)) {
             return ciPipelineMavenDTO.getVersion();
         }
         try {
+            mavenRepoUrl = mavenRepoUrl +
+                    ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) +
+                    BaseConstants.Symbol.SLASH +
+                    ciPipelineMavenDTO.getArtifactId() + "/maven-metadata.xml";
+            ResponseEntity<String> metadataXml = restTemplate.getForEntity(mavenRepoUrl, String.class);
+
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
             //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
-            NexusClient nexusClient2 = RetrofitHandler.getScalarNexusClient(mavenRepoUrl, userName, password);
-            Response<String> metadataXml = nexusClient2.customComponentMetadata(ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion()).execute();
             // 如果请求返回404，maven-metadata.xml不存在，说明没有多个版本
-            if (metadataXml.code() == HttpStatus.NOT_FOUND.value()) {
+            if (metadataXml.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
                 return ciPipelineMavenDTO.getVersion();
             }
-            if (metadataXml.code() == HttpStatus.UNAUTHORIZED.value()) {
+            if (metadataXml.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
                 throw new CommonException("error.pull.user.auth.fail");
             }
-            String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.body());
+            String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.getBody());
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
