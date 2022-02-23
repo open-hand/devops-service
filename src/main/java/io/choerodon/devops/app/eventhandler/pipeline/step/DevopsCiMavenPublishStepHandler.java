@@ -349,7 +349,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         if (mavenPublishConfig == null) {
             return false;
         }
-        if (mavenPublishConfig.getNexusRepoId() == null) {
+        if (mavenPublishConfig.getNexusRepoId() == null && mavenPublishConfig.getTargetRepo() == null) {
             return false;
         }
         return true;
