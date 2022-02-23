@@ -234,7 +234,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                     ciPipelineMavenDTO.getArtifactId() + "/maven-metadata.xml";
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
             ResponseEntity<String> metadataXml = restTemplate.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
-
+            logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml.getBody());
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
             //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
