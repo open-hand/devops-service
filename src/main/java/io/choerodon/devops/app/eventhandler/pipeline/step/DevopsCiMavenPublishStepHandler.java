@@ -332,7 +332,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             devopsCiMavenPublishConfigDTO.setRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getRepos()));
         }
         if (mavenPublishConfig.getTargetRepo() != null) {
-            devopsCiMavenPublishConfigDTO.setTargetRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getTargetRepoStr()));
+            devopsCiMavenPublishConfigDTO.setTargetRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getTargetRepo()));
         }
         return devopsCiMavenPublishConfigDTO;
     }
