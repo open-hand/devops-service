@@ -51,6 +51,9 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("健康探针")
     private String healthProb;
 
+    @ApiModelProperty("dockerCommand")
+    private String dockerCommand;
+
     @ApiModelProperty("更新该是新建实例")
     private String operation;
 
@@ -388,5 +391,13 @@ public class CdHostDeployConfigVO {
 
     public void setHealthProb(String healthProb) {
         this.healthProb = healthProb;
+    }
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
     }
 }
