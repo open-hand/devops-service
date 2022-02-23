@@ -232,6 +232,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                     ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) +
                     BaseConstants.Symbol.SLASH +
                     ciPipelineMavenDTO.getArtifactId() + "/maven-metadata.xml";
+            logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
             ResponseEntity<String> metadataXml = restTemplate.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
 
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
