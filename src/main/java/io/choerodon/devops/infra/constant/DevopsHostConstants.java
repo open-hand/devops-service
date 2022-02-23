@@ -14,7 +14,7 @@ public class DevopsHostConstants {
 
     public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    public static final int THREE_MINUTE_MILLISECONDS = 3 * 60 * 1000;
+    public static final int THIRTY_MINUTE_MILLISECONDS = 30 * 60 * 1000;
     // ws
     public static final String HOST_SESSION = "host-sessions-cache";
     public static final String GROUP = "host:";

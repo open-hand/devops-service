@@ -57,8 +57,8 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     public List<DevopsHostCommandDTO> listStagnatedRecord(String hostId) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DevopsHostConstants.DATE_PATTERN);
 
-        // 获取三分钟以前的时间
-        Date threeMinutesBefore = new Date(System.currentTimeMillis() - DevopsHostConstants.THREE_MINUTE_MILLISECONDS);
+        // 获取30分钟以前的时间
+        Date threeMinutesBefore = new Date(System.currentTimeMillis() - DevopsHostConstants.THIRTY_MINUTE_MILLISECONDS);
         String beforeDate = simpleDateFormat.format(threeMinutesBefore);
         return devopsHostCommandMapper.listStagnatedRecord(hostId, beforeDate);
     }
