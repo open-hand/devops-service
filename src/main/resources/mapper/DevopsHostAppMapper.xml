@@ -195,7 +195,7 @@
         LEFT JOIN devops_docker_instance ddi ON ddi.app_id = dha.id
         <where>
             dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
-            AND rdupm_type != 'docker'
+            AND rdupm_type = 'docker'
             AND ddi.id IN (SELECT
             MAX( ddix.id )
             FROM
