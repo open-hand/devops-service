@@ -728,8 +728,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             cdHostDeployConfigVO.setJarDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class));
         }
         if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
-            devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
+            cdHostDeployConfigVO.setImageDeploy(JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class));
+            cdHostDeployConfigVO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
         }
         devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
 
