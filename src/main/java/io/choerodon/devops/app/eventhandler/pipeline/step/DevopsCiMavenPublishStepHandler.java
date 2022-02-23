@@ -139,7 +139,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         boolean targetRepoEmpty = devopsCiMavenPublishConfigVO.getNexusRepoId() == null && devopsCiMavenPublishConfigVO.getTargetRepo() == null;
         boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
         boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
-        boolean settingsEmpty = StringUtils.hasText(devopsCiMavenPublishConfigVO.getMavenSettings());
+        boolean settingsEmpty = !StringUtils.hasText(devopsCiMavenPublishConfigVO.getMavenSettings());
 
         // 如果都为空, 不生成settings文件
         if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty && settingsEmpty) {
