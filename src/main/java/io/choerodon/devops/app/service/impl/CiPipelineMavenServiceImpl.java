@@ -231,7 +231,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             mavenRepoUrl = mavenRepoUrl +
                     ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) +
                     BaseConstants.Symbol.SLASH +
-                    ciPipelineMavenDTO.getArtifactId() + "/maven-metadata.xml";
+                    ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml";
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
             ResponseEntity<String> metadataXml = restTemplate.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml.getBody());
@@ -248,9 +248,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.getBody());
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
         } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
-                logger.debug("The ex is:", ex);
+            if (logger.isInfoEnabled()) {
+                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.info("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();
         }
