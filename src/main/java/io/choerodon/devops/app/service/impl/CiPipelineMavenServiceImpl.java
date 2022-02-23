@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +77,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
-    private RestTemplate restTemplate;
+    @Qualifier(value = "restTemplateForIp")
+    private RestTemplate restTemplateForIp;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -233,7 +235,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                     BaseConstants.Symbol.SLASH +
                     ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml";
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
-            ResponseEntity<String> metadataXml = restTemplate.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
+            ResponseEntity<String> metadataXml = restTemplateForIp.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml.getBody());
             // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
