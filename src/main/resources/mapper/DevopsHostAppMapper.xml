@@ -138,7 +138,6 @@
         select dha.*,
         dh.name as host_name,
         dhai.app_id,
-
         dhai.source_type,
         dhai.source_config,
         dhai.pre_command,
@@ -177,7 +176,7 @@
         dh.name as host_name,
         ddi.app_id,
         ddi.source_type,
-        ddi.id as instanceId,
+        NULL,
         NULL,
         NULL,
         NULL,
