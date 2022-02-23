@@ -96,7 +96,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
 
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
-        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = ConvertUtils.convertObject(devopsCiMavenPublishConfigDTO, DevopsCiMavenPublishConfigVO.class);
+        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = dtoToVo(devopsCiMavenPublishConfigDTO);
 
         List<MavenRepoVO> targetRepos = new ArrayList<>();
         boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId,
