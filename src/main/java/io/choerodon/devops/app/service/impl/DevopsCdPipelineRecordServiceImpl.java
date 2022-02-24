@@ -928,7 +928,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         try {
             dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO,
-                    new String(decoder.decodeBuffer(imageDeploy.getValue()), StandardCharsets.UTF_8)));
+                    new String(decoder.decodeBuffer(cdHostDeployConfigVO.getDockerCommand()), StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new CommonException(e);
         }
@@ -946,8 +946,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 DeployObjectTypeEnum.IMAGE,
                 deployObjectName,
                 deployVersion,
-                null,
-                null,
+                devopsHostAppDTO.getName(),
+                devopsHostAppDTO.getCode(),
                 appServiceId,
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
