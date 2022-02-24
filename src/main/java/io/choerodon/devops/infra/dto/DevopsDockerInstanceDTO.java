@@ -54,6 +54,9 @@ public class DevopsDockerInstanceDTO extends AuditDomain {
     private Long appId;
 
     @ApiModelProperty("镜像仓库的类型，默认的还是自定义的")
+    /**
+     * {@link io.choerodon.devops.infra.enums.host.DevopsHostDeployType}
+     */
     private String repoType;
 
     @ApiModelProperty("仓库的名称，默认的才有")
