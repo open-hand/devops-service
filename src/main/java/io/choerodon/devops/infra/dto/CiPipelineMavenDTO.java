@@ -38,7 +38,7 @@ public class CiPipelineMavenDTO extends AuditDomain {
     private String username;
     private String password;
 
-    public String getDownloadUrl() {
+    public String calculateDownloadUrl() {
         String downloadUrl = "";
         if (getVersion().contains("SNAPSHOT")) {
             downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));

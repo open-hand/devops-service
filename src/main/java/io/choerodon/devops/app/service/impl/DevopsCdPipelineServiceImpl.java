@@ -725,7 +725,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             getMavenVersion(ciPipelineMavenDTO.getVersion()));
 
                     if (ciPipelineMavenDTO.getNexusRepoId() == null) {
-                        prodJarInfoVO.setDownloadUrl(ciPipelineMavenDTO.getDownloadUrl());
+                        prodJarInfoVO.setDownloadUrl(ciPipelineMavenDTO.calculateDownloadUrl());
                         prodJarInfoVO.setUsername(ciPipelineMavenDTO.getUsername());
                         prodJarInfoVO.setPassword(ciPipelineMavenDTO.getPassword());
                     }
