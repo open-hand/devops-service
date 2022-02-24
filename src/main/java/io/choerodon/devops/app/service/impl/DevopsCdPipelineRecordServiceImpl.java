@@ -595,7 +595,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 version = ciPipelineMavenDTO.getVersion();
             }
         }
-
+        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
             // 0.3 获取并记录信息
@@ -643,11 +643,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdHostDeployInfoDTO.getPostCommand(),
                     devopsCdHostDeployInfoDTO.getKillCommand(),
                     devopsCdHostDeployInfoDTO.getHealthProb(),
-                    null,
+                    jarPullInfoDTO,
                     devopsCdHostDeployInfoDTO.getDeployType());
         }
 
-        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
