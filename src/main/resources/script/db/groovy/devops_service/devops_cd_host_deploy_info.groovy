@@ -32,5 +32,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
             column(name: "health_prob", type: "TEXT", remarks: "健康探针", afterColumn: "kill_command")
         }
     }
+    changeSet(author: 'wx', id: '2022-02-24-update-column') {
+        addColumn(tableName: 'devops_cd_host_deploy_info') {
+            column(name: "docker_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
+        }
+        sql("""
+              ALTER TABLE devops_cd_host_deploy_info CHANGE jar_deploy_json NAME deploy_json VARCHAR(2048)
+        """)
+    }
+
 
 }

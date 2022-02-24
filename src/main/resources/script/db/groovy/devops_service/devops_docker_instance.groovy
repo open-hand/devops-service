@@ -39,17 +39,25 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_instance.groovy') {
             column(name: 'app_id', type: "BIGINT UNSIGNED", defaultValue: '0', remarks: '主机应用id', afterColumn: 'container_id') {
                 constraints(nullable: false)
             }
-        }
-    }
-
-    changeSet(author: 'wx', id: '2022-02-21-add-column') {
-        addColumn(tableName: 'devops_docker_instance') {
-            column(name: 'repoType', type: 'VARCHAR(128)', remarks: '仓库类型  自定义的还是默认的', afterColumn: 'app_id') {
-                constraints(nullable: false)
+            column(name: 'repo_type', type: 'VARCHAR(256)', remarks: '镜像仓库的类型，默认的还是自定义的', afterColumn: 'container_id') {
+            }
+            column(name: 'repo_name', type: 'VARCHAR(256)', remarks: '仓库的名称，默认的才有', afterColumn: 'container_id') {
+            }
+            column(name: 'repo_id', type: 'VARCHAR(256)', remarks: '仓库的id,默认的才有', afterColumn: 'container_id') {
+            }
+            column(name: 'user_name', type: 'VARCHAR(256)', remarks: '自定义仓库的用户名', afterColumn: 'container_id') {
+            }
+            column(name: 'pass_word', type: 'VARCHAR(256)', remarks: '自定义仓库的密码', afterColumn: 'container_id') {
+            }
+            column(name: 'private_repository', type: 'TINYINT UNSIGNED', remarks: '自定义仓库是否共享', afterColumn: 'container_id') {
+            }
+            column(name: 'image_name', type: 'VARCHAR(256)', remarks: '默认仓库的镜像名称', afterColumn: 'container_id') {
+            }
+            column(name: 'tag', type: 'VARCHAR(256)', remarks: '默认仓库的镜像版本', afterColumn: 'container_id') {
+            }
+            column(name: 'docker_command', type: 'TEXT', remarks: '命令框的命令', afterColumn: 'container_id') {
             }
 
-            column(name: 'repoName', type: 'VARCHAR(256)', remarks: '仓库名称', afterColumn: 'app_id') {
-            }
         }
     }
 
