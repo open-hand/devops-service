@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 
 /**
@@ -115,6 +116,8 @@ public class DevopsHostAppVO {
 
     private FileInfoVO fileInfoVO;
 
+    private JarPullInfoDTO jarPullInfoDTO;
+
     @ApiModelProperty("groupId")
     private String groupId;
     @ApiModelProperty("artifactId")
@@ -137,8 +140,17 @@ public class DevopsHostAppVO {
     private IamUserDTO creator;
     private IamUserDTO updater;
 
+
     @ApiModelProperty("操作命令")
     private DevopsHostCommandDTO devopsHostCommandDTO;
+
+    public JarPullInfoDTO getJarPullInfoDTO() {
+        return jarPullInfoDTO;
+    }
+
+    public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
+        this.jarPullInfoDTO = jarPullInfoDTO;
+    }
 
     public DevopsHostCommandDTO getDevopsHostCommandDTO() {
         return devopsHostCommandDTO;

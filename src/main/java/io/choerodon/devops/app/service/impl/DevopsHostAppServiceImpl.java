@@ -44,6 +44,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.InstanceDeployOptions;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
@@ -175,6 +176,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return JsonHelper.marshalByJackson(jarDeployVO.getMarketDeployObjectInfoVO());
         } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getFileInfoVO());
+        } else if (AppSourceType.CUSTOM.getValue().equals(jarDeployVO.getSourceType())) {
+            return JsonHelper.marshalByJackson(jarDeployVO.getJarPullInfoDTO());
         }
         return null;
     }
@@ -473,6 +476,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
             } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
                 devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
+            } else if (AppSourceType.CUSTOM.getValue().equals(devopsHostAppVO.getSourceType())) {
+                devopsHostAppVO.setJarPullInfoDTO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), JarPullInfoDTO.class));
             }
         }
     }

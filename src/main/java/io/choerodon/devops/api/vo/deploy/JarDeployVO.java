@@ -7,6 +7,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 
 /**
  * 〈功能简述〉
@@ -53,6 +54,8 @@ public class JarDeployVO {
     private FileInfoVO fileInfoVO;
     private ProdJarInfoVO prodJarInfoVO;
 
+    private JarPullInfoDTO jarPullInfoDTO;
+
     @ApiModelProperty("部署配置文件列表")
     private List<ConfigSettingVO> configSettingVOS;
 
@@ -70,6 +73,27 @@ public class JarDeployVO {
         this.healthProb = healthProb;
         this.killCommand = killCommand;
         this.operation = operation;
+    }
+
+    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, JarPullInfoDTO jarPullInfoDTO, String operation) {
+        this.appCode = appCode;
+        this.appName = appName;
+        this.sourceType = sourceType;
+        this.jarPullInfoDTO = jarPullInfoDTO;
+        this.preCommand = preCommand;
+        this.runCommand = runCommand;
+        this.postCommand = postCommand;
+        this.healthProb = healthProb;
+        this.killCommand = killCommand;
+        this.operation = operation;
+    }
+
+    public JarPullInfoDTO getJarPullInfoDTO() {
+        return jarPullInfoDTO;
+    }
+
+    public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
+        this.jarPullInfoDTO = jarPullInfoDTO;
     }
 
     public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
