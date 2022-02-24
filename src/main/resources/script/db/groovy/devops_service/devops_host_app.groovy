@@ -48,7 +48,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
         dropIndex(indexName: "idx_host_id", tableName: "devops_host_app")
     }
 
-    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+    changeSet(author: 'wx',id: '2022-02-24-drop-index'){
         dropIndex(indexName: "uk_host_id_name", tableName: "devops_host_app")
         dropIndex(indexName: "uk_host_id_code", tableName: "devops_host_app")
     }
