@@ -596,8 +596,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
         }
 
-        ProdJarInfoVO prodJarInfoVO = null;
-
+        JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
             // 0.3 获取并记录信息
             List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
@@ -614,7 +613,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
             C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
 
-            prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
+            ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
                     nexusRepoId,
                     groupId,
                     artifactId,
@@ -623,18 +622,30 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             username = mavenRepoDTOList.get(0).getNePullUserId();
             password = mavenRepoDTOList.get(0).getNePullUserPassword();
             version = c7nNexusComponentDTO.getVersion();
-        }
 
-        JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
-                devopsCdHostDeployInfoDTO.getAppName(),
-                devopsCdHostDeployInfoDTO.getAppCode(),
-                devopsCdHostDeployInfoDTO.getPreCommand(),
-                devopsCdHostDeployInfoDTO.getRunCommand(),
-                devopsCdHostDeployInfoDTO.getPostCommand(),
-                devopsCdHostDeployInfoDTO.getKillCommand(),
-                devopsCdHostDeployInfoDTO.getHealthProb(),
-                prodJarInfoVO,
-                devopsCdHostDeployInfoDTO.getDeployType());
+            jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
+                    devopsCdHostDeployInfoDTO.getAppName(),
+                    devopsCdHostDeployInfoDTO.getAppCode(),
+                    devopsCdHostDeployInfoDTO.getPreCommand(),
+                    devopsCdHostDeployInfoDTO.getRunCommand(),
+                    devopsCdHostDeployInfoDTO.getPostCommand(),
+                    devopsCdHostDeployInfoDTO.getKillCommand(),
+                    devopsCdHostDeployInfoDTO.getHealthProb(),
+                    prodJarInfoVO,
+                    devopsCdHostDeployInfoDTO.getDeployType());
+        } else {
+
+            jarDeployVO = new JarDeployVO(AppSourceType.CUSTOM.getValue(),
+                    devopsCdHostDeployInfoDTO.getAppName(),
+                    devopsCdHostDeployInfoDTO.getAppCode(),
+                    devopsCdHostDeployInfoDTO.getPreCommand(),
+                    devopsCdHostDeployInfoDTO.getRunCommand(),
+                    devopsCdHostDeployInfoDTO.getPostCommand(),
+                    devopsCdHostDeployInfoDTO.getKillCommand(),
+                    devopsCdHostDeployInfoDTO.getHealthProb(),
+                    null,
+                    devopsCdHostDeployInfoDTO.getDeployType());
+        }
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
 
