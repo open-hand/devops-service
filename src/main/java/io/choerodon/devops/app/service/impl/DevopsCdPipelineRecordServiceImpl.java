@@ -664,7 +664,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     hostId,
                     devopsHostAppDTO.getId(),
                     jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
-                    AppSourceType.CURRENT_PROJECT.getValue(),
+                    jarDeployVO.getSourceType(),
                     devopsHostAppService.calculateSourceConfig(jarDeployVO),
                     jarDeployVO.getPreCommand(),
                     jarDeployVO.getRunCommand(),
