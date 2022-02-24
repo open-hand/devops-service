@@ -941,8 +941,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 保存部署记录
         devopsDeployRecordService.saveRecord(
                 devopsCdPipelineRecordDTO.getProjectId(),
-                DeployType.MANUAL,
-                null,
+                DeployType.AUTO,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 devopsHostDTO.getId(),
                 devopsHostDTO.getName(),
