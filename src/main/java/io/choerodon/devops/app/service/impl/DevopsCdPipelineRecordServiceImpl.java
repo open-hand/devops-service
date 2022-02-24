@@ -924,6 +924,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        //跟新commond id
+        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordMapper.updateByPrimaryKey(devopsCdJobRecordDTO);
+
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         try {
