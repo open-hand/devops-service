@@ -736,16 +736,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     LOGGER.error("error.query.repo.nexus.is.null");
                 }
             } else {
-                if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
-                    downloadUrl = appendWithSlash(pipelineMavenDTO.getMavenRepoUrl(), pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
-                    downloadUrl = appendWithSlash(downloadUrl, pipelineMavenDTO.getArtifactId());
-                    downloadUrl = appendWithSlash(downloadUrl, pipelineMavenDTO.getVersion() + ".jar");
-                } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-                    downloadUrl = appendWithSlash(pipelineMavenDTO.getMavenRepoUrl(), pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
-                    downloadUrl = appendWithSlash(downloadUrl, pipelineMavenDTO.getArtifactId());
-                    downloadUrl = appendWithSlash(downloadUrl, pipelineMavenDTO.getVersion());
-                    downloadUrl = appendWithSlash(downloadUrl, pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + pipelineMavenDTO.getVersion() + ".jar");
-                }
+                downloadUrl = pipelineMavenDTO.getDownloadUrl();
                 server = new Server(null, pipelineMavenDTO.getUsername(), pipelineMavenDTO.getPassword());
             }
 
@@ -760,83 +751,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
     }
 
-    private String appendWithSlash(String source, String str) {
-        if (source.endsWith("/")) {
-            source = source.substring(0, source.length() - 1);
-        }
-        if (str.startsWith("/")) {
-            str = str.substring(1, str.length());
-        }
-        return source + BaseConstants.Symbol.SLASH + str;
-    }
-
-    private void fillDockerPull(DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
-        ciPipelineImageDTO.setGitlabPipelineId(devopsCiPipelineRecordDTO.getGitlabPipelineId());
-        CiPipelineImageDTO pipelineImageDTO = ciPipelineImageMapper.selectOne(ciPipelineImageDTO);
-        //job的状态成功才有命令
-        if (!Objects.isNull(pipelineImageDTO) && StringUtils.equalsIgnoreCase(devopsCiJobRecordVO.getStatus(), PipelineStatus.SUCCESS.toValue())) {
-            devopsCiJobRecordVO.setDownloadImage("docker pull " + pipelineImageDTO.getImageTag());
-        }
-    }
-
-//    private void fillJarInfo(Long projectId, DevopsCiJobRecordVO devopsCiJobRecordVO, Long gitlabPipelineId) {
-//        if (Objects.isNull(gitlabPipelineId)) {
-//            return;
-//        }
-//        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
-//        ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
-//        CiPipelineMavenDTO pipelineMavenDTO = ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
-//        if (Objects.isNull(pipelineMavenDTO)) {
-//            return;
-//        }
-//        //返回代理地址的仓库和用户名密码
-//        CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobRecordVO.getMetadata(), CiConfigVO.class);
-//        List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-//        //如果在一个job里面多次发布，那么取seq最大的 最后的一次发布的结果。
-//        List<CiConfigTemplateVO> ciConfigTemplateVOS = ciConfigVOConfig.stream().filter(ciConfigTemplateVO ->
-//                StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.MAVEN_DEPLOY.getType())
-//                        || StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType(), CiJobScriptTypeEnum.UPLOAD_JAR.getType()))
-//                .collect(Collectors.toList());
-//        if (!CollectionUtils.isEmpty(ciConfigTemplateVOS)) {
-//            //这里不是devopsCiJobDTO的MavenSettings 而是devopsCiJobDTORecord的MavenSettings
-//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(devopsCiJobRecordVO.getMavenSettingId());
-//            if (!Objects.isNull(devopsCiMavenSettingsDTO) && StringUtils.hasText(devopsCiMavenSettingsDTO.getMavenSettings())) {
-//                // 将maven的setting文件转换为java对象
-//                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
-//                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
-//                if (!Objects.isNull(c7nNexusRepoDTO)) {
-//                    Server server = null;
-//                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
-//                        server = getServer(settings, c7nNexusRepoDTO);
-//                    }
-//                    //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-//                    //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
-//                    //区分RELEASE 和 SNAPSHOT
-//                    String downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
-//                    if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
-//                        downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
-//                                pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +
-//                                BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + pipelineMavenDTO.getVersion() + ".jar";
-//                    } else if (pipelineMavenDTO.getVersion().contains("RELEASE")) {
-//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-//                    } else {
-//                        // 通过update version函数后还有这种version:2021.3.3-143906-master ，
-//                        downloadUrl = getReleaseUrl(pipelineMavenDTO, c7nNexusRepoDTO, downloadUrl);
-//                    }
-//                    PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();
-//                    pipelineJarInfoVO.setDownloadUrl(downloadUrl);
-//                    pipelineJarInfoVO.setServer(server);
-//                    devopsCiJobRecordVO.setDownloadMavenJarVO(pipelineJarInfoVO);
-//                } else {
-//                    LOGGER.error("error.query.repo.nexus.is.null");
-//                }
-//            }
-//        }
-//
-//
-//    }
 
     private String getReleaseUrl(CiPipelineMavenDTO pipelineMavenDTO, C7nNexusRepoDTO c7nNexusRepoDTO, String downloadUrl) {
         downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
