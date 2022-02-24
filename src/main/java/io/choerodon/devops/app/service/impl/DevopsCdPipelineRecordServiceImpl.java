@@ -368,7 +368,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
         CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         try {
-            if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
+            if (cdHostDeployConfigVO.getHostDeployType().equals(RdupmTypeEnum.DOCKER.value())) {
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
@@ -776,6 +776,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String image = null;
         Long appServiceId = null;
         String serviceName = null;
+        String repoName = null;
+        Long repoId = null;
+        String userName = null;
+        String password = null;
+        String repoType = null;
+        String repoUrl = null;
+        String tag = null;
 
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
 
@@ -836,11 +843,20 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
                         harborRepoDTO.getHarborRepoConfig().getLoginName(),
                         harborRepoDTO.getHarborRepoConfig().getPassword()));
+                userName = harborRepoDTO.getHarborRepoConfig().getLoginName();
+                password = harborRepoDTO.getHarborRepoConfig().getPassword();
+                repoUrl = ciPipelineImageDTO.getImageTag();
+                repoType = harborRepoDTO.getRepoType();
+
+
             } else {
                 dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
                         harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
                         harborRepoDTO.getPullRobot().getName(),
                         harborRepoDTO.getPullRobot().getToken()));
+                repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
+                repoName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+                repoType = harborRepoDTO.getRepoType();
             }
 
             // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
@@ -848,6 +864,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             int indexOf = imageTag.lastIndexOf(":");
             String imageVersion = imageTag.substring(indexOf);
             String repoImageName = imageTag.substring(0, indexOf);
+            tag = repoImageName;
 
             image = ciPipelineImageDTO.getImageTag();
             deployVersion = imageVersion;
@@ -872,10 +889,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     DockerInstanceStatusEnum.OPERATING.value(),
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
             devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getImageDeploy().getValue());
-            devopsDockerInstanceDTO.setRepoId(cdHostDeployConfigVO.getImageDeploy().getRepoId());
-            // TODO: 2022/2/22
-//            devopsDockerInstanceDTO.setImageName();
-//            devopsDockerInstanceDTO.setTag();
+            devopsDockerInstanceDTO.setRepoId(repoId);
+            devopsDockerInstanceDTO.setRepoName(repoName);
+            devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
+            devopsDockerInstanceDTO.setImageName(repoUrl);
+            devopsDockerInstanceDTO.setPassWord(password);
+            devopsDockerInstanceDTO.setUserName(userName);
+            devopsDockerInstanceDTO.setRepoType(repoType);
+            devopsDockerInstanceDTO.setTag(tag);
 
 
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
