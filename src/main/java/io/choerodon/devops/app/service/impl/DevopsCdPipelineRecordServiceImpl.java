@@ -37,7 +37,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
@@ -565,7 +564,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String groupId;
         String artifactId;
         String versionRegular;
-
+        String version = null;
+        String downloadUrl = null;
+        String username = null;
+        String password = null;
         if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
             nexusRepoId = jarDeploy.getRepositoryId();
             groupId = jarDeploy.getGroupId();
@@ -582,22 +584,43 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             artifactId = ciPipelineMavenDTO.getArtifactId();
             //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
             versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
+            if (nexusRepoId == null) {
+                downloadUrl = ciPipelineMavenDTO.getMavenRepoUrl();
+                username = ciPipelineMavenDTO.getUsername();
+                password = ciPipelineMavenDTO.getPassword();
+                version = ciPipelineMavenDTO.getVersion();
+            }
         }
 
-        // 0.3 获取并记录信息
-        List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
-        if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-            LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-            updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
-            return;
-        }
-        List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
-        if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-            throw new CommonException("error.get.maven.config");
+        ProdJarInfoVO prodJarInfoVO = null;
+
+        if (nexusRepoId != null) {
+            // 0.3 获取并记录信息
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), nexusRepoId, groupId, artifactId, versionRegular);
+            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                LOGGER.info("no jar to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+                updateStatusToSkip(cdPipelineRecordDTO, jobRecordDTO);
+                return;
+            }
+            List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
+            if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
+                throw new CommonException("error.get.maven.config");
+            }
+
+            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
+            C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
+
+            prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
+                    nexusRepoId,
+                    groupId,
+                    artifactId,
+                    c7nNexusComponentDTO.getVersion());
+            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
+            username = mavenRepoDTOList.get(0).getNePullUserId();
+            password = mavenRepoDTOList.get(0).getNePullUserPassword();
+            version = c7nNexusComponentDTO.getVersion();
         }
 
-        C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
-        C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
         JarDeployVO jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                 devopsCdHostDeployInfoDTO.getAppName(),
                 devopsCdHostDeployInfoDTO.getAppCode(),
@@ -606,18 +629,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdHostDeployInfoDTO.getPostCommand(),
                 devopsCdHostDeployInfoDTO.getKillCommand(),
                 devopsCdHostDeployInfoDTO.getHealthProb(),
-                new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
-                        nexusRepoId,
-                        groupId,
-                        artifactId,
-                        c7nNexusComponentDTO.getVersion()),
+                prodJarInfoVO,
                 devopsCdHostDeployInfoDTO.getDeployType());
 
-
-        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
-        jarPullInfoDTO.setPullUserId(mavenRepoDTOList.get(0).getNePullUserId());
-        jarPullInfoDTO.setPullUserPassword(mavenRepoDTOList.get(0).getNePullUserPassword());
-        jarPullInfoDTO.setDownloadUrl(nexusComponentDTOList.get(0).getDownloadUrl());
+        JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
@@ -644,7 +659,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setGroupId(groupId);
             devopsHostAppInstanceDTO.setArtifactId(artifactId);
-            devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
+            devopsHostAppInstanceDTO.setVersion(version);
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
@@ -674,23 +689,23 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(devopsHostAppService.calculateSourceConfig(jarDeployVO));
-            devopsHostAppInstanceDTO.setVersion(c7nNexusComponentDTO.getVersion());
+            devopsHostAppInstanceDTO.setVersion(version);
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
-        String appFile = workDir + SLASH + c7nNexusComponentDTO.getName();
+        String appFile = workDir + SLASH + artifactId;
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", c7nNexusComponentDTO.getName());
+        params.put("{{ APP_FILE_NAME }}", artifactId);
         params.put("{{ APP_FILE }}", appFile);
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
                 jarDeployVO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
-                HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
-                        mavenRepoDTOList.get(0).getNePullUserPassword(),
-                        c7nNexusComponentDTO.getDownloadUrl(),
+                HostDeployUtil.getDownloadCommand(username,
+                        password,
+                        downloadUrl,
                         appFile),
                 ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
@@ -724,8 +739,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.JAR,
-                c7nNexusComponentDTO.getName(),
-                c7nNexusComponentDTO.getVersion(),
+                artifactId,
+                version,
                 devopsCdHostDeployInfoDTO.getAppName(),
                 devopsCdHostDeployInfoDTO.getAppCode(),
                 devopsHostAppDTO.getId(),

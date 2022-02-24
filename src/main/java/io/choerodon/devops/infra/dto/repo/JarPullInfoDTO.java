@@ -12,6 +12,12 @@ public class JarPullInfoDTO {
     private String pullUserPassword;
     private String downloadUrl;
 
+    public JarPullInfoDTO(String pullUserId, String pullUserPassword, String downloadUrl) {
+        this.pullUserId = pullUserId;
+        this.pullUserPassword = pullUserPassword;
+        this.downloadUrl = downloadUrl;
+    }
+
     public String getPullUserId() {
         return pullUserId;
     }
