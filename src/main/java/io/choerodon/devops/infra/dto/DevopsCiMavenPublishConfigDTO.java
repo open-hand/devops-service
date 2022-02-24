@@ -36,6 +36,9 @@ public class DevopsCiMavenPublishConfigDTO extends AuditDomain {
     @ApiModelProperty("表单填写的Maven的依赖仓库 json格式")
     private String repoStr;
 
+    @ApiModelProperty("发包的目的仓库信息 json格式")
+    private String targetRepoStr;
+
     @ApiModelProperty("直接粘贴的maven的settings内容")
     private String mavenSettings;
 
@@ -45,6 +48,14 @@ public class DevopsCiMavenPublishConfigDTO extends AuditDomain {
 
     @ApiModelProperty("所属步骤id")
     private Long stepId;
+
+    public String getTargetRepoStr() {
+        return targetRepoStr;
+    }
+
+    public void setTargetRepoStr(String targetRepoStr) {
+        this.targetRepoStr = targetRepoStr;
+    }
 
     public Long getStepId() {
         return stepId;

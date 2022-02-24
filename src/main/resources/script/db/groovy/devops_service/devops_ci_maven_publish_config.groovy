@@ -27,4 +27,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_publish_config.groovy') 
                 constraintName: 'uk_step_id', columnNames: 'step_id')
     }
 
+    changeSet(author: 'wanghao', id: '2022-02-23-add-column') {
+        addColumn(tableName: 'devops_ci_maven_publish_config') {
+            column(name: "target_repo_str", type: "TEXT", remarks: '发包的目的仓库信息 json格式', afterColumn: "repo_str")
+        }
+    }
 }

@@ -24,6 +24,12 @@ public class DevopsCiMavenPublishConfigVO {
     @ApiModelProperty("表单填写的Maven的依赖仓库 json格式")
     private String repoStr;
 
+    @ApiModelProperty("发包的目的仓库信息 json格式")
+    private String targetRepoStr;
+
+    @ApiModelProperty("发包的目的仓库信息")
+    private MavenRepoVO targetRepo;
+
     @ApiModelProperty("直接粘贴的maven的settings内容")
     private String mavenSettings;
 
@@ -37,6 +43,22 @@ public class DevopsCiMavenPublishConfigVO {
 
     @ApiModelProperty("表单填写的Maven的依赖仓库")
     private List<MavenRepoVO> repos;
+
+    public String getTargetRepoStr() {
+        return targetRepoStr;
+    }
+
+    public void setTargetRepoStr(String targetRepoStr) {
+        this.targetRepoStr = targetRepoStr;
+    }
+
+    public MavenRepoVO getTargetRepo() {
+        return targetRepo;
+    }
+
+    public void setTargetRepo(MavenRepoVO targetRepo) {
+        this.targetRepo = targetRepo;
+    }
 
     public Set<Long> getNexusMavenRepoIds() {
         return nexusMavenRepoIds;
