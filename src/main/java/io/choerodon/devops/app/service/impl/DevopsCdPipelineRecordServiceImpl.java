@@ -875,7 +875,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             int indexOf = imageTag.lastIndexOf(":");
             String imageVersion = imageTag.substring(indexOf);
             String repoImageName = imageTag.substring(0, indexOf);
-            tag = repoImageName;
+            tag = imageVersion;
 
             image = ciPipelineImageDTO.getImageTag();
             deployVersion = imageVersion;
@@ -972,7 +972,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, CdHostDeployConfigVO cdHostDeployConfigVO, Long hostId) {
-        if (org.apache.commons.lang3.StringUtils.equals(CREATE, cdHostDeployConfigVO.getOperation())) {
+        if (org.apache.commons.lang3.StringUtils.equals(CREATE, cdHostDeployConfigVO.getDeployType())) {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
             devopsHostAppDTO.setProjectId(projectId);
