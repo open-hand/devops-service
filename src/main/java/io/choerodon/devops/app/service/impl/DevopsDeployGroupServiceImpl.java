@@ -655,8 +655,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
         } else {
-            // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
+            // 0.2 从制品库获取仓库信息
+            if (nexusRepoId == null) {
+                JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
+                jarPullInfoDTO.setPullUserId(jarDeployVO.getProdJarInfoVO().getUsername());
+                jarPullInfoDTO.setPullUserPassword(jarDeployVO.getProdJarInfoVO().getPassword());
+                jarPullInfoDTO.setDownloadUrl(jarDeployVO.getProdJarInfoVO().getDownloadUrl());
+                return jarPullInfoDTO;
+            }
+
             String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
             String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
             String version = jarDeployVO.getProdJarInfoVO().getVersion();
