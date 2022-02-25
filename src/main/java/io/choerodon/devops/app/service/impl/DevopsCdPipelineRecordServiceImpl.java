@@ -898,7 +898,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     image,
                     DockerInstanceStatusEnum.OPERATING.value(),
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
-            devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getImageDeploy().getValue());
+            devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
             devopsDockerInstanceDTO.setRepoId(repoId);
             devopsDockerInstanceDTO.setRepoName(repoName);
             devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());

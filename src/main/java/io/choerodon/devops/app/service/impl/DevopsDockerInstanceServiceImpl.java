@@ -114,7 +114,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         checkHostExist(hostDTO);
         //校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, hostDTO, DetailsHelper.getUserDetails().getUserId());
-
         //获取主机应用
         DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, dockerDeployVO, hostDTO.getId());
         if (devopsHostAppDTO == null) {
@@ -233,6 +232,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
         } else {
             //查询主机应用实例
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(dockerDeployVO.getHostAppId());
+            devopsHostAppDTO.setName(dockerDeployVO.getName());
+            devopsHostAppMapper.updateByPrimaryKey(devopsHostAppDTO);
             return devopsHostAppMapper.selectByPrimaryKey(dockerDeployVO.getHostAppId());
         }
     }

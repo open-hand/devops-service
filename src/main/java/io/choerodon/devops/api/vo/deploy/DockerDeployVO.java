@@ -38,6 +38,8 @@ public class DockerDeployVO {
 
     @ApiModelProperty("主机应用的名称")
     private String appName;
+    @ApiModelProperty("修改得时候传的是name")
+    private String name;
 
     @ApiModelProperty("主机应用的code")
     private String appCode;
@@ -53,6 +55,14 @@ public class DockerDeployVO {
 
     @ApiModelProperty("外部自定义仓库信息")
     private ExternalImageInfo externalImageInfo;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public ExternalImageInfo getExternalImageInfo() {
         return externalImageInfo;
