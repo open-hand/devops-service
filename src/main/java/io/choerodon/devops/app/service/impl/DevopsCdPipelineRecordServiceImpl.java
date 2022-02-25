@@ -952,7 +952,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 deployVersion,
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
-                appServiceId,
+                devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
         devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
