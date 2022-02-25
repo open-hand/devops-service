@@ -421,6 +421,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
             return;
         }
+        //删除hostapp
+        devopsHostMapper.deleteByPrimaryKey(dockerInstanceDTO.getAppId());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
