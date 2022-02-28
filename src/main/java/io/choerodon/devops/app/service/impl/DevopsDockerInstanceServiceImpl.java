@@ -158,7 +158,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 hostDTO.getId(),
                 hostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.IMAGE,
+                DeployObjectTypeEnum.DOCKER,
                 deployObjectName,
                 deployVersion,
                 devopsHostAppDTO.getName(),
