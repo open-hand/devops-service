@@ -230,10 +230,10 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             headers.add("Authorization", token);
             HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
 
-            mavenRepoUrl = mavenRepoUrl +
-                    ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) +
-                    BaseConstants.Symbol.SLASH +
-                    ciPipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml";
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH));
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getArtifactId());
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml");
+
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
             ResponseEntity<String> metadataXml = restTemplateForIp.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml.getBody());
@@ -256,6 +256,16 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             return ciPipelineMavenDTO.getVersion();
         }
+    }
+
+    private String appendWithSlash(String source, String str) {
+        if (source.endsWith("/")) {
+            source = source.substring(0, source.length() - 1);
+        }
+        if (str.startsWith("/")) {
+            str = str.substring(1, str.length());
+        }
+        return source + BaseConstants.Symbol.SLASH + str;
     }
 
     @Override
