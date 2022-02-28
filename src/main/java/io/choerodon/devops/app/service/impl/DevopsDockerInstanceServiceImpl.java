@@ -134,6 +134,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         saveDeployRecord(projectId, dockerDeployVO, hostDTO, devopsHostAppDTO, deploySourceVO, dockerDeployDTO, devopsDockerInstanceDTO);
 
         // 4. 发送部署指令给agent
+        dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         HostAgentMsgVO hostAgentMsgVO = initHostAgentMsg(hostDTO, dockerDeployDTO, devopsHostCommandDTO);
 
         sendHostDeployMsg(hostDTO, devopsDockerInstanceDTO, hostAgentMsgVO);
