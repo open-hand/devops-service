@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
@@ -13,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -226,29 +228,33 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             String basicInfo = userName + ":" + password;
             String token = "Basic " + Base64.getEncoder().encodeToString(basicInfo.getBytes());
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Authorization", token);
-            HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
-
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH));
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getArtifactId());
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml");
-
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
-            ResponseEntity<String> metadataXml = restTemplateForIp.exchange(mavenRepoUrl, HttpMethod.GET, httpEntity, String.class);
-            logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml.getBody());
-            // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
-            // 另外这里不用nexus的list API是因为这个API返回的是乱序的
-            //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
-            // 如果请求返回404，maven-metadata.xml不存在，说明没有多个版本
-            if (metadataXml.getStatusCode().value() == HttpStatus.NOT_FOUND.value()) {
+
+            OkHttpClient client = new OkHttpClient();
+            //创建一个Request
+            Request request = new Request.Builder()
+                    .get()
+                    .header("Authorization", token)
+                    .url(mavenRepoUrl)
+                    .build();
+            //通过client发起请求
+            okhttp3.Response execute = client.newCall(request).execute();
+            if (execute.isSuccessful()) {
+                String metadataXml = execute.body().string();
+                logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml);
+                String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml);
+                return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
+            } else if (execute.code() == HttpStatus.NOT_FOUND.value()) {
                 return ciPipelineMavenDTO.getVersion();
-            }
-            if (metadataXml.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()) {
+            } else if (execute.code() == HttpStatus.UNAUTHORIZED.value()) {
                 throw new CommonException("error.pull.user.auth.fail");
+            } else {
+                throw new CommonException("error.pull.metadata.fail");
             }
-            String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.getBody());
-            return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
+
         } catch (Exception ex) {
             if (logger.isInfoEnabled()) {
                 logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
