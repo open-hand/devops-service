@@ -503,7 +503,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 hostId,
                 devopsHostDTO != null ? devopsHostDTO.getName() : null,
                 PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.JAR,
+                DeployObjectTypeEnum.OTHER,
                 devopsCdHostDeployInfoDTO.getAppName(),
                 null,
                 devopsCdHostDeployInfoDTO.getAppName(),
