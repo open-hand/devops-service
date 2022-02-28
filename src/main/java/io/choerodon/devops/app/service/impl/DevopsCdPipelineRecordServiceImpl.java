@@ -947,7 +947,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsHostDTO.getId(),
                 devopsHostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.IMAGE,
+                DeployObjectTypeEnum.DOCKER,
                 deployObjectName,
                 deployVersion,
                 devopsHostAppDTO.getName(),
