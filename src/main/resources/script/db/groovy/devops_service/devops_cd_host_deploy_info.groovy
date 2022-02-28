@@ -37,7 +37,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
             column(name: "docker_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
         }
         sql("""
-              ALTER TABLE devops_cd_host_deploy_info CHANGE jar_deploy_json NAME deploy_json VARCHAR(2048)
+              ALTER TABLE devops_cd_host_deploy_info CHANGE jar_deploy_json  deploy_json VARCHAR(2048)
         """)
     }
 
