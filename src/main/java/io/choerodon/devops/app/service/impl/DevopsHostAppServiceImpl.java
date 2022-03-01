@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
@@ -115,6 +116,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private HostConnectionHandler hostConnectionHandler;
 
     @Override
     @Transactional
@@ -489,6 +492,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private void deployCustomInstance(Long projectId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO, CustomDeployVO customDeployVO) {
         Long hostId = customDeployVO.getHostId();
+        // 校验主机已连接
+        hostConnectionHandler.checkHostConnection(hostId);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
@@ -605,8 +610,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String groupId = null;
         String artifactId = null;
         String version = null;
-        // 校验主机权限
-        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
+        // 校验主机已连接
+        hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 
