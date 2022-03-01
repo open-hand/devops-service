@@ -804,7 +804,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
         CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
 
-        Long hostId = cdHostDeployConfigVO.getHostConnectionVO().getHostId();
+        Long hostId = cdHostDeployConfigVO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
         // 0.2
