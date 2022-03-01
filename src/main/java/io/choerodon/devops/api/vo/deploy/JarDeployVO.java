@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.deploy;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
@@ -58,6 +59,9 @@ public class JarDeployVO {
 
     @ApiModelProperty("部署配置文件列表")
     private List<ConfigSettingVO> configSettingVOS;
+
+    @JsonIgnore
+    private Long appId;
 
     public JarDeployVO() {
     }
@@ -230,5 +234,13 @@ public class JarDeployVO {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }
