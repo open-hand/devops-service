@@ -46,6 +46,8 @@ public class CustomDeployVO {
     @ApiModelProperty("部署配置文件列表")
     private List<ConfigSettingVO> configSettingVOS;
 
+    private Long appId;
+
     public CustomDeployVO() {
     }
 
@@ -158,5 +160,13 @@ public class CustomDeployVO {
 
     public void setOperation(String operation) {
         this.operation = operation;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

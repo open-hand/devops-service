@@ -1,23 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.hzero.core.base.BaseConstants;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -63,6 +45,23 @@ import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 /**
  * 〈功能简述〉
@@ -114,6 +113,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
 
     @Override
     @Transactional
@@ -127,6 +128,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else {
             // 根据字段变化执行对应操作
             DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, jarDeployVO.getAppCode());
+            jarDeployVO.setAppId(devopsHostAppDTO.getId());
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
             if (!devopsHostAppInstanceDTO.getPreCommand().equals(jarDeployVO.getPreCommand()) ||
@@ -164,6 +166,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
+            devopsCdHostDeployInfoService.updateJarDeployInfoFromAppCenter(jarDeployVO);
         }
     }
 
@@ -421,6 +424,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         } else {
             // 根据字段变化执行对应操作
             DevopsHostAppDTO devopsHostAppDTO = queryByHostIdAndCode(hostId, customDeployVO.getAppCode());
+            customDeployVO.setAppId(devopsHostAppDTO.getId());
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
             if (!devopsHostAppInstanceDTO.getPreCommand().equals(customDeployVO.getPreCommand()) ||
@@ -459,6 +463,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
+            devopsCdHostDeployInfoService.updateCustomDeployInfoFromAppCenter(customDeployVO);
         }
     }
 

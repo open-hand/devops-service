@@ -31,7 +31,10 @@ import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
+import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 import io.choerodon.devops.infra.dto.repo.DockerPullAccountDTO;
@@ -92,13 +95,13 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
-    private AppServiceService appServiceService;
-    @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
 
 
     private static final BASE64Decoder decoder = new BASE64Decoder();
@@ -126,6 +129,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         //保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
+
+        // 如果该应用关联了流水线，同步修改流水线里面的信息
+        devopsCdHostDeployInfoService.updateDockerDeployInfoFromAppCenter(dockerDeployVO);
 
         //保存命令
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);
