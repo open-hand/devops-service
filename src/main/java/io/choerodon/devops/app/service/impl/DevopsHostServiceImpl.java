@@ -322,7 +322,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                     .collect(Collectors.toMap(DevopsHostUserPermissionDTO::getHostId, Function.identity()));
         }
 
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
         Map<Long, DevopsHostUserPermissionDTO> finalHostPermissionMap = hostPermissionMap;
         devopsHostVOList = devopsHostVOList.stream()
                 .peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue()))

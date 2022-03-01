@@ -409,7 +409,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
 
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
             LOGGER.info("host {} not connect, skip this task.", hostId);
@@ -545,7 +545,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
 
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
 
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
             LOGGER.info("host {} not connect, skip this task.", hostId);

@@ -1,21 +1,5 @@
 package io.choerodon.devops.infra.handler;
 
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.HOST_ID;
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.TOKEN;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.host.HostSessionVO;
 import io.choerodon.devops.app.service.DevopsHostService;
@@ -23,6 +7,21 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.HOST_ID;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.TOKEN;
 
 @Component
 public class HostConnectionHandler {
@@ -71,8 +70,8 @@ public class HostConnectionHandler {
      *
      * @param hostId 环境ID
      */
-    public void checkEnvConnection(Long hostId) {
-        if (!getEnvConnectionStatus(hostId)) {
+    public void checkHostConnection(Long hostId) {
+        if (!getHostConnectionStatus(hostId)) {
             throw new CommonException("error.host.disconnect");
         }
     }
@@ -83,7 +82,7 @@ public class HostConnectionHandler {
      *
      * @return 环境更新列表
      */
-    public List<Long> getUpdatedClusterList() {
+    public List<Long> getUpdatedHostList() {
         Map<String, HostSessionVO> clusterSessions = (Map<String, HostSessionVO>) (Map) redisTemplate.opsForHash().entries(DevopsHostConstants.HOST_SESSION);
         return clusterSessions.values().stream()
                 .filter(clusterSessionVO -> agentVersion.equals(clusterSessionVO.getVersion()))
@@ -97,7 +96,7 @@ public class HostConnectionHandler {
      * @param hostId 主机ID
      * @return true 表示已连接
      */
-    private boolean getEnvConnectionStatus(Long hostId) {
+    private boolean getHostConnectionStatus(Long hostId) {
         Map<String, HostSessionVO> clusterSessions = (Map<String, HostSessionVO>) (Map) redisTemplate.opsForHash().entries(DevopsHostConstants.HOST_SESSION);
         return clusterSessions.values().stream()
                 .anyMatch(t -> hostId.equals(t.getHostId())
