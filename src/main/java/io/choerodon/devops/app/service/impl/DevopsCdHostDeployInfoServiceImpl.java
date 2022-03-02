@@ -48,6 +48,9 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
     @Override
     public void updateDockerDeployInfoFromAppCenter(DockerDeployVO dockerDeployVO) {
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoMapper.selectByHostAppId(dockerDeployVO.getHostAppId());
+        if (devopsCdHostDeployInfoDTO == null) {
+            return;
+        }
 
 
         devopsCdHostDeployInfoDTO.setDockerCommand(dockerDeployVO.getValue());
