@@ -1,19 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.mapper.DevopsHostCommandMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 〈功能简述〉
@@ -67,5 +68,13 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     @Transactional
     public void batchUpdateTimeoutCommand(Set<Long> missCommands) {
         devopsHostCommandMapper.batchUpdateTimeoutCommand(missCommands);
+    }
+
+    @Override
+    public List<DevopsHostCommandDTO> listByIds(Set<Long> missCommands) {
+        if (CollectionUtils.isEmpty(missCommands)) {
+            return new ArrayList<>();
+        }
+        return devopsHostCommandMapper.listByIds(missCommands);
     }
 }
