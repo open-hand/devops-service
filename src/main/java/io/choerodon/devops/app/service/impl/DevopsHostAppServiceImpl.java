@@ -320,6 +320,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
             throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
+        // 校验主机是否处于连接状态，未连接则抛出异常，不能删除
+        hostConnectionHandler.checkHostConnection(hostId);
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
 
         if (org.apache.commons.lang3.StringUtils.equals(hostDeployType, HostDeployType.IMAGED_DEPLOY.getValue())) {
