@@ -24,6 +24,7 @@ public interface DevopsHostCommandService {
 
     /**
      * 查询出处于操作中状态三分钟及以上的记录
+     *
      * @param hostId
      * @return
      */
@@ -31,7 +32,10 @@ public interface DevopsHostCommandService {
 
     /**
      * 处理超时命令
+     *
      * @param missCommands
      */
     void batchUpdateTimeoutCommand(Set<Long> missCommands);
+
+    List<DevopsHostCommandDTO> listByIds(Set<Long> missCommands);
 }
