@@ -8,7 +8,6 @@ import static java.util.stream.Collectors.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -1186,7 +1185,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     gitUtil.pushLocalTag(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, tag.getName());
                 }
 
-            } catch (GitAPIException | UnsupportedEncodingException e) {
+            } catch (GitAPIException e) {
                 LOGGER.error("Failed to import external application.");
                 LOGGER.error("GitAPIException: ", e);
             }
