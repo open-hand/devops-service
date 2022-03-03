@@ -43,6 +43,11 @@ public enum AppSourceType {
     PIPELINE("pipeline"),
 
     /**
+     * 自定义jar下载地址
+     */
+    CUSTOM_JAR("custom_jar"),
+
+    /**
      * 自定义来源 （应用中心部署组部署会用上）
      */
     CUSTOM("custom"),

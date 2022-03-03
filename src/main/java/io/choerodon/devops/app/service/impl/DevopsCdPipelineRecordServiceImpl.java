@@ -1,7 +1,36 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import org.apache.commons.lang.BooleanUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+import sun.misc.BASE64Decoder;
+
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -41,34 +70,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import org.apache.commons.lang.BooleanUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import sun.misc.BASE64Decoder;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 /**
  * 〈功能简述〉
@@ -634,7 +635,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     devopsCdHostDeployInfoDTO.getDeployType());
         } else {
 
-            jarDeployVO = new JarDeployVO(AppSourceType.CUSTOM.getValue(),
+            jarDeployVO = new JarDeployVO(AppSourceType.CUSTOM_JAR.getValue(),
                     devopsCdHostDeployInfoDTO.getAppName(),
                     devopsCdHostDeployInfoDTO.getAppCode(),
                     devopsCdHostDeployInfoDTO.getPreCommand(),
