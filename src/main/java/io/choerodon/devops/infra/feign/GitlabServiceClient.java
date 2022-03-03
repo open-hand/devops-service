@@ -650,13 +650,6 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
 
-    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/query")
-    ResponseEntity<BranchDTO> queryBranchByName(
-            @ApiParam(value = "工程id", required = true)
-            @PathVariable("projectId") Integer projectId,
-            @ApiParam(value = "要查询的分支名", required = true)
-            @RequestParam("branchName") String branchName);
-
     /**
      * 列举出gitlab项目组的ci variable
      *
