@@ -1135,11 +1135,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                 for (Ref ref : refs) {
                     String branchName;
                     if (ref.getName().contains(Constants.R_HEADS)) {
-                        branchName = ref.getName().split("/")[2];
+                        branchName = ref.getName().replace("refs/heads/", "");
                         // 当前的本地的 refs/heads/ 内的引用是保护分支的名称，大部分保护分支是master，不排除develop等其他分支的可能
                         protectedBranchName = branchName;
                     } else {
-                        branchName = ref.getName().split("/")[3];
+                        branchName = ref.getName().replace("refs/remotes/origin/", "");
                     }
 
                     // 跳过对活跃本地分支A: /refs/heads/A 和 /refs/remotes/origin/A 之间的第二次重复的推送
