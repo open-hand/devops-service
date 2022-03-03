@@ -425,10 +425,10 @@ public interface GitlabServiceClient {
      * @param branchName 分支名
      * @return 不含任何消息体的ResponseEntity
      */
-    @GetMapping("/v1/projects/{projectId}/repository/branches/{branchName}")
+    @GetMapping("/v1/projects/{projectId}/repository/branches")
     ResponseEntity<BranchDTO> queryBranch(
             @PathVariable("projectId") Integer projectId,
-            @PathVariable("branchName") String branchName);
+            @RequestParam("branchName") String branchName);
 
     //todo 如果name里面有&字符，&后面的部分会被丢弃
 

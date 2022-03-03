@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -1155,7 +1154,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                     LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>import branch name is {} <<<<<<<<<<<<<<<<<<<<<", branchName);
 
-                    BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), URLEncoder.encode(branchName, "UTF-8"));
+                    BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
                     if (branchDTO.getName() == null) {
                         try {
                             // 提交并推代码
