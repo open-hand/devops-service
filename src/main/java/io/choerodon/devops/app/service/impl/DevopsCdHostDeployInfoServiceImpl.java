@@ -12,6 +12,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -47,49 +50,59 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
 
     @Override
     public void updateDockerDeployInfoFromAppCenter(DockerDeployVO dockerDeployVO) {
-        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoMapper.selectByHostAppId(dockerDeployVO.getHostAppId());
-        if (devopsCdHostDeployInfoDTO == null) {
+        List<DevopsCdHostDeployInfoDTO> devopsCdHostDeployInfoDTOList = devopsCdHostDeployInfoMapper.selectByHostAppId(dockerDeployVO.getHostAppId());
+        if (CollectionUtils.isEmpty(devopsCdHostDeployInfoDTOList)) {
             return;
         }
 
+        devopsCdHostDeployInfoDTOList.forEach(devopsCdHostDeployInfoDTO -> {
+            devopsCdHostDeployInfoDTO.setDockerCommand(dockerDeployVO.getValue());
 
-        devopsCdHostDeployInfoDTO.setDockerCommand(dockerDeployVO.getValue());
+            CdHostDeployConfigVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class);
+            imageDeploy.setContainerName(dockerDeployVO.getContainerName());
 
-        CdHostDeployConfigVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class);
-        imageDeploy.setContainerName(dockerDeployVO.getContainerName());
+            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
+            devopsCdHostDeployInfoDTO.setAppName(dockerDeployVO.getAppName());
 
-        devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
-        devopsCdHostDeployInfoDTO.setAppName(dockerDeployVO.getAppName());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.docker.deploy.info");
+        });
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.docker.deploy.info");
     }
 
     @Override
     public void updateJarDeployInfoFromAppCenter(JarDeployVO jarDeployVO) {
-        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoMapper.selectByHostAppId(jarDeployVO.getAppId());
+        List<DevopsCdHostDeployInfoDTO> devopsCdHostDeployInfoDTOList = devopsCdHostDeployInfoMapper.selectByHostAppId(jarDeployVO.getAppId());
+        if (CollectionUtils.isEmpty(devopsCdHostDeployInfoDTOList)) {
+            return;
+        }
+        devopsCdHostDeployInfoDTOList.forEach(devopsCdHostDeployInfoDTO -> {
+            devopsCdHostDeployInfoDTO.setAppName(jarDeployVO.getAppName());
+            devopsCdHostDeployInfoDTO.setPreCommand(jarDeployVO.getPreCommand());
+            devopsCdHostDeployInfoDTO.setRunCommand(jarDeployVO.getRunCommand());
+            devopsCdHostDeployInfoDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsCdHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
+            devopsCdHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
 
-        devopsCdHostDeployInfoDTO.setAppName(jarDeployVO.getAppName());
-        devopsCdHostDeployInfoDTO.setPreCommand(jarDeployVO.getPreCommand());
-        devopsCdHostDeployInfoDTO.setRunCommand(jarDeployVO.getRunCommand());
-        devopsCdHostDeployInfoDTO.setPostCommand(jarDeployVO.getPostCommand());
-        devopsCdHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
-        devopsCdHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.jar.deploy.info");
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.jar.deploy.info");
+        });
     }
 
     @Override
     public void updateCustomDeployInfoFromAppCenter(CustomDeployVO customDeployVO) {
-        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoMapper.selectByHostAppId(customDeployVO.getAppId());
+        List<DevopsCdHostDeployInfoDTO> devopsCdHostDeployInfoDTOList = devopsCdHostDeployInfoMapper.selectByHostAppId(customDeployVO.getAppId());
+        if (CollectionUtils.isEmpty(devopsCdHostDeployInfoDTOList)) {
+            return;
+        }
+        devopsCdHostDeployInfoDTOList.forEach(devopsCdHostDeployInfoDTO -> {
+            devopsCdHostDeployInfoDTO.setAppName(customDeployVO.getAppName());
+            devopsCdHostDeployInfoDTO.setPreCommand(customDeployVO.getPreCommand());
+            devopsCdHostDeployInfoDTO.setRunCommand(customDeployVO.getRunCommand());
+            devopsCdHostDeployInfoDTO.setPostCommand(customDeployVO.getPostCommand());
+            devopsCdHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
+            devopsCdHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
 
-
-        devopsCdHostDeployInfoDTO.setAppName(customDeployVO.getAppName());
-        devopsCdHostDeployInfoDTO.setPreCommand(customDeployVO.getPreCommand());
-        devopsCdHostDeployInfoDTO.setRunCommand(customDeployVO.getRunCommand());
-        devopsCdHostDeployInfoDTO.setPostCommand(customDeployVO.getPostCommand());
-        devopsCdHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
-        devopsCdHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
-
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.custom.deploy.info");
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.custom.deploy.info");
+        });
     }
 }
