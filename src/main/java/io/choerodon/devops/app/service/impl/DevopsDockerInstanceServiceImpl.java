@@ -193,7 +193,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
             devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
             devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
-            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+            devopsDockerInstanceDTO.setDockerCommand(dockerDeployVO.getValue());
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             return devopsDockerInstanceDTO;
         } else {
@@ -208,7 +208,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsDockerInstanceDTO.setUserName(dockerDeployDTO.getUserName());
             devopsDockerInstanceDTO.setPassWord(dockerDeployDTO.getPassWord());
             devopsDockerInstanceDTO.setPrivateRepository(dockerDeployDTO.getPrivateRepository());
-            devopsDockerInstanceDTO.setDockerCommand(getDeValues(dockerDeployVO));
+            devopsDockerInstanceDTO.setDockerCommand(dockerDeployVO.getValue());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_UPDATE_DOCKER_INSTANCE_FAILED);
             return devopsDockerInstanceMapper.selectByPrimaryKey(devopsDockerInstanceDTO.getId());
         }
