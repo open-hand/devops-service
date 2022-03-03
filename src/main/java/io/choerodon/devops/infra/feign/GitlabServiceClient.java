@@ -425,7 +425,7 @@ public interface GitlabServiceClient {
      * @param branchName 分支名
      * @return 不含任何消息体的ResponseEntity
      */
-    @GetMapping("/v1/projects/{projectId}/repository/branches")
+    @GetMapping("/v1/projects/{projectId}/repository/branches/query")
     ResponseEntity<BranchDTO> queryBranch(
             @PathVariable("projectId") Integer projectId,
             @RequestParam("branchName") String branchName);
