@@ -529,7 +529,7 @@ public class GitUtil {
             PushCommand pushCommand = git.push();
             pushCommand.add(MASTER);
             pushCommand.setRemote(repoUrl);
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("admin", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
             throw new CommonException(ERROR_GIT_PUSH, e);
