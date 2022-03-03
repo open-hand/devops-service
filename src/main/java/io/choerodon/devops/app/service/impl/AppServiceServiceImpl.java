@@ -8,6 +8,7 @@ import static java.util.stream.Collectors.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -1152,6 +1153,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     }
 
                     LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>import branch name is {} <<<<<<<<<<<<<<<<<<<<<", branchName);
+
                     BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(gitlabProjectDO.getId(), branchName);
                     if (branchDTO.getName() == null) {
                         try {
@@ -1184,7 +1186,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     gitUtil.pushLocalTag(repositoryGit, appServiceDTO.getRepoUrl(), accessToken, tag.getName());
                 }
 
-            } catch (GitAPIException e) {
+            } catch (GitAPIException | UnsupportedEncodingException e) {
                 LOGGER.error("Failed to import external application.");
                 LOGGER.error("GitAPIException: ", e);
             }
