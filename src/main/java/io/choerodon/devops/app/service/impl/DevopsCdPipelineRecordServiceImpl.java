@@ -799,10 +799,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-        CdHostDeployConfigVO cdHostDeployConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-        CdHostDeployConfigVO.ImageDeploy imageDeploy = cdHostDeployConfigVO.getImageDeploy();
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+        CdHostDeployConfigVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class);
 
-        Long hostId = cdHostDeployConfigVO.getHostId();
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
 
         // 0.2
@@ -836,8 +836,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             deployVersion = filterImageTagVoList.get(0).getTagName();
             deployObjectName = imageDeploy.getImageName();
-            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, imageDeploy.getImageName());
-            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
         } else {
             if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
                 throw new CommonException("error.no.gitlab.pipeline.id");
@@ -876,14 +874,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             image = ciPipelineImageDTO.getImageTag();
             deployVersion = imageVersion;
             deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
-            AppServiceRepVO appServiceRepVO = applicationService.queryByCode(projectId, deployObjectName);
-            appServiceId = appServiceRepVO == null ? null : appServiceRepVO.getId();
-            serviceName = appServiceRepVO == null ? null : appServiceRepVO.getServiceName();
         }
 
         // 1. 更新状态 记录镜像信息
         // 保存 应用服务与主机之间的关系
-        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, cdHostDeployConfigVO, hostId);
+        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, devopsCdHostDeployInfoDTO, hostId);
 
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
@@ -895,7 +890,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     image,
                     DockerInstanceStatusEnum.OPERATING.value(),
                     AppSourceType.CURRENT_PROJECT.getValue(), null);
-            devopsDockerInstanceDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
+            devopsDockerInstanceDTO.setDockerCommand(devopsCdHostDeployInfoDTO.getDockerCommand());
             devopsDockerInstanceDTO.setRepoId(repoId);
             devopsDockerInstanceDTO.setRepoName(repoName);
             devopsDockerInstanceDTO.setAppId(devopsHostAppDTO.getId());
@@ -908,6 +903,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
+            // 保存appId
+            devopsCdHostDeployInfoDTO.setAppId(devopsHostAppDTO.getId());
+            devopsCdHostDeployInfoDTO.setDeployType(DeployTypeEnum.UPDATE.value());
+            devopsCdHostDeployInfoService.baseUpdate(devopsCdHostDeployInfoDTO);
         } else {
             dockerDeployDTO.setContainerId(devopsDockerInstanceDTO.getContainerId());
         }
@@ -929,7 +928,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         try {
             dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO,
-                    new String(decoder.decodeBuffer(cdHostDeployConfigVO.getDockerCommand()), StandardCharsets.UTF_8)));
+                    new String(decoder.decodeBuffer(devopsCdHostDeployInfoDTO.getDockerCommand()), StandardCharsets.UTF_8)));
         } catch (IOException e) {
             throw new CommonException(e);
         }
@@ -971,14 +970,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, CdHostDeployConfigVO cdHostDeployConfigVO, Long hostId) {
-        if (org.apache.commons.lang3.StringUtils.equals(CREATE, cdHostDeployConfigVO.getDeployType())) {
+    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {
+        if (org.apache.commons.lang3.StringUtils.equals(CREATE, devopsCdHostDeployInfoDTO.getDeployType())) {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
             devopsHostAppDTO.setProjectId(projectId);
             devopsHostAppDTO.setHostId(hostId);
-            devopsHostAppDTO.setName(cdHostDeployConfigVO.getAppName());
-            devopsHostAppDTO.setCode(cdHostDeployConfigVO.getAppCode());
+            devopsHostAppDTO.setName(devopsCdHostDeployInfoDTO.getAppName());
+            devopsHostAppDTO.setCode(devopsCdHostDeployInfoDTO.getAppCode());
             devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
             devopsHostAppMapper.insertSelective(devopsHostAppDTO);
 
@@ -989,8 +988,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             record.setRdupmType(RdupmTypeEnum.DOCKER.value());
             record.setProjectId(projectId);
             record.setHostId(hostId);
-            record.setName(cdHostDeployConfigVO.getAppName());
-            record.setCode(cdHostDeployConfigVO.getAppCode());
+            record.setName(devopsCdHostDeployInfoDTO.getAppName());
+            record.setCode(devopsCdHostDeployInfoDTO.getAppCode());
             return devopsHostAppMapper.selectOne(record);
         }
     }
