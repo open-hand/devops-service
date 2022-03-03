@@ -36,10 +36,7 @@ import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
-import io.choerodon.devops.infra.util.HostDeployUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.*;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
@@ -156,7 +153,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         String deployVersion = null;
         deployVersion = dockerDeployVO.getImageInfo().getTag();
         deployObjectName = dockerDeployVO.getImageInfo().getImageName();
-        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, devopsDockerInstanceDTO.getDockerCommand()));
+        dockerDeployDTO.setCmd(HostDeployUtil.genDockerRunCmd(dockerDeployDTO, Base64Util.decodeBuffer(devopsDockerInstanceDTO.getDockerCommand())));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
