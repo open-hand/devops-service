@@ -183,7 +183,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return JsonHelper.marshalByJackson(jarDeployVO.getMarketDeployObjectInfoVO());
         } else if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getFileInfoVO());
-        } else if (AppSourceType.CUSTOM.getValue().equals(jarDeployVO.getSourceType())) {
+        } else if (AppSourceType.CUSTOM_JAR.getValue().equals(jarDeployVO.getSourceType())) {
             return JsonHelper.marshalByJackson(jarDeployVO.getJarPullInfoDTO());
         }
         return null;
@@ -487,7 +487,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
             } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
                 devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
-            } else if (AppSourceType.CUSTOM.getValue().equals(devopsHostAppVO.getSourceType())) {
+            } else if (AppSourceType.CUSTOM_JAR.getValue().equals(devopsHostAppVO.getSourceType())) {
                 devopsHostAppVO.setJarPullInfoDTO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), JarPullInfoDTO.class));
             }
         }
@@ -738,7 +738,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
                     appFile);
-        } else if (AppSourceType.CUSTOM.getValue().equals(jarDeployVO.getSourceType())) {
+        } else if (AppSourceType.CUSTOM_JAR.getValue().equals(jarDeployVO.getSourceType())) {
             String downloadUrl = jarDeployVO.getJarPullInfoDTO().getDownloadUrl();
 
             appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
