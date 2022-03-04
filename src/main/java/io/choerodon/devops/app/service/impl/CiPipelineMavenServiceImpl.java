@@ -179,7 +179,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                             baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
                     jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
                 } else {
-                    jarSnapshotTimestamp = getCustomJarSnapshotTimestamp(mavenRepoUrl, username, password, ciPipelineMavenDTO);
+                    jarSnapshotTimestamp = getCustomJarSnapshotTimestamp(mavenRepoUrl, DESEncryptUtil.decode(username), DESEncryptUtil.decode(password), ciPipelineMavenDTO);
                 }
                 //加上小版本   0.0.1-SNAPSHOT/springboot-0.0.1-20210202.063200-1.jar
                 logger.debug(">>>>>>>>>>>>>>>>>5. >>>>>>>>>>>>>>>>>>>>jarSnapshotTimestamp {}", jarSnapshotTimestamp);
