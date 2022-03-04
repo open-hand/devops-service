@@ -96,7 +96,7 @@ public class HostConnectionHandler {
      * @param hostId 主机ID
      * @return true 表示已连接
      */
-    private boolean getHostConnectionStatus(Long hostId) {
+    public boolean getHostConnectionStatus(Long hostId) {
         Map<String, HostSessionVO> clusterSessions = (Map<String, HostSessionVO>) (Map) redisTemplate.opsForHash().entries(DevopsHostConstants.HOST_SESSION);
         return clusterSessions.values().stream()
                 .anyMatch(t -> hostId.equals(t.getHostId())
