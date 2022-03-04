@@ -283,6 +283,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
             devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
         }
+        // 设置所属主机连接状态
+        devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId())?"connected":"disconnected");
         return devopsHostAppVO;
     }
 

@@ -72,6 +72,8 @@ public class DevopsHostAppVO {
     private String status;
     @ApiModelProperty("docker容器的端口")
     private String ports;
+    @ApiModelProperty
+    private String hostStatus;
 
     private DevopsDockerInstanceVO devopsDockerInstanceVO;
 
@@ -431,5 +433,13 @@ public class DevopsHostAppVO {
 
     public void setPorts(String ports) {
         this.ports = ports;
+    }
+
+    public String getHostStatus() {
+        return hostStatus;
+    }
+
+    public void setHostStatus(String hostStatus) {
+        this.hostStatus = hostStatus;
     }
 }
