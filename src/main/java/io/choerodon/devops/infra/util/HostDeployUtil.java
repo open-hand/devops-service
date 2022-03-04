@@ -1,16 +1,15 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
  * 〈功能简述〉
@@ -40,7 +39,8 @@ public class HostDeployUtil {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+            s = trim(s);
+            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
                 values = s;
             }
         }
@@ -82,7 +82,7 @@ public class HostDeployUtil {
         StringBuilder commandSB = new StringBuilder();
         String[] lines = rawCommand.split("\n");
         for (String line : lines) {
-            if (line.length() > 0 && !line.contains("#")) {
+            if (line.length() > 0 && !line.startsWith("#")) {
                 commandSB.append(line).append("\n");
             }
         }
@@ -104,7 +104,7 @@ public class HostDeployUtil {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
                 values = s;
             }
         }
@@ -124,4 +124,15 @@ public class HostDeployUtil {
         }
         return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
     }
+
+    public static String trim(String s) {
+        while (s.charAt(0) == ' ') {
+            s = s.substring(1);
+        }
+        while (s.charAt(s.length() - 1) == ' ') {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
+    }
+
 }
