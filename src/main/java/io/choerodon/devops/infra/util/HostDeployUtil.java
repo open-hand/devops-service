@@ -128,6 +128,9 @@ public class HostDeployUtil {
     }
 
     public static String trim(String s) {
+        if (ObjectUtils.isEmpty(s)) {
+            return s;
+        }
         while (s.charAt(0) == ' ') {
             s = s.substring(1);
         }
