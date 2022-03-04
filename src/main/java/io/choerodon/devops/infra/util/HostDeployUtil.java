@@ -82,6 +82,7 @@ public class HostDeployUtil {
         StringBuilder commandSB = new StringBuilder();
         String[] lines = rawCommand.split("\n");
         for (String line : lines) {
+            line = trim(line);
             if (line.length() > 0 && !line.startsWith("#")) {
                 commandSB.append(line).append("\n");
             }
@@ -104,6 +105,7 @@ public class HostDeployUtil {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
+            s = trim(s);
             if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
                 values = s;
             }
