@@ -737,7 +737,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
             } else {
                 downloadUrl = pipelineMavenDTO.calculateDownloadUrl();
-                server = new Server(null, pipelineMavenDTO.getUsername(), pipelineMavenDTO.getPassword());
+                server = new Server(null, DESEncryptUtil.decode(pipelineMavenDTO.getUsername()), DESEncryptUtil.decode(pipelineMavenDTO.getPassword()));
             }
 
             PipelineJarInfoVO pipelineJarInfoVO = new PipelineJarInfoVO();

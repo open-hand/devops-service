@@ -590,8 +590,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
             if (nexusRepoId == null) {
                 downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
-                username = ciPipelineMavenDTO.getUsername();
-                password = ciPipelineMavenDTO.getPassword();
+                username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
+                password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
                 version = ciPipelineMavenDTO.getVersion();
             }
         }

@@ -356,7 +356,7 @@ public class GitlabCiUtil {
     }
 
     public static String saveCustomJarMetadata(Long jobId, Long sequence, String url, String username, String password) {
-        String rawCommand = "saveCustomJarMetadata %s %s \"%s\" \"%s\" \"%s\"";
-        return String.format(rawCommand, jobId, sequence, url, username, password);
+        String rawCommand = "saveCustomJarMetadata %s %s %s %s %s";
+        return String.format(rawCommand, jobId, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
     }
 }
