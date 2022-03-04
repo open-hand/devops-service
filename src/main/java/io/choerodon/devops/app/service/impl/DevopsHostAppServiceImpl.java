@@ -137,7 +137,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
             if (!devopsHostAppInstanceDTO.getPreCommand().equals(jarDeployVO.getPreCommand()) ||
                     !devopsHostAppInstanceDTO.getRunCommand().equals(jarDeployVO.getRunCommand()) ||
-                    !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand())) {
+                    !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand()) ||
+                    !devopsHostAppInstanceDTO.getSourceConfig().equals(calculateSourceConfig(jarDeployVO))) {
                 // 执行操作前，先判断kill命令是否存在，不存在停止执行
                 if (!HostDeployUtil.checkKillCommandExist(jarDeployVO.getKillCommand())) {
                     throw new CommonException("error.host.instance.kill.command.exist");
