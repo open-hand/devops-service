@@ -2915,6 +2915,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     // 市场应用也不存在，返回空
                     return new ArrayList<>();
                 }
+                appServiceDTO = new AppServiceDTO();
                 appServiceDTO.setName(marketServiceVO.getMarketServiceName());
             }
             AppServiceGroupVO appServiceGroupVO = new AppServiceGroupVO();
