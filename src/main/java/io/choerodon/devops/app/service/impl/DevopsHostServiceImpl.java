@@ -546,7 +546,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+    public String downloadCreateHostFile(Long projectId, Long hostId, String token) {
         DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
         devopsHostDTO.setId(hostId);
         devopsHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostDTO);
