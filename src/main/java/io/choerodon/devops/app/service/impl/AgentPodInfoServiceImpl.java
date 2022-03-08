@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import io.choerodon.devops.app.service.AgentPodService;
@@ -48,11 +50,12 @@ public class AgentPodInfoServiceImpl implements AgentPodService {
 
     @Override
     public List<PodMetricsRedisInfoVO> queryAllPodSnapshots(String podName, String namespace, String clusterCode) {
-        return stringRedisTemplate.opsForList()
-                .range(String.format(KEY_PATTERN, podName, namespace, clusterCode), 0, RECORD_SIZE - 1)
-                .stream()
-                .map(p -> JSON.parseObject(p, PodMetricsRedisInfoVO.class))
-                .collect(Collectors.toList());
+        List<String> range = stringRedisTemplate.opsForList()
+                .range(String.format(KEY_PATTERN, podName, namespace, clusterCode), 0, RECORD_SIZE - 1);
+        if (CollectionUtils.isEmpty(range)) {
+            return new ArrayList<>();
+        }
+        return range.stream().map(p -> JSON.parseObject(p, PodMetricsRedisInfoVO.class)).collect(Collectors.toList());
     }
 
     @Nullable

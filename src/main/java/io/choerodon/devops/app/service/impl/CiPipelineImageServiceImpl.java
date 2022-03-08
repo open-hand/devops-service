@@ -36,10 +36,10 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Override
     public void createOrUpdate(CiPipelineImageVO ciPipelineImageVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(ciPipelineImageVO.getToken());
-        Long appServiceId = appServiceDTO.getId();
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException("error.token.invalid");
         }
+        Long appServiceId = appServiceDTO.getId();
 
         // 异常包装
         ExceptionUtil.wrapExWithCiEx(() -> {
