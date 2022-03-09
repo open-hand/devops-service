@@ -79,6 +79,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
 
+    private static final String CONNECTED = "connected";
+    private static final String DISCONNECTED = "disconnected";
+
     @Lazy
     @Autowired
     private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
@@ -239,6 +242,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
             devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
             devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
+            devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         });
         return page;
     }
@@ -284,7 +288,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
         }
         // 设置所属主机连接状态
-        devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId())?"connected":"disconnected");
+        devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         return devopsHostAppVO;
     }
 
