@@ -87,7 +87,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
             Map<String, String> upgradeInfo = new HashMap<>();
-            upgradeInfo.put("upgradeCommand", devopsHostService.downloadCreateHostFile(devopsHostDTO.getProjectId(), devopsHostDTO.getId(), devopsHostDTO.getToken()));
+            upgradeInfo.put("upgradeCommand", devopsHostService.getUpgradeString(devopsHostDTO.getProjectId(), devopsHostDTO));
             upgradeInfo.put("version", agentVersion);
             hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
 

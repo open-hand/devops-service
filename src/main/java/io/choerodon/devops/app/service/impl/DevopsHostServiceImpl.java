@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
@@ -76,12 +75,19 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh %s";
     private static final String HOST_UNINSTALL_SHELL = "ps -ef|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
+    private static final String HOST_UPGRADE_COMMAND_TEMPLATE;
 
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
             HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.host.sh");
+            throw new CommonException("error.load.host.install.sh");
+        }
+
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_upgrade.sh")) {
+            HOST_UPGRADE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.upgrade.sh");
         }
     }
 
@@ -169,6 +175,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
+    @Override
+    public String getUpgradeString(Long projectId, DevopsHostDTO devopsHostDTO) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{{ TOKEN }}", devopsHostDTO.getToken());
+        params.put("{{ CONNECT }}", agentServiceUrl);
+        params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
+        params.put("{{ BINARY }}", binaryDownloadUrl);
+        params.put("{{ VERSION }}", agentVersion);
+        return FileUtil.replaceReturnString(HOST_UPGRADE_COMMAND_TEMPLATE, params);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
@@ -232,7 +250,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
+    public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO
+            devopsHostConnectionTestVO) {
         SSHClient sshClient = null;
         try {
             DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
@@ -303,7 +322,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withCreatorInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withCreatorInfo,
+                                            @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         // 解析查询参数
         Page<DevopsHostVO> page;
