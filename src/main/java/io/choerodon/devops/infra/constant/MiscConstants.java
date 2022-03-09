@@ -58,6 +58,12 @@ public final class MiscConstants {
      */
     public static final String USER_SYNC_ERROR_FILE_BUCKET_NAME = "devops-service.user-sync.error-file";
 
+    /**
+     * 用户同步失败的文件存放的桶名称
+     * https://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
+     */
+    public static final String DEVOPS_SERVICE_BUCKET_NAME = "devops-service";
+
     public static final String UNKNOWN_SERVICE = "UnknownService";
 
     public static final String CREATE_TYPE = "create";
