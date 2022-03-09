@@ -53,7 +53,7 @@ public class HostDeployUtil {
     }
 
     public static String getWorkingDir(Long instanceId) {
-        return "$HOME/choerodon/" + instanceId;
+        return "/var/choerodon/" + instanceId;
     }
 
 
