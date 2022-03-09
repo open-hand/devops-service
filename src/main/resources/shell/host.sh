@@ -9,7 +9,6 @@ HOST_ID={{ HOST_ID }}
 VERSION={{ VERSION }}
 AGENT_NAME=c7n-agent
 AGENT=${WORK_DIR}/${AGENT_NAME}
-AGENT_LOG=${WORK_DIR}/${AGENT_NAME}.log
 TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 
 cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh

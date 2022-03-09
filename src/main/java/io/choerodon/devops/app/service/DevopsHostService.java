@@ -39,6 +39,15 @@ public interface DevopsHostService {
     String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
+     * 获得agent升级命令
+     *
+     * @param projectId     项目id
+     * @param devopsHostDTO 主机配置dto
+     * @return agent升级命令
+     */
+    String getUpgradeString(Long projectId, DevopsHostDTO devopsHostDTO);
+
+    /**
      * 更新主机
      *
      * @param projectId                 项目id
