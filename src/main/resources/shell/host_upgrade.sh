@@ -40,6 +40,27 @@ TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 EOF
 sudo chmod 0777 ${WORK_DIR}/c7n-agent.env
 
+cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
+#!/bin/sh
+operate=\$1
+case \$operate in
+start)
+    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}"
+    ;;
+stop)
+    pidFile=/var/choerodon/c7n-agent.pid
+    if [ -f \$pidFile ];then
+      agentPid=\$(cat \$pidFile)
+      kill -9 \$agentPid
+      rm -rf \$pidFile
+    fi
+    ;;
+esac
+
+EOF
+
+sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
+
 cd "$WORK_DIR" || exit
 
 # 4. 下载执行程序
