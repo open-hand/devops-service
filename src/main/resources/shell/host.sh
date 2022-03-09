@@ -11,26 +11,6 @@ AGENT_NAME=c7n-agent
 AGENT=${WORK_DIR}/${AGENT_NAME}
 TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 
-cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
-#!/bin/sh
-operate=\$1
-case \$operate in
-start)
-    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}"
-    ;;
-stop)
-    agentPid=\$(cat /var/choerodon/c7n-agent.pid)
-    if [ ! -z \$agentPid ];then
-    kill -9 \$agentPid
-    rm -rf /var/choerodon/c7n-agent.pid
-    fi
-    ;;
-esac
-
-EOF
-
-sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
-
 # 1. 校验当前用户有var目录
 if [ -z "${VAR}" ]; then
   sudo mkdir /var
@@ -41,6 +21,7 @@ if [ ! -d "${WORK_DIR}" ]; then
   echo "Creating ${WORK_DIR} directory"
   sudo mkdir $WORK_DIR
   sudo chmod 0777 $WORK_DIR
+  sudo chown $USER:$USER $WORK_DIR
   echo "Working directory ${WORK_DIR} created successfully"
 fi
 
@@ -61,16 +42,37 @@ TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 
 EOF
 
-sudo chmod 0777 ${WORK_DIR}/agent.env
+sudo chmod 0777 ${WORK_DIR}/c7n-agent.env
 
+cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
+#!/bin/sh
+operate=\$1
+case \$operate in
+start)
+    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}"
+    ;;
+stop)
+    pidFile=/var/choerodon/c7n-agent.pid
+    if [ -f \$pidFile ];then
+      agentPid=\$(cat \$pidFile)
+      kill -9 \$agentPid
+      rm -rf \$pidFile
+    fi
+    ;;
+esac
+
+EOF
+
+sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
 
 # 4. 下载执行程序
 echo "Downloading c7n-agent"
 curl -o ${TAR_FILE} "{{ BINARY }}"
 
-if [ -f $AGENT_NAME ];then
-rm -rf /var/choerodon/c7n-agent
+if [ -f $AGENT_NAME ]; then
+  rm -rf /var/choerodon/c7n-agent
 fi
+
 tar -zxvf ${TAR_FILE}
 echo "c7n-agent downloaded successfully"
 
@@ -102,11 +104,8 @@ sudo systemctl daemon-reload
 cd "${WORK_DIR}"
 chmod +x "${AGENT}"
 
-if [ -f "/var/choerodon/c7n-agent.pid" ];then
-  agentPid=$(cat /var/choerodon/c7n-agent.pid)
-  if [ ! -z $agentPid ];then
-    sudo systemctl stop c7n-agent
-  fi
+if [ -f "/var/choerodon/c7n-agent.pid" ]; then
+  sudo systemctl stop c7n-agent
 fi
 
 sudo systemctl start c7n-agent
