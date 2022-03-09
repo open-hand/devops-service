@@ -69,9 +69,7 @@ sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
 echo "Downloading c7n-agent"
 curl -o ${TAR_FILE} "{{ BINARY }}"
 
-if [ -f $AGENT_NAME ]; then
-  rm -rf /var/choerodon/c7n-agent
-fi
+rm -rf /var/choerodon/c7n-agent
 
 tar -zxvf ${TAR_FILE}
 echo "c7n-agent downloaded successfully"
