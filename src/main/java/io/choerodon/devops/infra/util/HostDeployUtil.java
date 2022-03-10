@@ -1,16 +1,15 @@
 package io.choerodon.devops.infra.util;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
  * 〈功能简述〉
@@ -22,8 +21,8 @@ import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 public class HostDeployUtil {
 
     private static final String HOST_COMMAND_TEMPLATE;
-    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -fsSLo %s -u %s:%s %s";
-    private static final String FILE_DOWNLOAD_COMMAND = "curl -fsSLo %s %s";
+    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -fsSLo \"%s\" -u \"%s:%s\" \"%s\"";
+    private static final String FILE_DOWNLOAD_COMMAND = "curl -fsSLo \"%s\" \"%s\"";
 
     private HostDeployUtil() {
     }
@@ -36,11 +35,12 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
+    public static String getDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
         String[] strings = value.split("\n");
         String values = "";
         for (String s : strings) {
-            if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
+            s = trim(s);
+            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
                 values = s;
             }
         }
@@ -49,17 +49,15 @@ public class HostDeployUtil {
         }
 
         // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
+        return values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
     }
 
-    public static String genWorkingDir(Long instanceId) {
-        return "$HOME/choerodon/" + instanceId + "/";
+    public static String getWorkingDir(Long instanceId) {
+        return "/var/choerodon/" + instanceId;
     }
 
 
-    public static String genDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
+    public static String getDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
         if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
             return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
@@ -75,7 +73,7 @@ public class HostDeployUtil {
         }
     }
 
-    public static String genCommand(Map<String, String> params, String command) {
+    public static String getCommand(Map<String, String> params, String command) {
         params.put("{{ COMMAND }}", removeComments(command));
         return FileUtil.replaceReturnString(HOST_COMMAND_TEMPLATE, params);
     }
@@ -84,7 +82,8 @@ public class HostDeployUtil {
         StringBuilder commandSB = new StringBuilder();
         String[] lines = rawCommand.split("\n");
         for (String line : lines) {
-            if (line.length() > 0 && !line.contains("#")) {
+            line = trim(line);
+            if (line.length() > 0 && !line.startsWith("#")) {
                 commandSB.append(line).append("\n");
             }
         }
@@ -94,4 +93,51 @@ public class HostDeployUtil {
             return commandSB.toString();
         }
     }
+
+    public static Boolean checkKillCommandExist(String deleteCommand) {
+        if (ObjectUtils.isEmpty(deleteCommand)) {
+            return false;
+        }
+        return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
+    }
+
+    public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
+        String[] strings = value.split("\n");
+        String values = "";
+        for (String s : strings) {
+            s = trim(s);
+            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
+                values = s;
+            }
+        }
+        if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
+            throw new CommonException("error.instruction");
+        }
+
+        // 判断镜像是否存在 存在删除 部署
+        StringBuilder dockerRunExec = new StringBuilder();
+        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage()));
+        return dockerRunExec.toString();
+    }
+
+    public static Boolean checkHealthProbExit(String deleteCommand) {
+        if (ObjectUtils.isEmpty(deleteCommand)) {
+            return false;
+        }
+        return !ObjectUtils.isEmpty(removeComments(Base64Util.decodeBuffer(deleteCommand)));
+    }
+
+    public static String trim(String s) {
+        if (ObjectUtils.isEmpty(s)) {
+            return s;
+        }
+        while (s.charAt(0) == ' ') {
+            s = s.substring(1);
+        }
+        while (s.charAt(s.length() - 1) == ' ') {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
+    }
+
 }

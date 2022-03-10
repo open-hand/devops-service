@@ -58,7 +58,7 @@ public class DevopsCiPipelineAdditionalValidator {
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
-        validateImage(ciCdPipelineVO.getImage());
+//        validateImage(ciCdPipelineVO.getImage());
 
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
@@ -72,7 +72,7 @@ public class DevopsCiPipelineAdditionalValidator {
                     validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
                     stage.getJobList().forEach(job -> {
-                        validateImage(job.getImage());
+//                        validateImage(job.getImage());
                         validateParallel(job);
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);

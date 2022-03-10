@@ -317,6 +317,37 @@ function saveJarMetadata() {
     exit 1
   fi
 }
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
+# $3 maven_repo_url   目标仓库地址
+# $4 username   目标仓库用户名
+# $5 password   目标仓库用户密码
+function saveCustomJarMetadata() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "job_id=$1" \
+    -F "sequence=$2" \
+    -F "maven_repo_url=$3" \
+    -F "username=$4" \
+    -F "password=$5" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
 
 ############################### 存储sonar扫描的信息 ################################
 # $1 scanner_type 扫描器类型

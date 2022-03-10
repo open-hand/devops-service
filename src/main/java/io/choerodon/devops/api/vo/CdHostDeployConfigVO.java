@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -47,6 +46,24 @@ public class CdHostDeployConfigVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+
+    @ApiModelProperty("dockerCommand")
+    private String dockerCommand;
+
+    @ApiModelProperty("更新该是新建实例")
+    private String operation;
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
 
     public static class JarDeploy {
         @ApiModelProperty("部署来源：matchDeploy(匹配部署)/pipelineDeploy(流水线部署)")
@@ -153,7 +170,7 @@ public class CdHostDeployConfigVO {
 
         @Encrypt
         @ApiModelProperty("仓库Id")
-        private String repoId;
+        private Long repoId;
 
         @ApiModelProperty("镜像名称")
         private String imageName;
@@ -214,11 +231,11 @@ public class CdHostDeployConfigVO {
             this.value = value;
         }
 
-        public String getRepoId() {
+        public Long getRepoId() {
             return repoId;
         }
 
-        public void setRepoId(String repoId) {
+        public void setRepoId(Long repoId) {
             this.repoId = repoId;
         }
 
@@ -358,5 +375,29 @@ public class CdHostDeployConfigVO {
 
     public void setImageDeploy(ImageDeploy imageDeploy) {
         this.imageDeploy = imageDeploy;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
     }
 }

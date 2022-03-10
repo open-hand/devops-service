@@ -25,4 +25,6 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
     void batchUpdateTimeoutCommand(@Param("missCommands") Set<Long> missCommands);
 
     List<DevopsHostCommandDTO> listStagnatedRecord(@Param("hostId") String hostId, @Param("beforeDate") String beforeDate);
+
+    List<DevopsHostCommandDTO> listByIds(@Param("missCommands") Set<Long> missCommands);
 }

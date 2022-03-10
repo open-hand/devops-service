@@ -96,7 +96,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
 
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = devopsCiMavenPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
-        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = ConvertUtils.convertObject(devopsCiMavenPublishConfigDTO, DevopsCiMavenPublishConfigVO.class);
+        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = dtoToVo(devopsCiMavenPublishConfigDTO);
 
         List<MavenRepoVO> targetRepos = new ArrayList<>();
         boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId,
@@ -136,34 +136,41 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         Set<Long> dependencyRepoIds = devopsCiMavenPublishConfigVO.getNexusMavenRepoIds();
         List<MavenRepoVO> dependencyRepos = devopsCiMavenPublishConfigVO.getRepos();
 
-        boolean targetRepoEmpty = devopsCiMavenPublishConfigVO.getNexusRepoId() == null;
+        boolean targetRepoEmpty = devopsCiMavenPublishConfigVO.getNexusRepoId() == null && devopsCiMavenPublishConfigVO.getTargetRepo() == null;
         boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
         boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
+        boolean settingsEmpty = !StringUtils.hasText(devopsCiMavenPublishConfigVO.getMavenSettings());
 
         // 如果都为空, 不生成settings文件
-        if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty) {
+        if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty && settingsEmpty) {
             return false;
         }
 
         // 查询制品库
-        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null,
-                projectId,
-                ArrayUtil.singleAsSet(devopsCiMavenPublishConfigVO.getNexusRepoId()));
-
-        // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
-        if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
-            return false;
-        }
-
-        // 转化制品库信息, 并将目标仓库信息取出, 放入targetRepoContainer
-        List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
-            MavenRepoVO result = convertRepo(r);
-            // 目标仓库不为空, 并且目标仓库包含
-            if (!targetRepoEmpty && devopsCiMavenPublishConfigVO.getNexusRepoId().equals(r.getRepositoryId())) {
-                targetRepoContainer.add(result);
+        List<MavenRepoVO> mavenRepoVOS = new ArrayList<>();
+        if (devopsCiMavenPublishConfigVO.getNexusRepoId() != null) {
+            List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null,
+                    projectId,
+                    ArrayUtil.singleAsSet(devopsCiMavenPublishConfigVO.getNexusRepoId()));
+            // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
+            if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
+                return false;
             }
-            return result;
-        }).collect(Collectors.toList());
+            // 转化制品库信息, 并将目标仓库信息取出, 放入targetRepoContainer
+
+            mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
+                MavenRepoVO result = convertRepo(r);
+                // 目标仓库不为空, 并且目标仓库包含
+                if (!targetRepoEmpty && devopsCiMavenPublishConfigVO.getNexusRepoId().equals(r.getRepositoryId())) {
+                    targetRepoContainer.add(result);
+                }
+                return result;
+            }).collect(Collectors.toList());
+        } else {
+            MavenRepoVO targetRepo = devopsCiMavenPublishConfigVO.getTargetRepo();
+            mavenRepoVOS.add(targetRepo);
+            targetRepoContainer.add(targetRepo);
+        }
 
         // 将手动输入的仓库信息也放入列表
         if (!dependencyRepoEmpty) {
@@ -171,7 +178,14 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         }
 
         // 生成settings文件内容
-        String settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
+        String settings;
+        // 如果填了自定义的settings文件则直接使用用户填的
+        if (settingsEmpty) {
+            settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
+        } else {
+            settings = devopsCiMavenPublishConfigVO.getMavenSettings();
+        }
+
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO1 = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
 
@@ -267,9 +281,22 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
             // 只生成一个jar包元数据上传指令用于CD阶段
             //加上jobId  与sequence，用于查询jar包的时间戳
-            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
-                    jobId,
-                    devopsCiStepDTO.getSequence()));
+            String cmd;
+            if (ciConfigTemplateVO.getNexusRepoId() != null) {
+
+                cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
+                        jobId,
+                        devopsCiStepDTO.getSequence());
+            } else {
+                MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
+                cmd = GitlabCiUtil.saveCustomJarMetadata(jobId,
+                        devopsCiStepDTO.getSequence(),
+                        targetRepo.getUrl(),
+                        targetRepo.getUsername(),
+                        targetRepo.getPassword());
+            }
+
+            shells.add(cmd);
         } else {
             // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
             shells.addAll(templateShells);
@@ -288,6 +315,9 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             devopsCiMavenPublishConfigVO.setRepos(JsonHelper.unmarshalByJackson(devopsCiMavenPublishConfigDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
             }));
         }
+        if (StringUtils.hasText(devopsCiMavenPublishConfigDTO.getTargetRepoStr())) {
+            devopsCiMavenPublishConfigVO.setTargetRepo(JsonHelper.unmarshalByJackson(devopsCiMavenPublishConfigDTO.getTargetRepoStr(), MavenRepoVO.class));
+        }
         return devopsCiMavenPublishConfigVO;
     }
 
@@ -300,6 +330,9 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         }
         if (!CollectionUtils.isEmpty(mavenPublishConfig.getRepos())) {
             devopsCiMavenPublishConfigDTO.setRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getRepos()));
+        }
+        if (mavenPublishConfig.getTargetRepo() != null) {
+            devopsCiMavenPublishConfigDTO.setTargetRepoStr(JsonHelper.marshalByJackson(mavenPublishConfig.getTargetRepo()));
         }
         return devopsCiMavenPublishConfigDTO;
     }
@@ -316,7 +349,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         if (mavenPublishConfig == null) {
             return false;
         }
-        if (mavenPublishConfig.getNexusRepoId() == null) {
+        if (mavenPublishConfig.getNexusRepoId() == null && mavenPublishConfig.getTargetRepo() == null) {
             return false;
         }
         return true;

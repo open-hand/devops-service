@@ -1512,7 +1512,7 @@ public class GitlabServiceClientOperator {
     }
 
     public BranchDTO getBranch(int gitlabProjectId, String ref) {
-        return gitlabServiceClient.queryBranchByName(gitlabProjectId, ref).getBody();
+        return gitlabServiceClient.queryBranch(gitlabProjectId, ref).getBody();
     }
 
     public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {

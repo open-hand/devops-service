@@ -39,7 +39,7 @@ public class SyncOperatingCommandStatusEventHandler implements HostMsgHandler {
 
     @Override
     public void handler(String hostId, @Nullable Long commandId, String payload) {
-        // 1. 查询处于操作中三分钟以上的操作记录
+        // 1. 查询处于操作中30分钟以上的操作记录
         List<DevopsHostCommandDTO> devopsHostCommandDTOList = devopsHostCommandService.listStagnatedRecord(hostId);
         if (CollectionUtils.isEmpty(devopsHostCommandDTOList)) {
             LOGGER.info(">>>>>>>>>>>>>>>Host : {}, Stagnated operating host command is null, skip.<<<<<<<<<<<<<<<<<<", hostId);

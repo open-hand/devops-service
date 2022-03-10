@@ -360,7 +360,7 @@ public class BaseServiceClientOperator {
         try {
             ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
+            if (userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
                 return null;
             }
             return userDOResponseEntity.getBody().getContent().get(0);

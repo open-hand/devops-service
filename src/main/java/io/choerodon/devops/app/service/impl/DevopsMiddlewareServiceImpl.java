@@ -297,6 +297,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     JsonHelper.marshalByJackson(middlewareConfig),
                     null,
                     null,
+                    null,
+                    null,
                     null);
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
 
@@ -437,6 +439,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     middlewareMySqlHostDeployVO.getAppCode(),
                     AppSourceType.MIDDLEWARE.getValue(),
                     JsonHelper.marshalByJackson(middlewareConfig),
+                    null,
+                    null,
                     null,
                     null,
                     null);

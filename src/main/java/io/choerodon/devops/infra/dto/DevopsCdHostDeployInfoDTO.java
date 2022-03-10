@@ -39,7 +39,7 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
     private String appCode;
     private String hostDeployType;
 
-    private String jarDeployJson;
+    private String deployJson;
 
     private String preCommand;
     private String runCommand;
@@ -48,8 +48,16 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
     private String killCommand;
     @ApiModelProperty("健康探针")
     private String healthProb;
-    @ApiModelProperty("操作类型 create/update")
-    private String operation;
+    @ApiModelProperty("删除命令")
+    private String dockerCommand;
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
+    }
 
     public Long getId() {
         return id;
@@ -107,12 +115,12 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
         this.hostDeployType = hostDeployType;
     }
 
-    public String getJarDeployJson() {
-        return jarDeployJson;
+    public String getDeployJson() {
+        return deployJson;
     }
 
-    public void setJarDeployJson(String jarDeployJson) {
-        this.jarDeployJson = jarDeployJson;
+    public void setDeployJson(String deployJson) {
+        this.deployJson = deployJson;
     }
 
     public String getPreCommand() {
@@ -153,13 +161,5 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
 
     public void setHealthProb(String healthProb) {
         this.healthProb = healthProb;
-    }
-
-    public String getOperation() {
-        return operation;
-    }
-
-    public void setOperation(String operation) {
-        this.operation = operation;
     }
 }
