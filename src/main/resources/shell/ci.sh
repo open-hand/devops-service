@@ -36,18 +36,7 @@ mkdir -p $DOCKER_CONFIG
 # 设成docekr认证配置文件
 echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
 
-# 获取commit时间
-C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
-C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
-C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
-C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
-C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
-C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
-C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
-export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
 
-# 8位sha值
-export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
 
 # 分支名
 if [ $CIRCLECI ]; then
@@ -134,7 +123,45 @@ function cache_jar() {
 }
 
 #################################### 构建镜像 ####################################
+$1: skipTlsVerify 是否跳过证书校验
+$2: dockerBuildContextDir docker构建上下文
+$3: dockerFilePath Dockerfile路径
+function kaniko_build() {
+  # 获取commit时间
+  C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
+  C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+  C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+  C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+  C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+  C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+  C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
+  export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
+
+  if [ -z $KUBERNETES_SERVICE_HOST ];then
+      ssh -o StrictHostKeyChecking=no root@kaniko /kaniko/kaniko $1  --no-push \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      --tarPath ${PWD}/${PROJECT_NAME}.tar
+  else
+      ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko $1  --no-push \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      --tarPath ${PWD}/${PROJECT_NAME}.tar
+  fi
+}
+
+#################################### 构建镜像 ####################################
 function docker_build() {
+  # 获取commit时间
+  C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
+  C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+  C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+  C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+  C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+  C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+  C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
+  export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
+
+  # 8位sha值
+  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
   cp /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar ${1:-"src/main/docker"}/app.jar || true
   cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
@@ -151,6 +178,19 @@ function clean_cache() {
 ################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build() {
+  # 获取commit时间
+  C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
+  C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+  C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+  C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+  C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+  C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+  C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
+  export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
+
+  # 8位sha值
+  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
+
   #判断chart主目录名是否与应用编码保持一致
   CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
   if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
