@@ -269,8 +269,8 @@ public class GitlabCiUtil {
             String resolveCommond = "trivyScanImage %s";
             commands.add(String.format(resolveCommond, jobId));
         }
-        String skopeoCommand = "skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-        commands.add(skopeoCommand);
+
+        commands.add("skopeo_copy");
         return commands;
     }
 

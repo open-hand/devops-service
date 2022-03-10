@@ -148,6 +148,20 @@ function kaniko_build() {
   fi
 }
 
+function skopeo_copy() {
+  # 获取commit时间
+  C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
+  C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+  C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+  C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+  C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+  C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+  C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
+  export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
+
+  skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+}
+
 #################################### 构建镜像 ####################################
 function docker_build() {
   # 获取commit时间
