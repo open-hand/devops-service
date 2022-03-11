@@ -71,7 +71,8 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
             CiTemplateCategoryDTO ciTemplateCategoryDTO = templateCategoryDTOMap.get(pipelineTemplateVO.getCiTemplateCategoryId());
             pipelineTemplateVO.setCiTemplateCategoryDTO(ciTemplateCategoryDTO);
         });
-
+        //自定义的排在预置的后面
+        ciTemplateCategoryDTOS = ciTemplateCategoryDTOS.stream().sorted(Comparator.comparing(CiTemplateCategoryDTO::getBuiltIn).reversed()).collect(Collectors.toList());
         return new PipelineTemplateCompositeVO(ciTemplateCategoryDTOS, pipelineTemplateVOS);
     }
 
