@@ -427,22 +427,22 @@
                da.name     appServiceName,
                dav.version appServiceVersion,
                cmd.creation_date,
-               cmd.status  status,
-               cmd.error   error,
-               cmd.last_update_date,
-               cmd.last_updated_by,
-               cmd.created_by
+        cmd.status status,
+        cmd.error error,
+        cmd.last_update_date,
+        cmd.last_updated_by,
+        cmd.created_by
         from devops_app_service_instance dai
-                     JOIN devops_app_service da ON dai.app_service_id = da.id
-                     JOIN devops_app_service_version dav ON dai.app_service_version_id = dav.id
-                     JOIN devops_env de ON de.id = dai.env_id
-                     LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
-                where da.project_id = #{projectId}
-                  and cmd.command_type in ('create', 'update')
-                  and cmd.`status` not in
-                      ('doing', 'operating')
-                  and cmd.object = 'instance'
-                  and dai.status != 'deleted'
+        JOIN devops_app_service da ON dai.app_service_id = da.id
+        JOIN devops_app_service_version dav ON dai.app_service_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
+        where de.project_id = #{projectId}
+        and cmd.command_type in ('create', 'update')
+        and cmd.`status` not in
+        ('doing', 'operating')
+        and cmd.object = 'instance'
+        and dai.status != 'deleted'
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('', '${startTime}', ' 00:00:00')
         </if>

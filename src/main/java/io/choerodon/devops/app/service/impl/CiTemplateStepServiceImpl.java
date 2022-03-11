@@ -1,10 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,9 @@ import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateStepCategoryService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
+import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.CiTemplateJobGroupTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiTemplateDockerMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateSonarMapper;
@@ -80,13 +81,36 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
         Set<Long> cids = ciTemplateStepVOS.stream().map(CiTemplateStepVO::getCategoryId).collect(Collectors.toSet());
         List<CiTemplateStepCategoryVO> ciTemplateStepCategoryVOS = ciTemplateStepCategoryService.listByIds(cids);
 
+
+        //将步骤分组排序
+        List<CiTemplateStepCategoryVO> customJobGroupVOS = ciTemplateStepCategoryVOS.stream().filter(ciTemplateStepCategoryVO -> !ciTemplateStepCategoryVO.getBuiltIn()).collect(Collectors.toList());
+
+        List<CiTemplateStepCategoryVO> otherVos = ciTemplateStepCategoryVOS.stream()
+                .filter(CiTemplateStepCategoryVO::getBuiltIn)
+                .filter(ciTemplateStepCategoryVO -> StringUtils.equalsIgnoreCase(ciTemplateStepCategoryVO.getName(), "其他"))
+                .collect(Collectors.toList());
+        List<CiTemplateStepCategoryVO> firstVos = ciTemplateStepCategoryVOS
+                .stream()
+                .filter(ciTemplateStepCategoryVO -> StringUtils.equalsIgnoreCase(ciTemplateStepCategoryVO.getName(), "构建"))
+                .collect(Collectors.toList());
+
+        List<CiTemplateStepCategoryVO> groupVOS = ciTemplateStepCategoryVOS.stream().filter(CiTemplateStepCategoryVO::getBuiltIn)
+                .filter(ciTemplateStepCategoryVO -> !StringUtils.equalsIgnoreCase(ciTemplateStepCategoryVO.getName(), "其他"))
+                .filter(ciTemplateStepCategoryVO -> !StringUtils.equalsIgnoreCase(ciTemplateStepCategoryVO.getName(), "构建"))
+                .sorted(Comparator.comparing(CiTemplateStepCategoryVO::getId))
+                .collect(Collectors.toList());
+        List<CiTemplateStepCategoryVO> templateStepCategoryVOS = new ArrayList<>();
+        templateStepCategoryVOS.addAll(firstVos);
+        templateStepCategoryVOS.addAll(groupVOS);
+        templateStepCategoryVOS.addAll(otherVos);
+        templateStepCategoryVOS.addAll(customJobGroupVOS);
         // 将步骤分组
-        ciTemplateStepCategoryVOS.forEach(ciTemplateStepCategoryVO -> {
+        templateStepCategoryVOS.forEach(ciTemplateStepCategoryVO -> {
             List<CiTemplateStepVO> ciTemplateStepVOList = categoryStepMap.get(ciTemplateStepCategoryVO.getId());
             ciTemplateStepCategoryVO.setCiTemplateStepVOList(ciTemplateStepVOList);
         });
 
-        return ciTemplateStepCategoryVOS;
+        return templateStepCategoryVOS;
     }
 }
 
