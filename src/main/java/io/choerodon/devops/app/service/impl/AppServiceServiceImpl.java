@@ -2824,7 +2824,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public AppServiceDTO baseCreate(AppServiceDTO appServiceDTO) {
-        if (appServiceMapper.insert(appServiceDTO) != 1) {
+        if (appServiceMapper.insertSelective(appServiceDTO) != 1) {
             throw new CommonException("error.application.create.insert");
         }
         return appServiceDTO;
@@ -3410,6 +3410,17 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void batchTransfer(Long projectId, List<AppServiceTransferVO> appServiceTransferVOList) {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, appServiceTransferVOList.size());
+
+        // 校验是否能迁移应用服务
+        appServiceTransferVOList.forEach(v -> {
+            AppServiceDTO appServiceDTO = new AppServiceDTO();
+            appServiceDTO.setGitlabProjectId(v.getGitlabProjectId());
+            List<AppServiceDTO> appServiceDTOList = appServiceMapper.select(appServiceDTO);
+            if (!CollectionUtils.isEmpty(appServiceDTOList)
+                    && appServiceDTOList.stream().anyMatch(app -> "none".equals(app.getExternalGitlabUrl()))) {
+                throw new CommonException("error.app.is.already.bind");
+            }
+        });
 
         // 权限校验
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
