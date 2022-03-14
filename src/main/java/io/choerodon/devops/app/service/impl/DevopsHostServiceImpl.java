@@ -73,7 +73,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh %s";
-    private static final String HOST_UNINSTALL_SHELL = "ps -ef|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
+    private static final String HOST_UNINSTALL_SHELL = "sudo systemctl stop c7n-agent";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
     private static final String HOST_UPGRADE_COMMAND_TEMPLATE;
 
