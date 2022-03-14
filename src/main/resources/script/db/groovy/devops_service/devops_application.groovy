@@ -185,7 +185,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
 
     }
 
-    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
-            dropIndex(indexName: "devops_app_idx_project_id", tableName: "devops_app_service")
+    changeSet(author: 'lihao', id: '2021-11-02-drop-index') {
+        dropIndex(indexName: "devops_app_idx_project_id", tableName: "devops_app_service")
+    }
+    changeSet(author: 'wanghao', id: '2022-03-14-data-fix') {
+        sql("""
+            UPDATE devops_app_service das SET das.external_gitlab_url ='none' WHERE das.external_gitlab_url is null
+        """)
     }
 }
