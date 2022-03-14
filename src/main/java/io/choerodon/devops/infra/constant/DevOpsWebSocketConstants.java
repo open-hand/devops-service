@@ -22,6 +22,7 @@ public final class DevOpsWebSocketConstants {
     public static final String USER_ID = "userId";
     public static final String COLON = ":";
     public static final String POD_NAME = "podName";
+    public static final String PREVIOUS = "previous";
     public static final String CONTAINER_NAME = "containerName";
     public static final String LOG_ID = "logId";
     public static final String ENV = "env";
@@ -30,6 +31,7 @@ public final class DevOpsWebSocketConstants {
     public static final String DESCRIBE_Id = "describeId";
     public static final String HOST_AGENT = "host_agent";
     public static final String HOST_ID = "hostId";
+    public static final String INSTANCE_ID = "instanceId";
 
     /**
      * 形如:  cluster:123

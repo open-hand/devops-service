@@ -33,6 +33,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     @Override
     @Transactional
     public DevopsCdStageDTO create(DevopsCdStageDTO devopsCdStageDTO) {
+        devopsCdStageDTO.setId(null);
         if (devopsCdStageMapper.insert(devopsCdStageDTO) != 1) {
             throw new CommonException(CREATE_STAGE_FAILED);
         }

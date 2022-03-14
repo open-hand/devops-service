@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -193,13 +194,14 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1beta2StatefulSet.class);
 
         DevopsStatefulSetDTO oldDevopsStatefulSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2StatefulSet.getMetadata().getName());
         if (oldDevopsStatefulSetDTO != null) {
             oldDevopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsStatefulSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsStatefulSetMapper.updateByPrimaryKeySelective(oldDevopsStatefulSetDTO);
         } else {
 
@@ -215,6 +217,8 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             devopsStatefulSetDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsStatefulSetDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsStatefulSetDTO.setName(v1beta2StatefulSet.getMetadata().getName());
+            devopsStatefulSetDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsStatefulSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsStatefulSetMapper.insertSelective(devopsStatefulSetDTO);
         }
     }

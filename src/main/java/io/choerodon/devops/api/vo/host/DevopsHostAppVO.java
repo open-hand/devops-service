@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 
 /**
@@ -29,14 +30,8 @@ public class DevopsHostAppVO {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
-    @ApiModelProperty("进程id")
-    private String pid;
-    @ApiModelProperty("占用端口")
-    private String ports;
     @ApiModelProperty("部署来源")
     private String sourceType;
-    @ApiModelProperty("进程状态")
-    private String status;
     @ApiModelProperty("制品类型")
     private String rdupmType;
     /**
@@ -63,6 +58,32 @@ public class DevopsHostAppVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("删除命令是否存在")
+    private Boolean killCommandExist;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("健康探针是否存在")
+    private Boolean healthProbExist;
+    @ApiModelProperty("应用是否准备好")
+    private Boolean ready;
+    @ApiModelProperty("docker容器的状态")
+    private String status;
+    @ApiModelProperty("docker容器的端口")
+    private String ports;
+    @ApiModelProperty
+    private String hostStatus;
+
+    private DevopsDockerInstanceVO devopsDockerInstanceVO;
+
+    public DevopsDockerInstanceVO getDevopsDockerInstanceVO() {
+        return devopsDockerInstanceVO;
+    }
+
+    public void setDevopsDockerInstanceVO(DevopsDockerInstanceVO devopsDockerInstanceVO) {
+        this.devopsDockerInstanceVO = devopsDockerInstanceVO;
+    }
 
     public String getPreCommand() {
         return preCommand;
@@ -97,6 +118,8 @@ public class DevopsHostAppVO {
 
     private FileInfoVO fileInfoVO;
 
+    private JarPullInfoDTO jarPullInfoDTO;
+
     @ApiModelProperty("groupId")
     private String groupId;
     @ApiModelProperty("artifactId")
@@ -116,8 +139,20 @@ public class DevopsHostAppVO {
     private Long lastUpdatedBy;
     private Long objectVersionNumber;
 
+    private IamUserDTO creator;
+    private IamUserDTO updater;
+
+
     @ApiModelProperty("操作命令")
     private DevopsHostCommandDTO devopsHostCommandDTO;
+
+    public JarPullInfoDTO getJarPullInfoDTO() {
+        return jarPullInfoDTO;
+    }
+
+    public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
+        this.jarPullInfoDTO = jarPullInfoDTO;
+    }
 
     public DevopsHostCommandDTO getDevopsHostCommandDTO() {
         return devopsHostCommandDTO;
@@ -150,8 +185,6 @@ public class DevopsHostAppVO {
     public void setVersion(String version) {
         this.version = version;
     }
-
-    private IamUserDTO creator;
 
     public FileInfoVO getFileInfoVO() {
         return fileInfoVO;
@@ -233,6 +266,14 @@ public class DevopsHostAppVO {
         this.creator = creator;
     }
 
+    public IamUserDTO getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(IamUserDTO updater) {
+        this.updater = updater;
+    }
+
     public Long getProjectId() {
         return projectId;
     }
@@ -265,36 +306,12 @@ public class DevopsHostAppVO {
         this.code = code;
     }
 
-    public String getPid() {
-        return pid;
-    }
-
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
-    }
-
     public String getSourceType() {
         return sourceType;
     }
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getRdupmType() {
@@ -360,5 +377,69 @@ public class DevopsHostAppVO {
 
     public void setMiddlewareVersion(String middlewareVersion) {
         this.middlewareVersion = middlewareVersion;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public Boolean getKillCommandExist() {
+        return killCommandExist;
+    }
+
+    public void setKillCommandExist(Boolean killCommandExist) {
+        this.killCommandExist = killCommandExist;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public Boolean getReady() {
+        return ready;
+    }
+
+    public void setReady(Boolean ready) {
+        this.ready = ready;
+    }
+
+    public Boolean getHealthProbExist() {
+        return healthProbExist;
+    }
+
+    public void setHealthProbExist(Boolean healthProbExist) {
+        this.healthProbExist = healthProbExist;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public String getHostStatus() {
+        return hostStatus;
+    }
+
+    public void setHostStatus(String hostStatus) {
+        this.hostStatus = hostStatus;
     }
 }

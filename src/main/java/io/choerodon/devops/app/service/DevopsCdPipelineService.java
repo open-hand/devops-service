@@ -123,6 +123,13 @@ public interface DevopsCdPipelineService {
     void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO);
 
     /**
+     * 处理api测试套件执行完成事件
+     *
+     * @param apiTestCompleteEventVO
+     */
+    void handleApiTestSuiteCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO);
+
+    /**
      * 查询引用了实例作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
      *
      * @param projectId  项目id

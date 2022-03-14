@@ -1001,7 +1001,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
         DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
@@ -1011,6 +1011,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             // 更新ingress记录
             oldDevopsIngressDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             oldDevopsIngressDTO.setStatus(IngressStatus.RUNNING.getStatus());
+            oldDevopsIngressDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsIngressMapper.updateByPrimaryKeySelective(oldDevopsIngressDTO);
 
             // 删除旧的ingressPath记录
@@ -1019,6 +1020,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             // 插入ingressPath记录
             devopsIngressDTO.getDevopsIngressPathDTOS().forEach(t -> {
                 t.setIngressId(oldDevopsIngressDTO.getId());
+                t.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
                 devopsIngressPathMapper.insert(t);
             });
         } else {
@@ -1036,11 +1038,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             devopsIngressDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsIngressDTO.setName(v1beta1Ingress.getMetadata().getName());
             devopsIngressDTO.setInstanceId(appServiceInstanceDTO.getId());
+            devopsIngressDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsIngressDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsIngressMapper.insertSelective(devopsIngressDTO);
 
             // 插入ingressPath记录
             devopsIngressDTO.getDevopsIngressPathDTOS().forEach(t -> {
                 t.setIngressId(devopsIngressDTO.getId());
+                t.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+                t.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
                 devopsIngressPathMapper.insert(t);
             });
         }

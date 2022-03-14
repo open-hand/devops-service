@@ -5,6 +5,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -38,11 +39,25 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
     private String appCode;
     private String hostDeployType;
 
-    private String jarDeployJson;
+    private String deployJson;
 
     private String preCommand;
     private String runCommand;
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("删除命令")
+    private String dockerCommand;
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
+    }
 
     public Long getId() {
         return id;
@@ -100,12 +115,12 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
         this.hostDeployType = hostDeployType;
     }
 
-    public String getJarDeployJson() {
-        return jarDeployJson;
+    public String getDeployJson() {
+        return deployJson;
     }
 
-    public void setJarDeployJson(String jarDeployJson) {
-        this.jarDeployJson = jarDeployJson;
+    public void setDeployJson(String deployJson) {
+        this.deployJson = deployJson;
     }
 
     public String getPreCommand() {
@@ -130,5 +145,21 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
 
     public void setPostCommand(String postCommand) {
         this.postCommand = postCommand;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
     }
 }

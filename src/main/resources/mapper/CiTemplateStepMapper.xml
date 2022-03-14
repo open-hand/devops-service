@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStepMapper">
+
+
+    <select id="listByJobIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
+        select dcts.*, dctjsr.ci_template_job_id, dctjsr.sequence
+        from devops_ci_template_job_step_rel dctjsr
+        join devops_ci_template_step dcts on dctjsr.ci_template_step_id = dcts.id
+        where dctjsr.ci_template_job_id in
+        <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
+            #{jobId}
+        </foreach>
+    </select>
+    <select id="listStepsByTemplateJobId" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
+        select dcts.*, dctjsr.sequence
+        from devops_ci_template_job dctj
+                 join devops_ci_template_job_step_rel dctjsr on dctj.id = dctjsr.ci_template_job_id
+                 join devops_ci_template_step dcts on dcts.id = dctjsr.ci_template_step_id
+        where (dctj.source_type = 'site' and dctj.source_id = 0)
+           or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
+            and dctjsr.ci_template_job_id = #{templateJobId}
+    </select>
+    <select id="listStepsByOrganizationIdId" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
+        select dcts.*
+        from devops_ci_template_step dcts
+        where (dcts.source_type = 'site' and dcts.source_id = 0)
+           or (dcts.source_type = 'organization' and dcts.source_id = #{organizationId})
+    </select>
+</mapper>
+

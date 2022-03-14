@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.feign.operator;
 
 import java.util.*;
-import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,9 +8,6 @@ import javax.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCollapser;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -189,67 +184,135 @@ public class BaseServiceClientOperator {
         return userDTOS;
     }
 
-    /**
-     * 以合并请求的方式，请求用户的信息
-     *
-     * @param ids 用户id
-     * @return 异步结果引用
-     */
-    @HystrixCollapser(
-            batchMethod = "batchListUsersByIds"
-            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
-            , collapserProperties = {
-            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
-            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
-    })
-    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
-        return null;
-    }
-
-    @HystrixCommand
-    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
-        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
-        Set<Long> all = new HashSet<>();
-        // 收集所有的id，一次性请求
-        ids.forEach(i -> {
-            if (!CollectionUtils.isEmpty(i)) {
-                all.addAll(i);
-            }
-        });
-
-        Map<Long, IamUserDTO> resultMap;
-        if (!all.isEmpty()) {
-            Long[] newIds = new Long[all.size()];
-            try {
-                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
-                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
-                });
-                if (userDTOS == null) {
-                    resultMap = Collections.emptyMap();
-                } else {
-                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
-                }
-            } catch (Exception e) {
-                throw new CommonException("error.users.get", e);
-            }
-        } else {
-            resultMap = Collections.emptyMap();
+    public Boolean checkSiteAccess(Long userId) {
+        try {
+            return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.check.user.site.access", e);
         }
-
-        // 拆分给响应
-        return ids.stream()
-                .map(i -> {
-                    List<IamUserDTO> result = new ArrayList<>(i.size());
-                    for (Long id : i) {
-                        IamUserDTO temp = resultMap.get(id);
-                        if (temp != null) {
-                            result.add(temp);
-                        }
-                    }
-                    return result;
-                })
-                .collect(Collectors.toList());
     }
+
+//    /**
+//     * 以合并请求的方式，请求用户的信息
+//     *
+//     * @param ids 用户id
+//     * @return 异步结果引用
+//     */
+//    @HystrixCollapser(
+//            batchMethod = "batchListUsersByIds"
+//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
+//            , collapserProperties = {
+//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
+//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
+//    })
+//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
+//        return null;
+//    }
+//
+//    @HystrixCommand
+//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
+//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
+//        Set<Long> all = new HashSet<>();
+//        // 收集所有的id，一次性请求
+//        ids.forEach(i -> {
+//            if (!CollectionUtils.isEmpty(i)) {
+//                all.addAll(i);
+//            }
+//        });
+//
+//        Map<Long, IamUserDTO> resultMap;
+//        if (!all.isEmpty()) {
+//            Long[] newIds = new Long[all.size()];
+//            try {
+//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
+//                });
+//                if (userDTOS == null) {
+//                    resultMap = Collections.emptyMap();
+//                } else {
+//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+//                }
+//            } catch (Exception e) {
+//                throw new CommonException("error.users.get", e);
+//            }
+//        } else {
+//            resultMap = Collections.emptyMap();
+//        }
+//
+//        // 拆分给响应
+//        return ids.stream()
+//                .map(i -> {
+//                    List<IamUserDTO> result = new ArrayList<>(i.size());
+//                    for (Long id : i) {
+//                        IamUserDTO temp = resultMap.get(id);
+//                        if (temp != null) {
+//                            result.add(temp);
+//                        }
+//                    }
+//                    return result;
+//                })
+//                .collect(Collectors.toList());
+//    }/**
+//     * 以合并请求的方式，请求用户的信息
+//     *
+//     * @param ids 用户id
+//     * @return 异步结果引用
+//     */
+//    @HystrixCollapser(
+//            batchMethod = "batchListUsersByIds"
+//            , scope = com.netflix.hystrix.HystrixCollapser.Scope.GLOBAL
+//            , collapserProperties = {
+//            @HystrixProperty(name = "timerDelayInMilliseconds", value = "30"),
+//            @HystrixProperty(name = "maxRequestsInBatch", value = "100"),
+//    })
+//    public Future<List<IamUserDTO>> listUsersByIdsCollapse(List<Long> ids) {
+//        return null;
+//    }
+//
+//    @HystrixCommand
+//    public List<List<IamUserDTO>> batchListUsersByIds(List<List<Long>> ids) {
+//        LOGGER.debug("Batch list user by ids, input size: {}", ids.size());
+//        Set<Long> all = new HashSet<>();
+//        // 收集所有的id，一次性请求
+//        ids.forEach(i -> {
+//            if (!CollectionUtils.isEmpty(i)) {
+//                all.addAll(i);
+//            }
+//        });
+//
+//        Map<Long, IamUserDTO> resultMap;
+//        if (!all.isEmpty()) {
+//            Long[] newIds = new Long[all.size()];
+//            try {
+//                List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+//                        .listUsersByIds(all.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
+//                });
+//                if (userDTOS == null) {
+//                    resultMap = Collections.emptyMap();
+//                } else {
+//                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+//                }
+//            } catch (Exception e) {
+//                throw new CommonException("error.users.get", e);
+//            }
+//        } else {
+//            resultMap = Collections.emptyMap();
+//        }
+//
+//        // 拆分给响应
+//        return ids.stream()
+//                .map(i -> {
+//                    List<IamUserDTO> result = new ArrayList<>(i.size());
+//                    for (Long id : i) {
+//                        IamUserDTO temp = resultMap.get(id);
+//                        if (temp != null) {
+//                            result.add(temp);
+//                        }
+//                    }
+//                    return result;
+//                })
+//                .collect(Collectors.toList());
+//    }
 
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
         try {
@@ -297,7 +360,7 @@ public class BaseServiceClientOperator {
         try {
             ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
+            if (userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
                 return null;
             }
             return userDOResponseEntity.getBody().getContent().get(0);

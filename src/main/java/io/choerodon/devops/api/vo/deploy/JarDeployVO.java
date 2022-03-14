@@ -1,10 +1,14 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
+import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
+import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 
 /**
  * 〈功能简述〉
@@ -35,6 +39,12 @@ public class JarDeployVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("操作类型 create/update")
+    private String operation;
 
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
@@ -45,10 +55,18 @@ public class JarDeployVO {
     private FileInfoVO fileInfoVO;
     private ProdJarInfoVO prodJarInfoVO;
 
+    private JarPullInfoDTO jarPullInfoDTO;
+
+    @ApiModelProperty("部署配置文件列表")
+    private List<ConfigSettingVO> configSettingVOS;
+
+    @JsonIgnore
+    private Long appId;
+
     public JarDeployVO() {
     }
 
-    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, ProdJarInfoVO prodJarInfoVO) {
+    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, ProdJarInfoVO prodJarInfoVO, String operation) {
         this.appCode = appCode;
         this.appName = appName;
         this.sourceType = sourceType;
@@ -56,6 +74,30 @@ public class JarDeployVO {
         this.preCommand = preCommand;
         this.runCommand = runCommand;
         this.postCommand = postCommand;
+        this.healthProb = healthProb;
+        this.killCommand = killCommand;
+        this.operation = operation;
+    }
+
+    public JarDeployVO(String sourceType, String appName, String appCode, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, JarPullInfoDTO jarPullInfoDTO, String operation) {
+        this.appCode = appCode;
+        this.appName = appName;
+        this.sourceType = sourceType;
+        this.jarPullInfoDTO = jarPullInfoDTO;
+        this.preCommand = preCommand;
+        this.runCommand = runCommand;
+        this.postCommand = postCommand;
+        this.healthProb = healthProb;
+        this.killCommand = killCommand;
+        this.operation = operation;
+    }
+
+    public JarPullInfoDTO getJarPullInfoDTO() {
+        return jarPullInfoDTO;
+    }
+
+    public void setJarPullInfoDTO(JarPullInfoDTO jarPullInfoDTO) {
+        this.jarPullInfoDTO = jarPullInfoDTO;
     }
 
     public MarketDeployObjectInfoVO getMarketDeployObjectInfoVO() {
@@ -146,6 +188,14 @@ public class JarDeployVO {
         this.sourceType = sourceType;
     }
 
+    public List<ConfigSettingVO> getConfigSettingVOS() {
+        return configSettingVOS;
+    }
+
+    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
+        this.configSettingVOS = configSettingVOS;
+    }
+
     public Long getMktAppVersionId() {
         return mktAppVersionId;
     }
@@ -160,5 +210,37 @@ public class JarDeployVO {
 
     public void setDeployObjectId(Long deployObjectId) {
         this.deployObjectId = deployObjectId;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

@@ -45,6 +45,9 @@
                 AND NOT EXISTS(SELECT 1 FROM devops_app_service_version dav WHERE dav.app_service_id = da.id)
             </if>
         </if>
+        <if test="excludeFailed != null">
+                and da.is_failed=0
+        </if>
         <include refid="sqlparam"/>
         <if test="index != ''">
             ORDER BY da.is_active DESC,
@@ -74,6 +77,9 @@
         FROM devops_app_service da
         <where>
             da.project_id = #{projectId}
+            <if test="!includeExternal">
+                AND da.external_config_id IS NULL
+            </if>
             <if test="isActive != null">
                 <if test="isActive">
                     AND da.is_active = TRUE
@@ -99,6 +105,9 @@
                          open="(" close=")" separator=",">
                     #{appServiceId}
                 </foreach>
+            </if>
+            <if test="excludeFailed != null or excludeFailed !=false">
+                    and da.is_failed=0
             </if>
             <include refid="sqlparam"/>
         </where>
@@ -169,6 +178,26 @@
         order by das.external_config_id is null desc
     </select>
 
+    <select id="listByActiveOrderByTargetAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT das.id,
+               das.name,
+               das.code
+        FROM devops_app_service das
+                WHERE das.is_active IS TRUE
+                  AND das.is_synchro IS TRUE
+        AND das.gitlab_project_id IS NOT NULL
+        AND das.project_id = #{projectId}
+        <if test="param != null and param != ''">
+            AND
+            (das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+        <if test="targetAppServiceId!=null">
+        ORDER BY das.id=#{targetAppServiceId} DESC
+        </if>
+    </select>
+
     <select id="countByActive" resultType="integer">
         SELECT count(1) FROM(
         SELECT das.id
@@ -203,6 +232,33 @@
         </if>
         order by da.external_config_id is null desc
     </select>
+
+    <select id="listProjectMembersAppServiceByActiveOrderByTargetAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
+        SELECT da.id,
+               da.name,
+               da.code
+        FROM devops_app_service da
+                WHERE da.is_active IS TRUE
+                  AND da.is_synchro IS TRUE
+                  AND da.gitlab_project_id IS NOT NULL
+        <if test="param != null and param != ''">
+            AND
+            (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+        <if test="appServiceIds != null and appServiceIds.size > 0">
+            and da.id in
+            <foreach collection="appServiceIds" item="appServiceId" index="index"
+                     open="(" close=")" separator=",">
+                #{appServiceId}
+            </foreach>
+        </if>
+        <if test="targetAppServiceId!=null">
+        ORDER BY da.id=#{targetAppServiceId} DESC
+        </if>
+    </select>
+
 
     <select id="countProjectMembersAppServiceByActive" resultType="integer">
         SELECT count(1) FROM (
@@ -245,6 +301,9 @@
         JOIN devops_env de ON dai.env_id = de.id
         WHERE da.is_active
         AND de.project_id = #{projectId}
+        <if test="envId != null">
+            AND de.id=#{envId}
+        </if>
         <if test="appServiceName != null and appServiceName != ''">
             AND  da.NAME = #{appServiceName,jdbcType=VARCHAR}
         </if>
@@ -954,5 +1013,10 @@
         FROM devops_app_service da
         WHERE da.is_active
         AND da.project_id=#{projectId,jdbcType=BIGINT} and da.external_config_id is not null
+    </select>
+
+    <select id="listAllIdsByProjectId" resultType="java.lang.Long">
+        SELECT id FROM devops_app_service
+        WHERE project_id=#{projectId}
     </select>
 </mapper>

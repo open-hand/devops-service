@@ -142,6 +142,9 @@ public class AppServiceRepVO {
     @ApiModelProperty("外部应用仓库配置")
     private AppExternalConfigDTO appExternalConfigDTO;
 
+    @ApiModelProperty("用户权限等级")
+    private Integer accessLevel;
+
     public Long getExternalConfigId() {
         return externalConfigId;
     }
@@ -492,6 +495,14 @@ public class AppServiceRepVO {
 
     public void setMarketServiceDeployObjectVO(MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
         this.marketServiceDeployObjectVO = marketServiceDeployObjectVO;
+    }
+
+    public Integer getAccessLevel() {
+        return accessLevel;
+    }
+
+    public void setAccessLevel(Integer accessLevel) {
+        this.accessLevel = accessLevel;
     }
 }
 

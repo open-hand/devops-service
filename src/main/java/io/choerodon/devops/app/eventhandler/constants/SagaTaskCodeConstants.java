@@ -85,6 +85,10 @@ public class SagaTaskCodeConstants {
      * 处理API测试任务执行完成后逻辑
      */
     public static final String HANDLE_API_TEST_TASK_COMPLETE_EVENT = "handle-api-test-task-complete-event";
+    /**
+     * 处理API测试套件执行完成后逻辑
+     */
+    public static final String HANDLE_API_TEST_SUITE_COMPLETE_EVENT = "handle-api-test-suite-complete-event";
 
     /**
      * 创建流水线环境自动部署实例
@@ -325,6 +329,11 @@ public class SagaTaskCodeConstants {
      * 处理hzero实例部署失败
      */
     public static final String DEVOPS_HZERO_DEPLOY_FAILED = "devops-hzero-deploy-failed";
+
+    /**
+     * 修复流水线api测试数据
+     */
+    public static final String DEVOPS_REPAIR_API_TEST_TASK_FROM_CD = "devops-repair-api-test-task-from-cd";
 
     private SagaTaskCodeConstants() {
     }

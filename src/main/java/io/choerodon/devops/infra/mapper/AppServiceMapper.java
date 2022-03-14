@@ -25,7 +25,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("params") List<String> params,
                              @Param("index") String index,
-                             @Param("includeExternal") Boolean includeExternal);
+                             @Param("includeExternal") Boolean includeExternal,
+                             @Param("excludeFailed") Boolean excludeFailed);
 
     List<AppServiceDTO> listByProjectId(@Param("projectId") Long projectId,
                                         @Param("searchParam") Map<String, Object> searchParam,
@@ -44,6 +45,8 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     AppServiceDTO queryByToken(@Param("token") String token);
 
     List<AppServiceDTO> listByActive(@Param("projectId") Long projectId, @Param("param") String param);
+
+    List<AppServiceDTO> listByActiveOrderByTargetAppServiceId(@Param("projectId") Long projectId, @Param("targetAppServiceId") Long targetAppServiceId, @Param("param") String param);
 
     Integer countByActive(@Param("projectId") Long projectId);
 
@@ -109,7 +112,9 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                      @Param("searchParam") Map<String, Object> searchParam,
                                                      @Param("params") List<String> params,
                                                      @Param("doSort") Boolean doSort,
-                                                     @Param("userId") Long userId);
+                                                     @Param("userId") Long userId,
+                                                     @Param("includeExternal") Boolean includeExternal,
+                                                     @Param("excludeFailed") Boolean excludeFailed);
 
 
     List<AppServiceDTO> listAppServiceByIds(@Param("ids") Set<Long> ids,
@@ -120,6 +125,12 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                                              @Param("appServiceIds") Set<Long> appServiceIds,
                                                              @Param("userId") Long userId,
                                                              @Param("param") String param);
+
+    List<AppServiceDTO> listProjectMembersAppServiceByActiveOrderByTargetAppServiceId(@Param("projectId") Long projectId,
+                                                                                      @Param("targetAppServiceId") Long targetAppServiceId,
+                                                                                      @Param("appServiceIds") Set<Long> appServiceIds,
+                                                                                      @Param("userId") Long userId,
+                                                                                      @Param("param") String param);
 
     Integer countProjectMembersAppServiceByActive(@Param("projectId") Long projectId,
                                                   @Param("appServiceIds") Set<Long> appServiceIds,
@@ -141,7 +152,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     int updateIsActiveNullToTrue();
 
-    List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("appServiceName") String appServiceName);
+    List<AppServiceDTO> listAll(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appServiceName") String appServiceName);
 
     List<AppServiceDTO> queryAppServicesHavingVersions(@Param("projectId") Long projectId);
 
@@ -211,5 +222,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     List<AppServiceSimpleVO> listByProjectIdsAndCodes(@Param("projectIds") List<Long> projectIds, @Param("codes") List<String> codes);
 
     List<AppServiceRepVO> queryApplicationCenter(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("type") String type, @Param("params") String params);
+
+    Set<Long> listAllIdsByProjectId(@Param("projectId") Long projectId);
 }
 

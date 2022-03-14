@@ -29,7 +29,7 @@ public interface HrdsCodeRepoClient {
      * @return
      */
     @PostMapping("/v1/organizations/{organizationId}/projects/{projectId}/gitlab/repositories/members/self/privilege")
-    ResponseEntity<List<MemberPrivilegeViewDTO>> selfPrivilege(@PathVariable("organizationId") Long organizationId,
+    ResponseEntity<String> selfPrivilege(@PathVariable("organizationId") Long organizationId,
                                                                @PathVariable("projectId") Long projectId,
                                                                @RequestBody Set<Long> repositoryIds);
 

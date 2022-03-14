@@ -15,6 +15,7 @@ import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -142,8 +143,13 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(devopsDeploymentVO.getEnvId());
         //校验环境是否连接
         clusterConnectionHandler.checkEnvConnection(environmentDTO.getClusterId());
-        DevopsEnvCommandDTO devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
-        devopsEnvCommandDTO.setCreatedBy(userId);
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
+        if (devopsDeploymentVO.getCommandId() == null) {
+            devopsEnvCommandDTO = WorkloadServiceImpl.initDevopsEnvCommandDTO(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getOperateType(), userId);
+            devopsEnvCommandDTO.setCreatedBy(userId);
+        } else {
+            devopsEnvCommandDTO.setId(devopsDeploymentVO.getCommandId());
+        }
 
         DevopsDeploymentDTO devopsDeploymentDTO = ConvertUtils.convertObject(devopsDeploymentVO, DevopsDeploymentDTO.class);
 
@@ -157,7 +163,13 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsWorkloadResourceContentService.update(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId(), content);
         }
 
-        devopsDeploymentDTO.setCommandId(devopsEnvCommandService.baseCreate(devopsEnvCommandDTO).getId());
+        if (devopsDeploymentVO.getCommandId() == null) {
+            devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
+        } else {
+            devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+        }
+
+        devopsDeploymentDTO.setCommandId(devopsEnvCommandDTO.getId());
         baseUpdate(devopsDeploymentDTO);
         return io.choerodon.devops.infra.util.ConvertUtils.convertObject(devopsDeploymentDTO, DevopsDeploymentVO.class);
     }
@@ -212,13 +224,14 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta2Deployment v1beta2Deployment = json.deserialize(detailsJson, V1beta2Deployment.class);
 
         DevopsDeploymentDTO oldDevopsDeploymentDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {
             oldDevopsDeploymentDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsDeploymentDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDeploymentMapper.updateByPrimaryKeySelective(oldDevopsDeploymentDTO);
         } else {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
@@ -230,9 +243,10 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             devopsDeploymentDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDeploymentDTO.setSourceType(WorkloadSourceTypeEnums.CHART.getType());
             devopsDeploymentDTO.setName(v1beta2Deployment.getMetadata().getName());
+            devopsDeploymentDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsDeploymentDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDeploymentMapper.insertSelective(devopsDeploymentDTO);
         }
-
     }
 
     @Override

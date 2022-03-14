@@ -4,28 +4,25 @@ import java.util.*;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.annotation.WillDeleted;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.CiTriggerType;
-import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.util.Base64Util;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.MavenSettingsUtil;
 
 /**
  * @author zmf
  * @since 20-4-20
  */
-@WillDeleted
 public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
+    private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
     private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
@@ -61,7 +58,7 @@ public class DevopsCiPipelineAdditionalValidator {
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
-        validateImage(ciCdPipelineVO.getImage());
+//        validateImage(ciCdPipelineVO.getImage());
 
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
@@ -75,26 +72,61 @@ public class DevopsCiPipelineAdditionalValidator {
                     validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
                     stage.getJobList().forEach(job -> {
-                        validateImage(job.getImage());
+//                        validateImage(job.getImage());
+                        validateParallel(job);
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        validateJobStep(job);
+
                     });
                 });
-        ciCdPipelineVO.getDevopsCdStageVOS()
-                .stream()
-                .forEach(stage -> {
-                    if (CollectionUtils.isEmpty(stage.getJobList())) {
-                        return;
-                    }
+        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+            ciCdPipelineVO.getDevopsCdStageVOS()
+                    .stream()
+                    .forEach(stage -> {
+                        if (CollectionUtils.isEmpty(stage.getJobList())) {
+                            throw new CommonException("error.cd.job.is.empty", stage.getName());
+                        }
 
-                    // 校验stage名称唯一
-                    validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+                        // 校验stage名称唯一
+                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
-                    stage.getJobList().forEach(job -> {
-                        validateTriggerRefRegex(job);
-                        validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        stage.getJobList().forEach(job -> {
+                            validateTriggerRefRegex(job);
+                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
+                        });
                     });
-                });
+        }
+
+    }
+
+    private static void validateJobStep(DevopsCiJobVO job) {
+        if (CiJobTypeEnum.NORMAL.value().equals(job.getType())) {
+            List<DevopsCiStepVO> devopsCiStepVOList = job.getDevopsCiStepVOList();
+            if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
+                throw new CommonException("error.job.step.is.empty");
+            }
+        }
+    }
+
+    /**
+     * 校验流水线执行变量的key格式
+     *
+     * @param variables
+     */
+    public static void additionalCheckVariablesKey(Map<String, String> variables) {
+        variables.forEach((k, v) -> {
+            if (!PIPELINE_VARIABLE_KEY_FORMAT.matcher(k).matches()) {
+                throw new CommonException("error.variable.key.format.invalid");
+            }
+        });
+    }
+
+    private static void validateParallel(DevopsCiJobVO job) {
+        if (job.getParallel() != null
+                && (job.getParallel() < 2 || job.getParallel() > 50)) {
+            throw new CommonException("error.job.parallel.size.range");
+        }
     }
 
     public static void validateBranch(Set<String> relatedBranches) {
@@ -131,6 +163,63 @@ public class DevopsCiPipelineAdditionalValidator {
             throw new CommonException(ERROR_STEP_SEQUENCE_DUPLICATED, templateName);
         }
         existedSequences.add(sequence);
+    }
+
+    /**
+     * 校验maven步骤的参数
+     *
+     * @param config maven步骤数据
+     */
+    public static void validateMavenBuildStep(DevopsCiMavenBuildConfigVO config) {
+        // 主要是校验仓库设置
+        if (!CollectionUtils.isEmpty(config.getRepos())) {
+            config.getRepos().forEach(repo -> {
+                if (StringUtils.isEmpty(repo.getType())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_EMPTY);
+                }
+                String[] types = repo.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_MAVEN_REPO_TYPE_INVALID, repo.getType());
+                }
+
+                if (StringUtils.isEmpty(repo.getName())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_NAME_EMPTY);
+                }
+
+                if (!MAVEN_REPO_NAME_REGEX.matcher(repo.getName()).matches()) {
+                    throw new CommonException(ERROR_MAVEN_REPO_NAME_INVALID, repo.getName());
+                }
+
+                if (StringUtils.isEmpty(repo.getUrl())) {
+                    throw new CommonException(ERROR_MAVEN_REPO_URL_EMPTY);
+                }
+
+                if (!GitOpsConstants.HTTP_URL_PATTERN.matcher(repo.getUrl()).matches()) {
+                    throw new CommonException(ERROR_MAVEN_REPO_URL_INVALID, repo.getUrl());
+                }
+
+                if (Boolean.TRUE.equals(repo.getPrivateRepo())) {
+                    if (StringUtils.isEmpty(repo.getUsername())) {
+                        throw new CommonException(ERROR_MAVEN_REPO_USERNAME_EMPTY);
+                    }
+                    if (StringUtils.isEmpty(repo.getPassword())) {
+                        throw new CommonException(ERROR_MAVEN_REPO_PSW_EMPTY);
+                    }
+                }
+            });
+
+            // 两个字段只能填一个
+            if (!StringUtils.isEmpty(config.getMavenSettings())) {
+                throw new CommonException(ERROR_BOTH_REPOS_AND_SETTINGS_EXIST);
+            }
+        }
+
+        // 校验用户直接粘贴的maven的settings文件的内容
+        if (!StringUtils.isEmpty(config.getMavenSettings())
+                && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
+            // 如果不符合xml格式，抛异常
+            throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT);
+        }
     }
 
     /**
@@ -186,7 +275,7 @@ public class DevopsCiPipelineAdditionalValidator {
         if (!StringUtils.isEmpty(config.getMavenSettings())
                 && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
             // 如果不符合xml格式，抛异常
-                throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
+            throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT, config.getName());
         }
     }
 
@@ -209,19 +298,13 @@ public class DevopsCiPipelineAdditionalValidator {
      */
     @SuppressWarnings("unchecked")
     private static void validateCustomJobFormat(String stageName, DevopsCiJobVO devopsCiJobVO) {
-        if (!JobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
+        if (!CiJobTypeEnum.CUSTOM.value().equalsIgnoreCase(devopsCiJobVO.getType())) {
             return;
         }
-
-        // 解密自定义任务的元数据
-        String metadata = Base64Util.getBase64DecodedString(devopsCiJobVO.getMetadata());
-        // 解密数据放入对象
-        devopsCiJobVO.setMetadata(metadata);
-
         Yaml yaml = new Yaml();
         Object load;
         try {
-            load = yaml.load(metadata);
+            load = yaml.load(devopsCiJobVO.getScript());
         } catch (Exception ex) {
             throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
         }
@@ -237,9 +320,9 @@ public class DevopsCiPipelineAdditionalValidator {
                 throw new CommonException(ERROR_CUSTOM_JOB_FORMAT_INVALID);
             }
             devopsCiJobVO.setName(key);
-            JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
-            String stageNameDefinedInJob = jsonObject.getString(GitOpsConstants.STAGE);
-            CommonExAssertUtil.assertTrue(stageName.equals(stageNameDefinedInJob), ERROR_CUSTOM_JOB_STAGE_NOT_MATCH, stageNameDefinedInJob, stageName);
+//            JSONObject jsonObject = new JSONObject((Map<String, Object>) value);
+//            String stageNameDefinedInJob = jsonObject.getString(GitOpsConstants.STAGE);
+//            CommonExAssertUtil.assertTrue(stageName.equals(stageNameDefinedInJob), ERROR_CUSTOM_JOB_STAGE_NOT_MATCH, stageNameDefinedInJob, stageName);
         });
     }
 

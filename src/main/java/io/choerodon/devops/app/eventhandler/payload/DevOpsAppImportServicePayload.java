@@ -11,6 +11,8 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
     private GitPlatformType platformType;
     private Long gitlabUserId;
     private Boolean template;
+    private String username;
+    private String password;
     /**
      * 平台层或者组织层定义的模板Id
      */
@@ -62,5 +64,21 @@ public class DevOpsAppImportServicePayload extends DevOpsAppServicePayload {
 
     public void setDevopsAppTemplateId(Long devopsAppTemplateId) {
         this.devopsAppTemplateId = devopsAppTemplateId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

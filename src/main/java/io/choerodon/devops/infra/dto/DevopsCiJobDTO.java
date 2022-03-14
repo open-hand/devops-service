@@ -30,10 +30,18 @@ public class DevopsCiJobDTO extends AuditDomain {
     private Long ciStageId;
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
+
+    @ApiModelProperty("分组类型")
+    private String groupType;
+
     @ApiModelProperty("任务类型")
     private String type;
+    @ApiModelProperty("v1.2之前的旧任务类型，仅数据修复用，v1.3即可删除")
+    private String oldType;
     @ApiModelProperty("触发类型对应的值")
     private String triggerValue;
+    @ApiModelProperty("job的并发数")
+    private Integer parallel;
 
     /**
      * {@link io.choerodon.devops.infra.enums.CiTriggerType}
@@ -54,6 +62,41 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("是否下载共享目录的内容 / 默认为false")
     @Column(name = "is_to_download")
     private Boolean toDownload;
+
+    @ApiModelProperty("脚本类型任务的自定义脚本")
+    private String script;
+
+    public String getOldType() {
+        return oldType;
+    }
+
+    public void setOldType(String oldType) {
+        this.oldType = oldType;
+    }
+
+    public String getScript() {
+        return script;
+    }
+
+    public void setScript(String script) {
+        this.script = script;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
+
+    public Integer getParallel() {
+        return parallel;
+    }
+
+    public void setParallel(Integer parallel) {
+        this.parallel = parallel;
+    }
 
     public Long getId() {
         return id;

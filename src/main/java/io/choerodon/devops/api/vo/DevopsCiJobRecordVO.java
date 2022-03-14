@@ -6,7 +6,10 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.annotation.WillDeleted;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
+import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
+import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
 
 /**
  * 〈功能简述〉
@@ -15,7 +18,6 @@ import io.choerodon.devops.infra.annotation.WillDeleted;
  * @author wanghao
  * @since 2020/4/7 22:34
  */
-@WillDeleted
 public class DevopsCiJobRecordVO {
     @Encrypt
     private Long id;
@@ -70,7 +72,7 @@ public class DevopsCiJobRecordVO {
     /**
      * ci生成jar包地址
      */
-    private DownloadMavenJarVO downloadMavenJarVO;
+    private PipelineJarInfoVO pipelineJarInfo;
 
     /**
      * 是否有镜像扫描
@@ -78,6 +80,47 @@ public class DevopsCiJobRecordVO {
     private Boolean imageScan;
 
     private Long mavenSettingId;
+
+    @ApiModelProperty("ci任务产生的chart信息")
+    private PipelineChartInfo pipelineChartInfo;
+    @ApiModelProperty("ci任务产生的sonar信息")
+    private PipelineSonarInfo pipelineSonarInfo;
+    @ApiModelProperty("ci任务产生的镜像信息")
+    private PipelineImageInfoVO pipelineImageInfo;
+    @ApiModelProperty("ci任务产生的单元测试信息")
+    List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
+
+    public List<DevopsCiUnitTestReportVO> getDevopsCiUnitTestReportInfoList() {
+        return devopsCiUnitTestReportInfoList;
+    }
+
+    public void setDevopsCiUnitTestReportInfoList(List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList) {
+        this.devopsCiUnitTestReportInfoList = devopsCiUnitTestReportInfoList;
+    }
+
+    public PipelineSonarInfo getPipelineSonarInfo() {
+        return pipelineSonarInfo;
+    }
+
+    public void setPipelineSonarInfo(PipelineSonarInfo pipelineSonarInfo) {
+        this.pipelineSonarInfo = pipelineSonarInfo;
+    }
+
+    public PipelineImageInfoVO getPipelineImageInfo() {
+        return pipelineImageInfo;
+    }
+
+    public void setPipelineImageInfo(PipelineImageInfoVO pipelineImageInfo) {
+        this.pipelineImageInfo = pipelineImageInfo;
+    }
+
+    public PipelineChartInfo getPipelineChartInfo() {
+        return pipelineChartInfo;
+    }
+
+    public void setPipelineChartInfo(PipelineChartInfo pipelineChartInfo) {
+        this.pipelineChartInfo = pipelineChartInfo;
+    }
 
     public Long getMavenSettingId() {
         return mavenSettingId;
@@ -95,12 +138,12 @@ public class DevopsCiJobRecordVO {
         this.imageScan = imageScan;
     }
 
-    public DownloadMavenJarVO getDownloadMavenJarVO() {
-        return downloadMavenJarVO;
+    public PipelineJarInfoVO getPipelineJarInfo() {
+        return pipelineJarInfo;
     }
 
-    public void setDownloadMavenJarVO(DownloadMavenJarVO downloadMavenJarVO) {
-        this.downloadMavenJarVO = downloadMavenJarVO;
+    public void setPipelineJarInfo(PipelineJarInfoVO pipelineJarInfo) {
+        this.pipelineJarInfo = pipelineJarInfo;
     }
 
     public String getDownloadImage() {

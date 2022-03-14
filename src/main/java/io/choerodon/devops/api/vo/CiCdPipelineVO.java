@@ -10,9 +10,14 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
+
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class CiCdPipelineVO {
     @Encrypt(ignoreUserConflict = true)
     @Id
@@ -45,9 +50,6 @@ public class CiCdPipelineVO {
     private String versionName;
     @ApiModelProperty("是否启用/nullable")
     private Boolean enabled;
-    @ApiModelProperty("流水线触发方式")
-    @NotEmpty(message = "error.pipeline.triggerType.cannot.be.null")
-    private String triggerType;
     @ApiModelProperty("最近执行时间/nullable")
     private Date latestExecuteDate;
     @ApiModelProperty("最近执行记录状态/nullable")
@@ -60,12 +62,16 @@ public class CiCdPipelineVO {
     @Valid
     private List<DevopsCdStageVO> devopsCdStageVOS;
 
+    @ApiModelProperty(name = "流水线变量")
+    private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
+
     private Boolean hasRecords = false;
     //cicd 流水线下的执行记录
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
 
     private Set<String> relatedBranches;
 
+    private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
 
     private Long objectVersionNumber;
 
@@ -81,6 +87,22 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+
+    public List<DevopsCiPipelineVariableDTO> getDevopsCiPipelineVariableDTOList() {
+        return devopsCiPipelineVariableDTOList;
+    }
+
+    public void setDevopsCiPipelineVariableDTOList(List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList) {
+        this.devopsCiPipelineVariableDTOList = devopsCiPipelineVariableDTOList;
+    }
+
+    public List<DevopsCiPipelineFunctionDTO> getDevopsCiPipelineFunctionDTOList() {
+        return devopsCiPipelineFunctionDTOList;
+    }
+
+    public void setDevopsCiPipelineFunctionDTOList(List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList) {
+        this.devopsCiPipelineFunctionDTOList = devopsCiPipelineFunctionDTOList;
+    }
 
     public Set<String> getRelatedBranches() {
         return relatedBranches;
@@ -200,14 +222,6 @@ public class CiCdPipelineVO {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
     }
 
     public Date getLatestExecuteDate() {

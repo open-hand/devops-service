@@ -1,14 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_MERGE_REQUEST_PASS;
+import static java.util.stream.Collectors.toMap;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -20,15 +23,25 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
+import io.choerodon.devops.api.vo.MergeRequestVO;
+import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.enums.MergeRequestState;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PageRequestUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -40,6 +53,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMergeRequestServiceImpl.class);
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
@@ -53,6 +68,12 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     private TransactionalProducer producer;
     @Autowired
     private DevopsIssueRelService devopsIssueRelService;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
 
     @Override
     public List<DevopsMergeRequestDTO> baseListBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
@@ -173,6 +194,54 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
     @Override
     public DevopsMergeRequestDTO baseCountMergeRequest(Integer gitlabProjectId) {
         return devopsMergeRequestMapper.countMergeRequest(gitlabProjectId, DetailsHelper.getUserDetails() == null ? 0L : DetailsHelper.getUserDetails().getUserId());
+    }
+
+    @Override
+    public Page<MergeRequestVO> getMergeRequestToBeChecked(Long projectId, Set<Long> appServiceIdsToSearch, String param, PageRequest pageRequest) {
+        // 如果没有指定应用服务，那么查出当前项目下权限大于20的应用
+        if (CollectionUtils.isEmpty(appServiceIdsToSearch)) {
+            appServiceIdsToSearch = new HashSet<>();
+            Set<Long> appServiceIds = applicationService.listAllIdsByProjectId(projectId);
+            Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
+            Set<Long> idSet = memberPrivilegeViewDTOMap.keySet();
+            for (Long id : idSet) {
+                MemberPrivilegeViewDTO memberPrivilegeViewDTO = memberPrivilegeViewDTOMap.get(id);
+                if (memberPrivilegeViewDTO != null && memberPrivilegeViewDTO.getAccessLevel() != null && memberPrivilegeViewDTO.getAccessLevel() > 20) {
+                    appServiceIdsToSearch.add(id);
+                }
+            }
+        }
+
+        Set<Long> finalAppServiceIdsToSearch = appServiceIdsToSearch;
+        if (CollectionUtils.isEmpty(finalAppServiceIdsToSearch)) {
+            return new Page<>();
+        }
+        Page<MergeRequestVO> mergeRequestVOPage = PageHelper.doPage(pageRequest, () -> devopsMergeRequestMapper.listMergeRequestToBeChecked(projectId, finalAppServiceIdsToSearch, param));
+        Set<Long> gitlabUserIds = new HashSet<>();
+        mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
+            if (mergeRequestVO.getAuthorId() != null) {
+                gitlabUserIds.add(mergeRequestVO.getAuthorId());
+            }
+            if (mergeRequestVO.getAssigneeId() != null) {
+                gitlabUserIds.add(mergeRequestVO.getAssigneeId());
+            }
+        });
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        List<UserAttrDTO> userAttrDTOS = userAttrService.baseListByGitlabUserIds(new ArrayList<>(gitlabUserIds));
+        List<Long> iamUserIds = userAttrDTOS.stream().map(UserAttrDTO::getIamUserId).collect(Collectors.toList());
+        Map<Long, Long> gitlabIamUserIdMap = userAttrDTOS.stream().collect(Collectors.toMap(UserAttrDTO::getGitlabUserId, UserAttrDTO::getIamUserId));
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+        Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+        mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            String mergeRequestUrl = String.format("%s%s%s-%s/%s/merge_requests/%s",
+                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getCode(), mergeRequestVO.getAppServiceCode(), mergeRequestVO.getGitlabMergeRequestId());
+            mergeRequestVO.setIamAuthor(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAuthorId())), UserVO.class));
+            mergeRequestVO.setIamAssignee(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAssigneeId())), UserVO.class));
+            mergeRequestVO.setGitlabUrl(mergeRequestUrl);
+        });
+        return mergeRequestVOPage;
     }
 
     private DevopsMergeRequestDTO voToDto(DevopsMergeRequestVO devopsMergeRequestVO) {

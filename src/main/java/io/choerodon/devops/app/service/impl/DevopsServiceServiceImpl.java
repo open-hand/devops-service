@@ -123,6 +123,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private DevopsDeploymentService devopsDeploymentService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -141,10 +143,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         Page<DevopsServiceVO> devopsServiceByPage = ConvertUtils.convertPage(basePageByOptions(
                 projectId, envId, instanceId, pageable, null, appServiceId), this::queryDtoToVo);
         if (!devopsServiceByPage.getContent().isEmpty()) {
+            Set<Long> appServiceIds = devopsServiceByPage.stream().map(DevopsServiceVO::getAppServiceId).filter(Objects::nonNull).collect(Collectors.toSet());
+            Map<Long, List<DevopsDeployAppCenterVO>> appServiceDeployAppCenterVOMap = devopsDeployAppCenterService.listByAppServiceIds(envId, appServiceIds).stream().collect(Collectors.groupingBy(DevopsDeployAppCenterVO::getAppServiceId));
+
             devopsServiceByPage.getContent().forEach(devopsServiceVO -> {
-                Page<DevopsIngressVO> devopsIngressVOPageInfo = devopsIngressService
-                        .basePageByOptions(projectId, null, devopsServiceVO.getId(), new PageRequest(0, 100), null);
-                devopsServiceVO.setDevopsIngressVOS(devopsIngressVOPageInfo.getContent());
+                // 如果网络是关联指定的应用，查出该应用生成的所有容器应用
+                if (devopsServiceVO.getAppServiceId() != null) {
+                    List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = appServiceDeployAppCenterVOMap.get(devopsServiceVO.getAppServiceId());
+                    if (!CollectionUtils.isEmpty(devopsDeployAppCenterVOS)) {
+                        List<String> names = devopsDeployAppCenterVOS.stream().filter(a->!a.getObjectId().equals(instanceId)).map(DevopsDeployAppCenterVO::getName).collect(Collectors.toList());
+                        devopsServiceVO.setRelatedApplicationName(names);
+                    }
+                }
             });
         }
         return devopsServiceByPage;
@@ -1253,7 +1263,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1Service v1Service = json.deserialize(detailsJson, V1Service.class);
 
@@ -1263,6 +1273,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             oldDevopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
 
             fillDevopsServiceInfo(oldDevopsServiceDTO, v1Service);
+
+            oldDevopsServiceDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
 
             devopsServiceMapper.updateByPrimaryKeySelective(oldDevopsServiceDTO);
         } else {
@@ -1279,6 +1291,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsServiceDTO.setAppServiceId(appServiceInstanceDTO.getAppServiceId());
             fillDevopsServiceInfo(devopsServiceDTO, v1Service);
+            devopsServiceDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsServiceDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsServiceMapper.insertSelective(devopsServiceDTO);
         }
     }

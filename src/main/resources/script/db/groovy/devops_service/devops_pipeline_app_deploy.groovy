@@ -27,4 +27,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_app_deploy.groovy') {
         renameTable(newTableName: 'devops_pipeline_app_service_deploy', oldTableName: 'devops_pipeline_app_deploy')
     }
 
+    changeSet(author: 'wanghao', id: '2021-12-11-delete-table') {
+        dropTable(tableName: "devops_pipeline_app_service_deploy")
+    }
+
 }

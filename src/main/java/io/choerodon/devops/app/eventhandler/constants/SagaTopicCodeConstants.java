@@ -277,6 +277,11 @@ public class SagaTopicCodeConstants {
     public static final String API_TEST_TASK_COMPLETE_EVENT = "api-test-task-complete-event";
 
     /**
+     * API测试套件执行完成事件
+     */
+    public static final String API_TEST_SUITE_COMPLETE_EVENT = "api-test-suite-complete-event";
+
+    /**
      * 创建应用模板
      */
     public static final String DEVOPS_CREATE_APP_TEMPLATE = "api-create-app-template";
@@ -315,6 +320,12 @@ public class SagaTopicCodeConstants {
      * iam添加项目类型
      */
 //    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
+
+    /**
+     * 修复流水线api测试数据
+     */
+    public static final String REPAIR_API_TEST_TASK_FROM_CD = "repair-api-test-task-from-cd";
+
     private SagaTopicCodeConstants() {
     }
 }

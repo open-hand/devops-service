@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ResourceVO;
@@ -12,12 +18,6 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import javax.annotation.Nullable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by younger on 2018/3/28.
@@ -86,21 +86,22 @@ public interface AppServiceService {
      * @param projectId       项目id
      * @param isActive        是否启用
      * @param hasVersion      是否存在版本
-     * @param appMarket       服务市场导入
      * @param pageable        分页参数
      * @param params          参数
      * @param includeExternal
+     * @param excludeFailed   排除掉创建失败的应用
      * @return Page
      */
     Page<AppServiceRepVO> pageByOptions(Long projectId,
-                                        Boolean isActive,
-                                        Boolean hasVersion,
-                                        Boolean appMarket,
-                                        String type,
-                                        Boolean doPage,
-                                        PageRequest pageable,
-                                        String params,
-                                        Boolean checkMember, Boolean includeExternal);
+                                            Boolean isActive,
+                                            Boolean hasVersion,
+                                            String type,
+                                            Boolean doPage,
+                                            PageRequest pageable,
+                                            String params,
+                                            Boolean checkMember,
+                                            Boolean includeExternal,
+                                            Boolean excludeFailed);
 
     /**
      * 处理服务创建逻辑
@@ -156,6 +157,10 @@ public interface AppServiceService {
      */
     Page<AppServiceCodeVO> pageByIds(Long projectId, Long envId, Long appServiceId, PageRequest pageable);
 
+    Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
+                                                               PageRequest pageable,
+                                                               String params);
+
     /**
      * 项目下查询所有已经启用的服务
      *
@@ -174,9 +179,10 @@ public interface AppServiceService {
      * 项目下查询所有可选已经启用的服务
      *
      * @param projectId 项目id
+     * @param envId     环境id
      * @return baseList of ApplicationRepDTO
      */
-    List<AppServiceRepVO> listAll(Long projectId, String appServiceName);
+    List<AppServiceRepVO> listAll(Long projectId, Long envId);
 
     /**
      * 创建服务校验名称是否存在
@@ -241,6 +247,8 @@ public interface AppServiceService {
      */
     Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken);
 
+    Boolean validateRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String username, String password);
+
     /**
      * 从外部代码托管平台导入项目创建服务
      *
@@ -249,6 +257,15 @@ public interface AppServiceService {
      * @return response
      */
     AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate);
+
+    /**
+     * 项目下从通用git导入服务
+     *
+     * @param projectId          project id
+     * @param appServiceImportVO 导入操作的相关信息
+     * @return response
+     */
+    AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO);
 
     /**
      * 根据服务code查询服务
@@ -353,9 +370,16 @@ public interface AppServiceService {
 
     AppServiceDTO baseQuery(Long appServiceId);
 
-    Page<AppServiceDTO> basePageByOptions(Long projectId, Boolean isActive, Boolean hasVersion, Boolean appMarket,
-                                          String type, Boolean doPage, PageRequest pageable, String params,
-                                          Boolean checkMember, Boolean includeExternal);
+    Page<AppServiceDTO> basePageByOptions(Long projectId,
+                                          Boolean isActive,
+                                          Boolean hasVersion,
+                                          String type,
+                                          Boolean doPage,
+                                          PageRequest pageable,
+                                          String params,
+                                          Boolean checkMember,
+                                          Boolean includeExternal,
+                                          Boolean excludeFailed);
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
@@ -394,7 +418,7 @@ public interface AppServiceService {
      * @param param
      * @return
      */
-    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, Boolean deployOnly, String serviceType, Boolean includeExternal);
+    List<AppServiceGroupVO> listAllAppServices(Long projectId, String type, String param, String serviceType, Long appServiceId, Boolean includeExternal);
 
     String getToken(Integer gitlabProjectId, String applicationDir, UserAttrDTO userAttrDTO);
 
@@ -555,7 +579,7 @@ public interface AppServiceService {
      * @param projectIds
      * @return
      */
-    List<ResourceVO> listResourceByIds(List<Long> projectIds);
+    List<ResourceVO> listResourceByIds(Long organizationId, List<Long> projectIds);
 
     /**
      * @param appServiceList
@@ -607,5 +631,7 @@ public interface AppServiceService {
 
     List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds);
 
-    Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, PageRequest pageRequest, String param);
+    Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param);
+
+    Set<Long> listAllIdsByProjectId(Long projectId);
 }

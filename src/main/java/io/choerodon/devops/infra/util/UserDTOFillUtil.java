@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -33,12 +34,15 @@ public class UserDTOFillUtil {
      * @param destFiled 目标DTO字段
      */
     public static void fillUserInfo(List<?> sourceList, String filed, String destFiled) {
+        if (CollectionUtils.isEmpty(sourceList)) {
+            return;
+        }
         List<Long> userIds = sourceList.stream().map(v -> {
             Class<?> aClass = v.getClass();
             try {
-                Field declaredField = aClass.getDeclaredField(filed);
-                declaredField.setAccessible(true);
-                return (Long) declaredField.get(v);
+                Field userIdFiled = getFiled(aClass, filed);
+                userIdFiled.setAccessible(true);
+                return (Long) userIdFiled.get(v);
             } catch (Exception e) {
                 LOGGER.info("read user id failed", e.fillInStackTrace());
             }
@@ -51,12 +55,13 @@ public class UserDTOFillUtil {
             sourceList.forEach(source -> {
                 Class<?> aClass = source.getClass();
                 try {
-                    Field userIdFiled = aClass.getDeclaredField(filed);
+                    Field userIdFiled = getFiled(aClass, filed);
                     userIdFiled.setAccessible(true);
                     Long userId = (Long) userIdFiled.get(source);
 
                     IamUserDTO iamUserDTO = iamUserDTOMap.get(userId);
-                    Field userDTOFiled = aClass.getDeclaredField(destFiled);
+
+                    Field userDTOFiled = getFiled(aClass, destFiled);
                     userDTOFiled.setAccessible(true);
                     userDTOFiled.set(source, iamUserDTO);
                 } catch (Exception e) {
@@ -64,5 +69,23 @@ public class UserDTOFillUtil {
                 }
             });
         }
+    }
+
+    private static Field getFiled(Class<?> aClass, String filed) throws NoSuchFieldException {
+
+        Field[] declaredFields = aClass.getDeclaredFields();
+
+        for (Field declaredField : declaredFields) {
+            if (declaredField.getName().equals(filed)) {
+                return declaredField;
+            }
+        }
+
+        if (aClass.getSuperclass() != null) {
+            return getFiled(aClass.getSuperclass(), filed);
+        }
+
+        throw new NoSuchFieldException(filed);
+
     }
 }

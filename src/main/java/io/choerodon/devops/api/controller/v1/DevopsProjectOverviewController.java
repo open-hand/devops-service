@@ -2,27 +2,30 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CountVO;
+import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉
- * 〈CI流水线Controller〉
+ * 项目下统计
  *
  * @author lihao
  * @Date 2020/7/8 15:56
@@ -93,5 +96,19 @@ public class DevopsProjectOverviewController {
         return Optional.ofNullable(devopsProjectOverview.getCiCount(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.overview.ci.count"));
+    }
+
+    @ApiOperation("查看项目下所有待审核合并请求")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/merge_request_to_be_checked")
+    @CustomPageRequest
+    public ResponseEntity<Page<MergeRequestVO>> getMergeRequestToBeChecked(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "选择的应用服务id") @RequestParam(value = "app_service_ids", required = false) Set<Long> appServiceIdsToSearch,
+            @ApiParam(value = "搜索参数") @RequestParam(value = "param", required = false) String param,
+            @ApiIgnore PageRequest pageRequest
+    ) {
+        return Results.success(devopsProjectOverview.getMergeRequestToBeChecked(projectId, appServiceIdsToSearch, param, pageRequest));
     }
 }

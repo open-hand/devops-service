@@ -4,21 +4,31 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.app.service.DevopsCiContentService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
+import io.choerodon.devops.app.service.DevopsCiStageService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
+import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiContentMapper;
 import io.choerodon.devops.infra.util.FileUtil;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 〈功能简述〉
@@ -34,15 +44,18 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
+    private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH = "/component/empty-gitlabci-config-for-cd.yml";
     /**
      * 默认的空gitlab-ci文件内容
      */
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
+    /**
+     * 默认的空gitlab-ci文件内容
+     */
+    private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD;
     private DevopsCiContentMapper devopsCiContentMapper;
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-
-    @Value("${services.gateway.url}")
-    private String gatewayUrl;
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH)) {
@@ -50,11 +63,29 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         } catch (IOException e) {
             throw new CommonException("error.load.default.empty.gitlab.ci.file");
         }
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH)) {
+            DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.default.empty.gitlab.ci.file");
+        }
     }
 
-    public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper, DevopsCiCdPipelineMapper devopsCiCdPipelineMapper) {
+    @Autowired
+    private DevopsCiStageService devopsCiStageService;
+
+    @Value("${services.gateway.url}")
+    private String gatewayUrl;
+    @Value("${devops.ci.default.rule-number}")
+    private Long defaultRuleNumber;
+    @Autowired
+    private DevopsCdStageService devopsCdStageService;
+
+    public DevopsCiContentServiceImpl(DevopsCiContentMapper devopsCiContentMapper,
+                                      DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
+                                      @Lazy DevopsCiPipelineService devopsCiPipelineService) {
         this.devopsCiContentMapper = devopsCiContentMapper;
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
+        this.devopsCiPipelineService = devopsCiPipelineService;
     }
 
     @Override
@@ -66,7 +97,43 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
         }
-        String ciContent = devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
+        // 只有纯cd流水线返回一个
+        List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
+        List<DevopsCdStageDTO> devopsCdStageDTOList = devopsCdStageService.queryByPipelineId(devopsCiPipelineDTO.getId());
+        if (CollectionUtils.isEmpty(devopsCiStageDTOList) && !CollectionUtils.isEmpty(devopsCdStageDTOList)) {
+            return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD;
+        }
+
+        DevopsCiContentDTO devopsCiContentDTO = devopsCiContentMapper.queryLatestContent(devopsCiPipelineDTO.getId());
+
+        String ciContent;
+        // 需要重新生成yaml的情况有两种
+        // 1. 流水线有修改
+        // 2. devops的渲染规则有变动
+        if (devopsCiContentDTO == null) {
+            ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
+
+            // 缓存配置
+            devopsCiContentDTO = new DevopsCiContentDTO();
+            devopsCiContentDTO.setCiContentFile(ciContent);
+            devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
+            devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
+            MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,
+                    devopsCiContentDTO,
+                    "error.save.content.failed");
+        } else if (devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
+                || devopsCiContentDTO.getDevopsDefaultRuleNumber() < defaultRuleNumber) {
+            ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
+
+            devopsCiContentDTO.setCiContentFile(ciContent);
+            devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
+            devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiContentMapper,
+                    devopsCiContentDTO,
+                    "error.update.content.failed");
+        } else {
+            ciContent = devopsCiContentDTO.getCiContentFile();
+        }
 
         Map<String, String> params = new HashMap<>();
         gatewayUrl = gatewayUrl.endsWith("/") ? gatewayUrl.substring(0, gatewayUrl.length() - 1) : gatewayUrl;

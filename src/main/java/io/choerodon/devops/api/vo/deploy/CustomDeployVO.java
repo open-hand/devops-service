@@ -1,6 +1,9 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -20,8 +23,10 @@ public class CustomDeployVO {
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("应用名")
+    @Length(max = 128, min = 1,message = "error.host.app.name.length")
     private String appName;
     @ApiModelProperty("应用编码")
+    @Length(max = 64,min=1 ,message = "error.host.app.code.length")
     private String appCode;
     @ApiModelProperty("来源配置")
     private String sourceConfig;
@@ -32,8 +37,19 @@ public class CustomDeployVO {
     private String runCommand;
     @ApiModelProperty("后置命令")
     private String postCommand;
+    @ApiModelProperty("删除命令")
+    private String killCommand;
+    @ApiModelProperty("健康探针")
+    private String healthProb;
+    @ApiModelProperty("操作类型 create/update")
+    private String operation;
 
     private FileInfoVO fileInfoVO;
+
+    @ApiModelProperty("部署配置文件列表")
+    private List<ConfigSettingVO> configSettingVOS;
+
+    private Long appId;
 
     public CustomDeployVO() {
     }
@@ -115,5 +131,45 @@ public class CustomDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public List<ConfigSettingVO> getConfigSettingVOS() {
+        return configSettingVOS;
+    }
+
+    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
+        this.configSettingVOS = configSettingVOS;
+    }
+
+    public String getKillCommand() {
+        return killCommand;
+    }
+
+    public void setKillCommand(String killCommand) {
+        this.killCommand = killCommand;
+    }
+
+    public String getHealthProb() {
+        return healthProb;
+    }
+
+    public void setHealthProb(String healthProb) {
+        this.healthProb = healthProb;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

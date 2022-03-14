@@ -1,5 +1,12 @@
 package io.choerodon.devops.infra.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -22,14 +29,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.GitConfigVO;
@@ -350,18 +351,28 @@ public class ExternalGitUtil {
      * @param dirName     directory name
      * @param remoteUrl   remote url to clone
      * @param accessToken the access token for access
+     * @param username    username
+     * @param password
      * @return the git instance of local repository
      */
-    public Git cloneRepository(String dirName, String remoteUrl, String accessToken) {
+    public Git cloneRepository(String dirName, String remoteUrl, String accessToken, String username, String password) {
         Git git;
         String workingDirectory = getWorkingDirectory(dirName);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
         try {
+            UsernamePasswordCredentialsProvider usernamePasswordCredentialsProvider = null;
+            if (!ObjectUtils.isEmpty(accessToken)) {
+                usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider("", accessToken);
+            } else if (ObjectUtils.isEmpty(accessToken) && ObjectUtils.isEmpty(username)) {
+                usernamePasswordCredentialsProvider = null;
+            } else if (ObjectUtils.isEmpty(accessToken) && !ObjectUtils.isEmpty(username)) {
+                usernamePasswordCredentialsProvider = new UsernamePasswordCredentialsProvider(username, password);
+            }
             Git.cloneRepository()
                     .setURI(remoteUrl)
                     .setCloneAllBranches(true)
-                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .setCredentialsProvider(usernamePasswordCredentialsProvider)
                     .setDirectory(localPathFile)
                     .call();
             git = Git.open(new File(localPathFile + GIT_SUFFIX));
@@ -487,7 +498,7 @@ public class ExternalGitUtil {
      * @param git         Git对象
      * @param repoUrl     仓库地址
      * @param accessToken 访问token
-     * @param tagName  要推送的tag名
+     * @param tagName     要推送的tag名
      */
     public void pushLocalTag(Git git, String repoUrl, String accessToken, String tagName) {
         try {
@@ -540,7 +551,7 @@ public class ExternalGitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken,Boolean deleteFile) {
+    public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken, Boolean deleteFile) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();

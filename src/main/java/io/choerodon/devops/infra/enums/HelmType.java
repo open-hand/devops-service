@@ -71,7 +71,7 @@ public enum HelmType {
     OPERATE_DOCKER_REGISTRY_SECRET_FAILED("operate_docker_registry_secret_failed"),
     OPERATE_DOCKER_REGISTRY_SECRET("operate_docker_registry_secret"),
     /**
-     * 删除pod，由DevOps服务发到agent
+     * 删除pod，由DevOps服务发到agent，agent返回也是这个
      */
     DELETE_POD("delete_pod"),
     /**

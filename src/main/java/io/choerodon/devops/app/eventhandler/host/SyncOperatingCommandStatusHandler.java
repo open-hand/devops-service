@@ -1,19 +1,20 @@
 package io.choerodon.devops.app.eventhandler.host;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.choerodon.devops.api.vo.host.CommandResultVO;
+import io.choerodon.devops.app.service.DevopsCdPipelineService;
+import io.choerodon.devops.app.service.DevopsHostCommandService;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
+import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import io.choerodon.devops.api.vo.host.CommandResultVO;
-import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
-import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -31,6 +32,9 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
     @Autowired
     private CommandResultHandler commandResultHandler;
 
+    @Autowired
+    private DevopsCdPipelineService devopsCdPipelineService;
+
     @Override
     @Transactional
     public void handler(String hostId, Long commandId, String payload) {
@@ -38,12 +42,21 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
         });
         // 1. 将所有agent丢失的命令状态改为超时
         Set<Long> missCommands = commandResultVOS.stream().filter(CommandResultVO::getNotExist).map(CommandResultVO::getCommandId).collect(Collectors.toSet());
-        if(!CollectionUtils.isEmpty(missCommands)) {
+        if (!CollectionUtils.isEmpty(missCommands)) {
             devopsHostCommandService.batchUpdateTimeoutCommand(missCommands);
+            // 更新流水线的状态
+            List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByIds(missCommands);
+            devopsHostCommandDTOS.forEach(devopsHostCommandDTO ->
+            {
+                if (devopsHostCommandDTO.getCdJobRecordId() != null) {
+                    devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
+                    ;
+                }
+            });
+            // 2. 同步devops丢失的命令
+            List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());
+            unSyncCommands.forEach(unSyncCommand -> commandResultHandler.handler(hostId, unSyncCommand.getCommandId(), unSyncCommand));
         }
-        // 2. 同步devops丢失的命令
-        List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());
-        unSyncCommands.forEach(unSyncCommand -> commandResultHandler.handler(hostId, unSyncCommand.getCommandId(), unSyncCommand));
     }
 
     @Override

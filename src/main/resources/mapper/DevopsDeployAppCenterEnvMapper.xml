@@ -168,4 +168,19 @@
         AND ddace.id != #{appId}
         </if>
     </select>
+
+    <select id="listByAppServiceIds" resultType="io.choerodon.devops.api.vo.DevopsDeployAppCenterVO">
+        SELECT ddace.id,
+               ddace.name,
+               ddace.object_id,
+               dasi.app_service_id
+        FROM devops_deploy_app_center_env ddace
+                     JOIN devops_app_service_instance dasi on ddace.object_id = dasi.id
+                WHERE ddace.rdupm_type = 'chart'
+                  AND ddace.env_id = #{envId}
+                  AND dasi.app_service_id IN
+        <foreach collection="appServiceIds" separator="," open="(" close=")" item="appServiceId">
+            #{appServiceId}
+        </foreach>
+    </select>
 </mapper>

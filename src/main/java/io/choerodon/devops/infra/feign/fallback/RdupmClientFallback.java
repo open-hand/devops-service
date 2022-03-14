@@ -121,4 +121,9 @@ public class RdupmClientFallback implements RdupmClient {
     public ResponseEntity<NexusServerConfig> getDefaultMavenRepo(Long organizationId) {
         throw new CommonException("error.query.nexus.service.config");
     }
+
+    @Override
+    public ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(Set<Long> harborConfigIds) {
+        throw new CommonException("error.query.harbor.config.by.ids");
+    }
 }

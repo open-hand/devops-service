@@ -54,6 +54,8 @@
         de.id envId,
         de.`code` envCode,
         de.`name` envName,
+        dp.node_name nodeName,
+        dp.restart_count restartCount,
         dp.object_version_number
         FROM
         devops_env_pod dp
@@ -143,7 +145,9 @@
         de.id envId,
         de.`code` envCode,
         de.`name` envName,
-        dp.object_version_number
+        dp.object_version_number,
+        dp.node_name node_name,
+        dp.restart_count restart_count
         FROM
         devops_env_pod dp
         LEFT JOIN devops_env de ON de.id = dp.env_id

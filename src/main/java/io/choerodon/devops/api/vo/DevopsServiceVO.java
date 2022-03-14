@@ -39,6 +39,8 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     private String loadBalanceIp;
     private List<DevopsIngressVO> devopsIngressVOS;
     private Long instanceId;
+    @ApiModelProperty("该字段包含除当前实例外，关联的其它应用实例的名称")
+    private List<String> relatedApplicationName;
     /**
      * pod实时信息
      */
@@ -219,5 +221,13 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
 
     public void setSelectors(Map<String, String> selectors) {
         this.selectors = selectors;
+    }
+
+    public List<String> getRelatedApplicationName() {
+        return relatedApplicationName;
+    }
+
+    public void setRelatedApplicationName(List<String> relatedApplicationName) {
+        this.relatedApplicationName = relatedApplicationName;
     }
 }

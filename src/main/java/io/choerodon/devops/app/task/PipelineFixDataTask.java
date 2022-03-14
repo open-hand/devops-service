@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_APP_CENTER_DATA;
-
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,8 @@ public class PipelineFixDataTask {
     private static final Logger logger = LoggerFactory.getLogger(PipelineFixDataTask.class);
 
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
+
+    private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
 
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;

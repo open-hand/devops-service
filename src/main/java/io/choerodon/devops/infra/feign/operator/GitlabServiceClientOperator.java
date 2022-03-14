@@ -392,7 +392,8 @@ public class GitlabServiceClientOperator {
 
     /**
      * 这里是更新master分支上的文件内容
-     *  @param projectId     项目id
+     *
+     * @param projectId     项目id
      * @param path          文件路径
      * @param content       文件内容
      * @param commitMessage 提交信息
@@ -542,13 +543,14 @@ public class GitlabServiceClientOperator {
             AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
             GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
             appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
-            return gitlabServiceClient.createExternalProjectHook(projectId,
+            String response = gitlabServiceClient.createExternalProjectHook(projectId,
                     projectHookDTO,
                     appExternalConfigVO.getGitlabUrl(),
                     appExternalConfigVO.getAuthType(),
                     appExternalConfigVO.getAccessToken(),
                     appExternalConfigVO.getUsername(),
                     appExternalConfigVO.getPassword()).getBody();
+            return JsonHelper.unmarshalByJackson(response, ProjectHookDTO.class);
         } catch (Exception e) {
             throw new CommonException("error.projecthook.create", e);
 
@@ -747,7 +749,7 @@ public class GitlabServiceClientOperator {
     public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDTO>> responseEntity;
         try {
-            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null,null, null);
+            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null, null, null);
         } catch (Exception e) {
             throw new CommonException("error.branch.get", e);
         }
@@ -1157,7 +1159,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public List<CommitDTO> listExternalCommits(Integer projectId,Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
+    public List<CommitDTO> listExternalCommits(Integer projectId, Integer page, Integer size, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             List<CommitDTO> commitDTOS = new LinkedList<>();
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
@@ -1408,7 +1410,7 @@ public class GitlabServiceClientOperator {
     public Pipeline createPipeline(int projectId,
                                    int gitlabUserid,
                                    String ref,
-                                   @Nullable AppExternalConfigDTO appExternalConfigDTO) {
+                                   @Nullable AppExternalConfigDTO appExternalConfigDTO, Map<String, String> variables) {
         ResponseEntity<Pipeline> pipeline;
         try {
             if (appExternalConfigDTO == null) {
@@ -1419,7 +1421,8 @@ public class GitlabServiceClientOperator {
                         null,
                         null,
                         null,
-                        null);
+                        null,
+                        variables);
             } else {
                 GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
@@ -1430,7 +1433,8 @@ public class GitlabServiceClientOperator {
                         appExternalConfigDTO.getAuthType(),
                         appExternalConfigDTO.getAccessToken(),
                         appExternalConfigDTO.getUsername(),
-                        appExternalConfigDTO.getPassword());
+                        appExternalConfigDTO.getPassword(),
+                        variables);
             }
 
         } catch (Exception e) {
@@ -1444,12 +1448,17 @@ public class GitlabServiceClientOperator {
 
     public String queryTrace(int gitlabProjectId, int jobId, int gitlabUserid, AppExternalConfigDTO appExternalConfigDTO) {
         if (appExternalConfigDTO == null) {
-            return gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
+            ResponseEntity<String> responseEntity = gitlabServiceClient.queryTrace(gitlabProjectId, jobId, gitlabUserid,
                     null,
                     null,
                     null,
                     null,
-                    null).getBody();
+                    null);
+            if (responseEntity != null) {
+                return responseEntity.getBody();
+            } else {
+                return "";
+            }
         } else {
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
@@ -1503,7 +1512,7 @@ public class GitlabServiceClientOperator {
     }
 
     public BranchDTO getBranch(int gitlabProjectId, String ref) {
-        return gitlabServiceClient.queryBranchByName(gitlabProjectId, ref).getBody();
+        return gitlabServiceClient.queryBranch(gitlabProjectId, ref).getBody();
     }
 
     public MemberDTO getMember(Long gitlabProjectId, Long gitlabUserId) {
@@ -1582,5 +1591,11 @@ public class GitlabServiceClientOperator {
                 appExternalConfigVO.getPassword()).getBody();
 
     }
+
+    public List<GroupDTO> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
+
+        return gitlabServiceClient.queryGroupWithStatisticsByName(groupName, userId, statistics).getBody();
+    }
+
 
 }

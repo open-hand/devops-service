@@ -60,4 +60,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline.groovy') {
             WHERE dcp.image LIKE 'registry.cn-shanghai.aliyuncs.com/c7n/cibase%';
         """)
     }
+    changeSet(author: 'wanghao', id: '2021-12-14-drop-column') {
+        dropColumn(columnName: "trigger_type", tableName: "devops_cicd_pipeline")
+    }
 }

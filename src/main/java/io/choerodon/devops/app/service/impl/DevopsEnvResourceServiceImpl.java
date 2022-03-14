@@ -261,10 +261,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     }
                     //获取job状态
                     if (i <= podEventVOS.size() - 1) {
-                        if (podEventVOS.size() == i) {
-                            PodEventVO podEventVO = new PodEventVO();
-                            podEventVOS.add(podEventVO);
-                        }
                         setJobStatus(v1Job, podEventVOS.get(i));
                     }
                 }

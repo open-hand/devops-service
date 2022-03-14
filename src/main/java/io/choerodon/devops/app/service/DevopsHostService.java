@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
@@ -38,6 +37,15 @@ public interface DevopsHostService {
      * @return 安装命令
      */
     String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
+
+    /**
+     * 获得agent升级命令
+     *
+     * @param projectId     项目id
+     * @param devopsHostDTO 主机配置dto
+     * @return agent升级命令
+     */
+    String getUpgradeString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
      * 更新主机
@@ -214,19 +222,14 @@ public interface DevopsHostService {
      * @param projectId
      * @param hostId
      * @param token
-     * @param res
      */
-    String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
+    String downloadCreateHostFile(Long projectId, Long hostId, String token);
 
     ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
 
-    String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate);
+    String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate,String previousAgentVersion);
 
     String queryUninstallShell(Long projectId, Long hostId);
-
-    Page<?> queryInstanceList(Long projectId, Long hostId, Long appServiceId, PageRequest pageRequest, String name, String type, String status, String params);
-
-    Page<DevopsHostInstanceVO> queryInstanceListByHostId(Long projectId, Long hostId, PageRequest pageRequest, String name, String type, String status, String params);
 
     /**
      * 主机连接

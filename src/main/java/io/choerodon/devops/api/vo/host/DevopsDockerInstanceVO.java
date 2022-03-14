@@ -6,6 +6,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -35,6 +36,118 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
 
     private IamUserDTO deployer;
     private Long createdBy;
+
+
+    @ApiModelProperty("主机应用id")
+    @Encrypt
+    private Long appId;
+
+    @ApiModelProperty("镜像仓库的类型，默认的还是自定义的")
+    private String repoType;
+
+    @ApiModelProperty("仓库的名称，默认的才有")
+    private String repoName;
+
+    @ApiModelProperty("仓库的id,默认的才有")
+    private Long repoId;
+
+    @ApiModelProperty("自定义仓库的用户名")
+    private String userName;
+
+    @ApiModelProperty("自定义仓库的密码")
+    private String passWord;
+
+    @ApiModelProperty("自定义仓库是否是私库")
+    private Boolean privateRepository;
+
+    @ApiModelProperty("默认仓库的镜像名称")
+    private String imageName;
+
+    @ApiModelProperty("默认仓库的镜像版本")
+    private String tag;
+
+    @ApiModelProperty("命令框的命令")
+    private String dockerCommand;
+
+    public String getDockerCommand() {
+        return dockerCommand;
+    }
+
+    public void setDockerCommand(String dockerCommand) {
+        this.dockerCommand = dockerCommand;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
+
+    public Long getRepoId() {
+        return repoId;
+    }
+
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassWord() {
+        return passWord;
+    }
+
+    public void setPassWord(String passWord) {
+        this.passWord = passWord;
+    }
+
+    public Boolean getPrivateRepository() {
+        return privateRepository;
+    }
+
+    public void setPrivateRepository(Boolean privateRepository) {
+        this.privateRepository = privateRepository;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
 
     public Long getCreatedBy() {
         return createdBy;

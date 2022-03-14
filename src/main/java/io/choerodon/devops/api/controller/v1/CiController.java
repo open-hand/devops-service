@@ -6,8 +6,6 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -28,7 +27,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/ci")
 public class CiController {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
@@ -47,6 +45,10 @@ public class CiController {
 
     @Autowired
     private DevopsImageScanResultService devopsImageScanResultService;
+    @Autowired
+    private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
+    @Autowired
+    private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -102,10 +104,14 @@ public class CiController {
             @RequestParam String version,
             @ApiParam(value = "commit", required = true)
             @RequestParam String commit,
+            @ApiParam(value = "GitLab流水线id")
+            @RequestParam(value = "gitlabPipelineId", required = false) Long gitlabPipelineId,
+            @ApiParam(value = "job_name")
+            @RequestParam(value = "jobName", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
             @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref);
+        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref, gitlabPipelineId, jobName);
         return ResponseEntity.ok().build();
     }
 
@@ -130,11 +136,17 @@ public class CiController {
     @PostMapping("/save_jar_metadata")
     public ResponseEntity<Void> saveJarMetaData(
             @ApiParam(value = "制品库id", required = true)
-            @RequestParam("nexus_repo_id") Long nexusRepoId,
+            @RequestParam(value = "nexus_repo_id", required = false) Long nexusRepoId,
             @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
             @RequestParam("job_id") Long jobId,
             @ApiParam(value = "制品库id", required = true)
             @RequestParam("sequence") Long sequence,
+            @ApiParam(value = "maven仓库地址", required = true)
+            @RequestParam(value = "maven_repo_url", required = false) String mavenRepoUrl,
+            @ApiParam(value = "maven仓库用户名", required = true)
+            @RequestParam(value = "username", required = false) String username,
+            @ApiParam(value = "maven仓库用户密码", required = true)
+            @RequestParam(value = "password", required = false) String password,
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "job_name", required = true)
@@ -143,10 +155,25 @@ public class CiController {
             @RequestParam String token,
             @ApiParam(value = "pom文件", required = true)
             @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file);
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password);
         return ResponseEntity.ok().build();
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "存储sonar信息")
+    @PostMapping("/save_sonar_info")
+    public ResponseEntity<Void> saveSonarInfo(
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "scanner_type", required = true)
+            @RequestParam(value = "scanner_type") String scannerType) {
+        devopsCiPipelineSonarService.saveSonarInfo(gitlabPipelineId, jobName, token, scannerType);
+        return ResponseEntity.ok().build();
+    }
 
     @Permission(permissionLogin = true)
     @ApiOperation(value = "判断平台是否有配置sonarqube")
@@ -182,6 +209,26 @@ public class CiController {
             @ApiParam(value = "json文件", required = false)
             @RequestParam MultipartFile file) {
         devopsImageScanResultService.resolveImageScanJson(gitlabPipelineId, jobId, startDate, endDate, file, token, jobName);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "上传单元测试报告")
+    @PostMapping("/upload_unit_test")
+    public ResponseEntity<Void> uploadUnitTest(
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "token", required = true)
+            @RequestParam(value = "type") String type,
+            @ApiParam(value = "测试报告", required = true)
+            @RequestParam MultipartFile file,
+            @ApiParam(value = "测试结果（如果传了则使用用户上传的结果）")
+                    DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
+        devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
         return ResponseEntity.ok().build();
     }
 

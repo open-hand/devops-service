@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -317,28 +318,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Page<BranchVO> pageBranchByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params, Long currentProjectId) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+
+        if (applicationDTO == null) {
+            return new Page<>();
+        }
         // 外部应用服务直接从gitlab查询
         if (applicationDTO.getExternalConfigId() != null) {
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
-            List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listExternalBranch(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
-            if (branchDTOS == null) {
-                return new Page<>();
-            }
-            List<BranchVO> branchVOS = branchDTOS.stream().map(branchDTO -> {
-                BranchVO branchVO = new BranchVO();
-                branchVO.setBranchName(branchDTO.getName());
-                return branchVO;
-            }).collect(Collectors.toList());
-            if (params != null) {
-                Map<String, Object> maps = TypeUtil.castMapParams(params);
-                Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-                if (!CollectionUtils.isEmpty(searchParam)) {
-                    Object branchName = searchParam.get("branchName");
-                    branchVOS = branchVOS.stream().filter(branchVO -> branchVO.getBranchName().contains(branchName.toString())).collect(Collectors.toList());
-                }
-
-            }
-            return PageUtils.createPageFromList(branchVOS, pageable);
+            return listExternalBranch(pageable, params, applicationDTO);
         }
 
         try {
@@ -346,12 +332,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } catch (GitlabAccessInvalidException e) {
             return new Page<>();
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId(), false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
 
-        if (applicationDTO == null) {
-            return new Page<>();
-        }
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
@@ -1245,6 +1228,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             // 此情况是分支已被删除，需要用另一种方式获取分支名称
             List<Long> relatedCommitIds = devopsIssueRelService.listCommitRelationByBranchId(branchId);
             // 因为所有的commit都属于同一个分支，因此默认取第1个commitId来查询分支名称
+            if (CollectionUtils.isEmpty(relatedCommitIds)){
+                return;
+            }
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.selectByPrimaryKey(relatedCommitIds.get(0));
             // 这里的操作是查出之前被删除的同名分支id
             List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitService.baseListByAppIdAndBranch(appServiceId, devopsGitlabCommitDTO.getRef(), null);
@@ -1385,5 +1371,71 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         pageFromList.setSize(pageRequest.getSize());
         pageFromList.setNumber(pageRequest.getPage());
         return pageFromList;
+    }
+
+    @Override
+    public Page<BranchVO> pageBranchBasicInfoByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params) {
+        AppServiceDTO applicationDTO = appServiceService.baseQuery(appServiceId);
+
+        if (applicationDTO == null) {
+            return new Page<>();
+        }
+        // 外部应用服务直接从gitlab查询
+        if (applicationDTO.getExternalConfigId() != null) {
+            return listExternalBranch(pageable, params, applicationDTO);
+        }
+
+        try {
+            checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_LIST);
+        } catch (GitlabAccessInvalidException e) {
+            return new Page<>();
+        }
+
+        // 查询用户是否在该gitlab project下
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        if (userAttrDTO == null) {
+            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+        }
+        DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+
+        if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId)) {
+            MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(devopsProjectDTO.getDevopsAppGroupId().intValue(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            if (memberDTO == null || memberDTO.getId() == null) {
+                memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(applicationDTO.getGitlabProjectId()), userAttrDTO.getGitlabUserId());
+            }
+            if (memberDTO == null) {
+                throw new CommonException("error.user.not.in.gitlab.project");
+            }
+        }
+        Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
+                devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
+
+        return ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
+    }
+
+    @NotNull
+    private Page<BranchVO> listExternalBranch(PageRequest pageable, String params, AppServiceDTO applicationDTO) {
+        AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(applicationDTO.getExternalConfigId());
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listExternalBranch(applicationDTO.getGitlabProjectId(), appExternalConfigDTO);
+        if (branchDTOS == null) {
+            return new Page<>();
+        }
+        List<BranchVO> branchVOS = branchDTOS.stream().map(branchDTO -> {
+            BranchVO branchVO = new BranchVO();
+            branchVO.setBranchName(branchDTO.getName());
+            return branchVO;
+        }).collect(Collectors.toList());
+        if (params != null) {
+            Map<String, Object> maps = TypeUtil.castMapParams(params);
+            Map<String, Object> searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            if (!CollectionUtils.isEmpty(searchParam)) {
+                Object branchName = searchParam.get("branchName");
+                if (branchName != null) {
+                    branchVOS = branchVOS.stream().filter(branchVO -> branchVO.getBranchName().contains(branchName.toString())).collect(Collectors.toList());
+                }
+            }
+
+        }
+        return PageUtils.createPageFromList(branchVOS, pageable);
     }
 }

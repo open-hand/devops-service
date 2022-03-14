@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -155,13 +156,14 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
         V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(detailsJson, V1beta2DaemonSet.class);
 
         DevopsDaemonSetDTO oldDevopsDaemonSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2DaemonSet.getMetadata().getName());
         if (oldDevopsDaemonSetDTO != null) {
             oldDevopsDaemonSetDTO.setCommandId(appServiceInstanceDTO.getCommandId());
+            oldDevopsDaemonSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDaemonSetMapper.updateByPrimaryKeySelective(oldDevopsDaemonSetDTO);
         } else {
 
@@ -177,6 +179,8 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
             devopsDaemonSetDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsDaemonSetDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
             devopsDaemonSetDTO.setName(v1beta2DaemonSet.getMetadata().getName());
+            devopsDaemonSetDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
+            devopsDaemonSetDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
             devopsDaemonSetMapper.insertSelective(devopsDaemonSetDTO);
         }
     }

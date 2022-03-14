@@ -24,4 +24,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_path.groovy') {
             column(name: 'service_port', type: 'BIGINT UNSIGNED', remarks: '网络端口', afterColumn: 'service_name')
         }
     }
+
+    changeSet(author: 'lihao',id: '2022-01-14-modify-column'){
+        modifyDataType(tableName: 'devops_ingress_path', columnName: 'path', newDataType: 'VARCHAR(500)')
+    }
 }

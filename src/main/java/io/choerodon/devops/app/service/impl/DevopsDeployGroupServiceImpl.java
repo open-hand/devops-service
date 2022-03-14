@@ -570,7 +570,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             devopsDeployGroupContainerConfigVO, V1Container v1Container, StringBuilder wgetCommandSB) {
         // 处理用户上传的jar
         if (AppSourceType.UPLOAD.getValue().equals(devopsDeployGroupContainerConfigVO.getSourceType())) {
-            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getFileInfoVO().getUploadUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
+            wgetCommandSB.append(String.format(WGET_COMMAND_TEMPLATE, devopsDeployGroupContainerConfigVO.getJarDeployVO().getFileInfoVO().getJarFileUrl(), devopsDeployGroupContainerConfigVO.getName() + ".jar")).append(";");
         } else {
             // 制品库中的jar
             JarPullInfoDTO jarPullInfoDTO = getJarPullInfo(projectDTO, devopsDeployGroupContainerConfigVO.getJarDeployVO());
@@ -655,8 +655,16 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             //如果是市场部署将部署人员添加为应用的订阅人员
             marketServiceClientOperator.subscribeApplication(marketServiceDeployObjectVO.getMarketAppId(), DetailsHelper.getUserDetails().getUserId());
         } else {
-            // 0.2 从制品库获取仓库信息
             Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
+            // 0.2 从制品库获取仓库信息
+            if (nexusRepoId == null) {
+                JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
+                jarPullInfoDTO.setPullUserId(jarDeployVO.getProdJarInfoVO().getUsername());
+                jarPullInfoDTO.setPullUserPassword(jarDeployVO.getProdJarInfoVO().getPassword());
+                jarPullInfoDTO.setDownloadUrl(jarDeployVO.getProdJarInfoVO().getDownloadUrl());
+                return jarPullInfoDTO;
+            }
+
             String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
             String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
             String version = jarDeployVO.getProdJarInfoVO().getVersion();

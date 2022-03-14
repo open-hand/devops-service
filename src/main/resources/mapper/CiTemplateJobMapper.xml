@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateJobMapper">
+
+    <select id="listByStageId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
+        select dctj.*
+        from devops_ci_template_stage_job_rel dctsjr
+                 join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
+        where dctsjr.ci_template_stage_id = #{stageId}
+    </select>
+    <select id="listByStageIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        select dctj.*, dctsjr.ci_template_stage_id as relate_stage_id
+        from devops_ci_template_stage_job_rel dctsjr
+        join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
+        where dctsjr.ci_template_stage_id in
+        <foreach collection="stageIds" item="stageId" open="(" separator="," close=")">
+            #{stageId}
+        </foreach>
+    </select>
+    <select id="listByTenantIdAndGroupId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
+        select * from devops_ci_template_job dctj
+        where dctj.group_id = #{groupId}
+        and ((dctj.source_type = 'site' and dctj.source_id = 0)
+        or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId}))
+    </select>
+
+    <update id="updateImageByIds">
+        UPDATE devops_ci_template_job
+        SET image = #{image,jdbcType=VARCHAR}
+        WHERE id in
+        <foreach collection="ids" item="id" index="index"
+                 open="(" close=")" separator=",">
+            #{id,jdbcType=BIGINT}
+        </foreach>
+    </update>
+</mapper>
+

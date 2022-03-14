@@ -23,11 +23,9 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
-import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DevopsJavaInstanceVO;
 import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
 import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -280,11 +278,10 @@ public class DevopsHostController {
             @ApiParam(value = "主机id", required = true)
             @PathVariable("host_id") Long hostId,
             @ApiParam(value = "token", required = true)
-            @PathVariable("token") String token,
-            HttpServletResponse res) {
-        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
+            @PathVariable("token") String token) {
+        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+                .orElseThrow(() -> new CommonException("error.devops.host.sh.download"));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -296,7 +293,7 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId) {
-        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId,false));
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId, false, ""));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -309,45 +306,6 @@ public class DevopsHostController {
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId) {
         return ResponseEntity.ok(devopsHostService.queryUninstallShell(projectId, hostId));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询主机的应用实例列表")
-    @GetMapping("/app/{app_service_id}/instance/list")
-    @CustomPageRequest
-    public ResponseEntity<Page<?>> queryInstanceList(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "主机", required = true)
-            @RequestParam(value = "hostId", required = false) Long hostId,
-            @ApiParam(value = "应用服务id", required = true)
-            @Encrypt @PathVariable(value = "app_service_id") Long appServiceId,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "params", required = false) String params,
-            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsHostService.queryInstanceList(projectId, hostId, appServiceId, pageRequest, name, type, status, params));
-    }
-
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "主机管理 根据主机查询应用实例")
-    @GetMapping("/instance/list")
-    @CustomPageRequest
-    public ResponseEntity<Page<DevopsHostInstanceVO>> queryInstanceListByHostId(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "主机", required = true)
-            @RequestParam(value = "host_id", required = false) Long hostId,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "params", required = false) String params,
-            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsHostService.queryInstanceListByHostId(projectId, hostId, pageRequest, name, type, status, params));
     }
 
 

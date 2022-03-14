@@ -82,7 +82,7 @@ public class UserResourceServiceImpl implements UserResourceService {
         if (CollectionUtils.isEmpty(hostDTOS)) {
             return result;
         }
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
         hostDTOS.forEach(hostDTO -> {
             hostDTO.setHostStatus(updatedClusterList.contains(hostDTO.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue());
             ProjectDTO project = projects.stream().filter(projectDTO -> Objects.equals(projectDTO.getId(),

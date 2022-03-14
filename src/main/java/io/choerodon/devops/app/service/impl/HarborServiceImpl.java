@@ -46,6 +46,7 @@ import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
     private static final Gson gson = new Gson();
+    private static final String AUTHTYPE_PULL = "pull";
 
     @Autowired
     @Lazy
@@ -160,6 +161,22 @@ public class HarborServiceImpl implements HarborService {
             configDTOMap.put(versionDTO.getId(), devopsConfigDTO);
         });
         return configDTOMap;
+    }
+
+    @Override
+    public List<DevopsConfigDTO> queryHarborConfigByHarborConfigIds(Set<Long> harborConfigIds) {
+        ResponseEntity<List<HarborRepoDTO>> listResponseEntity = rdupmClient.queryHarborReposByIds(harborConfigIds);
+        List<HarborRepoDTO> body = listResponseEntity.getBody();
+        if (CollectionUtils.isEmpty(body)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<DevopsConfigDTO> resultDevopsConfigDTOS = new ArrayList<>();
+        body.forEach(harborRepoDTO -> {
+            DevopsConfigDTO devopsConfigDTO = repoDTOToDevopsConfigDTO(harborRepoDTO, AUTHTYPE_PULL);
+            resultDevopsConfigDTOS.add(devopsConfigDTO);
+
+        });
+        return resultDevopsConfigDTOS;
     }
 
     private AppServiceShareRuleDTO queryShareAppService(Long appServiceId) {

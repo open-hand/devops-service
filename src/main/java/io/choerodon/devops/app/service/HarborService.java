@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
@@ -25,4 +26,6 @@ public interface HarborService {
     void batchDeleteImageTags(List<HarborImageTagDTO> deleteImagetags);
 
     Map<Long, DevopsConfigDTO> listRepoConfigByAppVersionIds(List<Long> appVersionIds);
+
+    List<DevopsConfigDTO> queryHarborConfigByHarborConfigIds(Set<Long> harborConfigIds);
 }

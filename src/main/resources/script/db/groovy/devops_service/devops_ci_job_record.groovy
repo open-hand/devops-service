@@ -89,11 +89,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         addNotNullConstraint(tableName: "devops_ci_job_record", columnName: "app_service_id", columnDataType: "BIGINT UNSIGNED")
     }
 
+
     changeSet(author: 'wanghao', id: '2021-11-2-modify-unique-index') {
         dropUniqueConstraint(tableName: 'devops_ci_job_record',
                 constraintName: 'uk_gitlab_job_id')
         addUniqueConstraint(tableName: 'devops_ci_job_record',
                 constraintName: 'uk_gitlab_job_app_service_id', columnNames: 'gitlab_job_id, app_service_id')
+    }
+
+    changeSet(author: 'wanghao', id: '2021-12-29-add-column') {
+
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'group_type', type: 'VARCHAR(20)', remarks: '分组类型', afterColumn: 'stage')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2022-1-9-fix-data') {
+        sql("""
+            UPDATE devops_ci_job_record dcjr set dcjr.type = 'normal' WHERE dcjr.type != 'custom'
+        """)
     }
 
 }

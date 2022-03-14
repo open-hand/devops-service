@@ -80,27 +80,28 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         hostSessionVO.setRegisterKey(WebSocketTool.getGroup(session));
         redisTemplate.opsForHash().put(DevopsHostConstants.HOST_SESSION, hostSessionVO.getRegisterKey(), hostSessionVO);
 
-        MsgVO msgVO = new MsgVO();
+        MsgVO msgVO;
         // 版本不一致，需要升级
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
             DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
             Map<String, String> upgradeInfo = new HashMap<>();
-            upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId(), true));
+            upgradeInfo.put("upgradeCommand", devopsHostService.getUpgradeString(devopsHostDTO.getProjectId(), devopsHostDTO));
             upgradeInfo.put("version", agentVersion);
             hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
+
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         } else {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
             hostMsgVO.setHostId(hostId);
+
             // 为了保持和其他通过hzero发送的消息结构一致
             msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.INIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
         }
 
         sendToSession(session, new TextMessage(JsonHelper.marshalByJackson(msgVO)));
-
     }
 
     private void sendToSession(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {

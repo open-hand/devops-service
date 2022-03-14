@@ -6,9 +6,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCdStageVO {
     @Encrypt
     private Long id;
@@ -26,8 +28,6 @@ public class DevopsCdStageVO {
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
-    @Encrypt
-    private List<Long> cdAuditUserIds;
     private Boolean parallel;
     private String type;
 
@@ -101,14 +101,6 @@ public class DevopsCdStageVO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
-    }
-
-    public List<Long> getCdAuditUserIds() {
-        return cdAuditUserIds;
-    }
-
-    public void setCdAuditUserIds(List<Long> cdAuditUserIds) {
-        this.cdAuditUserIds = cdAuditUserIds;
     }
 
     public Boolean getParallel() {

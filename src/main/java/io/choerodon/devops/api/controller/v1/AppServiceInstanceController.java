@@ -365,6 +365,7 @@ public class AppServiceInstanceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
+
     /**
      * 获取当前实例生效的Values
      *
@@ -413,6 +414,7 @@ public class AppServiceInstanceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
     }
+
     /**
      * 获取当前实例升级到特定版本的Values
      *
@@ -1041,6 +1043,6 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return ResponseEntity.ok(appServiceInstanceService.listByServiceAndEnv(projectId, appServiceId, envId));
+        return ResponseEntity.ok(appServiceInstanceService.listByServiceAndEnv(projectId, appServiceId, envId, true));
     }
 }

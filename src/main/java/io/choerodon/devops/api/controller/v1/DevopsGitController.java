@@ -295,6 +295,24 @@ public class DevopsGitController {
         return Results.success(devopsGitService.pageBranchByOptions(projectId, pageable, appServiceId, params, currentProjectId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询服务下的分支信息")
+    @CustomPageRequest
+    @PostMapping("/page_branch_basic_info_by_options")
+    public ResponseEntity<Page<BranchVO>> pageBranchBasicInfoByOptions(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务id", required = true)
+            @PathVariable(value = "app_service_id") Long appServiceId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageable,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params
+    ) {
+        return Results.success(devopsGitService.pageBranchBasicInfoByOptions(projectId, pageable, appServiceId, params));
+    }
+
     /**
      * 分页查询服务下的分支，并过滤掉绑定issue的分支
      *

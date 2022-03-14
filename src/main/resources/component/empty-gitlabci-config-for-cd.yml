@@ -1,0 +1,5 @@
+trigger_cd:
+  stage: build
+  script:
+    - echo "hello world!"
+

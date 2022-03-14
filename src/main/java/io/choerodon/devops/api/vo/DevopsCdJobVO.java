@@ -4,7 +4,9 @@ import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -15,10 +17,12 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @author wanghao
  * @since 2020/4/2 17:00
  */
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class DevopsCdJobVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("任务名称")
+    @Size(min = 1, max = 30, message = "error.cd.job.name.length")
     @NotEmpty(message = "error.job.name.cannot.be.null")
     private String name;
 
