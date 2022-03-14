@@ -467,11 +467,6 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDTO> queryBranchByName(Integer projectId, String branchName) {
-        throw new CommonException("error.gitlab.branch.query");
-    }
-
-    @Override
     public ResponseEntity<GitLabUserDTO> queryAdminUser() {
         throw new CommonException("error.gitlab.admin.id.query");
     }

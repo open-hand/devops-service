@@ -425,10 +425,10 @@ public interface GitlabServiceClient {
      * @param branchName 分支名
      * @return 不含任何消息体的ResponseEntity
      */
-    @GetMapping("/v1/projects/{projectId}/repository/branches/{branchName}")
+    @GetMapping("/v1/projects/{projectId}/repository/branches/query")
     ResponseEntity<BranchDTO> queryBranch(
             @PathVariable("projectId") Integer projectId,
-            @PathVariable("branchName") String branchName);
+            @RequestParam("branchName") String branchName);
 
     //todo 如果name里面有&字符，&后面的部分会被丢弃
 
@@ -649,13 +649,6 @@ public interface GitlabServiceClient {
             @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
-
-    @GetMapping(value = "/v1/projects/{projectId}/repository/branches/{branchName}")
-    ResponseEntity<BranchDTO> queryBranchByName(
-            @ApiParam(value = "工程id", required = true)
-            @PathVariable("projectId") Integer projectId,
-            @ApiParam(value = "要查询的分支名", required = true)
-            @PathVariable("branchName") String branchName);
 
     /**
      * 列举出gitlab项目组的ci variable

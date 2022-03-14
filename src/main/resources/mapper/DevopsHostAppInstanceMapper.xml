@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostAppInstanceMapper">
+    <update id="updateKillCommand">
+        UPDATE devops_host_app_instance
+        set kill_command=#{killCommand}
+        where id = #{id}
+    </update>
+
+    <update id="updateHealthProb">
+        UPDATE devops_host_app_instance
+        set health_prob=#{healthProb}
+        where id = #{id}
+    </update>
+</mapper>

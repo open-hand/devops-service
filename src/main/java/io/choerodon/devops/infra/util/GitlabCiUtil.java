@@ -261,24 +261,16 @@ public class GitlabCiUtil {
         // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
         //如果没有镜像扫描，直接推镜像
 //        String rawCommand = "ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko %s --no-push -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --tarPath ${PWD}/${PROJECT_NAME}.tar";
-        String rawCommand = "if [ -z $KUBERNETES_SERVICE_HOST ];then\n" +
-                "    ssh -o StrictHostKeyChecking=no root@kaniko /kaniko/kaniko %s  --no-push \\\n" +
-                "    -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \\\n" +
-                "    --tarPath ${PWD}/${PROJECT_NAME}.tar\n" +
-                "else\n" +
-                "    ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko %s  --no-push \\\n" +
-                "    -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \\\n" +
-                "    --tarPath ${PWD}/${PROJECT_NAME}.tar\n" +
-                "fi";
+        String rawCommand = "kaniko_build %s %s %s";
 
-        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
+        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
         //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
         if (imageScan) {
             String resolveCommond = "trivyScanImage %s";
             commands.add(String.format(resolveCommond, jobId));
         }
-        String skopeoCommand = "skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
-        commands.add(skopeoCommand);
+
+        commands.add("skopeo_copy");
         return commands;
     }
 
@@ -353,5 +345,10 @@ public class GitlabCiUtil {
     public static String saveJarMetadata(Long nexusRepoId, Long jobId, Long sequence) {
         String rawCommand = "saveJarMetadata %s %s %s";
         return String.format(rawCommand, nexusRepoId, jobId, sequence);
+    }
+
+    public static String saveCustomJarMetadata(Long jobId, Long sequence, String url, String username, String password) {
+        String rawCommand = "saveCustomJarMetadata %s %s %s %s %s";
+        return String.format(rawCommand, jobId, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
     }
 }

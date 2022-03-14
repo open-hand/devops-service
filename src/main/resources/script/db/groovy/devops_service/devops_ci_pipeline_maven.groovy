@@ -55,4 +55,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_maven.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_pipeline_maven',
                 constraintName: 'uk_devops_gitlab_pipeline_id', columnNames: 'app_service_id,gitlab_pipeline_id,job_name')
     }
+    changeSet(author: 'wanghao', id: '2022-02-23-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_maven') {
+            column(name: "maven_repo_url", type: "VARCHAR(255)", afterColumn: "nexus_repo_id")
+            column(name: "username", type: "VARCHAR(255)", afterColumn: "maven_repo_url")
+            column(name: "password", type: "VARCHAR(255)", afterColumn: "username")
+        }
+    }
 }

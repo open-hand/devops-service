@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -33,6 +34,58 @@ public class CiPipelineMavenDTO extends AuditDomain {
     private String artifactId;
     private String version;
     private Long nexusRepoId;
+    private String mavenRepoUrl;
+    private String username;
+    private String password;
+
+    public String calculateDownloadUrl() {
+        String downloadUrl = "";
+        if (getVersion().contains("SNAPSHOT")) {
+            downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+            downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
+            downloadUrl = appendWithSlash(downloadUrl, getVersion() + ".jar");
+        } else if (getVersion().contains("RELEASE")) {
+            downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+            downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
+            downloadUrl = appendWithSlash(downloadUrl, getVersion());
+            downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + ".jar");
+        }
+        return downloadUrl;
+    }
+
+    private String appendWithSlash(String source, String str) {
+        if (source.endsWith("/")) {
+            source = source.substring(0, source.length() - 1);
+        }
+        if (str.startsWith("/")) {
+            str = str.substring(1, str.length());
+        }
+        return source + BaseConstants.Symbol.SLASH + str;
+    }
+
+    public String getMavenRepoUrl() {
+        return mavenRepoUrl;
+    }
+
+    public void setMavenRepoUrl(String mavenRepoUrl) {
+        this.mavenRepoUrl = mavenRepoUrl;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

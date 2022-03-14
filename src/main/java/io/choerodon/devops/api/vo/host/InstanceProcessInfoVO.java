@@ -13,19 +13,9 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class InstanceProcessInfoVO {
     private String instanceId;
-    private String pid;
-    private String ports;
-    private String status;
+    private Boolean ready;
     private IamUserDTO deployer;
     private Date deployDate;
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
     public String getInstanceId() {
         return instanceId;
@@ -35,20 +25,12 @@ public class InstanceProcessInfoVO {
         this.instanceId = instanceId;
     }
 
-    public String getPid() {
-        return pid;
+    public Boolean getReady() {
+        return ready;
     }
 
-    public void setPid(String pid) {
-        this.pid = pid;
-    }
-
-    public String getPorts() {
-        return ports;
-    }
-
-    public void setPorts(String ports) {
-        this.ports = ports;
+    public void setReady(Boolean ready) {
+        this.ready = ready;
     }
 
     public IamUserDTO getDeployer() {
