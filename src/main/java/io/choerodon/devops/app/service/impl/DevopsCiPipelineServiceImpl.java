@@ -446,6 +446,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 3. 为gitlab-ci文件添加include指令
+        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
+        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
+
         initGitlabCi(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
@@ -614,8 +617,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //                ciCdPipelineVO.getRelatedBranches().forEach(branch -> initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl));
 //            }
         }
-        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
-        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
     }
 
     /**
@@ -1624,6 +1625,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //更新CD流水线
         updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
+        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
+        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
 
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
@@ -1714,8 +1717,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         });
 
-        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
-        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
         // 新增ci阶段，需要初始化gitlab-ci.yaml
         if (initCiFileFlag) {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
