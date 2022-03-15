@@ -1837,7 +1837,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             });
             Map<String, Object> auths = new HashMap<>();
             auths.put("auths", auth);
-            gitlabCi.getVariables().put("DOCKER_AUTH_CONFIG", JsonHelper.marshalByJackson(auths));
+            Map<String, String> variables = gitlabCi.getVariables();
+            if (CollectionUtils.isEmpty(variables)) {
+                variables = new HashMap<>();
+            }
+            variables.put("DOCKER_AUTH_CONFIG", JsonHelper.marshalByJackson(auths));
         }
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
