@@ -659,9 +659,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 根据pipeline_id查询数据
         CiCdPipelineVO ciCdPipelineVO = getCiCdPipelineVO(pipelineId);
 
-        // 添加镜像认证信息
-        fillDockerAuthConfig(ciCdPipelineVO);
-
         //查询流水线对应的应用服务
         AppServiceDTO appServiceDTO = getAppServiceDTO(ciCdPipelineVO);
         //当前用户是否能修改流水线权限
@@ -674,11 +671,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
         ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
         return ciCdPipelineVO;
-    }
-
-    private void fillDockerAuthConfig(CiCdPipelineVO ciCdPipelineVO) {
-        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(ciCdPipelineVO.getId());
-        ciCdPipelineVO.setCiDockerAuthConfigDTOList(ciDockerAuthConfigDTOS);
     }
 
     private List<DevopsCdStageVO> handleCdStage(Long pipelineId) {
