@@ -547,11 +547,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
-        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
-        if (!Objects.isNull(iamUserDTO)) {
-            devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
-            devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
-        }
+//        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
+//        if (!Objects.isNull(iamUserDTO)) {
+//            devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
+//            devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
+//        }
         devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
 
         // 添加提交信息
@@ -559,7 +559,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long appServiceId = ciCdPipelineVO.getAppServiceId();
 
         devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
-        addCommitInfo(appServiceId, devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
+//        addCommitInfo(appServiceId, devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
@@ -1018,6 +1018,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
             return;
         }
+        stageRecord.setStatus(JobStatusEnum.RUNNING.value());
     }
 
     private Long getIamUserIdByGitlabUserName(String username) {
