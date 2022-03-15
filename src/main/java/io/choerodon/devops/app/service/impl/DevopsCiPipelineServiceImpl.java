@@ -184,6 +184,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCiPipelineVariableService devopsCiPipelineVariableService;
     @Autowired
     private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
+    @Autowired
+    private CiDockerAuthConfigService ciDockerAuthConfigService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -439,6 +441,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveFunction(ciCdPipelineVO, ciCdPipelineDTO);
         // 保存流水线变量
         saveCiVariable(ciCdPipelineVO, ciCdPipelineDTO);
+        // 保存Docker认证配置
+        saveCiDockerAuthConfig(ciCdPipelineVO, ciCdPipelineDTO);
 
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
@@ -449,6 +453,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         initGitlabCi(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
+    }
+
+    private void saveCiDockerAuthConfig(CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
+        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList = ciCdPipelineVO.getCiDockerAuthConfigDTOList();
+        if (!CollectionUtils.isEmpty(ciDockerAuthConfigDTOList)) {
+            ciDockerAuthConfigDTOList.forEach(v -> {
+                v.setId(null);
+                v.setDevopsPipelineId(ciCdPipelineDTO.getId());
+                ciDockerAuthConfigService.baseCreate(v);
+            });
+        }
     }
 
     private void initGitlabCi(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
@@ -640,6 +655,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public CiCdPipelineVO query(Long projectId, Long pipelineId) {
         // 根据pipeline_id查询数据
         CiCdPipelineVO ciCdPipelineVO = getCiCdPipelineVO(pipelineId);
+
+        // 添加镜像认证信息
+        fillDockerAuthConfig(ciCdPipelineVO);
+
         //查询流水线对应的应用服务
         AppServiceDTO appServiceDTO = getAppServiceDTO(ciCdPipelineVO);
         //当前用户是否能修改流水线权限
@@ -652,6 +671,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
         ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
         return ciCdPipelineVO;
+    }
+
+    private void fillDockerAuthConfig(CiCdPipelineVO ciCdPipelineVO) {
+        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(ciCdPipelineVO.getId());
+        ciCdPipelineVO.setCiDockerAuthConfigDTOList(ciDockerAuthConfigDTOS);
     }
 
     private List<DevopsCdStageVO> handleCdStage(Long pipelineId) {
@@ -1616,6 +1640,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 先删除之前的旧数据（考虑到数据不多，性能影响不大，没有必要做对比更新）
         devopsCiPipelineVariableService.deleteByPipelineId(pipelineId);
         saveCiVariable(ciCdPipelineVO, ciCdPipelineDTO);
+
+        // 更新流水线变量
+        // 先删除之前的旧数据（考虑到数据不多，性能影响不大，没有必要做对比更新）
+        ciDockerAuthConfigService.deleteByPipelineId(pipelineId);
+        saveCiDockerAuthConfig(ciCdPipelineVO, ciCdPipelineDTO);
+
 
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
