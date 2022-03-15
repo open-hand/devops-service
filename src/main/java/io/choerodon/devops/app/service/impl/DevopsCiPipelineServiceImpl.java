@@ -1834,6 +1834,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             Map<String, String> variables = devopsCiPipelineVariableDTOS.stream().collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
             gitlabCi.setVariables(variables);
         }
+        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(pipelineId);
+        if (!CollectionUtils.isEmpty(ciDockerAuthConfigDTOS)) {
+            Map<String, Object> auth = new HashMap<>();
+            ciDockerAuthConfigDTOS.forEach(ciDockerAuthConfigDTO -> {
+                Map<String, String> config = new HashMap<>();
+                String authStr = ciDockerAuthConfigDTO.getUsername() + ":" + ciDockerAuthConfigDTO.getPassword();
+                config.put("auth", Base64Util.getBase64EncodedString(authStr));
+                auth.put(ciDockerAuthConfigDTO.getDomain(), config);
+            });
+            Map<String, Object> auths = new HashMap<>();
+            auths.put("auths", auth);
+            gitlabCi.getVariables().put("DOCKER_AUTH_CONFIG", JsonHelper.marshalByJackson(auths));
+        }
 
         // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
         gitlabCi.setImage(StringUtils.isEmpty(ciCdPipelineDTO.getImage()) ? defaultCiImage : ciCdPipelineDTO.getImage());
