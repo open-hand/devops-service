@@ -842,6 +842,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 throw new CommonException("error.no.gitlab.pipeline.id");
             }
             CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
+            if (ciPipelineImageDTO == null) {
+                throw new CommonException("error.deploy.images.not.exist");
+            }
             HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
             // 设置拉取账户
