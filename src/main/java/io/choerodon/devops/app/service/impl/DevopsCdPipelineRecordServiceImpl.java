@@ -856,6 +856,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 userName = harborRepoDTO.getHarborRepoConfig().getLoginName();
                 password = harborRepoDTO.getHarborRepoConfig().getPassword();
                 repoType = harborRepoDTO.getRepoType();
+                repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
 
 
             } else {
