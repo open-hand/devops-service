@@ -265,6 +265,7 @@ function triggerCdPipeline() {
 # 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,
 # 在CD阶段的主机部署-镜像部署中选中了这个任务(job)的任务才能正确部署镜像
 function saveImageMetadata() {
+    export_commit_tag
     result_upload_to_devops=$(curl -X POST "${CHOERODON_URL}/devops/ci/record_image" \
       --header 'Content-Type: application/json' \
       -d "{
