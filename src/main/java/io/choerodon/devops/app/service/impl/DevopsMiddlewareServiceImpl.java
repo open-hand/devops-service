@@ -139,8 +139,6 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
-    @Autowired
-    private PermissionHelper permissionHelper;
 
     /**
      * 中间件的环境部署逻辑和市场应用的部署逻辑完全一样，只是需要提前构造values
@@ -228,7 +226,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
-        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getAppCode(), Redis.getType());
+        checkMiddlewareNameAndCode(projectId, middlewareRedisHostDeployVO.getAppName(), middlewareRedisHostDeployVO.getAppCode(), Redis.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
@@ -375,7 +373,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             }
         }
 
-        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getAppCode(), MySQL.getType());
+        checkMiddlewareNameAndCode(projectId, middlewareMySqlHostDeployVO.getAppName(), middlewareMySqlHostDeployVO.getAppCode(), MySQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
 
@@ -742,9 +740,13 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         middlewareMySqlHostDeployVO.setConfiguration(convertedConfiguration);
     }
 
-    public void checkMiddlewareName(Long projectId, String name, String type) {
-        AppServiceInstanceValidator.checkName(name);
-        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkNameUnique(projectId, name, type) < 1, "error.middleware.name.exists");
+    public void checkMiddlewareNameAndCode(Long projectId, String name, String code, String type) {
+        if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name)) {
+            throw new CommonException("error.middleware.name.exists");
+        }
+
+        AppServiceInstanceValidator.checkCode(code);
+        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkCodeUnique(projectId, code, type) < 1, "error.middleware.code.exists");
     }
 
     private String preProcessShell() {
