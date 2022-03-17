@@ -187,6 +187,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<CommitDTO>> getCommitsByRef(Integer projectId, String ref) {
+        throw new CommonException("error.commits.get");
+    }
+
+    @Override
     public ResponseEntity<GroupDTO> createGroup(GroupDTO groupDO, Integer userId) {
         throw new CommonException("error.group.create");
     }

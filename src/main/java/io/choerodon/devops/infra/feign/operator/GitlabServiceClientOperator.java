@@ -945,6 +945,14 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<CommitDTO> getCommits(Integer gitLabProjectId, String branchName) {
+        try {
+            return gitlabServiceClient.getCommitsByRef(gitLabProjectId, branchName).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
 
     public List<BranchDTO> listBranch(Integer gitlabProjectId, Integer userId) {
         try {

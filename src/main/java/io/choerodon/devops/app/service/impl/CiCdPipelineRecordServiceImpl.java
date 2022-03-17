@@ -356,7 +356,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 //                Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
 //                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
 //                String sinceDate = simpleDateFormat.format(commitDate);
-                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, null);
+                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref);
                 if (CollectionUtils.isEmpty(commitDTOList)) {
                     throw new CommonException("error.ref.no.commit");
                 }
