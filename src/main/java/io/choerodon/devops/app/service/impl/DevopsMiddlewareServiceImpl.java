@@ -228,7 +228,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void hostDeployForRedis(Long projectId, MiddlewareRedisHostDeployVO middlewareRedisHostDeployVO) {
-        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getName(), Redis.getType());
+        checkMiddlewareName(projectId, middlewareRedisHostDeployVO.getAppCode(), Redis.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
@@ -257,7 +257,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 devopsHostDTOForConnection.getName(),
                 CommandStatus.SUCCESS.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
-                middlewareRedisHostDeployVO.getName(),
+                middlewareRedisHostDeployVO.getAppCode(),
                 middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                 null,
                 null,
@@ -308,7 +308,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             redisConfigurationToSave.put("password", middlewareRedisHostDeployVO.getPassword());
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
-                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getAppCode(),
                     Redis.getType(),
                     middlewareRedisHostDeployVO.getMode(),
                     middlewareRedisHostDeployVO.getVersion(),
@@ -329,7 +329,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareHostCommandVO.setShell(deployShell);
             middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
             middlewareHostCommandVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-            middlewareHostCommandVO.setName(middlewareRedisHostDeployVO.getName());
+            middlewareHostCommandVO.setName(middlewareRedisHostDeployVO.getAppCode());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
@@ -351,7 +351,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     devopsHostDTOForConnection.getName(),
                     CommandStatus.FAILED.getStatus(),
                     DeployObjectTypeEnum.MIDDLEWARE,
-                    middlewareRedisHostDeployVO.getName(),
+                    middlewareRedisHostDeployVO.getAppCode(),
                     middlewareRedisHostDeployVO.getVersion() + "-" + middlewareRedisHostDeployVO.getMode(),
                     null,
                     deploySourceVO,
@@ -375,7 +375,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             }
         }
 
-        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getName(), MySQL.getType());
+        checkMiddlewareName(projectId, middlewareMySqlHostDeployVO.getAppCode(), MySQL.getType());
 
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareMySqlHostDeployVO.getHostIds());
 
@@ -401,7 +401,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 devopsHostDTOForConnection.getName(),
                 CommandStatus.SUCCESS.getStatus(),
                 DeployObjectTypeEnum.MIDDLEWARE,
-                middlewareMySqlHostDeployVO.getName(),
+                middlewareMySqlHostDeployVO.getAppCode(),
                 middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                 null,
                 null,
@@ -453,7 +453,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             mysqlConfigurationToSave.put("configuration", middlewareMySqlHostDeployVO.getConfiguration());
             DevopsMiddlewareDTO devopsMiddlewareDTO = saveMiddlewareInfo(projectId,
                     devopsHostAppInstanceDTO.getId(),
-                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getAppCode(),
                     MySQL.getType(),
                     middlewareMySqlHostDeployVO.getMode(),
                     middlewareMySqlHostDeployVO.getVersion(),
@@ -475,7 +475,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
             middlewareHostCommandVO.setShell(deployShell);
             middlewareHostCommandVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
             middlewareHostCommandVO.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            middlewareHostCommandVO.setName(middlewareMySqlHostDeployVO.getName());
+            middlewareHostCommandVO.setName(middlewareMySqlHostDeployVO.getAppCode());
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(devopsHostDTOForConnection.getId()));
@@ -497,7 +497,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                     devopsHostDTOForConnection.getName(),
                     CommandStatus.FAILED.getStatus(),
                     DeployObjectTypeEnum.MIDDLEWARE,
-                    middlewareMySqlHostDeployVO.getName(),
+                    middlewareMySqlHostDeployVO.getAppCode(),
                     middlewareMySqlHostDeployVO.getVersion() + "-" + middlewareMySqlHostDeployVO.getMode(),
                     null,
                     deploySourceVO,
