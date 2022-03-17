@@ -741,7 +741,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     public void checkMiddlewareNameAndCode(Long projectId, String name, String code, String type) {
-        if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name)) {
+        if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name))) {
             throw new CommonException("error.middleware.name.exists");
         }
 
