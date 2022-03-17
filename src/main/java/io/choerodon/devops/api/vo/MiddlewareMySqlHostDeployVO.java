@@ -14,10 +14,6 @@ public class MiddlewareMySqlHostDeployVO {
     private Set<Long> hostIds;
     @ApiModelProperty("部署模式")
     private String mode;
-    @ApiModelProperty("名称")
-    @Size(min = 1, max = 53, message = "error.app.instance.name.length")
-    @NotBlank(message = "error.app.instance.name.null")
-    private String name;
     @ApiModelProperty("应用中心应用名称")
     @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
     @NotBlank(message = "error.app.instance.name.null")
@@ -52,14 +48,6 @@ public class MiddlewareMySqlHostDeployVO {
 
     public void setMode(String mode) {
         this.mode = mode;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getVersion() {

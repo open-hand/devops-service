@@ -1130,13 +1130,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void helmJobEvent(String msg) {
-        Event event = JSONArray.parseObject(msg, Event.class);
-        if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
-            event.getInvolvedObject().setKind(ResourceType.JOB.getType());
-            event.getInvolvedObject().setName(
-                    event.getInvolvedObject().getName()
-                            .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
-            insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
+        try {
+            Event event = JSONArray.parseObject(msg, Event.class);
+            if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
+                event.getInvolvedObject().setKind(ResourceType.JOB.getType());
+                event.getInvolvedObject().setName(
+                        event.getInvolvedObject().getName()
+                                .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
+                insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
+            }
+        } catch (Exception e) {
+            LOGGER.info("job event:{}", msg);
+            throw e;
         }
     }
 

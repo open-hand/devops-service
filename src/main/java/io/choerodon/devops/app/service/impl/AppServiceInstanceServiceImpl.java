@@ -1812,7 +1812,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public boolean isNameValid(String code, Long envId) {
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
-        return AppServiceInstanceValidator.isNameValid(code)
+        return AppServiceInstanceValidator.isCodeValid(code)
                 && !appServiceInstanceMapper.checkCodeExist(code, envId);
     }
 
@@ -1824,7 +1824,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @param isFromPipeline 是否从流水自动部署中进行校验，如果是，不再校验流水线中的将要创建的实例名称是否存在
      */
     private void checkNameInternal(String code, Long envId, boolean isFromPipeline) {
-        AppServiceInstanceValidator.checkName(code);
+        AppServiceInstanceValidator.checkCode(code);
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
