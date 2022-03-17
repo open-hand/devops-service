@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -347,17 +346,17 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             String sha;
             List<CommitDTO> commitDTOList;
             if (appExternalConfigDTO == null) {
-                DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
-                devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
-                devopsGitlabCommitDTO.setRef(ref);
-                List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
-                if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
-                    throw new CommonException("error.no.commit.information.under.the.application.service");
-                }
-                Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
-                String sinceDate = simpleDateFormat.format(commitDate);
-                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, sinceDate);
+//                DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
+//                devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
+//                devopsGitlabCommitDTO.setRef(ref);
+//                List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
+//                if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
+//                    throw new CommonException("error.no.commit.information.under.the.application.service");
+//                }
+//                Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
+//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
+//                String sinceDate = simpleDateFormat.format(commitDate);
+                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref, null);
                 if (CollectionUtils.isEmpty(commitDTOList)) {
                     throw new CommonException("error.ref.no.commit");
                 }
