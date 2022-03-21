@@ -90,6 +90,7 @@ function node_module() {
 
 # 开发使用devbuild，构建镜像使用build
 function node_build() {
+  export_commit_tag
   cd boot
   ./node_modules/.bin/gulp start
   cnpm run ${1:-"build"}
@@ -104,6 +105,7 @@ function cache_dist() {
 # 更新maven项目本版本号
 # $1 填入true表示用项目根目录的settings.xml文件，其他任何值都不使用本地settings.xml
 function update_pom_version() {
+  export_commit_tag
   if [ "$1" == "true" -a -f settings.xml ];then
       echo "Update pom version: using custom settings.xml..."
       mvn versions:set -DnewVersion=${CI_COMMIT_TAG} -s settings.xml ||
@@ -265,6 +267,7 @@ function triggerCdPipeline() {
 # 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,
 # 在CD阶段的主机部署-镜像部署中选中了这个任务(job)的任务才能正确部署镜像
 function saveImageMetadata() {
+    export_commit_tag
     result_upload_to_devops=$(curl -X POST "${CHOERODON_URL}/devops/ci/record_image" \
       --header 'Content-Type: application/json' \
       -d "{
@@ -371,6 +374,7 @@ function saveSonarInfo() {
 ############################### 解析ci阶段镜像扫描产生的json文件，存于数据库 ###############################
 # $2 ciJobId    猪齿鱼的CI的JOB的id
 function trivyScanImage() {
+  export_commit_tag
   which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'

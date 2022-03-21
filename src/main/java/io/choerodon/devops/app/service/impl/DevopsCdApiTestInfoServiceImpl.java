@@ -29,7 +29,7 @@ public class DevopsCdApiTestInfoServiceImpl implements DevopsCdApiTestInfoServic
 
     @Override
     public DevopsCdApiTestInfoDTO queryById(Long deployInfoId) {
-        return null;
+        return devopsCdApiTestInfoMapper.selectByPrimaryKey(deployInfoId);
     }
 }
 

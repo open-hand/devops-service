@@ -450,6 +450,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 3. 为gitlab-ci文件添加include指令
+        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
+        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
+
         initGitlabCi(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         return ciCdPipelineMapper.selectByPrimaryKey(ciCdPipelineDTO.getId());
@@ -656,9 +659,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 根据pipeline_id查询数据
         CiCdPipelineVO ciCdPipelineVO = getCiCdPipelineVO(pipelineId);
 
-        // 添加镜像认证信息
-        fillDockerAuthConfig(ciCdPipelineVO);
-
         //查询流水线对应的应用服务
         AppServiceDTO appServiceDTO = getAppServiceDTO(ciCdPipelineVO);
         //当前用户是否能修改流水线权限
@@ -671,11 +671,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
         ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
         return ciCdPipelineVO;
-    }
-
-    private void fillDockerAuthConfig(CiCdPipelineVO ciCdPipelineVO) {
-        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(ciCdPipelineVO.getId());
-        ciCdPipelineVO.setCiDockerAuthConfigDTOList(ciDockerAuthConfigDTOS);
     }
 
     private List<DevopsCdStageVO> handleCdStage(Long pipelineId) {
@@ -1651,6 +1646,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
         //更新CD流水线
         updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+
+        // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
+        devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
+
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
 
@@ -1739,6 +1738,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             }
         });
+
         // 新增ci阶段，需要初始化gitlab-ci.yaml
         if (initCiFileFlag) {
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
@@ -1824,6 +1824,24 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOS = devopsCiPipelineVariableService.listByPipelineId(pipelineId);
         if (!CollectionUtils.isEmpty(devopsCiPipelineVariableDTOS)) {
             Map<String, String> variables = devopsCiPipelineVariableDTOS.stream().collect(Collectors.toMap(DevopsCiPipelineVariableDTO::getVariableKey, DevopsCiPipelineVariableDTO::getVariableValue));
+            gitlabCi.setVariables(variables);
+        }
+        List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOS = ciDockerAuthConfigService.listByPipelineId(pipelineId);
+        if (!CollectionUtils.isEmpty(ciDockerAuthConfigDTOS)) {
+            Map<String, Object> auth = new HashMap<>();
+            ciDockerAuthConfigDTOS.forEach(ciDockerAuthConfigDTO -> {
+                Map<String, String> config = new HashMap<>();
+                String authStr = ciDockerAuthConfigDTO.getUsername() + ":" + ciDockerAuthConfigDTO.getPassword();
+                config.put("auth", Base64Util.getBase64EncodedString(authStr));
+                auth.put(ciDockerAuthConfigDTO.getDomain(), config);
+            });
+            Map<String, Object> auths = new HashMap<>();
+            auths.put("auths", auth);
+            Map<String, String> variables = gitlabCi.getVariables();
+            if (CollectionUtils.isEmpty(variables)) {
+                variables = new HashMap<>();
+            }
+            variables.put("DOCKER_AUTH_CONFIG", JsonHelper.marshalByJackson(auths));
             gitlabCi.setVariables(variables);
         }
 

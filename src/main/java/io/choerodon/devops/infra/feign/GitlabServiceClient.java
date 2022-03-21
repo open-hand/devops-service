@@ -238,13 +238,13 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/external_projects/{projectId}/repository/commits/project")
     ResponseEntity<List<CommitDTO>> listExternalCommits(@PathVariable("projectId") Integer projectId,
-                                                @RequestParam("page") Integer page,
-                                                @RequestParam("size") Integer size,
-                                                @RequestParam(value = "gitlabUrl") String gitlabUrl,
-                                                @RequestParam(value = "authType") String authType,
-                                                @RequestParam(value = "accessToken") String accessToken,
-                                                @RequestParam(value = "username") String username,
-                                                @RequestParam(value = "password") String password);
+                                                        @RequestParam("page") Integer page,
+                                                        @RequestParam("size") Integer size,
+                                                        @RequestParam(value = "gitlabUrl") String gitlabUrl,
+                                                        @RequestParam(value = "authType") String authType,
+                                                        @RequestParam(value = "accessToken") String accessToken,
+                                                        @RequestParam(value = "username") String username,
+                                                        @RequestParam(value = "password") String password);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatusDTO>> listCommitStatus(@PathVariable("projectId") Integer projectId,
@@ -254,6 +254,11 @@ public interface GitlabServiceClient {
     @PostMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDTO>> getCommits(@PathVariable("projectId") Integer projectId,
                                                @RequestBody GitlabTransferDTO gitlabTransferDTO);
+
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch/{ref}")
+    ResponseEntity<List<CommitDTO>> getCommitsByRef(@PathVariable("projectId") Integer projectId,
+                                                    @PathVariable(value = "ref") String ref);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDTO>> listJobs(@PathVariable("projectId") Integer projectId,
