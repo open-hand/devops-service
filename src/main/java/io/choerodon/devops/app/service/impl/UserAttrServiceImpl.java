@@ -166,15 +166,27 @@ public class UserAttrServiceImpl implements UserAttrService {
         rdmMemberQueryDTO.setRealName(realName);
         List<RdmMemberViewDTO> rdmMemberViewDTOS = hrdsCodeRepoClientOperator.listMembers(null, projectId, rdmMemberQueryDTO);
 
-        List<Long> finalSelectedIamUserIds = selectedIamUserIds;
-        List<IamUserDTO> userDTOS = rdmMemberViewDTOS.stream().map(v -> {
+        // allUserIds构成
+        // 1. 用户选中的
+        // 2. 项目下搜索到的
+        List<Long> allUserIds = new ArrayList<>(selectedIamUserIds);
+
+        if (!CollectionUtils.isEmpty(rdmMemberViewDTOS)) {
+            rdmMemberViewDTOS.forEach(user -> {
+                if (!allUserIds.contains(user.getUserId())) {
+                    allUserIds.add(user.getUserId());
+                }
+            });
+        }
+        if (CollectionUtils.isEmpty(allUserIds)) {
+            return new Page<>();
+        }
+        List<IamUserDTO> userDTOS = allUserIds.stream().map(v -> {
             IamUserDTO iamUserDTO = new IamUserDTO();
-            iamUserDTO.setId(v.getUserId());
-            if (finalSelectedIamUserIds.contains(v.getUserId())) {
-                iamUserDTO.setSelectFlag(1);
-            }
+            iamUserDTO.setId(v);
             return iamUserDTO;
-        }).sorted(Comparator.comparingInt(IamUserDTO::getSelectFlag).reversed()).collect(Collectors.toList());
+        }).collect(Collectors.toList());
+
         Page<IamUserDTO> page = PageInfoUtil.createPageFromList(userDTOS, pageRequest);
 
         List<Long> userIds = page.getContent().stream().map(IamUserDTO::getId).collect(Collectors.toList());
@@ -189,7 +201,6 @@ public class UserAttrServiceImpl implements UserAttrService {
                 v.setEmail(iamUserDTO.getEmail());
             }
         });
-
 
         return page;
     }
