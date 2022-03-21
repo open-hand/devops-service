@@ -169,7 +169,7 @@ public class UserAttrServiceImpl implements UserAttrService {
         // allUserIds构成
         // 1. 用户选中的
         // 2. 项目下搜索到的
-        List<Long> allUserIds = new ArrayList<>(selectedIamUserIds);
+        List<Long> allUserIds = new ArrayList<>(new HashSet<>(selectedIamUserIds));
 
         if (!CollectionUtils.isEmpty(rdmMemberViewDTOS)) {
             rdmMemberViewDTOS.forEach(user -> {
