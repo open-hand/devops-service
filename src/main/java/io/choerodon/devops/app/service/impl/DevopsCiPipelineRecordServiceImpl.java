@@ -544,7 +544,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
 
 
-        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
+//        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -578,7 +578,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i -> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
-            Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
             calculateStageStatus(devopsCiStageRecordVO, latestedsCiJobRecordDTOS);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
             latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
@@ -1018,6 +1017,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
             return;
         }
+        stageRecord.setStatus(JobStatusEnum.RUNNING.value());
     }
 
     private Long getIamUserIdByGitlabUserName(String username) {

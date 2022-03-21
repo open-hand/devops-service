@@ -151,7 +151,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 if (devopsServiceVO.getAppServiceId() != null) {
                     List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOS = appServiceDeployAppCenterVOMap.get(devopsServiceVO.getAppServiceId());
                     if (!CollectionUtils.isEmpty(devopsDeployAppCenterVOS)) {
-                        List<String> names = devopsDeployAppCenterVOS.stream().filter(a->!a.getObjectId().equals(instanceId)).map(DevopsDeployAppCenterVO::getName).collect(Collectors.toList());
+                        List<String> names = devopsDeployAppCenterVOS.stream().filter(a -> !a.getObjectId().equals(instanceId)).map(DevopsDeployAppCenterVO::getName).collect(Collectors.toList());
                         devopsServiceVO.setRelatedApplicationName(names);
                     }
                 }
@@ -704,6 +704,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
 
         if (devopsServiceQueryDTO.getTargetDeploymentId() != null) {
+            devopsServiceTargetVO.setTargetDeploymentId(devopsServiceQueryDTO.getTargetDeploymentId());
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsServiceQueryDTO.getTargetDeploymentId());
             if (devopsDeploymentDTO != null) {
                 devopsServiceTargetVO.setTargetDeploymentName(devopsDeploymentDTO.getName());

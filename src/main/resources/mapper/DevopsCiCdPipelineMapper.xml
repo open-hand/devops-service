@@ -59,7 +59,8 @@
                dcp.last_update_date,
                dcp.is_enabled as enabled,
                dcp.token,
-               dcp.image
+               dcp.image,
+               dcp.version_name
         FROM devops_cicd_pipeline dcp
         WHERE dcp.token = #{token,jdbcType=VARCHAR}
     </select>

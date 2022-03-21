@@ -1237,7 +1237,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.update(devopsCdJobRecordDTO1);
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task success. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId());
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId(), e.getCause());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId(), e);
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
