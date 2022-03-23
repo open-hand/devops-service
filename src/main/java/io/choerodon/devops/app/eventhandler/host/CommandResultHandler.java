@@ -48,6 +48,7 @@ public class CommandResultHandler implements HostMsgHandler {
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
 
+
     @PostConstruct
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_INSTANCE.value(), payload -> {
@@ -72,7 +73,10 @@ public class CommandResultHandler implements HostMsgHandler {
 
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+            devopsHostAppService.baseDelete(devopsDockerInstanceDTO.getAppId());
+
         });
         Consumer<String> dockerUpdateConsumer = payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);

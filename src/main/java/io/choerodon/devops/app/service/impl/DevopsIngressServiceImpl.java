@@ -1009,6 +1009,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 更新ingress
         if (oldDevopsIngressDTO != null) {
             // 更新ingress记录
+            oldDevopsIngressDTO.setDomain(devopsIngressDTO.getDomain());
             oldDevopsIngressDTO.setCommandId(appServiceInstanceDTO.getCommandId());
             oldDevopsIngressDTO.setStatus(IngressStatus.RUNNING.getStatus());
             oldDevopsIngressDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
