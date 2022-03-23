@@ -181,16 +181,12 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
             // 查询为node添加id需要的数据
             List<DevopsClusterNodeDTO> outerNodes = devopsClusterNodeService.queryNodeByClusterIdAndType(clusterId, ClusterNodeTypeEnum.OUTTER);
-            List<String> range = stringRedisTemplate
+            Map<String, ClusterNodeInfoVO> redisNodeInfoMap = stringRedisTemplate
                     .opsForList()
-                    .range(redisKey, 0, nodeDTOS.size());
-            if (CollectionUtils.isEmpty(range)) {
-                throw new CommonException("error.range.is.empty");
-            }
-            Map<String, ClusterNodeInfoVO> redisNodeInfoMap =
-                    range.stream()
-                            .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
-                            .collect(Collectors.toMap(ClusterNodeInfoVO::getNodeName, v -> v));
+                    .range(redisKey, 0, nodeDTOS.size())
+                    .stream()
+                    .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
+                    .collect(Collectors.toMap(ClusterNodeInfoVO::getNodeName, v -> v));
 
             List<ClusterNodeInfoVO> nodeInfoVOS = nodeDTOS.stream().map(node -> {
                 ClusterNodeInfoVO clusterNodeInfoVO = new ClusterNodeInfoVO();
@@ -257,13 +253,10 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             long start = (long) (pageable.getPage()) * (long) pageable.getSize();
             // stop不怕越界， redis会将边界之前的最后的那些元素返回
             long stop = start + pageable.getSize() - 1;
-            List<String> range = stringRedisTemplate
+            nodes = stringRedisTemplate
                     .opsForList()
-                    .range(redisKey, start, stop);
-            if (CollectionUtils.isEmpty(range)) {
-                throw new CommonException("error.range.is.empty");
-            }
-            nodes = range.stream()
+                    .range(redisKey, start, stop)
+                    .stream()
                     .map(node -> JSONObject.parseObject(node, ClusterNodeInfoVO.class))
                     .collect(Collectors.toList());
             long total = stringRedisTemplate.opsForList().size(redisKey);
