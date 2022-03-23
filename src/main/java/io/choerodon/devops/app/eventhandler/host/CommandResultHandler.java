@@ -61,14 +61,6 @@ public class CommandResultHandler implements HostMsgHandler {
                     devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
                 }
             }
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
-            if (devopsDockerInstanceDTO != null) {
-                devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
-                devopsHostAppService.baseDelete(devopsDockerInstanceDTO.getAppId());
-                if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                    devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
-                }
-            }
         });
         Consumer<String> deploy_instance = (payload) -> {
             InstanceProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, InstanceProcessInfoVO.class);
@@ -81,7 +73,10 @@ public class CommandResultHandler implements HostMsgHandler {
 
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER.value(), payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
             devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+            devopsHostAppService.baseDelete(devopsDockerInstanceDTO.getAppId());
+
         });
         Consumer<String> dockerUpdateConsumer = payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
