@@ -48,6 +48,7 @@ public class CommandResultHandler implements HostMsgHandler {
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
 
+
     @PostConstruct
     void init() {
         resultHandlerMap.put(HostCommandEnum.KILL_INSTANCE.value(), payload -> {
@@ -56,6 +57,14 @@ public class CommandResultHandler implements HostMsgHandler {
             if (devopsHostAppInstanceDTO != null) {
                 devopsHostAppInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
                 devopsHostAppService.baseDelete(devopsHostAppInstanceDTO.getAppId());
+                if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                    devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
+                }
+            }
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(Long.valueOf(processInfoVO.getInstanceId()));
+            if (devopsDockerInstanceDTO != null) {
+                devopsDockerInstanceService.baseDelete(Long.valueOf(processInfoVO.getInstanceId()));
+                devopsHostAppService.baseDelete(devopsDockerInstanceDTO.getAppId());
                 if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
                     devopsMiddlewareService.deleteByInstanceId(Long.valueOf(processInfoVO.getInstanceId()));
                 }
