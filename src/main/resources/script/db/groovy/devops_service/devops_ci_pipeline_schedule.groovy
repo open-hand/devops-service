@@ -22,8 +22,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_schedule.groovy') {
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发类型：周期触发，单次触发') {
                 constraints(nullable: false)
             }
-            column(name: 'start_day_of_hour', type: 'BIGINT UNSIGNED', remarks: '开始时间：周期触发时需要，0-23')
-            column(name: 'end_day_of_hour', type: 'BIGINT UNSIGNED', remarks: '结束时间：周期触发时需要，0-23')
+
+            column(name: 'week_number', type: 'VARCHAR(255)', remarks: '每周几触发') {
+                constraints(nullable: false)
+            }
+
+            column(name: 'start_hour_of_day', type: 'BIGINT UNSIGNED', remarks: '开始时间：周期触发时需要，0-23')
+            column(name: 'end__hour_of_day', type: 'BIGINT UNSIGNED', remarks: '结束时间：周期触发时需要，0-23')
             column(name: 'period', type: 'BIGINT UNSIGNED', remarks: '执行间隔：周期触发时需要，10，20，30，40，50，60，120，240')
 
             column(name: 'execute_time', type: 'DATETIME', remarks: '执行时间：单次触发时需要')
