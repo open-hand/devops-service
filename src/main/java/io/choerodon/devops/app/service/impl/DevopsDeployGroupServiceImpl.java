@@ -28,6 +28,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
@@ -40,6 +41,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.*;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.DevopsRegistryRepoType;
 import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
@@ -710,12 +712,23 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
             ConfigVO configVO = new ConfigVO();
             if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsDeployGroupDockerDeployVO.getSourceType())) {
-                HarborC7nRepoImageTagVo harborC7nRepoImageTagVo = getHarborC7nRepoImageTagVo(devopsDeployGroupDockerDeployVO);
-                configVO.setUserName(harborC7nRepoImageTagVo.getPullAccount());
-                configVO.setPassword(harborC7nRepoImageTagVo.getPullPassword());
-                configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
-                devopsRegistrySecretDTO.setRepoType(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType());
-                dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
+                if (DevopsRegistryRepoType.DEFAULT_REPO.getType().equals(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType())) {
+                    HarborC7nRepoImageTagVo harborC7nRepoImageTagVo = getHarborC7nRepoImageTagVo(devopsDeployGroupDockerDeployVO);
+                    configVO.setUserName(harborC7nRepoImageTagVo.getPullAccount());
+                    configVO.setPassword(harborC7nRepoImageTagVo.getPullPassword());
+                    configVO.setUrl(harborC7nRepoImageTagVo.getHarborUrl());
+                    devopsRegistrySecretDTO.setRepoType(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType());
+                    dockerDeployDTO.setImage(harborC7nRepoImageTagVo.getImageTagList().get(0).getPullCmd().replace("docker pull", "").trim());
+                } else {
+                    // 自定义仓库不查询镜像列表
+                    HarborCustomRepo harborCustomRepo = rdupmClientOperator.queryCustomRepoById(projectDTO.getId(), devopsDeployGroupDockerDeployVO.getImageInfo().getRepoId());
+                    configVO.setUserName(harborCustomRepo.getLoginName());
+                    configVO.setPassword(harborCustomRepo.getPassword());
+                    configVO.setUrl(harborCustomRepo.getRepoUrl());
+                    devopsRegistrySecretDTO.setRepoType(devopsDeployGroupDockerDeployVO.getImageInfo().getRepoType());
+                    dockerDeployDTO.setImage(devopsDeployGroupDockerDeployVO.getImageInfo().getImageUrl());
+                }
+
             } else {
                 configVO.setUserName(devopsDeployGroupDockerDeployVO.getImageInfo().getUsername());
                 configVO.setPassword(devopsDeployGroupDockerDeployVO.getImageInfo().getPassword());

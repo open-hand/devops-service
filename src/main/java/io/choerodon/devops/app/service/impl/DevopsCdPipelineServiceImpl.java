@@ -712,7 +712,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
                             imageName,
                             tagName,
-                            Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
+                            Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
+                            ciPipelineImageDTO.getImageTag());
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
                     config.setPipelineJobName(null);
                     config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
