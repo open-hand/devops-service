@@ -5,14 +5,26 @@ import java.util.Calendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineScheduleVO;
+import io.choerodon.devops.app.service.AppExternalConfigService;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineScheduleService;
+import io.choerodon.devops.app.service.CiScheduleVariableService;
+import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiPipelineScheduleDTO;
+import io.choerodon.devops.infra.dto.CiScheduleVariableDTO;
+import io.choerodon.devops.infra.dto.gitlab.PipelineSchedule;
+import io.choerodon.devops.infra.dto.gitlab.Variable;
 import io.choerodon.devops.infra.enums.CiPipelineScheduleTriggerTypeEnum;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiPipelineScheduleMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
  * devops_ci_pipeline_schedule(CiPipelineSchedule)应用服务
@@ -24,6 +36,14 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService {
     @Autowired
     private CiPipelineScheduleMapper ciPipelineScheduleMapper;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
+    private CiScheduleVariableService ciScheduleVariableService;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
 
     @Override
@@ -31,11 +51,58 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     public CiPipelineScheduleDTO create(CiPipelineScheduleVO ciPipelineScheduleVO) {
         validate(ciPipelineScheduleVO);
 
-        CiPipelineScheduleDTO ciPipelineScheduleDTO = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
+        Long appServiceId = ciPipelineScheduleVO.getAppServiceId();
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
+
         String cron = calculateCron(ciPipelineScheduleVO);
 
+        PipelineSchedule pipelineSchedule = new PipelineSchedule();
+        pipelineSchedule.setCron(cron);
+        pipelineSchedule.setRef(ciPipelineScheduleVO.getRef());
+        pipelineSchedule.setDescription(ciPipelineScheduleVO.getName());
+        pipelineSchedule.setCronTimezone("UTC");
 
-        return null;
+        PipelineSchedule pipelineSchedules;
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+        // 1. 创建定时计划
+        pipelineSchedules = gitlabServiceClientOperator
+                .createPipelineSchedule(gitlabProjectId,
+                        null,
+                        appExternalConfigDTO,
+                        pipelineSchedule);
+        // 2. 如果有变量，创建变量
+        if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
+            AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
+            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
+                Variable variable1 = new Variable();
+                variable1.setKey(variable.getKey());
+                variable1.setValue(variable.getValue());
+
+                gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
+                        pipelineSchedules.getId(),
+                        null,
+                        finalAppExternalConfigDTO,
+                        variable1);
+            });
+        }
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
+        ciPipelineScheduleDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
+
+        MapperUtil.resultJudgedInsertSelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO, "error.save.pipeline.schedule.failed");
+        if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
+            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
+                CiScheduleVariableDTO ciScheduleVariableDTO = ConvertUtils.convertObject(variable, CiScheduleVariableDTO.class);
+                ciScheduleVariableDTO.setCiPipelineScheduleId(ciPipelineScheduleDTO.getId());
+                ciScheduleVariableDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
+                ciScheduleVariableService.baseCreate(ciScheduleVariableDTO);
+            });
+        }
+
+        return ciPipelineScheduleDTO;
     }
 
     /**
