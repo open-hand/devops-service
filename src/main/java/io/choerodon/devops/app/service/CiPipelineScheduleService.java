@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.CiPipelineScheduleVO;
 import io.choerodon.devops.infra.dto.CiPipelineScheduleDTO;
 
@@ -13,5 +15,8 @@ public interface CiPipelineScheduleService {
 
     CiPipelineScheduleDTO create(CiPipelineScheduleVO ciPipelineScheduleVO);
 
+    List<CiPipelineScheduleVO> listByAppServiceId(Long projectId, Long appServiceId);
+
+    void enableSchedule(Long projectId, Long id);
 }
 

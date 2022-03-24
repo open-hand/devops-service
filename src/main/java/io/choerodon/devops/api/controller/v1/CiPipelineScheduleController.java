@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
@@ -35,6 +37,27 @@ public class CiPipelineScheduleController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
         return ResponseEntity.ok(ciPipelineScheduleService.create(ciPipelineScheduleVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询所有执行计划")
+    @GetMapping
+    public ResponseEntity<List<CiPipelineScheduleVO>> listByAppServiceId(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam("app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(ciPipelineScheduleService.listByAppServiceId(projectId, appServiceId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用执行计划")
+    @PutMapping("{id}")
+    public ResponseEntity<Void> enableSchedule(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable("id") Long id) {
+        ciPipelineScheduleService.enableSchedule(projectId, id);
+        return ResponseEntity.noContent().build();
     }
 
 }

@@ -7,11 +7,14 @@ import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * @author hao.wang08@hand-china.com
  * @since 2022-03-24 17:04:47
  */
-public class CiPipelineScheduleVO {
+public class CiPipelineScheduleVO extends AuditDomain {
 
 
     private Long id;
@@ -37,7 +40,37 @@ public class CiPipelineScheduleVO {
     @ApiModelProperty(value = "执行时间：单次触发时需要")
     private Date executeTime;
 
+    private IamUserDTO userDTO;
+
+    private Date nextRunAt;
+    private Boolean active;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     List<CiScheduleVariableVO> variableVOList;
+
+
+    public Date getNextRunAt() {
+        return nextRunAt;
+    }
+
+    public void setNextRunAt(Date nextRunAt) {
+        this.nextRunAt = nextRunAt;
+    }
+
+    public IamUserDTO getUserDTO() {
+        return userDTO;
+    }
+
+    public void setUserDTO(IamUserDTO userDTO) {
+        this.userDTO = userDTO;
+    }
 
     public List<CiScheduleVariableVO> getVariableVOList() {
         return variableVOList;

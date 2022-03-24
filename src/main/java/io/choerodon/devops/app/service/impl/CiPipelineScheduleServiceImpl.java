@@ -1,6 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ import io.choerodon.devops.infra.mapper.CiPipelineScheduleMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
 
 /**
  * devops_ci_pipeline_schedule(CiPipelineSchedule)应用服务
@@ -103,6 +108,47 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         }
 
         return ciPipelineScheduleDTO;
+    }
+
+    @Override
+    public List<CiPipelineScheduleVO> listByAppServiceId(Long projectId, Long appServiceId) {
+
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = new CiPipelineScheduleDTO();
+        ciPipelineScheduleDTO.setAppServiceId(appServiceId);
+
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+
+        List<CiPipelineScheduleDTO> ciPipelineScheduleDTOS = ciPipelineScheduleMapper.select(ciPipelineScheduleDTO);
+
+        List<CiPipelineScheduleVO> ciPipelineScheduleVOS = ConvertUtils.convertList(ciPipelineScheduleDTOS, CiPipelineScheduleVO.class);
+
+        UserDTOFillUtil.fillUserInfo(ciPipelineScheduleVOS, "lastUpdatedBy", "userDTO");
+
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+
+        List<PipelineSchedule> pipelineSchedules = gitlabServiceClientOperator.listPipelineSchedules(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                appExternalConfigDTO);
+
+        Map<Integer, PipelineSchedule> pipelineScheduleMap = pipelineSchedules.stream().collect(Collectors.toMap(PipelineSchedule::getId, Function.identity()));
+        ciPipelineScheduleVOS.forEach(v -> {
+            PipelineSchedule pipelineSchedule = pipelineScheduleMap.get(v.getPipelineScheduleId());
+            if (pipelineSchedule != null) {
+                v.setNextRunAt(pipelineSchedule.getNextRunAt());
+                v.setActive(pipelineSchedule.getActive());
+            }
+        });
+
+        return ciPipelineScheduleVOS;
+    }
+
+    @Override
+    public void enableSchedule(Long projectId, Long id) {
+
     }
 
     /**
