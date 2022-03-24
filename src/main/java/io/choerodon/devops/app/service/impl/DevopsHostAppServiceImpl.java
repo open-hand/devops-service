@@ -323,6 +323,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteById(Long projectId, Long hostId, Long appId, String hostDeployType) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
