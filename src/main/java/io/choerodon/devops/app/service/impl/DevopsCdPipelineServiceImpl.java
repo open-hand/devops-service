@@ -703,14 +703,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
                     dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
 
-                    String[] nameAndTagArray = ciPipelineImageDTO.getImageTag().split(":");
-                    String iamgeName = nameAndTagArray[0].substring(nameAndTagArray[0].lastIndexOf("/") + 1);
+                    int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
+                    String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
+                    String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
 
                     ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
                             harborRepoDTO.getRepoType(),
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                            iamgeName,
-                            nameAndTagArray[1],
+                            imageName,
+                            tagName,
                             Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
                     config.setPipelineJobName(null);
