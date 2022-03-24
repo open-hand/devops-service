@@ -556,4 +556,24 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GroupDTO>> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
         throw new CommonException("error.query.group.statistics");
     }
+
+    @Override
+    public ResponseEntity<PipelineSchedule> createPipelineSchedule(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, PipelineSchedule pipelineSchedule) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Variable> createScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Variable> createScheduleVariable(Integer projectId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<PipelineSchedule> queryPipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId) {
+        return null;
+    }
 }
