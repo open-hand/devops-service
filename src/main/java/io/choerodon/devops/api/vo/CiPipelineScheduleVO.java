@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 
@@ -35,6 +36,16 @@ public class CiPipelineScheduleVO {
     private Long period;
     @ApiModelProperty(value = "执行时间：单次触发时需要")
     private Date executeTime;
+
+    List<CiScheduleVariableVO> variableVOList;
+
+    public List<CiScheduleVariableVO> getVariableVOList() {
+        return variableVOList;
+    }
+
+    public void setVariableVOList(List<CiScheduleVariableVO> variableVOList) {
+        this.variableVOList = variableVOList;
+    }
 
     public String getWeekNumber() {
         return weekNumber;
