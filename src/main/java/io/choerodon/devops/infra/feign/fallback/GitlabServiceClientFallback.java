@@ -581,4 +581,14 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<PipelineSchedule>> listPipelineSchedules(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         return null;
     }
+
+    @Override
+    public ResponseEntity<Void> updatePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password, PipelineSchedule pipelineSchedule) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        return null;
+    }
 }
