@@ -135,7 +135,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 devopsConfigService.baseCreate(newConfigDTO);
 
             } catch (Exception e) {
-                LOGGER.error("======创建SonarQube token失败======={}", e.getMessage());
+                LOGGER.error("======创建SonarQube token失败=======", e);
             }
         }
     }
