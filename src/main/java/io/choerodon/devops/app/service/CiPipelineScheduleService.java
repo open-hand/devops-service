@@ -22,5 +22,7 @@ public interface CiPipelineScheduleService {
     void disableSchedule(Long projectId, Long id);
 
     void deleteSchedule(Long projectId, Long id);
+
+    void update(CiPipelineScheduleVO ciPipelineScheduleVO);
 }
 

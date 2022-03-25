@@ -40,6 +40,18 @@ public class CiPipelineScheduleController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "修改定时执行计划")
+    @PutMapping("{id}")
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable("id") Long id,
+            @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
+        ciPipelineScheduleService.update(ciPipelineScheduleVO);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询所有执行计划")
     @GetMapping
     public ResponseEntity<List<CiPipelineScheduleVO>> listByAppServiceId(
