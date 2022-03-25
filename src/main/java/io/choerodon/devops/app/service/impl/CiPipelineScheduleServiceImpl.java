@@ -218,7 +218,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
      * @return
      */
     private String calculateCron(CiPipelineScheduleVO ciPipelineScheduleVO) {
-        String cronTemplate = "s% s% * * s%";
+        String cronTemplate = "%s %s * * %s";
         String minute = "";
         String hour = "";
         if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(ciPipelineScheduleVO.getTriggerType())) {
