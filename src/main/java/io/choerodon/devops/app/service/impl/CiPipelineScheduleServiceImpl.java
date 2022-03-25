@@ -212,6 +212,63 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
     }
 
+    @Override
+    @Transactional
+    public void update(CiPipelineScheduleVO ciPipelineScheduleVO) {
+        validate(ciPipelineScheduleVO);
+
+        Long appServiceId = ciPipelineScheduleVO.getAppServiceId();
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
+
+        String cron = calculateCron(ciPipelineScheduleVO);
+
+        PipelineSchedule pipelineSchedule = new PipelineSchedule();
+        pipelineSchedule.setCron(cron);
+        pipelineSchedule.setRef(ciPipelineScheduleVO.getRef());
+        pipelineSchedule.setDescription(ciPipelineScheduleVO.getName());
+        pipelineSchedule.setCronTimezone("UTC");
+
+        PipelineSchedule pipelineSchedules;
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+        // 1. 创建定时计划
+        pipelineSchedules = gitlabServiceClientOperator
+                .createPipelineSchedule(gitlabProjectId,
+                        null,
+                        appExternalConfigDTO,
+                        pipelineSchedule);
+        // 2. 如果有变量，创建变量
+        if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
+            AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
+            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
+                Variable variable1 = new Variable();
+                variable1.setKey(variable.getKey());
+                variable1.setValue(variable.getValue());
+
+                gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
+                        pipelineSchedules.getId(),
+                        null,
+                        finalAppExternalConfigDTO,
+                        variable1);
+            });
+        }
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
+        ciPipelineScheduleDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
+
+        MapperUtil.resultJudgedInsertSelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO, "error.save.pipeline.schedule.failed");
+        if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
+            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
+                CiScheduleVariableDTO ciScheduleVariableDTO = ConvertUtils.convertObject(variable, CiScheduleVariableDTO.class);
+                ciScheduleVariableDTO.setCiPipelineScheduleId(ciPipelineScheduleDTO.getId());
+                ciScheduleVariableDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
+                ciScheduleVariableService.baseCreate(ciScheduleVariableDTO);
+            });
+        }
+    }
+
     /**
      * 计算cron表达式
      * @param ciPipelineScheduleVO
