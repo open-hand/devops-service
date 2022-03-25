@@ -38,7 +38,7 @@ public class CiPipelineScheduleVO extends AuditDomain {
     @ApiModelProperty(value = "执行间隔：周期触发时需要，10，20，30，40，50，60，120，240")
     private Long period;
     @ApiModelProperty(value = "执行时间：单次触发时需要")
-    private Date executeTime;
+    private String executeTime;
 
     private IamUserDTO userDTO;
 
@@ -160,11 +160,11 @@ public class CiPipelineScheduleVO extends AuditDomain {
         this.period = period;
     }
 
-    public Date getExecuteTime() {
+    public String getExecuteTime() {
         return executeTime;
     }
 
-    public void setExecuteTime(Date executeTime) {
+    public void setExecuteTime(String executeTime) {
         this.executeTime = executeTime;
     }
 }
