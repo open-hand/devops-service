@@ -230,10 +230,9 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 hour = ciPipelineScheduleVO.getStartHourOfDay() + "-" + ciPipelineScheduleVO.getEndHourOfDay();
             }
         } else if (CiPipelineScheduleTriggerTypeEnum.SINGLE.value().equals(ciPipelineScheduleVO.getTriggerType())) {
-            Calendar instance = Calendar.getInstance();
-            instance.setTime(ciPipelineScheduleVO.getExecuteTime());
-            minute = String.valueOf(instance.get(Calendar.MINUTE));
-            hour = String.valueOf(instance.get(Calendar.HOUR));
+            String[] split = ciPipelineScheduleVO.getExecuteTime().split(":");
+            minute = split[1];
+            hour = split[0];
         } else {
             throw new CommonException("error.trigger.type.invalid");
         }

@@ -81,7 +81,7 @@ public class CiPipelineScheduleDTO extends AuditDomain {
     private Long period;
 
     @ApiModelProperty(value = "执行时间：单次触发时需要")
-    private Date executeTime;
+    private String executeTime;
 
     public String getWeekNumber() {
         return weekNumber;
@@ -163,11 +163,11 @@ public class CiPipelineScheduleDTO extends AuditDomain {
         this.period = period;
     }
 
-    public Date getExecuteTime() {
+    public String getExecuteTime() {
         return executeTime;
     }
 
-    public void setExecuteTime(Date executeTime) {
+    public void setExecuteTime(String executeTime) {
         this.executeTime = executeTime;
     }
 

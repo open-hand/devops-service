@@ -31,7 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_schedule.groovy') {
             column(name: 'end__hour_of_day', type: 'BIGINT UNSIGNED', remarks: '结束时间：周期触发时需要，0-23')
             column(name: 'period', type: 'BIGINT UNSIGNED', remarks: '执行间隔：周期触发时需要，10，20，30，40，50，60，120，240')
 
-            column(name: 'execute_time', type: 'DATETIME', remarks: '执行时间：单次触发时需要')
+            column(name: 'execute_time', type: 'VARCHAR(255)', remarks: '执行时间：单次触发时需要,HH:mm')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
