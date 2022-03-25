@@ -1691,4 +1691,91 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public PipelineSchedule queryPipelineSchedule(Integer projectId,
+                                                  Integer userId,
+                                                  Integer pipelineScheduleId,
+                                                  AppExternalConfigDTO appExternalConfigDTO) {
+        if (appExternalConfigDTO == null) {
+            return gitlabServiceClient.queryPipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null).getBody();
+        } else {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            return gitlabServiceClient.queryPipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+        }
+    }
+
+    public void updatePipelineSchedule(Integer projectId,
+                                                  Integer userId,
+                                                  Integer pipelineScheduleId,
+                                                  AppExternalConfigDTO appExternalConfigDTO,
+                                                   PipelineSchedule pipelineSchedule) {
+        if (appExternalConfigDTO == null) {
+            gitlabServiceClient.updatePipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    pipelineSchedule);
+        } else {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            gitlabServiceClient.updatePipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword(),
+                    pipelineSchedule);
+        }
+    }
+
+    public void deletePipelineSchedule(Integer projectId,
+                                       Integer userId,
+                                       Integer pipelineScheduleId,
+                                       AppExternalConfigDTO appExternalConfigDTO) {
+        if (appExternalConfigDTO == null) {
+            gitlabServiceClient.deletePipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
+        } else {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            gitlabServiceClient.deletePipelineSchedule(projectId,
+                    userId,
+                    pipelineScheduleId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword());
+        }
+    }
+
 }

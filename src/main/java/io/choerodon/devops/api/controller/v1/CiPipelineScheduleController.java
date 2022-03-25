@@ -51,12 +51,34 @@ public class CiPipelineScheduleController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用执行计划")
-    @PutMapping("{id}")
+    @PutMapping("{id}/enable")
     public ResponseEntity<Void> enableSchedule(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.enableSchedule(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停用执行计划")
+    @PutMapping("{id}/disable")
+    public ResponseEntity<Void> disableSchedule(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable("id") Long id) {
+        ciPipelineScheduleService.disableSchedule(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除执行计划")
+    @DeleteMapping("{id}")
+    public ResponseEntity<Void> deleteSchedule(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable("id") Long id) {
+        ciPipelineScheduleService.deleteSchedule(projectId, id);
         return ResponseEntity.noContent().build();
     }
 

@@ -148,6 +148,67 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
     @Override
     public void enableSchedule(Long projectId, Long id) {
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciPipelineScheduleDTO.getAppServiceId());
+
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+        PipelineSchedule pipelineSchedule = gitlabServiceClientOperator.queryPipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                appExternalConfigDTO);
+
+        if (Boolean.TRUE.equals(pipelineSchedule.getActive())) {
+            return;
+        }
+        pipelineSchedule.setActive(true);
+        gitlabServiceClientOperator.updatePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                appExternalConfigDTO,
+                pipelineSchedule);
+    }
+
+    @Override
+    public void disableSchedule(Long projectId, Long id) {
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciPipelineScheduleDTO.getAppServiceId());
+
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+        PipelineSchedule pipelineSchedule = gitlabServiceClientOperator.queryPipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                appExternalConfigDTO);
+
+        if (Boolean.FALSE.equals(pipelineSchedule.getActive())) {
+            return;
+        }
+        pipelineSchedule.setActive(false);
+        gitlabServiceClientOperator.updatePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                appExternalConfigDTO,
+                pipelineSchedule);
+    }
+
+    @Override
+    public void deleteSchedule(Long projectId, Long id) {
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciPipelineScheduleDTO.getAppServiceId());
+
+        AppExternalConfigDTO appExternalConfigDTO = null;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+        }
+        gitlabServiceClientOperator.deletePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                appExternalConfigDTO);
 
     }
 

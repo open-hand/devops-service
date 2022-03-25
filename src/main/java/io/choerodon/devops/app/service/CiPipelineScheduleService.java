@@ -18,5 +18,9 @@ public interface CiPipelineScheduleService {
     List<CiPipelineScheduleVO> listByAppServiceId(Long projectId, Long appServiceId);
 
     void enableSchedule(Long projectId, Long id);
+
+    void disableSchedule(Long projectId, Long id);
+
+    void deleteSchedule(Long projectId, Long id);
 }
 
