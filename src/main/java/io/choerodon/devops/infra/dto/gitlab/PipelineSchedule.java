@@ -5,7 +5,6 @@
 
 package io.choerodon.devops.infra.dto.gitlab;
 
-import java.security.acl.Owner;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +19,6 @@ public class PipelineSchedule {
     private Date updatedAt;
     private Boolean active;
     private Pipeline lastPipeline;
-    private Owner owner;
     private List<Variable> variables;
 
     public PipelineSchedule() {
@@ -104,14 +102,6 @@ public class PipelineSchedule {
 
     public void setLastPipeline(Pipeline lastPipeline) {
         this.lastPipeline = lastPipeline;
-    }
-
-    public Owner getOwner() {
-        return this.owner;
-    }
-
-    public void setOwner(Owner owner) {
-        this.owner = owner;
     }
 
     public List<Variable> getVariables() {
