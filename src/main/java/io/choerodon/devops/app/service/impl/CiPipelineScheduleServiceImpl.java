@@ -197,6 +197,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     }
 
     @Override
+    @Transactional
     public void deleteSchedule(Long projectId, Long id) {
         CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciPipelineScheduleDTO.getAppServiceId());
@@ -209,6 +210,8 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 null,
                 TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                 appExternalConfigDTO);
+        ciPipelineScheduleMapper.deleteByPrimaryKey(id);
+        ciScheduleVariableService.deleteByPipelineScheduleId(id);
 
     }
 

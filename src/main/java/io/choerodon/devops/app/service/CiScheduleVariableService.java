@@ -12,5 +12,6 @@ public interface CiScheduleVariableService {
 
     void baseCreate(CiScheduleVariableDTO ciScheduleVariableDTO);
 
+    void deleteByPipelineScheduleId(Long id);
 }
 
