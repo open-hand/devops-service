@@ -28,7 +28,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_schedule.groovy') {
             }
 
             column(name: 'start_hour_of_day', type: 'BIGINT UNSIGNED', remarks: '开始时间：周期触发时需要，0-23')
-            column(name: 'end__hour_of_day', type: 'BIGINT UNSIGNED', remarks: '结束时间：周期触发时需要，0-23')
+            column(name: 'end_hour_of_day', type: 'BIGINT UNSIGNED', remarks: '结束时间：周期触发时需要，0-23')
             column(name: 'period', type: 'BIGINT UNSIGNED', remarks: '执行间隔：周期触发时需要，10，20，30，40，50，60，120，240')
 
             column(name: 'execute_time', type: 'VARCHAR(255)', remarks: '执行时间：单次触发时需要,HH:mm')
