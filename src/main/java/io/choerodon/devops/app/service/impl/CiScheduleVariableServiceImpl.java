@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiScheduleVariableService;
 import io.choerodon.devops.infra.dto.CiScheduleVariableDTO;
@@ -25,6 +26,14 @@ public class CiScheduleVariableServiceImpl implements CiScheduleVariableService 
     @Transactional
     public void baseCreate(CiScheduleVariableDTO ciScheduleVariableDTO) {
         MapperUtil.resultJudgedInsertSelective(ciScheduleVariableMapper, ciScheduleVariableDTO, "error.save.variable.failed");
+    }
+
+    @Override
+    public void deleteByPipelineScheduleId(Long id) {
+        Assert.notNull(id, "error.ci.pipeline.id.is.null");
+        CiScheduleVariableDTO ciScheduleVariableDTO = new CiScheduleVariableDTO();
+        ciScheduleVariableDTO.setCiPipelineScheduleId(id);
+        ciScheduleVariableMapper.delete(ciScheduleVariableDTO);
     }
 }
 

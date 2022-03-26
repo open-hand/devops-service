@@ -66,7 +66,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         pipelineSchedule.setCron(cron);
         pipelineSchedule.setRef(ciPipelineScheduleVO.getRef());
         pipelineSchedule.setDescription(ciPipelineScheduleVO.getName());
-        pipelineSchedule.setCronTimezone("UTC");
+        pipelineSchedule.setCronTimezone("Asia/Shanghai");
 
         PipelineSchedule pipelineSchedules;
         AppExternalConfigDTO appExternalConfigDTO = null;
@@ -136,7 +136,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
         Map<Integer, PipelineSchedule> pipelineScheduleMap = pipelineSchedules.stream().collect(Collectors.toMap(PipelineSchedule::getId, Function.identity()));
         ciPipelineScheduleVOS.forEach(v -> {
-            PipelineSchedule pipelineSchedule = pipelineScheduleMap.get(v.getPipelineScheduleId());
+            PipelineSchedule pipelineSchedule = pipelineScheduleMap.get(TypeUtil.objToInt(v.getPipelineScheduleId()));
             if (pipelineSchedule != null) {
                 v.setNextRunAt(pipelineSchedule.getNextRunAt());
                 v.setActive(pipelineSchedule.getActive());
@@ -197,6 +197,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     }
 
     @Override
+    @Transactional
     public void deleteSchedule(Long projectId, Long id) {
         CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciPipelineScheduleDTO.getAppServiceId());
@@ -209,6 +210,8 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 null,
                 TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                 appExternalConfigDTO);
+        ciPipelineScheduleMapper.deleteByPrimaryKey(id);
+        ciScheduleVariableService.deleteByPipelineScheduleId(id);
 
     }
 
