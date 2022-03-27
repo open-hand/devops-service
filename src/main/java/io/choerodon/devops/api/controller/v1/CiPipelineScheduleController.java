@@ -47,7 +47,7 @@ public class CiPipelineScheduleController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable("id") Long id,
             @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
-        ciPipelineScheduleService.update(ciPipelineScheduleVO);
+        ciPipelineScheduleService.update(id, ciPipelineScheduleVO);
         return ResponseEntity.noContent().build();
     }
 

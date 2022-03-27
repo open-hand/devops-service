@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineScheduleVO;
+import io.choerodon.devops.api.vo.CiScheduleVariableVO;
 import io.choerodon.devops.app.service.AppExternalConfigService;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineScheduleService;
@@ -141,6 +143,12 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 v.setNextRunAt(pipelineSchedule.getNextRunAt());
                 v.setActive(pipelineSchedule.getActive());
             }
+            List<CiScheduleVariableDTO> ciScheduleVariableDTOS = ciScheduleVariableService.listByScheduleId(v.getId());
+            if (!CollectionUtils.isEmpty(ciScheduleVariableDTOS)) {
+                List<CiScheduleVariableVO> ciScheduleVariableVOS = ConvertUtils.convertList(ciScheduleVariableDTOS, CiScheduleVariableVO.class);
+                v.setVariableVOList(ciScheduleVariableVOS);
+            }
+
         });
 
         return ciPipelineScheduleVOS;
@@ -206,10 +214,17 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
-        gitlabServiceClientOperator.deletePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+        PipelineSchedule pipelineSchedule = gitlabServiceClientOperator.queryPipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
                 null,
                 TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                 appExternalConfigDTO);
+        if (pipelineSchedule != null && pipelineSchedule.getId() != null) {
+            gitlabServiceClientOperator.deletePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                    null,
+                    TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                    appExternalConfigDTO);
+        }
+
         ciPipelineScheduleMapper.deleteByPrimaryKey(id);
         ciScheduleVariableService.deleteByPipelineScheduleId(id);
 
@@ -217,10 +232,15 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
     @Override
     @Transactional
-    public void update(CiPipelineScheduleVO ciPipelineScheduleVO) {
+    public void update(Long id, CiPipelineScheduleVO ciPipelineScheduleVO) {
         validate(ciPipelineScheduleVO);
 
-        Long appServiceId = ciPipelineScheduleVO.getAppServiceId();
+        CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
+        if (ciPipelineScheduleDTO == null) {
+            throw new CommonException("error.ci.pipeline.schedule.not.found");
+        }
+
+        Long appServiceId = ciPipelineScheduleDTO.getAppServiceId();
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
 
@@ -232,43 +252,125 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         pipelineSchedule.setDescription(ciPipelineScheduleVO.getName());
         pipelineSchedule.setCronTimezone("UTC");
 
-        PipelineSchedule pipelineSchedules;
+        PipelineSchedule pipelineSchedules = null;
         AppExternalConfigDTO appExternalConfigDTO = null;
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
-        // 1. 创建定时计划
-        pipelineSchedules = gitlabServiceClientOperator
-                .createPipelineSchedule(gitlabProjectId,
-                        null,
-                        appExternalConfigDTO,
-                        pipelineSchedule);
-        // 2. 如果有变量，创建变量
-        if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
-            AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
-            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
-                Variable variable1 = new Variable();
-                variable1.setKey(variable.getKey());
-                variable1.setValue(variable.getValue());
+        pipelineSchedules = gitlabServiceClientOperator.queryPipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                null,
+                TypeUtil.objToInt(id),
+                appExternalConfigDTO);
+        if (pipelineSchedules == null) {
+            // 不存在则创建
+            // 1. 创建定时计划
+            pipelineSchedules = gitlabServiceClientOperator
+                    .createPipelineSchedule(gitlabProjectId,
+                            null,
+                            appExternalConfigDTO,
+                            pipelineSchedule);
+            // 2. 如果有变量，创建变量
+            if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
+                for (CiScheduleVariableVO variable : ciPipelineScheduleVO.getVariableVOList()) {
+                    Variable variable1 = new Variable();
+                    variable1.setKey(variable.getKey());
+                    variable1.setValue(variable.getValue());
 
-                gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
-                        pipelineSchedules.getId(),
-                        null,
-                        finalAppExternalConfigDTO,
-                        variable1);
-            });
+                    gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
+                            pipelineSchedules.getId(),
+                            null,
+                            appExternalConfigDTO,
+                            variable1);
+                }
+            }
+        } else {
+            // 更新执行计划
+            gitlabServiceClientOperator.updatePipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                    null,
+                    TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
+                    appExternalConfigDTO,
+                    pipelineSchedule);
+            // 更新变量
+            List<Variable> variables = pipelineSchedules.getVariables();
+            Map<String, String> existVarMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(variables)) {
+                existVarMap = variables.stream().collect(Collectors.toMap(Variable::getKey, Variable::getValue));
+            }
+
+            List<CiScheduleVariableVO> variableVOList = ciPipelineScheduleVO.getVariableVOList();
+            Map<String, String> newVarMap = new HashMap<>();
+            if (!CollectionUtils.isEmpty(variableVOList)) {
+                newVarMap = variableVOList.stream().collect(Collectors.toMap(CiScheduleVariableVO::getKey, CiScheduleVariableVO::getValue));
+            }
+
+            List<Variable> addVarList = new ArrayList<>();
+            List<Variable> delVarList = new ArrayList<>();
+            List<Variable> editVarList = new ArrayList<>();
+
+            // 1. 新增
+            for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
+                if (!existVarMap.containsKey(ciScheduleVariableVO.getKey())) {
+                    Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
+                    addVarList.add(variable);
+                }
+            }
+            // 2. 删除
+            for (Variable variable : variables) {
+                if (!newVarMap.containsKey(variable.getKey())) {
+                    delVarList.add(variable);
+                }
+            }
+            // 3. 更新
+            for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
+                if (existVarMap.containsKey(ciScheduleVariableVO.getKey())) {
+                    Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
+                    editVarList.add(variable);
+                }
+            }
+            if (!CollectionUtils.isEmpty(addVarList)) {
+                for (Variable variable : addVarList) {
+                    gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
+                            pipelineSchedules.getId(),
+                            null,
+                            appExternalConfigDTO,
+                            variable);
+                }
+            }
+            if (!CollectionUtils.isEmpty(delVarList)) {
+                for (Variable variable : delVarList) {
+                    gitlabServiceClientOperator.deleteScheduleVariable(gitlabProjectId,
+                            pipelineSchedules.getId(),
+                            null,
+                            appExternalConfigDTO,
+                            variable);
+                }
+            }
+            if (!CollectionUtils.isEmpty(editVarList)) {
+                for (Variable variable : editVarList) {
+                    gitlabServiceClientOperator.editScheduleVariable(gitlabProjectId,
+                            pipelineSchedules.getId(),
+                            null,
+                            appExternalConfigDTO,
+                            variable);
+                }
+            }
         }
-        CiPipelineScheduleDTO ciPipelineScheduleDTO = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
-        ciPipelineScheduleDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
 
-        MapperUtil.resultJudgedInsertSelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO, "error.save.pipeline.schedule.failed");
+        CiPipelineScheduleDTO ciPipelineScheduleDTO1 = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
+        ciPipelineScheduleDTO1.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
+        ciPipelineScheduleDTO1.setAppServiceId(null);
+
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO1, "error.save.pipeline.schedule.failed");
+
+        // 先删除再新建
+        ciScheduleVariableService.deleteByPipelineScheduleId(ciPipelineScheduleDTO.getId());
         if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
-            ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
+            for (CiScheduleVariableVO variable : ciPipelineScheduleVO.getVariableVOList()) {
                 CiScheduleVariableDTO ciScheduleVariableDTO = ConvertUtils.convertObject(variable, CiScheduleVariableDTO.class);
                 ciScheduleVariableDTO.setCiPipelineScheduleId(ciPipelineScheduleDTO.getId());
                 ciScheduleVariableDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
                 ciScheduleVariableService.baseCreate(ciScheduleVariableDTO);
-            });
+            }
         }
     }
 

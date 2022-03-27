@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,14 @@ public class CiScheduleVariableServiceImpl implements CiScheduleVariableService 
         CiScheduleVariableDTO ciScheduleVariableDTO = new CiScheduleVariableDTO();
         ciScheduleVariableDTO.setCiPipelineScheduleId(id);
         ciScheduleVariableMapper.delete(ciScheduleVariableDTO);
+    }
+
+    @Override
+    public List<CiScheduleVariableDTO> listByScheduleId(Long id) {
+        Assert.notNull(id, "error.ci.pipeline.id.is.null");
+        CiScheduleVariableDTO ciScheduleVariableDTO = new CiScheduleVariableDTO();
+        ciScheduleVariableDTO.setCiPipelineScheduleId(id);
+        return ciScheduleVariableMapper.select(ciScheduleVariableDTO);
     }
 }
 
