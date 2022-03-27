@@ -568,6 +568,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Variable> editScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        throw new CommonException("error.edit.Pipeline.Variable");
+    }
+
+    @Override
+    public ResponseEntity<Variable> deleteScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        throw new CommonException("error.delete.Pipeline.Variable");
+    }
+
+    @Override
     public ResponseEntity<PipelineSchedule> queryPipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.query.Pipeline.Schedule");
     }
