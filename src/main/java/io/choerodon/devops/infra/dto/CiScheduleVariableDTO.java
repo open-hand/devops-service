@@ -1,21 +1,18 @@
 package io.choerodon.devops.infra.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.util.Date;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * devops_ci_schedule_variable(CiScheduleVariable)实体类
@@ -52,11 +49,11 @@ public class CiScheduleVariableDTO extends AuditDomain {
 
     @ApiModelProperty(value = "key", required = true)
     @NotBlank
-    private String key;
+    private String variableKey;
 
     @ApiModelProperty(value = "value", required = true)
     @NotBlank
-    private String value;
+    private String variableValue;
 
 
     public Long getId() {
@@ -83,20 +80,20 @@ public class CiScheduleVariableDTO extends AuditDomain {
         this.pipelineScheduleId = pipelineScheduleId;
     }
 
-    public String getKey() {
-        return key;
+    public String getVariableKey() {
+        return variableKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setVariableKey(String variableKey) {
+        this.variableKey = variableKey;
     }
 
-    public String getValue() {
-        return value;
+    public String getVariableValue() {
+        return variableValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setVariableValue(String variableValue) {
+        this.variableValue = variableValue;
     }
 
 }

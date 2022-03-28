@@ -86,8 +86,8 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             AppExternalConfigDTO finalAppExternalConfigDTO = appExternalConfigDTO;
             ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
                 Variable variable1 = new Variable();
-                variable1.setKey(variable.getKey());
-                variable1.setValue(variable.getValue());
+                variable1.setKey(variable.getVariableKey());
+                variable1.setValue(variable.getVariableValue());
 
                 gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
                         pipelineSchedules.getId(),
@@ -273,8 +273,8 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
                 for (CiScheduleVariableVO variable : ciPipelineScheduleVO.getVariableVOList()) {
                     Variable variable1 = new Variable();
-                    variable1.setKey(variable.getKey());
-                    variable1.setValue(variable.getValue());
+                    variable1.setKey(variable.getVariableKey());
+                    variable1.setValue(variable.getVariableValue());
 
                     gitlabServiceClientOperator.createScheduleVariable(gitlabProjectId,
                             pipelineSchedules.getId(),
@@ -300,7 +300,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             List<CiScheduleVariableVO> variableVOList = ciPipelineScheduleVO.getVariableVOList();
             Map<String, String> newVarMap = new HashMap<>();
             if (!CollectionUtils.isEmpty(variableVOList)) {
-                newVarMap = variableVOList.stream().collect(Collectors.toMap(CiScheduleVariableVO::getKey, CiScheduleVariableVO::getValue));
+                newVarMap = variableVOList.stream().collect(Collectors.toMap(CiScheduleVariableVO::getVariableKey, CiScheduleVariableVO::getVariableValue));
             }
 
             List<Variable> addVarList = new ArrayList<>();
@@ -309,7 +309,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
             // 1. 新增
             for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
-                if (!existVarMap.containsKey(ciScheduleVariableVO.getKey())) {
+                if (!existVarMap.containsKey(ciScheduleVariableVO.getVariableKey())) {
                     Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
                     addVarList.add(variable);
                 }
@@ -322,7 +322,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             }
             // 3. 更新
             for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
-                if (existVarMap.containsKey(ciScheduleVariableVO.getKey())) {
+                if (existVarMap.containsKey(ciScheduleVariableVO.getVariableKey())) {
                     Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
                     editVarList.add(variable);
                 }
