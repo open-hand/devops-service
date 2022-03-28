@@ -15,9 +15,9 @@ public class CiScheduleVariableVO {
     @ApiModelProperty(value = "gitlab pipeline_schedule_id", required = true)
     private Long pipelineScheduleId;
     @ApiModelProperty(value = "key", required = true)
-    private String key;
+    private String variableKey;
     @ApiModelProperty(value = "value", required = true)
-    private String value;
+    private String variableValue;
 
 
     public Long getId() {
@@ -44,19 +44,19 @@ public class CiScheduleVariableVO {
         this.pipelineScheduleId = pipelineScheduleId;
     }
 
-    public String getKey() {
-        return key;
+    public String getVariableKey() {
+        return variableKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setVariableKey(String variableKey) {
+        this.variableKey = variableKey;
     }
 
-    public String getValue() {
-        return value;
+    public String getVariableValue() {
+        return variableValue;
     }
 
-    public void setValue(String value) {
-        this.value = value;
+    public void setVariableValue(String variableValue) {
+        this.variableValue = variableValue;
     }
 }

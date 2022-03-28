@@ -12,11 +12,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_schedule_variable.groovy') {
             column(name: 'pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab pipeline_schedule_id')  {
                 constraints(nullable: false)
             }
-            column(name: 'key', type: 'VARCHAR(255)', remarks: 'key') {
+            column(name: 'variable_key', type: 'VARCHAR(255)', remarks: 'key') {
                 constraints(nullable: false)
             }
 
-            column(name: 'value', type: 'VARCHAR(255)', remarks: 'value') {
+            column(name: 'variable_value', type: 'VARCHAR(255)', remarks: 'value') {
                 constraints(nullable: false)
             }
 
