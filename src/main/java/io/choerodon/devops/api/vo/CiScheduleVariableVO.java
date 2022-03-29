@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.Pattern;
+
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -15,6 +17,7 @@ public class CiScheduleVariableVO {
     @ApiModelProperty(value = "gitlab pipeline_schedule_id", required = true)
     private Long pipelineScheduleId;
     @ApiModelProperty(value = "key", required = true)
+    @Pattern(regexp = "^\\\\w+$", message = "error.variable.key.invalid")
     private String variableKey;
     @ApiModelProperty(value = "value", required = true)
     private String variableValue;
