@@ -2,10 +2,10 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 import java.util.List;
-
 import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -17,8 +17,10 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class CiPipelineScheduleVO extends AuditDomain {
 
 
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "应用服务id", required = true)
+    @Encrypt
     private Long appServiceId;
     @ApiModelProperty(value = "定时任务名称", required = true)
     private String name;
