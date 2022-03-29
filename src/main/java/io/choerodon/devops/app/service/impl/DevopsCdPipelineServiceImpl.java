@@ -1218,7 +1218,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             } else if (ApiTestTaskType.SUITE.getValue().equals(devopsCdApiTestInfoDTO.getTaskType())) {
                 taskRecordDTO = testServiceClientoperator
                         .executeSuite(devopsCdJobRecordDTO.getProjectId(),
-                                devopsCdApiTestInfoDTO.getApiTestTaskId(),
+                                devopsCdApiTestInfoDTO.getApiTestSuiteId(),
                                 devopsCdJobRecordDTO.getCreatedBy(),
                                 ApiTestTriggerType.PIPELINE.getValue(),
                                 jobRecordId);
