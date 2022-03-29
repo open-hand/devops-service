@@ -259,7 +259,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         }
         pipelineSchedules = gitlabServiceClientOperator.queryPipelineSchedule(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
                 null,
-                TypeUtil.objToInt(id),
+                TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                 appExternalConfigDTO);
         if (pipelineSchedules == null) {
             // 不存在则创建
