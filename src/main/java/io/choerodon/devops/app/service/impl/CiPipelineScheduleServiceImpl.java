@@ -310,7 +310,9 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             // 1. 新增
             for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
                 if (!existVarMap.containsKey(ciScheduleVariableVO.getVariableKey())) {
-                    Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
+                    Variable variable = new Variable();
+                    variable.setKey(ciScheduleVariableVO.getVariableKey());
+                    variable.setValue(ciScheduleVariableVO.getVariableValue());
                     addVarList.add(variable);
                 }
             }
@@ -323,7 +325,9 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             // 3. 更新
             for (CiScheduleVariableVO ciScheduleVariableVO : variableVOList) {
                 if (existVarMap.containsKey(ciScheduleVariableVO.getVariableKey())) {
-                    Variable variable = ConvertUtils.convertObject(ciScheduleVariableVO, Variable.class);
+                    Variable variable = new Variable();
+                    variable.setKey(ciScheduleVariableVO.getVariableKey());
+                    variable.setValue(ciScheduleVariableVO.getVariableValue());
                     editVarList.add(variable);
                 }
             }
