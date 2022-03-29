@@ -1,21 +1,19 @@
 package io.choerodon.devops.infra.dto;
 
-import java.util.Date;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * devops_ci_pipeline_schedule(CiPipelineSchedule)实体类
@@ -45,10 +43,12 @@ public class CiPipelineScheduleDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "应用服务id", required = true)
     @NotNull
+    @Encrypt
     private Long appServiceId;
 
     @ApiModelProperty(value = "定时任务名称", required = true)

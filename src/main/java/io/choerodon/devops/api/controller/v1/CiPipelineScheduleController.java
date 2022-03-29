@@ -5,6 +5,7 @@ import java.util.List;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,10 +42,11 @@ public class CiPipelineScheduleController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "修改定时执行计划")
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Void> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable("id") Long id,
             @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
         ciPipelineScheduleService.update(id, ciPipelineScheduleVO);
@@ -57,16 +59,18 @@ public class CiPipelineScheduleController extends BaseController {
     public ResponseEntity<List<CiPipelineScheduleVO>> listByAppServiceId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @RequestParam("app_service_id") Long appServiceId) {
         return ResponseEntity.ok(ciPipelineScheduleService.listByAppServiceId(projectId, appServiceId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用执行计划")
-    @PutMapping("{id}/enable")
+    @PutMapping("/{id}/enable")
     public ResponseEntity<Void> enableSchedule(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.enableSchedule(projectId, id);
         return ResponseEntity.noContent().build();
@@ -74,10 +78,11 @@ public class CiPipelineScheduleController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "停用执行计划")
-    @PutMapping("{id}/disable")
+    @PutMapping("/{id}/disable")
     public ResponseEntity<Void> disableSchedule(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.disableSchedule(projectId, id);
         return ResponseEntity.noContent().build();
@@ -85,10 +90,11 @@ public class CiPipelineScheduleController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除执行计划")
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSchedule(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.deleteSchedule(projectId, id);
         return ResponseEntity.noContent().build();
