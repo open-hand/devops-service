@@ -814,11 +814,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        Optional<BranchDTO> branchEOptional = branchDTOS
-                .stream().filter(e -> branchName.equals(e.getName())).findFirst();
-        return !branchEOptional.isPresent();
+        BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(applicationDTO.getGitlabProjectId(), branchName);
+        return branchDTO == null;
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
@@ -1228,7 +1225,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             // 此情况是分支已被删除，需要用另一种方式获取分支名称
             List<Long> relatedCommitIds = devopsIssueRelService.listCommitRelationByBranchId(branchId);
             // 因为所有的commit都属于同一个分支，因此默认取第1个commitId来查询分支名称
-            if (CollectionUtils.isEmpty(relatedCommitIds)){
+            if (CollectionUtils.isEmpty(relatedCommitIds)) {
                 return;
             }
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.selectByPrimaryKey(relatedCommitIds.get(0));
