@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -815,7 +816,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(applicationDTO.getGitlabProjectId(), branchName);
-        return branchDTO == null;
+        return branchDTO == null || ObjectUtils.isEmpty(branchDTO.getName());
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
