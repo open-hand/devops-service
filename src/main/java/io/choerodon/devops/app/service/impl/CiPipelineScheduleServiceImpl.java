@@ -357,6 +357,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         }
 
         CiPipelineScheduleDTO ciPipelineScheduleDTO1 = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
+        ciPipelineScheduleDTO1.setId(id);
         ciPipelineScheduleDTO1.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
         ciPipelineScheduleDTO1.setAppServiceId(null);
 
