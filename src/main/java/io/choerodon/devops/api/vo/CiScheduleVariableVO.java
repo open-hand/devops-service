@@ -17,7 +17,7 @@ public class CiScheduleVariableVO {
     @ApiModelProperty(value = "gitlab pipeline_schedule_id", required = true)
     private Long pipelineScheduleId;
     @ApiModelProperty(value = "key", required = true)
-    @Pattern(regexp = "^\\\\w+$", message = "error.variable.key.invalid")
+    @Pattern(regexp = "^[A-Za-z0-9_]{1,128}$", message = "error.variable.key.invalid")
     private String variableKey;
     @ApiModelProperty(value = "value", required = true)
     private String variableValue;
