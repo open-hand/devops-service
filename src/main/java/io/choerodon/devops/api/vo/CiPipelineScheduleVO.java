@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 import java.util.List;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -55,6 +56,7 @@ public class CiPipelineScheduleVO extends AuditDomain {
         this.active = active;
     }
 
+    @Valid
     List<CiScheduleVariableVO> variableVOList;
 
 

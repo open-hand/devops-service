@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -36,7 +37,7 @@ public class CiPipelineScheduleController extends BaseController {
     public ResponseEntity<CiPipelineScheduleDTO> create(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
+            @RequestBody @Valid CiPipelineScheduleVO ciPipelineScheduleVO) {
         return ResponseEntity.ok(ciPipelineScheduleService.create(ciPipelineScheduleVO));
     }
 
@@ -48,7 +49,7 @@ public class CiPipelineScheduleController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable("id") Long id,
-            @RequestBody CiPipelineScheduleVO ciPipelineScheduleVO) {
+            @RequestBody @Valid CiPipelineScheduleVO ciPipelineScheduleVO) {
         ciPipelineScheduleService.update(id, ciPipelineScheduleVO);
         return ResponseEntity.noContent().build();
     }
