@@ -48,7 +48,7 @@ public class ClusterConnectionHandler {
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    @Value("${services.gitlab.internalsshUrl}")
+    @Value("${services.gitlab.internalsshUrl:}")
     private String gitlabInternalsshUrl;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
