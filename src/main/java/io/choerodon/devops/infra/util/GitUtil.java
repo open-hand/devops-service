@@ -73,7 +73,7 @@ public class GitUtil {
     private String classPath;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    @Value("${services.gitlab.internalsshUrl}")
+    @Value("${services.gitlab.internalsshUrl:}")
     private String gitlabInternalsshUrl;
 
 
