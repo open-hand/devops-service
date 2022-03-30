@@ -73,6 +73,18 @@ public class GitUtil {
     private String classPath;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
+    @Value("${services.gitlab.internalsshUrl}")
+    private String gitlabInternalsshUrl;
+
+
+    public String getSshUrl() {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(gitlabInternalsshUrl)) {
+            return gitlabInternalsshUrl;
+        } else {
+            return gitlabSshUrl;
+        }
+
+    }
 
     /**
      * 构造方法

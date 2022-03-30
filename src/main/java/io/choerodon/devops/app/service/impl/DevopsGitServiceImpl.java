@@ -697,7 +697,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(
-                pattern, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(),
+                pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getCode(),
                 devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsEnvironmentDTO.getClusterCode());
