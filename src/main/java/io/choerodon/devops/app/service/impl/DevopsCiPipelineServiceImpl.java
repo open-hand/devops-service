@@ -186,6 +186,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
     @Autowired
     private CiDockerAuthConfigService ciDockerAuthConfigService;
+    @Autowired
+    private CiPipelineScheduleService ciPipelineScheduleService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -670,6 +672,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //封装流水线
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
         ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
+
+        // 添加是否开启执行计划
+        List<CiPipelineScheduleVO> ciPipelineScheduleVOS = ciPipelineScheduleService.listByAppServiceId(projectId, appServiceDTO.getId());
+        if (!CollectionUtils.isEmpty(ciPipelineScheduleVOS)
+                && ciPipelineScheduleVOS.stream().anyMatch(v -> Boolean.TRUE.equals(v.getActive()))) {
+            ciCdPipelineVO.setEnableSchedule(true);
+        } else {
+            ciCdPipelineVO.setEnableSchedule(false);
+        }
         return ciCdPipelineVO;
     }
 
