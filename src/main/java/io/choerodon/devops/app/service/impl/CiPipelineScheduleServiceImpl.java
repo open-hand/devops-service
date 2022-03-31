@@ -246,11 +246,6 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
         String cron = calculateCron(ciPipelineScheduleVO);
 
-        PipelineSchedule pipelineSchedule = new PipelineSchedule();
-        pipelineSchedule.setCron(cron);
-        pipelineSchedule.setRef(ciPipelineScheduleVO.getRef());
-        pipelineSchedule.setDescription(ciPipelineScheduleVO.getName());
-        pipelineSchedule.setCronTimezone("UTC");
 
         PipelineSchedule pipelineSchedules = null;
         AppExternalConfigDTO appExternalConfigDTO = null;
@@ -261,6 +256,10 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 null,
                 TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                 appExternalConfigDTO);
+        pipelineSchedules.setCron(cron);
+        pipelineSchedules.setRef(ciPipelineScheduleVO.getRef());
+        pipelineSchedules.setDescription(ciPipelineScheduleVO.getName());
+        pipelineSchedules.setCronTimezone("Asia/Shanghai");
         if (pipelineSchedules == null) {
             // 不存在则创建
             // 1. 创建定时计划
@@ -268,7 +267,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                     .createPipelineSchedule(gitlabProjectId,
                             null,
                             appExternalConfigDTO,
-                            pipelineSchedule);
+                            pipelineSchedules);
             // 2. 如果有变量，创建变量
             if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
                 for (CiScheduleVariableVO variable : ciPipelineScheduleVO.getVariableVOList()) {
@@ -289,7 +288,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                     null,
                     TypeUtil.objToInt(ciPipelineScheduleDTO.getPipelineScheduleId()),
                     appExternalConfigDTO,
-                    pipelineSchedule);
+                    pipelineSchedules);
             // 更新变量
             List<Variable> variables = pipelineSchedules.getVariables();
             Map<String, String> existVarMap = new HashMap<>();
