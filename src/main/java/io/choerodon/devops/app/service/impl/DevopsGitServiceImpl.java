@@ -224,7 +224,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         appServiceService.baseCheckApp(projectId, appServiceId);
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         AppServiceDTO applicationDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
-        gitlabServiceClientOperator.updateRelease(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId());
+        Release release = gitlabServiceClientOperator.queryRelease(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
+        if (release == null || release.getTagName() == null) {
+            ReleaseParams releaseParams = new ReleaseParams();
+            releaseParams.setTagName(tag);
+            releaseParams.setDescription(releaseNotes);
+            gitlabServiceClientOperator.createRelease(applicationDTO.getGitlabProjectId(),
+                    tag,
+                    releaseNotes,
+                    getGitlabUserId());
+        } else {
+            gitlabServiceClientOperator.updateRelease(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId());
+        }
+
     }
 
     @Override

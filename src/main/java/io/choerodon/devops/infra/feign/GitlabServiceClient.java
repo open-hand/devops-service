@@ -393,6 +393,12 @@ public interface GitlabServiceClient {
             @RequestParam(required = false) Integer userId,
             @RequestBody(required = false) ReleaseParams release);
 
+    @PutMapping("/v1/projects/{project_id}/releases/{tag_name}")
+    ResponseEntity<Release> queryRelease(
+            @PathVariable(value = "project_id") Integer projectId,
+            @RequestParam(required = false) Integer userId,
+            @PathVariable(value = "tag_name") String tagName);
+
     /**
      * 更新 tag
      *

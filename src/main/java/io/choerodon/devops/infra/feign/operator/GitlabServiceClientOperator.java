@@ -702,14 +702,18 @@ public class GitlabServiceClientOperator {
             ResponseEntity<TagDTO> tag1 = gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
 
             // gitlab14之后需要分布创建
-            ReleaseParams releaseParams = new ReleaseParams();
-            releaseParams.setTagName(tag);
-            releaseParams.setDescription(releaseNotes);
-            gitlabServiceClient.createRelease(gitLabProjectId, userId, releaseParams);
+            createRelease(gitLabProjectId, tag, releaseNotes, userId);
 
         } catch (Exception e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
+    }
+
+    public Release createRelease(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        ReleaseParams releaseParams = new ReleaseParams();
+        releaseParams.setTagName(tag);
+        releaseParams.setDescription(releaseNotes);
+        return gitlabServiceClient.createRelease(gitLabProjectId, userId, releaseParams).getBody();
     }
 
     public TagDTO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
@@ -735,6 +739,15 @@ public class GitlabServiceClientOperator {
             releaseParams.setTagName(tag);
             releaseParams.setDescription(releaseNotes);
             gitlabServiceClient.updateRelease(gitLabProjectId, userId, releaseParams);
+        } catch (Exception e) {
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
+        }
+    }
+
+
+    public Release queryRelease(Integer gitLabProjectId, String tag, Integer userId) {
+        try {
+            return gitlabServiceClient.queryRelease(gitLabProjectId, userId, tag).getBody();
         } catch (Exception e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
