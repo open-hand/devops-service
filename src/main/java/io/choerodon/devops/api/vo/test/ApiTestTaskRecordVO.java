@@ -19,6 +19,10 @@ public class ApiTestTaskRecordVO {
     @ApiModelProperty(name = "所属任务id")
     private Long taskId;
 
+    @Encrypt
+    @ApiModelProperty(value = "所属套件id")
+    private Long suiteId;
+
     @ApiModelProperty(name = "执行状态/failed/running/success")
     private String status;
 
@@ -46,6 +50,14 @@ public class ApiTestTaskRecordVO {
     private String deployJobName;
 
     private Double performThreshold;
+
+    public Long getSuiteId() {
+        return suiteId;
+    }
+
+    public void setSuiteId(Long suiteId) {
+        this.suiteId = suiteId;
+    }
 
     public String getViewId() {
         return viewId;
