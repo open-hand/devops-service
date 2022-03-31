@@ -381,6 +381,12 @@ public interface GitlabServiceClient {
             @RequestBody GitlabTransferDTO gitlabTransferDTO,
             @RequestParam("userId") Integer userId);
 
+    @PostMapping("/v1/projects/{project_id}/releases")
+    ResponseEntity<Release> createRelease(
+            @PathVariable(value = "project_id") Integer projectId,
+            @RequestParam(required = false) Integer userId,
+            @RequestBody(required = false) ReleaseParams release);
+
     /**
      * 更新 tag
      *

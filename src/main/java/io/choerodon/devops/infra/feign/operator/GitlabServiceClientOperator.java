@@ -695,15 +695,18 @@ public class GitlabServiceClientOperator {
             if (msg == null) {
                 msg = "No ReleaseNote";
             }
-            if (releaseNotes == null) {
-                releaseNotes = "No ReleaseNote";
-            }
             GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
             gitlabTransferDTO.setTagName(tag);
             gitlabTransferDTO.setRef(ref);
             gitlabTransferDTO.setMsg(msg);
-            gitlabTransferDTO.setReleaseNotes(releaseNotes);
-            gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
+            ResponseEntity<TagDTO> tag1 = gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
+
+            // gitlab14之后需要分布创建
+            ReleaseParams releaseParams = new ReleaseParams();
+            releaseParams.setTagName(tag);
+            releaseParams.setDescription(releaseNotes);
+            gitlabServiceClient.createRelease(gitLabProjectId, userId, releaseParams);
+
         } catch (Exception e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
