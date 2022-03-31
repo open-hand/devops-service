@@ -246,6 +246,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Release> createRelease(Integer projectId, Integer userId, ReleaseParams release) {
+        throw new CommonException("error.release.create");
+    }
+
+    @Override
     public ResponseEntity deleteTag(Integer projectId, String name, Integer userId) {
         throw new CommonException("error.tag.delete");
     }
