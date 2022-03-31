@@ -726,6 +726,20 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public void updateRelease(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        try {
+            if (releaseNotes == null) {
+                releaseNotes = "";
+            }
+            ReleaseParams releaseParams = new ReleaseParams();
+            releaseParams.setTagName(tag);
+            releaseParams.setDescription(releaseNotes);
+            gitlabServiceClient.updateRelease(gitLabProjectId, userId, releaseParams);
+        } catch (Exception e) {
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
+        }
+    }
+
     public void deleteTag(Integer gitLabProjectId, String tag, Integer userId) {
         try {
             gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
