@@ -695,18 +695,25 @@ public class GitlabServiceClientOperator {
             if (msg == null) {
                 msg = "No ReleaseNote";
             }
-            if (releaseNotes == null) {
-                releaseNotes = "No ReleaseNote";
-            }
             GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();
             gitlabTransferDTO.setTagName(tag);
             gitlabTransferDTO.setRef(ref);
             gitlabTransferDTO.setMsg(msg);
-            gitlabTransferDTO.setReleaseNotes(releaseNotes);
-            gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
+            ResponseEntity<TagDTO> tag1 = gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
+
+            // gitlab14之后需要分布创建
+            createRelease(gitLabProjectId, tag, releaseNotes, userId);
+
         } catch (Exception e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
+    }
+
+    public Release createRelease(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        ReleaseParams releaseParams = new ReleaseParams();
+        releaseParams.setTagName(tag);
+        releaseParams.setDescription(releaseNotes);
+        return gitlabServiceClient.createRelease(gitLabProjectId, userId, releaseParams).getBody();
     }
 
     public TagDTO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
@@ -718,6 +725,29 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTagName(tag);
             gitlabTransferDTO.setReleaseNotes(releaseNotes);
             return gitlabServiceClient.updateTag(gitLabProjectId, gitlabTransferDTO, userId).getBody();
+        } catch (Exception e) {
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
+        }
+    }
+
+    public void updateRelease(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        try {
+            if (releaseNotes == null) {
+                releaseNotes = "";
+            }
+            ReleaseParams releaseParams = new ReleaseParams();
+            releaseParams.setTagName(tag);
+            releaseParams.setDescription(releaseNotes);
+            gitlabServiceClient.updateRelease(gitLabProjectId, userId, releaseParams);
+        } catch (Exception e) {
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
+        }
+    }
+
+
+    public Release queryRelease(Integer gitLabProjectId, String tag, Integer userId) {
+        try {
+            return gitlabServiceClient.queryRelease(gitLabProjectId, userId, tag).getBody();
         } catch (Exception e) {
             throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }

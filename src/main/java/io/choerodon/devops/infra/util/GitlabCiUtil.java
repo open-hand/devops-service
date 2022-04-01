@@ -263,7 +263,7 @@ public class GitlabCiUtil {
 
         String rawCommand = "kaniko_build %s %s %s";
 
-        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
+        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify=true " : "--skip-tls-verify=false ", dockerBuildContextDir, dockerFilePath));
         //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
         if (imageScan) {
             String resolveCommond = "trivyScanImage %s";

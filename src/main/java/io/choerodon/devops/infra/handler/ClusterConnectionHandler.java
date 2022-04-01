@@ -48,6 +48,8 @@ public class ClusterConnectionHandler {
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
+    @Value("${services.gitlab.internalsshUrl:}")
+    private String gitlabInternalsshUrl;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -106,7 +108,7 @@ public class ClusterConnectionHandler {
         //本地路径
         String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getCode(), clusterCode, envCode, envId);
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organizationDTO.getTenantNum(),
+        String url = GitUtil.getGitlabSshUrl(pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(),
                 projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
 
         File file = new File(path);
