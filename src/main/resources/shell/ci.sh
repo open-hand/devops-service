@@ -459,3 +459,15 @@ function mvnCompile() {
         ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1"
     fi
 }
+# 重新镜像上传相关变量，用于控制推送到不同镜像仓库
+# $1 projectId
+# $2 repoType
+# $3 repoId
+function rewrite_image_info() {
+  http_status_code=`curl -o .rewrite_image_info.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3"`
+  if [ "$http_status_code" != "200" ]; then
+    cat .rewrite_image_info.sh
+    exit 1
+  fi
+  source .rewrite_image_info.sh
+}

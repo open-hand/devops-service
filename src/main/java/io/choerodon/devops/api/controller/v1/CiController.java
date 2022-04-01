@@ -232,4 +232,18 @@ public class CiController {
         return ResponseEntity.ok().build();
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息")
+    @GetMapping("/rewrite_repo_info_script")
+    public ResponseEntity<String> queryRewriteRepoInfoScript(
+            @RequestParam(value = "project_id") Long projectId,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "仓库类型", required = true)
+            @RequestParam(value = "repo_type") String repoType,
+            @ApiParam(value = "制品库id", required = true)
+            @RequestParam(value = "repo_id") Long repoId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryRewriteRepoInfoScript(projectId, token, repoType, repoId));
+    }
+
 }

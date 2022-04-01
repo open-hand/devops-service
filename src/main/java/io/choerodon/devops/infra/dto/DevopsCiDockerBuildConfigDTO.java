@@ -57,6 +57,29 @@ public class DevopsCiDockerBuildConfigDTO extends AuditDomain {
     @ApiModelProperty("所属步骤id")
     private Long stepId;
 
+    @ApiModelProperty("仓库类型")
+    private String repoType;
+
+    @ApiModelProperty("制品库仓库id")
+    @Encrypt
+    private Long repoId;
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
+
+    public Long getRepoId() {
+        return repoId;
+    }
+
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
+
     public Long getStepId() {
         return stepId;
     }

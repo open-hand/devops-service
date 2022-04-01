@@ -11,6 +11,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
@@ -241,26 +242,25 @@ public class GitlabCiUtil {
     /**
      * 生成docker构建需要的脚本
      *
-     * @param dockerBuildContextDir docker构建上下文目录
-     * @param dockerFilePath        dockerfile文件路径
-     * @param skipTlsVerify         是否跳过证书校验
+     * @param skipTlsVerify 是否跳过证书校验
      */
-    public static List<String> generateDockerScripts(String dockerBuildContextDir,
-                                                     String dockerFilePath,
+    public static List<String> generateDockerScripts(Long projectId,
+                                                     DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO,
                                                      boolean skipTlsVerify,
                                                      boolean imageScan,
                                                      Long jobId) {
+
+        String dockerBuildContextDir = devopsCiDockerBuildConfigDTO.getDockerContextDir();
+        String dockerFilePath = devopsCiDockerBuildConfigDTO.getDockerFilePath();
+
         List<String> commands = new ArrayList<>();
+        // 如果没有配置镜像仓库，镜像默认推送到应用服务关联的制品库,配置了则推送到指定仓库
+        if (devopsCiDockerBuildConfigDTO.getRepoId() == null
+                || org.apache.commons.lang3.StringUtils.isEmpty(devopsCiDockerBuildConfigDTO.getRepoType())) {
+            String cmd = "rewrite_image_info %s %s %s";
+            commands.add(String.format(cmd, projectId, devopsCiDockerBuildConfigDTO.getRepoType(), devopsCiDockerBuildConfigDTO.getRepoId()));
+        }
 
-        // 在生成镜像的命令前保存镜像的元数据
-        // 放在生成镜像的命令前的原因是:
-        // 1. 如果是多阶段构建的Dockerfile, kaniko会在构建完成后删除文件系统, 导致后续命令无法执行, 所以只能提前
-        // 2. ci阶段失败后, cd阶段不会执行, 所以产生的脏数据不会有影响
-        commands.add("saveImageMetadata");
-
-        // 默认跳过证书校验， 之后可以进行配置, 因为自签名的证书不方便进行证书校验
-        //如果没有镜像扫描，直接推镜像
-//        String rawCommand = "ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko %s --no-push -c $PWD/%s -f $PWD/%s -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --tarPath ${PWD}/${PROJECT_NAME}.tar";
         String rawCommand = "kaniko_build %s %s %s";
 
         commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify " : "", dockerBuildContextDir, dockerFilePath));
@@ -271,6 +271,7 @@ public class GitlabCiUtil {
         }
 
         commands.add("skopeo_copy");
+        commands.add("saveImageMetadata");
         return commands;
     }
 
