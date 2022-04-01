@@ -119,7 +119,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
                 Map<String, String> map = new HashMap<>();
                 map.put("name", "ci-token");
-                map.put("login", "admin");
+                map.put("login", userName);
                 Call<ResponseBody> responseCall = sonarClient.listToken();
                 UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
                 Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
@@ -135,7 +135,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 devopsConfigService.baseCreate(newConfigDTO);
 
             } catch (Exception e) {
-                LOGGER.error("======创建SonarQube token失败======={}", e.getMessage());
+                LOGGER.error("======创建SonarQube token失败=======", e);
             }
         }
     }

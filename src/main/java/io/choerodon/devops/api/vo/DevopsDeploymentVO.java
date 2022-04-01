@@ -47,6 +47,8 @@ public class DevopsDeploymentVO extends AuditDomain {
     @ApiModelProperty("来源类型 chart/工作负载/部署组")
     private String sourceType;
 
+    private String status;
+
     public String getCommandType() {
         return commandType;
     }
@@ -157,5 +159,13 @@ public class DevopsDeploymentVO extends AuditDomain {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -31,10 +31,7 @@ import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
-import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.ObjectType;
-import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -177,7 +174,11 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 devopsEnvPodDTOS = devopsEnvPodService.listPodByKind(devopsDeployAppCenterVO.getEnvId(), ResourceType.DEPLOYMENT.getType(), devopsDeployAppCenterVO.getCode());
                 DevopsDeploymentVO deploymentVO = devopsDeploymentService.selectByPrimaryWithCommandInfo(devopsDeployAppCenterVO.getObjectId());
                 if (!ObjectUtils.isEmpty(deploymentVO)) {
-                    devopsDeployAppCenterVO.setStatus(deploymentVO.getCommandStatus());
+                    if (CommandStatus.OPERATING.getStatus().equals(deploymentVO.getCommandStatus())) {
+                        devopsDeployAppCenterVO.setStatus(deploymentVO.getCommandStatus());
+                    } else {
+                        devopsDeployAppCenterVO.setStatus(deploymentVO.getStatus());
+                    }
                     devopsDeployAppCenterVO.setError(deploymentVO.getError());
                 }
             }

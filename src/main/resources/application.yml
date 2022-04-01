@@ -54,6 +54,7 @@ services:
     url: "gitlab.example.com" # gitlab地址
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
+    internalsshUrl: ${SERVICES_GITLAB_INTERNALSSHURL:} # 用于ssh操作的gitlab地址
   helm:
     url: "helm.example.com" # 存放helm chart包的仓库地址
     userName: # Helm chart 仓库 的用户名, 选填(与密码要配对)
