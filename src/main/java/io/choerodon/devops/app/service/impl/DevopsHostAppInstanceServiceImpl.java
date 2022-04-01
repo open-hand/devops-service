@@ -50,6 +50,18 @@ public class DevopsHostAppInstanceServiceImpl implements DevopsHostAppInstanceSe
     }
 
     @Override
+    @Transactional
+    public void updateKillCommand(Long id, String killCommand) {
+        devopsHostAppInstanceMapper.updateKillCommand(id, killCommand);
+    }
+
+    @Override
+    @Transactional
+    public void updateHealthProb(Long id, String healthProb) {
+        devopsHostAppInstanceMapper.updateHealthProb(id, healthProb);
+    }
+
+    @Override
     public List<DevopsHostAppInstanceDTO> listByHostId(Long hostId) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO();

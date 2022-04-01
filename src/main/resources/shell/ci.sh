@@ -36,36 +36,44 @@ mkdir -p $DOCKER_CONFIG
 # 设成docekr认证配置文件
 echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
 
-# 获取commit时间
-C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
-C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
-C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
-C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
-C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
-C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
-C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
-export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
+function export_commit_tag() {
+   # 判断是否有git命令，没有退出此函数
+   if ! which git > /dev/null;
+   then
+       return
+   fi
 
-# 8位sha值
-export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
+    # 获取commit时间
+    C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
+    C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+    C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+    C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+    C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+    C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+    C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
+    export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
 
-# 分支名
-if [ $CIRCLECI ]; then
-  export C7N_BRANCH=$(echo $CIRCLE_BRANCH | tr '[A-Z]' '[a-z]' | tr '[:punct:]' '-')
-elif [ $GITLAB_CI ]; then
-  export C7N_BRANCH=$CI_COMMIT_REF_SLUG
-fi
+    # 分支名
+    if [ $CIRCLECI ]; then
+      export C7N_BRANCH=$(echo $CIRCLE_BRANCH | tr '[A-Z]' '[a-z]' | tr '[:punct:]' '-')
+    elif [ $GITLAB_CI ]; then
+      export C7N_BRANCH=$CI_COMMIT_REF_SLUG
+    fi
 
-# 默认Version
-if [ $CI_COMMIT_TAG ]; then
-  export C7N_VERSION=$CI_COMMIT_TAG
-elif [ $CIRCLE_TAG ]; then
-  export C7N_VERSION=$CIRCLE_TAG
-else
-  export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
-fi
+    # 默认Version
+    if [ $CI_COMMIT_TAG ]; then
+      export C7N_VERSION=$CI_COMMIT_TAG
+    elif [ $CIRCLE_TAG ]; then
+      export C7N_VERSION=$CIRCLE_TAG
+    else
+      export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
+    fi
 
-export CI_COMMIT_TAG=$C7N_VERSION
+    export CI_COMMIT_TAG=$C7N_VERSION
+
+}
+
+export_commit_tag
 
 # 参数为要合并的远程分支名,默认develop
 # e.g. git_merge develop
@@ -134,7 +142,29 @@ function cache_jar() {
 }
 
 #################################### 构建镜像 ####################################
+$1: skipTlsVerify 是否跳过证书校验
+$2: dockerBuildContextDir docker构建上下文
+$3: dockerFilePath Dockerfile路径
+function kaniko_build() {
+  if [ -z $KUBERNETES_SERVICE_HOST ];then
+      ssh -o StrictHostKeyChecking=no root@kaniko /kaniko/kaniko $1  --no-push \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      --tarPath ${PWD}/${PROJECT_NAME}.tar
+  else
+      ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko $1  --no-push \
+      -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
+      --tarPath ${PWD}/${PROJECT_NAME}.tar
+  fi
+}
+
+function skopeo_copy() {
+  skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
+}
+
+#################################### 构建镜像 ####################################
 function docker_build() {
+  # 8位sha值
+  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
   cp /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}-jar/app.jar ${1:-"src/main/docker"}/app.jar || true
   cp -r /cache/${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/* ${1:-"."} || true
   docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} ${1:-"."} || true
@@ -151,6 +181,9 @@ function clean_cache() {
 ################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build() {
+  # 8位sha值
+  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
+
   #判断chart主目录名是否与应用编码保持一致
   CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
   if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
@@ -277,6 +310,37 @@ function saveJarMetadata() {
     exit 1
   fi
 }
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
+# $3 maven_repo_url   目标仓库地址
+# $4 username   目标仓库用户名
+# $5 password   目标仓库用户密码
+function saveCustomJarMetadata() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "job_id=$1" \
+    -F "sequence=$2" \
+    -F "maven_repo_url=$3" \
+    -F "username=$4" \
+    -F "password=$5" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+
 
 ############################### 存储sonar扫描的信息 ################################
 # $1 scanner_type 扫描器类型
@@ -345,10 +409,24 @@ function uploadNodeJsUnitTestReport() {
     uploadUnitTestReport node_js_unit_test report.zip
 }
 
+# 上传通用单元测试报告
+# $1 测试报告路径
+# $2 测试用例总数
+# $3 测试用例通过数
+# $4 测试用例失败数
+# $5 测试用例跳过数
+function uploadGeneralUnitTestReport() {
+    uploadUnitTestReport general_unit_test $1 $2 $3 $4 $5
+}
+
 
 # 上传测试报告
 # $1 测试报告类型
 # $2 测试报告路径
+# $3 测试用例总数
+# $4 测试用例通过数
+# $5 测试用例失败数
+# $6 测试用例跳过数
 function uploadUnitTestReport() {
     result_upload_to_devops=$(curl -X POST \
     -H 'Expect:' \
@@ -357,6 +435,10 @@ function uploadUnitTestReport() {
     -F "job_name=${CI_JOB_NAME}" \
     -F "type=$1" \
     -F "file=@$2" \
+    -F "tests=$3" \
+    -F "passes=$4" \
+    -F "failures=$5" \
+    -F "skipped=$6" \
     "${CHOERODON_URL}/devops/ci/upload_unit_test" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
@@ -376,4 +458,16 @@ function mvnCompile() {
     else
         ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1"
     fi
+}
+# 重新镜像上传相关变量，用于控制推送到不同镜像仓库
+# $1 projectId
+# $2 repoType
+# $3 repoId
+function rewrite_image_info() {
+  http_status_code=`curl -o .rewrite_image_info.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3"`
+  if [ "$http_status_code" != "200" ]; then
+    cat .rewrite_image_info.sh
+    exit 1
+  fi
+  source .rewrite_image_info.sh
 }

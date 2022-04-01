@@ -73,6 +73,18 @@ public class GitUtil {
     private String classPath;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
+    @Value("${services.gitlab.internalsshUrl:}")
+    private String gitlabInternalsshUrl;
+
+
+    public String getSshUrl() {
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(gitlabInternalsshUrl)) {
+            return gitlabInternalsshUrl;
+        } else {
+            return gitlabSshUrl;
+        }
+
+    }
 
     /**
      * 构造方法
@@ -529,7 +541,7 @@ public class GitUtil {
             PushCommand pushCommand = git.push();
             pushCommand.add(MASTER);
             pushCommand.setRemote(repoUrl);
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("admin", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
             throw new CommonException(ERROR_GIT_PUSH, e);

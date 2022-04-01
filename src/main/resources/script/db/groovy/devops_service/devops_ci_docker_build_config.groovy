@@ -38,4 +38,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_docker_build_config.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_docker_build_config',
                 constraintName: 'uk_step_id', columnNames: 'step_id')
     }
+    changeSet(author: 'wanghao', id: '2022-04-01-add-column') {
+        addColumn(tableName: 'devops_ci_docker_build_config') {
+            column(name: 'repo_type', type: 'VARCHAR(280)', remarks: '仓库类型')
+            column(name: 'repo_id', type: 'BIGINT UNSIGNED', remarks: '制品库仓库id')
+
+        }
+    }
 }

@@ -19,6 +19,10 @@ public interface DevopsHostAppInstanceService {
 
     void baseUpdate(DevopsHostAppInstanceDTO devopsHostAppInstanceDTO);
 
+    void updateKillCommand(Long id, String killCommand);
+
+    void updateHealthProb(Long id, String healthProb);
+
     List<DevopsHostAppInstanceDTO> listByHostId(Long hostId);
 
     void baseDelete(Long id);

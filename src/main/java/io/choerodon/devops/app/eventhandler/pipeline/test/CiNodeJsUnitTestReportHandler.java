@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.CiNodeJsReportVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.enums.CiUnitTestTypeEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -66,7 +67,7 @@ public class CiNodeJsUnitTestReportHandler implements CiUnitTestReportHandler {
         String fileName = "NodeJs单元测试报告-" + "(" + jobName + ")";
         String directory = "pipeline/" + gitlabPipelineId;
         // 上传测试报告
-        return fileClient.uploadFile(0L, "devops-service", directory, fileName, file);
+        return fileClient.uploadFile(0L, MiscConstants.DEVOPS_SERVICE_BUCKET_NAME, directory, fileName, file);
     }
 
     @Override

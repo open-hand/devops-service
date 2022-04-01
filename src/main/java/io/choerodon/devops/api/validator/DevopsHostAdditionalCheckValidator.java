@@ -18,7 +18,6 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
  */
 @Component
 public class DevopsHostAdditionalCheckValidator {
-    private static final Pattern JMETER_PATH_PATTERN = Pattern.compile("^(/[\\w\\W]+)+$");
 
     @Lazy
     @Autowired

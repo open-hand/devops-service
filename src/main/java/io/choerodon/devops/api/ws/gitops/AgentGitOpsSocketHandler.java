@@ -312,6 +312,7 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 break;
             case DELETE_POD:
                 agentMsgHandlerService.handleDeletePod(Long.parseLong(msg.getClusterId()), msg.getPayload());
+                break;
             default:
                 LOGGER.warn("UnExpected message type {}", msg.getType());
                 break;
