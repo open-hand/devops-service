@@ -15,23 +15,14 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineScheduleVO;
 import io.choerodon.devops.api.vo.CiScheduleVariableVO;
-import io.choerodon.devops.app.service.AppExternalConfigService;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.CiPipelineScheduleService;
-import io.choerodon.devops.app.service.CiScheduleVariableService;
-import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiPipelineScheduleDTO;
-import io.choerodon.devops.infra.dto.CiScheduleVariableDTO;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.PipelineSchedule;
 import io.choerodon.devops.infra.dto.gitlab.Variable;
 import io.choerodon.devops.infra.enums.CiPipelineScheduleTriggerTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiPipelineScheduleMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * devops_ci_pipeline_schedule(CiPipelineSchedule)应用服务
@@ -51,6 +42,8 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     private CiScheduleVariableService ciScheduleVariableService;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    private UserAttrService userAttrService;
 
 
     @Override
@@ -75,10 +68,15 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         if (appServiceDTO.getExternalConfigId() != null) {
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
+        Integer gitlabUserId = null;
+        if (userAttrDTO != null) {
+            gitlabUserId = userAttrDTO.getGitlabUserId() == null ? null : TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
+        }
         // 1. 创建定时计划
         pipelineSchedules = gitlabServiceClientOperator
                 .createPipelineSchedule(gitlabProjectId,
-                        null,
+                        gitlabUserId,
                         appExternalConfigDTO,
                         pipelineSchedule);
         // 2. 如果有变量，创建变量
