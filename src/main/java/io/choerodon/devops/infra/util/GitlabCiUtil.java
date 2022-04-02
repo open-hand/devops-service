@@ -255,8 +255,8 @@ public class GitlabCiUtil {
 
         List<String> commands = new ArrayList<>();
         // 如果没有配置镜像仓库，镜像默认推送到应用服务关联的制品库,配置了则推送到指定仓库
-        if (devopsCiDockerBuildConfigDTO.getRepoId() == null
-                || org.apache.commons.lang3.StringUtils.isEmpty(devopsCiDockerBuildConfigDTO.getRepoType())) {
+        if (devopsCiDockerBuildConfigDTO.getRepoId() != null
+                && org.apache.commons.lang3.StringUtils.isNotBlank(devopsCiDockerBuildConfigDTO.getRepoType())) {
             String cmd = "rewrite_image_info %s %s %s";
             commands.add(String.format(cmd, projectId, devopsCiDockerBuildConfigDTO.getRepoType(), devopsCiDockerBuildConfigDTO.getRepoId()));
         }
