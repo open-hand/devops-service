@@ -1,20 +1,17 @@
 package io.choerodon.devops.infra.feign;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import java.util.List;
 import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.ibatis.annotations.Param;
-import org.hzero.core.util.Results;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.NexusServerConfig;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
@@ -28,7 +25,6 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -213,4 +209,8 @@ public interface RdupmClient {
     ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(@RequestBody Set<Long> harborConfigIds);
 
 
+    @ApiOperation(value = "组织层-查询关联应用服务列表")
+    @GetMapping("/v1/projects/{project_id}/custom_repos/{repo_id}/basic_info_internal")
+    ResponseEntity<HarborCustomRepo> queryCustomRepoById(@PathVariable("project_id") Long projectId,
+                                                         @PathVariable("repo_id") Long repoId);
 }

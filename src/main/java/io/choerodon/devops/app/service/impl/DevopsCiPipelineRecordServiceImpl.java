@@ -74,6 +74,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
     private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
+    private static final String REPOSITORY = "repository";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
@@ -133,6 +134,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Value("${devops.proxy.uriPrefix}")
     private String proxy;
+
+    @Value("${nexus.proxy.urlDisplay:false}")
+    private Boolean urlDisplay;
 
 
     // @lazy解决循环依赖
@@ -719,7 +723,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
                     //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
                     //区分RELEASE 和 SNAPSHOT
-                    downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                    if (urlDisplay) {
+                        downloadUrl = String.format(DOWNLOAD_JAR_URL, api, proxy, c7nNexusRepoDTO.getConfigId());
+                    } else {
+                        if (!StringUtils.isEmpty(c7nNexusRepoDTO.getInternalUrl())) {
+                            downloadUrl = c7nNexusRepoDTO.getInternalUrl().split(c7nNexusRepoDTO.getNeRepositoryName())[0];
+                        }
+                    }
+
                     if (pipelineMavenDTO.getVersion().contains("SNAPSHOT")) {
                         downloadUrl += c7nNexusRepoDTO.getNeRepositoryName() + BaseConstants.Symbol.SLASH +
                                 pipelineMavenDTO.getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH) +

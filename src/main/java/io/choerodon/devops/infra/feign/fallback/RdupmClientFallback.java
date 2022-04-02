@@ -126,4 +126,9 @@ public class RdupmClientFallback implements RdupmClient {
     public ResponseEntity<List<HarborRepoDTO>> queryHarborReposByIds(Set<Long> harborConfigIds) {
         throw new CommonException("error.query.harbor.config.by.ids");
     }
+
+    @Override
+    public ResponseEntity<HarborCustomRepo> queryCustomRepoById(Long projectId, Long repoId) {
+        throw new CommonException("error.query.harbor.custom.repo");
+    }
 }

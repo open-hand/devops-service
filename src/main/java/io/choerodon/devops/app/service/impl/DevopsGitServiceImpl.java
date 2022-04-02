@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -218,12 +219,24 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public TagVO updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes) {
+    public void updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.TAG_UPDATE);
         appServiceService.baseCheckApp(projectId, appServiceId);
         permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
         AppServiceDTO applicationDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
-        return ConvertUtils.convertObject(gitlabServiceClientOperator.updateTag(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId()), TagVO.class);
+        Release release = gitlabServiceClientOperator.queryRelease(applicationDTO.getGitlabProjectId(), tag, getGitlabUserId());
+        if (release == null || release.getTagName() == null) {
+            ReleaseParams releaseParams = new ReleaseParams();
+            releaseParams.setTagName(tag);
+            releaseParams.setDescription(releaseNotes);
+            gitlabServiceClientOperator.createRelease(applicationDTO.getGitlabProjectId(),
+                    tag,
+                    releaseNotes,
+                    getGitlabUserId());
+        } else {
+            gitlabServiceClientOperator.updateRelease(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId());
+        }
+
     }
 
     @Override
@@ -696,7 +709,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(
-                pattern, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(),
+                pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getCode(),
                 devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsEnvironmentDTO.getClusterCode());
@@ -814,11 +827,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(applicationDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        Optional<BranchDTO> branchEOptional = branchDTOS
-                .stream().filter(e -> branchName.equals(e.getName())).findFirst();
-        return !branchEOptional.isPresent();
+        BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(applicationDTO.getGitlabProjectId(), branchName);
+        return branchDTO == null || ObjectUtils.isEmpty(branchDTO.getName());
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
@@ -1228,7 +1238,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             // 此情况是分支已被删除，需要用另一种方式获取分支名称
             List<Long> relatedCommitIds = devopsIssueRelService.listCommitRelationByBranchId(branchId);
             // 因为所有的commit都属于同一个分支，因此默认取第1个commitId来查询分支名称
-            if (CollectionUtils.isEmpty(relatedCommitIds)){
+            if (CollectionUtils.isEmpty(relatedCommitIds)) {
                 return;
             }
             DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.selectByPrimaryKey(relatedCommitIds.get(0));
