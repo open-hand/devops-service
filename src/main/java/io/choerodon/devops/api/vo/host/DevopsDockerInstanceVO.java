@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo.host;
 
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 〈功能简述〉
@@ -49,6 +49,7 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
     private String repoName;
 
     @ApiModelProperty("仓库的id,默认的才有")
+    @Encrypt
     private Long repoId;
 
     @ApiModelProperty("自定义仓库的用户名")
