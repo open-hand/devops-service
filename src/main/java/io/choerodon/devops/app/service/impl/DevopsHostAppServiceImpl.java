@@ -46,7 +46,10 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.InstanceDeployOptions;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
+import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.enums.DeployType;
+import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
@@ -122,6 +125,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
+    @Autowired
+    private DockerComposeValueService dockerComposeValueService;
 
     @Override
     @Transactional
@@ -207,8 +212,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     @Transactional
-    public void baseDelete(Long instanceId) {
-        devopsHostAppMapper.deleteByPrimaryKey(instanceId);
+    public void baseDelete(Long id) {
+        devopsHostAppMapper.deleteByPrimaryKey(id);
     }
 
     @Override
@@ -280,6 +285,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
         }
+
+        if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+            DevopsHostAppDTO devopsHostAppDTO = baseQuery(id);
+            devopsHostAppVO.setRunCommand(devopsHostAppDTO.getRunCommand());
+            devopsHostAppVO.setDockerComposeValueDTO(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()));
+        }
+
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
         List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -324,7 +336,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteById(Long projectId, Long hostId, Long appId, String hostDeployType) {
+    public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
             throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
@@ -333,8 +345,39 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostConnectionHandler.checkHostConnection(hostId);
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
 
-        if (org.apache.commons.lang3.StringUtils.equals(hostDeployType, HostDeployType.IMAGED_DEPLOY.getValue())) {
+        DevopsHostAppDTO devopsHostAppDTO = baseQuery(appId);
+        // 后续可以优化代码结构
+        if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppDTO.getRdupmType())) {
+            // 走中间件删除逻辑
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+            if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
+                throw new CommonException("error.host.instance.kill.command.exist");
+            }
+            devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
+        } else if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppDTO.getRdupmType())) {
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_DOCKER_COMPOSE.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_COMPOSE.value());
+            devopsHostCommandDTO.setInstanceId(appId);
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+            instanceDeployOptions.setInstanceId(String.valueOf(appId));
+            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
+        } else if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppDTO.getRdupmType())) {
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
             devopsDockerInstanceDTO.setAppId(appId);
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -354,46 +397,31 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
-            // 走中间件删除逻辑
-            if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
-            } else {
-                if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
-                    throw new CommonException("error.host.instance.kill.command.exist");
-                }
-
-                // 走中间件删除逻辑
-                if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                    devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
-                } else {
-                    if (!HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand())) {
-                        throw new CommonException("error.host.instance.kill.command.exist");
-                    }
-
-                    DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-                    devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
-                    devopsHostCommandDTO.setHostId(hostId);
-                    devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
-                    devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
-                    devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-                    devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-
-                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
-                    hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-                    hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-
-
-                    InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
-                    instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-                    instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
-                    instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
-                    hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
-
-                    webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
-                }
+            if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
+                throw new CommonException("error.host.instance.kill.command.exist");
             }
+
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+            instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
+            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
     }
 

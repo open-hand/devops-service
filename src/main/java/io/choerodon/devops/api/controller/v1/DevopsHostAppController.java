@@ -71,9 +71,8 @@ public class DevopsHostAppController {
                                            @PathVariable("host_id") Long hostId,
                                            @Encrypt
                                            @ApiParam(value = "主机应用id", required = true)
-                                           @PathVariable("app_id") Long appId,
-                                           @RequestParam(value = "host_deploy_type") String hostDeployType) {
-        devopsHostAppService.deleteById(projectId, hostId, appId, hostDeployType);
+                                           @PathVariable("app_id") Long appId) {
+        devopsHostAppService.deleteById(projectId, hostId, appId);
         return ResponseEntity.noContent().build();
     }
 

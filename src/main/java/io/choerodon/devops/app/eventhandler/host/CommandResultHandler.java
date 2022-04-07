@@ -5,15 +5,14 @@ import java.util.Map;
 import java.util.function.Consumer;
 import javax.annotation.PostConstruct;
 
-import com.netflix.discovery.converters.Auto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
+import io.choerodon.devops.api.vo.host.DockerComposeInfoVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.InstanceProcessInfoVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.impl.DevopsMiddlewareServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
@@ -47,6 +46,8 @@ public class CommandResultHandler implements HostMsgHandler {
     private DevopsMiddlewareService devopsMiddlewareService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DockerComposeService dockerComposeService;
 
 
     @PostConstruct
@@ -87,11 +88,17 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
             devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
         };
+
         resultHandlerMap.put(HostCommandEnum.STOP_DOCKER.value(), dockerUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.START_DOCKER.value(), dockerUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.RESTART_DOCKER.value(), dockerUpdateConsumer);
-
         resultHandlerMap.put(HostCommandEnum.DEPLOY_DOCKER.value(), dockerUpdateConsumer);
+
+        resultHandlerMap.put(HostCommandEnum.KILL_DOCKER_COMPOSE.value(), payload -> {
+            DockerComposeInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerComposeInfoVO.class);
+            // 删除docker-compose应用数据
+            dockerComposeService.deleteAppData(Long.valueOf(processInfoVO.getInstanceId()));
+        });
     }
 
 

@@ -19,6 +19,7 @@ public enum DeployObjectTypeEnum {
     DEPLOYMENT("deployment"),
     JAR("jar"),
     DOCKER("docker"),
+    DOCKER_COMPOSE("docker_compose"),
     MIDDLEWARE("middleware"),
     /**
      * 其他类型

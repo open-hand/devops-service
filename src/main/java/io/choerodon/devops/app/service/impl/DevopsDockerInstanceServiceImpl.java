@@ -1,5 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import sun.misc.BASE64Decoder;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
@@ -37,24 +56,6 @@ import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import sun.misc.BASE64Decoder;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 〈功能简述〉
@@ -128,7 +129,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         //获取部署对象
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
 
-        //保存实例的信息
+        // 保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
 
         // 如果该应用关联了流水线，同步修改流水线里面的信息
@@ -389,5 +390,16 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         Assert.notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
         return devopsDockerInstanceMapper.selectOne(new DevopsDockerInstanceDTO(hostId, containerName));
+    }
+
+    @Override
+    @Transactional
+    public void deleteByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+
+        devopsDockerInstanceMapper.delete(devopsDockerInstanceDTO);
     }
 }

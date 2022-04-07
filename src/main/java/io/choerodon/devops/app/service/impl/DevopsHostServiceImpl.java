@@ -779,6 +779,20 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public DevopsHostDTO checkHostAvailable(Long hostId) {
+        // 1. 获取主机信息
+        DevopsHostDTO hostDTO = baseQuery(hostId);
+        if (hostDTO == null) {
+            throw new CommonException("error.host.not.exist");
+        }
+        // 2. 校验主机已连接
+        hostConnectionHandler.checkHostConnection(hostId);
+        // 3. 校验主机权限
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
+        return hostDTO;
+    }
+
+    @Override
     public Page<DevopsUserVO> pageNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
