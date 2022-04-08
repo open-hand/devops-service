@@ -223,6 +223,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         operatorContainer(appId, instanceId, HostCommandEnum.REMOVE_DOCKER_IN_COMPOSE);
     }
 
+    @Override
+    public Page<DockerComposeValueDTO> listValueRecords(Long projectId, Long id, PageRequest pageable, String searchParam) {
+        return PageHelper.doPage(pageable, () -> dockerComposeValueService.listRemarkValuesByAppId(id, searchParam));
+    }
+
     private void operatorContainer(Long appId, Long instanceId, HostCommandEnum operator) {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
         Long hostId = devopsHostAppDTO.getHostId();

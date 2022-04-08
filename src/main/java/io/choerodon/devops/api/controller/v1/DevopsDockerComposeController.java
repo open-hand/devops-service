@@ -13,6 +13,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.app.service.DockerComposeService;
+import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -107,6 +108,19 @@ public class DevopsDockerComposeController {
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.removeContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询部署配置列表")
+    @GetMapping("/{id}/value_records")
+    public ResponseEntity<Page<DockerComposeValueDTO>> listValueRecords(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "id") Long id,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @RequestParam(value = "search_param") String searchParam) {
+        return ResponseEntity.ok(dockerComposeService.listValueRecords(projectId, id, pageable, searchParam));
     }
 
 

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -32,4 +33,6 @@ public interface DockerComposeService {
     void startContainer(Long projectId, Long id, Long instanceId);
 
     void removeContainer(Long projectId, Long id, Long instanceId);
+
+    Page<DockerComposeValueDTO> listValueRecords(Long projectId, Long id, PageRequest pageable, String searchParam);
 }

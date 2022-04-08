@@ -1,11 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DockerComposeValueService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.devops.infra.mapper.DockerComposeValueMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -47,6 +50,13 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
     @Transactional
     public void baseUpdate(DockerComposeValueDTO dockerComposeValueDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(dockerComposeValueMapper, dockerComposeValueDTO, "error.update.compose.value");
+    }
+
+    @Override
+    public List<DockerComposeValueDTO> listRemarkValuesByAppId(Long appId, String searchParam) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+
+        return dockerComposeValueMapper.listRemarkValuesByAppId(appId, searchParam);
     }
 }
 

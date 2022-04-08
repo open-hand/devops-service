@@ -3,5 +3,13 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DockerComposeValueMapper">
 
 
+    <select id="listRemarkValuesByAppId" resultType="io.choerodon.devops.infra.dto.DockerComposeValueDTO">
+        select *
+        from devops_docker_compose_value ddcv
+        where ddcv.remark is not null and ddcv.app_id = #{appId}
+        <if test="searchParam != null">
+            and ddcv.remark like CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+        </if>
+    </select>
 </mapper>
 

@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DockerComposeValueMapper extends BaseMapper<DockerComposeValueDTO> {
 
+    List<DockerComposeValueDTO> listRemarkValuesByAppId(@Param("appId") Long appId, @Param("searchParam") String searchParam);
 }
 
