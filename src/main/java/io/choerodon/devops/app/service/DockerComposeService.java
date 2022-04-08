@@ -25,4 +25,11 @@ public interface DockerComposeService {
     Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable);
 
     void deleteAppData(Long id);
+
+
+    void stopContainer(Long projectId, Long id, Long instanceId);
+
+    void startContainer(Long projectId, Long id, Long instanceId);
+
+    void removeContainer(Long projectId, Long id, Long instanceId);
 }

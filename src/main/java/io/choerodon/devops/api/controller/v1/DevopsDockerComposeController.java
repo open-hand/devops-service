@@ -62,7 +62,7 @@ public class DevopsDockerComposeController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "docker_compose应用重新部署")
+    @ApiOperation(value = "分页查询docker-compose应用包含的容器列表")
     @GetMapping("/{id}/containers")
     public ResponseEntity<Page<DevopsDockerInstanceVO>> pageContainers(
             @ApiParam(value = "项目Id", required = true)
@@ -71,6 +71,42 @@ public class DevopsDockerComposeController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
         return ResponseEntity.ok(dockerComposeService.pageContainers(projectId, id, pageable));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停用容器")
+    @PutMapping("/{id}/containers/{instance_id}/stop")
+    public ResponseEntity<Page<DevopsDockerInstanceVO>> stopContainer(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "id") Long id,
+            @PathVariable(value = "instance_id") Long instanceId) {
+        dockerComposeService.stopContainer(projectId, id, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用容器")
+    @PutMapping("/{id}/containers/{instance_id}/start")
+    public ResponseEntity<Page<DevopsDockerInstanceVO>> startContainer(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "id") Long id,
+            @PathVariable(value = "instance_id") Long instanceId) {
+        dockerComposeService.startContainer(projectId, id, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除容器")
+    @PutMapping("/{id}/containers/{instance_id}/remove")
+    public ResponseEntity<Page<DevopsDockerInstanceVO>> removeContainer(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "id") Long id,
+            @PathVariable(value = "instance_id") Long instanceId) {
+        dockerComposeService.removeContainer(projectId, id, instanceId);
+        return ResponseEntity.noContent().build();
     }
 
 

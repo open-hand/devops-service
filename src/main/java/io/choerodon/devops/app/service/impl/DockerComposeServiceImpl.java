@@ -12,13 +12,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.deploy.DockerComposeDeployDTO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
@@ -178,13 +176,12 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
                 null);
-        runCommand = appendCmd(appId, runCommand);
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.RESTART_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, runCommand)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, null)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
@@ -196,7 +193,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable) {
-        return PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByHostId(id));
+        return PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByAppId(id));
     }
 
     @Override
@@ -209,6 +206,52 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         // 3. 删除实例数据
         devopsDockerInstanceService.deleteByAppId(id);
 
+    }
+
+    @Override
+    public void stopContainer(Long projectId, Long appId, Long instanceId) {
+        operatorContainer(appId, instanceId, HostCommandEnum.STOP_DOCKER_IN_COMPOSE);
+    }
+
+    @Override
+    public void startContainer(Long projectId, Long appId, Long instanceId) {
+        operatorContainer(appId, instanceId, HostCommandEnum.START_DOCKER_IN_COMPOSE);
+    }
+
+    @Override
+    public void removeContainer(Long projectId, Long appId, Long instanceId) {
+        operatorContainer(appId, instanceId, HostCommandEnum.REMOVE_DOCKER_IN_COMPOSE);
+    }
+
+    private void operatorContainer(Long appId, Long instanceId, HostCommandEnum operator) {
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
+        Long hostId = devopsHostAppDTO.getHostId();
+
+        devopsHostService.checkHostAvailable(devopsHostAppDTO.getHostId());
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.baseQuery(instanceId);
+        // 保存操作记录
+        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
+                HostResourceType.DOCKER_PROCESS.value(),
+                instanceId,
+                operator.value(),
+                HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+        DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
+        dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        // 发送部署指令给aegent
+        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
+                operator.value(),
+                String.valueOf(devopsHostCommandDTO.getId()),
+                JsonHelper.marshalByJackson(dockerProcessInfoVO));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
+                String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId),
+                JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
     private void deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
