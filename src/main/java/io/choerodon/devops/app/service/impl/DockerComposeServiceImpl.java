@@ -28,6 +28,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
+import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -149,6 +150,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     public void restartDockerComposeApp(Long projectId, Long appId) {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
         Long hostId = devopsHostAppDTO.getHostId();
+        String runCommand = devopsHostAppDTO.getRunCommand();
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(devopsHostAppDTO.getHostId());
 
@@ -176,12 +178,13 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
                 null);
+        runCommand = appendCmd(appId, runCommand);
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.RESTART_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, null)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, runCommand)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
@@ -234,6 +237,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getId(),
                 null);
 
+        runCommand = appendCmd(appId, runCommand);
+
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
@@ -245,5 +250,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
+
+    private String appendCmd(Long appId, String runCommand) {
+        String workingDir = HostDeployUtil.getWorkingDir(appId);
+        String intoWorkdir = "cd " + workingDir;
+        return intoWorkdir + "\n" + runCommand;
     }
 }
