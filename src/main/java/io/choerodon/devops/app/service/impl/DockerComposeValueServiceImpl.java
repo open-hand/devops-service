@@ -42,5 +42,11 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
         dockerComposeValueDTO.setAppId(appId);
         dockerComposeValueMapper.delete(dockerComposeValueDTO);
     }
+
+    @Override
+    @Transactional
+    public void baseUpdate(DockerComposeValueDTO dockerComposeValueDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(dockerComposeValueMapper, dockerComposeValueDTO, "error.update.compose.value");
+    }
 }
 

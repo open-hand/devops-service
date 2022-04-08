@@ -6,12 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.app.service.DockerComposeService;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -63,8 +67,10 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DevopsDockerInstanceVO>> pageContainers(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok(dockerComposeService.pageContainers(projectId, id));
+            @PathVariable(value = "id") Long id,
+            @ApiIgnore
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
+        return ResponseEntity.ok(dockerComposeService.pageContainers(projectId, id, pageable));
     }
 
 

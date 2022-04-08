@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,8 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -106,19 +109,34 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         Long hostId = devopsHostAppDTO.getHostId();
         String appName = dockerComposeDeployVO.getName();
         String runCommand = dockerComposeDeployVO.getRunCommand();
-        String remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
-        String value = dockerComposeDeployVO.getDockerComposeValueDTO().getValue();
+        String remark;
+        String value;
+        Long valueId = dockerComposeDeployVO.getValueId();
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(hostId);
 
-        // 保存部署配置
-        DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO(appId,
-                remark,
-                value);
-        dockerComposeValueService.baseCreate(dockerComposeValueDTO);
+        if (valueId == null) {
+            remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
+            value = dockerComposeDeployVO.getDockerComposeValueDTO().getValue();
+            // 保存部署配置,如果输入了版本备注则新建记录
+            if (StringUtils.isNotBlank(remark)) {
+                DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO(appId,
+                        remark,
+                        value);
+                dockerComposeValueService.baseCreate(dockerComposeValueDTO);
+                devopsHostAppDTO.setEffectValueId(dockerComposeValueDTO.getId());
+            } else {
+                DockerComposeValueDTO dockerComposeValueDTO = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId());
+                dockerComposeValueDTO.setValue(value);
+                dockerComposeValueService.baseUpdate(dockerComposeValueDTO);
+            }
+
+        } else {
+            DockerComposeValueDTO dockerComposeValueDTO = dockerComposeValueService.baseQuery(valueId);
+            value = dockerComposeValueDTO.getValue();
+        }
 
         // 更新应用信息
-        devopsHostAppDTO.setEffectValueId(dockerComposeValueDTO.getId());
         devopsHostAppDTO.setRunCommand(runCommand);
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
@@ -174,10 +192,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     }
 
     @Override
-    public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id) {
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(id);
-
-        return null;
+    public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable) {
+        return PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByHostId(id));
     }
 
     @Override

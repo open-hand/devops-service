@@ -31,7 +31,19 @@ public class DockerComposeDeployVO {
     @NotBlank
     private String runCommand;
 
+    @Encrypt
+    @ApiModelProperty("部署配置id")
+    private Long valueId;
+
     private DockerComposeValueDTO dockerComposeValueDTO;
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 
     public String getRunCommand() {
         return runCommand;

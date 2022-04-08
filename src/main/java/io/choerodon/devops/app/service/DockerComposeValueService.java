@@ -15,5 +15,7 @@ public interface DockerComposeValueService {
     DockerComposeValueDTO baseQuery(Long id);
 
     void deleteByAppId(Long appId);
+
+    void baseUpdate(DockerComposeValueDTO dockerComposeValueDTO);
 }
 

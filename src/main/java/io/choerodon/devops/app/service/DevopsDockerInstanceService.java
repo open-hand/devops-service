@@ -30,6 +30,8 @@ public interface DevopsDockerInstanceService {
 
     List<DevopsDockerInstanceDTO> listByHostId(Long hostId);
 
+    List<DevopsDockerInstanceDTO> listByAppId(Long appId);
+
     DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName);
 
     void deleteByAppId(Long appId);

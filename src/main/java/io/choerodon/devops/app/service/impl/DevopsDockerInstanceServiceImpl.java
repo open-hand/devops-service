@@ -386,6 +386,16 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
     @Override
+    public List<DevopsDockerInstanceDTO> listByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+
+        return devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+    }
+
+    @Override
     public DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         Assert.notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);

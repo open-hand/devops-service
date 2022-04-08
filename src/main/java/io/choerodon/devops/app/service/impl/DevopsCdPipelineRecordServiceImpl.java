@@ -378,6 +378,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
                         .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE_DEPLOY.getValue())) {
+                ApplicationContextHelper
+                        .getSpringFactory()
+                        .getBean(DevopsCdPipelineRecordService.class)
+                        .pipelineDeployDockerCompose(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             } else {
                 ApplicationContextHelper
                         .getSpringFactory()
@@ -972,6 +977,25 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
+
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        Long projectId = projectDTO.getId();
+
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
+        Long hostId = devopsCdHostDeployInfoDTO.getHostId();
+        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+
 
     }
 
