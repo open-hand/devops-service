@@ -367,6 +367,17 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
     @Override
+    public DevopsDockerInstanceDTO queryByAppIdAndContainerId(Long appId, String containerId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        Assert.notNull(containerId, ResourceCheckConstant.ERROR_APP_CONTAINER_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+        devopsDockerInstanceDTO.setContainerId(containerId);
+        return devopsDockerInstanceMapper.selectOne(devopsDockerInstanceDTO);
+    }
+
+    @Override
     @Transactional
     public void baseUpdate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_UPDATE_DOCKER_INSTANCE_FAILED);

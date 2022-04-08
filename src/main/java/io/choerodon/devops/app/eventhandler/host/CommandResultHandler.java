@@ -94,10 +94,33 @@ public class CommandResultHandler implements HostMsgHandler {
         resultHandlerMap.put(HostCommandEnum.RESTART_DOCKER.value(), dockerUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.DEPLOY_DOCKER.value(), dockerUpdateConsumer);
 
+
+        Consumer<String> dockerInComposeUpdateConsumer = payload -> {
+            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+            // 更新状态和容器id
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getAppId()), processInfoVO.getContainerId());
+
+            if (devopsDockerInstanceDTO != null) {
+                devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
+                devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
+                devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+            }
+
+        };
+
         resultHandlerMap.put(HostCommandEnum.KILL_DOCKER_COMPOSE.value(), payload -> {
             DockerComposeInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerComposeInfoVO.class);
             // 删除docker-compose应用数据
             dockerComposeService.deleteAppData(Long.valueOf(processInfoVO.getInstanceId()));
+        });
+        resultHandlerMap.put(HostCommandEnum.START_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
+        resultHandlerMap.put(HostCommandEnum.START_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
+        resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER_IN_COMPOSE.value(), payload -> {
+            DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getAppId()), processInfoVO.getContainerId());
+            if (devopsDockerInstanceDTO != null) {
+                devopsDockerInstanceService.baseDelete(devopsDockerInstanceDTO.getId());
+            }
         });
     }
 

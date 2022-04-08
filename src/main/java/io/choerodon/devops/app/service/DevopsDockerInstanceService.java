@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 public interface DevopsDockerInstanceService {
     /**
      * 部署docker进程
+     *
      * @param projectId
      * @param dockerDeployVO
      */
@@ -22,6 +23,8 @@ public interface DevopsDockerInstanceService {
 
 
     DevopsDockerInstanceDTO baseQuery(Long instanceId);
+
+    DevopsDockerInstanceDTO queryByAppIdAndContainerId(Long appId, String containerId);
 
     void baseUpdate(DevopsDockerInstanceDTO devopsDockerInstanceDTO);
 
