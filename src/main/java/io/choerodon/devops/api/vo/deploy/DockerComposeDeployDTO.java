@@ -8,34 +8,34 @@ package io.choerodon.devops.api.vo.deploy;
  * @since 2022/4/7 14:31
  */
 public class DockerComposeDeployDTO {
-    private Long hostId;
-    private Long appId;
+    private String hostId;
+    private String appId;
     private String value;
     private String runCommand;
 
     public DockerComposeDeployDTO() {
     }
 
-    public DockerComposeDeployDTO(Long hostId, Long appId, String value, String runCommand) {
+    public DockerComposeDeployDTO(String hostId, String appId, String value, String runCommand) {
         this.hostId = hostId;
         this.appId = appId;
         this.value = value;
         this.runCommand = runCommand;
     }
 
-    public Long getHostId() {
+    public String getHostId() {
         return hostId;
     }
 
-    public void setHostId(Long hostId) {
+    public void setHostId(String hostId) {
         this.hostId = hostId;
     }
 
-    public Long getAppId() {
+    public String getAppId() {
         return appId;
     }
 
-    public void setAppId(Long appId) {
+    public void setAppId(String appId) {
         this.appId = appId;
     }
 

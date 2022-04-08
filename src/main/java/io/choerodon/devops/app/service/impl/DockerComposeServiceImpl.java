@@ -181,7 +181,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.RESTART_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(hostId, appId, null, null)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, null)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
@@ -238,7 +238,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(hostId, appId, value, runCommand)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), value, runCommand)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
