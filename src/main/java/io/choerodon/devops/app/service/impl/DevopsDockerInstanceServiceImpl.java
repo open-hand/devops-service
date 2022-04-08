@@ -412,4 +412,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
         devopsDockerInstanceMapper.delete(devopsDockerInstanceDTO);
     }
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+    }
 }

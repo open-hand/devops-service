@@ -35,4 +35,7 @@ public interface DevopsDockerInstanceService {
     DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName);
 
     void deleteByAppId(Long appId);
+
+    void baseCreate(DevopsDockerInstanceDTO devopsDockerInstanceDTO);
+
 }
