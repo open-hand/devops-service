@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -20,5 +20,5 @@ public interface DevopsHostAppInstanceMapper extends BaseMapper<DevopsHostAppIns
 
     void updateHealthProb(@Param("id") Long id, @Param("healthProb") String healthProb);
 
-    List<DevopsHostAppInstanceDTO> listByAppIds(@Param("appIds") List<DevopsHostAppVO> appIds);
+    List<DevopsHostAppInstanceDTO> listByAppIds(@Param("appIds") Set<Long> appIds);
 }

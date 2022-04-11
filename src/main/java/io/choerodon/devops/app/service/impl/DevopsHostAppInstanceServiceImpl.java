@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import io.choerodon.devops.api.vo.host.DevopsHostAppVO;
 import io.choerodon.devops.app.service.DevopsHostAppInstanceService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
@@ -82,7 +82,7 @@ public class DevopsHostAppInstanceServiceImpl implements DevopsHostAppInstanceSe
     }
 
     @Override
-    public List<DevopsHostAppInstanceDTO> listByAppIds(List<DevopsHostAppVO> appIds) {
+    public List<DevopsHostAppInstanceDTO> listByAppIds(Set<Long> appIds) {
         return devopsHostAppInstanceMapper.listByAppIds(appIds);
     }
 }

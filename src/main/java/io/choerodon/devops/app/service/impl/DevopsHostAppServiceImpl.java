@@ -243,9 +243,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return page;
         }
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
-        List<DevopsHostAppVO> appIds = page.getContent().stream()
+        Set<Long> appIds = page.getContent().stream()
                 .filter(v -> RdupmTypeEnum.JAR.value().equals(v.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(v.getRdupmType()))
-                .collect(Collectors.toList());
+                .map(DevopsHostAppVO::getId)
+                .collect(Collectors.toSet());
         Map<Long, DevopsHostAppInstanceDTO> hostAppInstanceDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(appIds)) {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppIds(appIds);
