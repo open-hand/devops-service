@@ -9,16 +9,16 @@ package io.choerodon.devops.api.vo.deploy;
  */
 public class DockerComposeDeployDTO {
     private String hostId;
-    private String appId;
+    private String instanceId;
     private String value;
     private String runCommand;
 
     public DockerComposeDeployDTO() {
     }
 
-    public DockerComposeDeployDTO(String hostId, String appId, String value, String runCommand) {
+    public DockerComposeDeployDTO(String hostId, String instanceId, String value, String runCommand) {
         this.hostId = hostId;
-        this.appId = appId;
+        this.instanceId = instanceId;
         this.value = value;
         this.runCommand = runCommand;
     }
@@ -31,12 +31,12 @@ public class DockerComposeDeployDTO {
         this.hostId = hostId;
     }
 
-    public String getAppId() {
-        return appId;
+    public String getInstanceId() {
+        return instanceId;
     }
 
-    public void setAppId(String appId) {
-        this.appId = appId;
+    public void setInstanceId(String instanceId) {
+        this.instanceId = instanceId;
     }
 
     public String getValue() {

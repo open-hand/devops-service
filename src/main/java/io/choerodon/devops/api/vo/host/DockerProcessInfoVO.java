@@ -15,7 +15,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class DockerProcessInfoVO {
     @Encrypt
-    private String appId;
     private String instanceId;
     private String containerId;
     private String image;
@@ -24,14 +23,6 @@ public class DockerProcessInfoVO {
     private String ports;
     private IamUserDTO deployer;
     private Date deployDate;
-
-    public String getAppId() {
-        return appId;
-    }
-
-    public void setAppId(String appId) {
-        this.appId = appId;
-    }
 
     public String getInstanceId() {
         return instanceId;

@@ -98,7 +98,7 @@ public class CommandResultHandler implements HostMsgHandler {
         Consumer<String> dockerInComposeUpdateConsumer = payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             // 更新状态和容器id
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getAppId()), processInfoVO.getContainerId());
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getInstanceId()), processInfoVO.getContainerId());
 
             if (devopsDockerInstanceDTO != null) {
                 devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
@@ -117,7 +117,7 @@ public class CommandResultHandler implements HostMsgHandler {
         resultHandlerMap.put(HostCommandEnum.STOP_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER_IN_COMPOSE.value(), payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getAppId()), processInfoVO.getContainerId());
+            DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getInstanceId()), processInfoVO.getContainerId());
             if (devopsDockerInstanceDTO != null) {
                 devopsDockerInstanceService.baseDelete(devopsDockerInstanceDTO.getId());
             }
