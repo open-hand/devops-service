@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.core.base.BaseConstants;
@@ -247,20 +246,26 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 .filter(v -> RdupmTypeEnum.JAR.value().equals(v.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(v.getRdupmType()))
                 .map(DevopsHostAppVO::getId)
                 .collect(Collectors.toSet());
-        Map<Long, DevopsHostAppInstanceDTO> hostAppInstanceDTOMap = new HashMap<>();
+        Map<Long, List<DevopsHostAppInstanceDTO>> hostAppInstanceDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(appIds)) {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppIds(appIds);
-            hostAppInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getAppId, Function.identity()));
+            hostAppInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.groupingBy(DevopsHostAppInstanceDTO::getAppId));
         }
 
-        Map<Long, DevopsHostAppInstanceDTO> finalHostAppInstanceDTOMap = hostAppInstanceDTOMap;
+        Map<Long, List<DevopsHostAppInstanceDTO>> finalHostAppInstanceDTOMap = hostAppInstanceDTOMap;
         page.getContent().forEach(devopsHostAppVO -> {
             compoundDevopsHostAppVO(devopsHostAppVO);
-            devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
             if (RdupmTypeEnum.JAR.value().equals(devopsHostAppVO.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(devopsHostAppVO.getRdupmType())) {
-                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = finalHostAppInstanceDTOMap.get(devopsHostAppVO.getId());
-                devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
-                devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+                List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = finalHostAppInstanceDTOMap.get(devopsHostAppVO.getId());
+                if (!CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
+                    DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+                    devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
+                    devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId()));
+                }
+            }
+            if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId()));
             }
 
             devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
