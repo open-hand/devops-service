@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
+import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerComposeDeployDTO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
@@ -17,6 +18,8 @@ import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
@@ -26,6 +29,7 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -57,6 +61,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     private KeySocketSendHelper webSocketHelper;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -266,6 +272,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
                 HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
 
         // 保存部署记录
         devopsDeployRecordService.saveRecord(
@@ -282,7 +290,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
-                null);
+                new DeploySourceVO(AppSourceType.CUSTOM, projectDTO.getName()));
 
         runCommand = appendCmd(appId, runCommand);
 
