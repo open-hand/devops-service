@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.core.base.BaseConstants;
@@ -242,11 +243,25 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return page;
         }
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
+        List<DevopsHostAppVO> appIds = page.getContent().stream()
+                .filter(v -> RdupmTypeEnum.JAR.value().equals(v.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(v.getRdupmType()))
+                .collect(Collectors.toList());
+        Map<Long, DevopsHostAppInstanceDTO> hostAppInstanceDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(appIds)) {
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppIds(appIds);
+            hostAppInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.toMap(DevopsHostAppInstanceDTO::getAppId, Function.identity()));
+        }
+
+        Map<Long, DevopsHostAppInstanceDTO> finalHostAppInstanceDTOMap = hostAppInstanceDTOMap;
         page.getContent().forEach(devopsHostAppVO -> {
             compoundDevopsHostAppVO(devopsHostAppVO);
             devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
-            devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
-            devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
+            if (RdupmTypeEnum.JAR.value().equals(devopsHostAppVO.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(devopsHostAppVO.getRdupmType())) {
+                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = finalHostAppInstanceDTOMap.get(devopsHostAppVO.getId());
+                devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
+                devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+            }
+
             devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         });
         return page;
