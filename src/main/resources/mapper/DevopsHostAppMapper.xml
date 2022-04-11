@@ -242,7 +242,7 @@
     <select id="listBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
         SELECT
         dha.*,
-        dh.NAME AS host_name,
+        dh.NAME AS host_name
         FROM
         devops_host_app dha
         LEFT JOIN devops_host dh ON dh.id = dha.host_id
@@ -264,8 +264,7 @@
     </select>
     <select id="listOwnedBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
         select dha.*,
-        dh.name as host_name,
-        null as status
+        dh.name as host_name
         from devops_host_app dha
         left join devops_host dh ON dh.id = dha.host_id
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
