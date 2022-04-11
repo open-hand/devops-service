@@ -40,7 +40,7 @@ public class DevopsDockerComposeController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "docker_compose应用部署")
+    @ApiOperation(value = "docker_compose应用更新")
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)

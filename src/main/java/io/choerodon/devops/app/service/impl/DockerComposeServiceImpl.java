@@ -148,7 +148,6 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     public void restartDockerComposeApp(Long projectId, Long appId) {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
         Long hostId = devopsHostAppDTO.getHostId();
-        String runCommand = devopsHostAppDTO.getRunCommand();
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(devopsHostAppDTO.getHostId());
 

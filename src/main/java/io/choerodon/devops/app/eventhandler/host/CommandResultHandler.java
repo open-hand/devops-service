@@ -114,7 +114,7 @@ public class CommandResultHandler implements HostMsgHandler {
             dockerComposeService.deleteAppData(Long.valueOf(processInfoVO.getInstanceId()));
         });
         resultHandlerMap.put(HostCommandEnum.START_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
-        resultHandlerMap.put(HostCommandEnum.START_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
+        resultHandlerMap.put(HostCommandEnum.STOP_DOCKER_IN_COMPOSE.value(), dockerInComposeUpdateConsumer);
         resultHandlerMap.put(HostCommandEnum.REMOVE_DOCKER_IN_COMPOSE.value(), payload -> {
             DockerProcessInfoVO processInfoVO = JsonHelper.unmarshalByJackson(payload, DockerProcessInfoVO.class);
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByAppIdAndContainerId(Long.valueOf(processInfoVO.getAppId()), processInfoVO.getContainerId());
