@@ -239,4 +239,51 @@
             AND dha.id != #{appId}
         </if>
     </select>
+    <select id="listBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+        SELECT
+        dha.*,
+        dh.NAME AS host_name,
+        FROM
+        devops_host_app dha
+        LEFT JOIN devops_host dh ON dh.id = dha.host_id
+        <where>
+            dha.project_id = #{projectId}
+            <if test="hostId != null">
+                and dha.host_id = #{hostId}
+            </if>
+            <if test="operationType != null">
+                and dha.operation_type = #{operationType}
+            </if>
+            <if test="rdupmType != null">
+                and dha.rdupm_type = #{rdupmType}
+            </if>
+            <if test="params != null">
+                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+    </select>
+    <select id="listOwnedBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+        select dha.*,
+        dh.name as host_name,
+        null as status
+        from devops_host_app dha
+        left join devops_host dh ON dh.id = dha.host_id
+        left join devops_host_user_permission dhup ON dhup.host_id = dh.id
+        <where>
+            dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
+            AND rdupm_type != 'docker'
+            <if test="hostId != null">
+                and dha.host_id = #{hostId}
+            </if>
+            <if test="operationType != null">
+                and dha.operationType = #{operationType}
+            </if>
+            <if test="rdupmType != null">
+                and dha.rdupmType = #{rdupmType}
+            </if>
+            <if test="params != null">
+                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+            </if>
+        </where>
+    </select>
 </mapper>
