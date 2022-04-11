@@ -10,6 +10,8 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.CreateGroup;
+import io.choerodon.devops.api.validator.UpdateGroup;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
 import io.choerodon.devops.app.service.DockerComposeService;
@@ -34,7 +36,7 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Void> deployDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody @Validated DockerComposeDeployVO dockerComposeDeployVO) {
+            @RequestBody @Validated(CreateGroup.class) DockerComposeDeployVO dockerComposeDeployVO) {
         dockerComposeService.deployDockerComposeApp(projectId, dockerComposeDeployVO);
         return ResponseEntity.noContent().build();
     }
@@ -46,7 +48,7 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @PathVariable(value = "id") Long id,
-            @RequestBody @Validated DockerComposeDeployVO dockerComposeDeployVO) {
+            @RequestBody @Validated(UpdateGroup.class) DockerComposeDeployVO dockerComposeDeployVO) {
         dockerComposeService.updateDockerComposeApp(projectId, id, dockerComposeDeployVO);
         return ResponseEntity.noContent().build();
     }

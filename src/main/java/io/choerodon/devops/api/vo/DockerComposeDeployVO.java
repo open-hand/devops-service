@@ -1,11 +1,14 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.validator.CreateGroup;
+import io.choerodon.devops.api.validator.UpdateGroup;
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 
 /**
@@ -18,23 +21,24 @@ import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 public class DockerComposeDeployVO {
     @Encrypt
     @ApiModelProperty("主机id")
-    @NotNull
+    @NotNull(groups = {CreateGroup.class})
     private Long hostId;
     @ApiModelProperty("主机应用的名称")
-    @NotBlank
+    @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
     private String name;
     @ApiModelProperty("主机应用的code")
-    @NotBlank
+    @NotBlank(groups = {CreateGroup.class})
     private String code;
 
     @ApiModelProperty(value = "部署指令", required = true)
-    @NotBlank
+    @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
     private String runCommand;
 
     @Encrypt
     @ApiModelProperty("部署配置id")
     private Long valueId;
 
+    @Valid
     private DockerComposeValueDTO dockerComposeValueDTO;
 
     public Long getValueId() {

@@ -9,9 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_docker_compose_value.groovy') {
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id') {
                 constraints(nullable: false)
             }
-            column(name: 'remark', type: 'VARCHAR(128)', remarks: '部署备注') {
-                constraints(nullable: false)
-            }
+            column(name: 'remark', type: 'VARCHAR(128)', remarks: '部署备注')
             column(name: 'value', type: 'TEXT', remarks: '部署使用的docker-compose.yaml文件') {
                 constraints(nullable: false)
             }

@@ -39,11 +39,9 @@ public class DockerComposeValueDTO extends AuditDomain {
     private Long id;
 
     @ApiModelProperty(value = "应用id", required = true)
-    @NotNull
     private Long appId;
 
     @ApiModelProperty(value = "部署备注", required = true)
-    @NotBlank
     private String remark;
 
     @ApiModelProperty(value = "部署使用的docker-compose.yaml文件", required = true)
