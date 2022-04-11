@@ -165,6 +165,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+
         // 保存部署记录
         devopsDeployRecordService.saveRecord(
                 projectId,
@@ -180,7 +182,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
-                null);
+                new DeploySourceVO(AppSourceType.CUSTOM, projectDTO.getName()));
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
