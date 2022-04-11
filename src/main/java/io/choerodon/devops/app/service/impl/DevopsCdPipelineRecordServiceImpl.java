@@ -995,21 +995,23 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
 
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
-
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
-
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
         Long appServiceId = ciCdPipelineVO.getAppServiceId();
 
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
 
+
         if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
             throw new CommonException("error.no.gitlab.pipeline.id");
         }
-
+        Long appId = devopsCdHostDeployInfoDTO.getAppId();
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
+
+        // 1. 查询关联构建任务生成的镜像
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
                 devopsCdPipelineRecordDTO.getGitlabPipelineId(),
                 devopsCdHostDeployInfoDTO.getImageJobName());
@@ -1017,10 +1019,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             throw new CommonException("error.deploy.images.not.exist");
         }
 
-        Long appId = devopsCdHostDeployInfoDTO.getAppId();
-
-        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
-
+        // 2. 通过应用服务编码匹配service，替换镜像
         String value = replaceValue(appServiceDTO.getCode(),
                 ciPipelineImageDTO.getImageTag(),
                 dockerComposeValueService
@@ -1034,6 +1033,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerComposeDeployVO.setRunCommand(devopsCdHostDeployInfoDTO.getRunCommand());
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
+        // 3. 更新docker-compose应用
         dockerComposeService.updateDockerComposeApp(projectId, appId, dockerComposeDeployVO);
 
     }
