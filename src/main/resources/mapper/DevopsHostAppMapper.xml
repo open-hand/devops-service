@@ -261,6 +261,7 @@
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>
         </where>
+        order by dha.id desc
     </select>
     <select id="listOwnedBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
         select dha.*,
@@ -270,7 +271,6 @@
         left join devops_host_user_permission dhup ON dhup.host_id = dh.id
         <where>
             dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
-            AND rdupm_type != 'docker'
             <if test="hostId != null">
                 and dha.host_id = #{hostId}
             </if>
@@ -284,5 +284,6 @@
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>
         </where>
+        order by dha.id desc
     </select>
 </mapper>

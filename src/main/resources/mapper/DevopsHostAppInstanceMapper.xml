@@ -13,7 +13,7 @@
         where id = #{id}
     </update>
     <select id="listByAppIds" resultType="io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO">
-        select *
+        select dhai.*
         from devops_host_app_instance dhai
         where dhai.app_id in
         <foreach collection="appIds" item="appId" open="(" separator="," close=")" index="i">
