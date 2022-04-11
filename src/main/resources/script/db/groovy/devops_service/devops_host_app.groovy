@@ -63,4 +63,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
             }
         }
     }
+    changeSet(author: 'wanghao', id: '2022-04-07-add-index') {
+        addUniqueConstraint(tableName: 'devops_host_app',
+                constraintName: 'uk_host_id_name', columnNames: 'project_id,name')
+        addUniqueConstraint(tableName: 'devops_host_app',
+                constraintName: 'uk_host_id_code', columnNames: 'project_id,code')
+    }
 }
