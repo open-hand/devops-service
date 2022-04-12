@@ -235,6 +235,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         return PageHelper.doPage(pageable, () -> dockerComposeValueService.listRemarkValuesByAppId(id, searchParam));
     }
 
+    @Override
+    public void restartContainer(Long projectId, Long appId, Long instanceId) {
+        operatorContainer(appId, instanceId, HostCommandEnum.RESTART_DOCKER_IN_COMPOSE);
+    }
+
     private void operatorContainer(Long appId, Long instanceId, HostCommandEnum operator) {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
         Long hostId = devopsHostAppDTO.getHostId();

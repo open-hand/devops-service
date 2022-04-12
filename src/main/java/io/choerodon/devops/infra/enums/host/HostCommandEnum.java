@@ -22,6 +22,7 @@ public enum HostCommandEnum {
     DEPLOY_DOCKER_COMPOSE("deploy_docker_compose"),
     KILL_DOCKER_COMPOSE("kill_docker_compose"),
     START_DOCKER_IN_COMPOSE("start_docker_in_compose"),
+    RESTART_DOCKER_IN_COMPOSE("restart_docker_in_compose"),
     STOP_DOCKER_IN_COMPOSE("stop_docker_in_compose"),
     REMOVE_DOCKER_IN_COMPOSE("remove_docker_in_compose"),
 
