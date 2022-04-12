@@ -69,8 +69,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     @Transactional
     public void deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO) {
         Long hostId = dockerComposeDeployVO.getHostId();
-        String appName = dockerComposeDeployVO.getName();
-        String appCode = dockerComposeDeployVO.getCode();
+        String appName = dockerComposeDeployVO.getAppName();
+        String appCode = dockerComposeDeployVO.getAppCode();
         String runCommand = dockerComposeDeployVO.getRunCommand();
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(hostId);
@@ -112,7 +112,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
         Long hostId = devopsHostAppDTO.getHostId();
-        String appName = dockerComposeDeployVO.getName();
+        String appName = dockerComposeDeployVO.getAppName();
         String runCommand = dockerComposeDeployVO.getRunCommand();
         String remark;
         String value;
