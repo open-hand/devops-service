@@ -17,12 +17,21 @@ public class DockerProcessInfoVO {
     @Encrypt
     private String instanceId;
     private String containerId;
+    private String containerName;
     private String image;
     private String name;
     private String status;
     private String ports;
     private IamUserDTO deployer;
     private Date deployDate;
+
+    public String getContainerName() {
+        return containerName;
+    }
+
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
+    }
 
     public String getInstanceId() {
         return instanceId;

@@ -52,12 +52,13 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
                     DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
                     if (devopsDockerInstanceDTO != null) {
                         devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
-
+                        devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
                         devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
                         devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
                     } else {
                         devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
                         devopsDockerInstanceDTO.setAppId(appId);
+                        devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
                         devopsDockerInstanceDTO.setHostId(Long.valueOf(hostId));
                         devopsDockerInstanceDTO.setSourceType(AppSourceType.CUSTOM.getValue());
                         devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
