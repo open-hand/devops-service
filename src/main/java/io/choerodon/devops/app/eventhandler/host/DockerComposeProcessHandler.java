@@ -32,7 +32,7 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
     @Override
     public void handler(String hostId, Long commandId, String payload) {
         DockerProcessUpdatePayload dockerProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, DockerProcessUpdatePayload.class);
-        Long appId = dockerProcessUpdatePayload.getAppId();
+        Long appId = dockerProcessUpdatePayload.getInstanceId();
 
         List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(appId);
 

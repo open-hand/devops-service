@@ -10,15 +10,15 @@ import java.util.List;
  * @Date 2021/6/27 20:43
  */
 public class DockerProcessUpdatePayload {
-    private Long appId;
+    private Long instanceId;
     private List<DockerProcessInfoVO> updateProcessInfos;
 
-    public Long getAppId() {
-        return appId;
+    public Long getInstanceId() {
+        return instanceId;
     }
 
-    public void setAppId(Long appId) {
-        this.appId = appId;
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
     }
 
     public List<DockerProcessInfoVO> getUpdateProcessInfos() {
