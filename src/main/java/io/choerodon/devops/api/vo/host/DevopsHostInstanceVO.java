@@ -1,14 +1,15 @@
 package io.choerodon.devops.api.vo.host;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by wangxiang on 2021/7/22
  */
 public class DevopsHostInstanceVO {
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("主机id")
