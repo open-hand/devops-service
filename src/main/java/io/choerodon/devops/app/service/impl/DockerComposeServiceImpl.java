@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -7,12 +14,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerComposeDeployDTO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.api.vo.host.DevopsHostInstanceVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.app.service.*;
@@ -200,7 +209,21 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable) {
-        return PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByAppId(id));
+        Page<DevopsDockerInstanceVO> pageInfo = PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByAppId(id));
+
+        if (CollectionUtils.isEmpty(pageInfo.getContent())) {
+            return pageInfo;
+        }
+        Set<Long> ids = pageInfo.getContent().stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toSet());
+        List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByTypeAndInsIds(ids, HostResourceType.DOCKER_COMPOSE.value());
+        Map<Long, DevopsHostCommandDTO> hostCommandDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsHostCommandDTOS)) {
+            hostCommandDTOMap = devopsHostCommandDTOS.stream().collect(Collectors.toMap(DevopsHostCommandDTO::getInstanceId, Function.identity()));
+        }
+        for (DevopsDockerInstanceVO devopsDockerInstanceVO : pageInfo.getContent()) {
+            devopsDockerInstanceVO.setDevopsHostCommandDTO(hostCommandDTOMap.get(devopsDockerInstanceVO.getId()));
+        }
+        return pageInfo;
     }
 
     @Override

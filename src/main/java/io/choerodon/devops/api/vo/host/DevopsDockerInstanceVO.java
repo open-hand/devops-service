@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo.host;
 
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.List;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 〈功能简述〉
@@ -68,6 +68,8 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
 
     @ApiModelProperty("命令框的命令")
     private String dockerCommand;
+    @ApiModelProperty("操作命令")
+    private DevopsHostCommandDTO devopsHostCommandDTO;
 
     public String getDockerCommand() {
         return dockerCommand;
@@ -165,8 +167,6 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
         this.deployer = deployer;
     }
 
-    @ApiModelProperty("操作命令")
-    private DevopsHostCommandDTO devopsHostCommandDTO;
 
     public DevopsHostCommandDTO getDevopsHostCommandDTO() {
         return devopsHostCommandDTO;
