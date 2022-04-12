@@ -396,6 +396,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             instanceDeployOptions.setInstanceId(String.valueOf(appId));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+            LOGGER.info("Delete docker-compose app msg is {}", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId), JsonHelper.marshalByJackson(hostAgentMsgVO));
         } else if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppDTO.getRdupmType())) {
