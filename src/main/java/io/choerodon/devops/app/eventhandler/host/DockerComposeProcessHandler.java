@@ -49,7 +49,7 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
             List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
             if (!CollectionUtils.isEmpty(updateProcessInfos)) {
                 updateProcessInfos.forEach(addProcessInfo -> {
-                    DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
+                    DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getContainerName());
                     if (devopsDockerInstanceDTO != null) {
                         devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
                         devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
