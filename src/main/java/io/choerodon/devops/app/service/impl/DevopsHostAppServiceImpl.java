@@ -389,7 +389,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
             hostAgentMsgVO.setHostId(String.valueOf(hostId));
-            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+            hostAgentMsgVO.setType(HostCommandEnum.KILL_DOCKER_COMPOSE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
