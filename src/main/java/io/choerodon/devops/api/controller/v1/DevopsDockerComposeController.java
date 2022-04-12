@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -47,6 +48,7 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Void> updateDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
             @RequestBody @Validated(UpdateGroup.class) DockerComposeDeployVO dockerComposeDeployVO) {
         dockerComposeService.updateDockerComposeApp(projectId, id, dockerComposeDeployVO);
@@ -59,6 +61,7 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Void> restartDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id) {
         dockerComposeService.restartDockerComposeApp(projectId, id);
         return ResponseEntity.noContent().build();
@@ -70,6 +73,7 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DevopsDockerInstanceVO>> pageContainers(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable) {
@@ -82,7 +86,9 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DevopsDockerInstanceVO>> stopContainer(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
+            @Encrypt
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.stopContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -94,7 +100,9 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DevopsDockerInstanceVO>> startContainer(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
+            @Encrypt
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.startContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -106,7 +114,9 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DevopsDockerInstanceVO>> removeContainer(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
+            @Encrypt
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.removeContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -118,6 +128,7 @@ public class DevopsDockerComposeController {
     public ResponseEntity<Page<DockerComposeValueDTO>> listValueRecords(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
