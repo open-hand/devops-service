@@ -46,18 +46,21 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
 
             // 处理更新的数据
             List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
-            updateProcessInfos.forEach(addProcessInfo -> {
-                DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
-                if (devopsDockerInstanceDTO != null) {
-                    devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
-                    devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
-                    devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
-                } else {
-                    devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
-                    devopsDockerInstanceDTO.setAppId(appId);
-                    devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
-                }
-            });
+            if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+                updateProcessInfos.forEach(addProcessInfo -> {
+                    DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
+                    if (devopsDockerInstanceDTO != null) {
+                        devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+                        devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
+                        devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+                    } else {
+                        devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
+                        devopsDockerInstanceDTO.setAppId(appId);
+                        devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
+                    }
+                });
+            }
+
         });
 
     }
