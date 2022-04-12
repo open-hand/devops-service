@@ -7,9 +7,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.host.DockerComposeUpdatePayload;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
-import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
@@ -31,28 +32,34 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
 
     @Override
     public void handler(String hostId, Long commandId, String payload) {
-        DockerProcessUpdatePayload dockerProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, DockerProcessUpdatePayload.class);
-        Long appId = dockerProcessUpdatePayload.getInstanceId();
+        DockerComposeUpdatePayload dockerProcessUpdatePayload = JsonHelper.unmarshalByJackson(payload, DockerComposeUpdatePayload.class);
 
-        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(appId);
+        if (CollectionUtils.isEmpty(dockerProcessUpdatePayload.getUpdateProcessInfos())) {
+            return;
+        }
+        dockerProcessUpdatePayload.getUpdateProcessInfos().forEach(processPayload -> {
+            Long appId = processPayload.getInstanceId();
 
+            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(appId);
 
-        Map<String, DevopsDockerInstanceDTO> instanceDTOMap = devopsDockerInstanceDTOList.stream().collect(Collectors.toMap(DevopsDockerInstanceDTO::getName, Function.identity()));
+            Map<String, DevopsDockerInstanceDTO> instanceDTOMap = devopsDockerInstanceDTOList.stream().collect(Collectors.toMap(DevopsDockerInstanceDTO::getName, Function.identity()));
 
-        // 处理更新的数据
-        List<DockerProcessInfoVO> updateProcessInfos = dockerProcessUpdatePayload.getUpdateProcessInfos();
-        updateProcessInfos.forEach(addProcessInfo -> {
-            DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
-            if (devopsDockerInstanceDTO != null) {
-                devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
-                devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
-                devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
-            } else {
-                devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
-                devopsDockerInstanceDTO.setAppId(appId);
-                devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
-            }
+            // 处理更新的数据
+            List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
+            updateProcessInfos.forEach(addProcessInfo -> {
+                DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
+                if (devopsDockerInstanceDTO != null) {
+                    devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+                    devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
+                    devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+                } else {
+                    devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
+                    devopsDockerInstanceDTO.setAppId(appId);
+                    devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
+                }
+            });
         });
+
     }
 
     @Override
