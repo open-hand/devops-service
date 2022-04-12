@@ -25,10 +25,10 @@ public class DockerComposeDeployVO {
     private Long hostId;
     @ApiModelProperty("主机应用的名称")
     @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
-    private String name;
+    private String appName;
     @ApiModelProperty("主机应用的code")
     @NotBlank(groups = {CreateGroup.class})
-    private String code;
+    private String appCode;
 
     @ApiModelProperty(value = "部署指令", required = true)
     @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
@@ -65,20 +65,20 @@ public class DockerComposeDeployVO {
         this.hostId = hostId;
     }
 
-    public String getName() {
-        return name;
+    public String getAppName() {
+        return appName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
-    public String getCode() {
-        return code;
+    public String getAppCode() {
+        return appCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public DockerComposeValueDTO getDockerComposeValueDTO() {
