@@ -1,12 +1,13 @@
 package io.choerodon.devops.app.task;
 
 
-import com.google.gson.Gson;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.google.gson.Gson;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.devops.api.vo.ConfigVO;
@@ -25,7 +25,6 @@ import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsRegistrySecretDTO;
 import io.choerodon.devops.infra.mapper.DevopsRegistrySecretMapper;
-import io.choerodon.devops.infra.util.GenerateUUID;
 
 /**
  * Created by wangxiang on 2022/1/13
