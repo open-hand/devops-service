@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -72,6 +73,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
 
 
     @Override
@@ -209,7 +212,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable) {
-        Page<DevopsDockerInstanceVO> pageInfo = PageHelper.doPage(pageable, () -> devopsDockerInstanceService.listByAppId(id));
+        Page<DevopsDockerInstanceVO> pageInfo = PageHelper.doPage(pageable, () -> devopsDockerInstanceMapper.listByAppId(id));
 
         if (CollectionUtils.isEmpty(pageInfo.getContent())) {
             return pageInfo;
