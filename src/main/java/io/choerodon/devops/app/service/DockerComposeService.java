@@ -35,4 +35,6 @@ public interface DockerComposeService {
     void removeContainer(Long projectId, Long id, Long instanceId);
 
     Page<DockerComposeValueDTO> listValueRecords(Long projectId, Long id, PageRequest pageable, String searchParam);
+
+    void restartContainer(Long projectId, Long id, Long instanceId);
 }

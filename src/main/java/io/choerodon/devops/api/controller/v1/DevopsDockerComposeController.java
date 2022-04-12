@@ -109,6 +109,20 @@ public class DevopsDockerComposeController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重启容器")
+    @PutMapping("/{id}/containers/{instance_id}/restart")
+    public ResponseEntity<Page<DevopsDockerInstanceVO>> restartContainer(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id,
+            @Encrypt
+            @PathVariable(value = "instance_id") Long instanceId) {
+        dockerComposeService.restartContainer(projectId, id, instanceId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除容器")
     @PutMapping("/{id}/containers/{instance_id}/remove")
     public ResponseEntity<Page<DevopsDockerInstanceVO>> removeContainer(

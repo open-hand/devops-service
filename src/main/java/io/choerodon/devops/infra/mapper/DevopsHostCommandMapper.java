@@ -16,7 +16,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @Date 2021/6/28 14:44
  */
 public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO> {
-    DevopsHostCommandDTO selectLatestByInstanceId(@Param("instanceId") Long id);
+    DevopsHostCommandDTO selectLatestByInstanceIdAndType(@Param("instanceId") Long id, @Param("instanceType") String instanceType);
 
     void deleteByHostId(@Param("hostId") Long hostId);
 
