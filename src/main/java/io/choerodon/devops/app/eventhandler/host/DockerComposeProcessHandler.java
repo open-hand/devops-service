@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.host.DockerComposeUpdatePayload;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.app.service.DevopsDockerInstanceService;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
+import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -51,11 +52,14 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
                     DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getName());
                     if (devopsDockerInstanceDTO != null) {
                         devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+
                         devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
                         devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
                     } else {
                         devopsDockerInstanceDTO = ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
                         devopsDockerInstanceDTO.setAppId(appId);
+                        devopsDockerInstanceDTO.setHostId(Long.valueOf(hostId));
+                        devopsDockerInstanceDTO.setSourceType(AppSourceType.CUSTOM.getValue());
                         devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
                     }
                 });
