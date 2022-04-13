@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
+import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
 
 /**
@@ -40,5 +41,7 @@ public interface DevopsDockerInstanceService {
     void deleteByAppId(Long appId);
 
     void baseCreate(DevopsDockerInstanceDTO devopsDockerInstanceDTO);
+
+    void createOrUpdate(String hostId, DockerProcessUpdatePayload processPayload);
 
 }

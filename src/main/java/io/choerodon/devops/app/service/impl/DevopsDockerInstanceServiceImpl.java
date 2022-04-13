@@ -3,7 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
@@ -24,6 +27,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
+import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
+import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
@@ -428,5 +433,35 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Transactional
     public void baseCreate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+    }
+
+    @Override
+    public void createOrUpdate(String hostId, DockerProcessUpdatePayload processPayload) {
+        Long appId = processPayload.getInstanceId();
+
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(appId);
+
+        Map<String, DevopsDockerInstanceDTO> instanceDTOMap = devopsDockerInstanceDTOList.stream().collect(Collectors.toMap(DevopsDockerInstanceDTO::getName, Function.identity()));
+
+        // 处理更新的数据
+        List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
+        if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+            updateProcessInfos.forEach(addProcessInfo -> {
+                DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getContainerName());
+                if (devopsDockerInstanceDTO != null) {
+                    devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+                    devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
+                    devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
+                    devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+                } else {
+                    devopsDockerInstanceDTO = io.choerodon.devops.infra.util.ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
+                    devopsDockerInstanceDTO.setAppId(appId);
+                    devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
+                    devopsDockerInstanceDTO.setHostId(Long.valueOf(hostId));
+                    devopsDockerInstanceDTO.setSourceType(AppSourceType.CUSTOM.getValue());
+                    devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
+                }
+            });
+        }
     }
 }
