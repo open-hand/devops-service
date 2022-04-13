@@ -284,6 +284,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 operator.value(),
