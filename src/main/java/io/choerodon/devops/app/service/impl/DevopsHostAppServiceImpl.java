@@ -47,10 +47,7 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.InstanceDeployOptions;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
-import io.choerodon.devops.infra.enums.AppCenterDeployWayEnum;
-import io.choerodon.devops.infra.enums.AppSourceType;
-import io.choerodon.devops.infra.enums.DeployType;
-import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployModeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
@@ -128,6 +125,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private HostConnectionHandler hostConnectionHandler;
     @Autowired
     private DockerComposeValueService dockerComposeValueService;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
 
     @Override
     @Transactional
@@ -321,6 +320,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostAppVO.setRunCommand(devopsHostAppDTO.getRunCommand());
             devopsHostAppVO.setDockerComposeValueDTO(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()));
             devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppDTO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
+            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceService.listByAppId(id);
+            calculateStatus(devopsHostAppVO, devopsDockerInstanceDTOS);
         }
         // 设置所属主机连接状态
         devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
@@ -330,6 +331,23 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         devopsHostAppVO.setCreator(creator);
         devopsHostAppVO.setUpdater(updater);
         return devopsHostAppVO;
+    }
+
+    private void calculateStatus(DevopsHostAppVO devopsHostAppVO, List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS) {
+        if (CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
+            return;
+        }
+        if (devopsDockerInstanceDTOS.stream().allMatch(v -> DockerComposeStatusEnum.RUNNING.getType().equals(v.getStatus()))) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.RUNNING.getType());
+            return;
+        }
+        if (devopsDockerInstanceDTOS.stream().allMatch(v -> DockerComposeStatusEnum.EXITED.getType().equals(v.getStatus()))) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.RUNNING.getType());
+            return;
+        }
+        devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
+        return;
     }
 
     @Override
