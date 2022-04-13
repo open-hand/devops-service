@@ -442,12 +442,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByHostId(appId);
 
         Map<String, DevopsDockerInstanceDTO> instanceDTOMap = devopsDockerInstanceDTOList.stream().collect(Collectors.toMap(DevopsDockerInstanceDTO::getName, Function.identity()));
-
+        LOGGER.info("instanceDTOMap is {}", JsonHelper.marshalByJackson(instanceDTOMap));
         // 处理更新的数据
         List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
         if (!CollectionUtils.isEmpty(updateProcessInfos)) {
             updateProcessInfos.forEach(addProcessInfo -> {
+                LOGGER.info("containerName is {}", JsonHelper.marshalByJackson(addProcessInfo.getContainerName()));
                 DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getContainerName());
+
                 if (devopsDockerInstanceDTO != null) {
                     devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
                     devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
