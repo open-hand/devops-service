@@ -75,10 +75,20 @@ public class DevopsHostAppVO {
     private String ports;
     @ApiModelProperty
     private String hostStatus;
+    @ApiModelProperty(value = "当前生效的配置id,为docker_compose部署类型时才需要")
+    private Long effectValueId;
 
     private DevopsDockerInstanceVO devopsDockerInstanceVO;
 
     private DockerComposeValueDTO dockerComposeValueDTO;
+
+    public Long getEffectValueId() {
+        return effectValueId;
+    }
+
+    public void setEffectValueId(Long effectValueId) {
+        this.effectValueId = effectValueId;
+    }
 
     public DockerComposeValueDTO getDockerComposeValueDTO() {
         return dockerComposeValueDTO;

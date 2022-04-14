@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 
@@ -22,5 +23,7 @@ public interface DockerComposeValueService {
 
     List<DockerComposeValueDTO> listRemarkValuesByAppId(Long id,
                                                         String searchParam);
+
+    List<DockerComposeValueDTO> listByIds(Set<Long> dcValueIds);
 }
 
