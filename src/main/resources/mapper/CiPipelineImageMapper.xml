@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.CiPipelineImageMapper">
+
+    <select id="queryPipelineLatestImage" resultType="io.choerodon.devops.infra.dto.CiPipelineImageDTO">
+        select *
+        from devops_ci_pipeline_image dcpi
+        where dcpi.app_service_id = #{appServiceId}
+          and dcpi.gitlab_pipeline_id = #{gitlabPipelineId}
+        order by id desc
+        limit 1
+    </select>
+</mapper>

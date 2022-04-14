@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
+import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
 import io.choerodon.devops.infra.constant.MiscConstants;
@@ -124,5 +125,32 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         params.put("{{ DOCKER_PASSWORD }}", dockerPassword);
 
         return FileUtil.replaceReturnString(REWRITE_REPO_INFO_FILE, params);
+    }
+
+    @Override
+    public ImageRepoInfoVO queryImageRepoInfo(Long projectId, String token, Long gitlabPipelineId) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new CommonException("error.app.svc.not.found");
+        }
+        CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageMapper.queryPipelineLatestImage(appServiceDTO.getId(), gitlabPipelineId);
+        String repoType = ciPipelineImageDTO.getRepoType();
+        Long repoId = ciPipelineImageDTO.getHarborRepoId();
+
+        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
+        String dockerRegistry = "";
+        String groupName = "";
+        if (DevopsRegistryRepoType.CUSTOM_REPO.getType().equals(repoType)) {
+
+            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+        } else {
+            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+        }
+
+        return new ImageRepoInfoVO(repoId, repoType, dockerRegistry, groupName);
     }
 }
