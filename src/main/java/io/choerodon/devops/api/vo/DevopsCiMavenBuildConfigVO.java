@@ -23,7 +23,6 @@ public class DevopsCiMavenBuildConfigVO {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表 json")
     private String nexusMavenRepoIdStr;
 
