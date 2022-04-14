@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,12 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
         Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
 
         return dockerComposeValueMapper.listRemarkValuesByAppId(appId, searchParam);
+    }
+
+    @Override
+    public List<DockerComposeValueDTO> listByIds(Set<Long> dcValueIds) {
+        String ids = dcValueIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        return dockerComposeValueMapper.selectByIds(ids);
     }
 }
 
