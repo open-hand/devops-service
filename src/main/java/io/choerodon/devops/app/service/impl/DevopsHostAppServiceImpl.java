@@ -274,11 +274,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     compoundDevopsHostAppVO(devopsHostAppVO, devopsHostAppInstanceDTO);
                     devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
                     devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
-                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId()));
+                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
                 }
             }
             if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
-                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId()));
+                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
                 devopsHostAppVO.setDockerComposeValueDTO(finalDockerComposeValueDTOMap.get(devopsHostAppVO.getEffectValueId()));
 
             }

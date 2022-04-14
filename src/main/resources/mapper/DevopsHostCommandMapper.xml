@@ -23,6 +23,7 @@
         SELECT *
         FROM devops_host_command dhc
         WHERE dhc.instance_id = #{instanceId}
+          and dhc.instance_type = #{instanceType}
         ORDER BY id DESC
         limit 1
     </select>

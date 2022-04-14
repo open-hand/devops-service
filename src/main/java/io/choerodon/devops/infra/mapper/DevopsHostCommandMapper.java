@@ -20,7 +20,7 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
 
     void deleteByHostId(@Param("hostId") Long hostId);
 
-    DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId);
+    DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId, @Param("instanceType") String instanceType);
 
     void batchUpdateTimeoutCommand(@Param("missCommands") Set<Long> missCommands);
 

@@ -51,8 +51,8 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     }
 
     @Override
-    public DevopsHostCommandDTO queryInstanceLatest(Long instanceId) {
-        return devopsHostCommandMapper.queryInstanceLatest(instanceId);
+    public DevopsHostCommandDTO queryInstanceLatest(Long instanceId, String instanceType) {
+        return devopsHostCommandMapper.queryInstanceLatest(instanceId, instanceType);
     }
 
     @Override
