@@ -23,7 +23,7 @@ public interface DockerComposeService {
 
     void restartDockerComposeApp(Long projectId, Long id);
 
-    Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable);
+    Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable, String param);
 
     void deleteAppData(Long id);
 

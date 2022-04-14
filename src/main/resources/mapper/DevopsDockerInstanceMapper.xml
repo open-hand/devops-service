@@ -12,6 +12,9 @@
         select *
         from devops_docker_instance ddi
         where ddi.app_id = #{appId}
+        <if test="param != null">
+            and ddi.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
         order by ddi.creation_date desc
     </select>
 
