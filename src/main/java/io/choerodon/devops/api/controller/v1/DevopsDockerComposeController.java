@@ -77,7 +77,7 @@ public class DevopsDockerComposeController {
             @PathVariable(value = "id") Long id,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
-            @RequestParam(value = "param") String param) {
+            @RequestParam(value = "param", required = false) String param) {
         return ResponseEntity.ok(dockerComposeService.pageContainers(projectId, id, pageable, param));
     }
 
