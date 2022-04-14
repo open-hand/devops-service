@@ -119,7 +119,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         }
 
         Map<String, String> params = new HashMap<>();
-        params.put("{{ DOCKER_REGISTRY }}", dockerRegistry);
+        params.put("{{ DOCKER_REGISTRY }}", trimPrefix(dockerRegistry));
         params.put("{{ GROUP_NAME }}", groupName);
         params.put("{{ DOCKER_USERNAME }}", dockerUsername);
         params.put("{{ DOCKER_PASSWORD }}", dockerPassword);
@@ -151,6 +151,11 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
             groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
         }
 
-        return new ImageRepoInfoVO(repoId, repoType, dockerRegistry, groupName);
+        return new ImageRepoInfoVO(repoId, repoType, trimPrefix(dockerRegistry), groupName);
+    }
+
+    private String trimPrefix(String dockerRegistry) {
+        String dockerUrl = dockerRegistry.replace("http://", "").replace("https://", "");
+        return dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
     }
 }
