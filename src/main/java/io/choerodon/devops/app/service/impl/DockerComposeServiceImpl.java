@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -106,12 +108,12 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppService.baseUpdate(devopsHostAppDTO1);
 
         // 保存操作记录
-        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, devopsHostDTO, devopsHostAppDTO);
+        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, devopsHostDTO, devopsHostAppDTO);
     }
 
     @Override
     @Transactional
-    public void updateDockerComposeApp(Long projectId, Long appId, DockerComposeDeployVO dockerComposeDeployVO) {
+    public void updateDockerComposeApp(Long projectId, Long appId, @Nullable Long cdJobRecordId, DockerComposeDeployVO dockerComposeDeployVO) {
         // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
@@ -150,7 +152,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
-        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, devopsHostDTO, devopsHostAppDTO);
+        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, devopsHostDTO, devopsHostAppDTO);
 
     }
 
@@ -284,13 +286,14 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
-    private void deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
+    private void deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
         // 保存操作记录
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
                 HostResourceType.DOCKER_COMPOSE.value(),
                 appId,
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
                 HostCommandStatusEnum.OPERATING.value());
+        devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
 

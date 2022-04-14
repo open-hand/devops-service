@@ -51,7 +51,7 @@ public class DevopsDockerComposeController {
             @Encrypt
             @PathVariable(value = "id") Long id,
             @RequestBody @Validated(UpdateGroup.class) DockerComposeDeployVO dockerComposeDeployVO) {
-        dockerComposeService.updateDockerComposeApp(projectId, id, dockerComposeDeployVO);
+        dockerComposeService.updateDockerComposeApp(projectId, id, null, dockerComposeDeployVO);
         return ResponseEntity.noContent().build();
     }
 

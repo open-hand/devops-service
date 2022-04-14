@@ -1034,7 +1034,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
         // 3. 更新docker-compose应用
-        dockerComposeService.updateDockerComposeApp(projectId, appId, dockerComposeDeployVO);
+        dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
 
     }
 
