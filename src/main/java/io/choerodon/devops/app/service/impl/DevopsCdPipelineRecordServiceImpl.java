@@ -387,7 +387,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
                         .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
-            } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE_DEPLOY.getValue())) {
+            } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
