@@ -218,7 +218,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             return pageInfo;
         }
         Set<Long> ids = pageInfo.getContent().stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toSet());
-        List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByTypeAndInsIds(ids, HostResourceType.DOCKER_COMPOSE.value());
+        List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByTypeAndInsIds(ids, HostResourceType.DOCKER_PROCESS.value());
         Map<Long, DevopsHostCommandDTO> hostCommandDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(devopsHostCommandDTOS)) {
             hostCommandDTOMap = devopsHostCommandDTOS.stream().collect(Collectors.toMap(DevopsHostCommandDTO::getInstanceId, Function.identity()));
