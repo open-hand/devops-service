@@ -19,6 +19,7 @@ public interface DockerComposeService {
 
     void updateDockerComposeApp(Long projectId,
                                 Long id,
+                                Long cdJobRecordId,
                                 DockerComposeDeployVO dockerComposeDeployVO);
 
     void restartDockerComposeApp(Long projectId, Long id);
