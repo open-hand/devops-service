@@ -259,7 +259,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Map<Long, DockerComposeValueDTO> dockerComposeValueDTOMap = new HashMap<>();
         if (!CollectionUtils.isEmpty(dcValueIds)) {
             List<DockerComposeValueDTO> dockerComposeValueDTOS = dockerComposeValueService.listByIds(dcValueIds);
-            if (CollectionUtils.isEmpty(dockerComposeValueDTOS)) {
+            if (!CollectionUtils.isEmpty(dockerComposeValueDTOS)) {
                 dockerComposeValueDTOMap = dockerComposeValueDTOS.stream().collect(Collectors.toMap(DockerComposeValueDTO::getId, Function.identity()));
             }
         }
