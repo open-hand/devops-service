@@ -211,8 +211,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     }
 
     @Override
-    public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable) {
-        Page<DevopsDockerInstanceVO> pageInfo = PageHelper.doPage(pageable, () -> devopsDockerInstanceMapper.listByAppId(id));
+    public Page<DevopsDockerInstanceVO> pageContainers(Long projectId, Long id, PageRequest pageable, String param) {
+        Page<DevopsDockerInstanceVO> pageInfo = PageHelper.doPage(pageable, () -> devopsDockerInstanceMapper.listByAppId(id, param));
 
         if (CollectionUtils.isEmpty(pageInfo.getContent())) {
             return pageInfo;

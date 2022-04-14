@@ -21,5 +21,5 @@ public interface DevopsDockerInstanceMapper extends BaseMapper<DevopsDockerInsta
 
     void deleteByHostId(@Param("hostId") Long hostId);
 
-    List<DevopsDockerInstanceVO> listByAppId(@Param("appId") Long appId);
+    List<DevopsDockerInstanceVO> listByAppId(@Param("appId") Long appId, @Param("param") String param);
 }
