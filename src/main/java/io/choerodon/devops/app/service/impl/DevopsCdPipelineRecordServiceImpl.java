@@ -1036,6 +1036,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         // 3. 更新docker-compose应用
         dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
 
+        devopsCdJobRecordDTO.setStatus(io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+
     }
 
     private String replaceValue(String code, String imageTag, String value) {
