@@ -100,6 +100,8 @@ public class CommandResultHandler implements HostMsgHandler {
             if (devopsDockerInstanceDTO != null) {
                 devopsDockerInstanceDTO.setStatus(processInfoVO.getStatus());
                 devopsDockerInstanceDTO.setPorts(processInfoVO.getPorts());
+                devopsDockerInstanceDTO.setContainerId(processInfoVO.getContainerId());
+                devopsDockerInstanceDTO.setImage(processInfoVO.getImage());
                 devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
             }
 
