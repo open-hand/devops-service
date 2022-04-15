@@ -301,8 +301,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         // 保存部署记录
         devopsDeployRecordService.saveRecord(
                 projectId,
-                DeployType.MANUAL,
-                null,
+                cdJobRecordId == null ? DeployType.MANUAL : DeployType.AUTO,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO.getName(),
