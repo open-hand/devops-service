@@ -1032,6 +1032,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DockerComposeDeployVO dockerComposeDeployVO = new DockerComposeDeployVO();
         dockerComposeDeployVO.setRunCommand(Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand()));
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
+        dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
 
         // 3. 更新docker-compose应用
         DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
