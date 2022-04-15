@@ -10,6 +10,7 @@
         <if test="searchParam != null">
             and ddcv.remark like CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
         </if>
+        order by id desc
     </select>
 </mapper>
 
