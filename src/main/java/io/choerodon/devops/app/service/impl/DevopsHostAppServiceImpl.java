@@ -358,7 +358,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             return;
         }
         if (devopsDockerInstanceDTOS.stream().allMatch(v -> DockerComposeStatusEnum.EXITED.getType().equals(v.getStatus()))) {
-            devopsHostAppVO.setStatus(DockerComposeStatusEnum.RUNNING.getType());
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.EXITED.getType());
             return;
         }
         devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
