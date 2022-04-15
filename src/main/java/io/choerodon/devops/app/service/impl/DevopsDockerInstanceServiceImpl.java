@@ -451,6 +451,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 if (devopsDockerInstanceDTO != null) {
                     devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
                     devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
+                    devopsDockerInstanceDTO.setContainerId(addProcessInfo.getContainerId());
                     devopsDockerInstanceDTO.setImage(addProcessInfo.getImage());
                     devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
                     devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
