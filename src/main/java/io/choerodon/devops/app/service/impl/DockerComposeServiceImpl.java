@@ -73,7 +73,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     @Transactional
-    public void deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO) {
+    public DevopsHostCommandDTO deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO) {
         Long hostId = dockerComposeDeployVO.getHostId();
         String appName = dockerComposeDeployVO.getAppName();
         String appCode = dockerComposeDeployVO.getAppCode();
@@ -108,12 +108,12 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppService.baseUpdate(devopsHostAppDTO1);
 
         // 保存操作记录
-        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, devopsHostDTO, devopsHostAppDTO);
+        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, devopsHostDTO, devopsHostAppDTO);
     }
 
     @Override
     @Transactional
-    public void updateDockerComposeApp(Long projectId, Long appId, @Nullable Long cdJobRecordId, DockerComposeDeployVO dockerComposeDeployVO) {
+    public DevopsHostCommandDTO updateDockerComposeApp(Long projectId, Long appId, @Nullable Long cdJobRecordId, DockerComposeDeployVO dockerComposeDeployVO) {
         // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
@@ -152,7 +152,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
-        deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, devopsHostDTO, devopsHostAppDTO);
+        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, devopsHostDTO, devopsHostAppDTO);
 
     }
 
@@ -286,7 +286,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
-    private void deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
+    private DevopsHostCommandDTO deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
         // 保存操作记录
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
                 HostResourceType.DOCKER_COMPOSE.value(),
@@ -328,6 +328,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+        return devopsHostCommandDTO;
     }
 
     private String appendCmd(Long appId, String runCommand) {

@@ -1034,9 +1034,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
         // 3. 更新docker-compose应用
-        dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
+        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
 
-        devopsCdJobRecordDTO.setStatus(io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
         devopsCdJobRecordService.update(devopsCdJobRecordDTO);
 
     }
