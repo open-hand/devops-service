@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -15,12 +16,12 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DockerComposeService {
 
-    void deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO);
+    DevopsHostCommandDTO deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO);
 
-    void updateDockerComposeApp(Long projectId,
-                                Long id,
-                                Long cdJobRecordId,
-                                DockerComposeDeployVO dockerComposeDeployVO);
+    DevopsHostCommandDTO updateDockerComposeApp(Long projectId,
+                                                Long id,
+                                                Long cdJobRecordId,
+                                                DockerComposeDeployVO dockerComposeDeployVO);
 
     void restartDockerComposeApp(Long projectId, Long id);
 
