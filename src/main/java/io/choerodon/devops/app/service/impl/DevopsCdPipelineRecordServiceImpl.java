@@ -1063,8 +1063,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
         try {
             Map<String, Object> services = (Map<String, Object>) jsonObject.get("services");
+
             Map<String, Object> service = (Map<String, Object>) services.get(code);
-            service.replace("image", imageTag);
+            if (!CollectionUtils.isEmpty(service)) {
+                service.replace("image", imageTag);
+            }
+
             return yaml.dump(jsonObject);
 
         } catch (Exception e) {
