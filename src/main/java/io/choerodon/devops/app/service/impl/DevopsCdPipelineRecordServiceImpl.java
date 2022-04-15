@@ -994,6 +994,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
 
+        StringBuilder log = new StringBuilder();
+
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
@@ -1012,19 +1014,25 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
 
         // 1. 查询关联构建任务生成的镜像
+        log.append("[info] Query deploy image info").append(System.lineSeparator());
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
                 devopsCdPipelineRecordDTO.getGitlabPipelineId(),
                 devopsCdHostDeployInfoDTO.getImageJobName());
         if (ciPipelineImageDTO == null) {
             throw new CommonException("error.deploy.images.not.exist");
         }
+        log.append("[info] Deploy image is ").append(ciPipelineImageDTO.getImageTag()).append(System.lineSeparator());
 
         // 2. 通过应用服务编码匹配service，替换镜像
+        log.append("[info] Start replace docker-compose.yaml").append(System.lineSeparator());
         String value = replaceValue(appServiceDTO.getCode(),
                 ciPipelineImageDTO.getImageTag(),
                 dockerComposeValueService
                         .baseQuery(devopsHostAppDTO.getEffectValueId())
                         .getValue());
+
+        log.append("[info] Replace docker-compose.yaml result is : ").append(System.lineSeparator());
+        log.append(value).append(System.lineSeparator());
 
         DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO();
         dockerComposeValueDTO.setValue(value);
@@ -1035,10 +1043,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
 
         // 3. 更新docker-compose应用
+        log.append("[info] Start update app").append(System.lineSeparator());
         DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
-
+        log.append("[info] Update app success").append(System.lineSeparator());
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordDTO.setLog(log.toString());
         devopsCdJobRecordService.update(devopsCdJobRecordDTO);
 
     }
