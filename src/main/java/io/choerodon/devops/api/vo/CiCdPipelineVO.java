@@ -90,7 +90,15 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+    private Boolean enableSchedule;
 
+    public Boolean getEnableSchedule() {
+        return enableSchedule;
+    }
+
+    public void setEnableSchedule(Boolean enableSchedule) {
+        this.enableSchedule = enableSchedule;
+    }
 
     public List<CiDockerAuthConfigDTO> getCiDockerAuthConfigDTOList() {
         return ciDockerAuthConfigDTOList;

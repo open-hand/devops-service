@@ -30,6 +30,8 @@ public interface DevopsCdPipelineRecordService {
 
     void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
+    void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+
     void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
     void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);

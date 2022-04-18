@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -301,4 +300,14 @@ public interface DevopsHostService {
      * 主机下为用户批量分配权限
      */
     void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO);
+
+    /**
+     * 校验主机是否可用，必须同时满足下列条件才可用
+     * 1. 主机存在
+     * 2. 主机已连接
+     * 3. 拥有主机权限
+     *
+     * @param hostId
+     */
+    DevopsHostDTO checkHostAvailable(Long hostId);
 }

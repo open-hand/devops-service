@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.infra.dto.DevopsHostAppInstanceDTO;
 
@@ -28,4 +29,6 @@ public interface DevopsHostAppInstanceService {
     void baseDelete(Long id);
 
     DevopsHostAppInstanceDTO baseQuery(Long id);
+
+    List<DevopsHostAppInstanceDTO> listByAppIds(Set<Long> appIds);
 }

@@ -18,6 +18,15 @@ package io.choerodon.devops.infra.enums.host;
 public enum HostCommandEnum {
 
     DEPLOY_MIDDLEWARE("deploy_middleware"),
+
+    DEPLOY_DOCKER_COMPOSE("deploy_docker_compose"),
+    KILL_DOCKER_COMPOSE("kill_docker_compose"),
+    START_DOCKER_IN_COMPOSE("start_docker_in_compose"),
+    RESTART_DOCKER_IN_COMPOSE("restart_docker_in_compose"),
+    STOP_DOCKER_IN_COMPOSE("stop_docker_in_compose"),
+    REMOVE_DOCKER_IN_COMPOSE("remove_docker_in_compose"),
+
+    RESTART_DOCKER_COMPOSE("restart_docker_compose"),
     DEPLOY_DOCKER("deploy_docker"),
     RESTART_DOCKER("restart_docker"),
     START_DOCKER("start_docker"),
@@ -26,6 +35,7 @@ public enum HostCommandEnum {
     OPERATE_INSTANCE("operate_instance"),
     UPDATE_PROB_COMMAND("update_prob_command"),
     KILL_INSTANCE("kill_instance"),
+
     KILL_MIDDLEWARE("kill_middleware"),
     INIT_AGENT("init_agent"),
     UPGRADE_AGENT("upgrade_agent"),

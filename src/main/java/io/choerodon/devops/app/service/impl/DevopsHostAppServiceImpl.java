@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.hzero.core.base.BaseConstants;
@@ -41,6 +42,7 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.InstanceDeployOptions;
@@ -122,6 +124,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
+    @Autowired
+    private DockerComposeValueService dockerComposeValueService;
+    @Autowired
+    private DevopsDockerInstanceService devopsDockerInstanceService;
 
     @Override
     @Transactional
@@ -207,8 +213,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     @Transactional
-    public void baseDelete(Long instanceId) {
-        devopsHostAppMapper.deleteByPrimaryKey(instanceId);
+    public void baseDelete(Long id) {
+        devopsHostAppMapper.deleteByPrimaryKey(id);
     }
 
     @Override
@@ -228,20 +234,55 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
         Page<DevopsHostAppVO> page;
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listByOptions(projectId, hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params));
         } else {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
         }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
             return page;
         }
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
+        Set<Long> appIds = page.getContent().stream()
+                .filter(v -> RdupmTypeEnum.JAR.value().equals(v.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(v.getRdupmType()))
+                .map(DevopsHostAppVO::getId)
+                .collect(Collectors.toSet());
+        Set<Long> dcValueIds = page.getContent().stream()
+                .filter(v -> RdupmTypeEnum.DOCKER_COMPOSE.value().equals(v.getRdupmType()))
+                .map(DevopsHostAppVO::getEffectValueId)
+                .collect(Collectors.toSet());
+        Map<Long, List<DevopsHostAppInstanceDTO>> hostAppInstanceDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(appIds)) {
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppIds(appIds);
+            hostAppInstanceDTOMap = devopsHostAppInstanceDTOS.stream().collect(Collectors.groupingBy(DevopsHostAppInstanceDTO::getAppId));
+        }
+        Map<Long, DockerComposeValueDTO> dockerComposeValueDTOMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(dcValueIds)) {
+            List<DockerComposeValueDTO> dockerComposeValueDTOS = dockerComposeValueService.listByIds(dcValueIds);
+            if (!CollectionUtils.isEmpty(dockerComposeValueDTOS)) {
+                dockerComposeValueDTOMap = dockerComposeValueDTOS.stream().collect(Collectors.toMap(DockerComposeValueDTO::getId, Function.identity()));
+            }
+        }
+
+        Map<Long, List<DevopsHostAppInstanceDTO>> finalHostAppInstanceDTOMap = hostAppInstanceDTOMap;
+        Map<Long, DockerComposeValueDTO> finalDockerComposeValueDTOMap = dockerComposeValueDTOMap;
         page.getContent().forEach(devopsHostAppVO -> {
-            compoundDevopsHostAppVO(devopsHostAppVO);
-            devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getInstanceId()));
-            devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
-            devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
+            if (RdupmTypeEnum.JAR.value().equals(devopsHostAppVO.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(devopsHostAppVO.getRdupmType())) {
+                List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = finalHostAppInstanceDTOMap.get(devopsHostAppVO.getId());
+                if (!CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
+                    DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+                    compoundDevopsHostAppVO(devopsHostAppVO, devopsHostAppInstanceDTO);
+                    devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
+                    devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+                    devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
+                }
+            }
+            if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
+                devopsHostAppVO.setDockerComposeValueDTO(finalDockerComposeValueDTOMap.get(devopsHostAppVO.getEffectValueId()));
+
+            }
+
             devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         });
         return page;
@@ -253,12 +294,6 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (ObjectUtils.isEmpty(devopsHostAppVO)) {
             return devopsHostAppVO;
         }
-        List<DevopsHostAppVO> devopsHostAppVOS = new ArrayList<>();
-        devopsHostAppVOS.add(devopsHostAppVO);
-        UserDTOFillUtil.fillUserInfo(devopsHostAppVOS, "createdBy", "creator");
-        UserDTOFillUtil.fillUserInfo(devopsHostAppVOS, "lastUpdatedBy", "updater");
-        devopsHostAppVO = devopsHostAppVOS.get(0);
-        compoundDevopsHostAppVO(devopsHostAppVO);
         devopsHostAppVO.setDeployWay(AppCenterDeployWayEnum.HOST.getValue());
         if (org.apache.commons.lang3.StringUtils.equals(devopsHostAppVO.getRdupmType(), RdupmTypeEnum.DOCKER.value())) {
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
@@ -269,27 +304,65 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setInstanceId(dockerInstanceDTOS.get(0).getId());
                 devopsHostAppVO.setStatus(dockerInstanceDTOS.get(0).getStatus());
                 devopsHostAppVO.setPorts(dockerInstanceDTOS.get(0).getPorts());
+                DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
+                devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
             }
+            devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppVO.getInstanceId(), HostResourceType.DOCKER_PROCESS.value()));
+
         }
-        devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsHostAppVO.getInstanceId()));
-        devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppVO.getKillCommand()));
-        devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppVO.getHealthProb()));
+
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
             DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
         }
-        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
-        devopsDockerInstanceDTO.setAppId(devopsHostAppVO.getId());
-        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
-        if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
-            DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.stream().sorted(Comparator.comparing(DevopsDockerInstanceDTO::getId).reversed()).collect(Collectors.toList()).get(0);
-            devopsHostAppVO.setDevopsDockerInstanceVO(ConvertUtils.convertObject(dockerInstanceDTO, DevopsDockerInstanceVO.class));
+        if (RdupmTypeEnum.JAR.value().equals(devopsHostAppVO.getRdupmType())
+                || RdupmTypeEnum.OTHER.value().equals(devopsHostAppVO.getRdupmType())) {
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppVO.getId());
+            if (!CollectionUtils.isEmpty(devopsHostAppInstanceDTOS)) {
+                DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+                compoundDevopsHostAppVO(devopsHostAppVO, devopsHostAppInstanceDTO);
+                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
+                devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
+                devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+            }
+
+        }
+
+        if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppVO.getRdupmType())) {
+            DevopsHostAppDTO devopsHostAppDTO = baseQuery(id);
+            devopsHostAppVO.setRunCommand(devopsHostAppDTO.getRunCommand());
+            devopsHostAppVO.setDockerComposeValueDTO(dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()));
+            devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppDTO.getId(), HostResourceType.DOCKER_COMPOSE.value()));
+            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceService.listByAppId(id);
+            calculateStatus(devopsHostAppVO, devopsDockerInstanceDTOS);
         }
         // 设置所属主机连接状态
         devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
+        IamUserDTO creator = baseServiceClientOperator.queryUserByUserId(devopsHostAppVO.getCreatedBy());
+        IamUserDTO updater = baseServiceClientOperator.queryUserByUserId(devopsHostAppVO.getLastUpdatedBy());
+
+        devopsHostAppVO.setCreator(creator);
+        devopsHostAppVO.setUpdater(updater);
         return devopsHostAppVO;
+    }
+
+    private void calculateStatus(DevopsHostAppVO devopsHostAppVO, List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS) {
+        if (CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
+            return;
+        }
+        if (devopsDockerInstanceDTOS.stream().allMatch(v -> DockerComposeStatusEnum.RUNNING.getType().equals(v.getStatus()))) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.RUNNING.getType());
+            return;
+        }
+        if (devopsDockerInstanceDTOS.stream().allMatch(v -> DockerComposeStatusEnum.EXITED.getType().equals(v.getStatus()))) {
+            devopsHostAppVO.setStatus(DockerComposeStatusEnum.EXITED.getType());
+            return;
+        }
+        devopsHostAppVO.setStatus(DockerComposeStatusEnum.OTHER.getType());
+        return;
     }
 
     @Override
@@ -324,7 +397,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteById(Long projectId, Long hostId, Long appId, String hostDeployType) {
+    public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
             throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
@@ -333,8 +406,40 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         hostConnectionHandler.checkHostConnection(hostId);
         devopsHostAdditionalCheckValidator.validHostIdAndInstanceIdMatch(hostId, appId);
 
-        if (org.apache.commons.lang3.StringUtils.equals(hostDeployType, HostDeployType.IMAGED_DEPLOY.getValue())) {
+        DevopsHostAppDTO devopsHostAppDTO = baseQuery(appId);
+        // 后续可以优化代码结构
+        if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppDTO.getRdupmType())) {
+            // 走中间件删除逻辑
+            List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
+            DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
+            if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
+                throw new CommonException("error.host.instance.kill.command.exist");
+            }
+            devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
+        } else if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppDTO.getRdupmType())) {
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_DOCKER_COMPOSE.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.DOCKER_COMPOSE.value());
+            devopsHostCommandDTO.setInstanceId(appId);
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.KILL_DOCKER_COMPOSE.value());
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+            instanceDeployOptions.setInstanceId(String.valueOf(appId));
+            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+            LOGGER.info("Delete docker-compose app msg is {}", JsonHelper.marshalByJackson(hostAgentMsgVO));
+
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId), JsonHelper.marshalByJackson(hostAgentMsgVO));
+        } else if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppDTO.getRdupmType())) {
             DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
             devopsDockerInstanceDTO.setAppId(appId);
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
@@ -354,46 +459,31 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
-            // 走中间件删除逻辑
-            if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
-            } else {
-                if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
-                    throw new CommonException("error.host.instance.kill.command.exist");
-                }
-
-                // 走中间件删除逻辑
-                if (AppSourceType.MIDDLEWARE.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
-                    devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
-                } else {
-                    if (!HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand())) {
-                        throw new CommonException("error.host.instance.kill.command.exist");
-                    }
-
-                    DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
-                    devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
-                    devopsHostCommandDTO.setHostId(hostId);
-                    devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
-                    devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
-                    devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
-                    devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-
-                    HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
-                    hostAgentMsgVO.setHostId(String.valueOf(hostId));
-                    hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
-                    hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
-
-
-                    InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
-                    instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-                    instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
-                    instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
-                    hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
-
-                    webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
-                }
+            if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
+                throw new CommonException("error.host.instance.kill.command.exist");
             }
+
+            DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
+            devopsHostCommandDTO.setCommandType(HostCommandEnum.KILL_INSTANCE.value());
+            devopsHostCommandDTO.setHostId(hostId);
+            devopsHostCommandDTO.setInstanceType(HostResourceType.INSTANCE_PROCESS.value());
+            devopsHostCommandDTO.setInstanceId(devopsHostAppInstanceDTO.getId());
+            devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
+            devopsHostCommandService.baseCreate(devopsHostCommandDTO);
+
+
+            HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
+            hostAgentMsgVO.setHostId(String.valueOf(hostId));
+            hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
+            hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
+
+            InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
+            instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+            instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
+            instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
+
+            webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
     }
 
@@ -486,17 +576,17 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         return devopsCdPipelineService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
-    private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO) {
+    private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
         if (!RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
-            if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), ProdJarInfoVO.class));
-            } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppVO.getSourceType())
-                    || AppSourceType.HZERO.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), MarketDeployObjectInfoVO.class));
-            } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), FileInfoVO.class));
-            } else if (AppSourceType.CUSTOM_JAR.getValue().equals(devopsHostAppVO.getSourceType())) {
-                devopsHostAppVO.setJarPullInfoDTO(JsonHelper.unmarshalByJackson(devopsHostAppVO.getSourceConfig(), JarPullInfoDTO.class));
+            if (AppSourceType.CURRENT_PROJECT.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                devopsHostAppVO.setProdJarInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), ProdJarInfoVO.class));
+            } else if (AppSourceType.MARKET.getValue().equals(devopsHostAppInstanceDTO.getSourceType())
+                    || AppSourceType.HZERO.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                devopsHostAppVO.setMarketDeployObjectInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), MarketDeployObjectInfoVO.class));
+            } else if (AppSourceType.UPLOAD.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                devopsHostAppVO.setFileInfoVO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class));
+            } else if (AppSourceType.CUSTOM_JAR.getValue().equals(devopsHostAppInstanceDTO.getSourceType())) {
+                devopsHostAppVO.setJarPullInfoDTO(JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarPullInfoDTO.class));
             }
         }
     }

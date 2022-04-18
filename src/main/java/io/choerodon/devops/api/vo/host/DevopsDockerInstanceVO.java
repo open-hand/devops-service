@@ -69,6 +69,8 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
 
     @ApiModelProperty("命令框的命令")
     private String dockerCommand;
+    @ApiModelProperty("操作命令")
+    private DevopsHostCommandDTO devopsHostCommandDTO;
 
     public String getDockerCommand() {
         return dockerCommand;
@@ -166,8 +168,6 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
         this.deployer = deployer;
     }
 
-    @ApiModelProperty("操作命令")
-    private DevopsHostCommandDTO devopsHostCommandDTO;
 
     public DevopsHostCommandDTO getDevopsHostCommandDTO() {
         return devopsHostCommandDTO;

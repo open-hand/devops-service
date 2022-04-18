@@ -11,20 +11,19 @@
         </foreach>
     </update>
 
-    <select id="selectLatestByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
-        SELECT
-	      *
-        FROM
-	     devops_host_command
-        WHERE
-	     instance_id = #{instanceId,jdbcType=BIGINT}
+    <select id="selectLatestByInstanceIdAndType" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT *
+        FROM devops_host_command
+        WHERE instance_id = #{instanceId,jdbcType=BIGINT}
+          and instance_type = #{instanceType}
         ORDER BY id DESC
-	     LIMIT 0,1;
+        LIMIT 0,1;
     </select>
     <select id="queryInstanceLatest" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
         SELECT *
         FROM devops_host_command dhc
         WHERE dhc.instance_id = #{instanceId}
+          and dhc.instance_type = #{instanceType}
         ORDER BY id DESC
         limit 1
     </select>
@@ -35,14 +34,23 @@
     </select>
 
     <delete id="deleteByHostId">
-        DELETE FROM devops_host_command WHERE host_id = #{hostId}
+        DELETE
+        FROM devops_host_command
+        WHERE host_id = #{hostId}
     </delete>
 
     <select id="listByIds" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
         SELECT * FROM devops_host_command
-        WHERE id IN 
+        WHERE id IN
         <foreach collection="missCommands" item="id" open="(" close=")" separator=",">
             #{id}
+        </foreach>
+    </select>
+    <select id="listByTypeAndInsIds" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT * FROM devops_host_command
+        WHERE instance_type = #{instanceType} and instance_id IN
+        <foreach collection="insIds" item="insId" open="(" close=")" separator=",">
+            #{insId}
         </foreach>
     </select>
 </mapper>

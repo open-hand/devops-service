@@ -57,6 +57,16 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("更新该是新建实例")
     private String operation;
 
+    private String imageJobName;
+
+    public String getImageJobName() {
+        return imageJobName;
+    }
+
+    public void setImageJobName(String imageJobName) {
+        this.imageJobName = imageJobName;
+    }
+
     public String getOperation() {
         return operation;
     }

@@ -1,10 +1,34 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
+import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import sun.misc.BASE64Decoder;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
+import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
+import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
@@ -37,24 +61,6 @@ import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.*;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
-import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import sun.misc.BASE64Decoder;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * 〈功能简述〉
@@ -128,7 +134,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         //获取部署对象
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
 
-        //保存实例的信息
+        // 保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
 
         // 如果该应用关联了流水线，同步修改流水线里面的信息
@@ -366,6 +372,17 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
     @Override
+    public DevopsDockerInstanceDTO queryByAppIdAndContainerId(Long appId, String containerId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        Assert.notNull(containerId, ResourceCheckConstant.ERROR_APP_CONTAINER_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+        devopsDockerInstanceDTO.setContainerId(containerId);
+        return devopsDockerInstanceMapper.selectOne(devopsDockerInstanceDTO);
+    }
+
+    @Override
     @Transactional
     public void baseUpdate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_UPDATE_DOCKER_INSTANCE_FAILED);
@@ -385,9 +402,68 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     }
 
     @Override
+    public List<DevopsDockerInstanceDTO> listByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+
+        return devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
+    }
+
+    @Override
     public DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName) {
         Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
         Assert.notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
         return devopsDockerInstanceMapper.selectOne(new DevopsDockerInstanceDTO(hostId, containerName));
+    }
+
+    @Override
+    @Transactional
+    public void deleteByAppId(Long appId) {
+        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+
+        DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
+        devopsDockerInstanceDTO.setAppId(appId);
+
+        devopsDockerInstanceMapper.delete(devopsDockerInstanceDTO);
+    }
+
+    @Override
+    @Transactional
+    public void baseCreate(DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, ERROR_SAVE_DOCKER_INSTANCE_FAILED);
+    }
+
+    @Override
+    public void createOrUpdate(String hostId, DockerProcessUpdatePayload processPayload) {
+        Long appId = processPayload.getInstanceId();
+
+        List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOList = devopsDockerInstanceService.listByAppId(appId);
+
+        Map<String, DevopsDockerInstanceDTO> instanceDTOMap = devopsDockerInstanceDTOList.stream().collect(Collectors.toMap(DevopsDockerInstanceDTO::getName, Function.identity()));
+        // 处理更新的数据
+        List<DockerProcessInfoVO> updateProcessInfos = processPayload.getUpdateProcessInfos();
+        if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+            updateProcessInfos.forEach(addProcessInfo -> {
+                DevopsDockerInstanceDTO devopsDockerInstanceDTO = instanceDTOMap.get(addProcessInfo.getContainerName());
+
+                if (devopsDockerInstanceDTO != null) {
+                    devopsDockerInstanceDTO.setStatus(addProcessInfo.getStatus());
+                    devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
+                    devopsDockerInstanceDTO.setContainerId(addProcessInfo.getContainerId());
+                    devopsDockerInstanceDTO.setImage(addProcessInfo.getImage());
+                    devopsDockerInstanceDTO.setPorts(addProcessInfo.getPorts());
+                    devopsDockerInstanceService.baseUpdate(devopsDockerInstanceDTO);
+                } else {
+                    devopsDockerInstanceDTO = io.choerodon.devops.infra.util.ConvertUtils.convertObject(addProcessInfo, DevopsDockerInstanceDTO.class);
+                    devopsDockerInstanceDTO.setAppId(appId);
+                    devopsDockerInstanceDTO.setName(addProcessInfo.getContainerName());
+                    devopsDockerInstanceDTO.setHostId(Long.valueOf(hostId));
+                    devopsDockerInstanceDTO.setSourceType(AppSourceType.CUSTOM.getValue());
+                    devopsDockerInstanceService.baseCreate(devopsDockerInstanceDTO);
+                }
+            });
+        }
     }
 }

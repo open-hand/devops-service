@@ -27,8 +27,15 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                         @Param("operationType") String operationType,
                                         @Param("params") String params);
 
+    List<DevopsHostAppVO> listBasicInfoByOptions(@Param("projectId") Long projectId,
+                                                 @Param("hostId") Long hostId,
+                                                 @Param("rdupmType") String rdupmType,
+                                                 @Param("operationType") String operationType,
+                                                 @Param("params") String params);
+
     /**
      * 查询主机下的应用实例详情
+     *
      * @param id
      * @return DevopsHostAppVO
      */
@@ -40,6 +47,13 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                              @Param("rdupmType") String rdupmType,
                                              @Param("operationType") String operationType,
                                              @Param("params") String params);
+
+    List<DevopsHostAppVO> listOwnedBasicInfoByOptions(@Param("projectId") Long projectId,
+                                                      @Param("userId") Long userId,
+                                                      @Param("hostId") Long hostId,
+                                                      @Param("rdupmType") String rdupmType,
+                                                      @Param("operationType") String operationType,
+                                                      @Param("params") String params);
 
     Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("name") String name);
 

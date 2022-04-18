@@ -886,4 +886,97 @@ public interface GitlabServiceClient {
             @RequestParam("userId") Integer userId,
             @RequestParam(value = "statistics") Boolean statistics);
 
+    @PostMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
+    ResponseEntity<PipelineSchedule> createPipelineSchedule(
+            @PathVariable("project_id") Integer projectId,
+            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
+            @RequestBody PipelineSchedule pipelineSchedule);
+
+    @PostMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}/variables")
+    ResponseEntity<Variable> createScheduleVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Integer projectId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
+            @RequestBody Variable variable);
+
+    @PutMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}/variables")
+    ResponseEntity<Variable> editScheduleVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Integer projectId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
+            @RequestBody Variable variable);
+
+    @DeleteMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}/variables")
+    ResponseEntity<Variable> deleteScheduleVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("project_id") Integer projectId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
+            @RequestBody Variable variable);
+
+    @GetMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}")
+    ResponseEntity<PipelineSchedule> queryPipelineSchedule(
+            @PathVariable("project_id") Integer projectId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @GetMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
+    ResponseEntity<List<PipelineSchedule>> listPipelineSchedules(
+            @PathVariable("project_id") Integer projectId,
+            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @PutMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}")
+    ResponseEntity<Void> updatePipelineSchedule(
+            @PathVariable("project_id") Integer projectId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password,
+            @RequestBody PipelineSchedule pipelineSchedule);
+    @DeleteMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}")
+    ResponseEntity<Void> deletePipelineSchedule(
+            @PathVariable("project_id") Integer projectId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
+            @PathVariable("pipeline_schedule_id") Integer pipelineScheduleId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
 }

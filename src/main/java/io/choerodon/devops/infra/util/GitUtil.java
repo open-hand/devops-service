@@ -155,8 +155,19 @@ public class GitUtil {
      */
     public static GitlabRepositoryInfo calaulateRepositoryInfo(String repositoryUrl) {
         String[] protolAndDomain = repositoryUrl.split("://");
-        String[] repoInfo = protolAndDomain[1].split("/");
-        return new GitlabRepositoryInfo(protolAndDomain[0] + "://" + repoInfo[0], repoInfo[1], repoInfo[2]);
+        String groupAndProject = protolAndDomain[1];
+        if (protolAndDomain[1].endsWith("/")) {
+            groupAndProject = protolAndDomain[1].substring(0, protolAndDomain[1].length() - 1);
+        }
+
+        int start = groupAndProject.indexOf("/");
+        int end = groupAndProject.lastIndexOf("/");
+
+        String domain = groupAndProject.substring(0, start);
+        String group = groupAndProject.substring(start + 1, end);
+        String project = groupAndProject.substring(end + 1);
+
+        return new GitlabRepositoryInfo(protolAndDomain[0] + "://" + domain, group, project);
     }
 
     private static String getLog(String repoPath, String fileName) {

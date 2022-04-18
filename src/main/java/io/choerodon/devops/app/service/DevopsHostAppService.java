@@ -38,7 +38,7 @@ public interface DevopsHostAppService {
 
     void baseUpdate(DevopsHostAppDTO devopsHostAppDTO);
 
-    void baseDelete(Long instanceId);
+    void baseDelete(Long id);
 
     DevopsHostAppDTO baseQuery(Long id);
 
@@ -73,7 +73,7 @@ public interface DevopsHostAppService {
      * @param appId
      * @param hostId
      */
-    void deleteById(Long projectId, Long hostId, Long appId, String hostDeployType);
+    void deleteById(Long projectId, Long hostId, Long appId);
 
     void baseCreate(DevopsHostAppDTO devopsHostAppDTO, String errorCode);
 
