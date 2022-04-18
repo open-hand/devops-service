@@ -128,12 +128,12 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     }
 
     @Override
-    public ImageRepoInfoVO queryImageRepoInfo(Long projectId, String token, Long gitlabPipelineId) {
+    public ImageRepoInfoVO queryImageRepoInfo(String token, Long gitlabPipelineId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
         if (appServiceDTO == null) {
             throw new CommonException("error.app.svc.not.found");
         }
-        CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        Long projectId = appServiceDTO.getProjectId();
 
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageMapper.queryPipelineLatestImage(appServiceDTO.getId(), gitlabPipelineId);
         String repoType = ciPipelineImageDTO.getRepoType();
