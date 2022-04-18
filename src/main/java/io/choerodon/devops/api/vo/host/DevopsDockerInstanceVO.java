@@ -49,6 +49,7 @@ public class DevopsDockerInstanceVO extends DevopsHostInstanceVO {
     private String repoName;
 
     @ApiModelProperty("仓库的id,默认的才有")
+    @Encrypt
     private Long repoId;
 
     @ApiModelProperty("自定义仓库的用户名")
