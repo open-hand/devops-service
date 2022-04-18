@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsMiddlewareMapper">
-    <select id="checkNameUnique" resultType="java.lang.Integer">
+    <select id="checkCodeUnique" resultType="java.lang.Integer">
         SELECT COUNT(*)
         FROM devops_middleware dm
         WHERE dm.project_id=#{projectId}
@@ -9,9 +9,11 @@
         AND dm.type=#{type}
     </select>
 
-    <select id="deleteByInstanceId" resultType="int">
-        DELETE FROM devops_middleware WHERE instance_id=#{instanceId}
-    </select>
+    <delete id="deleteByInstanceId">
+        DELETE
+        FROM devops_middleware
+        WHERE instance_id = #{instanceId}
+    </delete>
 
     <select id="queryByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsMiddlewareDTO">
         SELECT * FROM devops_middleware WHERE instance_id=#{instanceId}

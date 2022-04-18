@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -37,6 +36,15 @@ public interface DevopsHostService {
      * @return 安装命令
      */
     String getInstallString(Long projectId, DevopsHostDTO devopsHostDTO);
+
+    /**
+     * 获得agent升级命令
+     *
+     * @param projectId     项目id
+     * @param devopsHostDTO 主机配置dto
+     * @return agent升级命令
+     */
+    String getUpgradeString(Long projectId, DevopsHostDTO devopsHostDTO);
 
     /**
      * 更新主机
@@ -213,13 +221,12 @@ public interface DevopsHostService {
      * @param projectId
      * @param hostId
      * @param token
-     * @param res
      */
-    String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res);
+    String downloadCreateHostFile(Long projectId, Long hostId, String token);
 
     ResourceUsageInfoVO queryResourceUsageInfo(Long projectId, Long hostId);
 
-    String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate);
+    String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate,String previousAgentVersion);
 
     String queryUninstallShell(Long projectId, Long hostId);
 
@@ -293,4 +300,14 @@ public interface DevopsHostService {
      * 主机下为用户批量分配权限
      */
     void batchUpdateHostUserPermission(Long projectId, DevopsHostUserPermissionUpdateVO devopsHostUserPermissionUpdateVO);
+
+    /**
+     * 校验主机是否可用，必须同时满足下列条件才可用
+     * 1. 主机存在
+     * 2. 主机已连接
+     * 3. 拥有主机权限
+     *
+     * @param hostId
+     */
+    DevopsHostDTO checkHostAvailable(Long hostId);
 }

@@ -20,14 +20,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsHostAppService {
     /**
      * 部署java应用
+     *
      * @param projectId
      * @param jarDeployVO
      */
     void deployJavaInstance(Long projectId, JarDeployVO jarDeployVO);
 
     String calculateSourceConfig(JarDeployVO jarDeployVO);
+
     /**
      * 查询java实例列表
+     *
      * @param hostId
      * @return
      */
@@ -35,7 +38,7 @@ public interface DevopsHostAppService {
 
     void baseUpdate(DevopsHostAppDTO devopsHostAppDTO);
 
-    void baseDelete(Long instanceId);
+    void baseDelete(Long id);
 
     DevopsHostAppDTO baseQuery(Long id);
 
@@ -45,6 +48,7 @@ public interface DevopsHostAppService {
 
     /**
      * 查询主机下的应用实例详情
+     *
      * @param projectId
      * @param id
      * @return DevopsHostAppVO
@@ -61,8 +65,10 @@ public interface DevopsHostAppService {
     Boolean checkNameUnique(Long projectId, Long appId, String name);
 
     Boolean checkCodeUnique(Long projectId, Long appId, String code);
+
     /**
      * 删除主机应用
+     *
      * @param projectId
      * @param appId
      * @param hostId

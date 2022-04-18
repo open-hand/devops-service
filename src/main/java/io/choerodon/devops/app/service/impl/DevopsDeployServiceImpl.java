@@ -57,11 +57,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
-    private AppServiceInstanceService appServiceInstanceService;
-    @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
-    @Autowired
-    private JarAndImageDeployService jarAndImageDeployService;
     @Autowired
     private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
     @Autowired
@@ -75,21 +71,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
-    @Override
-    public void hostDeploy(Long projectId, DeployConfigVO deployConfigVO) {
-        if (DeployModeEnum.ENV.value().equals(deployConfigVO.getDeployType())) {
-            AppServiceDeployVO appServiceDeployVO = deployConfigVO.getAppServiceDeployVO();
-            appServiceDeployVO.setType("create");
-            appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false);
-        } else {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            jarAndImageDeployService.jarAndImageDeploy(projectId, deployConfigVO, authentication);
-        }
-    }
 
     @Override
     @Transactional

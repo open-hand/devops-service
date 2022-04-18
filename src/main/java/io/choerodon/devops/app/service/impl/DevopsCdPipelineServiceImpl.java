@@ -695,34 +695,42 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         devopsDeployGroupContainerConfigVOS.forEach(config -> {
             if (config.getPipelineJobName() != null) {
+                CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
                 if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
-                    CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
                     CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
                     HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
                     DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
                     dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
 
-                    String[] nameAndTagArray = ciPipelineImageDTO.getImageTag().split(":");
-                    String iamgeName = nameAndTagArray[0].substring(nameAndTagArray[0].lastIndexOf("/") + 1);
+                    int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
+                    String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
+                    String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
 
                     ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
                             harborRepoDTO.getRepoType(),
                             harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                            iamgeName,
-                            nameAndTagArray[1],
-                            Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()));
+                            imageName,
+                            tagName,
+                            Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
+                            ciPipelineImageDTO.getImageTag());
                     dockerDeployVO.setImageInfo(prodImageInfoVO);
                     config.setPipelineJobName(null);
                     config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
                     config.setDockerDeployVO(dockerDeployVO);
 
                 } else {
-                    CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(devopsCdPipelineRecordDTO.getPipelineId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+                    CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
                     ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(ciPipelineMavenDTO.getNexusRepoId(),
                             ciPipelineMavenDTO.getGroupId(),
                             ciPipelineMavenDTO.getArtifactId(),
                             getMavenVersion(ciPipelineMavenDTO.getVersion()));
+
+                    if (ciPipelineMavenDTO.getNexusRepoId() == null) {
+                        prodJarInfoVO.setDownloadUrl(ciPipelineMavenDTO.calculateDownloadUrl());
+                        prodJarInfoVO.setUsername(DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername()));
+                        prodJarInfoVO.setPassword(DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword()));
+                    }
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId());
 
@@ -1231,7 +1239,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordService.update(devopsCdJobRecordDTO1);
             LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task success. projectId : {}, taskId : {} <<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId());
         } catch (Exception e) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId(), e.getCause());
+            LOGGER.info(">>>>>>>>>>>>>>>>>>> Execute api test task failed. projectId : {}, taskId : {} e: {}<<<<<<<<<<<<<<<<<<<<", devopsCdJobRecordDTO.getProjectId(), devopsCdApiTestInfoDTO.getApiTestTaskId(), e);
             // 更新记录状态为失败
             devopsCdJobRecordService.updateStatusById(devopsCdJobRecordDTO.getId(), PipelineStatus.FAILED.toValue());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);

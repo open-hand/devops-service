@@ -1,22 +1,26 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
@@ -24,12 +28,8 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineMavenService;
 import io.choerodon.devops.app.service.DevopsCiStepService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
@@ -37,7 +37,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.NexusClient;
@@ -71,10 +70,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
-    @Lazy
-    private DevopsCiPipelineService devopsCiPipelineService;
-
-    @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
 
     @Autowired
@@ -82,6 +77,10 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+
+    @Autowired
+    @Qualifier(value = "restTemplateForIp")
+    private RestTemplate restTemplateForIp;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -102,7 +101,16 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void createOrUpdate(Long nexusRepoId, Long jobId, Long sequence, Long gitlabPipelineId, String jobName, String token, MultipartFile file) {
+    public void createOrUpdate(Long nexusRepoId,
+                               Long jobId,
+                               Long sequence,
+                               Long gitlabPipelineId,
+                               String jobName,
+                               String token,
+                               MultipartFile file,
+                               String mavenRepoUrl,
+                               String username,
+                               String password) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
             if (appServiceDTO == null) {
@@ -117,8 +125,11 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
-            ciPipelineMavenDTO.setNexusRepoId(Objects.requireNonNull(nexusRepoId));
+            ciPipelineMavenDTO.setNexusRepoId(nexusRepoId);
             ciPipelineMavenDTO.setJobName(Objects.requireNonNull(jobName));
+            ciPipelineMavenDTO.setMavenRepoUrl(mavenRepoUrl);
+            ciPipelineMavenDTO.setUsername(username);
+            ciPipelineMavenDTO.setPassword(password);
             //填充每次跑完ci后生成的准确的版本  下载maven-metadata basic登录  用户名密码要从setting里面获取
             //根据jobId 拿到JOb  判断job的类型是 maven_deploy 才请求maven
             DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
@@ -136,35 +147,40 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
             //如果一个job里面 有多次jar上传 会只保留最新的版本
             if (!CollectionUtils.isEmpty(ciStepDTOS)) {
-                logger.debug(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciStepDTOS));
-                //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
-                String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
-                // 将maven的setting文件转换为java对象
-                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
-                //通过仓库的id 筛选出匹配的server节点和Profiles 节点
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
-                logger.debug(">>>>>>>>>>>>>>>>>3. >>>>>>>>>>>>>>>>>>>>c7nNexusRepoDTO {}", JsonHelper.marshalByJackson(c7nNexusRepoDTO));
-                // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
-                String baseUrl = null;
-                Server server = null;
-                String neRepositoryName = null;
+                String jarSnapshotTimestamp;
+                if (nexusRepoId != null) {
+                    logger.debug(">>>>>>>>>>>>>>>>>2. >>>>>>>>>>>>>>>>>>>>ciConfigTemplateVOS {}", JsonHelper.marshalByJackson(ciStepDTOS));
+                    //这个job是发布maven 的job  根据jobId sequence 查询 maven setting 获取用户名密码 仓库地址等信息
+                    String queryMavenSettings = devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
+                    // 将maven的setting文件转换为java对象
+                    Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
+                    //通过仓库的id 筛选出匹配的server节点和Profiles 节点
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
+                    logger.debug(">>>>>>>>>>>>>>>>>3. >>>>>>>>>>>>>>>>>>>>c7nNexusRepoDTO {}", JsonHelper.marshalByJackson(c7nNexusRepoDTO));
+                    // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
+                    String baseUrl = null;
+                    Server server = null;
+                    String neRepositoryName = null;
 
-                if (!Objects.isNull(c7nNexusRepoDTO)) {
-                    neRepositoryName = c7nNexusRepoDTO.getNeRepositoryName();
-                    String[] temp = c7nNexusRepoDTO.getInternalUrl().split(BaseConstants.Symbol.SLASH);
-                    String repo = temp[temp.length - 1];
-                    if (c7nNexusRepoDTO.getInternalUrl().endsWith("/")) {
-                        c7nNexusRepoDTO.setInternalUrl(c7nNexusRepoDTO.getInternalUrl().substring(0, c7nNexusRepoDTO.getInternalUrl().length() - 1));
+                    if (!Objects.isNull(c7nNexusRepoDTO)) {
+                        neRepositoryName = c7nNexusRepoDTO.getNeRepositoryName();
+                        String[] temp = c7nNexusRepoDTO.getInternalUrl().split(BaseConstants.Symbol.SLASH);
+                        String repo = temp[temp.length - 1];
+                        if (c7nNexusRepoDTO.getInternalUrl().endsWith("/")) {
+                            c7nNexusRepoDTO.setInternalUrl(c7nNexusRepoDTO.getInternalUrl().substring(0, c7nNexusRepoDTO.getInternalUrl().length() - 1));
+                        }
+                        baseUrl = c7nNexusRepoDTO.getInternalUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
+                        String finalNeRepositoryName = neRepositoryName;
+                        server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
                     }
-                    baseUrl = c7nNexusRepoDTO.getInternalUrl().replace(repo, "").replace(temp[temp.length - 2] + BaseConstants.Symbol.SLASH, "");
-                    String finalNeRepositoryName = neRepositoryName;
-                    server = settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), finalNeRepositoryName)).collect(Collectors.toList()).get(0);
+                    // 下载mate_date获取时间戳 0.0.1-20210203.012553-2
+                    logger.debug(">>>>>>>>>>>>>>>>>4. >>>>>>>>>>>>>>>>>>>>baseUrl {}, neRepositoryName {}， server.getUsername {}， server.getPassword {}，ciPipelineMavenDTO {}",
+                            baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
+                    jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
+                } else {
+                    jarSnapshotTimestamp = getCustomJarSnapshotTimestamp(mavenRepoUrl, DESEncryptUtil.decode(username), DESEncryptUtil.decode(password), ciPipelineMavenDTO);
                 }
-                // 下载mate_date获取时间戳 0.0.1-20210203.012553-2
-                logger.debug(">>>>>>>>>>>>>>>>>4. >>>>>>>>>>>>>>>>>>>>baseUrl {}, neRepositoryName {}， server.getUsername {}， server.getPassword {}，ciPipelineMavenDTO {}",
-                        baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
-                String jarSnapshotTimestamp = getJarSnapshotTimestamp(baseUrl, neRepositoryName, server.getUsername(), server.getPassword(), ciPipelineMavenDTO);
                 //加上小版本   0.0.1-SNAPSHOT/springboot-0.0.1-20210202.063200-1.jar
                 logger.debug(">>>>>>>>>>>>>>>>>5. >>>>>>>>>>>>>>>>>>>>jarSnapshotTimestamp {}", jarSnapshotTimestamp);
                 if (!StringUtils.equalsIgnoreCase(jarSnapshotTimestamp, ciPipelineMavenDTO.getVersion())) {
@@ -201,6 +217,61 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             return ciPipelineMavenDTO.getVersion();
         }
+    }
+
+    public String getCustomJarSnapshotTimestamp(String mavenRepoUrl, String userName, String password, CiPipelineMavenDTO ciPipelineMavenDTO) {
+        if (Objects.isNull(mavenRepoUrl)) {
+            return ciPipelineMavenDTO.getVersion();
+        }
+        try {
+
+            String basicInfo = userName + ":" + password;
+            String token = "Basic " + Base64.getEncoder().encodeToString(basicInfo.getBytes());
+
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH));
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getArtifactId());
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml");
+            logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
+
+            OkHttpClient client = new OkHttpClient();
+            //创建一个Request
+            Request request = new Request.Builder()
+                    .get()
+                    .header("Authorization", token)
+                    .url(mavenRepoUrl)
+                    .build();
+            //通过client发起请求
+            okhttp3.Response execute = client.newCall(request).execute();
+            if (execute.isSuccessful()) {
+                String metadataXml = execute.body().string();
+                logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-xml url is {}", metadataXml);
+                String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml);
+                return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
+            } else if (execute.code() == HttpStatus.NOT_FOUND.value()) {
+                return ciPipelineMavenDTO.getVersion();
+            } else if (execute.code() == HttpStatus.UNAUTHORIZED.value()) {
+                throw new CommonException("error.pull.user.auth.fail");
+            } else {
+                throw new CommonException("error.pull.metadata.fail");
+            }
+
+        } catch (Exception ex) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.info("The ex is:", ex);
+            }
+            return ciPipelineMavenDTO.getVersion();
+        }
+    }
+
+    private String appendWithSlash(String source, String str) {
+        if (source.endsWith("/")) {
+            source = source.substring(0, source.length() - 1);
+        }
+        if (str.startsWith("/")) {
+            str = str.substring(1, str.length());
+        }
+        return source + BaseConstants.Symbol.SLASH + str;
     }
 
     @Override

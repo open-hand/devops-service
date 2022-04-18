@@ -49,7 +49,7 @@ public interface DevopsGitService {
      * @param releaseNotes
      * @return
      */
-    TagVO updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes);
+    void updateTag(Long projectId, Long appServiceId, String tag, String releaseNotes);
 
     /**
      * 删除标签

@@ -17,6 +17,11 @@ public enum HostMsgEventEnum {
      * 实例进程更新
      */
     INSTANCE_PROCESS_UPDATE("instance_process_update"),
+
+    /**
+     * docker_compose应用下容器进程更新
+     */
+    DOCKER_COMPOSE_PROCESS_UPDATE("docker_compose_process_update"),
     /**
      * docker进程更新
      */

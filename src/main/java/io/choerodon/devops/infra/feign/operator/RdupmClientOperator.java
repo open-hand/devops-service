@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -82,6 +83,14 @@ public class RdupmClientOperator {
      */
     public HarborC7nRepoImageTagVo listImageTag(String repoType, @Nullable Long repoId, String imageName, @Nullable String tagName) {
         ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, tagName);
+        if (response == null || response.getBody() == null) {
+            throw new CommonException("error.query.nexus.repo.list.tag");
+        }
+        return response.getBody();
+    }
+
+    public HarborCustomRepo queryCustomRepoById(Long projectId, Long repoId) {
+        ResponseEntity<HarborCustomRepo> response = rdupmClient.queryCustomRepoById(projectId, repoId);
         if (response == null || response.getBody() == null) {
             throw new CommonException("error.query.nexus.repo.list.tag");
         }

@@ -8,8 +8,22 @@
         where ddi.host_id = #{hostId}
         order by ddi.creation_date desc
     </select>
+    <select id="listByAppId" resultType="io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO">
+        select *
+        from devops_docker_instance ddi
+        where ddi.app_id = #{appId}
+        <if test="name != null">
+            and ddi.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="param != null">
+            and ddi.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
+        order by ddi.creation_date desc
+    </select>
 
     <delete id="deleteByHostId">
-        DELETE FROM devops_docker_instance WHERE host_id = #{hostId}
+        DELETE
+        FROM devops_docker_instance
+        WHERE host_id = #{hostId}
     </delete>
 </mapper>

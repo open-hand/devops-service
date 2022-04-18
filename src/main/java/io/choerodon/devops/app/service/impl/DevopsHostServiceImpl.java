@@ -7,15 +7,12 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +25,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -47,7 +45,6 @@ import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
 import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
-import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
@@ -72,15 +69,22 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
-    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh";
-    private static final String HOST_UNINSTALL_SHELL = "ps -ef|grep c7n-agent | grep -v grep |awk '{print  $2}' |xargs kill -9";
+    private static final String HOST_AGENT = "curl -o host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh %s";
+    private static final String HOST_UNINSTALL_SHELL = "sudo systemctl stop c7n-agent";
     private static final String HOST_ACTIVATE_COMMAND_TEMPLATE;
+    private static final String HOST_UPGRADE_COMMAND_TEMPLATE;
 
     static {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
             HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.host.sh");
+            throw new CommonException("error.load.host.install.sh");
+        }
+
+        try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_upgrade.sh")) {
+            HOST_UPGRADE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new CommonException("error.load.host.upgrade.sh");
         }
     }
 
@@ -168,6 +172,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return FileUtil.replaceReturnString(HOST_ACTIVATE_COMMAND_TEMPLATE, params);
     }
 
+    @Override
+    public String getUpgradeString(Long projectId, DevopsHostDTO devopsHostDTO) {
+        Map<String, String> params = new HashMap<>();
+        // 渲染激活环境的命令参数
+        params.put("{{ TOKEN }}", devopsHostDTO.getToken());
+        params.put("{{ CONNECT }}", agentServiceUrl);
+        params.put("{{ HOST_ID }}", devopsHostDTO.getId().toString());
+        params.put("{{ BINARY }}", binaryDownloadUrl);
+        params.put("{{ VERSION }}", agentVersion);
+        return FileUtil.replaceReturnString(HOST_UPGRADE_COMMAND_TEMPLATE, params);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
@@ -231,7 +247,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO devopsHostConnectionTestVO) {
+    public DevopsHostConnectionTestResultVO testConnection(Long projectId, DevopsHostConnectionTestVO
+            devopsHostConnectionTestVO) {
         SSHClient sshClient = null;
         try {
             DevopsHostConnectionTestResultVO result = new DevopsHostConnectionTestResultVO();
@@ -302,7 +319,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withCreatorInfo, @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
+    public Page<DevopsHostVO> pageByOptions(Long projectId, PageRequest pageRequest, boolean withCreatorInfo,
+                                            @Nullable String searchParam, @Nullable String hostStatus, @Nullable Boolean doPage) {
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId);
         // 解析查询参数
         Page<DevopsHostVO> page;
@@ -321,7 +339,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                     .collect(Collectors.toMap(DevopsHostUserPermissionDTO::getHostId, Function.identity()));
         }
 
-        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedClusterList();
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
         Map<Long, DevopsHostUserPermissionDTO> finalHostPermissionMap = hostPermissionMap;
         devopsHostVOList = devopsHostVOList.stream()
                 .peek(h -> h.setHostStatus(updatedClusterList.contains(h.getId()) ? DevopsHostStatus.CONNECTED.getValue() : DevopsHostStatus.DISCONNECT.getValue()))
@@ -420,6 +438,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
             return;
         }
+        //删除hostapp
+        devopsHostMapper.deleteByPrimaryKey(dockerInstanceDTO.getAppId());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
@@ -543,7 +563,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String downloadCreateHostFile(Long projectId, Long hostId, String token, HttpServletResponse res) {
+    public String downloadCreateHostFile(Long projectId, Long hostId, String token) {
         DevopsHostDTO devopsHostDTO = new DevopsHostDTO();
         devopsHostDTO.setId(hostId);
         devopsHostDTO = devopsHostMapper.selectByPrimaryKey(devopsHostDTO);
@@ -567,13 +587,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate) {
+    public String queryShell(Long projectId, Long hostId, Boolean queryForAutoUpdate, String previousAgentVersion) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         // 如果是agent自动升级查询shell，那么不进行权限校验
         if (!queryForAutoUpdate) {
             devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
         }
-        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken());
+        return String.format(HOST_AGENT, apiHost, projectId, hostId, devopsHostDTO.getToken(), ObjectUtils.isEmpty(previousAgentVersion) ? "" : previousAgentVersion);
     }
 
     @Override
@@ -590,7 +610,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             return;
         }
         Map<String, String> map = new HashMap<>();
-        String command = queryShell(projectId, hostId, false);
+        String command = queryShell(projectId, hostId, false, "");
         redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.OPERATING.getValue(), null));
         automaticHost(devopsHostConnectionVO, map, redisKey, command);
     }
@@ -756,6 +776,20 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public DevopsHostDTO checkHostAvailable(Long hostId) {
+        // 1. 获取主机信息
+        DevopsHostDTO hostDTO = baseQuery(hostId);
+        if (hostDTO == null) {
+            throw new CommonException("error.host.not.exist");
+        }
+        // 2. 校验主机已连接
+        hostConnectionHandler.checkHostConnection(hostId);
+        // 3. 校验主机权限
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
+        return hostDTO;
+    }
+
+    @Override
     public Page<DevopsUserVO> pageNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
@@ -822,34 +856,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         return members;
-    }
-
-    private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {
-        if (!CollectionUtils.isEmpty(devopsNormalInstances)) {
-            List<Long> normalInstanceIds = devopsNormalInstances.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());
-            List<DevopsHostAppDTO> devopsHostAppDTOS = devopsHostAppMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOS, DevopsNormalInstanceVO.class);
-            devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
-                devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
-                //加上操作状态
-                devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsNormalInstanceVOS);
-        }
-    }
-
-    private void handleDockerProcess(List<DevopsHostInstanceVO> devopsHostInstanceVOS, List<DevopsHostInstanceVO> hostInstances) {
-        if (!CollectionUtils.isEmpty(devopsHostInstanceVOS)) {
-            List<Long> dockerInstanceIds = devopsHostInstanceVOS.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());
-            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
-            List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
-            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
-                devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
-                //加上操作状态
-                devopsDockerInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsDockerInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsDockerInstanceVOS);
-        }
     }
 
     private String generateRedisKey(Long projectId, Long hostId) {

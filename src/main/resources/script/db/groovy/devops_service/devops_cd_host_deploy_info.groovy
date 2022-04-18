@@ -26,4 +26,24 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2022-02-15-add-column') {
+        addColumn(tableName: 'devops_cd_host_deploy_info') {
+            column(name: "kill_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
+            column(name: "health_prob", type: "TEXT", remarks: "健康探针", afterColumn: "kill_command")
+        }
+    }
+    changeSet(author: 'wx', id: '2022-02-24-update-column') {
+        addColumn(tableName: 'devops_cd_host_deploy_info') {
+            column(name: "docker_command", type: "TEXT", remarks: "删除命令", afterColumn: "post_command")
+        }
+        sql("""
+              ALTER TABLE devops_cd_host_deploy_info CHANGE jar_deploy_json  deploy_json VARCHAR(2048)
+        """)
+    }
+    changeSet(author: 'wanghao', id: '2022-04-08-add-column') {
+        addColumn(tableName: 'devops_cd_host_deploy_info') {
+            column(name: "image_job_name", type: "VARCHAR(64)", remarks: "关联镜像构建任务名称", afterColumn: "post_command")
+        }
+    }
+
 }

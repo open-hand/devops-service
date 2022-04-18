@@ -14,6 +14,16 @@ public class HostAgentMsgVO {
     private String hostId;
     private String configSettings;
 
+    public HostAgentMsgVO() {
+    }
+
+    public HostAgentMsgVO(String hostId, String type, String commandId, String payload) {
+        this.type = type;
+        this.payload = payload;
+        this.commandId = commandId;
+        this.hostId = hostId;
+    }
+
     public String getType() {
         return type;
     }

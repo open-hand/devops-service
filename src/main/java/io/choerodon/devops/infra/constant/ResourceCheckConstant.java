@@ -63,6 +63,7 @@ public class ResourceCheckConstant {
     // app
     public static final String ERROR_APP_CODE_IS_NULL = "error.app.code.is.null";
     public static final String ERROR_APP_ID_IS_NULL = "error.app.id.is.null";
+    public static final String ERROR_APP_CONTAINER_ID_IS_NULL = "error.app.container.id.is.null";
     public static final String ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE = "error.app.instance.is.associated.with.pipeline";
 
 

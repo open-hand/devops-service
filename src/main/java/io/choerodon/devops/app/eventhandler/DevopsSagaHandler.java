@@ -6,8 +6,6 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
@@ -31,12 +29,14 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
-import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
+import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
+import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
+import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
@@ -45,9 +45,7 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.GitUserNameUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.LogUtil;
 
 
 /**
@@ -334,72 +332,6 @@ public class DevopsSagaHandler {
     public String trigerSimpleCDPipeline(String data) {
         devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
         return data;
-    }
-
-    /**
-     * 创建流水线环境自动部署实例
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_CREATE_INSTANCE,
-            description = "创建流水线环境自动部署实例",
-            sagaCode = DEVOPS_PIPELINE_ENV_AUTO_DEPLOY_INSTANCE,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void pipelineEnvAutoDeployInstance(String data) {
-        AppServiceDeployVO appServiceDeployVO = gson.fromJson(data, AppServiceDeployVO.class);
-        Long jobRecordId = appServiceDeployVO.getRecordId();
-        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-        DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
-        Long pipelineRecordId = devopsCdStageRecordDTO.getPipelineRecordId();
-        try {
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(null, appServiceDeployVO, true);
-            // 对于新建实例的部署任务，部署成功后修改为替换实例
-            updateDeployTypeToUpdate(appServiceDeployVO.getDeployInfoId(), appServiceInstanceVO);
-            DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordService.queryById(devopsCdJobRecordDTO.getId());
-            if (PipelineStatus.RUNNING.toValue().equals(cdJobRecordDTO.getStatus())) {
-                // 更新job状态为success
-                devopsCdJobRecordDTO.setCommandId(appServiceInstanceVO.getCommandId());
-                devopsCdJobRecordDTO.setFinishedDate(new Date());
-                if (devopsCdJobRecordDTO.getStartedDate() != null) {
-                    devopsCdJobRecordDTO.setDurationSeconds((new Date().getTime() - devopsCdJobRecordDTO.getStartedDate().getTime()) / 1000);
-                }
-                devopsCdJobRecordDTO.setLog(devopsCdJobRecordDTO.getLog() + "Deploy app success." + System.lineSeparator());
-                devopsCdJobRecordDTO.setStatus(PipelineStatus.SUCCESS.toValue());
-                devopsCdJobRecordService.update(devopsCdJobRecordDTO);
-            }
-            LOGGER.info("create pipeline auto deploy instance success");
-        } catch (Exception e) {
-            LOGGER.error("error create pipeline auto deploy instance", e);
-            String log = devopsCdJobRecordDTO.getLog();
-            if (log != null) {
-                log = LogUtil.cutOutString(log + System.lineSeparator() + LogUtil.readContentOfThrowable(e), 2500);
-            } else {
-                log = LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500);
-            }
-            devopsCdJobRecordService.updateJobStatusFailed(jobRecordId, log);
-            devopsCdStageRecordService.updateStageStatusFailed(devopsCdStageRecordDTO.getId());
-            devopsCdPipelineRecordService.updatePipelineStatusFailed(pipelineRecordId);
-
-            Long userId = GitUserNameUtil.getUserId();
-            sendNotificationService.sendCdPipelineNotice(pipelineRecordId,
-                    MessageCodeConstants.PIPELINE_FAILED,
-                    userId, GitUserNameUtil.getEmail(), new HashMap<>());
-            LOGGER.info("send pipeline failed message to the user. The user id is {}", userId);
-        }
-    }
-
-    /**
-     * 更新部署配置为替换实例
-     *
-     * @param deployInfoId
-     * @param appServiceInstanceVO
-     */
-    private void updateDeployTypeToUpdate(Long deployInfoId, AppServiceInstanceVO appServiceInstanceVO) {
-        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(deployInfoId);
-        devopsCdEnvDeployInfoDTO.setDeployType(CommandType.UPDATE.getType());
-        devopsCdEnvDeployInfoDTO.setInstanceId(appServiceInstanceVO.getId());
-        devopsCdEnvDeployInfoDTO.setInstanceName(appServiceInstanceVO.getCode());
-        devopsCdEnvDeployInfoService.update(devopsCdEnvDeployInfoDTO);
     }
 
     /**

@@ -56,6 +56,17 @@ public class DevopsHostCommandDTO extends AuditDomain {
     @ApiModelProperty("操作关联的流水线任务记录id/nullable, 不为空则说明操作关联了流水线任务")
     private Long cdJobRecordId;
 
+    public DevopsHostCommandDTO() {
+    }
+
+    public DevopsHostCommandDTO(Long hostId, String instanceType, Long instanceId, String commandType, String status) {
+        this.hostId = hostId;
+        this.instanceType = instanceType;
+        this.instanceId = instanceId;
+        this.commandType = commandType;
+        this.status = status;
+    }
+
     public Long getCdJobRecordId() {
         return cdJobRecordId;
     }

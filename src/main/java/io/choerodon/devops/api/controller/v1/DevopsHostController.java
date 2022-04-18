@@ -278,11 +278,10 @@ public class DevopsHostController {
             @ApiParam(value = "主机id", required = true)
             @PathVariable("host_id") Long hostId,
             @ApiParam(value = "token", required = true)
-            @PathVariable("token") String token,
-            HttpServletResponse res) {
-        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token, res))
+            @PathVariable("token") String token) {
+        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.host.insert"));
+                .orElseThrow(() -> new CommonException("error.devops.host.sh.download"));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -294,7 +293,7 @@ public class DevopsHostController {
             @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "host_id") Long hostId) {
-        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId,false));
+        return ResponseEntity.ok(devopsHostService.queryShell(projectId, hostId, false, ""));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

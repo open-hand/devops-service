@@ -10,7 +10,6 @@ import org.springframework.util.Assert;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdEnvDeployInfoService;
 import io.choerodon.devops.infra.dto.DevopsCdEnvDeployInfoDTO;
-import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.mapper.DevopsCdEnvDeployInfoMapper;
 
 /**
@@ -70,31 +69,6 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
         if (devopsCdEnvDeployInfoMapper.updateByPrimaryKeySelective(devopsCdEnvDeployInfoDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_DEPLOY_INFO);
         }
-    }
-
-    @Override
-    public void updateOrUpdateByCdJob(Long cdJobId, String jarName) {
-        DevopsCdEnvDeployInfoDTO queryDTO = new DevopsCdEnvDeployInfoDTO();
-        queryDTO.setCdJobId(cdJobId);
-        DevopsCdEnvDeployInfoDTO envDeployInfoDTO = devopsCdEnvDeployInfoMapper.selectOne(queryDTO);
-        if (envDeployInfoDTO == null) {
-            queryDTO.setJarName(jarName);
-            if (devopsCdEnvDeployInfoMapper.insert(queryDTO) != 1) {
-                throw new CommonException(ERROR_SAVE_DEPLOY_INFO);
-            }
-        } else {
-            envDeployInfoDTO.setJarName(jarName);
-            if (devopsCdEnvDeployInfoMapper.updateByPrimaryKeySelective(envDeployInfoDTO) != 1) {
-                throw new CommonException(ERROR_UPDATE_DEPLOY_INFO);
-            }
-        }
-    }
-
-    @Override
-    public DevopsCdEnvDeployInfoDTO queryByCdJobId(Long cdJobId) {
-        DevopsCdEnvDeployInfoDTO queryDTO = new DevopsCdEnvDeployInfoDTO();
-        queryDTO.setCdJobId(cdJobId);
-        return devopsCdEnvDeployInfoMapper.selectOne(queryDTO);
     }
 
     @Override

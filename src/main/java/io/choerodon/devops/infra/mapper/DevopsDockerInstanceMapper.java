@@ -1,10 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
-import io.choerodon.mybatis.common.BaseMapper;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
+import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
+import io.choerodon.devops.infra.dto.DevopsDockerInstanceDTO;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * 〈功能简述〉
@@ -18,4 +20,6 @@ public interface DevopsDockerInstanceMapper extends BaseMapper<DevopsDockerInsta
     List<DevopsDockerInstanceDTO> listByHostId(Long hostId);
 
     void deleteByHostId(@Param("hostId") Long hostId);
+
+    List<DevopsDockerInstanceVO> listByAppId(@Param("appId") Long appId, @Param("name") String name, @Param("param") String param);
 }

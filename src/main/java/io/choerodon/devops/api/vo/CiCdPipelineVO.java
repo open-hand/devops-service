@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.CiDockerAuthConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
 
@@ -72,6 +73,8 @@ public class CiCdPipelineVO {
     private Set<String> relatedBranches;
 
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
+    @ApiModelProperty(name = "Docker认证配置")
+    private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
 
     private Long objectVersionNumber;
 
@@ -87,6 +90,23 @@ public class CiCdPipelineVO {
     private String envName;
     //流程耗时
     private Long time;
+    private Boolean enableSchedule;
+
+    public Boolean getEnableSchedule() {
+        return enableSchedule;
+    }
+
+    public void setEnableSchedule(Boolean enableSchedule) {
+        this.enableSchedule = enableSchedule;
+    }
+
+    public List<CiDockerAuthConfigDTO> getCiDockerAuthConfigDTOList() {
+        return ciDockerAuthConfigDTOList;
+    }
+
+    public void setCiDockerAuthConfigDTOList(List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList) {
+        this.ciDockerAuthConfigDTOList = ciDockerAuthConfigDTOList;
+    }
 
     public List<DevopsCiPipelineVariableDTO> getDevopsCiPipelineVariableDTOList() {
         return devopsCiPipelineVariableDTOList;

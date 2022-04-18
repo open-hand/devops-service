@@ -13,6 +13,10 @@ public enum HostResourceType {
      */
     INSTANCE_PROCESS("instance_process"),
     /**
+     * docker_compose进程
+     */
+    DOCKER_COMPOSE("docker_compose"),
+    /**
      * docker进程
      */
     DOCKER_PROCESS("docker_process");

@@ -29,7 +29,7 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
 public class AppServiceInstanceValidator {
     private static final Logger LOGGER = LoggerFactory.getLogger(AppServiceInstanceValidator.class);
     //appServiceInstance name
-    private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
+    private static final String CODE_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
     @Autowired
     private Validator validator;
     /**
@@ -42,14 +42,14 @@ public class AppServiceInstanceValidator {
     }
 
 
-    public static void checkName(String code) {
-        if (!isNameValid(code)) {
+    public static void checkCode(String code) {
+        if (!isCodeValid(code)) {
             throw new CommonException("error.app.instance.code.invalid");
         }
     }
 
-    public static boolean isNameValid(String name) {
-        return Pattern.matches(NAME_PATTERN, name);
+    public static boolean isCodeValid(String code) {
+        return Pattern.matches(CODE_PATTERN, code);
     }
 
     /**

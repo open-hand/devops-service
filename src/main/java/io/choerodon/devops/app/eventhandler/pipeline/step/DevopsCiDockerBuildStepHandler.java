@@ -60,9 +60,8 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getEnableDockerTlsVerify();
         //是否开启镜像扫描 默认是关闭镜像扫描的
         Boolean imageScan = devopsCiDockerBuildConfigDTO.getImageScan();
-        return GitlabCiUtil.generateDockerScripts(
-                devopsCiDockerBuildConfigDTO.getDockerContextDir(),
-                devopsCiDockerBuildConfigDTO.getDockerFilePath(),
+        return GitlabCiUtil.generateDockerScripts(devopsCiStepDTO.getProjectId(),
+                devopsCiDockerBuildConfigDTO,
                 doTlsVerify == null || !doTlsVerify,
                 !Objects.isNull(imageScan) && imageScan,
                 devopsCiStepDTO.getDevopsCiJobId());

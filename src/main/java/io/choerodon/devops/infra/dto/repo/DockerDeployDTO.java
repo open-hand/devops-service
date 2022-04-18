@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto.repo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * 〈功能简述〉
@@ -15,11 +16,96 @@ public class DockerDeployDTO {
     @ApiModelProperty("镜像地址")
     private String image;
     @ApiModelProperty("容器名")
-    private String name;
+    private String containerName;
     @ApiModelProperty("容器id")
     private String containerId;
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
+
+    private String repoName;
+
+    private String repoType;
+    @Encrypt
+    private Long repoId;
+
+    @ApiModelProperty("默认仓库的镜像名称")
+    private String imageName;
+
+    @ApiModelProperty("默认仓库的镜像版本")
+    private String tag;
+
+    @ApiModelProperty("自定义仓库的用户名")
+    private String userName;
+
+    @ApiModelProperty("自定义仓库的密码")
+    private String passWord;
+
+    @ApiModelProperty("自定义仓库是否是私库")
+    private Boolean privateRepository;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassWord() {
+        return passWord;
+    }
+
+    public void setPassWord(String passWord) {
+        this.passWord = passWord;
+    }
+
+    public Boolean getPrivateRepository() {
+        return privateRepository;
+    }
+
+    public void setPrivateRepository(Boolean privateRepository) {
+        this.privateRepository = privateRepository;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public Long getRepoId() {
+        return repoId;
+    }
+
+    public void setRepoId(Long repoId) {
+        this.repoId = repoId;
+    }
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
+    }
+
+    public String getRepoType() {
+        return repoType;
+    }
+
+    public void setRepoType(String repoType) {
+        this.repoType = repoType;
+    }
 
     public String getContainerId() {
         return containerId;
@@ -55,12 +141,12 @@ public class DockerDeployDTO {
         this.image = image;
     }
 
-    public String getName() {
-        return name;
+    public String getContainerName() {
+        return containerName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
     }
 
     public DockerPullAccountDTO getDockerPullAccountDTO() {

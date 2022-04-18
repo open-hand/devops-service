@@ -1,9 +1,10 @@
 package io.choerodon.devops.api.vo.host;
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import java.util.Date;
+
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import java.util.Date;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * 〈功能简述〉
@@ -16,12 +17,21 @@ public class DockerProcessInfoVO {
     @Encrypt
     private String instanceId;
     private String containerId;
+    private String containerName;
     private String image;
     private String name;
     private String status;
     private String ports;
     private IamUserDTO deployer;
     private Date deployDate;
+
+    public String getContainerName() {
+        return containerName;
+    }
+
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
+    }
 
     public String getInstanceId() {
         return instanceId;

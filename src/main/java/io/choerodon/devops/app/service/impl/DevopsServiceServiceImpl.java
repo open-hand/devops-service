@@ -944,6 +944,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 isUpdate = true;
             }
         }
+        if (!isUpdate && devopsServiceReqVO.getTargetDeploymentId() != null && devopsServiceDTO.getTargetDeploymentId() != null) {
+            if (!devopsServiceReqVO.getTargetDeploymentId().equals(devopsServiceDTO.getTargetDeploymentId())) {
+                isUpdate = true;
+            }
+        }
 
         if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                 .equals(devopsServiceReqVO.getPorts().stream().sorted().collect(Collectors.toList()))

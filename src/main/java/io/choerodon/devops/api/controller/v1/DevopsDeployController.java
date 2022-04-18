@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
-import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
@@ -32,18 +31,6 @@ public class DevopsDeployController {
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppService devopsHostAppService;
-
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "主机部署")
-    @PostMapping("/host")
-    public ResponseEntity<Void> manualDeploy(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody @Validated DeployConfigVO deployConfigVO) {
-        devopsDeployService.hostDeploy(projectId, deployConfigVO);
-        return ResponseEntity.noContent().build();
-    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "镜像部署")

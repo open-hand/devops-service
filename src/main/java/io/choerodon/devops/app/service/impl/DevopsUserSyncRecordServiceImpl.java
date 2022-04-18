@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.DevopsUserSyncRecordVO;
-import io.choerodon.devops.api.vo.kubernetes.MockMultipartFile;
 import io.choerodon.devops.app.service.DevopsUserSyncRecordService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.DevopsUserSyncRecordDTO;
@@ -103,7 +102,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
             LOGGER.debug("The failed users information for recordId {} is: \n{}", recordId, errorInformationCsv);
             String fileName = "user-sync-" + recordId + ".csv";
             try {
-                String resultFileUrl = fileClient.uploadFile(0L, MiscConstants.USER_SYNC_ERROR_FILE_BUCKET_NAME, null, fileName, "text/csv", errorInformationCsv.getBytes(StandardCharsets.UTF_8));
+                String resultFileUrl = fileClient.uploadFile(0L, MiscConstants.DEVOPS_SERVICE_BUCKET_NAME, MiscConstants.USER_SYNC_ERROR_FILE_BUCKET_NAME, fileName, "text/csv", errorInformationCsv.getBytes(StandardCharsets.UTF_8));
                 devopsUserSyncRecordDTO.setErrorUserResultUrl(resultFileUrl);
             } catch (Exception ex) {
                 LOGGER.warn("Failed to upload user error information", ex);

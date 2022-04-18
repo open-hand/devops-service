@@ -31,7 +31,7 @@
     "releaseNotes": ""
   },
   "branchInfo": {
-    "originBranch": "master",
+    "originBranch": "main",
     "branchName": "feature-SP-11"
   },
   "appServiceVersionDTO": {

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -8,6 +9,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
@@ -49,16 +51,16 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     }
 
     @Override
-    public DevopsHostCommandDTO queryInstanceLatest(Long instanceId) {
-        return devopsHostCommandMapper.queryInstanceLatest(instanceId);
+    public DevopsHostCommandDTO queryInstanceLatest(Long instanceId, String instanceType) {
+        return devopsHostCommandMapper.queryInstanceLatest(instanceId, instanceType);
     }
 
     @Override
     public List<DevopsHostCommandDTO> listStagnatedRecord(String hostId) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DevopsHostConstants.DATE_PATTERN);
 
-        // 获取三分钟以前的时间
-        Date threeMinutesBefore = new Date(System.currentTimeMillis() - DevopsHostConstants.THREE_MINUTE_MILLISECONDS);
+        // 获取30分钟以前的时间
+        Date threeMinutesBefore = new Date(System.currentTimeMillis() - DevopsHostConstants.THIRTY_MINUTE_MILLISECONDS);
         String beforeDate = simpleDateFormat.format(threeMinutesBefore);
         return devopsHostCommandMapper.listStagnatedRecord(hostId, beforeDate);
     }
@@ -67,5 +69,18 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
     @Transactional
     public void batchUpdateTimeoutCommand(Set<Long> missCommands) {
         devopsHostCommandMapper.batchUpdateTimeoutCommand(missCommands);
+    }
+
+    @Override
+    public List<DevopsHostCommandDTO> listByIds(Set<Long> missCommands) {
+        if (CollectionUtils.isEmpty(missCommands)) {
+            return new ArrayList<>();
+        }
+        return devopsHostCommandMapper.listByIds(missCommands);
+    }
+
+    @Override
+    public List<DevopsHostCommandDTO> listByTypeAndInsIds(Set<Long> insIds, String instanceType) {
+        return devopsHostCommandMapper.listByTypeAndInsIds(insIds, instanceType);
     }
 }

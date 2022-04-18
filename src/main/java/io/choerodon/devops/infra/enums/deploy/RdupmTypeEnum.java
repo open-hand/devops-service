@@ -21,6 +21,10 @@ public enum RdupmTypeEnum {
      */
     DOCKER("docker"),
     /**
+     * docker_compose镜像
+     */
+    DOCKER_COMPOSE("docker_compose"),
+    /**
      * jar包
      */
     JAR("jar"),
