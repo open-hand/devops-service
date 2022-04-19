@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -465,5 +466,19 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 }
             });
         }
+        Map<String, DockerProcessInfoVO> updateProcessInfoMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOList)) {
+            if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+                updateProcessInfoMap = updateProcessInfos.stream().collect(Collectors.toMap(DockerProcessInfoVO::getContainerName, Function.identity()));
+            }
+            Map<String, DockerProcessInfoVO> finalUpdateProcessInfoMap = updateProcessInfoMap;
+            devopsDockerInstanceDTOList.forEach(devopsDockerInstanceDTO -> {
+                DockerProcessInfoVO dockerProcessInfoVO = finalUpdateProcessInfoMap.get(devopsDockerInstanceDTO.getName());
+                if (dockerProcessInfoVO == null) {
+                    devopsDockerInstanceService.baseDelete(devopsDockerInstanceDTO.getId());
+                }
+            });
+        }
+
     }
 }
