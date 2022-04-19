@@ -291,7 +291,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+        }
         return hostAgentMsgVO;
     }
 
