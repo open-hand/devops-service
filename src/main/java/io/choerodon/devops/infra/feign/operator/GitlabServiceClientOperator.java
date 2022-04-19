@@ -382,7 +382,7 @@ public class GitlabServiceClientOperator {
                             appExternalConfigDTO.getAccessToken(),
                             appExternalConfigDTO.getUsername(),
                             appExternalConfigDTO.getPassword());
-            if (result.getBody().getFilePath() == null) {
+            if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (RetryableException e) {
