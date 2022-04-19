@@ -20,11 +20,6 @@ public class MarketServiceClientFallback implements MarketServiceClient {
         throw new CommonException("error.query.deploy.object.config");
     }
 
-//    @Override
-//    public ResponseEntity<RepoConfigVO> queryRepoConfig(Long projectId, Long appId, Long appServiceVersionId) {
-//        throw new CommonException("error.query.repo.config");
-//    }
-
     @Override
     public ResponseEntity<Void> createUseRecord(MarketAppUseRecordDTO marketAppUseRecordDTO) {
         throw new CommonException("error.create.use.record");

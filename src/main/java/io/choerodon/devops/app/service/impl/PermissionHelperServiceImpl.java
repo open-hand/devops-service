@@ -1,5 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
@@ -11,15 +21,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author zmf
@@ -180,7 +181,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         int count = 0;
         if (devopsServiceReqVO.getTargetAppServiceId() != null) count++;
         if (devopsServiceReqVO.getTargetDeploymentId() != null) count++;
-        if (!StringUtils.isEmpty(devopsServiceReqVO.getTargetInstanceCode())) count++;
+        if (StringUtils.hasText(devopsServiceReqVO.getTargetInstanceCode())) count++;
         if (!ArrayUtil.isEmpty(devopsServiceReqVO.getEndPoints())) count++;
         if (!ArrayUtil.isEmpty(devopsServiceReqVO.getSelectors())) count++;
 

@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -11,7 +10,9 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Constants;
@@ -33,15 +34,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.GitConfigVO;
-import io.choerodon.devops.api.vo.GitEnvConfigVO;
-import io.choerodon.devops.api.vo.GitlabRepositoryInfo;
 import io.choerodon.devops.app.service.DevopsClusterResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.EnvironmentType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -51,7 +45,6 @@ import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
  */
 @Component
 public class ExternalGitUtil {
-    public static final String DEV_OPS_SYNC_TAG = "devops-sync";
     public static final String DEV_OPS_REFS = "refs/tags/";
     public static final String TEMPLATE = "template";
     private static final String MASTER = "master";
@@ -91,42 +84,6 @@ public class ExternalGitUtil {
         }
     }
 
-    /**
-     * 验证无需token就可以进行访问的代码仓库的克隆地址是否有效
-     *
-     * @param repositoryUrl 代码仓库克隆地址
-     * @param token         访问仓库所需的token（可为空）
-     * @return true if the url is valid and the ls-remote result is not empty.
-     */
-    public static Boolean validRepositoryUrl(String repositoryUrl, String token) {
-        LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
-        lsRemoteCommand.setRemote(repositoryUrl);
-        if (!StringUtils.isEmpty(token)) {
-            lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", token));
-        }
-        try {
-            int size = lsRemoteCommand.call().size();
-            if (size == 0) {
-                return null;
-            } else {
-                return Boolean.TRUE;
-            }
-        } catch (GitAPIException e) {
-            return Boolean.FALSE;
-        }
-    }
-
-    /**
-     * https://code.choerodon.com.cn/hzero-c7ncd/devops-service
-     *
-     * @param repositoryUrl
-     * @return
-     */
-    public static GitlabRepositoryInfo calaulateRepositoryInfo(String repositoryUrl) {
-        String[] protolAndDomain = repositoryUrl.split("://");
-        String[] repoInfo = protolAndDomain[1].split("/");
-        return new GitlabRepositoryInfo(protolAndDomain[0] + "://" + repoInfo[0], repoInfo[1], repoInfo[2]);
-    }
 
     private static String getLog(String repoPath, String fileName) {
         String latestCommit = "";
@@ -186,68 +143,6 @@ public class ExternalGitUtil {
     }
 
     /**
-     * 获取克隆应用服务的代码库的ssh地址
-     *
-     * @param sshUrl         ssh格式的域名
-     * @param orgCode        组织code
-     * @param proCode        项目code
-     * @param appServiceCode 应用服务code
-     * @return ssh地址
-     */
-    public static String getAppServiceSshUrl(String sshUrl, String orgCode, String proCode, String appServiceCode) {
-        String result = "";
-        // 这里url分割有可能产生三段, 如: ssh://git@192.168.13.12:30022
-        String[] urls = sshUrl.split(":");
-        if (sshUrl.contains("@")) {
-            if (urls.length == 1) {
-                result = String.format("%s:%s-%s/%s.git", sshUrl, orgCode, proCode, appServiceCode);
-            } else {
-                if (PATTERN.matcher(urls[1]).matches()) {
-                    result = String.format("ssh://%s/%s-%s/%s.git",
-                            sshUrl, orgCode, proCode, appServiceCode);
-                } else if (urls.length == 3) {
-                    result = String.format("%s/%s-%s/%s.git",
-                            sshUrl, orgCode, proCode, appServiceCode);
-                }
-            }
-        } else {
-            if (urls.length == 1) {
-                result = String.format("git@%s:%s-%s/%s.git",
-                        sshUrl, orgCode, proCode, appServiceCode);
-            } else {
-                if (PATTERN.matcher(urls[1]).matches()) {
-                    result = String.format("ssh://git@%s/%s-%s/%s.git",
-                            sshUrl, orgCode, proCode, appServiceCode);
-                } else {
-                    LOGGER.debug("Unexpected case occurred when getting app-service ssh url: the gitlabSshUrl is {}, the orgCode is {}, the proCode is {} and the appServiceCode is {}", sshUrl, orgCode, proCode, appServiceCode);
-                }
-            }
-        }
-        return result;
-    }
-
-
-    /**
-     * clone by ssh
-     *
-     * @param path target path
-     * @param url  git repo url
-     */
-    public Git cloneBySsh(String path, String url, String sshKeyRsa) {
-        CloneCommand cloneCommand = Git.cloneRepository();
-        cloneCommand.setURI(url);
-        cloneCommand.setBranch(MASTER);
-        cloneCommand.setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa));
-        try {
-            cloneCommand.setDirectory(new File(path));
-            return cloneCommand.call();
-        } catch (GitAPIException e) {
-            LOGGER.debug("Failed to clone by ssh: path: {}, url: {}", path, url);
-            throw new CommonException(e.getMessage(), e);
-        }
-    }
-
-    /**
      * check git repo to commit
      *
      * @param path   git repo path
@@ -268,21 +163,6 @@ public class ExternalGitUtil {
             git.checkout().setName(commit).call();
         } catch (GitAPIException e) {
             throw new CommonException("error.git.checkout", e);
-        }
-    }
-
-
-    /**
-     * pull git repo using ssh
-     *
-     * @param path git repo
-     */
-    public Git pullBySsh(String path, String envRas) {
-        File repoGitDir = new File(path);
-        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            return pullBySsh(repository, envRas);
-        } catch (IOException e) {
-            throw new CommonException("error.git.pull", e);
         }
     }
 
@@ -322,30 +202,6 @@ public class ExternalGitUtil {
     }
 
     /**
-     * clone 并checkout
-     *
-     * @param dirName
-     * @param remoteUrl
-     * @param accessToken
-     * @return
-     */
-    public void cloneAndCheckout(String dirName, String remoteUrl, String accessToken, String commit) {
-        File localPathFile = new File(dirName);
-        try {
-            Git git = Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setDirectory(localPathFile)
-                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
-                    .call();
-            git.checkout().setName(commit).call();
-            git.close();
-            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
-        } catch (Exception e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-    }
-
-    /**
      * 克隆公开仓库的或者根据access token克隆私库的代码所有分支
      *
      * @param dirName     directory name
@@ -380,79 +236,6 @@ public class ExternalGitUtil {
             throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
-    }
-
-    public Git cloneRepository(File localPathFile, String remoteUrl, String accessToken) {
-        Git git;
-        deleteDirectory(localPathFile);
-        try {
-            Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setCloneAllBranches(true)
-                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
-                    .setDirectory(localPathFile)
-                    .call();
-            git = Git.open(new File(localPathFile + GIT_SUFFIX));
-        } catch (GitAPIException | IOException e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-        return git;
-    }
-
-    /**
-     * 克隆公开仓库或者根据access token克隆代码克隆特定分支
-     *
-     * @param dirName     directory name
-     * @param remoteUrl   remote url to clone
-     * @param accessToken the access token for access
-     * @param branchName  branch name
-     * @return the git instance of local repository
-     */
-    public Git cloneRepository(String dirName, String remoteUrl, String accessToken, String branchName) {
-        String workingDirectory = getWorkingDirectory(dirName);
-        File localPathFile = new File(workingDirectory);
-        deleteDirectory(localPathFile);
-        try {
-            return Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setCloneAllBranches(false)
-                    .setBranch(branchName)
-                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
-                    .setDirectory(localPathFile)
-                    .call();
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_CLONE, e);
-        }
-    }
-
-    /**
-     * 提交并push到远程代码仓库
-     *
-     * @param git         本地git对象
-     * @param repoUrl     仓库地址
-     * @param accessToken token
-     * @throws CommonException 异常发生时，应捕获此异常，关闭资源
-     */
-    public void commitAndPush(Git git, String repoUrl, String accessToken, String refName) {
-        try {
-            git.add().addFilepattern(".").call();
-            git.add().setUpdate(true).addFilepattern(".").call();
-            git.commit().setMessage("Render Variables[skip ci]").call();
-            List<Ref> refs = git.branchList().call();
-            PushCommand pushCommand = git.push();
-            for (Ref ref : refs) {
-                if (ref.getName().equals(refName)) {
-                    pushCommand.add(ref);
-                    break;
-                }
-            }
-            pushCommand.setRemote(repoUrl);
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
-                    "", accessToken));
-            pushCommand.call();
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
-        }
     }
 
     /**
@@ -491,59 +274,6 @@ public class ExternalGitUtil {
             throw new CommonException(ERROR_GIT_PUSH, e);
         }
     }
-
-    /**
-     * 将本地已经存在的单个tag推送到远程仓库
-     *
-     * @param git         Git对象
-     * @param repoUrl     仓库地址
-     * @param accessToken 访问token
-     * @param tagName     要推送的tag名
-     */
-    public void pushLocalTag(Git git, String repoUrl, String accessToken, String tagName) {
-        try {
-            // 推代码
-            git.push().add(tagName)
-                    .setRemote(repoUrl)
-                    .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
-                    .call();
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
-        }
-    }
-
-    public void commitAndPushForMaster(Git git, String repoUrl, String commitMessage, String accessToken) {
-        try {
-            git.add().addFilepattern(".").call();
-            git.add().setUpdate(true).addFilepattern(".").call();
-            git.commit().setMessage("The download version：" + commitMessage).call();
-            PushCommand pushCommand = git.push();
-            pushCommand.add(MASTER);
-            pushCommand.setRemote(repoUrl);
-            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken));
-            pushCommand.call();
-        } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
-        }
-    }
-
-    /**
-     * 获取最近一次commit
-     *
-     * @param git
-     * @return
-     */
-    public String getFirstCommit(Git git) {
-        String commit;
-        try {
-            Iterable<RevCommit> log = git.log().call();
-            commit = log.iterator().next().getName();
-        } catch (GitAPIException e) {
-            throw new CommonException("error.get.commit");
-        }
-        return commit;
-    }
-
     public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken) {
         push(git, name, commit, repoUrl, userName, accessToken, true);
     }
@@ -608,16 +338,6 @@ public class ExternalGitUtil {
                 throw new CommonException("error.directory.delete", e);
             }
         }
-    }
-
-    public Git initGit(File file) {
-        Git git = null;
-        try {
-            git = Git.init().setDirectory(file).call();
-        } catch (GitAPIException e) {
-            throw new CommonException("error.git.init", e);
-        }
-        return git;
     }
 
     /**
@@ -695,32 +415,6 @@ public class ExternalGitUtil {
      * 本地删除tag
      *
      * @param git     git repo
-     * @param sshKey  ssh私钥
-     * @param tagName 要删除的tag的名称
-     * @throws CommonException push error
-     */
-    public static void deleteTagAndPush(Git git, String sshKey, String tagName) {
-        try {
-            PushCommand pushCommand = git.push();
-            List<Ref> refs = git.tagList().call();
-            for (Ref ref : refs) {
-                if (ref.getName().equals(DEV_OPS_REFS + tagName)) {
-                    pushCommand.add(":" + ref.getName());
-                }
-            }
-            pushCommand.setRemote("origin");
-            pushCommand.setForce(true);
-            pushCommand.setTransportConfigCallback(getTransportConfigCallback(sshKey)).call();
-            git.tagDelete().setTags(tagName).call();
-        } catch (GitAPIException e) {
-            throw new CommonException("delete tag fail", e);
-        }
-    }
-
-    /**
-     * 本地删除tag
-     *
-     * @param git     git repo
      * @param tagName tag名称
      * @throws CommonException push error
      */
@@ -731,88 +425,6 @@ public class ExternalGitUtil {
         } catch (GitAPIException e) {
             throw new CommonException("delete tag fail", e);
         }
-    }
-
-    /**
-     * 本地删除tag后，创建新tag推送至远程仓库
-     *
-     * @param git     本地git仓库的引用
-     * @param sshKey  ssh私钥
-     * @param tagName tag名称
-     * @param sha     要打tag的commit的散列值
-     */
-    public static void pushTag(Git git, String sshKey, String tagName, String sha) {
-        deleteTag(git, tagName);
-        createTagAndPush(git, sshKey, tagName, sha);
-    }
-
-    /**
-     * create a file in git repo, and then commit it
-     *
-     * @param repoPath     git repo path
-     * @param git          git repo
-     * @param relativePath file relative path
-     * @param fileContent  file content
-     * @param commitMsg    commit msg, if null, commit msg will be '[ADD] add ' + file relative path
-     * @throws IOException     if target repo is not found
-     * @throws GitAPIException if target repo is not a git repo
-     */
-    public void createFileInRepo(String repoPath, Git git, String relativePath, String fileContent, String commitMsg)
-            throws IOException, GitAPIException {
-        FileUtil.saveDataToFile(repoPath, relativePath, fileContent);
-        boolean gitProvided = git != null;
-        git = gitProvided ? git : Git.open(new File(repoPath));
-        addFile(git, relativePath);
-        commitChanges(git, commitMsg == null || commitMsg.isEmpty() ? "[ADD] add " + relativePath : commitMsg);
-        if (!gitProvided) {
-            git.close();
-        }
-    }
-
-
-//    public String handDevopsEnvGitRepository(Long projectId, String envCode, String envRsa, String envType, String clusterCode) {
-//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-//        OrganizationDTO organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-//        //本地路径
-//        String path = GitOpsUtil.getLocalPathToStoreEnv(
-//                organizationDTO.getCode(), projectDTO.getCode(), clusterCode, envCode);
-//        //生成环境git仓库ssh地址
-//        String url = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getCode(),
-//                projectDTO.getCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
-//
-//        File file = new File(path);
-//        if (!file.exists()) {
-//            this.cloneBySsh(path, url, envRsa);
-//        }
-//        return path;
-//    }
-
-
-    public GitConfigVO getGitConfig(Long clusterId) {
-        DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        List<DevopsEnvironmentDTO> devopsEnvironments = devopsEnvironmentService.listEnvWithInstancesByClusterIdForAgent(clusterId);
-        GitConfigVO gitConfigVO = new GitConfigVO();
-        gitConfigVO.setAgentName("choerodon-cluster-agent-" + devopsClusterDTO.getCode());
-        LOGGER.info("Get git config to init cluster: agent name: {}", gitConfigVO.getAgentName());
-        List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
-        devopsEnvironments.forEach(devopsEnvironmentDTO -> {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
-            Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            String repoUrl = ExternalGitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
-
-            GitEnvConfigVO gitEnvConfigVO = new GitEnvConfigVO();
-            gitEnvConfigVO.setEnvId(devopsEnvironmentDTO.getId());
-            gitEnvConfigVO.setGitRsaKey(devopsEnvironmentDTO.getEnvIdRsa());
-            gitEnvConfigVO.setGitUrl(repoUrl);
-            gitEnvConfigVO.setInstances(devopsEnvironmentDTO.getInstances());
-            gitEnvConfigVO.setNamespace(GitOpsUtil.getEnvNamespace(devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getType()));
-            LOGGER.info("Agent Init: instances for env with id {} is {}", devopsEnvironmentDTO.getId(), devopsEnvironmentDTO.getInstances());
-            gitEnvConfigDTOS.add(gitEnvConfigVO);
-        });
-        gitConfigVO.setEnvs(gitEnvConfigDTOS);
-        gitConfigVO.setGitHost(gitlabSshUrl);
-        gitConfigVO.setCertManagerVersion(devopsClusterResourceService.queryCertManagerVersion(clusterId));
-        return gitConfigVO;
     }
 
     private void addFile(Git git, String relativePath) throws GitAPIException {

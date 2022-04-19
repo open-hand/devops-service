@@ -1,18 +1,18 @@
 package io.choerodon.devops.api.validator;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.PermissionHelper;
 import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * @author zmf

@@ -42,7 +42,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;

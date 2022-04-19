@@ -3,6 +3,10 @@ package io.choerodon.devops.infra.util;
 import java.util.Date;
 
 public class TimeUtil {
+
+    private TimeUtil() {
+    }
+
     /**
      * 获取两个时间之差
      *

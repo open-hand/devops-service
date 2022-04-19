@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.hrds.MemberPrivilegeViewDTO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CheckGitlabAccessLevelService;
 import io.choerodon.devops.app.service.PermissionHelper;

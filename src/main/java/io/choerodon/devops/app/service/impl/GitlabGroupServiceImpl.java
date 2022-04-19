@@ -99,13 +99,17 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         LOGGER.info(">>>>>>>>>>>>>>>>>checkRepositoryAvailable,groupName: {}, projectName：{}， token： {}<<<<<<<<<<<<<<<<", groupName, projectName, token);
         // 1. 先判断租户是否有限制，没有限制则直接放行
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(groupName, null);
-        LOGGER.info(">>>>>>>>>>>>>>>>>groupDTO {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(groupDTO));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(">>>>>>>>>>>>>>>>>groupDTO {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(groupDTO));
+        }
 
         if (groupDTO == null) {
             return false;
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByGitlabGroupId(groupDTO.getId());
-        LOGGER.info(">>>>>>>>>>>>>>>>>devopsProjectDTO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsProjectDTO));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(">>>>>>>>>>>>>>>>>devopsProjectDTO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsProjectDTO));
+        }
 
         if (devopsProjectDTO == null) {
             return false;
@@ -113,7 +117,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
         ExternalTenantVO externalTenantVO = baseServiceClientOperator.queryTenantByIdWithExternalInfo(projectDTO.getOrganizationId());
         // 平台组织直接跳过
-        LOGGER.info(">>>>>>>>>>>>>>>>>externalTenantVO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(externalTenantVO));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(">>>>>>>>>>>>>>>>>externalTenantVO is {}<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(externalTenantVO));
+        }
         if (Boolean.TRUE.equals(externalTenantVO.getRegister())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.FREE.name())
                 || StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.STANDARD.name())) {
@@ -123,7 +129,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             // 3. 判断是否超过限制
             LOGGER.info(">>>>>>>>>>>>>>>>>group {}, project {}. Used RepositorySize is {}, standardRepositoryStorageLimit is {}<<<<<<<<<<<<<<<<", groupName, projectName, gitlabProjectDTO.getStatistics().getRepositorySize(), standardRepositoryStorageLimit);
             return gitlabProjectDTO.getStatistics().getRepositorySize() < standardRepositoryStorageLimit;
-        } else if (StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.SENIOR.name())){
+        } else if (StringUtils.equalsIgnoreCase(externalTenantVO.getSaasLevel(), SaasLevelEnum.SENIOR.name())) {
             LOGGER.info(">>>>>>>>>>>>>>>>>Limit tenant code repository to senior.group {}, project {}<<<<<<<<<<<<<<<<", groupName, projectName);
             // 2. 查询gitlab已经使用了的大小
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectByName(groupName, projectName, null, true);

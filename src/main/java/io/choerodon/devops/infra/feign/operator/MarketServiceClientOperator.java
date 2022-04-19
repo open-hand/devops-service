@@ -81,8 +81,7 @@ public class MarketServiceClientOperator {
     }
 
     public MarketAppSubscribeRelVO subscribeApplication(Long marketAppId, Long userId) {
-        MarketAppSubscribeRelVO marketAppSubscribeRelVO = marketServiceClient.subscribeApplication(Objects.requireNonNull(marketAppId), Objects.requireNonNull(userId)).getBody();
-        return marketAppSubscribeRelVO;
+        return marketServiceClient.subscribeApplication(Objects.requireNonNull(marketAppId), Objects.requireNonNull(userId)).getBody();
     }
 
     public List<MarketServiceDeployObjectVO> queryUpgradeDeployObjects(Long projectId, Long marketServiceId, Long currentDeployObjectId) {

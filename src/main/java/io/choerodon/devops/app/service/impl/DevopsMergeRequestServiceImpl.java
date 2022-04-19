@@ -24,7 +24,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsMergeRequestVO;
 import io.choerodon.devops.api.vo.MergeRequestVO;
-import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.hrds.MemberPrivilegeViewDTO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsMergeRequestPayload;

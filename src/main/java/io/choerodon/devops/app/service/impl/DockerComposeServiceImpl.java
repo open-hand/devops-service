@@ -196,7 +196,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 String.valueOf(devopsHostCommandDTO.getId()),
                 JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, null)));
         if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> restart docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId),

@@ -1,13 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
@@ -19,7 +17,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -108,15 +105,6 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
             default:
                 return true;
         }
-    }
-
-    private List<Long> getAllGitlabMemberIsOrgRoot(List<Long> iamUserIds) {
-        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
-        if (!CollectionUtils.isEmpty(iamUserDTOS)) {
-            return iamUserDTOS.stream().filter(iamUserDTO -> baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), iamUserDTO.getOrganizationId()))
-                    .map(IamUserDTO::getId).collect(Collectors.toList());
-        }
-        return Collections.emptyList();
     }
 
 

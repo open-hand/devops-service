@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Map;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 

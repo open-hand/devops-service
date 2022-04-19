@@ -13,8 +13,8 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoVo;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoVo;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;

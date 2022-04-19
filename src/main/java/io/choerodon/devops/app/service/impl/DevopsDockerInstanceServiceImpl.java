@@ -30,7 +30,7 @@ import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
