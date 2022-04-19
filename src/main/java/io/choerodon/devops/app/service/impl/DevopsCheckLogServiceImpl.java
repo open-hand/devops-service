@@ -5,8 +5,6 @@ import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Joiner;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.domian.Condition;
@@ -41,13 +39,10 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
 
-    public static final String FIX_ENV_DATA = "fixEnvAppData";
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
-    private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @Value("${nexus.proxy.url:nexus.proxy.url}")
     private String nexusProxyUrl;
@@ -64,8 +59,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
-    @Autowired
-    private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
@@ -90,8 +83,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCiStepMapper devopsCiStepMapper;
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
-    @Autowired
-    private DevopsCiMavenPublishConfigMapper devopsCiMavenPublishConfigMapper;
     @Autowired
     private CiTemplateStepMapper ciTemplateStepMapper;
     @Autowired

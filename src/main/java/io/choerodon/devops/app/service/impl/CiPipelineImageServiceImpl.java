@@ -140,16 +140,8 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         Long repoId = ciPipelineImageDTO.getHarborRepoId();
 
         HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
-        String dockerRegistry = "";
-        String groupName = "";
-        if (DevopsRegistryRepoType.CUSTOM_REPO.getType().equals(repoType)) {
-
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-        } else {
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-        }
+        String dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+        String groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
 
         return new ImageRepoInfoVO(repoId, repoType, trimPrefix(dockerRegistry), groupName);
     }
