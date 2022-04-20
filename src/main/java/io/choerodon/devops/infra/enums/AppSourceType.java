@@ -51,6 +51,11 @@ public enum AppSourceType {
      * 自定义来源 （应用中心部署组部署会用上）
      */
     CUSTOM("custom"),
+
+    /**
+     * 自定义来源 （应用中心部署组部署会用上）
+     */
+    DOCKER_COMPOSE("docker_compose"),
     /**
      * 中间件,中间件在devops中的逻辑和市场应用大多都类似 （应用中心chart包部署会用上）
      */

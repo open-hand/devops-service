@@ -308,12 +308,12 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.DOCKER_COMPOSE,
-                null,
+                "Docker Compose应用",
                 null,
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
-                new DeploySourceVO(AppSourceType.CUSTOM, projectDTO.getName()));
+                new DeploySourceVO(AppSourceType.DOCKER_COMPOSE, projectDTO.getName()));
 
         runCommand = appendCmd(appId, runCommand);
 
