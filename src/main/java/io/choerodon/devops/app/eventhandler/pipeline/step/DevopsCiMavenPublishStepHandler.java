@@ -152,7 +152,9 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         if (devopsCiMavenPublishConfigVO.getNexusRepoId() != null) {
             Set<Long> ids = new HashSet<>();
             ids.add(devopsCiMavenPublishConfigVO.getNexusRepoId());
-            ids.addAll(dependencyRepoIds);
+            if (!CollectionUtils.isEmpty(dependencyRepoIds)) {
+                ids.addAll(dependencyRepoIds);
+            }
             List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null,
                     projectId,
                     ids);
