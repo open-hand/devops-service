@@ -179,9 +179,9 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             Map<String, Object> newServices = (Map<String, Object>) new JSONObject((Map<String, Object>) newData).get("services");
 
             if (currentServices.keySet().stream().allMatch(newServices::containsKey)) {
-                return true;
-            } else {
                 return false;
+            } else {
+                return true;
             }
 
         } catch (Exception e) {
