@@ -131,7 +131,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(hostId);
 
-        DockerComposeValueDTO currentValue = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId());
+        String currentValue = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId()).getValue();
 
         if (valueId == null) {
             remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
@@ -154,7 +154,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             value = dockerComposeValueDTO.getValue();
         }
 
-        boolean downFlag = isRemoveService(currentValue.getValue(), value);
+        boolean downFlag = isRemoveService(currentValue, value);
 
         // 更新应用信息
         devopsHostAppDTO.setRunCommand(runCommand);
