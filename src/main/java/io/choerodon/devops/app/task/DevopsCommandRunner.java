@@ -114,45 +114,27 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     private void createSonarToken() {
         DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-        if (oldConfigDTO == null) {
-            try {
-                SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-                Map<String, String> map = new HashMap<>();
-                map.put("name", "ci-token");
-                map.put("login", userName);
-                Call<ResponseBody> responseCall = sonarClient.listToken();
-                UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
-                Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
-                if (userTokenOptional.isPresent()) {
-                    map.put("name", "ci-token-new");
-                }
-                Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-                UserToken userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
-                DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
-                newConfigDTO.setConfig(userToken.getToken());
-                newConfigDTO.setName(DEFAULT_SONAR_NAME);
-                newConfigDTO.setType(ProjectConfigType.SONAR.getType());
-                devopsConfigService.baseCreate(newConfigDTO);
-
-            } catch (Exception e) {
-                LOGGER.error("======创建SonarQube token失败=======", e);
-            }
+        SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+        Map<String, String> map = new HashMap<>();
+        map.put("name", "ci-token");
+        map.put("login", userName);
+        Call<ResponseBody> responseCall = sonarClient.listToken();
+        UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
+        Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
+        UserToken userToken;
+        if (userTokenOptional.isPresent()) {
+            userToken = userTokenOptional.get();
         } else {
-            SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-            Map<String, String> map = new HashMap<>();
-            map.put("name", "ci-token");
-            map.put("login", userName);
-            Call<ResponseBody> responseCall = sonarClient.listToken();
-            UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
-            Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
-            UserToken userToken;
-            if (userTokenOptional.isPresent()) {
-                userToken = userTokenOptional.get();
-            } else {
-                Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-                userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
-            }
-
+            Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
+            userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
+        }
+        if (oldConfigDTO == null) {
+            DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
+            newConfigDTO.setConfig(userToken.getToken());
+            newConfigDTO.setName(DEFAULT_SONAR_NAME);
+            newConfigDTO.setType(ProjectConfigType.SONAR.getType());
+            devopsConfigService.baseCreate(newConfigDTO);
+        } else {
             oldConfigDTO.setConfig(userToken.getToken());
             devopsConfigService.baseUpdate(oldConfigDTO);
         }
