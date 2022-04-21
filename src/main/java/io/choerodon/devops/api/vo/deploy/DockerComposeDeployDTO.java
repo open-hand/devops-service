@@ -24,7 +24,7 @@ public class DockerComposeDeployDTO {
         this.runCommand = runCommand;
     }
 
-    public DockerComposeDeployDTO(String hostId, String instanceId, String value, String runCommand, boolean downFlag) {
+    public DockerComposeDeployDTO(String hostId, String instanceId, String value, String runCommand, Boolean downFlag) {
         this.hostId = hostId;
         this.instanceId = instanceId;
         this.value = value;
