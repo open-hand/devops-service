@@ -12,6 +12,7 @@ public class DockerComposeDeployDTO {
     private String instanceId;
     private String value;
     private String runCommand;
+    private Boolean downFlag;
 
     public DockerComposeDeployDTO() {
     }
@@ -21,6 +22,22 @@ public class DockerComposeDeployDTO {
         this.instanceId = instanceId;
         this.value = value;
         this.runCommand = runCommand;
+    }
+
+    public DockerComposeDeployDTO(String hostId, String instanceId, String value, String runCommand, boolean downFlag) {
+        this.hostId = hostId;
+        this.instanceId = instanceId;
+        this.value = value;
+        this.runCommand = runCommand;
+        this.downFlag = downFlag;
+    }
+
+    public Boolean getDownFlag() {
+        return downFlag;
+    }
+
+    public void setDownFlag(Boolean downFlag) {
+        this.downFlag = downFlag;
     }
 
     public String getHostId() {

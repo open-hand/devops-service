@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Map;
 import javax.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -10,8 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.DockerComposeDeployDTO;
@@ -108,7 +113,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppService.baseUpdate(devopsHostAppDTO1);
 
         // 保存操作记录
-        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, devopsHostDTO, devopsHostAppDTO);
+        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, devopsHostDTO, devopsHostAppDTO, null);
     }
 
     @Override
@@ -125,6 +130,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         Long valueId = dockerComposeDeployVO.getValueId();
 
         DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(hostId);
+
+        DockerComposeValueDTO currentValue = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId());
 
         if (valueId == null) {
             remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
@@ -147,12 +154,39 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             value = dockerComposeValueDTO.getValue();
         }
 
+        boolean downFlag = isRemoveService(currentValue.getValue(), value);
+
         // 更新应用信息
         devopsHostAppDTO.setRunCommand(runCommand);
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
-        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, devopsHostDTO, devopsHostAppDTO);
+        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, devopsHostDTO, devopsHostAppDTO, downFlag);
+
+    }
+
+    private boolean isRemoveService(String currentValue, String newValue) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(options);
+        Object currentData = yaml.load(currentValue);
+        Object newData = yaml.load(newValue);
+
+        try {
+            Map<String, Object> currentServices = (Map<String, Object>) new JSONObject((Map<String, Object>) currentData).get("services");
+            Map<String, Object> newServices = (Map<String, Object>) new JSONObject((Map<String, Object>) newData).get("services");
+
+            if (currentServices.keySet().stream().allMatch(newServices::containsKey)) {
+                return true;
+            } else {
+                return false;
+            }
+
+        } catch (Exception e) {
+            throw new CommonException("error.yaml.format.invalid", e);
+        }
 
     }
 
@@ -286,7 +320,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
-    private DevopsHostCommandDTO deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO) {
+    private DevopsHostCommandDTO deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO, Boolean downFlag) {
         // 保存操作记录
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
                 HostResourceType.DOCKER_COMPOSE.value(),
@@ -321,7 +355,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), value, runCommand)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), value, runCommand, downFlag)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
