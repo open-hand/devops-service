@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
@@ -29,6 +30,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
@@ -187,7 +190,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
-
+    @Autowired
+    private DockerComposeService dockerComposeService;
+    @Autowired
+    private DockerComposeValueService dockerComposeValueService;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
@@ -378,6 +387,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
                         .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+            } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
+                ApplicationContextHelper
+                        .getSpringFactory()
+                        .getBean(DevopsCdPipelineRecordService.class)
+                        .pipelineDeployDockerCompose(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
             } else {
                 ApplicationContextHelper
                         .getSpringFactory()
@@ -973,6 +987,93 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
+
+        StringBuilder log = new StringBuilder();
+
+        DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
+        DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        Long projectId = projectDTO.getId();
+        Long appServiceId = ciCdPipelineVO.getAppServiceId();
+
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
+
+        if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
+            throw new CommonException("error.no.gitlab.pipeline.id");
+        }
+        Long appId = devopsCdHostDeployInfoDTO.getAppId();
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
+        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceId);
+
+        // 1. 查询关联构建任务生成的镜像
+        log.append("[info] Query deploy image info").append(System.lineSeparator());
+        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
+                devopsCdPipelineRecordDTO.getGitlabPipelineId(),
+                devopsCdHostDeployInfoDTO.getImageJobName());
+        if (ciPipelineImageDTO == null) {
+            throw new CommonException("error.deploy.images.not.exist");
+        }
+        log.append("[info] Deploy image is ").append(ciPipelineImageDTO.getImageTag()).append(System.lineSeparator());
+
+        // 2. 通过应用服务编码匹配service，替换镜像
+        log.append("[info] Start replace docker-compose.yaml").append(System.lineSeparator());
+        String value = replaceValue(appServiceDTO.getCode(),
+                ciPipelineImageDTO.getImageTag(),
+                dockerComposeValueService
+                        .baseQuery(devopsHostAppDTO.getEffectValueId())
+                        .getValue());
+
+        log.append("[info] Replace docker-compose.yaml result is : ").append(System.lineSeparator());
+        log.append(value).append(System.lineSeparator());
+
+        DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO();
+        dockerComposeValueDTO.setValue(value);
+
+        DockerComposeDeployVO dockerComposeDeployVO = new DockerComposeDeployVO();
+        dockerComposeDeployVO.setRunCommand(Base64Util.decodeBuffer(devopsCdHostDeployInfoDTO.getRunCommand()));
+        dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
+        dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
+
+        // 3. 更新docker-compose应用
+        log.append("[info] Start update app").append(System.lineSeparator());
+        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
+        log.append("[info] Update app success").append(System.lineSeparator());
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordDTO.setLog(log.toString());
+        devopsCdJobRecordService.update(devopsCdJobRecordDTO);
+
+    }
+
+    private String replaceValue(String code, String imageTag, String value) {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(options);
+        Object data = yaml.load(value);
+        JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+        try {
+            Map<String, Object> services = (Map<String, Object>) jsonObject.get("services");
+
+            Map<String, Object> service = (Map<String, Object>) services.get(code);
+            if (!CollectionUtils.isEmpty(service)) {
+                service.replace("image", imageTag);
+            }
+
+            return yaml.dump(jsonObject);
+
+        } catch (Exception e) {
+            throw new CommonException("error.yaml.format.invalid", e);
+        }
     }
 
     private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {

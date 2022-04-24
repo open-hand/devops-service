@@ -20,7 +20,7 @@ public interface DevopsHostCommandService {
 
     void baseUpdate(DevopsHostCommandDTO devopsHostCommandDTO);
 
-    DevopsHostCommandDTO queryInstanceLatest(Long instanceId);
+    DevopsHostCommandDTO queryInstanceLatest(Long instanceId, String instanceType);
 
     /**
      * 查询出处于操作中状态三分钟及以上的记录
@@ -38,4 +38,6 @@ public interface DevopsHostCommandService {
     void batchUpdateTimeoutCommand(Set<Long> missCommands);
 
     List<DevopsHostCommandDTO> listByIds(Set<Long> missCommands);
+
+    List<DevopsHostCommandDTO> listByTypeAndInsIds(Set<Long> insIds, String instanceType);
 }

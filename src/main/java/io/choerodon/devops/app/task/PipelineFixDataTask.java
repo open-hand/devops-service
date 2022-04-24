@@ -21,7 +21,6 @@ public class PipelineFixDataTask {
 
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
 
-    private static final String PIPELINE_SONAR_IMAGE_FIX = "pipelineSonarImageFix";
 
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;

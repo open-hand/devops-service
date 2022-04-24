@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -9,4 +11,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @description
  */
 public interface CiPipelineImageMapper extends BaseMapper<CiPipelineImageDTO> {
+
+    CiPipelineImageDTO queryPipelineLatestImage(@Param("appServiceId") Long appServiceId, @Param("gitlabPipelineId") Long gitlabPipelineId);
 }

@@ -9,12 +9,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,6 @@ import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
 import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
-import io.choerodon.devops.infra.enums.host.HostInstanceType;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
@@ -779,6 +776,20 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public DevopsHostDTO checkHostAvailable(Long hostId) {
+        // 1. 获取主机信息
+        DevopsHostDTO hostDTO = baseQuery(hostId);
+        if (hostDTO == null) {
+            throw new CommonException("error.host.not.exist");
+        }
+        // 2. 校验主机已连接
+        hostConnectionHandler.checkHostConnection(hostId);
+        // 3. 校验主机权限
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
+        return hostDTO;
+    }
+
+    @Override
     public Page<DevopsUserVO> pageNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
@@ -845,34 +856,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         return members;
-    }
-
-    private void handleNormalProcess(List<DevopsHostInstanceVO> devopsNormalInstances, List<DevopsHostInstanceVO> hostInstances) {
-        if (!CollectionUtils.isEmpty(devopsNormalInstances)) {
-            List<Long> normalInstanceIds = devopsNormalInstances.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());
-            List<DevopsHostAppDTO> devopsHostAppDTOS = devopsHostAppMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(normalInstanceIds));
-            List<DevopsNormalInstanceVO> devopsNormalInstanceVOS = ConvertUtils.convertList(devopsHostAppDTOS, DevopsNormalInstanceVO.class);
-            devopsNormalInstanceVOS.forEach(devopsNormalInstanceVO -> {
-                devopsNormalInstanceVO.setInstanceType(HostInstanceType.NORMAL_PROCESS.value());
-                //加上操作状态
-                devopsNormalInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsNormalInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsNormalInstanceVOS);
-        }
-    }
-
-    private void handleDockerProcess(List<DevopsHostInstanceVO> devopsHostInstanceVOS, List<DevopsHostInstanceVO> hostInstances) {
-        if (!CollectionUtils.isEmpty(devopsHostInstanceVOS)) {
-            List<Long> dockerInstanceIds = devopsHostInstanceVOS.stream().map(DevopsHostInstanceVO::getId).collect(Collectors.toList());
-            List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(dockerInstanceIds));
-            List<DevopsDockerInstanceVO> devopsDockerInstanceVOS = ConvertUtils.convertList(devopsDockerInstanceDTOS, DevopsDockerInstanceVO.class);
-            devopsDockerInstanceVOS.forEach(devopsDockerInstanceVO -> {
-                devopsDockerInstanceVO.setInstanceType(HostInstanceType.DOCKER_PROCESS.value());
-                //加上操作状态
-                devopsDockerInstanceVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceId(devopsDockerInstanceVO.getId()));
-            });
-            hostInstances.addAll(devopsDockerInstanceVOS);
-        }
     }
 
     private String generateRedisKey(Long projectId, Long hostId) {

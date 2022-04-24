@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
+import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.service.*;
@@ -230,6 +231,32 @@ public class CiController {
                     DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
         return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息")
+    @GetMapping("/rewrite_repo_info_script")
+    public ResponseEntity<String> queryRewriteRepoInfoScript(
+            @RequestParam(value = "project_id") Long projectId,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "仓库类型", required = true)
+            @RequestParam(value = "repo_type") String repoType,
+            @ApiParam(value = "制品库id", required = true)
+            @RequestParam(value = "repo_id") Long repoId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryRewriteRepoInfoScript(projectId, token, repoType, repoId));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息")
+    @GetMapping("/image_repo_info")
+    public ResponseEntity<ImageRepoInfoVO> queryImageRepoInfo(
+            @RequestParam(value = "project_id") Long projectId,
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryImageRepoInfo(projectId, token, gitlabPipelineId));
     }
 
 }

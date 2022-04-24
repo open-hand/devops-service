@@ -51,6 +51,16 @@ public class DevopsCdHostDeployInfoDTO extends AuditDomain {
     @ApiModelProperty("删除命令")
     private String dockerCommand;
 
+    private String imageJobName;
+
+    public String getImageJobName() {
+        return imageJobName;
+    }
+
+    public void setImageJobName(String imageJobName) {
+        this.imageJobName = imageJobName;
+    }
+
     public String getDockerCommand() {
         return dockerCommand;
     }

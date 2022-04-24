@@ -52,11 +52,22 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
         dropIndex(indexName: "uk_host_id_name", tableName: "devops_host_app")
         dropIndex(indexName: "uk_host_id_code", tableName: "devops_host_app")
     }
-
     changeSet(author: 'wanghao', id: '2022-04-07-add-index') {
         addUniqueConstraint(tableName: 'devops_host_app',
                 constraintName: 'uk_host_id_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_host_app',
                 constraintName: 'uk_host_id_code', columnNames: 'project_id,code')
     }
+
+    changeSet(author: 'wanghao', id: '2022-04-07-add-column') {
+        addColumn(tableName: 'devops_host_app') {
+            column(name: 'run_command', type: 'TEXT', remarks: '运行命令, docker_compose应用才需要') {
+                constraints(nullable: true)
+            }
+            column(name: 'effect_value_id', type: 'BIGINT UNSIGNED', remarks: '当前使用的配置id, docker_compose应用才需要') {
+                constraints(nullable: true)
+            }
+        }
+    }
+    
 }

@@ -4,9 +4,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -34,6 +36,9 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String name;
     @ApiModelProperty("应用编码")
     private String code;
+    /**
+     * {@link RdupmTypeEnum}
+     */
     @ApiModelProperty("制品类型")
     private String rdupmType;
     /**
@@ -41,6 +46,12 @@ public class DevopsHostAppDTO extends AuditDomain {
      */
     @ApiModelProperty("操作类型")
     private String operationType;
+    @ApiModelProperty(value = "部署指令", required = true)
+    @NotBlank
+    private String runCommand;
+    @ApiModelProperty(value = "当前生效的配置id,为docker_compose部署类型时才需要")
+    private Long effectValueId;
+
 
     public DevopsHostAppDTO() {
     }
@@ -57,6 +68,23 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.code = code;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
+    }
+
+
+    public Long getEffectValueId() {
+        return effectValueId;
+    }
+
+    public void setEffectValueId(Long effectValueId) {
+        this.effectValueId = effectValueId;
+    }
+
+    public String getRunCommand() {
+        return runCommand;
+    }
+
+    public void setRunCommand(String runCommand) {
+        this.runCommand = runCommand;
     }
 
     public Long getProjectId() {

@@ -19,6 +19,7 @@ public class DevopsHostConstants {
     public static final String HOST_SESSION = "host-sessions-cache";
     public static final String GROUP = "host:";
     public static final String DOCKER_INSTANCE = "host:%s:docker:instances:%s";
+    public static final String DOCKER_COMPOSE = "host:%s:docker:compose:%s";
     public static final String NORMAL_INSTANCE = "host:%s:normal:instances:%s";
     public static final String PIPELINE_CUSTOM_DEPLOY = "pipeline:custom:deploy:hosts:%s:jobs:%s";
     public static final String MIDDLEWARE_INSTANCE = "host:%s:middleware:instances:%s";

@@ -16,15 +16,17 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @Date 2021/6/28 14:44
  */
 public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO> {
-    DevopsHostCommandDTO selectLatestByInstanceId(@Param("instanceId") Long id);
+    DevopsHostCommandDTO selectLatestByInstanceIdAndType(@Param("instanceId") Long id, @Param("instanceType") String instanceType);
 
     void deleteByHostId(@Param("hostId") Long hostId);
 
-    DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId);
+    DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId, @Param("instanceType") String instanceType);
 
     void batchUpdateTimeoutCommand(@Param("missCommands") Set<Long> missCommands);
 
     List<DevopsHostCommandDTO> listStagnatedRecord(@Param("hostId") String hostId, @Param("beforeDate") String beforeDate);
 
     List<DevopsHostCommandDTO> listByIds(@Param("missCommands") Set<Long> missCommands);
+
+    List<DevopsHostCommandDTO> listByTypeAndInsIds(@Param("insIds") Set<Long> insIds, @Param("instanceType") String instanceType);
 }

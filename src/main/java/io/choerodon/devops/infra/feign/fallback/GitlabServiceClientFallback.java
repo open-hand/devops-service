@@ -571,4 +571,44 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GroupDTO>> queryGroupWithStatisticsByName(String groupName, Integer userId, Boolean statistics) {
         throw new CommonException("error.query.group.statistics");
     }
+
+    @Override
+    public ResponseEntity<PipelineSchedule> createPipelineSchedule(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, PipelineSchedule pipelineSchedule) {
+        throw new CommonException("error.create.Pipeline.Schedule");
+    }
+
+    @Override
+    public ResponseEntity<Variable> createScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        throw new CommonException("error.create.Pipeline.Variable");
+    }
+
+    @Override
+    public ResponseEntity<Variable> editScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        throw new CommonException("error.edit.Pipeline.Variable");
+    }
+
+    @Override
+    public ResponseEntity<Variable> deleteScheduleVariable(Integer projectId, Integer pipelineScheduleId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password, Variable variable) {
+        throw new CommonException("error.delete.Pipeline.Variable");
+    }
+
+    @Override
+    public ResponseEntity<PipelineSchedule> queryPipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.query.Pipeline.Schedule");
+    }
+
+    @Override
+    public ResponseEntity<List<PipelineSchedule>> listPipelineSchedules(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.list.Pipeline.Schedule");
+    }
+
+    @Override
+    public ResponseEntity<Void> updatePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password, PipelineSchedule pipelineSchedule) {
+        throw new CommonException("error.update.Pipeline.Schedule");
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("error.delete.Pipeline.Schedule");
+    }
 }
