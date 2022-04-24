@@ -184,6 +184,7 @@ function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
 
+  rewrite_image_info_for_chart
   #判断chart主目录名是否与应用编码保持一致
   CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
   if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
