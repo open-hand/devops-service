@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -149,9 +150,14 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         // 查询制品库
         List<MavenRepoVO> mavenRepoVOS = new ArrayList<>();
         if (devopsCiMavenPublishConfigVO.getNexusRepoId() != null) {
+            Set<Long> ids = new HashSet<>();
+            ids.add(devopsCiMavenPublishConfigVO.getNexusRepoId());
+            if (!CollectionUtils.isEmpty(dependencyRepoIds)) {
+                ids.addAll(dependencyRepoIds);
+            }
             List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null,
                     projectId,
-                    ArrayUtil.singleAsSet(devopsCiMavenPublishConfigVO.getNexusRepoId()));
+                    ids);
             // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
             if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
                 return false;
