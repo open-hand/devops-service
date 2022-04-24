@@ -4,6 +4,9 @@ package io.choerodon.devops.infra.util;
  * Created by wangxiang on 2021/7/28
  */
 public class StringUtils {
+    private StringUtils() {
+    }
+
     //首字母转小写
     public static String toLowerCaseFirstOne(String s) {
         if (Character.isLowerCase(s.charAt(0)))

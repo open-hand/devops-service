@@ -80,6 +80,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostAppServiceImpl.class);
 
     private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
+    private static final String ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST = "error.host.instance.kill.command.exist";
 
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
@@ -150,7 +151,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     !devopsHostAppInstanceDTO.getSourceConfig().equals(calculateSourceConfig(jarDeployVO))) {
                 // 执行操作前，先判断kill命令是否存在，不存在停止执行
                 if (!HostDeployUtil.checkKillCommandExist(jarDeployVO.getKillCommand())) {
-                    throw new CommonException("error.host.instance.kill.command.exist");
+                    throw new CommonException(ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST);
                 }
                 deployJavaInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, jarDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(jarDeployVO.getAppName())) {
@@ -173,7 +174,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
                     if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy custom instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
+                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy java instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
                     }
                     webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                             String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
@@ -231,12 +232,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params) {
+    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, Long appId) {
         Page<DevopsHostAppVO> page;
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params, appId));
         } else {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params, appId));
         }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
@@ -326,6 +327,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandMapper.selectLatestByInstanceIdAndType(devopsHostAppInstanceDTO.getId(), HostResourceType.INSTANCE_PROCESS.value()));
                 devopsHostAppVO.setKillCommandExist(HostDeployUtil.checkKillCommandExist(devopsHostAppInstanceDTO.getKillCommand()));
                 devopsHostAppVO.setHealthProbExist(HostDeployUtil.checkHealthProbExit(devopsHostAppInstanceDTO.getHealthProb()));
+                devopsHostAppVO.setSourceType(devopsHostAppInstanceDTO.getSourceType());
+                devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
+                devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
+                devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
             }
 
         }
@@ -414,7 +419,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
             if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
-                throw new CommonException("error.host.instance.kill.command.exist");
+                throw new CommonException(ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST);
             }
             devopsMiddlewareService.uninstallMiddleware(projectId, devopsHostAppInstanceDTO);
         } else if (RdupmTypeEnum.DOCKER_COMPOSE.value().equals(devopsHostAppDTO.getRdupmType())) {
@@ -460,7 +465,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
             if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getKillCommand())) {
-                throw new CommonException("error.host.instance.kill.command.exist");
+                throw new CommonException(ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST);
             }
 
             DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
@@ -535,7 +540,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     !devopsHostAppInstanceDTO.getRunCommand().equals(customDeployVO.getRunCommand()) ||
                     !devopsHostAppInstanceDTO.getPostCommand().equals(customDeployVO.getPostCommand())) {
                 if (!HostDeployUtil.checkKillCommandExist(customDeployVO.getKillCommand())) {
-                    throw new CommonException("error.host.instance.kill.command.exist");
+                    throw new CommonException(ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST);
                 }
                 deployCustomInstance(projectId, devopsHostDTO, devopsHostAppDTO, devopsHostAppInstanceDTO, customDeployVO);
             } else if (!devopsHostAppDTO.getName().equals(customDeployVO.getAppName())) {

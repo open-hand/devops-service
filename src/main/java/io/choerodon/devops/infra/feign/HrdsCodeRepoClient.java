@@ -7,8 +7,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.devops.api.vo.hrdsCode.MemberPrivilegeViewDTO;
-import io.choerodon.devops.api.vo.hrdsCode.RepositoryPrivilegeViewDTO;
+import io.choerodon.devops.api.vo.hrds.RepositoryPrivilegeViewDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.fallback.HrdsCodeRepoClientFallback;
 

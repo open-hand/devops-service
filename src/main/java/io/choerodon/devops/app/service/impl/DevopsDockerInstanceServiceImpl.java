@@ -1,16 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import static org.springframework.util.Assert.notNull;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -18,9 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -30,9 +26,7 @@ import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.host.DockerProcessInfoVO;
 import io.choerodon.devops.api.vo.host.DockerProcessUpdatePayload;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
-import io.choerodon.devops.api.vo.market.MarketHarborConfigVO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -79,7 +73,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
 
     private static final String CREATE = "create";
-    private static final String UPDATE = "update";
 
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
@@ -108,10 +101,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
 
-
-    private static final BASE64Decoder decoder = new BASE64Decoder();
-
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deployDockerInstance(Long projectId, DockerDeployVO dockerDeployVO) {
@@ -119,7 +108,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         //2.获取主机信息
         DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
-        checkHostExist(hostDTO);
+        notNull(hostDTO, "error.host.not.exist");
         //校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, hostDTO, DetailsHelper.getUserDetails().getUserId());
         // 校验主机已连接
@@ -265,27 +254,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return dockerDeployDTO;
     }
 
-
-    private void checkHostExist(DevopsHostDTO hostDTO) {
-        AssertUtils.notNull(hostDTO, "error.host.not.exist");
-    }
-
     private DevopsHostDTO getHost(Long hostId) {
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
-        return devopsHostDTO;
-    }
-
-    private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, DockerDeployVO dockerDeployVO) {
-        MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(dockerDeployVO.getDeployObjectId()));
-        if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
-            throw new CommonException("error.harbor.deploy.object.not.exist");
-        }
-        return marketServiceDeployObjectVO;
-    }
-
-    private void fillDeploySource(DeploySourceVO deploySourceVO, MarketServiceDeployObjectVO marketServiceDeployObjectVO) {
-        deploySourceVO.setMarketAppName(marketServiceDeployObjectVO.getMarketAppName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketAppVersion());
-        deploySourceVO.setMarketServiceName(marketServiceDeployObjectVO.getMarketServiceName() + BaseConstants.Symbol.MIDDLE_LINE + marketServiceDeployObjectVO.getMarketServiceVersion());
+        return devopsHostService.baseQuery(hostId);
     }
 
     private HarborC7nRepoImageTagVo getHarborC7nRepoImageTagVo(DockerDeployVO dockerDeployVO) {
@@ -321,18 +291,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerDeployDTO));
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
-        return hostAgentMsgVO;
-    }
-
-    private String getDeValues(DockerDeployVO dockerDeployVO) {
-        String values = null;
-        try {
-            values = new String(decoder.decodeBuffer(dockerDeployVO.getValue()), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            LOGGER.info("decode values failed!!!!. {}", dockerDeployVO.getValue());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
-        return values;
+        return hostAgentMsgVO;
     }
 
     private DevopsHostCommandDTO saveDevopsHostCommandDTO(DevopsHostDTO hostDTO, DevopsDockerInstanceDTO devopsDockerInstanceDTO) {
@@ -346,24 +308,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         return devopsHostCommandDTO;
     }
 
-    private DockerPullAccountDTO initDockerPullAccountDTO(MarketHarborConfigVO marketHarborConfigVO) {
-        DockerPullAccountDTO dockerPullAccountDTO = new DockerPullAccountDTO()
-                .setHarborUrl(marketHarborConfigVO.getRepoUrl())
-                .setPullAccount(marketHarborConfigVO.getRobotName())
-                .setPullPassword(marketHarborConfigVO.getToken());
-        return dockerPullAccountDTO;
-    }
-
-    private boolean isMarketOrHzero(DockerDeployVO dockerDeployVO) {
-        return AppSourceType.MARKET.getValue().equals(dockerDeployVO.getSourceType())
-                || AppSourceType.HZERO.getValue().equals(dockerDeployVO.getSourceType());
-    }
-
     private DeploySourceVO initDeploySourceVO(DockerDeployVO dockerDeployVO, ProjectDTO projectDTO) {
-        DeploySourceVO deploySourceVO = new DeploySourceVO()
+        return new DeploySourceVO()
                 .setType(dockerDeployVO.getSourceType())
                 .setProjectName(projectDTO.getName());
-        return deploySourceVO;
     }
 
     @Override
@@ -373,8 +321,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public DevopsDockerInstanceDTO queryByAppIdAndContainerId(Long appId, String containerId) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
-        Assert.notNull(containerId, ResourceCheckConstant.ERROR_APP_CONTAINER_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        notNull(containerId, ResourceCheckConstant.ERROR_APP_CONTAINER_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);
@@ -396,14 +344,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public List<DevopsDockerInstanceDTO> listByHostId(Long hostId) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
 
         return devopsDockerInstanceMapper.listByHostId(hostId);
     }
 
     @Override
     public List<DevopsDockerInstanceDTO> listByAppId(Long appId) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);
@@ -413,15 +361,15 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        Assert.notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
+        notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
         return devopsDockerInstanceMapper.selectOne(new DevopsDockerInstanceDTO(hostId, containerName));
     }
 
     @Override
     @Transactional
     public void deleteByAppId(Long appId) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);
@@ -465,5 +413,19 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
                 }
             });
         }
+        Map<String, DockerProcessInfoVO> updateProcessInfoMap = new HashMap<>();
+        if (!CollectionUtils.isEmpty(devopsDockerInstanceDTOList)) {
+            if (!CollectionUtils.isEmpty(updateProcessInfos)) {
+                updateProcessInfoMap = updateProcessInfos.stream().collect(Collectors.toMap(DockerProcessInfoVO::getContainerName, Function.identity()));
+            }
+            Map<String, DockerProcessInfoVO> finalUpdateProcessInfoMap = updateProcessInfoMap;
+            devopsDockerInstanceDTOList.forEach(devopsDockerInstanceDTO -> {
+                DockerProcessInfoVO dockerProcessInfoVO = finalUpdateProcessInfoMap.get(devopsDockerInstanceDTO.getName());
+                if (dockerProcessInfoVO == null) {
+                    devopsDockerInstanceService.baseDelete(devopsDockerInstanceDTO.getId());
+                }
+            });
+        }
+
     }
 }

@@ -6,6 +6,10 @@ import org.springframework.util.ObjectUtils;
 import io.choerodon.asgard.common.ApplicationContextHelper;
 
 public class EurekaInstanceUtil {
+
+    private EurekaInstanceUtil() {
+    }
+
     private static String instanceId;
 
     public static String getInstanceId() {

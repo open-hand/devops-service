@@ -1,17 +1,20 @@
 package io.choerodon.devops.infra.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.parsing.FailFastProblemReporter;
 
 /**
  * Created by wangxiang on 2021/2/2
  */
 public class XMLUtil {
 
+    private XMLUtil() {
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(XMLUtil.class);
 
@@ -27,7 +30,7 @@ public class XMLUtil {
             xmlObject = unmarshaller.unmarshal(getStringStream(settings));
 
         } catch (Exception e) {
-            LOGGER.error("error.xml.to.object", e.getMessage());
+            LOGGER.error("error.xml.to.object", e);
         }
         return xmlObject;
     }
@@ -35,8 +38,7 @@ public class XMLUtil {
     public static InputStream getStringStream(String sInputString) {
         if (sInputString != null && !sInputString.trim().equals("")) {
             try {
-                ByteArrayInputStream tInputStringStream = new ByteArrayInputStream(sInputString.getBytes());
-                return tInputStringStream;
+                return new ByteArrayInputStream(sInputString.getBytes());
             } catch (Exception ex) {
                 LOGGER.error("error.get.stream", ex);
             }

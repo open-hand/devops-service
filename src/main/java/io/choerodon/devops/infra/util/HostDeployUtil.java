@@ -1,15 +1,16 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
-import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
+import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 
 /**
  * 〈功能简述〉
@@ -102,22 +103,7 @@ public class HostDeployUtil {
     }
 
     public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
-        String[] strings = value.split("\n");
-        String values = "";
-        for (String s : strings) {
-            s = trim(s);
-            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
-                values = s;
-            }
-        }
-        if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
-            throw new CommonException("error.instruction");
-        }
-
-        // 判断镜像是否存在 存在删除 部署
-        StringBuilder dockerRunExec = new StringBuilder();
-        dockerRunExec.append(values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage()));
-        return dockerRunExec.toString();
+        return value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
     }
 
     public static Boolean checkHealthProbExit(String deleteCommand) {

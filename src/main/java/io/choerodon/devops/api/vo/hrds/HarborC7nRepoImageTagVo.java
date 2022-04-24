@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.vo.hrdsCode;
+package io.choerodon.devops.api.vo.hrds;
 
 import java.util.List;
 

@@ -10,25 +10,30 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
  * @since 2021/5/18
  */
 public class IamAdminIdHolder {
+
+    /**
+     * 持有的admin id
+     */
+    private static Long adminId = null;
+
     /**
      * admin用户的登录名
      */
     private static final String IAM_ADMIN_LOGIN_NAME = "admin";
 
-    /**
-     * 持有的admin id
-     */
-    private static Long ADMIN_ID = null;
+    private IamAdminIdHolder() {
+
+    }
 
     public static Long getAdminId() {
-        if (ADMIN_ID == null) {
+        if (adminId == null) {
             // 不用加锁，多次调用，id也是一样的值
-            ADMIN_ID = ApplicationContextHelper
+            adminId = ApplicationContextHelper
                     .getContext()
                     .getBean(BaseServiceClientOperator.class)
                     .queryUserByLoginName(IAM_ADMIN_LOGIN_NAME).getId();
         }
 
-        return ADMIN_ID;
+        return adminId;
     }
 }

@@ -8,6 +8,10 @@ import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
  * @since 2020/7/22
  */
 public class ExceptionUtil {
+
+    private ExceptionUtil() {
+    }
+
     /**
      * 包装一般的异常为 {@link DevopsCiInvalidException}, 用于返回非2xx的状态码
      *

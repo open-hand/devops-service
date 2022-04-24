@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.constant;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 /**

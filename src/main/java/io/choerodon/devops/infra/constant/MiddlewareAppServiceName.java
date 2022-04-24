@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MiddlewareAppServiceName {
+
+    private MiddlewareAppServiceName() {
+    }
+
     public static final Map<String, String> MIDDLE_APP_SERVICE_NAME_MAP;
 
     /**
@@ -12,8 +16,8 @@ public class MiddlewareAppServiceName {
      * key: marketApplicationName-marketServiceName
      * value: 展示出来的名称
      */
-    static{
-        Map<String,String> map=new HashMap<>();
+    static {
+        Map<String, String> map = new HashMap<>();
         map.put("Redis-standalone","Redis单机版");
         map.put("Redis-sentinel","Redis哨兵版");
         map.put("MySQL-standalone","MySQL单机版");

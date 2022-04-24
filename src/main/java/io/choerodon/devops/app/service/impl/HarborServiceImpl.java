@@ -168,7 +168,7 @@ public class HarborServiceImpl implements HarborService {
         ResponseEntity<List<HarborRepoDTO>> listResponseEntity = rdupmClient.queryHarborReposByIds(harborConfigIds);
         List<HarborRepoDTO> body = listResponseEntity.getBody();
         if (CollectionUtils.isEmpty(body)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<DevopsConfigDTO> resultDevopsConfigDTOS = new ArrayList<>();
         body.forEach(harborRepoDTO -> {

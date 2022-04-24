@@ -30,7 +30,7 @@ import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.ProdImageInfoVO;
-import io.choerodon.devops.api.vo.hrdsCode.HarborC7nRepoImageTagVo;
+import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.market.JarReleaseConfigVO;
 import io.choerodon.devops.api.vo.market.MarketMavenConfigVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;

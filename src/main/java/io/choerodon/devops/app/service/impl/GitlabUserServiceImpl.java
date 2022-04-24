@@ -198,7 +198,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
                 LOGGER.info("Successfully sync all users...");
             }
         } catch (Exception ex) {
-            // TODO 考虑同步失败的情况
             LOGGER.warn("Failed to sync user. ", ex);
         } finally {
             redisTemplate.delete(USER_SYNC_REDIS_KEY);

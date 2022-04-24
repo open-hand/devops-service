@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -19,6 +22,9 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * Description:
  */
 public class PageRequestUtil {
+
+    private static final String SORT_EXCETION_CODE = "error.field.not.supported.for.sort";
+
     private PageRequestUtil() {
     }
 
@@ -97,7 +103,7 @@ public class PageRequestUtil {
         sort.iterator().forEachRemaining(s -> {
             String field = orderByFieldMap.get(s.getProperty());
             if (field == null) {
-                throw new CommonException("error.field.not.supported.for.sort", s.getProperty());
+                throw new CommonException(SORT_EXCETION_CODE, s.getProperty());
             }
             newOrders.add(new Sort.Order(s.getDirection(), field));
         });
@@ -116,7 +122,7 @@ public class PageRequestUtil {
                 case "creationDate":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
                 default:
-                    throw new CommonException("error.field.not.supported.for.sort", order.getProperty());
+                    throw new CommonException(SORT_EXCETION_CODE, order.getProperty());
             }
         } else {
             return toBeSorted;
@@ -135,7 +141,7 @@ public class PageRequestUtil {
                 case "creationDate":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
                 default:
-                    throw new CommonException("error.field.not.supported.for.sort", order.getProperty());
+                    throw new CommonException(SORT_EXCETION_CODE, order.getProperty());
             }
         } else {
             return toBeSorted;

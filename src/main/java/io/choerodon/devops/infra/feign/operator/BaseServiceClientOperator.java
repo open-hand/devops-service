@@ -69,7 +69,7 @@ public class BaseServiceClientOperator {
     public List<ExternalTenantVO> querySaasTenants(List<String> saasLevels) {
         ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.querySaasTenants(saasLevels);
         if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
             return externalTenantVOS;
@@ -79,7 +79,7 @@ public class BaseServiceClientOperator {
     public List<ExternalTenantVO> queryRegisterTenant() {
         ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.queryRegisterTenant();
         if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
             return externalTenantVOS;
@@ -182,14 +182,6 @@ public class BaseServiceClientOperator {
             }
         }
         return userDTOS;
-    }
-
-    public Boolean checkSiteAccess(Long userId) {
-        try {
-            return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
-        } catch (Exception e) {
-            throw new CommonException("error.check.user.site.access", e);
-        }
     }
 
 //    /**
@@ -360,7 +352,7 @@ public class BaseServiceClientOperator {
         try {
             ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
+            if (userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
                 return null;
             }
             return userDOResponseEntity.getBody().getContent().get(0);

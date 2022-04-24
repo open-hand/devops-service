@@ -4,7 +4,6 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * Created by younger on 2018/3/28.

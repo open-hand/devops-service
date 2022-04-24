@@ -382,7 +382,7 @@ public class GitlabServiceClientOperator {
                             appExternalConfigDTO.getAccessToken(),
                             appExternalConfigDTO.getUsername(),
                             appExternalConfigDTO.getPassword());
-            if (result.getBody().getFilePath() == null) {
+            if (result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (RetryableException e) {
@@ -699,7 +699,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTagName(tag);
             gitlabTransferDTO.setRef(ref);
             gitlabTransferDTO.setMsg(msg);
-            ResponseEntity<TagDTO> tag1 = gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
+            gitlabServiceClient.createTag(gitLabProjectId, gitlabTransferDTO, userId);
 
             // gitlab14之后需要分布创建
             createRelease(gitLabProjectId, tag, releaseNotes, userId);

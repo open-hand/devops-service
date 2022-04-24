@@ -251,12 +251,11 @@ public class CiController {
     @ApiOperation(value = "查询制品仓库信息")
     @GetMapping("/image_repo_info")
     public ResponseEntity<ImageRepoInfoVO> queryImageRepoInfo(
-            @RequestParam(value = "project_id") Long projectId,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
-        return ResponseEntity.ok(ciPipelineImageService.queryImageRepoInfo(projectId, token, gitlabPipelineId));
+        return ResponseEntity.ok(ciPipelineImageService.queryImageRepoInfo(token, gitlabPipelineId));
     }
 
 }

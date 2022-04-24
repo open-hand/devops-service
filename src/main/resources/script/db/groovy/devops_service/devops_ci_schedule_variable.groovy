@@ -27,7 +27,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_schedule_variable.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_ci_schedule_variable',
-                constraintName: 'uk_name', columnNames: 'ci_pipeline_schedule_id,key')
+                constraintName: 'uk_name', columnNames: 'ci_pipeline_schedule_id,variable_key')
 
         createIndex(indexName: "idx_ci_pipeline_schedule_id", tableName: "devops_ci_schedule_variable") {
             column(name: "ci_pipeline_schedule_id")

@@ -10,7 +10,6 @@ import io.swagger.annotations.ApiModelProperty;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-import org.apache.logging.log4j.message.StringFormattedMessage;
 
 /**
  * Created by Sheep on 2019/3/14.

@@ -2,12 +2,11 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.devops.api.vo.GitlabUserRequestVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
@@ -27,7 +26,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class GitlabHandleServiceImpl implements GitlabHandleService {
 
-    private static final String PROJECT_ADMIN = "project-admin";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;

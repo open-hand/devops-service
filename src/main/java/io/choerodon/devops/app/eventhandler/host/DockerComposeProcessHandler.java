@@ -29,9 +29,7 @@ public class DockerComposeProcessHandler implements HostMsgHandler {
         if (CollectionUtils.isEmpty(dockerProcessUpdatePayload.getUpdateProcessInfos())) {
             return;
         }
-        dockerProcessUpdatePayload.getUpdateProcessInfos().forEach(processPayload -> {
-            devopsDockerInstanceService.createOrUpdate(hostId, processPayload);
-        });
+        dockerProcessUpdatePayload.getUpdateProcessInfos().forEach(processPayload -> devopsDockerInstanceService.createOrUpdate(hostId, processPayload));
 
     }
 

@@ -1,20 +1,21 @@
 package io.choerodon.devops.app.eventhandler.host;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.host.CommandResultVO;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -50,7 +51,6 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
             {
                 if (devopsHostCommandDTO.getCdJobRecordId() != null) {
                     devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
-                    ;
                 }
             });
             // 2. 同步devops丢失的命令
