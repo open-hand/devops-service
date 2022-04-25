@@ -39,7 +39,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
-import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -185,12 +184,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         newVersion.setRef(ref);
         newVersion.setVersion(version);
         //根据配置id 查询仓库是自定义还是默认
-        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
-        if (Objects.isNull(harborRepoDTO)
-                || Objects.isNull(harborRepoDTO.getHarborRepoConfig())
-                || harborRepoDTO.getHarborRepoConfig().getRepoId().longValue() != harborConfigId) {
-            throw new DevopsCiInvalidException("error.harbor.configuration.expiration");
-        }
+//        HarborRepoDTO harborRepoDTO = rdupmClient.queryHarborRepoConfig(appServiceDTO.getProjectId(), appServiceDTO.getId()).getBody();
+//        if (Objects.isNull(harborRepoDTO)
+//                || Objects.isNull(harborRepoDTO.getHarborRepoConfig())
+//                || harborRepoDTO.getHarborRepoConfig().getRepoId().longValue() != harborConfigId) {
+//            throw new DevopsCiInvalidException("error.harbor.configuration.expiration");
+//        }
         newVersion.setHarborConfigId(harborConfigId);
         newVersion.setRepoType(repoType);
 
