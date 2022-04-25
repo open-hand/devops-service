@@ -103,6 +103,8 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         imageRepoInfoVO.setGroupName(groupName);
         imageRepoInfoVO.setDockerUsername(dockerUsername);
         imageRepoInfoVO.setDockerPassword(dockerPassword);
+        imageRepoInfoVO.setRepoType(repoType);
+        imageRepoInfoVO.setHarborRepoId(repoId);
 
         return imageRepoInfoVO;
     }
