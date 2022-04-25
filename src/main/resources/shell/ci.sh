@@ -467,29 +467,35 @@ function mvnCompile() {
 function rewrite_image_info() {
   http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
   echo "Query repo info status code is :"  $http_status_code
-  if [ "$http_status_code" != "200" ]; then
+  if [ "$http_status_code" != "200" ];
+  then
     cat rewrite_image_info.json
-    exit 1
+    echo "Query repo info failed,skip rewrite image info"
+  else
+    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+    export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
+    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
   fi
 
-  export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-  export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-  export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
-  export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-  export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
-  export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+
 }
 
 function rewrite_image_info_for_chart() {
-  echo "Query image repo info"
+  echo "Query chart image repo info"
   http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/image_repo_info?token=${Token}&gitlab_pipeline_id=$1")
-  echo "Query repo info status code is :"  $http_status_code
-  if [ "$http_status_code" != "200" ]; then
+  echo "Query chart repo info status code is :"  $http_status_code
+  if [ "$http_status_code" != "200" ];
+  then
     cat rewrite_image_info.json
-    exit 1
+    echo "Query chart repo info failed,skip rewrite image info"
+  else
+    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
   fi
-  export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-  export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-  export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-  export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+
 }
