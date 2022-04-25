@@ -482,8 +482,8 @@ function rewrite_image_info_for_chart() {
     cat rewrite_image_info.json
     exit 1
   fi
-  export DOCKER_REGISTRY=$(jq .dockerRegistry rewrite_image_info.json)
-  export GROUP_NAME=$(jq .groupName rewrite_image_info.json)
-  export HARBOR_CONFIG_ID=$(jq .harborRepoId rewrite_image_info.json)
-  export REPO_TYPE=$(jq .repoType rewrite_image_info.json)
+  export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+  export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+  export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+  export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
 }
