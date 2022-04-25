@@ -236,7 +236,7 @@ public class CiController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "查询制品仓库信息")
     @GetMapping("/rewrite_repo_info_script")
-    public ResponseEntity<String> queryRewriteRepoInfoScript(
+    public ResponseEntity<ImageRepoInfoVO> queryRewriteRepoInfoScript(
             @RequestParam(value = "project_id") Long projectId,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,

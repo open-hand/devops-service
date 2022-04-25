@@ -465,13 +465,17 @@ function mvnCompile() {
 # $2 repoType
 # $3 repoId
 function rewrite_image_info() {
-  http_status_code=$(curl -o .rewrite_image_info.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
+  http_status_code=$(curl -o .rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
   echo "Query repo info status code is :"  $http_status_code
   if [ "$http_status_code" != "200" ]; then
-    cat .rewrite_image_info.sh
+    cat .rewrite_image_info.json
     exit 1
   fi
-  source .rewrite_image_info.sh
+
+  export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+  export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+  export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
+  export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
 }
 
 function rewrite_image_info_for_chart() {

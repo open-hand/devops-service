@@ -13,6 +13,9 @@ public class ImageRepoInfoVO {
     private String dockerRegistry;
     private String groupName;
 
+    private String dockerUsername;
+    private String dockerPassword;
+
     public ImageRepoInfoVO() {
 
     }
@@ -22,6 +25,22 @@ public class ImageRepoInfoVO {
         this.repoType = repoType;
         this.dockerRegistry = dockerRegistry;
         this.groupName = groupName;
+    }
+
+    public String getDockerUsername() {
+        return dockerUsername;
+    }
+
+    public void setDockerUsername(String dockerUsername) {
+        this.dockerUsername = dockerUsername;
+    }
+
+    public String getDockerPassword() {
+        return dockerPassword;
+    }
+
+    public void setDockerPassword(String dockerPassword) {
+        this.dockerPassword = dockerPassword;
     }
 
     public Long getHarborRepoId() {
