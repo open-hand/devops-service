@@ -465,10 +465,10 @@ function mvnCompile() {
 # $2 repoType
 # $3 repoId
 function rewrite_image_info() {
-  http_status_code=$(curl -o .rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
+  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
   echo "Query repo info status code is :"  $http_status_code
   if [ "$http_status_code" != "200" ]; then
-    cat .rewrite_image_info.json
+    cat rewrite_image_info.json
     exit 1
   fi
 
