@@ -104,7 +104,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         imageRepoInfoVO.setDockerUsername(dockerUsername);
         imageRepoInfoVO.setDockerPassword(dockerPassword);
         imageRepoInfoVO.setRepoType(repoType);
-        imageRepoInfoVO.setHarborRepoId(repoId);
+        imageRepoInfoVO.setHarborRepoId(String.valueOf(repoId));
 
         return imageRepoInfoVO;
     }
@@ -125,7 +125,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         String dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
         String groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
 
-        return new ImageRepoInfoVO(repoId, repoType, trimPrefix(dockerRegistry), groupName);
+        return new ImageRepoInfoVO(String.valueOf(repoId), repoType, trimPrefix(dockerRegistry), groupName);
     }
 
     private String trimPrefix(String dockerRegistry) {

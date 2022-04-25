@@ -8,7 +8,7 @@ package io.choerodon.devops.api.vo;
  * @since 2022/4/14 15:02
  */
 public class ImageRepoInfoVO {
-    private Long harborRepoId;
+    private String harborRepoId;
     private String repoType;
     private String dockerRegistry;
     private String groupName;
@@ -20,7 +20,7 @@ public class ImageRepoInfoVO {
 
     }
 
-    public ImageRepoInfoVO(Long harborRepoId, String repoType, String dockerRegistry, String groupName) {
+    public ImageRepoInfoVO(String harborRepoId, String repoType, String dockerRegistry, String groupName) {
         this.harborRepoId = harborRepoId;
         this.repoType = repoType;
         this.dockerRegistry = dockerRegistry;
@@ -43,11 +43,11 @@ public class ImageRepoInfoVO {
         this.dockerPassword = dockerPassword;
     }
 
-    public Long getHarborRepoId() {
+    public String getHarborRepoId() {
         return harborRepoId;
     }
 
-    public void setHarborRepoId(Long harborRepoId) {
+    public void setHarborRepoId(String harborRepoId) {
         this.harborRepoId = harborRepoId;
     }
 
