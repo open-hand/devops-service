@@ -44,6 +44,7 @@ spec:
           -Dinstaller.datasources.platform.password={{ .Values.preJob.preInitDB.datasources.platform.password }}
           -Dinstaller.datasources.platform.driver-class-name={{ .Values.preJob.preInitDB.datasources.platform.driver }}
           -Dinstaller.jarPath=/choerodon/{{ .Chart.Name }}.jar
+          -Dinstaller.exclusion={{ .Values.preJob.preInitDB.exclusion }}
           -Dlogging.level.root=info
           -Dinstaller.mapping=script/db/service-mapping.xml
           -jar /var/choerodon/choerodon-tool-liquibase.jar;
