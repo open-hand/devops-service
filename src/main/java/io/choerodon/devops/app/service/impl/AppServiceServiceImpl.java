@@ -86,6 +86,7 @@ import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -3952,5 +3953,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Set<Long> listAllIdsByProjectId(Long projectId) {
         return appServiceMapper.listAllIdsByProjectId(projectId);
+    }
+
+    @Override
+    public HarborRepoConfigDTO queryRepoConfigById(Long projectId, Long appServiceId) {
+        HarborRepoDTO selectedHarborConfig = rdupmClient.queryHarborRepoConfig(projectId, appServiceId).getBody();
+        if (selectedHarborConfig == null) {
+            return null;
+        }
+        return selectedHarborConfig.getHarborRepoConfig();
     }
 }
