@@ -15,7 +15,7 @@ public interface CiPipelineImageService {
 
     CiPipelineImageDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
-    String queryRewriteRepoInfoScript(Long projectId, String token, String repoType, Long repoId);
+    ImageRepoInfoVO queryRewriteRepoInfoScript(Long projectId, String token, String repoType, Long repoId);
 
     ImageRepoInfoVO queryImageRepoInfo(String token, Long gitlabPipelineId);
 }

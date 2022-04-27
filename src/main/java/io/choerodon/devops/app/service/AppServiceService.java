@@ -16,6 +16,7 @@ import io.choerodon.devops.app.eventhandler.payload.DevOpsAppServicePayload;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -634,4 +635,6 @@ public interface AppServiceService {
     Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param);
 
     Set<Long> listAllIdsByProjectId(Long projectId);
+
+    HarborRepoConfigDTO queryRepoConfigById(Long projectId, Long appServiceId);
 }

@@ -20,6 +20,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -1006,6 +1007,16 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody List<Long> projectIds) {
         return new ResponseEntity<>(applicationServiceService.queryAppByProjectIds(projectIds), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询应用服务关联的镜像仓库")
+    @GetMapping("/{app_service_id}/docker_repo_config")
+    public ResponseEntity<HarborRepoConfigDTO> queryRepoConfigById(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }
 
 

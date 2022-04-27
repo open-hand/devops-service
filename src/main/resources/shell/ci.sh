@@ -184,6 +184,7 @@ function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
 
+  rewrite_image_info_for_chart ${CI_PIPELINE_ID}
   #判断chart主目录名是否与应用编码保持一致
   CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
   if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
@@ -464,25 +465,37 @@ function mvnCompile() {
 # $2 repoType
 # $3 repoId
 function rewrite_image_info() {
-  http_status_code=$(curl -o .rewrite_image_info.sh -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
+  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/rewrite_repo_info_script?token=${Token}&project_id=$1&repo_type=$2&repo_id=$3")
   echo "Query repo info status code is :"  $http_status_code
-  if [ "$http_status_code" != "200" ]; then
-    cat .rewrite_image_info.sh
-    exit 1
+  if [ "$http_status_code" != "200" ];
+  then
+    cat rewrite_image_info.json
+    echo "Query repo info failed,skip rewrite image info"
+  else
+    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+    export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
+    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
   fi
-  source .rewrite_image_info.sh
+
+
 }
 
 function rewrite_image_info_for_chart() {
-  echo "Query image repo info"
-  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/image_repo_info?token=${Token}&project_id=$1&gitlab_pipeline_id=$2")
-  echo "Query repo info status code is :"  $http_status_code
-  if [ "$http_status_code" != "200" ]; then
+  echo "Query chart image repo info"
+  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/image_repo_info?token=${Token}&gitlab_pipeline_id=$1")
+  echo "Query chart repo info status code is :"  $http_status_code
+  if [ "$http_status_code" != "200" ];
+  then
     cat rewrite_image_info.json
-    exit 1
+    echo "Query chart repo info failed,skip rewrite image info"
+  else
+    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
   fi
-  export DOCKER_REGISTRY=$(jq .dockerRegistry rewrite_image_info.json)
-  export GROUP_NAME=$(jq .groupName rewrite_image_info.json)
-  export HARBOR_CONFIG_ID=$(jq .harborRepoId rewrite_image_info.json)
-  export REPO_TYPE=$(jq .repoType rewrite_image_info.json)
+
 }

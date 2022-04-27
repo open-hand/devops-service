@@ -7,6 +7,7 @@ import java.util.Set;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,6 +106,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<Page<MergeRequestVO>> getMergeRequestToBeChecked(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "选择的应用服务id") @RequestParam(value = "app_service_ids", required = false) Set<Long> appServiceIdsToSearch,
             @ApiParam(value = "搜索参数") @RequestParam(value = "param", required = false) String param,
             @ApiIgnore PageRequest pageRequest
