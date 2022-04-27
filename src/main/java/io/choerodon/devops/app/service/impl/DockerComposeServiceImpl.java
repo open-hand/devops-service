@@ -146,11 +146,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             } else {
                 DockerComposeValueDTO dockerComposeValueDTO = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId());
                 dockerComposeValueDTO.setValue(value);
-                devopsHostAppDTO.setEffectValueId(valueId);
                 dockerComposeValueService.baseUpdate(dockerComposeValueDTO);
             }
 
         } else {
+            devopsHostAppDTO.setEffectValueId(valueId);
             DockerComposeValueDTO dockerComposeValueDTO = dockerComposeValueService.baseQuery(valueId);
             value = dockerComposeValueDTO.getValue();
         }
