@@ -3961,6 +3961,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (selectedHarborConfig == null) {
             return null;
         }
-        return selectedHarborConfig.getHarborRepoConfig();
+        HarborRepoConfigDTO harborRepoConfig = selectedHarborConfig.getHarborRepoConfig();
+        harborRepoConfig.setType(selectedHarborConfig.getRepoType());
+        return harborRepoConfig;
     }
 }
