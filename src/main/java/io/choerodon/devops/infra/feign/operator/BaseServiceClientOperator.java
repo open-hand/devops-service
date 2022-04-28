@@ -184,6 +184,14 @@ public class BaseServiceClientOperator {
         return userDTOS;
     }
 
+    public Boolean checkSiteAccess(Long userId) {
+        try {
+            return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.check.user.site.access", e);
+        }
+    }
+
 //    /**
 //     * 以合并请求的方式，请求用户的信息
 //     *
