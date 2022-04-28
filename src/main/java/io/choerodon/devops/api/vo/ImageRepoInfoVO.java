@@ -8,27 +8,46 @@ package io.choerodon.devops.api.vo;
  * @since 2022/4/14 15:02
  */
 public class ImageRepoInfoVO {
-    private Long harborRepoId;
+    private String harborRepoId;
     private String repoType;
     private String dockerRegistry;
     private String groupName;
+
+    private String dockerUsername;
+    private String dockerPassword;
 
     public ImageRepoInfoVO() {
 
     }
 
-    public ImageRepoInfoVO(Long harborRepoId, String repoType, String dockerRegistry, String groupName) {
+    public ImageRepoInfoVO(String harborRepoId, String repoType, String dockerRegistry, String groupName) {
         this.harborRepoId = harborRepoId;
         this.repoType = repoType;
         this.dockerRegistry = dockerRegistry;
         this.groupName = groupName;
     }
 
-    public Long getHarborRepoId() {
+    public String getDockerUsername() {
+        return dockerUsername;
+    }
+
+    public void setDockerUsername(String dockerUsername) {
+        this.dockerUsername = dockerUsername;
+    }
+
+    public String getDockerPassword() {
+        return dockerPassword;
+    }
+
+    public void setDockerPassword(String dockerPassword) {
+        this.dockerPassword = dockerPassword;
+    }
+
+    public String getHarborRepoId() {
         return harborRepoId;
     }
 
-    public void setHarborRepoId(Long harborRepoId) {
+    public void setHarborRepoId(String harborRepoId) {
         this.harborRepoId = harborRepoId;
     }
 
