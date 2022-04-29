@@ -37,11 +37,11 @@ public class DockerComposeValueDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    @ApiModelProperty(value = "部署配置id", hidden = true)
+    @ApiModelProperty(value = "部署配置id")
     @Encrypt
     private Long id;
 
-    @ApiModelProperty(value = "应用id", hidden = true)
+    @ApiModelProperty(value = "应用id")
     @Encrypt
     private Long appId;
 

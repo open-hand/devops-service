@@ -63,6 +63,7 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id) {
         dockerComposeService.restartDockerComposeApp(projectId, id);
         return ResponseEntity.noContent().build();
@@ -75,10 +76,13 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "搜索参数，docker_compose应用名称")
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "搜索参数，docker_compose应用名称")
             @RequestParam(value = "param", required = false) String param) {
         return ResponseEntity.ok(dockerComposeService.pageContainers(projectId, id, pageable, name, param));
     }
@@ -90,8 +94,10 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @Encrypt
+            @ApiParam(value = "docker容器实例id", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.stopContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -104,8 +110,10 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @Encrypt
+            @ApiParam(value = "docker容器实例id", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.startContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -118,8 +126,10 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @Encrypt
+            @ApiParam(value = "docker容器实例id", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.restartContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -132,8 +142,10 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @Encrypt
+            @ApiParam(value = "docker容器实例id", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
         dockerComposeService.removeContainer(projectId, id, instanceId);
         return ResponseEntity.noContent().build();
@@ -146,9 +158,11 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "搜索参数，部署备注名称")
             @RequestParam(value = "search_param", required = false) String searchParam) {
         return ResponseEntity.ok(dockerComposeService.listValueRecords(projectId, id, pageable, searchParam));
     }
