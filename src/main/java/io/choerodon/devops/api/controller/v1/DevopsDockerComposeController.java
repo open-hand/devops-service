@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -27,12 +28,13 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping("/v1/projects/{project_id}/docker_composes")
+@Api(value = "docker compose应用部署相关接口")
 public class DevopsDockerComposeController {
     @Autowired
     private DockerComposeService dockerComposeService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "docker_compose应用部署")
+    @ApiOperation(value = "部署docker_compose应用")
     @PostMapping
     public ResponseEntity<Void> deployDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
@@ -43,7 +45,7 @@ public class DevopsDockerComposeController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "docker_compose应用更新")
+    @ApiOperation(value = "更新docker_compose应用")
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
@@ -57,7 +59,7 @@ public class DevopsDockerComposeController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "docker_compose应用重新部署")
+    @ApiOperation(value = "重新部署docker_compose应用")
     @PutMapping("/{id}/restart")
     public ResponseEntity<Void> restartDockerComposeApp(
             @ApiParam(value = "项目Id", required = true)
