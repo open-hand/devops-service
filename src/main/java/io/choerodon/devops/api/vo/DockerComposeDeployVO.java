@@ -35,10 +35,11 @@ public class DockerComposeDeployVO {
     private String runCommand;
 
     @Encrypt
-    @ApiModelProperty("部署配置id")
+    @ApiModelProperty("部署配置id, 回滚版本时需要")
     private Long valueId;
 
     @Valid
+    @ApiModelProperty("部署配置信息，正常部署时需要")
     private DockerComposeValueDTO dockerComposeValueDTO;
 
     public Long getValueId() {
