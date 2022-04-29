@@ -28,10 +28,12 @@ import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayl
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -81,6 +83,10 @@ public class SagaHandler {
     private DevopsAppTemplateService devopsAppTemplateService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private UserAttrMapper userAttrMapper;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -226,6 +232,12 @@ public class SagaHandler {
 
                 gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
                 LOGGER.info("Finished to create user {}", t);
+                // 更改devops_user 登录名
+                UserAttrDTO result = userAttrService.baseQueryByIamUserId(TypeUtil.objToLong(t.getId()));
+                if (!result.getGitlabUserName().equals(t.getUsername())) {
+                    result.setGitlabUserName(t.getUsername());
+                    userAttrMapper.updateByPrimaryKey(result);
+                }
             } catch (Exception ex) {
                 failedUsers.append("User with loginName ")
                         .append(t.getUsername())
