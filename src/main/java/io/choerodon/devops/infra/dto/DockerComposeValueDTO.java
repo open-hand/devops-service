@@ -37,15 +37,15 @@ public class DockerComposeValueDTO extends AuditDomain {
 
     @Id
     @GeneratedValue
-    @ApiModelProperty(value = "部署配置id")
+    @ApiModelProperty(value = "部署配置id", example = "1")
     @Encrypt
     private Long id;
 
-    @ApiModelProperty(value = "应用id")
+    @ApiModelProperty(value = "应用id", example = "1")
     @Encrypt
     private Long appId;
 
-    @ApiModelProperty(value = "部署备注")
+    @ApiModelProperty(value = "部署备注", example = "v1.0.0")
     private String remark;
 
     @ApiModelProperty(value = "部署使用的docker-compose.yaml文件", required = true)

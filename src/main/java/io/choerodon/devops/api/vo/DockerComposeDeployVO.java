@@ -20,22 +20,22 @@ import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
  */
 public class DockerComposeDeployVO {
     @Encrypt
-    @ApiModelProperty(value = "主机id", required = true)
+    @ApiModelProperty(value = "主机id", required = true, example = "1")
     @NotNull(groups = {CreateGroup.class})
     private Long hostId;
-    @ApiModelProperty(value = "主机应用的名称", required = true)
+    @ApiModelProperty(value = "主机应用的名称", required = true, example = "DC应用")
     @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
     private String appName;
-    @ApiModelProperty(value = "主机应用的code, 创建时需要")
+    @ApiModelProperty(value = "主机应用的code, 创建时需要", example = "dc-app")
     @NotBlank(groups = {CreateGroup.class})
     private String appCode;
 
-    @ApiModelProperty(value = "部署指令", required = true)
+    @ApiModelProperty(value = "部署指令", required = true, example = "docker-compose up -d")
     @NotBlank(groups = {CreateGroup.class, UpdateGroup.class})
     private String runCommand;
 
     @Encrypt
-    @ApiModelProperty(value = "部署配置id, 回滚版本时需要")
+    @ApiModelProperty(value = "部署配置id, 回滚版本时需要", example = "1")
     private Long valueId;
 
     @Valid
