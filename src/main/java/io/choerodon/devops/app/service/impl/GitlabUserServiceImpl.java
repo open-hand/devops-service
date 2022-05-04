@@ -138,7 +138,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             return false;
         }
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrE.getIamUserId());
-        if (iamUserDTO == null) {
+        if (iamUserDTO != null) {
             return false;
         } else {
             userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
