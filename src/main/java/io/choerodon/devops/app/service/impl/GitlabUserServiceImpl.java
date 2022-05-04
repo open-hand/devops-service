@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -93,6 +94,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private DevopsUserSyncRecordService devopsUserSyncRecordService;
+    @Autowired
+    private UserAttrMapper userAttrMapper;
 
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
@@ -124,6 +127,23 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Override
     public void createGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
         createGitlabUser(gitlabUserReqDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public Boolean updateGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByEmail(gitlabUserReqDTO.getEmail());
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrE.getIamUserId());
+        if (iamUserDTO == null) {
+            return false;
+        } else {
+            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrE.setGitlabUserName(gitLabUserDTO.getUsername());
+            userAttrMapper.updateByPrimaryKey(userAttrE);
+            updateGitlabUser(gitlabUserReqDTO);
+            return true;
+        }
     }
 
     @Override

@@ -28,6 +28,8 @@ public interface GitlabUserService {
      */
     void createGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO);
 
+    Boolean updateGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO);
+
     void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
 
     void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO);
