@@ -432,6 +432,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<GitLabUserDTO> queryUserByEmail(String email) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<String> getAdminToken() {
         return null;
     }
