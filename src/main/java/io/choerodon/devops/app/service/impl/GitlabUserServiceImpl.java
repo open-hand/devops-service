@@ -134,6 +134,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     public Boolean updateGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByEmail(gitlabUserReqDTO.getEmail());
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+        if (userAttrE == null) {
+            return false;
+        }
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrE.getIamUserId());
         if (iamUserDTO == null) {
             return false;
