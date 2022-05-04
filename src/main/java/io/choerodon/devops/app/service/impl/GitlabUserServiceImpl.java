@@ -144,7 +144,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
             userAttrE.setGitlabUserName(gitLabUserDTO.getUsername());
             userAttrMapper.updateByPrimaryKey(userAttrE);
-            updateGitlabUser(gitlabUserReqDTO);
+            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+                    gitlabConfigurationProperties.getProjectLimit(),
+                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
             return true;
         }
     }
