@@ -145,7 +145,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
             return false;
         } else {
             LOGGER.info("Re-establish the binding relationship:{}", gitlabUserReqDTO.getExternUid());
-            userAttrMapper.updateByGitlabUserId(userAttrE.getGitlabUserId(),Long.parseLong(gitlabUserReqDTO.getExternUid()),gitLabUserDTO.getUsername());
+            userAttrMapper.updateByGitlabUserId(userAttrE.getGitlabUserId(), Long.parseLong(gitlabUserReqDTO.getExternUid()), gitLabUserDTO.getUsername());
             gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));

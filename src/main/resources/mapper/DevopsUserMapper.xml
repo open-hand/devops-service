@@ -41,8 +41,7 @@
 
     <update id="updateByGitlabUserId">
         UPDATE devops_user
-        SET iam_user_id = #{iamUserId}
-        AND gitlab_user_name = #{gitlabUserName}
+        SET iam_user_id = #{iamUserId}, gitlab_user_name = #{gitlabUserName}
         WHERE
         gitlab_user_id = #{gitlabUserId}
     </update>
