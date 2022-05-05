@@ -876,7 +876,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public boolean isCodeValid(Long projectId, Long clusterId, String code) {
         return isCodePatternValid(code)
-                && !doesNamespaceExistInCluster(clusterId, code)
                 && isCodeUniqueInClusterAndProject(projectId, clusterId, code);
     }
 
