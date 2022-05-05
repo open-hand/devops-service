@@ -133,6 +133,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public Boolean updateGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByEmail(gitlabUserReqDTO.getEmail());
+        if (gitLabUserDTO == null) {
+            return false;
+        }
         UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
         if (userAttrE == null) {
             return false;
@@ -141,12 +144,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         if (iamUserDTO != null) {
             return false;
         } else {
+            LOGGER.info("Re-establish the binding relationship:{}", gitlabUserReqDTO.getExternUid());
             userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
             userAttrE.setGitlabUserName(gitLabUserDTO.getUsername());
-            userAttrMapper.updateByPrimaryKey(userAttrE);
+            if (userAttrMapper.updateByPrimaryKey(userAttrE) != 1) {
+                LOGGER.info("error update user attr");
+                return false;
+            }
             gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+            LOGGER.info("success Re-establish the binding relationship!");
             return true;
         }
     }
