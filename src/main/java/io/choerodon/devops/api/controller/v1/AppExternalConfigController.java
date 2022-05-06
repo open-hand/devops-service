@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.AppExternalConfigService;
+import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -20,6 +22,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wanghao
  * @since 2021/9/30 10:01
  */
+@Api(tags = SwaggerApiConfig.APP_EXTERNAL_CONFIG)
 @RestController
 @RequestMapping("/v1/projects/{project_id}/app_external_configs")
 public class AppExternalConfigController {

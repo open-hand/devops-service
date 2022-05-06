@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.*;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -18,6 +19,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
@@ -32,6 +34,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * Created by younger on 2018/4/4.
  */
+@Api(tags = SwaggerApiConfig.APP_SERVICE)
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_service")
 public class AppServiceController {
