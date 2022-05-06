@@ -61,10 +61,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_deploy_app_center_env.groovy') {
     }
 
 
-    changeSet(author: 'wanghao',id: '2021-11-26-add-index'){
+    changeSet(author: 'wanghao', id: '2021-11-26-add-index') {
         createIndex(indexName: "idx_object_type_and_id", tableName: "devops_deploy_app_center_env") {
             column(name: "object_id")
             column(name: "rdupm_type")
+        }
+    }
+
+    changeSet(author: 'wanghao', id: '2022-05-06-add-column') {
+        addColumn(tableName: 'devops_deploy_app_center_env') {
+            column(name: 'metric_deploy_status', type: 'TINYINT UNSIGNED', remarks: '是否收集资源状态', afterColumn: 'rdupm_type', defaultValue: '0') {
+                constraints(nullable: false)
+            }
         }
     }
 }
