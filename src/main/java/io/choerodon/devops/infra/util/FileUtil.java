@@ -29,6 +29,7 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,16 @@ public class FileUtil {
 
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
+    private static final String EXEC_PATH;
+
+    static {
+        String values_yaml_path = System.getenv("VALUES_YAML_PATH");
+        if (ObjectUtils.isEmpty(values_yaml_path)) {
+            EXEC_PATH = "/usr/lib/yaml/values_yaml";
+        } else {
+            EXEC_PATH = values_yaml_path;
+        }
+    }
 
 
     private FileUtil() {
