@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -26,6 +27,7 @@ import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
 import io.choerodon.devops.infra.enums.ResourceType;
@@ -42,6 +44,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * Created by Zenger on 2018/4/3.
  */
+@Api(tags = SwaggerApiConfig.APP_SERVICE_INSTANCE)
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_service_instances")
 public class AppServiceInstanceController {
