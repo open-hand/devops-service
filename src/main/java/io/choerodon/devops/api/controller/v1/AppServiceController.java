@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.*;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -18,8 +19,10 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.dto.AppExternalConfigDTO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 import io.choerodon.devops.infra.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.PageableDefault;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -31,6 +34,7 @@ import io.choerodon.swagger.annotation.Permission;
 /**
  * Created by younger on 2018/4/4.
  */
+@Api(tags = SwaggerApiConfig.APP_SERVICE)
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_service")
 public class AppServiceController {
@@ -1006,6 +1010,16 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody List<Long> projectIds) {
         return new ResponseEntity<>(applicationServiceService.queryAppByProjectIds(projectIds), HttpStatus.OK);
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询应用服务关联的镜像仓库")
+    @GetMapping("/{app_service_id}/docker_repo_config")
+    public ResponseEntity<HarborRepoConfigDTO> queryRepoConfigById(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }
 
 
