@@ -21,4 +21,8 @@ public interface UserAttrMapper extends BaseMapper<UserAttrDTO> {
                              @Param("isGitlabAdmin") Boolean isGitlabAdmin);
 
     Set<Long> selectAllUserIds();
+
+    void updateByGitlabUserId(@Param("gitlabUserId") Long gitlabUserId,
+                              @Param("iamUserId") Long iamUserId,
+                              @Param("gitlabUserName") String gitlabUserName);
 }

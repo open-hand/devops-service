@@ -28,10 +28,12 @@ import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayl
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -81,6 +83,10 @@ public class SagaHandler {
     private DevopsAppTemplateService devopsAppTemplateService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private UserAttrMapper userAttrMapper;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -209,34 +215,44 @@ public class SagaHandler {
         List<Exception> exs = new ArrayList<>();
 
         gitlabUserDTO.forEach(t -> {
+            LOGGER.info("Start to create user {}", t);
+            GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
+            gitlabUserReqDTO.setProvider("oauth2_generic");
+            gitlabUserReqDTO.setExternUid(t.getId());
+            gitlabUserReqDTO.setSkipConfirmation(true);
+            gitlabUserReqDTO.setUsername(t.getUsername());
+            gitlabUserReqDTO.setEmail(t.getEmail());
+            gitlabUserReqDTO.setName(t.getName());
+            if (t.getName() == null) {
+                gitlabUserReqDTO.setName(t.getUsername());
+            }
+            gitlabUserReqDTO.setCanCreateGroup(true);
+            gitlabUserReqDTO.setProjectsLimit(100);
             try {
-                LOGGER.info("Start to create user {}", t);
-                GitlabUserRequestVO gitlabUserReqDTO = new GitlabUserRequestVO();
-                gitlabUserReqDTO.setProvider("oauth2_generic");
-                gitlabUserReqDTO.setExternUid(t.getId());
-                gitlabUserReqDTO.setSkipConfirmation(true);
-                gitlabUserReqDTO.setUsername(t.getUsername());
-                gitlabUserReqDTO.setEmail(t.getEmail());
-                gitlabUserReqDTO.setName(t.getName());
-                if (t.getName() == null) {
-                    gitlabUserReqDTO.setName(t.getUsername());
-                }
-                gitlabUserReqDTO.setCanCreateGroup(true);
-                gitlabUserReqDTO.setProjectsLimit(100);
-
                 gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
                 LOGGER.info("Finished to create user {}", t);
+                // 更改devops_user 登录名
+                UserAttrDTO result = userAttrService.baseQueryByIamUserId(TypeUtil.objToLong(t.getId()));
+                if (!result.getGitlabUserName().equals(t.getUsername())) {
+                    result.setGitlabUserName(t.getUsername());
+                    userAttrMapper.updateByPrimaryKey(result);
+                }
             } catch (Exception ex) {
-                failedUsers.append("User with loginName ")
-                        .append(t.getUsername())
-                        .append("and email ")
-                        .append(t.getEmail())
-                        .append(" Failed, due to: ")
-                        .append(ex.getMessage())
-                        .append(NEW_LINE);
-                exs.add(ex);
-                LOGGER.warn("Failed to create user {}", t);
-                LOGGER.warn("And the ex is", ex);
+                // 补偿机制
+                // 根据邮箱查询到devops_user 但是对应的iam_user_id 不存在
+                // 更新gitlab用户 重新建立关联关系
+                if (!gitlabUserService.updateGitlabUserInNewTx(gitlabUserReqDTO)) {
+                    failedUsers.append("User with loginName ")
+                            .append(t.getUsername())
+                            .append("and email ")
+                            .append(t.getEmail())
+                            .append(" Failed, due to: ")
+                            .append(ex.getMessage())
+                            .append(NEW_LINE);
+                    exs.add(ex);
+                    LOGGER.warn("Failed to create user {}", t);
+                    LOGGER.warn("And the ex is", ex);
+                }
             }
         });
 

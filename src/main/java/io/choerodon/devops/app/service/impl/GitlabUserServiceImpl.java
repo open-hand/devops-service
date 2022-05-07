@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -93,6 +94,8 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private RedisTemplate<String, Object> redisTemplate;
     @Autowired
     private DevopsUserSyncRecordService devopsUserSyncRecordService;
+    @Autowired
+    private UserAttrMapper userAttrMapper;
 
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
@@ -127,14 +130,42 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     }
 
     @Override
-    public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public Boolean updateGitlabUserInNewTx(GitlabUserRequestVO gitlabUserReqDTO) {
+        GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByEmail(gitlabUserReqDTO.getEmail());
+        if (gitLabUserDTO == null) {
+            return false;
+        }
+        UserAttrDTO userAttrE = userAttrService.baseQueryByGitlabUserId(gitLabUserDTO.getId().longValue());
+        if (userAttrE == null) {
+            return false;
+        }
+        IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrE.getIamUserId());
+        if (iamUserDTO != null) {
+            return false;
+        } else {
+            LOGGER.info("Re-establish the binding relationship:{}", gitlabUserReqDTO.getExternUid());
+            userAttrMapper.updateByGitlabUserId(userAttrE.getGitlabUserId(), Long.parseLong(gitlabUserReqDTO.getExternUid()), gitlabUserReqDTO.getUsername());
+            gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+                    gitlabConfigurationProperties.getProjectLimit(),
+                    ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+            LOGGER.info("success Re-establish the binding relationship!");
+            return true;
+        }
+    }
 
+    @Override
+    public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
         checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                     gitlabConfigurationProperties.getProjectLimit(),
                     ConvertUtils.convertObject(gitlabUserReqDTO, GitlabUserReqDTO.class));
+            if (!userAttrDTO.getGitlabUserName().equals(gitlabUserReqDTO.getUsername())) {
+                userAttrDTO.setGitlabUserName(gitlabUserReqDTO.getUsername());
+                userAttrMapper.updateByPrimaryKey(userAttrDTO);
+            }
         }
     }
 

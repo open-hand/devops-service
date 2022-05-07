@@ -38,4 +38,11 @@
         SELECT iam_user_id
         FROM devops_user
     </select>
+
+    <update id="updateByGitlabUserId">
+        UPDATE devops_user
+        SET iam_user_id = #{iamUserId}, gitlab_user_name = #{gitlabUserName}
+        WHERE
+        gitlab_user_id = #{gitlabUserId}
+    </update>
 </mapper>

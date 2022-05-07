@@ -212,18 +212,18 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsDeployRecordService.saveRecord(
                 projectId,
                 DeployType.MANUAL,
-                null,
+                devopsHostCommandDTO.getId(),
                 DeployModeEnum.HOST,
                 hostId,
                 devopsHostDTO.getName(),
                 PipelineStatus.SUCCESS.toValue(),
                 DeployObjectTypeEnum.DOCKER_COMPOSE,
-                null,
+                "Docker Compose应用",
                 null,
                 devopsHostAppDTO.getName(),
                 devopsHostAppDTO.getCode(),
                 devopsHostAppDTO.getId(),
-                new DeploySourceVO(AppSourceType.CUSTOM, projectDTO.getName()));
+                new DeploySourceVO(AppSourceType.DOCKER_COMPOSE, projectDTO.getName()));
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),

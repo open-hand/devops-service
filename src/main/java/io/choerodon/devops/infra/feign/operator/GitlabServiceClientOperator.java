@@ -157,6 +157,10 @@ public class GitlabServiceClientOperator {
         return gitlabServiceClient.checkEmail(email).getBody();
     }
 
+    public GitLabUserDTO queryUserByEmail(String email) {
+        return gitlabServiceClient.queryUserByEmail(email).getBody();
+    }
+
 
     public MemberDTO queryGroupMember(Integer groupId, Integer userId) {
         MemberDTO memberDTO = gitlabServiceClient.queryGroupMember(

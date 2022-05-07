@@ -855,9 +855,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!isCodePatternValid(code)) {
             throw new CommonException("error.env.code.notMatch");
         }
-        if (doesNamespaceExistInCluster(clusterId, code)) {
-            throw new CommonException(ERROR_CODE_EXIST);
-        }
+        // 兼容甄零的收紧权限逻辑，不需要校验集群中已存在code
+//        if (doesNamespaceExistInCluster(clusterId, code)) {
+//            throw new CommonException(ERROR_CODE_EXIST);
+//        }
         baseCheckCode(projectId, clusterId, code);
     }
 
