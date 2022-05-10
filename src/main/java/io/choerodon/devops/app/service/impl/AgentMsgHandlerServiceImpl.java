@@ -1691,11 +1691,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (chartResourceOperatorService != null) {
                     chartResourceOperatorService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
                 }
-                // 保存应用异常信息
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
-                if (devopsDeployAppCenterEnvDTO != null && Boolean.TRUE.equals(devopsDeployAppCenterEnvDTO.getMetricDeployStatus())) {
 
-                }
 
             }
         } catch (Exception e) {
