@@ -71,8 +71,26 @@ public class AppExceptionRecordDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否是停机状态", required = true)
     @NotNull
-    private Long downtime;
+    private Boolean downtime;
 
+    public AppExceptionRecordDTO() {
+    }
+
+    public AppExceptionRecordDTO(@NotNull Long projectId,
+                                 @NotNull Long appId,
+                                 @NotNull Long envId,
+                                 @NotBlank String resourceType,
+                                 @NotBlank String resourceName,
+                                 @NotNull Date startDate,
+                                 @NotNull Boolean downtime) {
+        this.projectId = projectId;
+        this.appId = appId;
+        this.envId = envId;
+        this.resourceType = resourceType;
+        this.resourceName = resourceName;
+        this.startDate = startDate;
+        this.downtime = downtime;
+    }
 
     public Long getId() {
         return id;
@@ -138,13 +156,12 @@ public class AppExceptionRecordDTO extends AuditDomain {
         this.endDate = endDate;
     }
 
-    public Long getDowntime() {
+    public Boolean getDowntime() {
         return downtime;
     }
 
-    public void setDowntime(Long downtime) {
+    public void setDowntime(Boolean downtime) {
         this.downtime = downtime;
     }
-
 }
 

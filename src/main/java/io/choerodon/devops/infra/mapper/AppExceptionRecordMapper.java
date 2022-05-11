@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.AppExceptionRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +13,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface AppExceptionRecordMapper extends BaseMapper<AppExceptionRecordDTO> {
 
+    AppExceptionRecordDTO queryLatestExceptionRecord(@Param("appId") Long appId, @Param("resourceType") String resourceType, @Param("resourceName") String resourceName);
 }
 

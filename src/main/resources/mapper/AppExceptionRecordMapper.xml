@@ -3,5 +3,13 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.AppExceptionRecordMapper">
 
 
+    <select id="queryLatestExceptionRecord">
+        select *
+        from devops_app_exception_record daer
+        where daer.app_id = #{appId}
+          and daer.resource_type = #{resourceType}
+          and daer.resource_name = #{resourceName}
+          and daer.end_date is null;
+    </select>
 </mapper>
 
