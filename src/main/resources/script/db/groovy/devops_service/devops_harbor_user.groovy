@@ -18,9 +18,11 @@ databaseChangeLog(logicalFilePath: 'devops_harbor_user.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-        changeSet(id: '2019-10-25-add-table-devops_harbor_user', author: 'scp') {
-            addUniqueConstraint(tableName: 'devops_harbor_user',
-                    constraintName: 'uk_user_name', columnNames: 'harbor_project_user_name')
+    changeSet(id: '2019-10-25-add-table-devops_harbor_user', author: 'scp') {
+        addUniqueConstraint(tableName: 'devops_harbor_user',
+                constraintName: 'uk_user_name', columnNames: 'harbor_project_user_name')
     }
-
+    changeSet(author: 'wanghao', id: '2022-5-11-drop-table') {
+        dropTable(tableName: "devops_harbor_user")
+    }
 }

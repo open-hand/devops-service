@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_image_scan_result.groovy') {
     changeSet(author: 'wx', id: '2021-03-25-devops_image_scan_result') {
-        createTable(tableName: "devops_image_scan_result", remarks: '实例') {
+        createTable(tableName: "devops_image_scan_result", remarks: 'docker镜像结果表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_map.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env Id')
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 Id')
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command Id')
             column(name: 'name', type: 'VARCHAR(32)', remarks: 'name')
             column(name: 'description', type: 'VARCHAR(64)', remarks: '信息')

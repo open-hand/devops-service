@@ -2,15 +2,15 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
     changeSet(author: 'n1ck', id: '2018-09-18-create-table') {
-        createTable(tableName: "devops_gitlab_commit", remarks: 'devops commit') {
+        createTable(tableName: "devops_gitlab_commit", remarks: 'gitlab提交记录表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id')
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户id')
             column(name: 'commit_sha', type: 'VARCHAR(128)', remarks: 'commit sha') {
-                        constraints(unique: true)
-                    }
+                constraints(unique: true)
+            }
             column(name: 'commit_content', type: 'VARCHAR(2000)', remarks: '提交内容')
             column(name: 'ref', type: 'VARCHAR(128)', remarks: '分支')
             column(name: 'commit_date', type: 'DATETIME', remarks: '提交时间')

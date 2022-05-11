@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
     changeSet(author: 'Younger', id: '2018-04-24-create-table') {
-        createTable(tableName: "devops_env_resource", remarks: '部署') {
+        createTable(tableName: "devops_env_resource", remarks: '环境资源表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

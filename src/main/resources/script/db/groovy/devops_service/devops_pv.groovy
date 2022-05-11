@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_pv') {
     changeSet(id: '2019-11-1-add-devops_pv', author: 'yzj') {
-        createTable(tableName: "devops_pv") {
+        createTable(tableName: "devops_pv", remarks: 'PV表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: 'id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

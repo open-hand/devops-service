@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification_file.groovy') {
                 constraints(primaryKey: true)
             }
 
-            column(name: 'cert_id', type: 'BIGINT UNSIGNED', remarks: 'certificate id')
+            column(name: 'cert_id', type: 'BIGINT UNSIGNED', remarks: 'devops_certification表主键id')
             column(name: 'key_file', type: 'TEXT', remarks: 'key file content')
             column(name: 'cert_file', type: 'TEXT', remarks: 'cert file content')
 

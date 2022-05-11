@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_cd_stage_record.groovy') {
     changeSet(author: 'wanghao', id: '2020-07-02-create-table') {
-        createTable(tableName: "devops_cd_stage_record", remarks: '阶段') {
+        createTable(tableName: "devops_cd_stage_record", remarks: 'CD阶段记录') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

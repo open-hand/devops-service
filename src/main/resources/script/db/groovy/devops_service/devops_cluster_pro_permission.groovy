@@ -3,7 +3,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
     changeSet(author: 'Younger', id: '2018-11-01-create-table') {
-        createTable(tableName: "devops_cluster_pro_permission", remarks: 'cluster project permission') {
+        createTable(tableName: "devops_cluster_pro_permission", remarks: '集群项目权限关系表') {
             column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群Id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
             column(name: 'project_name', type: 'VARCHAR(64)', remarks: '项目名')

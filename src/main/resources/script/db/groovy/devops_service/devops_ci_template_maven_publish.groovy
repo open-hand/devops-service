@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_publish.groovy') {
     changeSet(author: 'wanghao', id: '2021-11-29-create-table-devops_ci_template_maven_publish') {
-        createTable(tableName: "devops_ci_template_maven_publish", remarks: 'devops_ci_template_maven_publish') {
+        createTable(tableName: "devops_ci_template_maven_publish", remarks: 'ci模板 maven发布配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

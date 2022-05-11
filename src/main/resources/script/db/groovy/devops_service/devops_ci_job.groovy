@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
     changeSet(author: 'wanghao', id: '2020-04-02-create-table') {
-        createTable(tableName: "devops_ci_job", remarks: 'devops_ci_job') {
+        createTable(tableName: "devops_ci_job", remarks: 'CI任务表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

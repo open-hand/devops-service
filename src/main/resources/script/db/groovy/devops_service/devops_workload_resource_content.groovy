@@ -3,7 +3,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_workload_resource_content.groovy') {
     changeSet(author: 'lihao', id: '2021-06-09-create-table') {
-        createTable(tableName: "devops_workload_resource_content", remarks: 'workload resource content') {
+        createTable(tableName: "devops_workload_resource_content", remarks: 'K8S工作负载内容表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

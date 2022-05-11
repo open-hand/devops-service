@@ -2,14 +2,14 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_schedule_variable.groovy') {
     changeSet(author: 'wanghao', id: '2022-03-24-create-table') {
-        createTable(tableName: "devops_ci_schedule_variable", remarks: 'devops_ci_schedule_variable') {
+        createTable(tableName: "devops_ci_schedule_variable", remarks: 'ci定时任务环境变量表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
             column(name: 'ci_pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'devops 定时计划id') {
                 constraints(nullable: false)
             }
-            column(name: 'pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab pipeline_schedule_id')  {
+            column(name: 'pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab pipeline_schedule_id') {
                 constraints(nullable: false)
             }
             column(name: 'variable_key', type: 'VARCHAR(255)', remarks: 'key') {

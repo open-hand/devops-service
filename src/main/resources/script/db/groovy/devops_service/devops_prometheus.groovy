@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'devops_prometheus.groovy') {
     changeSet(id: '2019-10-28-add-devops_prometheus', author: 'lizhaozhong') {
-        createTable(tableName: "devops_prometheus") {
+        createTable(tableName: "devops_prometheus", remarks: 'prometheus安装信息表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: 'id', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

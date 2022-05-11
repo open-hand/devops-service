@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_gitlab_pipeline.groovyovy') {
     changeSet(author: 'Younger', id: '2018-09-19-create-table') {
-        createTable(tableName: "devops_gitlab_pipeline", remarks: 'pipeline表') {
+        createTable(tableName: "devops_gitlab_pipeline", remarks: 'gitlab pipeline记录表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

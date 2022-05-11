@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_schedule.groovy') {
     changeSet(author: 'wanghao', id: '2022-03-24-create-table') {
-        createTable(tableName: "devops_ci_pipeline_schedule", remarks: 'devops_ci_pipeline_schedule') {
+        createTable(tableName: "devops_ci_pipeline_schedule", remarks: 'ci流水线定时配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_schedule.groovy') {
             column(name: 'name', type: 'VARCHAR(60)', remarks: '定时任务名称') {
                 constraints(nullable: false)
             }
-            column(name: 'pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab pipeline_schedule_id')  {
+            column(name: 'pipeline_schedule_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab pipeline_schedule_id') {
                 constraints(nullable: false)
             }
             column(name: 'ref', type: 'VARCHAR(255)', remarks: '触发分支') {

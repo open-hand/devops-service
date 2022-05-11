@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_cd_api_test_info.groovy') {
     changeSet(author: 'wanghao', id: '2021-12-17-create-table') {
-        createTable(tableName: "devops_cd_api_test_info", remarks: 'devops_cd_api_test_info') {
+        createTable(tableName: "devops_cd_api_test_info", remarks: 'CD API测试任务配置信息表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

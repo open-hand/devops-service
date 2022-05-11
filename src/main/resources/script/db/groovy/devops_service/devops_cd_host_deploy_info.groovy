@@ -2,7 +2,7 @@ package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
     changeSet(author: 'wanghao', id: '2021-09-14-create-table') {
-        createTable(tableName: "devops_cd_host_deploy_info", remarks: 'value ID') {
+        createTable(tableName: "devops_cd_host_deploy_info", remarks: 'CD主机部署任务配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
