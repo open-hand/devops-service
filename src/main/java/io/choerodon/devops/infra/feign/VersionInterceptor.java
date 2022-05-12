@@ -10,9 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import feign.RequestTemplate;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.feign.interceptor.FeignRequestInterceptor;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+@Component
 public class VersionInterceptor implements FeignRequestInterceptor {
     private static final String HEADER_VERSION = "version";
 
