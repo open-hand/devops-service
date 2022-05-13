@@ -2,15 +2,27 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
+@ApiModel("应用服务版本和提交信息VO")
 public class AppServiceVersionAndCommitVO {
 
+    @ApiModelProperty("版本关联的gitlab commit sha")
     private String commit;
+    @ApiModelProperty("版本关联的gitlab commit url")
     private String commitUrl;
+    @ApiModelProperty("版本关联的gitlab commit 用户名")
     private String commitUserName;
+    @ApiModelProperty("版本关联的gitlab commit 用户头像")
     private String commitUserImage;
+    @ApiModelProperty("版本关联的gitlab commit 备注")
     private String commitContent;
+    @ApiModelProperty("版本号")
     private String version;
+    @ApiModelProperty("版本关联的应用服务名")
     private String appServiceName;
+    @ApiModelProperty("版本的创建日期")
     private Date createDate;
 
     public String getCommit() {

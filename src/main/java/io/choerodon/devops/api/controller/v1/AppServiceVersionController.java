@@ -13,7 +13,6 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
@@ -39,9 +38,7 @@ public class AppServiceVersionController {
     private AppServiceVersionService appServiceVersionService;
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询服务版本")
     @CustomPageRequest
     @PostMapping(value = "/page_by_options")
@@ -79,9 +76,7 @@ public class AppServiceVersionController {
      * @return List
      */
     @ApiOperation(value = "项目下查询服务所有已部署版本")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/list_deployed_by_app_service/{app_service_id}")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryDeployedByAppServiceId(
             @ApiParam(value = "项目ID", required = true)
@@ -102,9 +97,7 @@ public class AppServiceVersionController {
      * @param envId        环境Id
      * @return List
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询部署在某个环境的应用服务的版本")
     @GetMapping("/app/{app_service_id}/env/{envId}/query")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryByappServiceIdAndEnvId(
@@ -128,9 +121,7 @@ public class AppServiceVersionController {
      * @param appServiceServiceId 服务版本ID
      * @return ApplicationVersionRespVO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "实例下查询可升级版本")
     @GetMapping(value = "/version/{app_version_id}/upgrade_version")
     public ResponseEntity<List<AppServiceVersionRespVO>> listUpgradeableAppVersion(
@@ -153,9 +144,7 @@ public class AppServiceVersionController {
      * @param versionId 服务版本ID
      * @return String
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据版本id获取版本values")
     @GetMapping(value = "/{versionId}/queryValue")
     public ResponseEntity<String> queryVersionValue(
@@ -178,9 +167,7 @@ public class AppServiceVersionController {
      * @param versionIds 服务版本ID
      * @return ApplicationVersionRespVO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据版本id查询版本信息(新用的地方用下面的接口，不要用这个)")
     @PostMapping(value = "/list_by_versionIds")
     public ResponseEntity<List<AppServiceVersionRespVO>> queryAppServiceVersionsByIds(
@@ -226,9 +213,7 @@ public class AppServiceVersionController {
      * @param appServiceId 服务Id
      * @return ApplicationVersionRespVO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据分支名查询版本")
     @GetMapping(value = "/list_by_branch")
     public ResponseEntity<List<AppServiceVersionAndCommitVO>> listAppVersionsByBranch(
@@ -253,9 +238,7 @@ public class AppServiceVersionController {
      * @param branch     分支
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据pipelineID 查询版本, 判断是否存在")
     @GetMapping(value = "/query_by_pipeline")
     public ResponseEntity<Boolean> queryByPipeline(
@@ -281,8 +264,7 @@ public class AppServiceVersionController {
      * @param appServiceId 服务id
      * @return 最新版本
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据服务ID查询最新生成版本的values")
     @GetMapping("/value")
     public ResponseEntity<String> queryByProjectId(
@@ -302,9 +284,7 @@ public class AppServiceVersionController {
      * @param version      版本
      * @return ApplicationVersionRespVO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据服务和版本号查询服务版本")
     @GetMapping(value = "/query_by_version")
     public ResponseEntity<AppServiceVersionRespVO> queryByVersion(
@@ -321,7 +301,7 @@ public class AppServiceVersionController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下查询共享服务版本")
     @CustomPageRequest
     @PostMapping(value = "/page_share/versions")
@@ -341,7 +321,7 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下分页查询共享服务版本或者根据版本信息模糊查询")
     @CustomPageRequest
     @GetMapping(value = "/page/share_versions")
@@ -361,7 +341,7 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下查询共享服务的所有共享版本")
     @GetMapping(value = "/{app_service_id}/list_share_versions")
     public ResponseEntity<List<AppServiceVersionVO>> listAppServiceVersionByShareAndAppSerivceId(
@@ -378,7 +358,7 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据应用服务Id集合查询所有应用版本")
     @GetMapping(value = "/list_by_service_ids")
     public ResponseEntity<List<AppServiceVersionVO>> listVersionByIds(
@@ -393,7 +373,7 @@ public class AppServiceVersionController {
                 .orElseThrow(() -> new CommonException("error.application.versions.get"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "根据应用服务Id查询所有应用版本")
     @GetMapping(value = "/list_by_service_id")
     public ResponseEntity<List<AppServiceVersionVO>> listVersionById(

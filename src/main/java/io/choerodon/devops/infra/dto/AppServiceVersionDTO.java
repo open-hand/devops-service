@@ -3,6 +3,8 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -14,44 +16,64 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @ModifyAudit
 @VersionAudit
+@ApiModel("应用服务版本DTO")
 @Table(name = "devops_app_service_version")
 public class AppServiceVersionDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("版本号")
     private String version;
     @Encrypt
+    @ApiModelProperty("版本关联的应用服务id")
     private Long appServiceId;
     @Encrypt
+    @ApiModelProperty("版本关联的valuesId")
     private Long valueId;
     @Encrypt
+    @ApiModelProperty("版本关联的READMEId")
     private Long readmeValueId;
+    @ApiModelProperty("版本关联的harbor镜像地址")
     private String image;
+    @ApiModelProperty("版本关联的Gitlab commit sha")
     private String commit;
+    @ApiModelProperty("版本关联的chart仓库地址")
     private String repository;
     @Encrypt
+    @ApiModelProperty("版本关联的harbor仓库id")
     private Long harborConfigId;
     @Encrypt
+    @ApiModelProperty("版本关联的helm仓库id")
     private Long helmConfigId;
+    @ApiModelProperty("版本关联的harbor仓库类型")
     private String repoType;
+    @ApiModelProperty("版本关联的分支")
     private String ref;
 
     @Transient
+    @ApiModelProperty("版本关联的应用服务名称")
     private String appServiceName;
     @Transient
+    @ApiModelProperty("版本关联的应用服务编码")
     private String appServiceCode;
     @Transient
+    @ApiModelProperty("版本关联的应用服务状态")
     private Boolean appServiceStatus;
     @Transient
+    @ApiModelProperty("版本关联的应用服务类型")
     private String appServiceType;
     @Transient
+    @ApiModelProperty("版本的readme内容")
     private String readme;
     @Transient
+    @ApiModelProperty("版本的values内容")
     private String values;
     @Transient
+    @ApiModelProperty("版本的chart名称")
     private String chartName;
     @Transient
+    @ApiModelProperty("版本的所属的项目id")
     private Long projectId;
 
 
