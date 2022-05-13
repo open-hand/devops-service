@@ -11,6 +11,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -19,6 +20,7 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
 
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
+@ApiModel(value = "cicd流水线定义VO")
 public class CiCdPipelineVO {
     @Encrypt(ignoreUserConflict = true)
     @Id
@@ -39,7 +41,9 @@ public class CiCdPipelineVO {
 
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
+    @ApiModelProperty("流水线关联应用服务类型")
     private String appServiceType;
+    @ApiModelProperty("流水线关联应用服务编码")
     private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
 

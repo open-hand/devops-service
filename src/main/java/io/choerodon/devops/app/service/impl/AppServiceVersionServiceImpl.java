@@ -292,16 +292,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         }
     }
 
-    private boolean filterAppDeploy(PipelineAppServiceDeployDTO deployDTO, String version) {
-        if (deployDTO.getTriggerVersion() == null || deployDTO.getTriggerVersion().isEmpty()) {
-            return true;
-        } else {
-            List<String> list = Arrays.asList(deployDTO.getTriggerVersion().split(","));
-            Optional<String> branch = list.stream().filter(version::contains).findFirst();
-            return branch.isPresent() && !branch.get().isEmpty();
-        }
-    }
-
     @Override
     public List<AppServiceVersionRespVO> listDeployedByAppId(Long projectId, Long appServiceId) {
         return ConvertUtils.convertList(
