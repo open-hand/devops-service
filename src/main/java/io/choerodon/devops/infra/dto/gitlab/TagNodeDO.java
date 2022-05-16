@@ -43,11 +43,6 @@ public class TagNodeDO implements Comparable<TagNodeDO> {
         }
     }
 
-//    public String getNextTag(Boolean isRelease) {
-//        return isRelease ? String.valueOf(this.hundred) + "." + (this.ten + 1) + ".0" :
-//                String.valueOf(this.hundred) + "." + this.ten + "." + (this.unit + 1);
-//    }
-
     public String getTag() {
         return String.format("%d.%d.%d", this.hundred, this.ten, this.unit);
     }
