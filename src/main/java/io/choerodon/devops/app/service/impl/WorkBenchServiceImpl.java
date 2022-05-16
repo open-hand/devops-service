@@ -21,7 +21,10 @@ import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.app.service.WorkBenchService;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -142,7 +145,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         // 不统计外部仓库
         appServiceDTOList = appServiceDTOList.stream()
                 .filter(v -> v.getExternalConfigId() == null)
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
         List<Integer> gitlabProjectIds = appServiceDTOList.stream()
                 .map(AppServiceDTO::getGitlabProjectId)
                 .collect(Collectors.toList());

@@ -23,8 +23,8 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CommandStatus;
 import io.choerodon.devops.infra.enums.CommandType;
-import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -34,9 +34,7 @@ import io.choerodon.devops.infra.util.*;
 public class WorkloadServiceImpl implements WorkloadService {
 
     private static final String METADATA = "metadata";
-    private static final String LABEL = "labels";
     private static final String KIND = "kind";
-    private static final String SPEC = "spec";
     private static final String MASTER = "master";
     private static final String WORK_LOAD = "WorkLoad";
 
