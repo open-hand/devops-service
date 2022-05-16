@@ -41,8 +41,8 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
         if (devopsDeployAppCenterEnvDTO == null || Boolean.FALSE.equals(devopsDeployAppCenterEnvDTO.getMetricDeployStatus())) {
             return;
         }
-        Integer current = 1;
-        Integer desired = 1;
+        int current = 1;
+        int desired = 1;
         String resourceName = "";
         if (ResourceType.DEPLOYMENT.getType().equals(resourceType)) {
             V1beta2Deployment v1beta2Deployment = json.deserialize(resource, V1beta2Deployment.class);
@@ -57,9 +57,18 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
         } else {
             return;
         }
+        // current = desired 正常
         // current == 0 停机
         // current < desired 异常
-        if (current == 0) {
+        if (current == desired) {
+            // 1. 查询现在是否存在异常记录,存在则将该记录标记为结束
+            AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
+            if (appExceptionRecordDTO != null) {
+                appExceptionRecordDTO.setEndDate(new Date());
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
+            }
+        } else if (current == 0) {
+            // 停机
             // 1. 查询现在是否存在异常记录
             AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
             if (appExceptionRecordDTO == null) {
@@ -71,11 +80,10 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                         new Date(),
                         true);
                 MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
-
             } else {
                 if (Boolean.FALSE.equals(appExceptionRecordDTO.getDowntime())) {
                     appExceptionRecordDTO.setEndDate(new Date());
-                    appExceptionRecordMapper.updateByPrimaryKeySelective(appExceptionRecordDTO);
+                    MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
 
                     AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
                             devopsDeployAppCenterEnvDTO.getId(),
@@ -84,6 +92,33 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                             resourceName,
                             new Date(),
                             true);
+                    MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+                }
+            }
+        } else {
+            // 1. 查询现在是否存在异常记录
+            AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
+            if (appExceptionRecordDTO == null) {
+                AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
+                        devopsDeployAppCenterEnvDTO.getId(),
+                        devopsDeployAppCenterEnvDTO.getEnvId(),
+                        resourceType,
+                        resourceName,
+                        new Date(),
+                        false);
+                MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+            } else {
+                if (Boolean.TRUE.equals(appExceptionRecordDTO.getDowntime())) {
+                    appExceptionRecordDTO.setEndDate(new Date());
+                    MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
+
+                    AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
+                            devopsDeployAppCenterEnvDTO.getId(),
+                            devopsDeployAppCenterEnvDTO.getEnvId(),
+                            resourceType,
+                            resourceName,
+                            new Date(),
+                            false);
                     MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
 
                 }
