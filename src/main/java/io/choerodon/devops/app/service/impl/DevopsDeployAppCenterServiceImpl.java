@@ -29,6 +29,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
@@ -40,10 +41,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -533,6 +531,26 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             return new ArrayList<>();
         }
         return devopsDeployAppCenterEnvMapper.listByAppServiceIds(envId, appServiceIds);
+    }
+
+    @Override
+    @Transactional
+    public void enableMetric(Long projectId, Long appId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
+        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+    }
+
+    @Override
+    @Transactional
+    public void disableMetric(Long projectId, Long appId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
+        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
     }
 
     @Transactional
