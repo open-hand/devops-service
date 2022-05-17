@@ -224,13 +224,16 @@ function chart_build() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo $response_upload_to_devops
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
+
 }
 #################################### 下载settings文件 ####################################
 # $1 fileName   下载settings文件后保存为的文件名称
