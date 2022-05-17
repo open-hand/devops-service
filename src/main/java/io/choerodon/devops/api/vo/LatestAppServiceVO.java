@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -10,11 +11,17 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class LatestAppServiceVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("应用服务名称")
     private String name;
+    @ApiModelProperty("应用服务编码")
     private String code;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("项目名称")
     private String projectName;
+    @ApiModelProperty("gitlab仓库地址")
     private String repoUrl;
+    @ApiModelProperty("最近更新时间")
     private Date lastUpdateDate;
 
     public Long getId() {

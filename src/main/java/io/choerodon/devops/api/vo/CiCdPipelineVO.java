@@ -70,18 +70,20 @@ public class CiCdPipelineVO {
     @ApiModelProperty(name = "流水线变量")
     private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
 
+    @ApiModelProperty(name = "流水线是否含有执行记录的标志")
     private Boolean hasRecords = false;
     //cicd 流水线下的执行记录
+    @ApiModelProperty(name = "cicd 流水线下的执行记录")
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
-
+    @ApiModelProperty(name = "流水线关联的分支")
     private Set<String> relatedBranches;
-
+    @ApiModelProperty(name = "流水线中定义的函数")
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
     @ApiModelProperty(name = "Docker认证配置")
     private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
 
     private Long objectVersionNumber;
-
+    @ApiModelProperty(name = "是否拥有流水线编辑权限")
     private Boolean edit;
     private List<Long> pipelineUserRels;
     private Date lastUpdateDate;
@@ -93,7 +95,9 @@ public class CiCdPipelineVO {
     private Boolean execute;
     private String envName;
     //流程耗时
+    @ApiModelProperty(name = "流程耗时")
     private Long time;
+    @ApiModelProperty(name = "流水线是否启用定时任务")
     private Boolean enableSchedule;
 
     public Boolean getEnableSchedule() {
