@@ -18,23 +18,36 @@ public class DevopsIngressVO extends DevopsResourceDataInfoVO {
     @Encrypt
     private Long id;
     @Encrypt
+    @ApiModelProperty("关联的应用服务id")
     private Long appServiceId;
+    @ApiModelProperty("域名")
     private String domain;
+    @ApiModelProperty("域名名称")
     private String name;
     @Encrypt
+    @ApiModelProperty("关联的环境id")
     private Long envId;
+    @ApiModelProperty("关联的环境名称")
     private String envName;
+    @ApiModelProperty("关联的环境状态")
     private Boolean envStatus;
     private Boolean isUsable;
+    @ApiModelProperty("网络的状态")
     private String status;
     @Encrypt
+    @ApiModelProperty("关联的证书id")
     private Long certId;
+    @ApiModelProperty("关联的证书名称")
     private String certName;
+    @ApiModelProperty("关联的证书状态")
     private String certStatus;
     @ApiModelProperty("域名对应的path，其中是path对象")
     private List<DevopsIngressPathVO> pathList;
+    @ApiModelProperty("command操作类型")
     private String commandType;
+    @ApiModelProperty("command操作状态")
     private String commandStatus;
+    @ApiModelProperty("错误信息")
     private String error;
     @ApiModelProperty("Annotations键值对，键不是确定值")
     private Map<String, String> annotations;
