@@ -51,4 +51,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_node.groovy') {
             column(name: "inner_node_name", type: "VARCHAR(128)", remarks: '既作为外部节点，又作为内部节点，这个字段表示作为的内部节点的名称', afterColumn: 'name')
         }
     }
+
+    changeSet(author: 'lihao', id: '2022-05-17-updateDataType') {
+        modifyDataType(tableName: 'devops_cluster_node', columnName: 'host_ip', newDataType: 'VARCHAR(128)')
+    }
 }
