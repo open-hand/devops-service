@@ -1018,7 +1018,7 @@ public class AppServiceController {
     public ResponseEntity<HarborRepoConfigDTO> queryRepoConfigById(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "app_service_id") Long appServiceId) {
+            @Encrypt @PathVariable(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }
 
