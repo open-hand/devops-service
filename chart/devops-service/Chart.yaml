@@ -1,5 +1,24 @@
-apiVersion: v1
-appVersion: "1.0"
-description: A Helm chart for Kubernetes
+annotations:
+  category: Infrastructure
+apiVersion: v2
+appVersion: 2.0.0
+dependencies:
+  - name: common
+    repository: https://openchart.choerodon.com.cn/choerodon/c7n
+    version: 1.x.x
+description: DevOps Service is the continuous delivery service of Choerodon.
+engine: gotpl
+home: https://github.com/open-hand/devops-service/tree/master/chart/devops-service
+icon: https://ui-avatars.com/api/?name=devops-service
+keywords:
+  - choerodon
+  - devops
+maintainers:
+  - email: zhuchiyu@vip.hand-china.com
+    name: choerodon
+    url: https://choerodon.io
 name: devops-service
-version: 0.1.0
+sources:
+  - https://github.com/open-hand/devops-service
+  - https://gitee.com/open-hand/devops-service
+version: 2.0.0

@@ -1,0 +1,26 @@
+{{ template "chart.header" . }}
+{{ template "chart.description" . }}
+
+## Installing the Chart
+
+To install the chart with the release name `{{ template "chart.name" . }}`:
+
+```console
+$ helm repo add c7n https://openchart.choerodon.com.cn/choerodon/c7n
+$ helm repo update
+$ helm install {{ template "chart.name" . }} c7n/{{ template "chart.name" . }}
+```
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+## Uninstalling the Chart
+
+```bash
+$ helm delete {{ template "chart.name" . }}
+```
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.maintainersSection" . }}

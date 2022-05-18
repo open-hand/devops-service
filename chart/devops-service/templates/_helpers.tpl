@@ -1,65 +1,89 @@
 {{/* vim: set filetype=mustache: */}}
-{{- /*
-service.labels.standard prints the standard service Helm labels.
-The standard labels are frequently used in metadata.
-*/ -}}
 
-{{- define "service.image" -}}
-{{- printf "%s:%s" .Values.image.repository (default (.Chart.Version) .Values.image.tag) -}}
-{{- end -}}
-
-{{- define "service.microservice.labels" -}}
-choerodon.io/version: {{ default (.Chart.Version) .Values.image.tag }}
-choerodon.io/service: {{ .Chart.Name | quote }}
-choerodon.io/metrics-port: {{ .Values.env.open.MANAGEMENT_SERVER_PORT | quote }}
-{{- end -}}
-
-{{- define "service.labels.standard" -}}
-choerodon.io/release: {{ .Release.Name | quote }}
-{{- end -}}
-
-{{- define "service.match.labels" -}}
-choerodon.io/release: {{ .Release.Name | quote }}
-{{- end -}}
-
-{{- define "service.logging.deployment.label" -}}
-choerodon.io/logs-parser: {{ .Values.logs.parser | quote }}
-{{- end -}}
-
-{{- define "service.monitoring.pod.annotations" -}}
-choerodon.io/metrics-group: {{ .Values.metrics.group | quote }}
-choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
+{{/*
+Return the proper image name
+*/}}
+{{- define "server.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.image "chart" .Chart "global" .Values.global) }}
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for deployment.
+Return the proper skywalking image name
 */}}
-{{- define "app.deployment.apiVersion" -}}
-{{- if semverCompare "<1.9-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "apps/v1beta2" -}}
+{{- define "skywalking.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.skywalking "chart" .Chart "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+Return the proper java base image name
+*/}}
+{{- define "initDatabases.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.initDatabases "chart" .Chart "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+Return the proper java base image name
+*/}}
+{{- define "base.image" -}}
+{{ include "common.images.image" (dict "imageRoot" .Values.base "chart" .Chart "global" .Values.global) }}
+{{- end -}}
+
+{{/*
+Return the proper Docker Image Registry Secret Names
+*/}}
+{{- define "server.imagePullSecrets" -}}
+{{- include "common.images.pullSecrets" (dict "images" (list .Values.initDatabases .Values.image .Values.base .Values.skywalking) "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Get the workingDir.
+*/}}
+{{- define "server.workingDir" -}}
+{{- printf "%s" (default .Values.persistence.mountPath .Values.workingDir) -}}
+{{- end -}}
+
+{{/*
+Get the credentials secret.
+*/}}
+{{- define "server.secretName" -}}
+{{- if .Values.global.server.existingSecret }}
+    {{- printf "%s" .Values.global.server.existingSecret -}}
+{{- else if .Values.existingSecret -}}
+    {{- printf "%s" .Values.existingSecret -}}
 {{- else -}}
-{{- print "apps/v1" -}}
+    {{- printf "%s" (include "common.names.fullname" .) -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for statefulset.
+Return true if a PVC object should be created
 */}}
-{{- define "app.statefulset.apiVersion" -}}
-{{- if semverCompare "<1.9-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "apps/v1beta2" -}}
-{{- else -}}
-{{- print "apps/v1" -}}
+{{- define "server.createPVC" -}}
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+    {{- true -}}
 {{- end -}}
 {{- end -}}
 
 {{/*
-Return the appropriate apiVersion for ingress.
+Return the PVC name
 */}}
-{{- define "app.ingress.apiVersion" -}}
-{{- if semverCompare "<1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "extensions/v1beta1" -}}
+{{- define "server.claimName" -}}
+{{- if and .Values.persistence.existingClaim }}
+    {{- printf "%s" (tpl .Values.persistence.existingClaim $) -}}
 {{- else -}}
-{{- print "networking.k8s.io/v1beta1" -}}
+    {{- printf "%s" (include "common.names.fullname" .) -}}
 {{- end -}}
+{{- end -}}
+
+{{/*
+Returns the proper service account name depending if an explicit service account name is set
+in the values file. If the name is not set it will default to either common.names.fullname if serviceAccount.create
+is true or default otherwise.
+*/}}
+{{- define "server.serviceAccountName" -}}
+    {{- if .Values.serviceAccount.create -}}
+        {{ default (include "common.names.fullname" .) .Values.serviceAccount.name }}
+    {{- else -}}
+        {{ default "default" .Values.serviceAccount.name }}
+    {{- end -}}
 {{- end -}}

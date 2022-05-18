@@ -1,0 +1,98 @@
+{{- if and .Values.initDatabases.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "common.names.fullname" . }}-init-db
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/hook-weight": "1"
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-delete-policy": "before-hook-creation"
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+spec:
+  backoffLimit: 1
+  parallelism: 1
+  completions: 1
+  activeDeadlineSeconds: {{ .Values.initDatabases.timeout | default 600 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+    spec:
+      {{- include "server.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.initDatabases.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.initDatabases.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.initDatabases.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.initDatabases.affinity "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.initDatabases.tolerations}}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.initDatabases.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: dbtool-volume
+          image:  {{ include "initDatabases.image" . }}
+          imagePullPolicy: {{ .Values.initDatabases.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ecx
+            - cp -rfp /var/choerodon/* /opt/choerodon
+          volumeMounts:
+          - mountPath: /opt/choerodon
+            name: volume
+        - name: server-volume
+          image:  {{ include "server.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ecx
+            - cp -rfp /choerodon/* /opt/choerodon
+          volumeMounts:
+          - mountPath: /opt/choerodon
+            name: volume
+      containers:
+        - name: init-databases
+          image:  {{ include "base.image" . }}
+          imagePullPolicy: {{ .Values.base.pullPolicy | quote }}
+          workingDir: {{ include "server.workingDir" . }}
+          command:
+            - /bin/sh
+            - -ecx
+            - >
+              java -Ddata.init=true 
+              -Dlogging.level.root=info
+              -Dinstaller.jarPath.init=true
+              -Dinstaller.exclusion={{ .Values.initDatabases.exclusion }}
+              -Dspring.datasource.url="{{ .Values.initDatabases.datasource.url }}"
+              -Dspring.datasource.username={{ .Values.initDatabases.datasource.username }}
+              -Dspring.datasource.password={{ .Values.initDatabases.datasource.password }}
+              -Dspring.datasource.driver-class-name={{ .Values.initDatabases.datasource.driver }}
+              -Dinstaller.datasources.platform.url="{{ .Values.initDatabases.datasources.platform.url }}"
+              -Dinstaller.datasources.platform.username={{ .Values.initDatabases.datasources.platform.username }}
+              -Dinstaller.datasources.platform.password={{ .Values.initDatabases.datasources.platform.password }}
+              -Dinstaller.datasources.platform.driver-class-name={{ .Values.initDatabases.datasources.platform.driver }}
+              -Dinstaller.jarPath=/opt/choerodon/{{ .Chart.Name }}.jar
+              -Dinstaller.mapping=script/db/service-mapping.xml
+              -jar /opt/choerodon/choerodon-tool-liquibase.jar;
+          volumeMounts:
+          - mountPath: /opt/choerodon
+            name: volume
+          {{- if .Values.initDatabases.resources }}
+          resources: {{ toYaml .Values.initDatabases.resources | nindent 12 }}
+          {{- end }}
+      restartPolicy: Never
+      serviceAccountName: {{ template "server.serviceAccountName" . }}
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+      {{- end }}
+      volumes:
+        - emptyDir: {}
+          name: volume
+{{- end }}
