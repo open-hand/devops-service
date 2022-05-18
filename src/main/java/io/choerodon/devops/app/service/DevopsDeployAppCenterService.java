@@ -152,19 +152,19 @@ public interface DevopsDeployAppCenterService {
 
     List<DevopsDeployAppCenterVO> listByAppServiceIds(Long envId, Set<Long> appServiceIds);
 
-    /**
-     * 启用chart应用监控
-     *
-     * @param projectId 项目id
-     * @param appId     应用id
-     */
-    void enableMetric(Long projectId, Long appId);
-
-    /**
-     * 关闭chart应用监控
-     *
-     * @param projectId 项目id
-     * @param appId     应用id
-     */
-    void disableMetric(Long projectId, Long appId);
+//    /**
+//     * 启用chart应用监控
+//     *
+//     * @param projectId 项目id
+//     * @param appId     应用id
+//     */
+//    void enableMetric(Long projectId, Long appId);
+//
+//    /**
+//     * 关闭chart应用监控
+//     *
+//     * @param projectId 项目id
+//     * @param appId     应用id
+//     */
+//    void disableMetric(Long projectId, Long appId);
 }
