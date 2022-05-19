@@ -1,122 +1,237 @@
-apiVersion: {{ include "app.deployment.apiVersion" . }}
+apiVersion: {{ include "common.capabilities.deployment.apiVersion" . }}
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
-  labels:
-{{ include "service.labels.standard" . | indent 4 }}
-{{- if .Values.logs.enabled }}
-{{ include "service.logging.deployment.label" . | indent 4 }}
-{{- end }}
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+  {{- end }}
 spec:
-  strategy:
-    type: {{ .Values.deploymentUpdate.type }}
-    {{- if eq .Values.deploymentUpdate.type "RollingUpdate" }}
-    rollingUpdate:
-      maxSurge: {{ .Values.deploymentUpdate.maxSurge }}
-      maxUnavailable: {{ .Values.deploymentUpdate.maxUnavailable }}
-    {{- else }}
-    rollingUpdate: null
-    {{- end}}
   replicas: {{ .Values.replicaCount }}
+  {{- if .Values.updateStrategy }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
   selector:
-    matchLabels:
-{{ include "service.match.labels" . | indent 6 }}
+    matchLabels: {{- include "common.labels.matchLabels" . | nindent 6 }}
   template:
     metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+      {{- if .Values.podAnnotations }}
       annotations:
-{{- if .Values.podAnnotations }}
-{{ toYaml .Values.podAnnotations | trimSuffix "\n" | indent 8 }}
-{{- end }}
-{{ include "service.monitoring.pod.annotations" . | indent 8 }}
-      labels:
-{{- if .Values.podLabels }}
-{{ toYaml .Values.podLabels | indent 8 }}
-{{- end }}
-{{ include "service.microservice.labels" . | indent 8 }}
-{{ include "service.labels.standard" . | indent 8 }}
+        {{- include "common.tplvalues.render" ( dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
+      {{- end }}
     spec:
-      terminationGracePeriodSeconds: 30
-  {{- if .Values.priorityClassName }}
-      priorityClassName: "{{ .Values.priorityClassName }}"
-  {{- end }}
-      initContainers:
-      - name: skywalking-agent
-        image: {{ .Values.plugins.skywalkingAgentImage }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - sh
-        - -c
-        - cp -rfp /skywalking/agent/* /agent
-        volumeMounts:
-        - name: skywalking-agent
-          mountPath: /agent
-      containers:
-      - name: {{ .Release.Name }}
-        image: {{ include "service.image" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-#        lifecycle:
-#          preStop:
-#            exec:
-#              command: ["/bin/sh", "-c","curl -X POST localhost:{{ .Values.env.open.SERVER_PORT }}/pre_stop"]
-        env:
-        - name: "CHART_VERSION"
-          value: {{ .Chart.Version }}
-{{- range $name, $value := .Values.env.open }}
-{{- if ne (len ($value | quote)) 0 }}
-        - name: {{ $name | quote }}
-          value: {{ $value | quote }}
-{{- end }}
-{{- end }}
-        ports:
-        - name: http
-          containerPort: {{ .Values.env.open.SERVER_PORT }}
-          protocol: TCP
-        - name: actuator
-          containerPort: {{ .Values.env.open.MANAGEMENT_SERVER_PORT }}
-          protocol: TCP
-        resources:
-{{ toYaml .Values.resources | indent 10 }}
-        volumeMounts:
-        - name: skywalking-agent
-          mountPath: /agent
-        livenessProbe:
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.livenessProbe.successThreshold }}
-          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-          exec:
-            command: 
-            - /bin/sh
-            - -c
-            - >
-              nc -z localhost {{ .Values.env.open.SERVER_PORT }}
-              && curl -s --fail localhost:{{ .Values.env.open.MANAGEMENT_SERVER_PORT }}/actuator/health
-        readinessProbe:
-          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.readinessProbe.successThreshold }}
-          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-          exec:
-            command: 
-            - /bin/sh
-            - -c
-            - >
-              nc -z localhost {{ .Values.env.open.SERVER_PORT }}
-              && curl -s --fail localhost:{{ .Values.env.open.MANAGEMENT_SERVER_PORT }}/actuator/health
-{{- with .Values.nodeSelector }}
-      nodeSelector:
-{{ toYaml . | indent 8 }}
-{{- end }}
-{{- with .Values.affinity }}
+      {{- include "server.imagePullSecrets" . | nindent 6 }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName }}
+      {{- end }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      automountServiceAccountToken: {{ .Values.automountServiceAccountToken }}
+      serviceAccountName: {{ template "server.serviceAccountName" . }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- else }}
       affinity:
-{{ toYaml . | indent 8 }}
-{{- end }}
-{{- with .Values.tolerations }}
-      tolerations:
-{{ toYaml . | indent 8 }}
-{{- end }}
+        podAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAffinityPreset "context" $) | nindent 10 }}
+        podAntiAffinity: {{- include "common.affinities.pods" (dict "type" .Values.podAntiAffinityPreset "context" $) | nindent 10 }}
+        nodeAffinity: {{- include "common.affinities.nodes" (dict "type" .Values.nodeAffinityPreset.type "key" .Values.nodeAffinityPreset.key "values" .Values.nodeAffinityPreset.values) | nindent 10 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.hostAliases }}
+      hostAliases: {{- include "common.tplvalues.render" (dict "value" .Values.hostAliases "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.securityContext.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      {{- end }}
+      initContainers:
+        - name: server-volume
+          image:  {{ include "server.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ecx
+            - |
+              cp -rfp /choerodon/* /opt/choerodon
+              cp -rfp /usr/lib/yaml /opt/choerodon/yaml
+          securityContext:
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+          volumeMounts:
+            - name: volume
+              mountPath: /opt/choerodon
+        {{- if .Values.skywalking.enabled }}
+        - name: skywalking-volume
+          image:  {{ include "skywalking.image" . }}
+          imagePullPolicy: {{ .Values.skywalking.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ecx
+            - cp -rfp /skywalking/agent/* /opt/choerodon/skywalking-agent
+          securityContext:
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+          volumeMounts:
+            - name: volume
+              mountPath: /opt/choerodon/skywalking-agent
+        {{- end }}
+        {{- if .Values.volumePermissionsEnabled }}
+        - name: volume-permissions
+          image: {{ include "server.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -ecx
+            - |
+              chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} /opt/choerodon;
+              {{- if .Values.persistence.enabled }}
+              chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.fsGroup }} {{ .Values.persistence.mountPath }};
+              {{- end }}
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: volume
+              mountPath: /opt/choerodon
+        {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.initContainers }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.initContainers "context" $) | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ .Chart.Name | quote }}
+          image: {{ include "base.image" . }}
+          imagePullPolicy: {{ .Values.base.pullPolicy | quote }}
+          workingDir: {{ include "server.workingDir" . }}
+          {{- if .Values.securityContext.enabled }}
+          securityContext:
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+          {{- end }}
+          {{- if .Values.command }}
+          command: {{- include "common.tplvalues.render" (dict "value" .Values.command "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.args }}
+          args: {{- include "common.tplvalues.render" (dict "value" .Values.args "context" $) | nindent 12 }}
+          {{- else }}
+          args:
+            - "/bin/sh"
+            - "-ecx"
+            - "java $SKYWALKING_OPTS $JAVA_OPTS -jar /opt/choerodon/{{ .Chart.Name }}.jar"
+          {{- end }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.containerPort.serverPort | quote }}
+            - name: MANAGEMENT_SERVER_PORT
+              value: {{ .Values.containerPort.actuatorPort | quote }}
+            - name: CHART_VERSION
+              value: {{ .Chart.Version | quote }}
+            - name: VALUES_YAML_PATH
+              value: /opt/choerodon/yaml/values_yaml
+            {{- if .Values.skywalking.enabled }}
+            - name: SKYWALKING_OPTS
+            {{- if .Values.skywalking.commandOverride }}
+              value: {{ .Values.skywalking.commandOverride }}
+            {{- else }}
+              value: >-
+                -javaagent:/opt/choerodon/skywalking-agent/skywalking-agent.jar
+                -Dskywalking.agent.service_name={{ default .Chart.Name .Values.skywalking.serviceName }}
+                -Dskywalking.agent.sample_n_per_3_secs={{ default 9 .Values.skywalking.sampleNPer3Secs }}
+                -Dskywalking.collector.backend_service={{ .Values.skywalking.collectorService }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.extraEnv }}
+            {{- include "common.tplvalues.renderkv" (dict "value" .Values.extraEnv "context" $) | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- if .Values.extraEnvVarsCM }}
+            - configMapRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsCM "context" $) }}
+            {{- end }}
+            {{- if .Values.extraEnvVarsSecret }}
+            - secretRef:
+                name: {{ include "common.tplvalues.render" (dict "value" .Values.extraEnvVarsSecret "context" $) }}
+            {{- end }}
+          ports:
+            - name: server
+              containerPort: {{ .Values.containerPort.serverPort }}
+              protocol: TCP
+            - name: actuator
+              containerPort: {{ .Values.containerPort.actuatorPort }}
+              protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}
+          livenessProbe:
+            tcpSocket:
+              port: server
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- else if .Values.customLivenessProbe }}
+          livenessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customLivenessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: actuator
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- else if .Values.customReadinessProbe }}
+          readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.startupProbe.enabled }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: actuator
+            initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.startupProbe.successThreshold }}
+            failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+          {{- else if .Values.customStartupProbe }}
+          startupProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customStartupProbe "context" $) | nindent 12 }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: volume
+              mountPath: /opt/choerodon
+            {{- if .Values.persistence.enabled }}
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            {{- end }}
+            {{- if .Values.extraVolumeMounts }}
+            {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumeMounts "context" $) | nindent 12 }}
+            {{- end }}
+        {{- if .Values.sidecars }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.sidecars "context" $) | nindent 8 }}
+        {{- end }}
       volumes:
-      - name: skywalking-agent
-        emptyDir: {}
+        - name: volume
+          emptyDir: {}
+        {{- if .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "server.claimName" . }}
+        {{- end }}
+        {{- if .Values.extraVolumes }}
+        {{- include "common.tplvalues.render" (dict "value" .Values.extraVolumes "context" $) | nindent 8 }}
+        {{- end }}
