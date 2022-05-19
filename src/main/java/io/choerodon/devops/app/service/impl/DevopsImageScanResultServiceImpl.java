@@ -20,14 +20,19 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.DevopsImageScanResultVO;
+import io.choerodon.devops.api.vo.ImageScanResultVO;
+import io.choerodon.devops.api.vo.VulnerabilitieVO;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
+import io.choerodon.devops.app.service.DevopsCiStepService;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.DevopsImageScanResultDTO;
-import io.choerodon.devops.infra.enums.CiJobScriptTypeEnum;
+import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.enums.ImageSecurityEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
@@ -53,6 +58,20 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
 
+    @Autowired
+    private DevopsCiStepService devopsCiStepService;
+    @Autowired
+    private DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService;
+
+    private static void securityMonitor(Integer integer, DevopsCiDockerBuildConfigDTO securityConditionConfigVO) {
+        if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSecurityControlConditions())) {
+            if (integer > securityConditionConfigVO.getVulnerabilityCount()) {
+                LOGGER.info("loophole count:{},security control:{}", integer, securityConditionConfigVO.getVulnerabilityCount());
+                throw new DevopsCiInvalidException("Does not meet the security control conditions," + securityConditionConfigVO.getSeverity()
+                        + " loophole count:" + integer);
+            }
+        }
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -94,50 +113,19 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
 
     private void checkSecurityCondition(Long gitlabPipelineId, Long jobId) {
         if (!Objects.isNull(jobId) && jobId > 0) {
-            DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
-            if (Objects.isNull(devopsCiJobDTO)) {
+            List<DevopsCiStepDTO> devopsCiStepDTOList = devopsCiStepService.listByJobId(jobId);
+            if (CollectionUtils.isEmpty(devopsCiStepDTOList)) {
                 return;
             }
-            LOGGER.debug("jobId:{},metadata:{}", jobId, devopsCiJobDTO.getMetadata());
-            CiConfigVO ciConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CiConfigVO.class);
-            List<CiConfigTemplateVO> ciConfigVOConfig = ciConfigVO.getConfig();
-            //一个job一个docker构建
-            CiConfigTemplateVO configTemplateVO = ciConfigVOConfig.stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(CiJobScriptTypeEnum.DOCKER.getType(), ciConfigTemplateVO.getType().trim())).collect(Collectors.toList()).get(0);
-            check(gitlabPipelineId, configTemplateVO);
-
-        }
-    }
-
-    private void check(Long gitlabPipelineId, CiConfigTemplateVO configTemplateVO) {
-        if (!Objects.isNull(configTemplateVO.getSecurityControl()) && configTemplateVO.getSecurityControl()) {
-            SecurityConditionConfigVO securityConditionConfigVO = configTemplateVO.getSecurityCondition();
-
-            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
-            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
-            List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
-            if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
+            List<DevopsCiStepDTO> collect = devopsCiStepDTOList.stream().filter(v -> DevopsCiStepTypeEnum.DOCKER_BUILD.value().equals(v.getType())).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(collect)) {
                 return;
             }
-            switch (ImageSecurityEnum.valueOf(securityConditionConfigVO.getLevel())) {
-                case HIGH:
-                    Integer highCount = getHighCount(devopsImageScanResultDTOS);
-                    securityMonitor(highCount, securityConditionConfigVO);
-                    break;
-                case CRITICAL:
-                    Integer criticalCount = getCriticalCount(devopsImageScanResultDTOS);
-                    securityMonitor(criticalCount, securityConditionConfigVO);
-                    break;
-                case MEDIUM:
-                    Integer mediumCount = getMediumCount(devopsImageScanResultDTOS);
-                    securityMonitor(mediumCount, securityConditionConfigVO);
-                    break;
-                case LOW:
-                    Integer lowCount = getLowCount(devopsImageScanResultDTOS);
-                    securityMonitor(lowCount, securityConditionConfigVO);
-                    break;
-                default:
-                    throw new DevopsCiInvalidException("security level not exist: {}", securityConditionConfigVO.getLevel());
-            }
+            DevopsCiStepDTO devopsCiStepDTO = collect.get(0);
+            DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
+
+            check(gitlabPipelineId, devopsCiDockerBuildConfigDTO);
+
         }
     }
 
@@ -194,12 +182,34 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         }
     }
 
-    private static void securityMonitor(Integer integer, SecurityConditionConfigVO securityConditionConfigVO) {
-        if (StringUtils.equalsIgnoreCase("<=", securityConditionConfigVO.getSymbol())) {
-            if (integer > securityConditionConfigVO.getCondition()) {
-                LOGGER.info("loophole count:{},security control:{}", integer, securityConditionConfigVO.getCondition());
-                throw new DevopsCiInvalidException("Does not meet the security control conditions," + securityConditionConfigVO.getLevel()
-                        + " loophole count:" + integer);
+    private void check(Long gitlabPipelineId, DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO) {
+        if (Boolean.TRUE.equals(devopsCiDockerBuildConfigDTO.getSecurityControl())) {
+
+            DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
+            devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+            List<DevopsImageScanResultDTO> devopsImageScanResultDTOS = devopsImageScanResultMapper.select(devopsImageScanResultDTO);
+            if (CollectionUtils.isEmpty(devopsImageScanResultDTOS)) {
+                return;
+            }
+            switch (ImageSecurityEnum.valueOf(devopsCiDockerBuildConfigDTO.getSeverity())) {
+                case HIGH:
+                    Integer highCount = getHighCount(devopsImageScanResultDTOS);
+                    securityMonitor(highCount, devopsCiDockerBuildConfigDTO);
+                    break;
+                case CRITICAL:
+                    Integer criticalCount = getCriticalCount(devopsImageScanResultDTOS);
+                    securityMonitor(criticalCount, devopsCiDockerBuildConfigDTO);
+                    break;
+                case MEDIUM:
+                    Integer mediumCount = getMediumCount(devopsImageScanResultDTOS);
+                    securityMonitor(mediumCount, devopsCiDockerBuildConfigDTO);
+                    break;
+                case LOW:
+                    Integer lowCount = getLowCount(devopsImageScanResultDTOS);
+                    securityMonitor(lowCount, devopsCiDockerBuildConfigDTO);
+                    break;
+                default:
+                    throw new DevopsCiInvalidException("security level not exist: {}", devopsCiDockerBuildConfigDTO.getSeverity());
             }
         }
     }
