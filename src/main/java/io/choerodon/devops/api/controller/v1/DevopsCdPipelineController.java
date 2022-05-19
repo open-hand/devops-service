@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -13,15 +14,17 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdPipelineService;
+import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
  * 〈功能简述〉
- * 〈〉
+ * 〈cd流水线相关内部调用接口，环境部署、主机部署等〉
  *
  * @author wanghao
  * @since 2020/7/3 17:24
  */
+@Api(tags = SwaggerApiConfig.DEVOPS_CD_PIPELINE)
 @RestController
 @RequestMapping("/v1/cd_pipeline")
 public class DevopsCdPipelineController {
@@ -41,10 +44,13 @@ public class DevopsCdPipelineController {
     @PostMapping(value = "/cd_host_deploy")
     public ResponseEntity<Void> cdHostDeploy(
             @Encrypt
+            @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
             @Encrypt
+            @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @Encrypt
+            @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
@@ -59,10 +65,13 @@ public class DevopsCdPipelineController {
     @PostMapping(value = "/env_auto_deploy")
     public ResponseEntity<Void> envAutoDeploy(
             @Encrypt
+            @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
             @Encrypt
+            @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @Encrypt
+            @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
@@ -124,8 +133,11 @@ public class DevopsCdPipelineController {
     @ApiOperation(value = "执行api测试")
     @PostMapping(value = "/execute_api_test_task")
     public ResponseEntity<Void> executeApiTestTask(
+            @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineService.executeApiTestTask(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
@@ -135,7 +147,9 @@ public class DevopsCdPipelineController {
     @ApiOperation(value = "查询部署任务状态")
     @GetMapping(value = "/deploy_status")
     public ResponseEntity<String> getDeployStatus(
+            @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "部署任务名称", required = true)
             @RequestParam(value = "deploy_job_name") String deployJobName) {
         return ResponseEntity.ok(devopsCdPipelineService.getDeployStatus(pipelineRecordId, deployJobName));
     }
@@ -145,8 +159,11 @@ public class DevopsCdPipelineController {
     @ApiOperation(value = "执行外部卡点任务")
     @PostMapping(value = "/execute_external_approval_task")
     public ResponseEntity<Void> executeExternalApprovalTask(
+            @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
         devopsCdPipelineService.executeExternalApprovalTask(pipelineRecordId, stageRecordId, jobRecordId);
         return ResponseEntity.noContent().build();
@@ -160,7 +177,7 @@ public class DevopsCdPipelineController {
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
-            @ApiParam(value = "任务Id", required = true)
+            @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId,
             @ApiParam(value = "外部卡点任务回调认证token", required = true)
             @RequestParam(value = "callback_token") String callbackToken,

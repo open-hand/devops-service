@@ -12,10 +12,15 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2020/4/7 10:35
  */
 public class SonarQubeConfigVO {
+    @ApiModelProperty("sonarqube地址")
     private String sonarUrl;
+    @ApiModelProperty("sonarqube用户名")
     private String username;
+    @ApiModelProperty("sonarqube密码")
     private String password;
+    @ApiModelProperty("sonarqube认证类型")
     private String authType;
+    @ApiModelProperty("sonarqube认证token")
     private String token;
 
     @ApiModelProperty("配置类型, 如果是default就不需要其他字段 / default或custom")
