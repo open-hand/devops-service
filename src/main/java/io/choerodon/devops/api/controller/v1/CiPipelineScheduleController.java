@@ -48,6 +48,7 @@ public class CiPipelineScheduleController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "执行计划Id", required = true)
             @PathVariable("id") Long id,
             @RequestBody @Valid CiPipelineScheduleVO ciPipelineScheduleVO) {
         ciPipelineScheduleService.update(id, ciPipelineScheduleVO);
@@ -61,6 +62,7 @@ public class CiPipelineScheduleController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "应用服务Id", required = true)
             @RequestParam("app_service_id") Long appServiceId) {
         return ResponseEntity.ok(ciPipelineScheduleService.listByAppServiceId(projectId, appServiceId));
     }
@@ -72,6 +74,7 @@ public class CiPipelineScheduleController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "执行计划Id", required = true)
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.enableSchedule(projectId, id);
         return ResponseEntity.noContent().build();
@@ -84,6 +87,7 @@ public class CiPipelineScheduleController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "执行计划Id", required = true)
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.disableSchedule(projectId, id);
         return ResponseEntity.noContent().build();
@@ -96,6 +100,7 @@ public class CiPipelineScheduleController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "执行计划Id", required = true)
             @PathVariable("id") Long id) {
         ciPipelineScheduleService.deleteSchedule(projectId, id);
         return ResponseEntity.noContent().build();
