@@ -81,17 +81,9 @@ public class CiCdPipelineVO {
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
     @ApiModelProperty(name = "Docker认证配置")
     private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
-
-    private Long objectVersionNumber;
     @ApiModelProperty(name = "是否拥有流水线编辑权限")
     private Boolean edit;
-    private List<Long> pipelineUserRels;
-    private Date lastUpdateDate;
-    private Date creationDate;
-    private String createUserUrl;
-    private String createUserName;
-    private String createUserRealName;
-    private Long createdBy;
+
     private Boolean execute;
     private String envName;
     //流程耗时
@@ -99,6 +91,14 @@ public class CiCdPipelineVO {
     private Long time;
     @ApiModelProperty(name = "流水线是否启用定时任务")
     private Boolean enableSchedule;
+
+    private Long objectVersionNumber;
+    private Date lastUpdateDate;
+    private Date creationDate;
+    private String createUserUrl;
+    private String createUserName;
+    private String createUserRealName;
+    private Long createdBy;
 
     public Boolean getEnableSchedule() {
         return enableSchedule;
@@ -307,14 +307,6 @@ public class CiCdPipelineVO {
 
     public void setEdit(Boolean edit) {
         this.edit = edit;
-    }
-
-    public List<Long> getPipelineUserRels() {
-        return pipelineUserRels;
-    }
-
-    public void setPipelineUserRels(List<Long> pipelineUserRels) {
-        this.pipelineUserRels = pipelineUserRels;
     }
 
     public Date getLastUpdateDate() {
