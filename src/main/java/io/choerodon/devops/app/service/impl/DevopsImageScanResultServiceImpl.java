@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsImageScanResultService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -74,17 +73,17 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (StringUtils.isEmpty(content)) {
-            handEmptyScanResult(gitlabPipelineId, startDate, endDate);
-            return;
-        }
+
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
         Long appServiceId = appServiceDTO.getId();
-
+        if (StringUtils.isEmpty(content)) {
+            handEmptyScanResult(gitlabPipelineId, startDate, endDate, appServiceId);
+            return;
+        }
         imageScanResultVOS = JsonHelper.unmarshalByJackson(content, new TypeReference<List<ImageScanResultVO>>() {
         });
         if (CollectionUtils.isEmpty(imageScanResultVOS)) {
-            handEmptyScanResult(gitlabPipelineId, startDate, endDate);
+            handEmptyScanResult(gitlabPipelineId, startDate, endDate, appServiceId);
             return;
         }
         //查询数据库是否存在，不存在则插入
@@ -176,14 +175,16 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
         devopsImageScanResultMapper.insertScanResultBatch(devopsImageScanResultDTOS);
     }
 
-    private void handEmptyScanResult(Long gitlabPipelineId, Date startDate, Date endDate) {
+    private void handEmptyScanResult(Long gitlabPipelineId, Date startDate, Date endDate, Long appServiceId) {
         DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
         devopsImageScanResultDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsImageScanResultDTO.setStartDate(startDate);
         devopsImageScanResultDTO.setEndDate(endDate);
+        devopsImageScanResultDTO.setAppServiceId(appServiceId);
 
         DevopsImageScanResultDTO scanResultDTO = new DevopsImageScanResultDTO();
         scanResultDTO.setGitlabPipelineId(gitlabPipelineId);
+        scanResultDTO.setAppServiceId(appServiceId);
         DevopsImageScanResultDTO resultDTO = devopsImageScanResultMapper.selectOne(scanResultDTO);
         if (Objects.isNull(resultDTO)) {
             devopsImageScanResultMapper.insert(devopsImageScanResultDTO);
