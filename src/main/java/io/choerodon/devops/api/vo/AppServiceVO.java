@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -17,6 +18,9 @@ public class AppServiceVO {
     private List<AppServiceVersionVO> allAppServiceVersions;
     private String status;
     private Integer gitlabProjectId;
+    @Encrypt
+    @ApiModelProperty("外部仓库配置id")
+    private Long externalConfigId;
 
     public List<AppServiceVersionVO> getAllAppServiceVersions() {
         return allAppServiceVersions;
@@ -72,5 +76,13 @@ public class AppServiceVO {
 
     public void setGitlabProjectId(Integer gitlabProjectId) {
         this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public Long getExternalConfigId() {
+        return externalConfigId;
+    }
+
+    public void setExternalConfigId(Long externalConfigId) {
+        this.externalConfigId = externalConfigId;
     }
 }
