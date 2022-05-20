@@ -28,14 +28,19 @@ public class DevopsEnvironmentRepVO {
     @ApiModelProperty("环境所属集群id")
     private Long clusterId;
     @Encrypt
+    @ApiModelProperty("环境所属分组id")
     private Long devopsEnvGroupId;
     @ApiModelProperty("是否拥有环境权限")
     private Boolean permission;
+    @ApiModelProperty("是否同步")
     private Boolean isSynchro;
+    @ApiModelProperty("是否失败")
     private Boolean isFailed;
+    @ApiModelProperty("是否跳过环境权限校验")
     private Boolean skipCheckPermission;
     private Long objectVersionNumber;
     @Encrypt
+    @ApiModelProperty("环境关联的saga实例id")
     private Long sagaInstanceId;
 
     public Long getSagaInstanceId() {

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -8,12 +9,18 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsAppServiceInstanceViewVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("实例名称")
     private String name;
     @Encrypt
+    @ApiModelProperty("应用中心应用id")
     private Long appId;
+    @ApiModelProperty("实例编码")
     private String code;
+    @ApiModelProperty("实例pod总数")
     private Long podCount;
+    @ApiModelProperty("实例运行pod名称")
     private Long podRunningCount;
+    @ApiModelProperty("实例状态")
     private String status;
 
 
