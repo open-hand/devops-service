@@ -974,21 +974,6 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
     }
 
-    // todo delete?
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "有主机部署的应用服务")
-    @GetMapping("/app_center/host/app/list")
-    @CustomPageRequest
-    public ResponseEntity<Page<AppServiceRepVO>> queryHostAppServices(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = "hostId", required = false) Long hostId,
-            @RequestParam(value = "params", required = false) String params,
-            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, type, hostId, params, pageRequest));
-    }
-
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "批量迁移平台gitlab代码库")
     @PutMapping("/batch_transfer")
@@ -1018,6 +1003,7 @@ public class AppServiceController {
     public ResponseEntity<HarborRepoConfigDTO> queryRepoConfigById(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务Id")
             @Encrypt @PathVariable(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }

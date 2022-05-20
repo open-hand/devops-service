@@ -78,13 +78,6 @@ public class AppServiceDTO extends AuditDomain {
     private String sshRepositoryUrl;
 
     @Transient
-    private String sonarUrl;
-    @Transient
-    private String gitlabProjectUrl;
-    @Transient
-    private String version;
-
-    @Transient
     @ApiModelProperty("外置仓库配置信息")
     private AppExternalConfigDTO appExternalConfigDTO;
 
@@ -120,36 +113,12 @@ public class AppServiceDTO extends AuditDomain {
         this.errorMessage = errorMessage;
     }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
     public String getImgUrl() {
         return imgUrl;
     }
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
-    }
-
-    public String getGitlabProjectUrl() {
-        return gitlabProjectUrl;
-    }
-
-    public void setGitlabProjectUrl(String gitlabProjectUrl) {
-        this.gitlabProjectUrl = gitlabProjectUrl;
-    }
-
-    public String getSonarUrl() {
-        return sonarUrl;
-    }
-
-    public void setSonarUrl(String sonarUrl) {
-        this.sonarUrl = sonarUrl;
     }
 
     public String getRepoUrl() {
@@ -308,9 +277,6 @@ public class AppServiceDTO extends AuditDomain {
                 ", imgUrl='" + imgUrl + '\'' +
                 ", repoUrl='" + repoUrl + '\'' +
                 ", sshRepositoryUrl='" + sshRepositoryUrl + '\'' +
-                ", sonarUrl='" + sonarUrl + '\'' +
-                ", gitlabProjectUrl='" + gitlabProjectUrl + '\'' +
-                ", version='" + version + '\'' +
                 '}';
     }
 }

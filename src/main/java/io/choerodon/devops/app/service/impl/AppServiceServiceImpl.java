@@ -2442,28 +2442,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         return appServiceMapper.select(appServiceDTO);
     }
 
-    @Override
-    public Page<AppServiceRepVO> queryHostAppServices(Long projectId, String type, Long hostId, String params, PageRequest pageRequest) {
-        //查询有主机部署的应用服务
-        if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(type, "project")) {
-            type = AppSourceType.CURRENT_PROJECT.getValue();
-        }
-        String finalType = type;
-        // todo delete?
-//        Page<AppServiceRepVO> serviceRepVOPage = PageHelper.doPageAndSort(pageRequest, () -> devopsHostAppInstanceRelMapper.selectHostAppByProjectId(projectId, finalType, hostId, params));
-//        if (CollectionUtils.isEmpty(serviceRepVOPage.getContent())) {
-//            return new Page<>();
-//        }
-//        handAppServices(projectId, serviceRepVOPage);
-//        serviceRepVOPage.getContent().forEach(appServiceRepVO -> {
-//            if (org.apache.commons.lang3.StringUtils.equalsIgnoreCase(appServiceRepVO.getSource(), AppSourceType.CURRENT_PROJECT.getValue())) {
-//                appServiceRepVO.setSource("project");
-//            }
-//        });
-        return new Page<>();
-
-    }
-
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
