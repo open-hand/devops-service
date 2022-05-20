@@ -507,13 +507,6 @@
         where da.id = #{appServiceId}
     </update>
 
-    <select id="queryByCodeWithNoProject" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.*
-        FROM devops_app_service da
-        WHERE da.code = #{code}
-        AND da.project_id is null
-    </select>
-
     <select id="listShareApplicationService" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         (SELECT DISTINCT da.id,
         da.`code`,

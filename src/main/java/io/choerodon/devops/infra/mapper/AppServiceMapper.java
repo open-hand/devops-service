@@ -54,8 +54,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
 
     List<AppServiceDTO> listByCode(@Param("code") String code);
 
-    AppServiceDTO queryByCodeWithNoProject(@Param("code") String code);
-
     List<AppServiceDTO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 
     void updateAppToSuccess(@Param("appServiceId") Long appServiceId);

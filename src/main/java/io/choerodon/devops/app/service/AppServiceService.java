@@ -229,16 +229,6 @@ public interface AppServiceService {
     AppServiceBatchCheckVO checkCodeByProjectId(Long projectId, AppServiceBatchCheckVO appServiceBatchCheckVO);
 
     /**
-     * 项目下查询已经启用有版本未发布的服务
-     *
-     * @param projectId 项目id
-     * @param pageable  分页参数
-     * @param params    查询参数
-     * @return baseList of ApplicationRepDTO
-     */
-    Page<AppServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageable, String params);
-
-    /**
      * valid the repository url and access token
      *
      * @param gitPlatformType git platform type
@@ -384,14 +374,9 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByCode(String code, Long projectId);
 
-    AppServiceDTO baseQueryByCodeWithNullProject(String code);
-
     List<AppServiceDTO> baseListByEnvId(Long projectId, Long envId, String status);
 
     Page<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageable);
-
-    Page<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
-                                                            PageRequest pageable, String params);
 
     AppServiceDTO baseQueryByToken(String token);
 

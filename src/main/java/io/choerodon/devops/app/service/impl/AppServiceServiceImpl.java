@@ -1317,12 +1317,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceReqVO> pageByActiveAndPubAndVersion(Long projectId, PageRequest pageable,
-                                                              String params) {
-        return ConvertUtils.convertPage(basePageByActiveAndPubAndHasVersion(projectId, true, pageable, params), AppServiceReqVO.class);
-    }
-
-    @Override
     public Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String
             accessToken) {
         if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
@@ -2665,11 +2659,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public AppServiceDTO baseQueryByCodeWithNullProject(String code) {
-        return appServiceMapper.queryByCodeWithNoProject(code);
-    }
-
-    @Override
     public List<AppServiceDTO> baseListByEnvId(Long projectId, Long envId, String status) {
         return appServiceMapper.listByEnvId(projectId, envId, null, status);
     }
@@ -2678,23 +2667,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceDTO> basePageByEnvId(Long projectId, Long envId, Long appServiceId, PageRequest pageable) {
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listByEnvId(projectId, envId, appServiceId, NODELETED));
 
-    }
-
-    @Override
-    public Page<AppServiceDTO> basePageByActiveAndPubAndHasVersion(Long projectId, Boolean isActive,
-                                                                   PageRequest pageable, String params) {
-        Map<String, Object> searchParam = null;
-        List<String> paramList = null;
-        if (!StringUtils.isEmpty(params)) {
-            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
-            searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
-            paramList = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAMS));
-        }
-        final Map<String, Object> finalSearchParam = searchParam;
-        final List<String> finalParam = paramList;
-
-        return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper
-                .basePageByActiveAndPubAndHasVersion(projectId, isActive, finalSearchParam, finalParam));
     }
 
     @Override
