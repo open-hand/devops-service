@@ -59,7 +59,7 @@ public class DevopsEnvironmentDTO extends AuditDomain {
     private String description;
     @ApiModelProperty("是否启用")
     private Boolean isActive;
-    @ApiModelProperty("环境对应的gitlab group id")
+    @ApiModelProperty("环境所属的分组 id")
     private Long devopsEnvGroupId;
     @ApiModelProperty("saga 同步的commit sha")
     private Long sagaSyncCommit;

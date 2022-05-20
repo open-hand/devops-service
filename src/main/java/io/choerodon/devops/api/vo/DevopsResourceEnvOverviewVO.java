@@ -18,7 +18,7 @@ public class DevopsResourceEnvOverviewVO {
     @ApiModelProperty("环境名称")
     private String name;
 
-    @ApiModelProperty
+    @ApiModelProperty("环境编码")
     private String code;
 
     @ApiModelProperty("环境是否连接")
