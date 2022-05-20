@@ -12,7 +12,6 @@
         da.is_synchro,
         da.gitlab_project_id,
         da.external_config_id,
-        da.uuid,
         da.is_failed,
         da.creation_date,
         da.created_by,
@@ -65,7 +64,6 @@
         da.is_synchro,
         da.gitlab_project_id,
         da.external_config_id,
-        da.uuid,
         da.is_failed,
         da.creation_date,
         da.created_by,
@@ -411,7 +409,6 @@
         da.gitlab_project_id,
         da.harbor_config_id,
         da.chart_config_id,
-        da.uuid,
         da.token,
         da.object_version_number
         FROM devops_app_service da
@@ -704,9 +701,6 @@
             </if>
             <if test="appService.chartConfigId != null">
                 chart_config_id = #{appService.chartConfigId,jdbcType=BIGINT},
-            </if>
-            <if test="appService.uuid != null">
-                uuid = #{appService.uuid,jdbcType=VARCHAR},
             </if>
             <if test="appService.mktAppId != null">
                 mkt_app_id = #{appService.mktAppId,jdbcType=BIGINT},
