@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -9,17 +10,26 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvironmentRepVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("环境名称")
     private String name;
+    @ApiModelProperty("环境描述")
     private String description;
+    @ApiModelProperty("环境编码")
     private String code;
+    @ApiModelProperty("环境是否启用")
     private Boolean isActive;
+    @ApiModelProperty("环境是否连接")
     private Boolean isConnected;
+    @ApiModelProperty("环境gitops库 project id")
     private Long gitlabEnvProjectId;
+    @ApiModelProperty("环境所属集群名称")
     private String clusterName;
     @Encrypt
+    @ApiModelProperty("环境所属集群id")
     private Long clusterId;
     @Encrypt
     private Long devopsEnvGroupId;
+    @ApiModelProperty("是否拥有环境权限")
     private Boolean permission;
     private Boolean isSynchro;
     private Boolean isFailed;

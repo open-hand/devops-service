@@ -969,7 +969,9 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/app_center/env_app")
     public ResponseEntity<Boolean> checkDeleteEnvApp(
+            @ApiParam(value = "应用服务ID", required = true)
             @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
+            @ApiParam(value = "环境ID", required = true)
             @Encrypt @RequestParam(value = "envId") Long envId) {
         return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
     }

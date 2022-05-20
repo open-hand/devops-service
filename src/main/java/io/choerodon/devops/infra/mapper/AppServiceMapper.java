@@ -37,11 +37,6 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
                                     @Param("appServiceId") Long appServiceId,
                                     @Param("status") String status);
 
-    List<AppServiceDTO> basePageByActiveAndPubAndHasVersion(@Param("projectId") Long projectId,
-                                                            @Param("active") Boolean active,
-                                                            @Param("searchParam") Map<String, Object> searchParam,
-                                                            @Param("params") List<String> params);
-
     AppServiceDTO queryByToken(@Param("token") String token);
 
     List<AppServiceDTO> listByActive(@Param("projectId") Long projectId, @Param("param") String param);

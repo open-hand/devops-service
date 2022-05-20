@@ -401,20 +401,6 @@
         </if>
     </sql>
 
-    <select id="basePageByActiveAndPubAndHasVersion" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.`id`,
-        da.`code`,
-        da.`name`
-        FROM devops_app_service da
-        WHERE
-        da.project_id = #{projectId}
-        AND da.is_active = #{active}
-        AND ((select count(1) from devops_app_service_share_rule dam where da.id = dam.app_service_id) = 0)
-        AND ((select count(1) from devops_app_service_version dav where da.id = dav.app_service_id) > 0)
-        AND da.type = 'normal'
-        <include refid="sqlparam"/>
-    </select>
-
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         SELECT da.id,
         da.project_id,
