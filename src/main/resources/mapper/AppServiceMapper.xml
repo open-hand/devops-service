@@ -551,7 +551,6 @@
         das.`name`,
         das.CODE,
         das.type,
-        das.mkt_app_id
         FROM devops_app_service das
         LEFT JOIN devops_app_service_share_rule b ON das.id = b.app_service_id
         <where>
@@ -573,39 +572,6 @@
             </if>
         </where>
     </select>
-
-    <!--<select id="queryMarketDownloadApps" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">-->
-    <!--SELECT DISTINCT-->
-    <!--das.id,-->
-    <!--das.project_id,-->
-    <!--das.`name`,-->
-    <!--das.CODE,-->
-    <!--das.type,-->
-    <!--das.mkt_app_id-->
-    <!--FROM-->
-    <!--devops_app_service das-->
-    <!--JOIN devops_app_service_version dasv ON dasv.app_service_id = das.id-->
-    <!--<choose>-->
-    <!--<when test="deployOnly!=null and deployOnly==true">-->
-    <!--AND dasv.`repository` IS NOT NULL-->
-    <!--</when>-->
-    <!--<otherwise>-->
-    <!--AND dasv.`commit` IS NOT NULL-->
-    <!--</otherwise>-->
-    <!--</choose>-->
-    <!--WHERE-->
-    <!--das.project_id IS NULL-->
-    <!--<if test="searchProjectId != null and searchProjectId !=''">-->
-    <!--AND das.mkt_app_id = #{searchProjectId}-->
-    <!--</if>-->
-    <!--<if test="type != null and type != ''">-->
-    <!--AND das.type = #{type}-->
-    <!--</if>-->
-    <!--<if test="param != null and param != ''">-->
-    <!--AND  (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')-->
-    <!--OR  das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))-->
-    <!--</if>-->
-    <!--</select>-->
 
     <select id="listAppServiceByIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
         select *
@@ -701,9 +667,6 @@
             </if>
             <if test="appService.chartConfigId != null">
                 chart_config_id = #{appService.chartConfigId,jdbcType=BIGINT},
-            </if>
-            <if test="appService.mktAppId != null">
-                mkt_app_id = #{appService.mktAppId,jdbcType=BIGINT},
             </if>
             <if test="appService.token != null">
                 token = #{appService.token,jdbcType=CHAR},
