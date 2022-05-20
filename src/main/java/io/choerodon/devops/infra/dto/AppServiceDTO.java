@@ -46,8 +46,6 @@ public class AppServiceDTO extends AuditDomain {
     private Boolean isActive;
     @ApiModelProperty("是否同步")
     private Boolean isSynchro;
-    @ApiModelProperty("应用服务唯一tuuid")
-    private String uuid;
     @ApiModelProperty("应用服务唯一token")
     private String token;
 
@@ -211,14 +209,6 @@ public class AppServiceDTO extends AuditDomain {
         isActive = active;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     public Boolean getSynchro() {
         return isSynchro;
     }
@@ -311,7 +301,6 @@ public class AppServiceDTO extends AuditDomain {
                 ", chartConfigId=" + chartConfigId +
                 ", isActive=" + isActive +
                 ", isSynchro=" + isSynchro +
-                ", uuid='" + uuid + '\'' +
                 ", token='" + token + '\'' +
                 ", hookId=" + hookId +
                 ", isFailed=" + isFailed +
