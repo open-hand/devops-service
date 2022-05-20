@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author lihao
@@ -8,7 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiVariableVO {
 
+    @ApiModelProperty("key")
     private String key;
+    @ApiModelProperty("value")
     private String value;
 
     public CiVariableVO() {

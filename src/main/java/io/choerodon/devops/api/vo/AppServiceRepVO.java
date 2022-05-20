@@ -47,9 +47,6 @@ public class AppServiceRepVO {
     @ApiModelProperty("外部仓库配置id")
     private Long externalConfigId;
 
-    private String publishLevel;
-    private String contributor;
-
     @ApiModelProperty("应用服务描述")
     private String description;
 
@@ -287,22 +284,6 @@ public class AppServiceRepVO {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public String getPublishLevel() {
-        return publishLevel;
-    }
-
-    public void setPublishLevel(String publishLevel) {
-        this.publishLevel = publishLevel;
-    }
-
-    public String getContributor() {
-        return contributor;
-    }
-
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
     }
 
     public String getDescription() {

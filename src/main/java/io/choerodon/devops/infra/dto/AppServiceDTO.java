@@ -30,26 +30,40 @@ public class AppServiceDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @ApiModelProperty("所属项目id")
     private Long projectId;
+    @ApiModelProperty("应用服务名称")
     private String name;
+    @ApiModelProperty("应用服务编码")
     private String code;
+    @ApiModelProperty("关联的gitlab Project id")
     private Integer gitlabProjectId;
+    @ApiModelProperty("关联的docker仓库 id")
     private Long harborConfigId;
+    @ApiModelProperty("关联的chart仓库 id")
     private Long chartConfigId;
+    @ApiModelProperty("是否启用")
     private Boolean isActive;
+    @ApiModelProperty("是否同步")
     private Boolean isSynchro;
+    @ApiModelProperty("应用服务唯一tuuid")
     private String uuid;
+    @ApiModelProperty("应用服务唯一token")
     private String token;
 
     @ApiModelProperty("应用服务附加的pom信息：groupId（敏捷使用）")
     private String groupId;
     @ApiModelProperty("应用服务附加的pom信息：artifactId（敏捷使用）")
     private String artifactId;
-
+    @ApiModelProperty("应用服务gitlab webhook id")
     private Long hookId;
+    @ApiModelProperty("是否创建失败")
     private Boolean isFailed;
+    @ApiModelProperty("应用服务类型，普通、测试")
     private String type;
+    @ApiModelProperty("应用服务图标地址")
     private String imgUrl;
+    @ApiModelProperty("应用服务创建错误信息")
     private String errorMessage;
 
     @ApiModelProperty("外部应用服务gitlab地址")
@@ -58,22 +72,8 @@ public class AppServiceDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("外部仓库配置id")
     private Long externalConfigId;
-    // TODO delete the field
-    /**
-     * @deprecated
-     */
-    @Deprecated
-    private Long mktAppId;
-
-    @Transient
-    private String publishLevel;
-    @Transient
-    private String contributor;
-    @Transient
-    private String description;
     @Transient
     private String repoUrl;
-
 
     @Transient
     @ApiModelProperty("应用服务对应的gitlab的仓库的ssh协议克隆地址")
@@ -86,12 +86,8 @@ public class AppServiceDTO extends AuditDomain {
     @Transient
     private String version;
 
-    /**
-     * 是否是空仓库(是否没有分支)
-     */
     @Transient
-    private Boolean emptyRepository;
-    @Transient
+    @ApiModelProperty("外置仓库配置信息")
     private AppExternalConfigDTO appExternalConfigDTO;
 
     public AppExternalConfigDTO getAppExternalConfigDTO() {
@@ -255,30 +251,6 @@ public class AppServiceDTO extends AuditDomain {
         this.artifactId = artifactId;
     }
 
-    public String getPublishLevel() {
-        return publishLevel;
-    }
-
-    public void setPublishLevel(String publishLevel) {
-        this.publishLevel = publishLevel;
-    }
-
-    public String getContributor() {
-        return contributor;
-    }
-
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Long getHookId() {
         return hookId;
     }
@@ -319,22 +291,6 @@ public class AppServiceDTO extends AuditDomain {
         this.chartConfigId = chartConfigId;
     }
 
-    public Long getMktAppId() {
-        return mktAppId;
-    }
-
-    public void setMktAppId(Long mktAppId) {
-        this.mktAppId = mktAppId;
-    }
-
-    public Boolean getEmptyRepository() {
-        return emptyRepository;
-    }
-
-    public void setEmptyRepository(Boolean emptyRepository) {
-        this.emptyRepository = emptyRepository;
-    }
-
     public String getSshRepositoryUrl() {
         return sshRepositoryUrl;
     }
@@ -361,16 +317,11 @@ public class AppServiceDTO extends AuditDomain {
                 ", isFailed=" + isFailed +
                 ", type='" + type + '\'' +
                 ", imgUrl='" + imgUrl + '\'' +
-                ", mktAppId=" + mktAppId +
-                ", publishLevel='" + publishLevel + '\'' +
-                ", contributor='" + contributor + '\'' +
-                ", description='" + description + '\'' +
                 ", repoUrl='" + repoUrl + '\'' +
                 ", sshRepositoryUrl='" + sshRepositoryUrl + '\'' +
                 ", sonarUrl='" + sonarUrl + '\'' +
                 ", gitlabProjectUrl='" + gitlabProjectUrl + '\'' +
                 ", version='" + version + '\'' +
-                ", emptyRepository=" + emptyRepository +
                 '}';
     }
 }
