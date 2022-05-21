@@ -107,7 +107,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
             imageRepoInfoVO.setDockerPassword(dockerPassword);
             imageRepoInfoVO.setRepoType(repoType);
             imageRepoInfoVO.setHarborRepoId(String.valueOf(repoId));
-        } catch (CommonException e) {
+        } catch (Exception e) {
             throw new DevopsCiInvalidException(e);
         }
 
@@ -134,7 +134,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
             HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
             dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
             groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-        } catch (CommonException e) {
+        } catch (Exception e) {
             throw new DevopsCiInvalidException(e);
         }
 
