@@ -499,13 +499,11 @@ function rewrite_image_info_for_chart() {
   echo "Query chart repo info status code is :"  $http_status_code
   if [ "$http_status_code" != "200" ];
   then
-    cat rewrite_image_info.json
     echo "Query chart repo info failed,skip rewrite image info"
   else
     is_failed=$(jq -r .faild rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
-      cat rewrite_image_info.json
       echo "Query chart repo info failed,skip rewrite image info"
     else
       export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
