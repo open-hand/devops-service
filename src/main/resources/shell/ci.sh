@@ -476,14 +476,20 @@ function rewrite_image_info() {
     cat rewrite_image_info.json
     echo "Query repo info failed,skip rewrite image info"
   else
-    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-    export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
-    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
-    export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+    is_failed=$(jq -r .faild rewrite_image_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      cat rewrite_image_info.json
+      echo "Query chart repo info failed,skip rewrite image info"
+    else
+      export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+      export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+      export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
+      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+      export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+      export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+    fi
   fi
-
 
 }
 
@@ -496,10 +502,17 @@ function rewrite_image_info_for_chart() {
     cat rewrite_image_info.json
     echo "Query chart repo info failed,skip rewrite image info"
   else
-    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    is_failed=$(jq -r .faild rewrite_image_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      cat rewrite_image_info.json
+      echo "Query chart repo info failed,skip rewrite image info"
+    else
+      export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+      export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+      export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    fi
   fi
 
 }
