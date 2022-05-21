@@ -76,54 +76,67 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
 
     @Override
     public ImageRepoInfoVO queryRewriteRepoInfoScript(Long projectId, String token, String repoType, Long repoId) {
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        if (appServiceDTO == null) {
-            throw new CommonException("error.app.svc.not.found");
-        }
-        CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
-        String dockerRegistry;
-        String groupName;
-        String dockerUsername;
-        String dockerPassword;
-        if (DevopsRegistryRepoType.CUSTOM_REPO.getType().equals(repoType)) {
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-            dockerUsername = harborRepoDTO.getHarborRepoConfig().getLoginName();
-            dockerPassword = harborRepoDTO.getHarborRepoConfig().getPassword();
+        ImageRepoInfoVO imageRepoInfoVO = null;
+        try {
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+            if (appServiceDTO == null) {
+                throw new CommonException("error.app.svc.not.found");
+            }
+            CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
+            String dockerRegistry;
+            String groupName;
+            String dockerUsername;
+            String dockerPassword;
+            if (DevopsRegistryRepoType.CUSTOM_REPO.getType().equals(repoType)) {
+                dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+                groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+                dockerUsername = harborRepoDTO.getHarborRepoConfig().getLoginName();
+                dockerPassword = harborRepoDTO.getHarborRepoConfig().getPassword();
 
-        } else {
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-            dockerUsername = harborRepoDTO.getPushRobot().getName();
-            dockerPassword = harborRepoDTO.getPushRobot().getToken();
+            } else {
+                dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+                groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+                dockerUsername = harborRepoDTO.getPushRobot().getName();
+                dockerPassword = harborRepoDTO.getPushRobot().getToken();
+            }
+            imageRepoInfoVO = new ImageRepoInfoVO();
+            imageRepoInfoVO.setDockerRegistry(trimPrefix(dockerRegistry));
+            imageRepoInfoVO.setGroupName(groupName);
+            imageRepoInfoVO.setDockerUsername(dockerUsername);
+            imageRepoInfoVO.setDockerPassword(dockerPassword);
+            imageRepoInfoVO.setRepoType(repoType);
+            imageRepoInfoVO.setHarborRepoId(String.valueOf(repoId));
+        } catch (CommonException e) {
+            throw new DevopsCiInvalidException(e);
         }
-        ImageRepoInfoVO imageRepoInfoVO = new ImageRepoInfoVO();
-        imageRepoInfoVO.setDockerRegistry(trimPrefix(dockerRegistry));
-        imageRepoInfoVO.setGroupName(groupName);
-        imageRepoInfoVO.setDockerUsername(dockerUsername);
-        imageRepoInfoVO.setDockerPassword(dockerPassword);
-        imageRepoInfoVO.setRepoType(repoType);
-        imageRepoInfoVO.setHarborRepoId(String.valueOf(repoId));
 
         return imageRepoInfoVO;
     }
 
     @Override
     public ImageRepoInfoVO queryImageRepoInfo(String token, Long gitlabPipelineId) {
-        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        if (appServiceDTO == null) {
-            throw new CommonException("error.app.svc.not.found");
+        String repoType = null;
+        Long repoId = null;
+        String dockerRegistry = null;
+        String groupName = null;
+        try {
+            AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+            if (appServiceDTO == null) {
+                throw new CommonException("error.app.svc.not.found");
+            }
+            Long projectId = appServiceDTO.getProjectId();
+
+            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageMapper.queryPipelineLatestImage(appServiceDTO.getId(), gitlabPipelineId);
+            repoType = ciPipelineImageDTO.getRepoType();
+            repoId = ciPipelineImageDTO.getHarborRepoId();
+
+            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
+            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
+            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+        } catch (CommonException e) {
+            throw new DevopsCiInvalidException(e);
         }
-        Long projectId = appServiceDTO.getProjectId();
-
-        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageMapper.queryPipelineLatestImage(appServiceDTO.getId(), gitlabPipelineId);
-        String repoType = ciPipelineImageDTO.getRepoType();
-        Long repoId = ciPipelineImageDTO.getHarborRepoId();
-
-        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
-        String dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-        String groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
 
         return new ImageRepoInfoVO(String.valueOf(repoId), repoType, trimPrefix(dockerRegistry), groupName);
     }
