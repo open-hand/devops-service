@@ -234,27 +234,27 @@ public class DevopsDeployAppCenterController {
     }
 
 
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "开启chart应用监控")
-//    @PutMapping("/{app_id}/metric/enable")
-//    public ResponseEntity<Page<DevopsDeployAppCenterVO>> enableMetric(
-//            @ApiParam(value = "项目id")
-//            @PathVariable("project_id") Long projectId,
-//            @ApiParam(value = "应用id")
-//            @Encrypt @RequestParam(value = "app_id") Long appId) {
-//        devopsDeployAppCenterService.enableMetric(projectId, appId);
-//        return ResponseEntity.noContent().build();
-//    }
-//
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "关闭chart应用监控")
-//    @PutMapping("/{app_id}/metric/disable")
-//    public ResponseEntity<Page<DevopsDeployAppCenterVO>> disableMetric(
-//            @ApiParam(value = "项目id")
-//            @PathVariable("project_id") Long projectId,
-//            @ApiParam(value = "应用id")
-//            @Encrypt @RequestParam(value = "app_id") Long appId) {
-//        devopsDeployAppCenterService.disableMetric(projectId, appId);
-//        return ResponseEntity.noContent().build();
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "开启chart应用监控")
+    @PutMapping("/{app_id}/metric/enable")
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> enableMetric(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @Encrypt @RequestParam(value = "app_id") Long appId) {
+        devopsDeployAppCenterService.enableMetric(projectId, appId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "关闭chart应用监控")
+    @PutMapping("/{app_id}/metric/disable")
+    public ResponseEntity<Page<DevopsDeployAppCenterVO>> disableMetric(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @Encrypt @RequestParam(value = "app_id") Long appId) {
+        devopsDeployAppCenterService.disableMetric(projectId, appId);
+        return ResponseEntity.noContent().build();
+    }
 }

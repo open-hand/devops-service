@@ -46,15 +46,15 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
 
-//    private Boolean metricDeployStatus;
-//
-//    public Boolean getMetricDeployStatus() {
-//        return metricDeployStatus;
-//    }
-//
-//    public void setMetricDeployStatus(Boolean metricDeployStatus) {
-//        this.metricDeployStatus = metricDeployStatus;
-//    }
+    private Boolean metricDeployStatus;
+
+    public Boolean getMetricDeployStatus() {
+        return metricDeployStatus;
+    }
+
+    public void setMetricDeployStatus(Boolean metricDeployStatus) {
+        this.metricDeployStatus = metricDeployStatus;
+    }
 
     public Long getId() {
         return id;
