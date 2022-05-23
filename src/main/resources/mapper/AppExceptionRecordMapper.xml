@@ -3,7 +3,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.AppExceptionRecordMapper">
 
 
-    <select id="queryLatestExceptionRecord">
+    <select id="queryLatestExceptionRecord" resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">
         select *
         from devops_app_exception_record daer
         where daer.app_id = #{appId}
