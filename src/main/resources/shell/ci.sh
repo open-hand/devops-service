@@ -158,6 +158,7 @@ function kaniko_build() {
 }
 
 function skopeo_copy() {
+  echo "Pushing image to docker repo, image tag is ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
   skopeo copy --dest-tls-verify=false --dest-creds=${DOCKER_USERNAME}:${DOCKER_PASSWORD} docker-archive:${PWD}/${PROJECT_NAME}.tar docker://${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
 }
 
@@ -184,7 +185,7 @@ function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
 
-  rewrite_image_info_for_chart ${CI_PIPELINE_ID}
+  rewrite_image_info_for_chart
   #判断chart主目录名是否与应用编码保持一致
   CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
   if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
@@ -224,13 +225,16 @@ function chart_build() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo $response_upload_to_devops
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
+
 }
 #################################### 下载settings文件 ####################################
 # $1 fileName   下载settings文件后保存为的文件名称
@@ -472,30 +476,41 @@ function rewrite_image_info() {
     cat rewrite_image_info.json
     echo "Query repo info failed,skip rewrite image info"
   else
-    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-    export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
-    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
-    export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+    is_failed=$(jq -r .faild rewrite_image_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      cat rewrite_image_info.json
+      echo "Query chart repo info failed,skip rewrite image info"
+    else
+      export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+      export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+      export DOCKER_USERNAME=$(jq -r .dockerUsername rewrite_image_info.json)
+      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+      export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+      export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+    fi
   fi
-
 
 }
 
 function rewrite_image_info_for_chart() {
   echo "Query chart image repo info"
-  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/image_repo_info?token=${Token}&gitlab_pipeline_id=$1")
+  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/image_repo_info?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}")
   echo "Query chart repo info status code is :"  $http_status_code
   if [ "$http_status_code" != "200" ];
   then
-    cat rewrite_image_info.json
     echo "Query chart repo info failed,skip rewrite image info"
   else
-    export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
-    export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
-    export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
-    export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    is_failed=$(jq -r .faild rewrite_image_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Query chart repo info failed,skip rewrite image info"
+    else
+      export DOCKER_REGISTRY=$(jq -r .dockerRegistry rewrite_image_info.json)
+      export GROUP_NAME=$(jq -r .groupName rewrite_image_info.json)
+      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
+      export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
+    fi
   fi
 
 }

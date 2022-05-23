@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -10,8 +11,11 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsAppServiceViewVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("应用服务名称")
     private String name;
+    @ApiModelProperty("应用服务类型")
     private String type;
+    @ApiModelProperty("应用服务下的实例")
     private List<DevopsAppServiceInstanceViewVO> instances;
 
     public Long getId() {

@@ -4,9 +4,9 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -19,59 +19,48 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiCdPipelineRecordVO extends BaseDomain {
 
+    @ApiModelProperty("流水线记录id")
     private Long devopsPipelineRecordRelId;
     @Encrypt
-    /**
-     * ci 执行记录的id
-     */
+    @ApiModelProperty("ci 执行记录的id")
     private Long ciRecordId;
     @Encrypt
-    /**
-     * cd 执行记录的id
-     */
+    @ApiModelProperty("cd 执行记录的id")
     private Long cdRecordId;
-    /**
-     * gitlab的流水线id
-     */
+    @ApiModelProperty("gitlab的流水线id")
     private Long gitlabPipelineId;
-
-    /**
-     * cd流水线记录的状态
-     */
+    @ApiModelProperty("cd流水线记录的状态")
     private String cdStatus;
-    /**
-     * ci的流水线记录状态
-     */
+    @ApiModelProperty("ci的流水线记录状态")
     private String ciStatus;
-    /**
-     * cicd 流水线的状态
-     */
+    @ApiModelProperty("cicd 流水线的状态")
     private String status;
+    @ApiModelProperty("流水线触发分支：master、release")
     private String gitlabTriggerRef;
+    @ApiModelProperty("流水线提交信息")
     private CustomCommitVO commit;
-
+    @ApiModelProperty("关联流水线信息")
     private CiCdPipelineVO ciCdPipelineVO;
-
-    /**
-     * ci和cd阶段记录的集合
-     */
+    @ApiModelProperty("ci和cd阶段记录的集合")
     private List<StageRecordVO> stageRecordVOS;
-    /**
-     * 待审核状态是需要一些数据
-     */
+    @ApiModelProperty("待审核状态时需要的一些数据")
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+    @ApiModelProperty("流水线名称")
     private String pipelineName;
+    @ApiModelProperty("关联gitlab project id")
     private Long gitlabProjectId;
+    @ApiModelProperty("界面展示id")
     private String viewId;
-
+    @ApiModelProperty("关联应用服务名称")
     private String appServiceName;
-
+    @ApiModelProperty("创建者id")
     private Long createdBy;
-
+    @ApiModelProperty("创建者信息")
     private IamUserDTO iamUserDTO;
-
+    @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     @Encrypt
+    @ApiModelProperty("关联流水线id")
     private Long pipelineId;
 
     public Long getPipelineId() {

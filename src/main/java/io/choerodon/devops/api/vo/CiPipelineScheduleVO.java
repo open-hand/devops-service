@@ -42,10 +42,14 @@ public class CiPipelineScheduleVO extends AuditDomain {
     private Long period;
     @ApiModelProperty(value = "执行时间：单次触发时需要")
     private String executeTime;
-
+    @Valid
+    @ApiModelProperty(value = "变量列表")
+    List<CiScheduleVariableVO> variableVOList;
+    @ApiModelProperty(value = "更新者信息")
     private IamUserDTO userDTO;
-
+    @ApiModelProperty(value = "下次执行时间")
     private Date nextRunAt;
+    @ApiModelProperty(value = "是否启用")
     private Boolean active;
 
     public Boolean getActive() {
@@ -55,10 +59,6 @@ public class CiPipelineScheduleVO extends AuditDomain {
     public void setActive(Boolean active) {
         this.active = active;
     }
-
-    @Valid
-    List<CiScheduleVariableVO> variableVOList;
-
 
     public Date getNextRunAt() {
         return nextRunAt;

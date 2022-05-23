@@ -969,24 +969,11 @@ public class AppServiceController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/app_center/env_app")
     public ResponseEntity<Boolean> checkDeleteEnvApp(
+            @ApiParam(value = "应用服务ID", required = true)
             @Encrypt @RequestParam(value = "appServiceId") Long appServiceId,
+            @ApiParam(value = "环境ID", required = true)
             @Encrypt @RequestParam(value = "envId") Long envId) {
         return ResponseEntity.ok(applicationServiceService.checkDeleteEnvApp(appServiceId, envId));
-    }
-
-    // todo delete?
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "有主机部署的应用服务")
-    @GetMapping("/app_center/host/app/list")
-    @CustomPageRequest
-    public ResponseEntity<Page<AppServiceRepVO>> queryHostAppServices(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = "hostId", required = false) Long hostId,
-            @RequestParam(value = "params", required = false) String params,
-            @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(applicationServiceService.queryHostAppServices(projectId, type, hostId, params, pageRequest));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -1018,7 +1005,8 @@ public class AppServiceController {
     public ResponseEntity<HarborRepoConfigDTO> queryRepoConfigById(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId,
-            @PathVariable(value = "app_service_id") Long appServiceId) {
+            @ApiParam(value = "应用服务Id")
+            @Encrypt @PathVariable(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }
 

@@ -34,36 +34,58 @@ public class DevopsEnvironmentDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Encrypt
     private Long id;
+    @ApiModelProperty("环境所属项目id")
     private Long projectId;
+    @ApiModelProperty("环境所属集群id")
     private Long clusterId;
+    @ApiModelProperty("环境对应的gitlab project id")
     private Long gitlabEnvProjectId;
+    @ApiModelProperty("gitops webhook id")
     private Long hookId;
+    @ApiModelProperty("环境私钥")
     private String envIdRsa;
+    @ApiModelProperty("环境公钥")
     private String envIdRsaPub;
+    @ApiModelProperty("环境名称")
     private String name;
+    @ApiModelProperty("环境编码")
     private String code;
+    @ApiModelProperty("环境token")
     private String token;
 
     @ApiModelProperty("环境的类型 user/system")
     private String type;
-
+    @ApiModelProperty("环境描述")
     private String description;
+    @ApiModelProperty("是否启用")
     private Boolean isActive;
+    @ApiModelProperty("环境所属的分组 id")
     private Long devopsEnvGroupId;
+    @ApiModelProperty("saga 同步的commit sha")
     private Long sagaSyncCommit;
+    @ApiModelProperty("devops 解析的commit sha")
     private Long devopsSyncCommit;
+    @ApiModelProperty("agent 解析的commit sha")
     private Long agentSyncCommit;
+    @ApiModelProperty("环境是否同步")
     private Boolean isSynchro;
+    @ApiModelProperty("环境是否失败")
     private Boolean isFailed;
+    @ApiModelProperty("环境是否跳过权限校验")
     private Boolean isSkipCheckPermission;
+    @ApiModelProperty("是否开启流水线部署")
     private Boolean isAutoDeploy;
     @Transient
+    @ApiModelProperty("环境是否连接")
     private Boolean connected;
     @Transient
+    @ApiModelProperty("是否拥有环境权限")
     private Boolean permission;
     @Transient
+    @ApiModelProperty("环境所属集群名称")
     private String clusterName;
     @Transient
+    @ApiModelProperty("环境所属集群编码")
     private String clusterCode;
 
     @ApiModelProperty("环境下实例的code")

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -10,8 +11,11 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsResourceBasicInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("资源名称")
     private String name;
+    @ApiModelProperty("资源状态")
     private String status;
+    @ApiModelProperty("资源关联的实例id")
     private Long instanceId;
 
     public Long getInstanceId() {

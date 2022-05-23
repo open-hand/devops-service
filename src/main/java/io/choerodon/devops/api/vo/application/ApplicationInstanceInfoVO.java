@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.application;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -12,10 +13,15 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class ApplicationInstanceInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("实例编码")
     private String code;
+    @ApiModelProperty("实例当前部署的版本")
     private String version;
+    @ApiModelProperty("实例的pod总数")
     private Integer podCount;
+    @ApiModelProperty("实例运行中的pod总数")
     private Integer podRunningCount;
+    @ApiModelProperty("实例的状态")
     private String status;
 
     public Long getId() {

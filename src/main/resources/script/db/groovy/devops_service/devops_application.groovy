@@ -193,4 +193,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             UPDATE devops_app_service das SET das.external_gitlab_url ='none' WHERE das.external_gitlab_url is null
         """)
     }
+    changeSet(author: 'wanghao', id: '2022-05-20-drop-column-1') {
+        dropColumn(columnName: "mkt_app_id", tableName: "devops_app_service")
+    }
+    changeSet(author: 'wanghao', id: '2022-05-20-drop-column-2') {
+        dropColumn(columnName: "is_skip_check_permission", tableName: "devops_app_service")
+    }
+    changeSet(author: 'wanghao', id: '2022-05-20-drop-column-3') {
+        dropColumn(columnName: "uuid", tableName: "devops_app_service")
+    }
 }

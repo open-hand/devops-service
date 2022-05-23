@@ -107,7 +107,7 @@ public class CiCdPipelineController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下流水线")
     @PostMapping("/query")
     @CustomPageRequest
@@ -120,7 +120,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "停用流水线")
     @PutMapping("/{pipeline_id}/disable")
     public ResponseEntity<CiCdPipelineDTO> disablePipeline(
@@ -131,7 +131,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, pipelineId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用流水线")
     @PutMapping("/{pipeline_id}/enable")
     public ResponseEntity<CiCdPipelineDTO> enablePipeline(
@@ -142,7 +142,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, pipelineId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除流水线")
     @DeleteMapping("/{pipeline_id}")
     public ResponseEntity<Void> deletePipeline(
@@ -154,7 +154,7 @@ public class CiCdPipelineController {
         return ResponseEntity.noContent().build();
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "全新执行GitLab流水线")
     @PostMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(
@@ -173,7 +173,7 @@ public class CiCdPipelineController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "测试主机连接")
     @PostMapping(value = "/test_connection")
     public ResponseEntity<Boolean> testConnection(
@@ -183,7 +183,7 @@ public class CiCdPipelineController {
         return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表，查询项目下流水线名称")
     @GetMapping(value = "/devops/pipeline")
     public ResponseEntity<List<CiCdPipelineDTO>> devopsPipline(
@@ -192,9 +192,7 @@ public class CiCdPipelineController {
         return Results.success(devopsCiPipelineService.devopsPipline(projectId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表 获取流水触发次数报表")
     @GetMapping(value = "/trigger")
     public ResponseEntity<PipelineFrequencyVO> listPipelineTrigger(
@@ -236,9 +234,7 @@ public class CiCdPipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.trigger.page.get"));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表 流水线执行时长图（根据流水线列表，时间）")
     @PostMapping(value = "/execute/time")
     public ResponseEntity<ExecuteTimeVO> pipelineExecuteTime(
@@ -323,8 +319,13 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
 
+    /**
+     * 修复数据使用，查询所有apiTest类型的数据
+     *
+     * @param projectId
+     * @return
+     */
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查看cd流水线下所有api测试任务日志的解析")
     @GetMapping("/api_test/list")
     public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
             @ApiParam(value = "项目 ID", required = true)

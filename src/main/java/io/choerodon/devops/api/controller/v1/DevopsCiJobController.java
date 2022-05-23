@@ -6,7 +6,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
@@ -31,10 +30,11 @@ public class DevopsCiJobController {
         this.devopsCiJobService = devopsCiJobService;
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/sonar/connect")
     @ApiOperation("sonar的连接测试")
     public ResponseEntity<Boolean> sonarConnect(
+            @ApiParam("项目 id")
             @PathVariable(name = "project_id") Long projectId,
             @RequestBody SonarQubeConfigVO sonarQubeConfigVO) {
         return ResponseEntity.ok(devopsCiJobService.sonarConnect(projectId, sonarQubeConfigVO));
@@ -43,31 +43,38 @@ public class DevopsCiJobController {
     /**
      * 返回应用服务对应的sonar配置（给质量管理团队使用）
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping("/sonar/config")
     @ApiOperation("返回应用服务对应的sonar配置（给质量管理团队使用）")
     public ResponseEntity<SonarInfoVO> getSonarConfig(
+            @ApiParam("项目 id")
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam("应用服务 id")
             @RequestParam(name = "appServiceId", required = false) Long appServiceId,
+            @ApiParam("应用服务编码")
             @RequestParam(name = "appServiceCode", required = false) String code) {
         return ResponseEntity.ok(devopsCiJobService.getSonarConfig(projectId, appServiceId, code));
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询job日志")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/trace")
     public ResponseEntity<DevopsCiJobLogVO> queryTrace(
+            @ApiParam("项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam("gitlab project id")
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @ApiParam("流水线任务 id")
             @PathVariable(value = "job_id") Long jobId,
             @Encrypt
+            @ApiParam("应用服务 id")
             @RequestParam(value = "app_service_id") Long appServiceId) {
         return ResponseEntity.ok(devopsCiJobService.queryTrace(gitlabProjectId, jobId, appServiceId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
     public ResponseEntity<Void> retryJob(

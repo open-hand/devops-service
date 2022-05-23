@@ -1,43 +1,49 @@
-{{- if .Values.service.enabled }}
+{{- if .Values.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.service.name }}
-  labels:
-{{ include "service.labels.standard" . | indent 4 }}
+  name: {{ include "common.names.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.service.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.service.annotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonAnnotations }}
+    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
-{{- if (or (eq .Values.service.type "ClusterIP" "") (empty .Values.service.type)) }}
-  type: ClusterIP
-  {{- if not (empty .Values.service.clusterIP) }}
-  clusterIP: {{ .Values.service.clusterIP }}
-  {{end}}
-{{- else if eq .Values.service.type "LoadBalancer" }}
   type: {{ .Values.service.type }}
-  loadBalancerIP: {{ default "" .Values.service.loadBalancerIP }}
-{{- else }}
-  type: {{ .Values.service.type }}
-{{- end }}
+  {{- if (or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{ if eq .Values.service.type "LoadBalancer" }}
+  loadBalancerSourceRanges: {{ .Values.service.loadBalancerSourceRanges }}
+  {{ end }}
+  {{- if (and (eq .Values.service.type "LoadBalancer") (not (empty .Values.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
   ports:
-    - port: {{ .Values.service.ports.http.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
-      {{- if and (eq .Values.service.type "NodePort") .Values.service.ports.http.nodePort }}
-      nodePort: {{ .Values.service.ports.http.nodePort }}
+    - name: server
+      port: {{ .Values.service.port.server }}
+      targetPort: server
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePort)) }}
+      nodePort: {{ .Values.service.nodePort.server }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
       {{- end }}
-    - port: {{ .Values.service.ports.actuator.port }}
+    - name: actuator
+      port: {{ .Values.service.port.actuator }}
       targetPort: actuator
-      protocol: TCP
-      name: actuator
-      {{- if and (eq .Values.service.type "NodePort") .Values.service.ports.actuator.nodePort }}
-      nodePort: {{ .Values.service.ports.actuator.nodePort }}
+      {{- if and (or (eq .Values.service.type "NodePort") (eq .Values.service.type "LoadBalancer")) (not (empty .Values.service.nodePort)) }}
+      nodePort: {{ .Values.service.nodePort.actuator }}
+      {{- else if eq .Values.service.type "ClusterIP" }}
+      nodePort: null
       {{- end }}
-{{- if .Values.service.externalIPs }}
-  externalIPs:
-{{- range $i , $ip := .Values.service.externalIPs }}
-  - {{ $ip }}
-{{- end }}
-{{- end }}
-  selector:
-{{ include "service.labels.standard" . | indent 4 }}
+  selector: {{- include "common.labels.matchLabels" . | nindent 4 }}
 {{- end }}

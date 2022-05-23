@@ -12,37 +12,58 @@ public class AppServiceInstanceVO {
     @Encrypt
     private Long id;
     @Encrypt
+    @ApiModelProperty("所属应用服务id")
     private Long appServiceId;
 
     @ApiModelProperty("所属应用id")
     @Encrypt
     private Long appId;
     @Encrypt
+    @ApiModelProperty("部署的环境id")
     private Long envId;
     private String publishLevel;
     private String contributor;
     private String description;
+    @ApiModelProperty("关联的版本id")
     private Long appServiceVersionId;
+    @ApiModelProperty("实例编码")
     private String code;
+    @ApiModelProperty("关联的应用服务名称")
     private String appServiceName;
+    @ApiModelProperty("关联的应用服务编码")
     private String appServiceCode;
+    @ApiModelProperty("部署的版本号")
     private String appServiceVersion;
+    @ApiModelProperty("部署的环境编码")
     private String envCode;
+    @ApiModelProperty("部署的环境名称")
     private String envName;
+    @ApiModelProperty("实例的状态")
     private String status;
     @Encrypt
+    @ApiModelProperty("实例当前的commandId")
     private Long commandId;
+    @ApiModelProperty("实例的总pod数")
     private Long podCount;
+    @ApiModelProperty("实例运行中的pod数")
     private Long podRunningCount;
+    @ApiModelProperty("实例的svc数")
     private Long serviceCount;
+    @ApiModelProperty("实例的ingress数")
     private Long ingressCount;
+    @ApiModelProperty("实例当前的command的状态")
     private String commandStatus;
+    @ApiModelProperty("实例当前的command的类型，更新、新建")
     private String commandType;
     private String commandVersion;
     private Long commandVersionId;
+    @ApiModelProperty("错误信息")
     private String error;
+    @ApiModelProperty("环境是否连接")
     private Boolean isConnect;
+    @ApiModelProperty("乐观锁版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty("项目id")
     private Long projectId;
     private List<DeploymentVO> deploymentVOS;
 

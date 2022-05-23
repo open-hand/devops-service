@@ -14,6 +14,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2020/7/13 16:10
  */
 public class AuditResultVO {
+    @ApiModelProperty("是否是会签")
     private Integer countersigned;
     @ApiModelProperty("已审核人员")
     private List<String> auditedUserNameList = new ArrayList<>();
