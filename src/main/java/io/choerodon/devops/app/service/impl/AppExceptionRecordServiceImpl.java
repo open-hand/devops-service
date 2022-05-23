@@ -130,7 +130,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("Collect app exception info failed. resourceType: {}, resource: {}, appServiceInstanceDTO: {}. error: {}", resourceType, resource, appServiceInstanceDTO, e.getCause());
+            LOGGER.error("Collect app exception info failed. resourceType: {}, resource: {}, appServiceInstanceDTO: {}. error: {}", resourceType, resource, appServiceInstanceDTO, e);
         }
 
 
