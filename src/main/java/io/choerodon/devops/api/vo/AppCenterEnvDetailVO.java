@@ -18,7 +18,9 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty("应用中心 应用id")
     private Long id;
+    @ApiModelProperty("应用名称")
     private String name;
+    @ApiModelProperty("应用编码")
     private String code;
 
     @Encrypt
@@ -68,9 +70,11 @@ public class AppCenterEnvDetailVO {
     private Boolean currentVersionAvailable;
     @ApiModelProperty("应用市场所属的实例是否有更新版本可以升级，如果有是true/只有市场实例需要")
     private Boolean upgradeAvailable;
-
+    @ApiModelProperty("应用版本号")
     private String versionName;
+    @ApiModelProperty("部署者信息")
     private IamUserDTO creator;
+    @ApiModelProperty("更新者信息")
     private IamUserDTO updater;
 
     @ApiModelProperty("创建时间")
@@ -92,12 +96,23 @@ public class AppCenterEnvDetailVO {
     @Encrypt
     @ApiModelProperty(name = "部署对象id")
     private Long mktDeployObjectId;
+    @ApiModelProperty(name = "是否启用应用监控")
+    private Boolean metricDeployStatus;
 
     @ApiModelProperty(name = "部署组应用配置")
     private DevopsDeployGroupAppConfigVO appConfig;
 
     @ApiModelProperty(name = "部署组容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
+
+    public Boolean getMetricDeployStatus() {
+        return metricDeployStatus;
+    }
+
+    public void setMetricDeployStatus(Boolean metricDeployStatus) {
+        this.metricDeployStatus = metricDeployStatus;
+    }
 
     public Boolean getCurrentVersionAvailable() {
         return currentVersionAvailable;

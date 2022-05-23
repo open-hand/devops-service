@@ -46,6 +46,7 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "chart/deployment")
     private String rdupmType;
 
+    @ApiModelProperty(name = "是否启用应用监控")
     private Boolean metricDeployStatus;
 
     public Boolean getMetricDeployStatus() {
