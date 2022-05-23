@@ -147,11 +147,11 @@ $2: dockerBuildContextDir docker构建上下文
 $3: dockerFilePath Dockerfile路径
 function kaniko_build() {
   if [ -z $KUBERNETES_SERVICE_HOST ];then
-      ssh -o StrictHostKeyChecking=no root@kaniko /kaniko/kaniko $1  --no-push \
+      ssh -o StrictHostKeyChecking=no root@kaniko DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
       --tarPath ${PWD}/${PROJECT_NAME}.tar
   else
-      ssh -o StrictHostKeyChecking=no root@127.0.0.1 /kaniko/kaniko $1  --no-push \
+      ssh -o StrictHostKeyChecking=no root@127.0.0.1 DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
       --tarPath ${PWD}/${PROJECT_NAME}.tar
   fi
