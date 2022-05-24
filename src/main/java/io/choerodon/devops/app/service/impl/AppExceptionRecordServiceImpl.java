@@ -46,18 +46,18 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             if (devopsDeployAppCenterEnvDTO == null || Boolean.FALSE.equals(devopsDeployAppCenterEnvDTO.getMetricDeployStatus())) {
                 return;
             }
-            Integer current = 0;
-            Integer desired = 1;
+            int current = 1;
+            int desired = 1;
             String resourceName = "";
             if (ResourceType.DEPLOYMENT.getType().equals(resourceType)) {
                 V1beta2Deployment v1beta2Deployment = json.deserialize(resource, V1beta2Deployment.class);
-                current = v1beta2Deployment.getStatus().getReadyReplicas();
-                desired = v1beta2Deployment.getStatus().getReplicas();
+                current = v1beta2Deployment.getStatus().getReadyReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReadyReplicas();
+                desired = v1beta2Deployment.getStatus().getReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReplicas();
                 resourceName = v1beta2Deployment.getMetadata().getName();
             } else if (ResourceType.STATEFULSET.getType().equals(resourceType)) {
                 V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(resource, V1beta2StatefulSet.class);
-                current = v1beta2StatefulSet.getStatus().getReadyReplicas();
-                desired = v1beta2StatefulSet.getStatus().getReplicas();
+                current = v1beta2StatefulSet.getStatus().getReadyReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReadyReplicas();
+                desired = v1beta2StatefulSet.getStatus().getReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReplicas();
                 resourceName = v1beta2StatefulSet.getMetadata().getName();
             } else {
                 return;
