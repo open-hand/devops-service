@@ -143,5 +143,12 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                 new java.sql.Date(startTime.getTime()),
                 new java.sql.Date(endTime.getTime()));
     }
+
+    @Override
+    public List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(Long appId, Date startTime, Date endTime) {
+        return appExceptionRecordMapper.listCompletedByAppIdAndDate(appId,
+                new java.sql.Date(startTime.getTime()),
+                new java.sql.Date(endTime.getTime()));
+    }
 }
 

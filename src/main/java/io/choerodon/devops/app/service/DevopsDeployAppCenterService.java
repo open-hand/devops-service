@@ -177,4 +177,13 @@ public interface DevopsDeployAppCenterService {
      * @return ExceptionTimesVO 停机次数折线图所需坐标信息
      */
     ExceptionTimesVO queryExceptionTimesChartInfo(Long projectId, Long appId, Date startTime, Date endTime);
+
+    /**
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return ExceptionDurationVO 异常时长散点图所需坐标信息
+     */
+    ExceptionDurationVO queryExceptionDurationChartInfo(Long projectId, Long appId, Date startTime, Date endTime);
 }
