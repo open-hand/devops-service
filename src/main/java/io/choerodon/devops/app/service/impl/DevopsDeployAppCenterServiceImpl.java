@@ -564,8 +564,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
 
         // 按日期分组
-        Map<java.sql.Date, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime())));
-        List<Date> dateList = new ArrayList<>();
+        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
+        List<String> dateList = new ArrayList<>();
         List<Long> exceptionTimesList = new ArrayList<>();
         List<Long> downTimeList = new ArrayList<>();
 
