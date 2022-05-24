@@ -97,6 +97,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
+    @Autowired
+    private AppExceptionRecordService appExceptionRecordService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -551,6 +553,31 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+    }
+
+    @Override
+    public ExceptionTimesVO queryExceptionTimesChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
+        List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listByAppIdAndDate(appId, startTime, endTime);
+
+        if (CollectionUtils.isEmpty(appExceptionRecordDTOS)) {
+            return new ExceptionTimesVO();
+        }
+
+        // 按日期分组
+        Map<java.sql.Date, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime())));
+        List<Date> dateList = new ArrayList<>();
+        List<Long> exceptionTimesList = new ArrayList<>();
+        List<Long> downTimeList = new ArrayList<>();
+
+
+        listMap.forEach((k, v) -> {
+            dateList.add(k);
+            downTimeList.add(v.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
+            exceptionTimesList.add(v.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
+        });
+
+
+        return new ExceptionTimesVO(dateList, exceptionTimesList, downTimeList);
     }
 
     @Transactional

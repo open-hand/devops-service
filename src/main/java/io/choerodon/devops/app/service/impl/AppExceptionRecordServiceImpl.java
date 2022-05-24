@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1beta2Deployment;
@@ -134,6 +135,13 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
         }
 
 
+    }
+
+    @Override
+    public List<AppExceptionRecordDTO> listByAppIdAndDate(Long appId, Date startTime, Date endTime) {
+        return appExceptionRecordMapper.listByAppIdAndDate(appId,
+                new java.sql.Date(startTime.getTime()),
+                new java.sql.Date(endTime.getTime()));
     }
 }
 
