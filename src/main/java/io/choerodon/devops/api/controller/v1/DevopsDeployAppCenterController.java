@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +27,6 @@ import io.choerodon.swagger.annotation.Permission;
  **/
 @RestController
 @RequestMapping("/v1/projects/{project_id}/deploy_app_center")
-
 public class DevopsDeployAppCenterController {
 
     @Autowired
@@ -261,16 +259,16 @@ public class DevopsDeployAppCenterController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "chart应用监控 - 停机次数折线图所需坐标信息")
-    @PutMapping("/{app_id}/metric/exception_times_chart_info")
+    @PostMapping("/{app_id}/metric/exception_times_chart_info")
     public ResponseEntity<ExceptionTimesVO> queryExceptionTimesChartInfo(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
             @Encrypt @RequestParam(value = "app_id") Long appId,
-            @ApiParam(value = "startTime")
-            @RequestParam Date startTime,
-            @ApiParam(value = "endTime")
-            @RequestParam Date endTime) {
-        return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionTimesChartInfo(projectId, appId, startTime, endTime));
+            @RequestBody DateQueryVO dateQueryVO) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionTimesChartInfo(projectId,
+                appId,
+                dateQueryVO.getStartTime(),
+                dateQueryVO.getEndTime()));
     }
 }
