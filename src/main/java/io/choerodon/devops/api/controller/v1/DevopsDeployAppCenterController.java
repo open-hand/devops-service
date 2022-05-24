@@ -236,7 +236,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "开启chart应用监控")
     @PutMapping("/{app_id}/metric/enable")
-    public ResponseEntity<Page<DevopsDeployAppCenterVO>> enableMetric(
+    public ResponseEntity<Void> enableMetric(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
@@ -248,7 +248,7 @@ public class DevopsDeployAppCenterController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "关闭chart应用监控")
     @PutMapping("/{app_id}/metric/disable")
-    public ResponseEntity<Page<DevopsDeployAppCenterVO>> disableMetric(
+    public ResponseEntity<Void> disableMetric(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
@@ -267,6 +267,21 @@ public class DevopsDeployAppCenterController {
             @Encrypt @RequestParam(value = "app_id") Long appId,
             @RequestBody DateQueryVO dateQueryVO) {
         return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionTimesChartInfo(projectId,
+                appId,
+                dateQueryVO.getStartTime(),
+                dateQueryVO.getEndTime()));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "chart应用监控 - 异常持续时长散点图坐标信息")
+    @PostMapping("/{app_id}/metric/exception_duration_chart_info")
+    public ResponseEntity<ExceptionDurationVO> queryExceptionDurationChartInfo(
+            @ApiParam(value = "项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @Encrypt @RequestParam(value = "app_id") Long appId,
+            @RequestBody DateQueryVO dateQueryVO) {
+        return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionDurationChartInfo(projectId,
                 appId,
                 dateQueryVO.getStartTime(),
                 dateQueryVO.getEndTime()));

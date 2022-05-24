@@ -25,5 +25,15 @@ public interface AppExceptionRecordService {
      * @return 异常记录列表
      */
     List<AppExceptionRecordDTO> listByAppIdAndDate(Long appId, Date startTime, Date endTime);
+
+    /**
+     * 查询应用结束的异常记录，按日期筛选
+     *
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return 异常记录列表
+     */
+    List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(Long appId, Date startTime, Date endTime);
 }
 
