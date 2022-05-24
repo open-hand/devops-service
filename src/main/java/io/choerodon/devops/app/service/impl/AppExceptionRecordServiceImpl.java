@@ -46,8 +46,8 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             if (devopsDeployAppCenterEnvDTO == null || Boolean.FALSE.equals(devopsDeployAppCenterEnvDTO.getMetricDeployStatus())) {
                 return;
             }
-            int current = 1;
-            int desired = 1;
+            Integer current = 0;
+            Integer desired = 1;
             String resourceName = "";
             if (ResourceType.DEPLOYMENT.getType().equals(resourceType)) {
                 V1beta2Deployment v1beta2Deployment = json.deserialize(resource, V1beta2Deployment.class);

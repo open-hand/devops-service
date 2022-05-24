@@ -257,4 +257,16 @@ public class DevopsDeployAppCenterController {
         devopsDeployAppCenterService.disableMetric(projectId, appId);
         return ResponseEntity.noContent().build();
     }
+
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "chart应用监控 - 停机次数折线图")
+//    @PutMapping("/{app_id}/metric/disable")
+//    public ResponseEntity<Page<DevopsDeployAppCenterVO>> disableMetric(
+//            @ApiParam(value = "项目id")
+//            @PathVariable("project_id") Long projectId,
+//            @ApiParam(value = "应用id")
+//            @Encrypt @RequestParam(value = "app_id") Long appId) {
+//        devopsDeployAppCenterService.disableMetric(projectId, appId);
+//        return ResponseEntity.noContent().build();
+//    }
 }
