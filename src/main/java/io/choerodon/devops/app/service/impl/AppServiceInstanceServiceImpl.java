@@ -225,8 +225,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
