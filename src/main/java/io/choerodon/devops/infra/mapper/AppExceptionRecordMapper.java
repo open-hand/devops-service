@@ -24,7 +24,7 @@ public interface AppExceptionRecordMapper extends BaseMapper<AppExceptionRecordD
                                                    @Param("startTime") Date startTime,
                                                    @Param("endTime") Date endTime);
 
-    List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(Long appId, Date date, Date date1);
+    List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(@Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     List<AppExceptionRecordDTO> listUnCompleteExceptionRecord(@Param("appId") Long appId);
 }
