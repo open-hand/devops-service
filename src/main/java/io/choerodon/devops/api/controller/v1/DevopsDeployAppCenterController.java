@@ -264,7 +264,7 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
-            @Encrypt @RequestParam(value = "app_id") Long appId,
+            @Encrypt @PathVariable(value = "app_id") Long appId,
             @RequestBody DateQueryVO dateQueryVO) {
         return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionTimesChartInfo(projectId,
                 appId,
@@ -279,7 +279,7 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
-            @Encrypt @RequestParam(value = "app_id") Long appId,
+            @Encrypt @PathVariable(value = "app_id") Long appId,
             @RequestBody DateQueryVO dateQueryVO) {
         return ResponseEntity.ok(devopsDeployAppCenterService.queryExceptionDurationChartInfo(projectId,
                 appId,
