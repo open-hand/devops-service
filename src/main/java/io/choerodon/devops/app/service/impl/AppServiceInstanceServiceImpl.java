@@ -225,6 +225,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -2412,6 +2414,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
+        // 如果开启了应用监控，同时关闭应用监控
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
+        devopsDeployAppCenterService.disableMetric(projectId, devopsDeployAppCenterEnvDTO.getId());
 
         //发送重启或停止实例的command
         Map<String, String> stopMap = new HashMap<>();

@@ -14,6 +14,13 @@ import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
  */
 public interface AppExceptionRecordService {
 
+    /**
+     * 创建或更新异常记录信息
+     *
+     * @param resourceType          资源类型 deployment、statefulset
+     * @param resource              资源yaml文件
+     * @param appServiceInstanceDTO 应用实例dto
+     */
     void createOrUpdateExceptionRecord(String resourceType, String resource, AppServiceInstanceDTO appServiceInstanceDTO);
 
     /**
@@ -35,5 +42,21 @@ public interface AppExceptionRecordService {
      * @return 异常记录列表
      */
     List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(Long appId, Date startTime, Date endTime);
+
+
+    /**
+     * 查询应用所有未终结的异常记录
+     *
+     * @param appId 应用id
+     * @return 未终结的异常记录列表
+     */
+    List<AppExceptionRecordDTO> listUnCompleteExceptionRecord(Long appId);
+
+    /**
+     * 终结所有未完成的异常记录
+     *
+     * @param appId 应用id
+     */
+    void completeExceptionRecord(Long appId);
 }
 
