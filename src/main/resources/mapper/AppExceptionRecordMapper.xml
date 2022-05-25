@@ -3,7 +3,8 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.AppExceptionRecordMapper">
 
 
-    <select id="queryLatestExceptionRecord" resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">
+    <select id="queryLatestExceptionRecordFilterByType"
+            resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">
         select *
         from devops_app_exception_record daer
         where daer.app_id = #{appId}
@@ -25,6 +26,13 @@
           and daer.end_date is not null
           and daer.start_date >= CONCAT('', '${startTime}', ' 00:00:00')
           and daer.end_date <![CDATA[<=]]> CONCAT('', '${endTime}', ' 23:59:59')
+    </select>
+    <select id="listUnCompleteExceptionRecord"
+            resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">
+        select *
+        from devops_app_exception_record daer
+        where daer.app_id = #{appId}
+          and daer.end_date is null;
     </select>
 </mapper>
 

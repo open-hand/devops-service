@@ -553,6 +553,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+
+        // 如果关闭时，还存在未终止的异常记录。则手动终止
+        appExceptionRecordService.completeExceptionRecord(appId);
     }
 
     @Override

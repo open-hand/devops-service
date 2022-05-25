@@ -68,7 +68,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             // current < desired 异常
             if (current == desired) {
                 // 1. 查询现在是否存在异常记录,存在则将该记录标记为结束
-                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
+                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecordFilterByType(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
                 if (appExceptionRecordDTO != null) {
                     appExceptionRecordDTO.setEndDate(new Date());
                     MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
@@ -76,7 +76,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             } else if (current == 0) {
                 // 停机
                 // 1. 查询现在是否存在异常记录
-                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
+                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecordFilterByType(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
                 if (appExceptionRecordDTO == null) {
                     AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
                             devopsDeployAppCenterEnvDTO.getId(),
@@ -103,7 +103,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                 }
             } else {
                 // 1. 查询现在是否存在异常记录
-                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecord(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
+                AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecordFilterByType(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
                 if (appExceptionRecordDTO == null) {
                     AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
                             devopsDeployAppCenterEnvDTO.getId(),
@@ -149,6 +149,21 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
         return appExceptionRecordMapper.listCompletedByAppIdAndDate(appId,
                 new java.sql.Date(startTime.getTime()),
                 new java.sql.Date(endTime.getTime()));
+    }
+
+    @Override
+    public List<AppExceptionRecordDTO> listUnCompleteExceptionRecord(Long appId) {
+        return appExceptionRecordMapper.listUnCompleteExceptionRecord(appId);
+    }
+
+    @Override
+    @Transactional
+    public void completeExceptionRecord(Long appId) {
+        List<AppExceptionRecordDTO> appExceptionRecordDTOS = listUnCompleteExceptionRecord(appId);
+        appExceptionRecordDTOS.forEach(r -> {
+            r.setEndDate(new Date());
+            appExceptionRecordMapper.updateByPrimaryKeySelective(r);
+        });
     }
 }
 
