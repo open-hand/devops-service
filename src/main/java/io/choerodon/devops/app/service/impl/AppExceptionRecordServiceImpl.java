@@ -165,5 +165,11 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             appExceptionRecordMapper.updateByPrimaryKeySelective(r);
         });
     }
+
+    @Override
+    @Transactional
+    public void clearRecordsBeforeDate(Date before) {
+        appExceptionRecordMapper.clearRecordsBeforeDate(before);
+    }
 }
 

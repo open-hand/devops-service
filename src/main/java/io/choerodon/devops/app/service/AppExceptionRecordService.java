@@ -58,5 +58,7 @@ public interface AppExceptionRecordService {
      * @param appId 应用id
      */
     void completeExceptionRecord(Long appId);
+
+    void clearRecordsBeforeDate(Date before);
 }
 
