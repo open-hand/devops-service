@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -9,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -39,6 +43,9 @@ import io.choerodon.devops.infra.util.StringMapBuilder;
  */
 @Service
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNotificationServiceImpl.class);
+    private static Random RANDOM;
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;
@@ -61,13 +68,19 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private DevopsSecretService devopsSecretService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private HzeroMessageClient hzeroMessageClient;
     @Autowired
     private MessageClient messageClient;
     @Autowired
     private PermissionHelper permissionHelper;
+
+    static {
+        try {
+            RANDOM = SecureRandom.getInstanceStrong();
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("get random failed", e);
+        }
+    }
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long projectId, Long envId, String objectType) {
@@ -143,7 +156,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         // 生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
-        String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
+        String captcha = String.valueOf(RANDOM.nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
 
 
