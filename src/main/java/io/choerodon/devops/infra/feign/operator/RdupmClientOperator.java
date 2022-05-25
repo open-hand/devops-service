@@ -123,7 +123,7 @@ public class RdupmClientOperator {
 
     public HarborRepoDTO queryHarborRepoConfigById(Long projectId, Long harborConfigId, String repoType) {
         ResponseEntity<HarborRepoDTO> response = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType);
-        if (response == null || response.getBody() == null || Objects.isNull(response.getBody().getHarborRepoConfig())) {
+        if (response == null || response.getBody() == null || response.getBody().getHarborRepoConfig() == null) {
             throw new CommonException("error.query.harbor.repo");
         }
         return response.getBody();
