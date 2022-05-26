@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,7 +120,18 @@ public class ClusterConnectionHandler {
             // 如果文件夾存在并且文件夹不为空,去拉取新的配置
             // 反之克隆远程的仓库的文件
             if (file.isDirectory() && file.listFiles().length > 0) {
-                gitUtil.pullBySsh(localPath, envRsa);
+                try {
+                    gitUtil.pullBySsh(localPath, envRsa);
+                } catch (Exception e) {
+                    // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
+                    if (e instanceof CheckoutConflictException) {
+                        // 删除本地gitops文件，然后重新clone
+                        FileUtil.deleteDirectory(file);
+                        gitUtil.cloneBySsh(path, url, envRsa);
+                    } else {
+                        throw new CommonException("error.git.pull", e);
+                    }
+                }
             } else {
                 gitUtil.cloneBySsh(path, url, envRsa);
             }
