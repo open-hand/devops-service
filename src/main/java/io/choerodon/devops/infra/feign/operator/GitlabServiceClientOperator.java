@@ -317,7 +317,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null,
                             null);
-            if (result.getBody() == null || result.getBody().getFilePath() == null) {
+            if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (Exception e) {
@@ -342,7 +342,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null,
                             null);
-            if (result.getBody() == null || result.getBody().getFilePath() == null) {
+            if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (RetryableException e) {
