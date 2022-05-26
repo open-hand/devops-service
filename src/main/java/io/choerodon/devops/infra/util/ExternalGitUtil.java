@@ -166,17 +166,6 @@ public class ExternalGitUtil {
         }
     }
 
-    private static Git pullBySsh(Repository repository, String sshKeyRsa) {
-        try (Git git = new Git(repository)) {
-            git.pull()
-                    .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
-                    .call();
-            return git;
-        } catch (GitAPIException e) {
-            throw new CommonException("error.git.pull", e);
-        }
-    }
-
     private static TransportConfigCallback getTransportConfigCallback(String sshKeyRsa) {
         return transport -> {
             SshTransport sshTransport = (SshTransport) transport;

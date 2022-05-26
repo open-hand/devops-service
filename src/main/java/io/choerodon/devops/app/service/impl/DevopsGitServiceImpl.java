@@ -15,6 +15,7 @@ import javax.annotation.PostConstruct;
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1196,8 +1197,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             return gitUtil.cloneBySsh(path, url, envIdRsa);
         } else {
             if (file.isDirectory() && file.listFiles().length > 0) {
-                String localPath = String.format("%s%s", path, GIT_SUFFIX);
-                return gitUtil.pullBySsh(localPath, envIdRsa);
+                try {
+                    String localPath = String.format("%s%s", path, GIT_SUFFIX);
+                    return gitUtil.pullBySsh(localPath, envIdRsa);
+                } catch (Exception e) {
+                    // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
+                    if (e instanceof CheckoutConflictException) {
+                        // 删除本地gitops文件，然后重新clone
+                        FileUtil.deleteDirectory(file);
+                        return gitUtil.cloneBySsh(path, url, envIdRsa);
+                    } else {
+                        throw new CommonException("error.git.pull", e);
+                    }
+                }
             } else {
                 return gitUtil.cloneBySsh(path, url, envIdRsa);
             }
