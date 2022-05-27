@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+
 /**
  * 展示实例详情页面的单个实例的信息
  *
@@ -102,6 +104,17 @@ public class AppServiceInstanceInfoVO {
     @Encrypt
     @ApiModelProperty(name = "部署对象id")
     private Long mktDeployObjectId;
+
+    @ApiModelProperty(name = "实例所属的应用信息")
+    private DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
+
+    public DevopsDeployAppCenterEnvDTO getDevopsDeployAppCenterEnvDTO() {
+        return devopsDeployAppCenterEnvDTO;
+    }
+
+    public void setDevopsDeployAppCenterEnvDTO(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
+        this.devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvDTO;
+    }
 
     public String getApplicationType() {
         return applicationType;

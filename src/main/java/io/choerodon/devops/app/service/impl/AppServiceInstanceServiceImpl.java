@@ -254,6 +254,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (isMarket(appServiceInstanceInfoDTO.getSource()) || isMiddleware(appServiceInstanceInfoDTO.getSource())) {
             fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
+        appServiceInstanceInfoVO.setDevopsDeployAppCenterEnvDTO(devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId));
 
         return appServiceInstanceInfoVO;
     }
