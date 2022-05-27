@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -19,6 +20,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @Id
+    @Encrypt
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
@@ -31,9 +33,11 @@ public class DevopsDeployAppCenterEnvDTO extends AuditDomain {
     @ApiModelProperty(name = "项目id")
     private Long projectId;
 
+    @Encrypt
     @ApiModelProperty(name = "部署对象id")
     private Long objectId;
 
+    @Encrypt
     @ApiModelProperty(name = "Id")
     private Long envId;
 
