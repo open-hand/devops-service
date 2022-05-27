@@ -666,7 +666,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             return;
         }
 
-
         Long objectId = null;
         if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
             // 3. 如果是更新应用，先判断应用是否存在。不存在则跳过。

@@ -37,14 +37,6 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private String status;
     @ApiModelProperty("流水线触发分支：master、release")
     private String gitlabTriggerRef;
-    @ApiModelProperty("流水线提交信息")
-    private CustomCommitVO commit;
-    @ApiModelProperty("关联流水线信息")
-    private CiCdPipelineVO ciCdPipelineVO;
-    @ApiModelProperty("ci和cd阶段记录的集合")
-    private List<StageRecordVO> stageRecordVOS;
-    @ApiModelProperty("待审核状态时需要的一些数据")
-    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
     @ApiModelProperty("流水线名称")
     private String pipelineName;
     @ApiModelProperty("关联gitlab project id")
@@ -53,15 +45,25 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     private String viewId;
     @ApiModelProperty("关联应用服务名称")
     private String appServiceName;
-    @ApiModelProperty("创建者id")
-    private Long createdBy;
-    @ApiModelProperty("创建者信息")
-    private IamUserDTO iamUserDTO;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
     @Encrypt
     @ApiModelProperty("关联流水线id")
     private Long pipelineId;
+    @ApiModelProperty("创建者id")
+    private Long createdBy;
+
+    @ApiModelProperty("创建者信息")
+    private IamUserDTO iamUserDTO;
+    @ApiModelProperty("流水线提交信息")
+    private CustomCommitVO commit;
+    @ApiModelProperty("关联流水线信息")
+    private CiCdPipelineVO ciCdPipelineVO;
+    @ApiModelProperty("ci和cd阶段记录的集合")
+    private List<StageRecordVO> stageRecordVOS;
+    @ApiModelProperty("待审核状态时需要的一些数据")
+    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+
 
     public Long getPipelineId() {
         return pipelineId;
