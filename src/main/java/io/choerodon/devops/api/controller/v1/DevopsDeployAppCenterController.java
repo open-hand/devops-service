@@ -240,7 +240,7 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
-            @Encrypt @RequestParam(value = "app_id") Long appId) {
+            @Encrypt @PathVariable(value = "app_id") Long appId) {
         devopsDeployAppCenterService.enableMetric(projectId, appId);
         return ResponseEntity.noContent().build();
     }
@@ -252,7 +252,7 @@ public class DevopsDeployAppCenterController {
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用id")
-            @Encrypt @RequestParam(value = "app_id") Long appId) {
+            @Encrypt @PathVariable(value = "app_id") Long appId) {
         devopsDeployAppCenterService.disableMetric(projectId, appId);
         return ResponseEntity.noContent().build();
     }
