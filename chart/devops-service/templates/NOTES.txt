@@ -3,7 +3,7 @@
 Verify deployment:
 
     curl -s $(kubectl get po --namespace {{ .Release.Namespace }} \
-        -l choerodon.io/release={{ .Release.Name }} \
+        -l app.kubernetes.io/name={{ .Release.Name }} \
         -o jsonpath="{.items[0].status.podIP}"):{{ .Values.containerPort.actuatorPort }}/actuator/health | jq -r .status
 
 If the following similar information appears, it is a successful deployment:
