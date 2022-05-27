@@ -46,41 +46,17 @@ public class DevopsCiJobRecordVO {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
-    @ApiModelProperty("release阶段生成chart的版本")
-    private String chartVersion;
-
-    private String sonarScannerType;
-
+    @ApiModelProperty("单元测试覆盖率")
     private String codeCoverage;
-
-    @ApiModelProperty("ci中返回sonar")
-    private List<SonarContentVO> sonarContentVOS;
-
     @ApiModelProperty("详细信息")
     private String metadata;
-
-    /**
-     * ci流水线生成镜像下载命令
-     */
-    private String downloadImage;
-
-    /**
-     *  ci生成npm包地址
-     */
-    private String downloadNpm;
-
-    /**
-     * ci生成jar包地址
-     */
-    private PipelineJarInfoVO pipelineJarInfo;
-
-    /**
-     * 是否有镜像扫描
-     */
+    @ApiModelProperty("是否有镜像扫描")
     private Boolean imageScan;
-
+    @ApiModelProperty("任务记录关联的maven配置id")
     private Long mavenSettingId;
 
+    @ApiModelProperty("ci生成jar包地址")
+    private PipelineJarInfoVO pipelineJarInfo;
     @ApiModelProperty("ci任务产生的chart信息")
     private PipelineChartInfo pipelineChartInfo;
     @ApiModelProperty("ci任务产生的sonar信息")
@@ -146,45 +122,12 @@ public class DevopsCiJobRecordVO {
         this.pipelineJarInfo = pipelineJarInfo;
     }
 
-    public String getDownloadImage() {
-        return downloadImage;
-    }
-
-    public void setDownloadImage(String downloadImage) {
-        this.downloadImage = downloadImage;
-    }
-
-
-    public String getDownloadNpm() {
-        return downloadNpm;
-    }
-
-    public void setDownloadNpm(String downloadNpm) {
-        this.downloadNpm = downloadNpm;
-    }
-
     public String getMetadata() {
         return metadata;
     }
 
     public void setMetadata(String metadata) {
         this.metadata = metadata;
-    }
-
-    public List<SonarContentVO> getSonarContentVOS() {
-        return sonarContentVOS;
-    }
-
-    public String getChartVersion() {
-        return chartVersion;
-    }
-
-    public void setChartVersion(String chartVersion) {
-        this.chartVersion = chartVersion;
-    }
-
-    public void setSonarContentVOS(List<SonarContentVO> sonarContentVOS) {
-        this.sonarContentVOS = sonarContentVOS;
     }
 
     public Long getId() {
@@ -273,14 +216,6 @@ public class DevopsCiJobRecordVO {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getSonarScannerType() {
-        return sonarScannerType;
-    }
-
-    public void setSonarScannerType(String sonarScannerType) {
-        this.sonarScannerType = sonarScannerType;
     }
 
     public String getCodeCoverage() {

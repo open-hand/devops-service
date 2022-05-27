@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,12 +10,19 @@ package io.choerodon.devops.api.vo;
  * @since 2020/4/23 16:42
  */
 public class CustomCommitVO {
+    @ApiModelProperty("提交用户")
     private String userName;
+    @ApiModelProperty("提交用户头像")
     private String userHeadUrl;
+    @ApiModelProperty("commit sha")
     private String commitSha;
+    @ApiModelProperty("commit url")
     private String commitUrl;
+    @ApiModelProperty("gitlab project url")
     private String gitlabProjectUrl;
+    @ApiModelProperty("提交分支")
     private String ref;
+    @ApiModelProperty("提交信息")
     private String commitContent;
 
     public String getUserName() {

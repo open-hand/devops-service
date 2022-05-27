@@ -1,15 +1,20 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCdPipelineDeatilVO {
+    @ApiModelProperty("阶段名称")
     private String stageName;
     @Encrypt
+    @ApiModelProperty("阶段记录id")
     private Long stageRecordId;
     @Encrypt
+    @ApiModelProperty("任务记录id")
     private Long taskRecordId;
+    @ApiModelProperty("审核类型")
     private String type;
-    //判断当前用户能否进行审核，能否看到人工审核这个操作按钮
+    @ApiModelProperty("判断当前用户能否进行审核，能否看到人工审核这个操作按钮")
     private Boolean execute;
 
     public Boolean getExecute() {
