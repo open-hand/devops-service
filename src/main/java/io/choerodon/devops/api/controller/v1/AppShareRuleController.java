@@ -86,7 +86,7 @@ public class AppShareRuleController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam
+            @ApiParam(value = "应用服务Id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
@@ -102,6 +102,7 @@ public class AppShareRuleController {
     @ApiOperation(value = "查询单个共享规则详情")
     @GetMapping(value = "/{rule_id}")
     public ResponseEntity<AppServiceShareRuleVO> query(
+            @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "规则Id", required = true)

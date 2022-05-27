@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  * 〈功能简述〉
@@ -13,6 +15,7 @@ import java.util.List;
 public class DevopsCiStageRecordVO extends StageRecordVO{
 
 
+    @ApiModelProperty("阶段中的任务记录信息")
     private List<DevopsCiJobRecordVO> jobRecordVOList;
 
 

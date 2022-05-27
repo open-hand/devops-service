@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -14,21 +15,36 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class CertificationVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("组织id")
     private Long organizationId;
+    @ApiModelProperty("证书名称")
     private String certName;
+    @ApiModelProperty("泛域名")
     private String commonName;
+    @ApiModelProperty("绑定的域名")
     private List<String> domains;
+    @ApiModelProperty("证书类型")
     private String type;
+    @ApiModelProperty("证书状态")
     private String status;
+    @ApiModelProperty("生效时间")
     private Date validFrom;
+    @ApiModelProperty("过期时间")
     private Date validUntil;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
+    @ApiModelProperty("环境名称")
     private String envName;
+    @ApiModelProperty("环境是否连接")
     private Boolean envConnected;
+    @ApiModelProperty("命令类型")
     private String commandType;
+    @ApiModelProperty("命令状态")
     private String commandStatus;
+    @ApiModelProperty("命令错误")
     private String error;
+    @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckProjectPermission;
 
 
