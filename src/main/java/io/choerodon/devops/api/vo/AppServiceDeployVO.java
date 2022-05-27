@@ -57,13 +57,6 @@ public class AppServiceDeployVO {
     @Encrypt
     @ApiModelProperty("记录id")
     private Long recordId;
-
-    @Encrypt
-    private Long deployInfoId;
-
-    private DevopsServiceReqVO devopsServiceReqVO;
-    private DevopsIngressVO devopsIngressVO;
-
     @ApiModelProperty("应用中心应用名称")
     @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
     @NotBlank(message = "error.app.name.null")
@@ -76,6 +69,11 @@ public class AppServiceDeployVO {
 
     @ApiModelProperty("服务来源")
     private String appServiceSource;
+
+    @ApiModelProperty(value = "实例的网络配置")
+    private DevopsServiceReqVO devopsServiceReqVO;
+    @ApiModelProperty(value = "实例的域名配置")
+    private DevopsIngressVO devopsIngressVO;
 
     public AppServiceDeployVO() {
     }
@@ -228,14 +226,6 @@ public class AppServiceDeployVO {
 
     public void setDevopsIngressVO(DevopsIngressVO devopsIngressVO) {
         this.devopsIngressVO = devopsIngressVO;
-    }
-
-    public Long getDeployInfoId() {
-        return deployInfoId;
-    }
-
-    public void setDeployInfoId(Long deployInfoId) {
-        this.deployInfoId = deployInfoId;
     }
 
     public String getAppName() {

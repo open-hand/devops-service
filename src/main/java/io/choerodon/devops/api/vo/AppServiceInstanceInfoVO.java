@@ -17,6 +17,7 @@ public class AppServiceInstanceInfoVO {
     private Long id;
     @ApiModelProperty("实例code")
     private String code;
+    @ApiModelProperty("实例状态")
     private String status;
     @ApiModelProperty("实例的所有pod数量")
     private Long podCount;
@@ -33,7 +34,9 @@ public class AppServiceInstanceInfoVO {
     @ApiModelProperty("实例所属应用服务的类型/normal_service,share_service")
     private String appServiceType;
     @Encrypt
+    @ApiModelProperty("关联的应用服务版本id")
     private Long appServiceVersionId;
+    @ApiModelProperty("关联的应用服务版本名称")
     private String versionName;
 
     @ApiModelProperty("最后更新时间")
@@ -87,6 +90,7 @@ public class AppServiceInstanceInfoVO {
     /**
      * {@link io.choerodon.devops.infra.enums.AppSourceType}
      */
+    @ApiModelProperty("应用来源")
     private String source;
 
     @ApiModelProperty("具体应用属于hzero还是市场")
