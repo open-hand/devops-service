@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -21,9 +19,6 @@ public class AppServiceInstanceVO {
     @Encrypt
     @ApiModelProperty("部署的环境id")
     private Long envId;
-    private String publishLevel;
-    private String contributor;
-    private String description;
     @ApiModelProperty("关联的版本id")
     private Long appServiceVersionId;
     @ApiModelProperty("实例编码")
@@ -55,7 +50,9 @@ public class AppServiceInstanceVO {
     private String commandStatus;
     @ApiModelProperty("实例当前的command的类型，更新、新建")
     private String commandType;
+    @ApiModelProperty("实例部署的版本")
     private String commandVersion;
+    @ApiModelProperty("实例部署的版本id")
     private Long commandVersionId;
     @ApiModelProperty("错误信息")
     private String error;
@@ -65,7 +62,6 @@ public class AppServiceInstanceVO {
     private Long objectVersionNumber;
     @ApiModelProperty("项目id")
     private Long projectId;
-    private List<DeploymentVO> deploymentVOS;
 
     public Long getAppId() {
         return appId;
@@ -203,30 +199,6 @@ public class AppServiceInstanceVO {
         this.error = error;
     }
 
-    public String getPublishLevel() {
-        return publishLevel;
-    }
-
-    public void setPublishLevel(String publishLevel) {
-        this.publishLevel = publishLevel;
-    }
-
-    public String getContributor() {
-        return contributor;
-    }
-
-    public void setContributor(String contributor) {
-        this.contributor = contributor;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Boolean getConnect() {
         return isConnect;
     }
@@ -267,13 +239,6 @@ public class AppServiceInstanceVO {
         this.commandVersionId = commandVersionId;
     }
 
-    public List<DeploymentVO> getDeploymentVOS() {
-        return deploymentVOS;
-    }
-
-    public void setDeploymentVOS(List<DeploymentVO> deploymentVOS) {
-        this.deploymentVOS = deploymentVOS;
-    }
 
     public Long getServiceCount() {
         return serviceCount;
