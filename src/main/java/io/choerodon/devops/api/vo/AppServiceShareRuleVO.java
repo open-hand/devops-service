@@ -38,9 +38,9 @@ public class AppServiceShareRuleVO {
 
     @ApiModelProperty("共享到指定项目,项目名称")
     private String projectName;
-
+    @ApiModelProperty("乐观锁版本号")
     private Long objectVersionNumber;
-
+    @ApiModelProperty("界面展示id")
     private String viewId;
 
     public String getViewId() {

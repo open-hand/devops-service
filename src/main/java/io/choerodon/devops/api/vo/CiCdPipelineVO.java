@@ -26,19 +26,15 @@ public class CiCdPipelineVO {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-
     @ApiModelProperty("流水线名称")
     @NotEmpty(message = "error.pipeline.name.cannot.be.null")
     private String name;
-
     @ApiModelProperty("项目id")
     private Long projectId;
-
     @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
     @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
     private Long appServiceId;
-
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;
     @ApiModelProperty("流水线关联应用服务类型")
@@ -46,11 +42,9 @@ public class CiCdPipelineVO {
     @ApiModelProperty("流水线关联应用服务编码")
     private String appServiceCode;
     @ApiModelProperty("gitlab项目id/nullable")
-
     private Long gitlabProjectId;
     @ApiModelProperty("runner镜像地址")
     private String image;
-
     @ApiModelProperty("自定义版本名称")
     private String versionName;
     @ApiModelProperty("是否启用/nullable")
@@ -59,20 +53,33 @@ public class CiCdPipelineVO {
     private Date latestExecuteDate;
     @ApiModelProperty("最近执行记录状态/nullable")
     private String latestExecuteStatus;
+    @ApiModelProperty(name = "流水线是否含有执行记录的标志")
+    private Boolean hasRecords = false;
+    @ApiModelProperty(name = "是否拥有流水线编辑权限")
+    private Boolean edit;
+    @ApiModelProperty(name = "流程耗时")
+    private Long time;
+    @ApiModelProperty(name = "流水线是否启用定时任务")
+    private Boolean enableSchedule;
+    @ApiModelProperty(name = "乐观锁版本号")
+    private Long objectVersionNumber;
+    @ApiModelProperty(name = "最近更新时间")
+    private Date lastUpdateDate;
+    @ApiModelProperty(name = "创建时间")
+    private Date creationDate;
+    @ApiModelProperty(name = "创建者")
+    private String createUserName;
+    @ApiModelProperty(name = "创建者id")
+    private Long createdBy;
+
     @ApiModelProperty(name = "ci阶段信息")
     @Valid
     private List<DevopsCiStageVO> devopsCiStageVOS;
-
     @ApiModelProperty(name = "cd阶段信息")
     @Valid
     private List<DevopsCdStageVO> devopsCdStageVOS;
-
     @ApiModelProperty(name = "流水线变量")
     private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
-
-    @ApiModelProperty(name = "流水线是否含有执行记录的标志")
-    private Boolean hasRecords = false;
-    //cicd 流水线下的执行记录
     @ApiModelProperty(name = "cicd 流水线下的执行记录")
     private List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS;
     @ApiModelProperty(name = "流水线关联的分支")
@@ -81,24 +88,6 @@ public class CiCdPipelineVO {
     private List<DevopsCiPipelineFunctionDTO> devopsCiPipelineFunctionDTOList;
     @ApiModelProperty(name = "Docker认证配置")
     private List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList;
-    @ApiModelProperty(name = "是否拥有流水线编辑权限")
-    private Boolean edit;
-
-    private Boolean execute;
-    private String envName;
-    //流程耗时
-    @ApiModelProperty(name = "流程耗时")
-    private Long time;
-    @ApiModelProperty(name = "流水线是否启用定时任务")
-    private Boolean enableSchedule;
-
-    private Long objectVersionNumber;
-    private Date lastUpdateDate;
-    private Date creationDate;
-    private String createUserUrl;
-    private String createUserName;
-    private String createUserRealName;
-    private Long createdBy;
 
     public Boolean getEnableSchedule() {
         return enableSchedule;
@@ -317,14 +306,6 @@ public class CiCdPipelineVO {
         this.lastUpdateDate = lastUpdateDate;
     }
 
-    public String getCreateUserUrl() {
-        return createUserUrl;
-    }
-
-    public void setCreateUserUrl(String createUserUrl) {
-        this.createUserUrl = createUserUrl;
-    }
-
     public String getCreateUserName() {
         return createUserName;
     }
@@ -333,36 +314,12 @@ public class CiCdPipelineVO {
         this.createUserName = createUserName;
     }
 
-    public String getCreateUserRealName() {
-        return createUserRealName;
-    }
-
-    public void setCreateUserRealName(String createUserRealName) {
-        this.createUserRealName = createUserRealName;
-    }
-
     public Long getCreatedBy() {
         return createdBy;
     }
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public Boolean getExecute() {
-        return execute;
-    }
-
-    public void setExecute(Boolean execute) {
-        this.execute = execute;
-    }
-
-    public String getEnvName() {
-        return envName;
-    }
-
-    public void setEnvName(String envName) {
-        this.envName = envName;
     }
 
 }
