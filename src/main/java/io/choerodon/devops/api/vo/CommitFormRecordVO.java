@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
@@ -14,20 +16,34 @@ import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
  */
 public class CommitFormRecordVO {
     @Encrypt
+    @ApiModelProperty("用户id")
     private Long userId;
     @Encrypt
+    @ApiParam("应用服务id")
     private Long appServiceId;
+    @ApiParam("用户头像地址")
     private String imgUrl;
+    @ApiParam("提交内容")
     private String commitContent;
+    @ApiParam("用户名")
     private String userName;
+    @ApiParam("提交日期")
     private Date commitDate;
+    @ApiParam("commit sha")
     private String commitSHA;
+    @ApiParam("应用服务名称")
     private String appServiceName;
+    @ApiParam("应用服务编码")
     private String appServiceCode;
+    @ApiParam("gitlab 地址")
     private String url;
+    @ApiParam("是否是ldap用户")
     private Boolean ldap;
+    @ApiParam("登录名")
     private String loginName;
+    @ApiParam("邮箱")
     private String email;
+    @ApiParam("真实姓名")
     private String realName;
 
     public CommitFormRecordVO() {
