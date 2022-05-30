@@ -21,7 +21,6 @@ import io.choerodon.devops.api.vo.AppServiceSimpleVO;
 import io.choerodon.devops.api.vo.AppServiceVO;
 import io.choerodon.devops.api.vo.ClusterOverViewVO;
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -35,8 +34,6 @@ import io.choerodon.swagger.annotation.Permission;
 public class DevopsOrganizationController {
     @Autowired
     AppServiceService applicationServiceService;
-    @Autowired
-    private DevopsCheckLogService devopsCheckLogService;
     @Autowired
     private DevopsClusterService devopsClusterService;
 

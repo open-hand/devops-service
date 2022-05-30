@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -7,10 +8,12 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class ResourceCheckVO {
 
+    @ApiModelProperty("通知方式")
     private String method;
-
+    @ApiModelProperty("用户名")
     private String user;
     @Encrypt
+    @ApiModelProperty("通知配置id")
     private Long notificationId;
 
     public String getMethod() {

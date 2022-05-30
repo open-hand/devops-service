@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.dto;
 
 import java.util.Objects;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Creator: Runge
  * Date: 2018/8/1
@@ -9,10 +11,15 @@ import java.util.Objects;
  * Description:
  */
 public class PortMapVO implements Comparable<PortMapVO> {
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("端口号")
     private Long port;
+    @ApiModelProperty("nodeport")
     private Long nodePort;
+    @ApiModelProperty("协议")
     private String protocol;
+    @ApiModelProperty("目标端口")
     private String targetPort;
 
     public String getName() {

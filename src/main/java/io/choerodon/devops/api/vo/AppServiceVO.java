@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -12,11 +12,17 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class AppServiceVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("应用服务名称")
     private String name;
+    @ApiModelProperty("应用服务编码")
     private String code;
+    @ApiModelProperty("应用服务类型")
     private String type;
+    @ApiModelProperty("应用服务版本")
     private List<AppServiceVersionVO> allAppServiceVersions;
+    @ApiModelProperty("应用服务状态")
     private String status;
+    @ApiModelProperty("gitlabProjectId")
     private Integer gitlabProjectId;
     @Encrypt
     @ApiModelProperty("外部仓库配置id")

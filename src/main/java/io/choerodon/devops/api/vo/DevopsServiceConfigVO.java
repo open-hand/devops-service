@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.infra.dto.PortMapVO;
 
 /**
@@ -11,7 +13,9 @@ import io.choerodon.devops.infra.dto.PortMapVO;
  * Description:
  */
 public class DevopsServiceConfigVO {
+    @ApiModelProperty("外部ip列表")
     private List<String> externalIps;
+    @ApiModelProperty("端口号")
     private List<PortMapVO> ports;
 
     public List<String> getExternalIps() {
