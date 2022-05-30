@@ -572,19 +572,19 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         List<Long> exceptionTimesList = new ArrayList<>();
         List<Long> downTimeList = new ArrayList<>();
 
-        Integer exceptionTotalTimes = 0;
-        Integer downTimeTotalTimes = 0;
+        Long exceptionTotalTimes = 0L;
+        Long downTimeTotalTimes = 0L;
 
         listMap.forEach((k, v) -> {
             dateList.add(k);
             downTimeList.add(v.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
             exceptionTimesList.add(v.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
         });
-        for (Integer i = 0; i < downTimeTotalTimes; i++) {
-            downTimeTotalTimes += i;
+        for (Integer i = 0; i < downTimeList.size(); i++) {
+            downTimeTotalTimes += downTimeList.get(i);
         }
         for (int i = 0; i < exceptionTimesList.size(); i++) {
-            exceptionTotalTimes += i;
+            exceptionTotalTimes += exceptionTimesList.get(i);
         }
 
         return new ExceptionTimesVO(exceptionTotalTimes, downTimeTotalTimes, dateList, exceptionTimesList, downTimeList);

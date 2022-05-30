@@ -15,9 +15,9 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("应用监控 - 异常次数图展示VO")
 public class ExceptionTimesVO {
     @ApiModelProperty("异常总次数")
-    private Integer exceptionTotalTimes;
+    private Long exceptionTotalTimes;
     @ApiModelProperty("停机总次数")
-    private Integer downTimeTotalTimes;
+    private Long downTimeTotalTimes;
     @ApiModelProperty("x轴 - 日期")
     private List<String> dateList;
     @ApiModelProperty("y轴 - 异常次数")
@@ -28,13 +28,7 @@ public class ExceptionTimesVO {
     public ExceptionTimesVO() {
     }
 
-    public ExceptionTimesVO(List<String> dateList, List<Long> exceptionTimesList, List<Long> downTimeList) {
-        this.dateList = dateList;
-        this.exceptionTimesList = exceptionTimesList;
-        this.downTimeList = downTimeList;
-    }
-
-    public ExceptionTimesVO(Integer exceptionTotalTimes, Integer downTimeTotalTimes, List<String> dateList, List<Long> exceptionTimesList, List<Long> downTimeList) {
+    public ExceptionTimesVO(Long exceptionTotalTimes, Long downTimeTotalTimes, List<String> dateList, List<Long> exceptionTimesList, List<Long> downTimeList) {
         this.exceptionTotalTimes = exceptionTotalTimes;
         this.downTimeTotalTimes = downTimeTotalTimes;
         this.dateList = dateList;
@@ -42,19 +36,19 @@ public class ExceptionTimesVO {
         this.downTimeList = downTimeList;
     }
 
-    public Integer getExceptionTotalTimes() {
+    public Long getExceptionTotalTimes() {
         return exceptionTotalTimes;
     }
 
-    public void setExceptionTotalTimes(Integer exceptionTotalTimes) {
+    public void setExceptionTotalTimes(Long exceptionTotalTimes) {
         this.exceptionTotalTimes = exceptionTotalTimes;
     }
 
-    public Integer getDownTimeTotalTimes() {
+    public Long getDownTimeTotalTimes() {
         return downTimeTotalTimes;
     }
 
-    public void setDownTimeTotalTimes(Integer downTimeTotalTimes) {
+    public void setDownTimeTotalTimes(Long downTimeTotalTimes) {
         this.downTimeTotalTimes = downTimeTotalTimes;
     }
 
