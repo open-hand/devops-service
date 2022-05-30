@@ -14,6 +14,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel("应用监控 - 异常次数图展示VO")
 public class ExceptionTimesVO {
+    @ApiModelProperty("异常总次数")
+    private Long exceptionTotalTimes;
+    @ApiModelProperty("停机总次数")
+    private Long downTimeTotalTimes;
     @ApiModelProperty("x轴 - 日期")
     private List<String> dateList;
     @ApiModelProperty("y轴 - 异常次数")
@@ -24,10 +28,28 @@ public class ExceptionTimesVO {
     public ExceptionTimesVO() {
     }
 
-    public ExceptionTimesVO(List<String> dateList, List<Long> exceptionTimesList, List<Long> downTimeList) {
+    public ExceptionTimesVO(Long exceptionTotalTimes, Long downTimeTotalTimes, List<String> dateList, List<Long> exceptionTimesList, List<Long> downTimeList) {
+        this.exceptionTotalTimes = exceptionTotalTimes;
+        this.downTimeTotalTimes = downTimeTotalTimes;
         this.dateList = dateList;
         this.exceptionTimesList = exceptionTimesList;
         this.downTimeList = downTimeList;
+    }
+
+    public Long getExceptionTotalTimes() {
+        return exceptionTotalTimes;
+    }
+
+    public void setExceptionTotalTimes(Long exceptionTotalTimes) {
+        this.exceptionTotalTimes = exceptionTotalTimes;
+    }
+
+    public Long getDownTimeTotalTimes() {
+        return downTimeTotalTimes;
+    }
+
+    public void setDownTimeTotalTimes(Long downTimeTotalTimes) {
+        this.downTimeTotalTimes = downTimeTotalTimes;
     }
 
     public List<String> getDateList() {
