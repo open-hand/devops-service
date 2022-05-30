@@ -234,7 +234,7 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "查询制品仓库信息")
+    @ApiOperation(value = "查询制品仓库信息", hidden = true)
     @GetMapping("/rewrite_repo_info_script")
     public ResponseEntity<ImageRepoInfoVO> queryRewriteRepoInfoScript(
             @RequestParam(value = "project_id") Long projectId,
@@ -248,7 +248,7 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "查询制品仓库信息")
+    @ApiOperation(value = "查询制品仓库信息", hidden = true)
     @GetMapping("/image_repo_info")
     public ResponseEntity<ImageRepoInfoVO> queryImageRepoInfo(
             @ApiParam(value = "token", required = true)

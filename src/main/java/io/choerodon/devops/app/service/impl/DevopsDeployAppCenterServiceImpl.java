@@ -564,10 +564,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public ExceptionTimesVO queryExceptionTimesChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
         List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listByAppIdAndDate(appId, startTime, endTime);
 
-        if (CollectionUtils.isEmpty(appExceptionRecordDTOS)) {
-            return new ExceptionTimesVO();
-        }
-
         // 按日期分组
         Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<String> dateList = new ArrayList<>();
@@ -608,9 +604,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public ExceptionDurationVO queryExceptionDurationChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
         List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listCompletedByAppIdAndDate(appId, startTime, endTime);
 
-        if (CollectionUtils.isEmpty(appExceptionRecordDTOS)) {
-            return new ExceptionDurationVO();
-        }
         Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream()
                 .collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
