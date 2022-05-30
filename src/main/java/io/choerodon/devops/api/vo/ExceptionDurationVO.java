@@ -36,6 +36,14 @@ public class ExceptionDurationVO {
         this.downTimeDurationList = downTimeDurationList;
     }
 
+    public List<String> getDateList() {
+        return dateList;
+    }
+
+    public void setDateList(List<String> dateList) {
+        this.dateList = dateList;
+    }
+
     public Long getExceptionTotalDuration() {
         return exceptionTotalDuration;
     }
