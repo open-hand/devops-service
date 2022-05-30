@@ -1,57 +1,69 @@
 package io.choerodon.devops.api.vo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by wangxiang on 2021/3/25
  */
 public class ImageScanResultVO {
     @JsonProperty("Target")
+    @ApiModelProperty("Target")
     private String target;
     @JsonProperty("Vulnerabilities")
+    @ApiModelProperty("缺陷列表")
     private List<VulnerabilitieVO> vulnerabilities;
 
     /**
      * 镜像扫描开始时间
      */
+    @ApiModelProperty("镜像扫描开始时间")
     private Date startDate;
     /**
      * 耗时
      */
+    @ApiModelProperty("耗时")
     private Long spendTime;
 
     /**
      * 未知漏洞个数
      */
+    @ApiModelProperty("未知漏洞个数")
     private Integer unknownCount;
 
     /**
      * 低危漏洞个数
      */
+    @ApiModelProperty("低危漏洞个数")
     private Integer lowCount;
 
     /**
      * 中危漏洞个数
      */
+    @ApiModelProperty("中危漏洞个数")
     private Integer mediumCount;
 
     /**
      * 高危漏洞个数
      */
+    @ApiModelProperty("高危漏洞个数")
     private Integer highCount;
 
 
     /**
      * 危急漏洞个数
      */
+    @ApiModelProperty("危急漏洞个数")
     private Integer criticalCount;
 
     /**
      * 漏洞严重程度
      * @link{ImageSecurityEnum}
      */
+    @ApiModelProperty("漏洞严重程度")
     private String level;
 
     public Date getStartDate() {

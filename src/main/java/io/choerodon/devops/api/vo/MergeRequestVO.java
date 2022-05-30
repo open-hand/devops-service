@@ -37,12 +37,13 @@ public class MergeRequestVO {
     private Integer projectId;
     @ApiModelProperty("源分支")
     private String sourceBranch;
-
+    @ApiModelProperty(hidden = true)
     private Integer sourceProjectId;
     @ApiModelProperty("合并状态")
     private String state;
     @ApiModelProperty("目标分支")
     private String targetBranch;
+    @ApiModelProperty(hidden = true)
     private Integer targetProjectId;
     @ApiModelProperty("标题")
     private String title;
@@ -67,7 +68,7 @@ public class MergeRequestVO {
     @ApiModelProperty("iam审核人信息")
     private UserVO iamAssignee;
 
-    @ApiModelProperty("提交记录")
+    @ApiModelProperty(value = "提交记录", hidden = true)
     private List<CommitVO> commits;
 
     public static Boolean isValid(MergeRequestVO mergeRequestVO) {
