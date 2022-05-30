@@ -567,20 +567,27 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
 
         // 按日期分组
-        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
+        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().sorted(Comparator.comparing(AppExceptionRecordDTO::getStartDate)).collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<String> dateList = new ArrayList<>();
         List<Long> exceptionTimesList = new ArrayList<>();
         List<Long> downTimeList = new ArrayList<>();
 
+        Integer exceptionTotalTimes = 0;
+        Integer downTimeTotalTimes = 0;
 
         listMap.forEach((k, v) -> {
             dateList.add(k);
             downTimeList.add(v.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
             exceptionTimesList.add(v.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
         });
+        for (Integer i = 0; i < downTimeTotalTimes; i++) {
+            downTimeTotalTimes += i;
+        }
+        for (int i = 0; i < exceptionTimesList.size(); i++) {
+            exceptionTotalTimes += i;
+        }
 
-
-        return new ExceptionTimesVO(dateList, exceptionTimesList, downTimeList);
+        return new ExceptionTimesVO(exceptionTotalTimes, downTimeTotalTimes, dateList, exceptionTimesList, downTimeList);
     }
 
     @Override
@@ -590,7 +597,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (CollectionUtils.isEmpty(appExceptionRecordDTOS)) {
             return new ExceptionDurationVO();
         }
-        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
+        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().sorted(Comparator.comparing(AppExceptionRecordDTO::getStartDate)).collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
         List<ExceptionRecordVO> downTimeDurationList = new ArrayList<>();
         listMap.forEach((k, v) -> v.forEach(r -> {
@@ -602,7 +609,15 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 exceptionDurationList.add(exceptionRecordVO);
             }
         }));
-        return new ExceptionDurationVO(exceptionDurationList, downTimeDurationList);
+        Long exceptionTotalDuration = 0L;
+        Long downTimeTotalDuration = 0L;
+        for (ExceptionRecordVO exceptionRecordVO : downTimeDurationList) {
+            downTimeTotalDuration += exceptionRecordVO.getDuration();
+        }
+        for (ExceptionRecordVO exceptionRecordVO : exceptionDurationList) {
+            exceptionTotalDuration += exceptionRecordVO.getDuration();
+        }
+        return new ExceptionDurationVO(exceptionTotalDuration, downTimeTotalDuration, exceptionDurationList, downTimeDurationList);
     }
 
     @Transactional
