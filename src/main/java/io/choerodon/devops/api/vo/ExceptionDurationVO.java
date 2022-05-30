@@ -18,6 +18,8 @@ public class ExceptionDurationVO {
     private Long exceptionTotalDuration;
     @ApiModelProperty("停机总时长")
     private Long downTimeTotalDuration;
+    @ApiModelProperty("x轴日期坐标")
+    private List<String> dateList;
     @ApiModelProperty("异常时长")
     private List<ExceptionRecordVO> exceptionDurationList;
     @ApiModelProperty("停机时长")
@@ -26,14 +28,10 @@ public class ExceptionDurationVO {
     public ExceptionDurationVO() {
     }
 
-    public ExceptionDurationVO(List<ExceptionRecordVO> exceptionDurationList, List<ExceptionRecordVO> downTimeDurationList) {
-        this.exceptionDurationList = exceptionDurationList;
-        this.downTimeDurationList = downTimeDurationList;
-    }
-
-    public ExceptionDurationVO(Long exceptionTotalDuration, Long downTimeTotalDuration, List<ExceptionRecordVO> exceptionDurationList, List<ExceptionRecordVO> downTimeDurationList) {
+    public ExceptionDurationVO(Long exceptionTotalDuration, Long downTimeTotalDuration, List<String> dateList, List<ExceptionRecordVO> exceptionDurationList, List<ExceptionRecordVO> downTimeDurationList) {
         this.exceptionTotalDuration = exceptionTotalDuration;
         this.downTimeTotalDuration = downTimeTotalDuration;
+        this.dateList = dateList;
         this.exceptionDurationList = exceptionDurationList;
         this.downTimeDurationList = downTimeDurationList;
     }

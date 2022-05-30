@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,9 +10,13 @@ package io.choerodon.devops.api.vo;
  * @since 2020/7/13 14:25
  */
 public class AduitStatusChangeVO {
+    @ApiModelProperty("审核状态是否变更")
     private Boolean auditStatusChanged;
+    @ApiModelProperty("当前状态")
     private String currentStatus;
+    @ApiModelProperty("会签")
     private Integer countersigned;
+    @ApiModelProperty("审核人")
     private String auditUserName;
 
 
