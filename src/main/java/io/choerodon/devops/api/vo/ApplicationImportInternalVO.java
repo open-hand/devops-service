@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -9,16 +11,19 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class ApplicationImportInternalVO {
     @Encrypt
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
     @Encrypt
+    @ApiParam("版本id")
     private Long versionId;
+    @ApiParam("应用服务类型")
     private String type;
+    @ApiParam("应用名称")
     private String appName;
+    @ApiParam("应用编码")
     private String appCode;
-    /**
-     * 源代码在文件服务器上的地址
-     */
     @Encrypt
+    @ApiParam("应用市场部署对象id")
     private Long deployObjectId;
 
     public Long getDeployObjectId() {

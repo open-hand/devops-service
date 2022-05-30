@@ -1,12 +1,17 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author zhaotianxin
  * @since 2019/9/3
  */
 public class DevopsConfigRepVO {
+    @ApiModelProperty("harbor配置信息")
     private DevopsConfigVO harbor;
+    @ApiModelProperty("chart配置信息")
     private DevopsConfigVO chart;
+    @ApiModelProperty("harbor仓库是否是私有库")
     private Boolean harborPrivate;
 
     public Boolean getHarborPrivate() {

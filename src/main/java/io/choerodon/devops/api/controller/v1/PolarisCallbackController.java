@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,12 @@ public class PolarisCallbackController {
     @Permission(permissionPublic = true)
     @ApiOperation("接收polaris扫描的结果")
     @PostMapping
-    public ResponseEntity<Void> finishScanning(@RequestParam("token") String token,
-                                               @RequestParam("cluster_id") Long clusterId,
-                                               @RequestBody PolarisResponsePayloadVO message) {
+    public ResponseEntity<Void> finishScanning(
+            @ApiParam("认证token")
+            @RequestParam("token") String token,
+            @ApiParam("集群id")
+            @RequestParam("cluster_id") Long clusterId,
+            @RequestBody PolarisResponsePayloadVO message) {
         polarisScanningService.handleAgentPolarisMessageFromHttp(token, clusterId, message);
         return Results.success();
     }

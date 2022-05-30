@@ -13,18 +13,23 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * Description:
  */
 public class DevopsServiceTargetVO {
+    @ApiModelProperty("选择的实例列表")
     private List<AppServiceInstanceInfoVO> instances;
-
     @Encrypt
+    @ApiModelProperty("目标应用服务id")
     private Long targetAppServiceId;
+    @ApiModelProperty("目标应用服务名称")
     private String targetAppServiceName;
+    @ApiModelProperty("目标部署组id")
     private Long targetDeploymentId;
+    @ApiModelProperty("目标部署组名称")
     private String targetDeploymentName;
     /**
      * 是创建网络时所填的标签，也是这个网络本身的选择器
      */
     @ApiModelProperty("网络的选择器")
     private Map<String, String> selectors;
+    @ApiModelProperty("目标端点")
     private Map<String, List<EndPointPortVO>> endPoints;
 
     public List<AppServiceInstanceInfoVO> getInstances() {

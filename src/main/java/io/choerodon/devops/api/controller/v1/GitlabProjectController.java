@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,9 +29,13 @@ public class GitlabProjectController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "校验仓库是否还有剩余空间")
     @GetMapping("/check_repository_available")
-    public ResponseEntity<Boolean> checkRepositoryAvailable(@RequestParam(name = "groupName") String groupName,
-                                                            @RequestParam(name = "projectName") String projectName,
-                                                            @RequestParam(name = "token") String token) {
+    public ResponseEntity<Boolean> checkRepositoryAvailable(
+            @ApiParam("gitlab group 名称")
+            @RequestParam(name = "groupName") String groupName,
+            @ApiParam("gitlab project 名称")
+            @RequestParam(name = "projectName") String projectName,
+            @ApiParam("认证token")
+            @RequestParam(name = "token") String token) {
         return ResponseEntity.ok(gitlabGroupService.checkRepositoryAvailable(groupName, projectName, token));
     }
 }

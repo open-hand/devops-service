@@ -2,10 +2,16 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Objects;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class ProjectReqVO {
+    @ApiModelProperty("项目id")
     private Long id;
+    @ApiModelProperty("项目名称")
     private String name;
+    @ApiModelProperty("项目编码")
     private String code;
+    @ApiModelProperty("是否有权限")
     private Boolean permission;
 
 

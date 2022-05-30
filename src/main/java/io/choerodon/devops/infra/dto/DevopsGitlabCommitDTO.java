@@ -19,22 +19,30 @@ public class DevopsGitlabCommitDTO extends AuditDomain {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-//    @Encrypt(DevopsGitlabCommitDTO.ENCRYPT_KEY)
     private Long id;
+    @ApiModelProperty("应用服务Id")
     private Long appServiceId;
+    @ApiModelProperty("用户Id")
     private Long userId;
     @Deprecated
     @ApiModelProperty("敏捷的issueId")
     private Long issueId;
+    @ApiModelProperty("commit sha")
     private String commitSha;
+    @ApiModelProperty("提交内容")
     private String commitContent;
+    @ApiModelProperty("提交分支")
     private String ref;
+    @ApiModelProperty("提交日期")
     private Date commitDate;
 
     @Transient
+    @ApiModelProperty("应用服务名称")
     private String appServiceName;
     @Transient
+    @ApiModelProperty("应用服务编码")
     private String appServiceCode;
+    @ApiModelProperty("gitlab url")
     private String url;
 
     @ApiModelProperty("敏捷的issueId")

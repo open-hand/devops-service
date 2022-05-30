@@ -8,7 +8,6 @@ import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
-import io.choerodon.devops.infra.dto.harbor.ProjectDetail;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**

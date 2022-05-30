@@ -9,9 +9,13 @@ import io.swagger.annotations.ApiModelProperty;
  * @Modified By:
  */
 public class ResourceVO {
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("总应用服务数")
     private Long currentAppService;
+    @ApiModelProperty("总集群数")
     private Long currentCluster;
+    @ApiModelProperty("总环境数")
     private Long currentEnv;
 
     @ApiModelProperty("当前gitlab的使用量")
