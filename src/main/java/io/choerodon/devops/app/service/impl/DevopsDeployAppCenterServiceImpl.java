@@ -4,6 +4,8 @@ import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -575,11 +577,22 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         Long exceptionTotalTimes = 0L;
         Long downTimeTotalTimes = 0L;
 
-        listMap.forEach((k, v) -> {
-            dateList.add(k);
-            downTimeList.add(v.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
-            exceptionTimesList.add(v.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
-        });
+        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        while (!localDate.isAfter(endDate)) {
+            List<AppExceptionRecordDTO> appExceptionRecordsOfDay = listMap.get(localDate.toString());
+            dateList.add(localDate.toString());
+            if (CollectionUtils.isEmpty(appExceptionRecordsOfDay)) {
+                downTimeList.add(0L);
+                exceptionTimesList.add(0L);
+            } else {
+                downTimeList.add(appExceptionRecordsOfDay.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
+                exceptionTimesList.add(appExceptionRecordsOfDay.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
+            }
+            localDate = localDate.plusDays(1);
+        }
+
         // 统计次数
         for (int i = 0; i < downTimeList.size(); i++) {
             downTimeTotalTimes += downTimeList.get(i);
