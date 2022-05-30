@@ -580,7 +580,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             downTimeList.add(v.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
             exceptionTimesList.add(v.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
         });
-        for (Integer i = 0; i < downTimeList.size(); i++) {
+        // 统计次数
+        for (int i = 0; i < downTimeList.size(); i++) {
             downTimeTotalTimes += downTimeList.get(i);
         }
         for (int i = 0; i < exceptionTimesList.size(); i++) {
@@ -609,6 +610,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 exceptionDurationList.add(exceptionRecordVO);
             }
         }));
+        // 统计时长
         Long exceptionTotalDuration = 0L;
         Long downTimeTotalDuration = 0L;
         for (ExceptionRecordVO exceptionRecordVO : downTimeDurationList) {
