@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.validation.constraints.NotNull;
+import io.choerodon.devops.api.vo.host.ResourceUsageInfoVO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 
 /**
  * 主机资源资源VO
@@ -12,19 +14,29 @@ import javax.validation.constraints.NotNull;
  * @author xingxingwu.hand-china.com 2021/07/13 17:02
  */
 public class HostDetailResourceVO {
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("项目名称")
     private String projectName;
     @Encrypt
+    @ApiModelProperty("主机id")
     private Long id;
+    @ApiModelProperty("主机名称")
     private String name;
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostStatus}
      */
+    @ApiModelProperty("主机状态")
     private String hostStatus;
+    @ApiModelProperty("主机ip")
     private String hostIp;
+    @ApiModelProperty("ssh端口号")
     private Integer sshPort;
+    @ApiModelProperty("主机cpu使用情况")
     private String cpu;
+    @ApiModelProperty("主机内存使用情况")
     private String mem;
+    @ApiModelProperty("主机硬盘使用情况")
     private String disk;
 
     public static HostDetailResourceVO build(@NotNull DevopsHostDTO hostDTO, ResourceUsageInfoVO resourceUsageInfoVO, String projectName) {
