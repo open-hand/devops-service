@@ -615,6 +615,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                 .collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
         List<ExceptionRecordVO> downTimeDurationList = new ArrayList<>();
+        List<String> dateList = new ArrayList<>();
 
         LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -632,6 +633,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
                     }
                 });
             }
+            dateList.add(localDate.toString());
             localDate = localDate.plusDays(1);
         }
         // 统计时长
@@ -643,7 +645,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         for (ExceptionRecordVO exceptionRecordVO : exceptionDurationList) {
             exceptionTotalDuration += exceptionRecordVO.getDuration();
         }
-        return new ExceptionDurationVO(exceptionTotalDuration, downTimeTotalDuration, exceptionDurationList, downTimeDurationList);
+        return new ExceptionDurationVO(exceptionTotalDuration, downTimeTotalDuration, dateList, exceptionDurationList, downTimeDurationList);
     }
 
     @Transactional
