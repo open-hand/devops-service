@@ -1,13 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.ClusterResourceVO;
-import io.choerodon.devops.api.vo.DevopsPrometheusVO;
-import io.choerodon.devops.api.vo.PrometheusStageVO;
-import io.choerodon.devops.app.service.DevopsClusterResourceService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Optional;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -17,8 +12,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Optional;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.ClusterResourceVO;
+import io.choerodon.devops.api.vo.DevopsPrometheusVO;
+import io.choerodon.devops.api.vo.PrometheusStageVO;
+import io.choerodon.devops.app.service.DevopsClusterResourceService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author zhaotianxin
@@ -122,7 +123,6 @@ public class DevopsClusterResourceController {
             @Encrypt
             @ApiParam(value = "集群id", required = true)
             @RequestParam(name = "cluster_id") Long clusterId) {
-
         return Optional.ofNullable(devopsClusterResourceService.queryPrometheus(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cluster.prometheus.query"));
@@ -132,6 +132,7 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "查询prometheus部署状态")
     @GetMapping("/prometheus/deploy_status")
     public ResponseEntity<PrometheusStageVO> getPrometheusDeployStatus(
+            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @Encrypt
@@ -145,6 +146,7 @@ public class DevopsClusterResourceController {
     @ApiOperation(value = "卸载prometheus")
     @DeleteMapping("/prometheus/unload")
     public ResponseEntity<Boolean> deletePrometheus(
+            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @ApiParam(value = "集群id", required = true)

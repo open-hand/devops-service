@@ -16,26 +16,30 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class CronJobInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("cronjob名称")
     private String name;
-
+    @ApiModelProperty("执行计划")
     private String schedule;
-
+    @ApiModelProperty("是否暂停")
     private Boolean suspend;
-
+    @ApiModelProperty("是否启用")
     private Integer active;
-
+    @ApiModelProperty("cronjob创建时间")
     private String creationTimestamp;
-
+    @ApiModelProperty("cronjob最近执行时间")
     private String lastScheduleTime;
+    @ApiModelProperty("cronjob端口号")
     private List<Integer> ports;
+    @ApiModelProperty("cronjob标签")
     private Map<String, String> labels;
     @Encrypt
+    @ApiModelProperty("cronjob所属实例id")
     private Long instanceId;
-
+    @ApiModelProperty("commandType")
     private String commandType;
-
+    @ApiModelProperty("commandStatus")
     private String commandStatus;
-
+    @ApiModelProperty("错误信息")
     private String error;
 
     @ApiModelProperty("来源类型 chart/工作负载")

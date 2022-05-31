@@ -16,21 +16,30 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DaemonSetInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("目标pod数")
     private Long desiredScheduled;
+    @ApiModelProperty("当前pod数")
     private Long currentScheduled;
+    @ApiModelProperty("可用pod数")
     private Long numberAvailable;
+    @ApiModelProperty("就绪pod数")
     private Long numberReady;
+    @ApiModelProperty("创建时间")
     private String age;
+    @ApiModelProperty("端口号")
     private List<Integer> ports;
+    @ApiModelProperty("标签")
     private Map<String, String> labels;
     @Encrypt
+    @ApiModelProperty("所属实例id")
     private Long instanceId;
-
+    @ApiModelProperty("commandType")
     private String commandType;
-
+    @ApiModelProperty("commandStatus")
     private String commandStatus;
-
+    @ApiModelProperty("错误信息")
     private String error;
 
     @ApiModelProperty("来源类型 chart/工作负载")

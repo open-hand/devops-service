@@ -1,10 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -30,8 +26,8 @@ import io.choerodon.devops.api.vo.WorkloadBaseCreateOrUpdateVO;
 import io.choerodon.devops.app.service.DevopsDeploymentService;
 import io.choerodon.devops.app.service.WorkloadService;
 import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
-import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.ResourceType;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -50,10 +46,12 @@ public class DevopsDeploymentController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "通过粘贴yaml/或上传文件形式创建或更新deployment资源")
     @PostMapping
-    public void createOrUpdate(@PathVariable(value = "project_id") Long projectId,
-                               @ModelAttribute @Valid WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
-                               BindingResult bindingResult,
-                               @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
+    public void createOrUpdate(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ModelAttribute @Valid WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
+            BindingResult bindingResult,
+            @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
@@ -66,8 +64,11 @@ public class DevopsDeploymentController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除deployment资源")
     @DeleteMapping
-    public ResponseEntity<Void> delete(@PathVariable(value = "project_id") Long projectId,
-                                         @RequestParam @Encrypt Long id) {
+    public ResponseEntity<Void> delete(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "deployment id", required = true)
+            @RequestParam @Encrypt Long id) {
         workloadService.delete(projectId, id, ResourceType.DEPLOYMENT);
         return Results.success();
     }
@@ -78,9 +79,12 @@ public class DevopsDeploymentController {
     public ResponseEntity<Page<DeploymentInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境 id", required = true)
             @RequestParam(value = "env_id") @Encrypt Long envId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "deployment 名称", required = true)
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "deployment 是否属于实例", required = true)
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
         return ResponseEntity.ok(devopsDeploymentService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
@@ -161,7 +165,8 @@ public class DevopsDeploymentController {
 
     /**
      * 查询deployment服务的所有端口
-     * @param deploymentId     服务id
+     *
+     * @param deploymentId 服务id
      * @return List
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})

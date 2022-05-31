@@ -66,7 +66,7 @@ public class DevopsDeployController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "hzero部署")
+    @ApiOperation(value = "hzero部署", hidden = true)
     @PostMapping("/hzero")
     public ResponseEntity<Long> deployHzeroApplication(
             @ApiParam(value = "项目Id", required = true)

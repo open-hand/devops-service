@@ -28,6 +28,7 @@ public class DevopsDeployGroupController {
     @PostMapping("create_or_update")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsDeployAppCenterEnvVO> createOrUpdate(
+            @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam("操作类型")
             @RequestParam("type") String type,
@@ -41,6 +42,7 @@ public class DevopsDeployGroupController {
     @PostMapping("/update_container")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsDeployAppCenterEnvVO> updateContainer(
+            @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "部署组信息")
             @RequestBody DevopsDeployGroupVO devopsDeployGroupVO

@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo.deploy;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -43,11 +41,8 @@ public class CustomDeployVO {
     private String healthProb;
     @ApiModelProperty("操作类型 create/update")
     private String operation;
-
+    @ApiModelProperty("部署文件信息")
     private FileInfoVO fileInfoVO;
-
-    @ApiModelProperty("部署配置文件列表")
-    private List<ConfigSettingVO> configSettingVOS;
 
     private Long appId;
 
@@ -131,14 +126,6 @@ public class CustomDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
-    }
-
-    public List<ConfigSettingVO> getConfigSettingVOS() {
-        return configSettingVOS;
-    }
-
-    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
-        this.configSettingVOS = configSettingVOS;
     }
 
     public String getKillCommand() {
