@@ -22,7 +22,7 @@
         from devops_app_exception_record daer
         where daer.app_id = #{appId}
           and daer.start_date >= CONCAT('', '${startTime}', ' 00:00:00')
-          and daer.end_date <![CDATA[<=]]> CONCAT('', '${endTime}', ' 23:59:59')
+          and (daer.end_date <![CDATA[<=]]> CONCAT('', '${endTime}', ' 23:59:59') or daer.end_date is null)
     </select>
     <select id="listCompletedByAppIdAndDate" resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">
         select *
