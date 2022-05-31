@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dto;
 
 import javax.persistence.*;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -22,19 +23,29 @@ public class DevopsAppTemplateDTO  extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Encrypt
     private Long id;
-
+    @ApiModelProperty("资源id")
     private Long sourceId;
+    @ApiModelProperty("资源类型")
     private String sourceType;
+    @ApiModelProperty("gitlabProjectId")
     private Long gitlabProjectId;
+    @ApiModelProperty("gitlabUrl")
     private String gitlabUrl;
+    @ApiModelProperty("应用模板名称")
     private String name;
+    @ApiModelProperty("应用模板编码")
     private String code;
+    @ApiModelProperty("应用模板类型")
     private String type;
+    @ApiModelProperty("是否启用")
     private Boolean enable;
+    @ApiModelProperty("状态")
     private String status;
+    @ApiModelProperty("备注")
     private String remark;
 
     @Transient
+    @ApiModelProperty("是否有权限")
     private Boolean permission;
 
     public DevopsAppTemplateDTO() {

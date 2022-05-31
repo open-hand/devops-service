@@ -321,7 +321,7 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
 
-    @ApiOperation("修复数据使用，查询所有apiTest类型的数据")
+    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @GetMapping("/api_test/list")
     public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(

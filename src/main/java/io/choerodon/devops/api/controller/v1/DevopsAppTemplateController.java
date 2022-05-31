@@ -57,9 +57,12 @@ public class DevopsAppTemplateController {
     @GetMapping("/site/check_name_or_code")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Boolean> checkNameAndCodeOnSite(
+            @ApiParam("name or code")
             @RequestParam(value = "value") String value,
+            @ApiParam("type")
             @RequestParam(value = "type") String type,
             @Encrypt
+            @ApiParam("模板id")
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, 0L, ResourceLevel.SITE.value());
         appTemplateDTO.setName(value);
@@ -72,6 +75,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> addPermissionOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.addPermission(appTemplateId);
         return Results.success();
@@ -82,6 +86,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> enableAppTemplateOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.enableAppTemplate(appTemplateId);
         return Results.success();
@@ -93,6 +98,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> disableAppTemplateOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.disableAppTemplate(appTemplateId);
         return Results.success();
@@ -103,6 +109,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> deleteAppTemplateOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.deleteAppTemplate(0L, ResourceLevel.SITE.value(), appTemplateId);
         return Results.success();
@@ -112,6 +119,7 @@ public class DevopsAppTemplateController {
     @GetMapping("/site/list")
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnSite(
+            @ApiParam("搜索参数")
             @RequestParam(required = false) String param) {
         return Results.success(devopsAppTemplateService.listAppTemplate(0L, ResourceLevel.SITE.value(), ResourceLevel.SITE.value(), param));
     }
@@ -121,6 +129,7 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
     }
@@ -130,7 +139,9 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.SITE)
     public ResponseEntity<Void> updateAppTemplateOnSite(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId,
+            @ApiParam("模板名称")
             @RequestParam(value = "name") String name) {
         devopsAppTemplateService.updateAppTemplate(appTemplateId, name);
         return Results.success();
@@ -143,6 +154,7 @@ public class DevopsAppTemplateController {
     public ResponseEntity<Page<DevopsAppTemplateDTO>> queryAppTemplateOnTenant(
             @ApiParam(value = "分页参数")
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @RequestBody(required = false) String params) {
         return Results.success(devopsAppTemplateService.pageAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), params, pageRequest));
@@ -152,6 +164,7 @@ public class DevopsAppTemplateController {
     @PostMapping("/organization/{organization_id}/create_template")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> createTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @RequestBody DevopsAppTemplateCreateVO appTemplateCreateVO) {
         devopsAppTemplateService.createTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), appTemplateCreateVO);
@@ -162,10 +175,14 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/check_name_or_code")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Boolean> checkNameAndCodeOnTenant(
+            @ApiParam("name or code")
             @RequestParam(value = "value") String value,
+            @ApiParam("type")
             @RequestParam(value = "type") String type,
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @RequestParam(value = "app_template_id", required = false) Long appTemplateId) {
         DevopsAppTemplateDTO appTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, organizationId, ResourceLevel.ORGANIZATION.value());
         appTemplateDTO.setName(value);
@@ -177,8 +194,10 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/add_permission/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> addPermissionOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.addPermission(appTemplateId);
         return Results.success();
@@ -188,8 +207,10 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/enable/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> enableAppTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.enableAppTemplate(appTemplateId);
         return Results.success();
@@ -200,8 +221,10 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/disable/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> disableAppTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.disableAppTemplate(appTemplateId);
         return Results.success();
@@ -211,8 +234,10 @@ public class DevopsAppTemplateController {
     @DeleteMapping("/organization/{organization_id}/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> deleteAppTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         devopsAppTemplateService.deleteAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), appTemplateId);
         return Results.success();
@@ -222,9 +247,11 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/list")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam("选择查询平台层模板/组织层模板：site/organization")
             @RequestParam(value = "selectedLevel") String selectedLevel,
+            @ApiParam("搜索参数")
             @RequestParam(required = false) String param) {
         return Results.success(devopsAppTemplateService.listAppTemplate(organizationId, ResourceLevel.ORGANIZATION.value(), selectedLevel, param));
     }
@@ -233,8 +260,10 @@ public class DevopsAppTemplateController {
     @GetMapping("/organization/{organization_id}/{app_template_id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsAppTemplateDTO> detailsAppTemplateOnTenant(
+            @ApiParam("租户id")
             @PathVariable(value = "organization_id") Long organizationId,
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId) {
         return Results.success(devopsAppTemplateService.queryAppTemplateById(appTemplateId));
     }
@@ -244,7 +273,9 @@ public class DevopsAppTemplateController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> updateAppTemplateOnTenant(
             @Encrypt
+            @ApiParam("模板id")
             @PathVariable(value = "app_template_id") Long appTemplateId,
+            @ApiParam("模板名称")
             @RequestParam(value = "name") String name) {
         devopsAppTemplateService.updateAppTemplate(appTemplateId, name);
         return Results.success();
@@ -254,9 +285,11 @@ public class DevopsAppTemplateController {
     @GetMapping("/project/{project_id}/list")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<DevopsAppTemplateDTO>> listAppTemplateOnProject(
+            @ApiParam("项目id")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam("选择查询平台层模板/组织层模板：site/organization")
             @RequestParam(value = "selectedLevel") String selectedLevel,
+            @ApiParam("搜索参数")
             @RequestParam(required = false) String param) {
         return Results.success(devopsAppTemplateService.listAppTemplate(projectId, ResourceLevel.PROJECT.value(), selectedLevel, param));
     }

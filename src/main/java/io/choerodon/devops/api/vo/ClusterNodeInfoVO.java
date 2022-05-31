@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -11,36 +12,53 @@ public class ClusterNodeInfoVO {
     /**
      * values: master/node
      */
+    @ApiModelProperty("节点角色")
     private String role;
+    @ApiModelProperty("节点名称")
     private String nodeName;
+    @ApiModelProperty("节点状态")
     private String status;
+    @ApiModelProperty("创建时间")
     private String createTime;
-
+    @ApiModelProperty("cpuTotal")
     private String cpuTotal;
+    @ApiModelProperty("cpuRequest")
     private String cpuRequest;
+    @ApiModelProperty("cpuLimit")
     private String cpuLimit;
+    @ApiModelProperty("cpuRequestPercentage")
     private String cpuRequestPercentage;
+    @ApiModelProperty("cpuLimitPercentage")
     private String cpuLimitPercentage;
-
+    @ApiModelProperty("memoryTotal")
     private String memoryTotal;
+    @ApiModelProperty("memoryRequest")
     private String memoryRequest;
+    @ApiModelProperty("memoryLimit")
     private String memoryLimit;
+    @ApiModelProperty("memoryRequestPercentage")
     private String memoryRequestPercentage;
+    @ApiModelProperty("memoryLimitPercentage")
     private String memoryLimitPercentage;
-
+    @ApiModelProperty("pod总数")
     private Long podTotal;
+    @ApiModelProperty("pod数")
     private Long podCount;
+    @ApiModelProperty("pod分配百分比")
     private String podPercentage;
+    @ApiModelProperty("集群类型")
     private String clusterType;
-
+    @ApiModelProperty("操作状态")
     private String operatingStatus;
-
+    @ApiModelProperty("错误信息")
     private String errorMsg;
-
+    @ApiModelProperty("是否可以删除master节点")
     private Boolean enableDeleteMasterRole = false;
+    @ApiModelProperty("是否可以删除etcd节点")
     private Boolean enableDeleteEtcdRole = false;
+    @ApiModelProperty("是否可以删除节点")
     private Boolean enableDeleteNode = false;
-
+    @ApiModelProperty("是否是外部节点")
     private Boolean outerNodeFlag = false;
 
     public String getRole() {

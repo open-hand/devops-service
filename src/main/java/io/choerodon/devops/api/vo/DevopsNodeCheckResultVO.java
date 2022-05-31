@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.CommandStatus;
 
@@ -7,7 +9,9 @@ import io.choerodon.devops.infra.enums.CommandStatus;
  * 节点检查进度
  */
 public class DevopsNodeCheckResultVO {
+    @ApiModelProperty("节点状态")
     private String status;
+    @ApiModelProperty("错误信息")
     private String errorMsg;
     private Step configuration;
     private Step system;

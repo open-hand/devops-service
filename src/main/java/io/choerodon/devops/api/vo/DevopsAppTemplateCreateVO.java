@@ -28,7 +28,9 @@ public class DevopsAppTemplateCreateVO {
     private String repoUrl;
     @ApiModelProperty("私有token")
     private String token;
+    @ApiModelProperty(hidden = true)
     private Long appTemplateId;
+    @ApiModelProperty(hidden = true)
     private Long creatorId;
 
     public String getName() {
