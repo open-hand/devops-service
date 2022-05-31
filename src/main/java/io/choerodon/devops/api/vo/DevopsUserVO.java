@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -10,9 +11,13 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsUserVO {
     @Encrypt
+    @ApiModelProperty("iamUserId")
     private Long iamUserId;
+    @ApiModelProperty("登录名")
     private String loginName;
+    @ApiModelProperty("真实姓名")
     private String realName;
+    @ApiModelProperty("头像地址")
     private String imageUrl;
 
     public DevopsUserVO() {
