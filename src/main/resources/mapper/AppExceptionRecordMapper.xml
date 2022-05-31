@@ -31,6 +31,7 @@
           and daer.end_date is not null
           and daer.start_date >= CONCAT('', '${startTime}', ' 00:00:00')
           and daer.end_date <![CDATA[<=]]> CONCAT('', '${endTime}', ' 23:59:59')
+        order by daer.start_date
     </select>
     <select id="listUnCompleteExceptionRecord"
             resultType="io.choerodon.devops.infra.dto.AppExceptionRecordDTO">

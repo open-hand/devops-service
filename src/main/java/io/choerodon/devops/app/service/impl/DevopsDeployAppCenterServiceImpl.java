@@ -604,31 +604,34 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     public ExceptionDurationVO queryExceptionDurationChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
         List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listCompletedByAppIdAndDate(appId, startTime, endTime);
 
-        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream()
-                .collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
         List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
         List<ExceptionRecordVO> downTimeDurationList = new ArrayList<>();
-        List<String> dateList = new ArrayList<>();
+        List<Date> dateList = appExceptionRecordDTOS.stream().map(AppExceptionRecordDTO::getStartDate).collect(Collectors.toList());
 
-        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        while (!localDate.isAfter(endDate)) {
-            List<AppExceptionRecordDTO> appExceptionRecordsOfDay = listMap.get(localDate.toString());
-            if (!CollectionUtils.isEmpty(appExceptionRecordsOfDay)) {
-                LocalDate finalLocalDate = localDate;
-                appExceptionRecordsOfDay.forEach(r -> {
-                    long duration = (r.getEndDate().getTime() - r.getStartDate().getTime()) / 1000;
-                    ExceptionRecordVO exceptionRecordVO = new ExceptionRecordVO(duration, r.getStartDate(), r.getEndDate(), finalLocalDate.toString());
-                    if (Boolean.TRUE.equals(r.getDowntime())) {
-                        downTimeDurationList.add(exceptionRecordVO);
-                    } else {
-                        exceptionDurationList.add(exceptionRecordVO);
-                    }
-                });
+
+        for (AppExceptionRecordDTO r : appExceptionRecordDTOS) {
+            long duration = (r.getEndDate().getTime() - r.getStartDate().getTime()) / 1000;
+            ExceptionRecordVO exceptionRecordVO = new ExceptionRecordVO(duration, r.getStartDate(), r.getEndDate(), r.getStartDate());
+            if (Boolean.TRUE.equals(r.getDowntime())) {
+                downTimeDurationList.add(exceptionRecordVO);
+            } else {
+                exceptionDurationList.add(exceptionRecordVO);
             }
-            dateList.add(localDate.toString());
-            localDate = localDate.plusDays(1);
         }
+
+//        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//        while (!localDate.isAfter(endDate)) {
+//            List<AppExceptionRecordDTO> appExceptionRecordsOfDay = listMap.get(localDate.toString());
+//            if (!CollectionUtils.isEmpty(appExceptionRecordsOfDay)) {
+//                LocalDate finalLocalDate = localDate;
+//                appExceptionRecordsOfDay.forEach(r -> {
+//
+//                });
+//            }
+//            dateList.add(localDate.toString());
+//            localDate = localDate.plusDays(1);
+//        }
         // 统计时长
         Long exceptionTotalDuration = 0L;
         Long downTimeTotalDuration = 0L;
