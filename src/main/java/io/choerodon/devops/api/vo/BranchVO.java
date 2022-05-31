@@ -17,29 +17,42 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class BranchVO {
 
-
+    @ApiModelProperty(hidden = true)
+    List<IssueInfo> issueInfoList;
+    @ApiModelProperty("分支名")
     private String branchName;
+    @ApiModelProperty("分支名")
     private String sha;
+    @ApiModelProperty("提交内容")
     private String commitContent;
+    @ApiModelProperty("提交地址")
     private String commitUrl;
+    @ApiModelProperty("提交日期")
     private Date commitDate;
+    @ApiModelProperty("创建日期")
     private Date creationDate;
+    @ApiModelProperty("提交人头像")
     private String commitUserUrl;
+    @ApiModelProperty("提交人")
     private String commitUserName;
+    @ApiModelProperty("提交人真实姓名")
     private String commitUserRealName;
+    @ApiModelProperty(hidden = true)
     private String createUserUrl;
+    @ApiModelProperty(hidden = true)
     private String createUserName;
+    @ApiModelProperty(hidden = true)
     private String createUserRealName;
-
+    @ApiModelProperty("状态")
     private String status;
-    private String errorMessage;
 
     @ApiModelProperty("分支纪录的版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty("错误信息")
+    private String errorMessage;
     @Encrypt
+    @ApiModelProperty("saga实例id")
     private Long sagaInstanceId;
-
-    List<IssueInfo> issueInfoList;
 
     public BranchVO() {
     }

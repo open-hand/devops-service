@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by n!Ck
  * Date: 2018/9/19
@@ -11,6 +13,7 @@ import java.util.List;
  */
 public class DevopsGitlabCommitVO {
     private List<CommitFormUserVO> commitFormUserVOList;
+    @ApiModelProperty("提交日期")
     private List<Date> totalCommitsDate;
 
     public DevopsGitlabCommitVO() {

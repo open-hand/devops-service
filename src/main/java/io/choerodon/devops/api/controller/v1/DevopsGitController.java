@@ -418,7 +418,6 @@ public class DevopsGitController {
      *
      * @param projectId    项目id
      * @param appServiceId 应用id
-     * @param branchName   分支名称
      * @param issueId      关联问题id
      * @return
      */

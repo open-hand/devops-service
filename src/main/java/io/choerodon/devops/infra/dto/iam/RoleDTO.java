@@ -1,15 +1,18 @@
 package io.choerodon.devops.infra.dto.iam;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * @author scp
  * @since 2020-01-10
  */
 public class RoleDTO {
 
+    @ApiModelProperty("角色id")
     private Long id;
-
+    @ApiModelProperty("角色名")
     private String name;
-
+    @ApiModelProperty("角色编码")
     private String code;
 
     public Long getId() {
