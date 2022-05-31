@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -24,8 +25,10 @@ import io.choerodon.swagger.annotation.Permission;
  *
  * @author wanghao
  * @since 2020/4/3 9:31
+ * @deprecated
  */
 @RestController
+@Api(hidden = true)
 @RequestMapping("/v1/projects/{project_id}/ci_pipeline_records")
 public class DevopsCiPipelineRecordController {
     private final DevopsCiPipelineRecordService devopsCiPipelineRecordService;
