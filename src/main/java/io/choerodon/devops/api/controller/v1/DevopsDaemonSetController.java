@@ -43,9 +43,12 @@ public class DevopsDaemonSetController {
     public ResponseEntity<Page<DaemonSetInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") @Encrypt Long envId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "daemonset名称", required = true)
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "是否属于实例", required = true)
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
         return ResponseEntity.ok(devopsDaemonSetService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
@@ -54,10 +57,13 @@ public class DevopsDaemonSetController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "通过粘贴yaml/或上传文件形式创建或更新daemonset资源")
     @PostMapping
-    public void createOrUpdate(@PathVariable(value = "project_id") Long projectId,
-                               @ModelAttribute @Valid WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
-                               BindingResult bindingResult,
-                               @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
+    public void createOrUpdate(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ModelAttribute @Valid WorkloadBaseCreateOrUpdateVO workloadBaseCreateOrUpdateVO,
+            BindingResult bindingResult,
+            @ApiParam(value = "daemonset内容", required = true)
+            @RequestParam(value = "contentFile", required = false) MultipartFile contentFile) {
         if (bindingResult.hasErrors()) {
             throw new CommonException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
@@ -68,8 +74,11 @@ public class DevopsDaemonSetController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除daemonset资源")
     @DeleteMapping
-    public void delete(@PathVariable(value = "project_id") Long projectId,
-                       @RequestParam @Encrypt Long id) {
+    public void delete(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "daemonset Id", required = true)
+            @RequestParam @Encrypt Long id) {
         workloadService.delete(projectId, id, ResourceType.DAEMONSET);
     }
 }

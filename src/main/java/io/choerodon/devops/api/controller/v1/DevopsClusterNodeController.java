@@ -90,6 +90,7 @@ public class DevopsClusterNodeController {
     public ResponseEntity<NodeOperatingResultVO> checkOperatingResult(
             @ApiParam(value = "项目id")
             @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "操作记录id")
             @RequestParam(value = "operationRecordId") Long operationRecordId) {
         return ResponseEntity.ok(devopsClusterNodeService.checkOperatingResult(projectId,operationRecordId));
     }

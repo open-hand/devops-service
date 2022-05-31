@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo.deploy;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -49,18 +47,21 @@ public class JarDeployVO {
     @ApiModelProperty("部署对象信息")
     private MarketDeployObjectInfoVO marketDeployObjectInfoVO;
     @Encrypt
+    @ApiModelProperty("市场应用版本id")
     private Long mktAppVersionId;
     @Encrypt
+    @ApiModelProperty("市场应用部署对象id")
     private Long deployObjectId;
-    private FileInfoVO fileInfoVO;
-    private ProdJarInfoVO prodJarInfoVO;
 
+    @ApiModelProperty("上传jar包信息")
+    private FileInfoVO fileInfoVO;
+    @ApiModelProperty("制品库jar包信息")
+    private ProdJarInfoVO prodJarInfoVO;
+    @ApiModelProperty("jar包拉取信息")
     private JarPullInfoDTO jarPullInfoDTO;
 
-    @ApiModelProperty("部署配置文件列表")
-    private List<ConfigSettingVO> configSettingVOS;
-
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private Long appId;
 
     public JarDeployVO() {
@@ -186,14 +187,6 @@ public class JarDeployVO {
 
     public void setSourceType(String sourceType) {
         this.sourceType = sourceType;
-    }
-
-    public List<ConfigSettingVO> getConfigSettingVOS() {
-        return configSettingVOS;
-    }
-
-    public void setConfigSettingVOS(List<ConfigSettingVO> configSettingVOS) {
-        this.configSettingVOS = configSettingVOS;
     }
 
     public Long getMktAppVersionId() {

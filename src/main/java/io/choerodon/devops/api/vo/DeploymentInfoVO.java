@@ -16,22 +16,32 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DeploymentInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("deployment名称")
     private String name;
+    @ApiModelProperty("目标副本数")
     private Long desired;
+    @ApiModelProperty("当前副本数")
     private Long current;
+    @ApiModelProperty("更新成功副本数")
     private Long upToDate;
+    @ApiModelProperty("可用副本数")
     private Long available;
+    @ApiModelProperty("age")
     private String age;
+    @ApiModelProperty("端口号")
     private List<Integer> ports;
+    @ApiModelProperty("标签")
     private Map<String, String> labels;
+    @ApiModelProperty("pod列表")
     private List<DevopsEnvPodVO> devopsEnvPodVOS;
     @Encrypt
+    @ApiModelProperty("所属实例id")
     private Long instanceId;
-
+    @ApiModelProperty("commandType")
     private String commandType;
-
+    @ApiModelProperty("commandStatus")
     private String commandStatus;
-
+    @ApiModelProperty("错误信息")
     private String error;
 
     @ApiModelProperty("来源类型 chart/工作负载/部署组")

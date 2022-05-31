@@ -44,10 +44,15 @@ public class DevopsDeployAppCenterController {
     @ApiOperation(value = "校验名称唯一")
     @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkNameUnique(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用名称", required = true)
             @RequestParam(value = "name") String name,
+            @ApiParam(value = "环境id", required = true)
             @Encrypt @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "制品类型", required = true)
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @ApiParam(value = "实例id", required = true)
             @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkNameUnique(envId, rdupmType, objectId, name));
     }
@@ -76,10 +81,15 @@ public class DevopsDeployAppCenterController {
     @ApiOperation(value = "校验code唯一")
     @GetMapping("/check_code")
     public ResponseEntity<Boolean> checkCodeUnique(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "应用编码", required = true)
             @RequestParam(value = "code") String code,
+            @ApiParam(value = "环境id", required = true)
             @Encrypt @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "制品类型", required = true)
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @ApiParam(value = "实例id", required = true)
             @Encrypt @RequestParam(value = "object_id", required = false) Long objectId) {
         return ResponseEntity.ok(devopsDeployAppCenterService.checkCodeUnique(envId, rdupmType, objectId, code));
     }
@@ -94,11 +104,16 @@ public class DevopsDeployAppCenterController {
     @ApiOperation(value = "根据环境id分页查询所有应用，不传环境id表示查出所有有权限环境下的应用")
     @GetMapping("/page_by_env")
     public ResponseEntity<Page<DevopsDeployAppCenterVO>> listApp(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @Encrypt @RequestParam(value = "env_id", required = false) Long envId,
+            @ApiParam(value = "应用名称", required = true)
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "制品类型", required = true)
             @RequestParam(value = "rdupm_type", required = false) String rdupmType,
+            @ApiParam(value = "操作类型", required = true)
             @RequestParam(value = "operation_type", required = false) String operationType,
+            @ApiParam(value = "搜索参数", required = true)
             @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
@@ -109,6 +124,7 @@ public class DevopsDeployAppCenterController {
     @GetMapping("/{app_center_id}/env_detail")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<AppCenterEnvDetailVO> envAppDetail(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
@@ -120,6 +136,7 @@ public class DevopsDeployAppCenterController {
     @GetMapping("/{app_center_id}/env_event")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<InstanceEventVO>> envAppEvent(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用中心 应用Id")
             @Encrypt
@@ -222,10 +239,14 @@ public class DevopsDeployAppCenterController {
     @ApiOperation(value = "根据环境id分页查询所有chart应用")
     @GetMapping("/page_chart")
     public ResponseEntity<Page<DevopsDeployAppCenterVO>> pageChart(
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @Encrypt @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "应用名称", required = true)
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "操作类型", required = true)
             @RequestParam(value = "operation_type", required = false) String operationType,
+            @ApiParam(value = "搜索参数", required = true)
             @RequestParam(value = "params", required = false) String params,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {

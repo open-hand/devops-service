@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,7 +10,9 @@ package io.choerodon.devops.api.vo;
  * @since 2020/11/12 17:43
  */
 public class NodeOperatingResultVO {
+    @ApiModelProperty("操作状态")
     private String status;
+    @ApiModelProperty(value = "错误信息")
     private String errorMsg;
 
     public String getStatus() {

@@ -12,6 +12,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class ProdJarInfoVO {
     @Encrypt
+    @ApiModelProperty("制品库nexus服务id")
     private Long nexusId;
 
     @Encrypt
@@ -30,10 +31,11 @@ public class ProdJarInfoVO {
     /**
      * 流水线jar包上传到自定义仓库时使用
      */
+    @ApiModelProperty("用户名")
     private String username;
-
+    @ApiModelProperty("密码")
     private String password;
-
+    @ApiModelProperty("下载地址")
     private String downloadUrl;
 
     public String getUsername() {
