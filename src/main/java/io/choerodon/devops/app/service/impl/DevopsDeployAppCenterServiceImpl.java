@@ -606,7 +606,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
         List<ExceptionRecordVO> downTimeDurationList = new ArrayList<>();
-        List<Date> dateList = appExceptionRecordDTOS.stream().map(AppExceptionRecordDTO::getStartDate).collect(Collectors.toList());
+        List<String> dateList = new ArrayList<>();
 
 
         for (AppExceptionRecordDTO r : appExceptionRecordDTOS) {
@@ -619,19 +619,12 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             }
         }
 
-//        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-//        while (!localDate.isAfter(endDate)) {
-//            List<AppExceptionRecordDTO> appExceptionRecordsOfDay = listMap.get(localDate.toString());
-//            if (!CollectionUtils.isEmpty(appExceptionRecordsOfDay)) {
-//                LocalDate finalLocalDate = localDate;
-//                appExceptionRecordsOfDay.forEach(r -> {
-//
-//                });
-//            }
-//            dateList.add(localDate.toString());
-//            localDate = localDate.plusDays(1);
-//        }
+        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        while (!localDate.isAfter(endDate)) {
+            dateList.add(localDate.toString());
+            localDate = localDate.plusDays(1);
+        }
         // 统计时长
         Long exceptionTotalDuration = 0L;
         Long downTimeTotalDuration = 0L;

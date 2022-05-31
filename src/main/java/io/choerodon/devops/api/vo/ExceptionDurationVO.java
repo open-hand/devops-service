@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.vo;
 
-import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModel;
@@ -20,7 +19,7 @@ public class ExceptionDurationVO {
     @ApiModelProperty("停机总时长")
     private Long downTimeTotalDuration;
     @ApiModelProperty("x轴日期坐标")
-    private List<Date> dateList;
+    private List<String> dateList;
     @ApiModelProperty("异常时长")
     private List<ExceptionRecordVO> exceptionDurationList;
     @ApiModelProperty("停机时长")
@@ -29,7 +28,7 @@ public class ExceptionDurationVO {
     public ExceptionDurationVO() {
     }
 
-    public ExceptionDurationVO(Long exceptionTotalDuration, Long downTimeTotalDuration, List<Date> dateList, List<ExceptionRecordVO> exceptionDurationList, List<ExceptionRecordVO> downTimeDurationList) {
+    public ExceptionDurationVO(Long exceptionTotalDuration, Long downTimeTotalDuration, List<String> dateList, List<ExceptionRecordVO> exceptionDurationList, List<ExceptionRecordVO> downTimeDurationList) {
         this.exceptionTotalDuration = exceptionTotalDuration;
         this.downTimeTotalDuration = downTimeTotalDuration;
         this.dateList = dateList;
@@ -37,11 +36,11 @@ public class ExceptionDurationVO {
         this.downTimeDurationList = downTimeDurationList;
     }
 
-    public List<Date> getDateList() {
+    public List<String> getDateList() {
         return dateList;
     }
 
-    public void setDateList(List<Date> dateList) {
+    public void setDateList(List<String> dateList) {
         this.dateList = dateList;
     }
 
