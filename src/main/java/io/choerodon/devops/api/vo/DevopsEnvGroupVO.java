@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -11,7 +12,9 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvGroupVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("group名称")
     private String name;
 
     public Long getId() {

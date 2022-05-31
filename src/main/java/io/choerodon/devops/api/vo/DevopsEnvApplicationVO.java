@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -8,9 +9,11 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsEnvApplicationVO {
     @Encrypt
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
 
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
 
     public Long getAppServiceId() {
