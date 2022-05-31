@@ -19,23 +19,23 @@ public class ExceptionRecordVO {
     @ApiModelProperty("结束时间")
     private Date endTime;
     @ApiModelProperty("发生日期")
-    private String date;
+    private Date date;
 
     public ExceptionRecordVO() {
     }
 
-    public ExceptionRecordVO(Long duration, Date startTime, Date endTime, String date) {
+    public ExceptionRecordVO(Long duration, Date startTime, Date endTime, Date date) {
         this.duration = duration;
         this.startTime = startTime;
         this.endTime = endTime;
         this.date = date;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
