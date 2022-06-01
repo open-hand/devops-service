@@ -4,6 +4,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.Date;
 import java.util.Optional;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -25,6 +26,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
+@Api(hidden = true)
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/pipeline")
 public class DevopsGitlabPipelineController {
