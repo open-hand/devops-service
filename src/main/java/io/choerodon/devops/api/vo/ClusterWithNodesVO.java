@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.core.domain.Page;
 
 /**
@@ -8,6 +10,7 @@ import io.choerodon.core.domain.Page;
  * @author zmf
  */
 public class ClusterWithNodesVO extends DevopsClusterRepVO {
+    @ApiModelProperty("节点列表")
     private Page<ClusterNodeInfoVO> nodes;
 
     public Page<ClusterNodeInfoVO> getNodes() {

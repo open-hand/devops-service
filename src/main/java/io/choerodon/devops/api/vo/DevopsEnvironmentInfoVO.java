@@ -13,25 +13,38 @@ import io.choerodon.devops.infra.enums.EnvironmentGitopsStatus;
 public class DevopsEnvironmentInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("环境编码")
     private String code;
+    @ApiModelProperty("环境名称")
     private String name;
+    @ApiModelProperty("环境是否连接")
     private Boolean connect;
+    @ApiModelProperty("环境是否同步")
     private Boolean synchronize;
     @Encrypt
+    @ApiModelProperty("所属集群id")
     private Long clusterId;
+    @ApiModelProperty("所属集群名称")
     private String clusterName;
+    @ApiModelProperty("是否跳过权限校验")
     private Boolean skipCheckPermission;
+    @ApiModelProperty("描述")
     private String description;
+    @ApiModelProperty("版本号")
     private Long objectVersionNumber;
+    @ApiModelProperty("是否启用")
     private Boolean active;
     @ApiModelProperty("环境是否失败")
     private Boolean fail;
     @Encrypt
+    @ApiModelProperty("分组id")
     private Long groupId;
+    @ApiModelProperty("gitlab url")
     private String gitlabUrl;
     /**
      * value from {@link EnvironmentGitopsStatus}
      */
+    @ApiModelProperty("gitops同步状态")
     private String gitopsStatus;
 
     public Boolean getFail() {

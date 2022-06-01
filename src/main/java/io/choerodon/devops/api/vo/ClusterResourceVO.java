@@ -1,17 +1,21 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
+
 /**
  * @author: 25499
  * @date: 2019/10/30 13:59
  * @description:
  */
 public class ClusterResourceVO {
-    private  String status;
-
+    @ApiModelProperty("组件状态")
+    private String status;
+    @ApiParam(value = "错误消息")
     private String message;
-
+    @ApiParam(value = "组件类型")
     private String type;
-
+    @ApiParam(value = "操作")
     private String operate;
 
     public ClusterResourceVO() {

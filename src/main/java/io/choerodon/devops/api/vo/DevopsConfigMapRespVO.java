@@ -3,23 +3,35 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsConfigMapRespVO extends DevopsResourceDataInfoVO {
     @Encrypt
     private Long id;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
     @Encrypt
+    @ApiModelProperty("commandId")
     private Long commandId;
+    @ApiModelProperty("command状态")
     private String commandStatus;
+    @ApiModelProperty("环境编码")
     private String envCode;
+    @ApiModelProperty("command类型")
     private String commandType;
+    @ApiModelProperty("错误信息")
     private String error;
+    @ApiModelProperty("环境状态")
     private Boolean envStatus;
+    @ApiModelProperty("configmap 名称")
     private String name;
+    @ApiModelProperty("keys")
     private List<String> key;
+    @ApiModelProperty("values")
     private Map<String, String> value;
+    @ApiModelProperty("configmap 描述")
     private String description;
 
     public Long getId() {

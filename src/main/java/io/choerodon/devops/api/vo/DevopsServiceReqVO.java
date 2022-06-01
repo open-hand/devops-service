@@ -54,7 +54,7 @@ public class DevopsServiceReqVO {
     @Encrypt
     @ApiModelProperty("目标对象是部署组时，部署组的id")
     private Long targetDeploymentId;
-
+    @ApiModelProperty("绑定的igress")
     private DevopsIngressVO devopsIngressVO;
 
     public Map<String, String> getSelectors() {

@@ -3,13 +3,17 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.vo.kubernetes.Stage;
 
 
 public class DevopsGitlabPipelineVO {
 
+    @ApiModelProperty("流水线状态")
     private String status;
     private String version;
+    @ApiModelProperty("gitlab pipelineId")
     private Long pipelineId;
     private Long gitlabProjectId;
     private String pipelineUserUrl;

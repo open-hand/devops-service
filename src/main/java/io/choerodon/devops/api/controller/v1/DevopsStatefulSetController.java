@@ -42,9 +42,12 @@ public class DevopsStatefulSetController {
     public ResponseEntity<Page<StatefulSetInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境Id", required = true)
             @RequestParam(value = "env_id") @Encrypt Long envId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "statefulSet名称")
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "是否是实例管理资源")
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
         return ResponseEntity.ok(devopsStatefulSetService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));

@@ -1,13 +1,14 @@
 package io.choerodon.devops.api.vo;
 
 
-import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import java.util.Date;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Date;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -20,7 +21,7 @@ public class DevopsDeployValueVO {
     @ApiModelProperty("部署配置内容")
     @NotNull(message = "error.deploy.value.value.null")
     private String value;
-
+    @ApiModelProperty("项目id")
     private Long projectId;
 
     @Encrypt
@@ -38,19 +39,27 @@ public class DevopsDeployValueVO {
     @ApiModelProperty("部署配置描述")
     @NotBlank(message = "error.deploy.value.description.null")
     private String description;
+    @ApiModelProperty(hidden = true)
     private String createUserUrl;
+    @ApiModelProperty(hidden = true)
     private String createUserName;
+    @ApiModelProperty(hidden = true)
     private String createUserRealName;
+    @ApiModelProperty(hidden = true)
     private Long createdBy;
+    @ApiModelProperty("环境状态")
     private Boolean envStatus;
+    @ApiModelProperty(hidden = true)
     private Date lastUpdateDate;
+    @ApiModelProperty(hidden = true)
     private Boolean index;
+    @ApiModelProperty("环境名称")
     private String envName;
     @ApiModelProperty("服务名称")
     private String appServiceName;
-
+    @ApiModelProperty(hidden = true)
     private Long objectVersionNumber;
-
+    @ApiModelProperty("创建者")
     private IamUserDTO creator;
 
     public IamUserDTO getCreator() {

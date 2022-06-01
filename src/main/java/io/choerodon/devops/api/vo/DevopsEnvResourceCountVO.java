@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -9,42 +10,43 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsEnvResourceCountVO {
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
-
+    @ApiModelProperty("实例总数")
     private Long instanceCount;
-
+    @ApiModelProperty("service总数")
     private Long serviceCount;
-
+    @ApiModelProperty("ingress总数")
     private Long ingressCount;
-
+    @ApiModelProperty("证书总数")
     private Long certificationCount;
-
+    @ApiModelProperty("configmap总数")
     private Long configMapCount;
-
+    @ApiModelProperty("secret总数")
     private Long secretCount;
-
+    @ApiModelProperty("自定义资源总数")
     private Long customCount;
-
+    @ApiModelProperty("运行实例总数")
     private Long runningInstanceCount;
-
+    @ApiModelProperty("操作中实例总数")
     private Long operatingInstanceCount;
-
+    @ApiModelProperty("停用实例总数")
     private Long stoppedInstanceCount;
-
+    @ApiModelProperty("失败实例总数")
     private Long failedInstanceCount;
-
+    @ApiModelProperty("pvc总数")
     private Long pvcCount;
-
+    @ApiModelProperty("工作负载总数")
     private Long workloadCount;
-
+    @ApiModelProperty("deployment总数")
     private Long deploymentCount;
-
+    @ApiModelProperty("job总数")
     private Long jobCount;
-
+    @ApiModelProperty("daemonset总数")
     private Long daemonSetCount;
-
+    @ApiModelProperty("statefulset总数")
     private Long statefulSetCount;
-
+    @ApiModelProperty("cronjob总数")
     private Long cronJobCount;
 
     public Long getDeploymentCount() {

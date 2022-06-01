@@ -10,6 +10,7 @@ public class DevopsClusterBasicInfoVO {
     private Long id;
     @ApiModelProperty(value = "集群名称")
     private String name;
+    @ApiModelProperty(value = "集群编码")
     private String code;
     @ApiModelProperty(value = "是否已经连接")
     private Boolean connect;

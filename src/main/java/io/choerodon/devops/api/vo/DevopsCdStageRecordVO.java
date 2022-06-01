@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -9,20 +10,21 @@ import io.choerodon.devops.api.vo.iam.UserVO;
 public class DevopsCdStageRecordVO extends StageRecordVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("阶段中的任务记录")
     private List<DevopsCdJobRecordVO> jobRecordVOList;
     @Encrypt
+    @ApiModelProperty("所属流水线id")
     private Long pipelineId;
+    @ApiModelProperty("是否并行执行")
     private Boolean parallel;
     @Encrypt
+    @ApiModelProperty("所属阶段id")
     private Long stageId;
+    @ApiModelProperty("审核人员信息")
     private List<PipelineUserVO> userDTOS;
-    private Boolean index;
-
-
-    private Long executionTime;
+    @ApiModelProperty("阶段顺序")
     private Long sequence;
-
-    //阶段已审核人员的信息 阶段间只有或签
+    @ApiModelProperty("阶段已审核人员的信息 阶段间只有或签")
     private UserVO iamUserDTO;
 
     @Override
@@ -41,10 +43,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
 
     public void setIamUserDTO(UserVO iamUserDTO) {
         this.iamUserDTO = iamUserDTO;
-    }
-
-    public void setExecutionTime(Long executionTime) {
-        this.executionTime = executionTime;
     }
 
     public List<DevopsCdJobRecordVO> getJobRecordVOList() {
@@ -80,10 +78,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
         this.parallel = parallel;
     }
 
-    public Long getExecutionTime() {
-        return executionTime;
-    }
-
     public Long getStageId() {
         return stageId;
     }
@@ -98,14 +92,6 @@ public class DevopsCdStageRecordVO extends StageRecordVO {
 
     public void setUserDTOS(List<PipelineUserVO> userDTOS) {
         this.userDTOS = userDTOS;
-    }
-
-    public Boolean getIndex() {
-        return index;
-    }
-
-    public void setIndex(Boolean index) {
-        this.index = index;
     }
 
 

@@ -254,6 +254,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (isMarket(appServiceInstanceInfoDTO.getSource()) || isMiddleware(appServiceInstanceInfoDTO.getSource())) {
             fillInformationForMarketInstance(appServiceInstanceInfoDTO, appServiceInstanceInfoVO);
         }
+        appServiceInstanceInfoVO.setDevopsDeployAppCenterEnvDTO(devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId));
 
         return appServiceInstanceInfoVO;
     }
@@ -2412,6 +2413,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         updateInstanceStatus(instanceId, devopsEnvCommandDTO.getId(), InstanceStatus.OPERATING.getStatus());
 
+        // 如果开启了应用监控，同时关闭应用监控
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
+        devopsDeployAppCenterService.disableMetric(projectId, devopsDeployAppCenterEnvDTO.getId());
 
         //发送重启或停止实例的command
         Map<String, String> stopMap = new HashMap<>();

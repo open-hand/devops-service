@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -14,12 +15,19 @@ public class DevopsEnvFileErrorVO {
     @Encrypt
     private Long id;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
+    @ApiModelProperty("文件路径")
     private String filePath;
+    @ApiModelProperty("gitlab 地址")
     private String fileUrl;
+    @ApiModelProperty("commit sha")
     private String commit;
+    @ApiModelProperty("错误信息")
     private String error;
+    @ApiModelProperty("commit url")
     private String commitUrl;
+    @ApiModelProperty("更新时间")
     private Date lastUpdateDate;
 
     public Long getId() {

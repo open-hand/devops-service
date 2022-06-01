@@ -314,27 +314,25 @@ public class GitUtil {
     }
 
 
-    /**
-     * pull git repo using ssh
-     *
-     * @param path git repo
-     */
-    public Git pullBySsh(String path, String envRas) {
-        File repoGitDir = new File(path);
-        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            return pullBySsh(repository, envRas);
-        } catch (IOException e) {
-            throw new CommonException("error.git.pull", e);
-        }
-    }
-
-    private static Git pullBySsh(Repository repository, String sshKeyRsa) {
+    private static Git pullBySsh(Repository repository, String sshKeyRsa) throws GitAPIException {
         try (Git git = new Git(repository)) {
             git.pull()
                     .setTransportConfigCallback(getTransportConfigCallback(sshKeyRsa))
                     .call();
             return git;
-        } catch (GitAPIException e) {
+        }
+    }
+
+    /**
+     * pull git repo using ssh
+     *
+     * @param path git repo
+     */
+    public Git pullBySsh(String path, String envRas) throws GitAPIException {
+        File repoGitDir = new File(path);
+        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
+            return pullBySsh(repository, envRas);
+        } catch (IOException e) {
             throw new CommonException("error.git.pull", e);
         }
     }

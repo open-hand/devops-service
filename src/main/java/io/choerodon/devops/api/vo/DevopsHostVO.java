@@ -54,8 +54,10 @@ public class DevopsHostVO {
     private Long objectVersionNumber;
 
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private Long createdBy;
 
+    @ApiModelProperty(hidden = true)
     private Boolean selected;
 
     @ApiModelProperty("权限标签")

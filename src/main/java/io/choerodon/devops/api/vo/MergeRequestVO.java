@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.iam.UserVO;
@@ -12,41 +13,62 @@ import io.choerodon.devops.api.vo.iam.UserVO;
  */
 public class MergeRequestVO {
 
+    @ApiModelProperty("审核人")
     private AssigneeVO assignee;
     @Encrypt
+    @ApiModelProperty("审核人id")
     private Long assigneeId;
+    @ApiModelProperty("提交人")
     private AuthorVO author;
     @Encrypt
+    @ApiModelProperty("提交人id")
     private Long authorId;
+    @ApiModelProperty("创建日期")
     private Date createdAt;
+    @ApiModelProperty("描述")
     private String description;
+    @ApiModelProperty("id")
     private Integer id;
+    @ApiModelProperty("gitlab mr id")
     private Integer iid;
+    @ApiModelProperty("合并状态")
     private String mergeStatus;
+    @ApiModelProperty("gitlab project id")
     private Integer projectId;
+    @ApiModelProperty("源分支")
     private String sourceBranch;
+    @ApiModelProperty(hidden = true)
     private Integer sourceProjectId;
+    @ApiModelProperty("合并状态")
     private String state;
+    @ApiModelProperty("目标分支")
     private String targetBranch;
+    @ApiModelProperty(hidden = true)
     private Integer targetProjectId;
+    @ApiModelProperty("标题")
     private String title;
+    @ApiModelProperty("更新日期")
     private Date updatedAt;
+    @ApiModelProperty("gitlab url")
     private String webUrl;
+    @ApiModelProperty("gitlab mr id")
     private String gitlabMergeRequestId;
 
     @Encrypt
+    @ApiModelProperty("应用服务 id")
     private Long appServiceId;
-
+    @ApiModelProperty("应用服务名")
     private String appServiceName;
-
+    @ApiModelProperty("应用服务编码")
     private String appServiceCode;
-
+    @ApiModelProperty("gitlab url")
     private String gitlabUrl;
-
+    @ApiModelProperty("iam作者信息")
     private UserVO iamAuthor;
-
+    @ApiModelProperty("iam审核人信息")
     private UserVO iamAssignee;
 
+    @ApiModelProperty(value = "提交记录", hidden = true)
     private List<CommitVO> commits;
 
     public static Boolean isValid(MergeRequestVO mergeRequestVO) {

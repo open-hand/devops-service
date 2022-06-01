@@ -16,21 +16,27 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class JobInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("job名称")
     private String name;
+    @ApiModelProperty("job是否执行完成")
     private Integer completions;
+    @ApiModelProperty("job是否还在执行")
     private Integer active;
+    @ApiModelProperty("age")
     private String age;
+    @ApiModelProperty("端口号")
     private List<Integer> ports;
+    @ApiModelProperty("标签")
     private Map<String, String> labels;
     @Encrypt
+    @ApiModelProperty("所属实例id")
     private Long instanceId;
-
+    @ApiModelProperty("操作类型")
     private String commandType;
-
+    @ApiModelProperty("操作状态")
     private String commandStatus;
-
+    @ApiModelProperty("错误信息")
     private String error;
-
     @ApiModelProperty("来源类型 chart/工作负载")
     private String sourceType;
 

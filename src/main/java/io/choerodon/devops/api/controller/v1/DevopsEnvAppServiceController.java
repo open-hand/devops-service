@@ -1,12 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.service.DevopsEnvApplicationService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -15,9 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.validator.EnvironmentApplicationValidator;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.service.DevopsEnvApplicationService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * @author lizongwei
@@ -139,9 +140,10 @@ public class DevopsEnvAppServiceController {
      * @param projectId 项目id
      * @param envId     环境id
      * @return 服务列表
+     * @deprecated
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务")
+    @ApiOperation(value = "查询项目下可用的且没有与该环境关联的服务", hidden = true)
     @GetMapping("/non_related_app_service")
     public ResponseEntity<List<BaseApplicationServiceVO>> listNonRelatedAppService(
             @ApiParam(value = "项目id", required = true)

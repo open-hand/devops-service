@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.sql.Date;
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.AppExceptionRecordDTO;
@@ -13,6 +16,18 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface AppExceptionRecordMapper extends BaseMapper<AppExceptionRecordDTO> {
 
-    AppExceptionRecordDTO queryLatestExceptionRecord(@Param("appId") Long appId, @Param("resourceType") String resourceType, @Param("resourceName") String resourceName);
+    AppExceptionRecordDTO queryLatestExceptionRecordFilterByType(@Param("appId") Long appId,
+                                                                 @Param("resourceType") String resourceType,
+                                                                 @Param("resourceName") String resourceName);
+
+    List<AppExceptionRecordDTO> listByAppIdAndDate(@Param("appId") Long appId,
+                                                   @Param("startTime") Date startTime,
+                                                   @Param("endTime") Date endTime);
+
+    List<AppExceptionRecordDTO> listCompletedByAppIdAndDate(@Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    List<AppExceptionRecordDTO> listUnCompleteExceptionRecord(@Param("appId") Long appId);
+
+    void clearRecordsBeforeDate(java.util.Date before);
 }
 

@@ -165,14 +165,10 @@ public class GitlabServiceClientOperator {
     public MemberDTO queryGroupMember(Integer groupId, Integer userId) {
         MemberDTO memberDTO = gitlabServiceClient.queryGroupMember(
                 groupId, userId).getBody();
-        if (memberDTO.getId() == null) {
+        if (memberDTO == null || memberDTO.getId() == null) {
             return null;
         }
         return memberDTO;
-    }
-
-    public List<MemberDTO> listGroupMember(Integer groupId) {
-        return gitlabServiceClient.listGroupMember(groupId).getBody();
     }
 
     public void deleteGroupMember(Integer groupId, Integer userId) {
@@ -245,24 +241,6 @@ public class GitlabServiceClientOperator {
         }
     }
 
-
-    public List<String> listProjectToken(Integer gitlabProjectId, String name, Integer userId) {
-        ResponseEntity<List<ImpersonationTokenDTO>> impersonationTokens;
-        try {
-            impersonationTokens = gitlabServiceClient
-                    .listProjectToken(userId);
-        } catch (Exception e) {
-            gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
-            throw new CommonException(e);
-        }
-        List<String> tokens = new ArrayList<>();
-        impersonationTokens.getBody().stream().forEach(impersonationToken ->
-                tokens.add(impersonationToken.getToken())
-        );
-        return tokens;
-    }
-
     public String createProjectToken(Integer gitlabProjectId, Integer userId, String name) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
@@ -271,6 +249,9 @@ public class GitlabServiceClientOperator {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
+        }
+        if (impersonationToken.getBody() == null) {
+            throw new CommonException("error.create.project.token");
         }
         return impersonationToken.getBody().getToken();
     }
@@ -336,7 +317,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null,
                             null);
-            if (result.getBody().getFilePath() == null) {
+            if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (Exception e) {
@@ -361,7 +342,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null,
                             null);
-            if (result.getBody().getFilePath() == null) {
+            if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
                 throw new CommonException("error.file.create");
             }
         } catch (RetryableException e) {
@@ -779,20 +760,6 @@ public class GitlabServiceClientOperator {
         }
         return responseEntity.getBody();
     }
-
-    public List<BranchDTO> listBranch(Integer projectId, String path, Integer userId) {
-        ResponseEntity<List<BranchDTO>> responseEntity;
-        try {
-            responseEntity = gitlabServiceClient.listBranch(projectId, userId, null, null, null, null, null);
-        } catch (Exception e) {
-            throw new CommonException("error.branch.get", e);
-        }
-        List<BranchDTO> branches = responseEntity.getBody();
-        branches.forEach(t -> t.getCommit().setUrl(
-                String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
-        return branches;
-    }
-
 
     public Page<TagDTO> pageTag(ProjectDTO projectDTO, Integer gitlabProjectId, String path, Integer page, String params, Integer size, Integer userId, boolean checkMember) {
         if (checkMember) {
@@ -1243,7 +1210,7 @@ public class GitlabServiceClientOperator {
 
         MemberDTO memberDTO = gitlabServiceClient.getProjectMember(
                 projectId, userId).getBody();
-        if (memberDTO.getId() == null) {
+        if (memberDTO == null || memberDTO.getId() == null) {
             return null;
         }
         return memberDTO;

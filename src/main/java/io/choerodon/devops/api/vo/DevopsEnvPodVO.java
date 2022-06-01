@@ -4,6 +4,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -11,32 +12,53 @@ public class DevopsEnvPodVO {
     @Encrypt
     private Long id;
     @Encrypt
+    @ApiModelProperty("所属实例id")
     private Long instanceId;
+    @ApiModelProperty("pod名")
     private String name;
+    @ApiModelProperty("pod ip")
     private String ip;
+    @ApiModelProperty("pod 是否就绪")
     private Boolean isReady;
+    @ApiModelProperty("pod 状态")
     private String status;
+    @ApiModelProperty("pod 创建日期")
     private Date creationDate;
+    @ApiModelProperty("所属应用服务名称")
     private String appServiceName;
+    @ApiModelProperty("所属命名空间")
     private String namespace;
+    @ApiModelProperty("应用服务版本")
     private String appServiceVersion;
-    private String publishLevel;
+    @ApiModelProperty("所属实例编码")
     private String instanceCode;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("环境编码")
     private String envCode;
+    @ApiModelProperty("环境名称")
     private String envName;
+    @ApiModelProperty(hidden = true)
     private Long objectVersionNumber;
+    @ApiModelProperty("环境是否连接")
     private Boolean isConnect;
     @Encrypt
+    @ApiModelProperty("集群id")
     private Long clusterId;
+    @ApiModelProperty("容器列表")
     private List<ContainerVO> containers;
+    @ApiModelProperty("节点名称")
     private String nodeName;
+    @ApiModelProperty("重启次数")
     private Long restartCount;
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private String ownerKind;
     @JsonIgnore
+    @ApiModelProperty(hidden = true)
     private String ownerName;
 
     public Long getId() {
@@ -141,14 +163,6 @@ public class DevopsEnvPodVO {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
-    }
-
-    public String getPublishLevel() {
-        return publishLevel;
-    }
-
-    public void setPublishLevel(String publishLevel) {
-        this.publishLevel = publishLevel;
     }
 
     public Long getEnvId() {

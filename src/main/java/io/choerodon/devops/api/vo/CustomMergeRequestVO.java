@@ -8,38 +8,40 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class CustomMergeRequestVO {
     @Encrypt
     private Long id;
-
+    @ApiModelProperty("项目id")
     private Long projectId;
-
     @Encrypt
+    @ApiModelProperty("应用服务Id")
     private Long applicationId;
-
+    @ApiModelProperty("用户头像")
     private String imageUrl;
-
+    @ApiModelProperty("gitlab mergeRequest id")
     private Long gitlabMergeRequestId;
 
     @Encrypt
+    @ApiModelProperty("提交人id")
     private Long authorId;
-
+    @ApiModelProperty("提交人")
     private String authorName;
 
     @Encrypt
+    @ApiModelProperty("审核人Id")
     private Long assigneeId;
-
+    @ApiModelProperty("审核人")
     private String assigneeName;
-
+    @ApiModelProperty("审核人头像")
     private String assigneeImageUrl;
-
+    @ApiModelProperty("源分支")
     private String sourceBranch;
-
+    @ApiModelProperty("目标分支")
     private String targetBranch;
-
+    @ApiModelProperty("状态")
     private String state;
-
+    @ApiModelProperty("标题")
     private String title;
-
+    @ApiModelProperty("创建日期")
     private Date createdAt;
-
+    @ApiModelProperty("更新日期")
     private Date updatedAt;
 
     @ApiModelProperty("前端展示使用的id")

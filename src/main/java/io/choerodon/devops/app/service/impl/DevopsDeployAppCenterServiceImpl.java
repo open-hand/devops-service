@@ -4,6 +4,8 @@ import static io.choerodon.devops.app.service.impl.AppServiceInstanceServiceImpl
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +31,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
@@ -40,10 +43,7 @@ import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
 import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsDeployAppCenterEnvMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
-import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -99,6 +99,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
+    @Autowired
+    private AppExceptionRecordService appExceptionRecordService;
+    @Autowired
+    private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -535,25 +539,119 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return devopsDeployAppCenterEnvMapper.listByAppServiceIds(envId, appServiceIds);
     }
 
-//    @Override
-//    @Transactional
-//    public void enableMetric(Long projectId, Long appId) {
-//        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-//        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-//
-//        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
-//        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
-//    }
-//
-//    @Override
-//    @Transactional
-//    public void disableMetric(Long projectId, Long appId) {
-//        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-//        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-//
-//        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
-//        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
-//    }
+    @Override
+    @Transactional
+    public void enableMetric(Long projectId, Long appId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
+        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+
+        // 开启应用监控时，同步一次应用状态
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = devopsEnvResourceService.baseListByInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
+        if (!CollectionUtils.isEmpty(devopsEnvResourceDTOS)) {
+            for (DevopsEnvResourceDTO devopsEnvResourceDTO : devopsEnvResourceDTOS) {
+                if (ResourceType.STATEFULSET.getType().equals(devopsEnvResourceDTO.getKind())
+                        || ResourceType.DEPLOYMENT.getType().equals(devopsEnvResourceDTO.getKind())) {
+                    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(devopsEnvResourceDTO.getResourceDetailId());
+                    appExceptionRecordService.createOrUpdateExceptionRecord(devopsEnvResourceDTO.getKind(), devopsEnvResourceDetailDTO.getMessage(), appServiceInstanceDTO);
+                }
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void disableMetric(Long projectId, Long appId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
+        devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+
+        // 如果关闭时，还存在未终止的异常记录。则手动终止
+        appExceptionRecordService.completeExceptionRecord(appId);
+    }
+
+    @Override
+    public ExceptionTimesVO queryExceptionTimesChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
+        List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listByAppIdAndDate(appId, startTime, endTime);
+
+        // 按日期分组
+        Map<String, List<AppExceptionRecordDTO>> listMap = appExceptionRecordDTOS.stream().collect(Collectors.groupingBy(v -> new java.sql.Date(v.getStartDate().getTime()).toString()));
+        List<String> dateList = new ArrayList<>();
+        List<Long> exceptionTimesList = new ArrayList<>();
+        List<Long> downTimeList = new ArrayList<>();
+
+        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        while (!localDate.isAfter(endDate)) {
+            List<AppExceptionRecordDTO> appExceptionRecordsOfDay = listMap.get(localDate.toString());
+            dateList.add(localDate.toString());
+            // 没有异常点则填0
+            if (CollectionUtils.isEmpty(appExceptionRecordsOfDay)) {
+                downTimeList.add(0L);
+                exceptionTimesList.add(0L);
+            } else {
+                // 存在异常点则计算
+                downTimeList.add(appExceptionRecordsOfDay.stream().filter(r -> Boolean.TRUE.equals(r.getDowntime())).count());
+                exceptionTimesList.add(appExceptionRecordsOfDay.stream().filter(r -> Boolean.FALSE.equals(r.getDowntime())).count());
+            }
+            localDate = localDate.plusDays(1);
+        }
+
+        // 统计次数
+        Long exceptionTotalTimes = 0L;
+        Long downTimeTotalTimes = 0L;
+        for (Long aLong : downTimeList) {
+            downTimeTotalTimes += aLong;
+        }
+        for (Long aLong : exceptionTimesList) {
+            exceptionTotalTimes += aLong;
+        }
+
+        return new ExceptionTimesVO(exceptionTotalTimes, downTimeTotalTimes, dateList, exceptionTimesList, downTimeList);
+    }
+
+    @Override
+    public ExceptionDurationVO queryExceptionDurationChartInfo(Long projectId, Long appId, Date startTime, Date endTime) {
+        List<AppExceptionRecordDTO> appExceptionRecordDTOS = appExceptionRecordService.listCompletedByAppIdAndDate(appId, startTime, endTime);
+
+        List<ExceptionRecordVO> exceptionDurationList = new ArrayList<>();
+        List<ExceptionRecordVO> downTimeDurationList = new ArrayList<>();
+        List<String> dateList = new ArrayList<>();
+
+
+        for (AppExceptionRecordDTO r : appExceptionRecordDTOS) {
+            long duration = (r.getEndDate().getTime() - r.getStartDate().getTime()) / 1000;
+            double durationMinute = duration / 60.0;
+            ExceptionRecordVO exceptionRecordVO = new ExceptionRecordVO(duration, String.format("%.2f", durationMinute), r.getStartDate(), r.getEndDate(), r.getStartDate());
+            if (Boolean.TRUE.equals(r.getDowntime())) {
+                downTimeDurationList.add(exceptionRecordVO);
+            } else {
+                exceptionDurationList.add(exceptionRecordVO);
+            }
+        }
+
+        LocalDate localDate = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endDate = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        while (!localDate.isAfter(endDate)) {
+            dateList.add(localDate.toString());
+            localDate = localDate.plusDays(1);
+        }
+        // 统计时长
+        Long exceptionTotalDuration = 0L;
+        Long downTimeTotalDuration = 0L;
+        for (ExceptionRecordVO exceptionRecordVO : downTimeDurationList) {
+            downTimeTotalDuration += exceptionRecordVO.getDuration();
+        }
+        for (ExceptionRecordVO exceptionRecordVO : exceptionDurationList) {
+            exceptionTotalDuration += exceptionRecordVO.getDuration();
+        }
+        return new ExceptionDurationVO(exceptionTotalDuration, downTimeTotalDuration, dateList, exceptionDurationList, downTimeDurationList);
+    }
 
     @Transactional
     @Override

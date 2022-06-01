@@ -50,7 +50,9 @@ public class MarketInstanceCreationRequestVO {
     /**
      * 中间件不支持这两个字段 需设置为null
      */
+    @ApiModelProperty("网络配置")
     private DevopsServiceReqVO devopsServiceReqVO;
+    @ApiModelProperty("域名配置")
     private DevopsIngressVO devopsIngressVO;
 
     @JsonIgnore
@@ -64,10 +66,7 @@ public class MarketInstanceCreationRequestVO {
     @JsonIgnore
     @ApiModelProperty(value = "chart版本", hidden = true)
     private String chartVersion;
-
-    /**
-     * 中间件或者普通的市场应用
-     */
+    @ApiModelProperty("中间件或者普通的市场应用")
     private String source;
 
     @ApiModelProperty("应用中心应用名称")

@@ -293,6 +293,7 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "API测试任务id", required = true)
             @RequestBody Set<Long> taskIds) {
         return ResponseEntity.ok(devopsCiPipelineService.listTaskReferencePipelineInfo(projectId, taskIds));
     }
@@ -302,6 +303,7 @@ public class CiCdPipelineController {
     @GetMapping(value = "/list_pipeline_name_reference_by_config_id")
     public ResponseEntity<List<String>> listPipelineNameReferenceByConfigId(@ApiParam(value = "项目 ID", required = true)
                                                                             @PathVariable(value = "project_id") Long projectId,
+                                                                            @ApiParam(value = "API测试任务配置ID", required = true)
                                                                             @RequestParam("config_id") Long taskConfigId) {
         return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
@@ -319,13 +321,8 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
 
-    /**
-     * 修复数据使用，查询所有apiTest类型的数据
-     *
-     * @param projectId
-     * @return
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
+    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
     @GetMapping("/api_test/list")
     public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
             @ApiParam(value = "项目 ID", required = true)

@@ -2,8 +2,12 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class IssueIdAndBranchIdsVO {
+    @ApiModelProperty("敏捷issueId")
     private Long issueId;
+    @ApiModelProperty("分支列表")
     private List<DevopsBranchVO> branches;
 
     public Long getIssueId() {

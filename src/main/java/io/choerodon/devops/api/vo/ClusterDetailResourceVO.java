@@ -1,10 +1,12 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import java.util.Date;
+import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import javax.validation.constraints.NotNull;
+import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 
 /**
  * 集群资源资源VO
@@ -14,13 +16,21 @@ import javax.validation.constraints.NotNull;
 public class ClusterDetailResourceVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("组织id")
     private Long organizationId;
+    @ApiModelProperty("项目id")
     private Long projectId;
+    @ApiModelProperty("项目id或名称")
     private String projectIdName;
+    @ApiModelProperty("集群名称")
     private String name;
+    @ApiModelProperty("集群编码")
     private String code;
+    @ApiModelProperty("集群类型")
     private String type;
+    @ApiModelProperty("集群连接状态")
     private String status;
+    @ApiModelProperty("集群创建日期")
     private Date creationDate;
 
     public static ClusterDetailResourceVO build(@NotNull DevopsClusterDTO clusterDTO, String projectIdName) {

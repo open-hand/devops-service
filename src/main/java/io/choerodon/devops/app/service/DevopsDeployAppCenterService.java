@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -152,19 +153,37 @@ public interface DevopsDeployAppCenterService {
 
     List<DevopsDeployAppCenterVO> listByAppServiceIds(Long envId, Set<Long> appServiceIds);
 
-//    /**
-//     * 启用chart应用监控
-//     *
-//     * @param projectId 项目id
-//     * @param appId     应用id
-//     */
-//    void enableMetric(Long projectId, Long appId);
-//
-//    /**
-//     * 关闭chart应用监控
-//     *
-//     * @param projectId 项目id
-//     * @param appId     应用id
-//     */
-//    void disableMetric(Long projectId, Long appId);
+    /**
+     * 启用chart应用监控
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     */
+    void enableMetric(Long projectId, Long appId);
+
+    /**
+     * 关闭chart应用监控
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     */
+    void disableMetric(Long projectId, Long appId);
+
+    /**
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return ExceptionTimesVO 停机次数折线图所需坐标信息
+     */
+    ExceptionTimesVO queryExceptionTimesChartInfo(Long projectId, Long appId, Date startTime, Date endTime);
+
+    /**
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return ExceptionDurationVO 异常时长散点图所需坐标信息
+     */
+    ExceptionDurationVO queryExceptionDurationChartInfo(Long projectId, Long appId, Date startTime, Date endTime);
 }

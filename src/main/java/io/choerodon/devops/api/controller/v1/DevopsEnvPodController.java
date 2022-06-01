@@ -83,29 +83,6 @@ public class DevopsEnvPodController {
         return ResponseEntity.ok(devopsEnvPodService.pageByKind(projectId, envId, kind, name, pageable, searchParam));
     }
 
-//    /**
-//     * 按资源用量列出环境下Pod信息
-//     *
-//     * @param envId 环境id
-//     * @param sort  排序条件
-//     * @return 环境下相关资源的数量
-//     */
-//    @Permission(level = ResourceLevel.ORGANIZATION,
-//            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "按资源用量列出环境下Pod信息")
-//    @GetMapping("/pod_ranking")
-//    public ResponseEntity<List<DevopsEnvPodInfoVO>> queryEnvPodInfo(
-//            @ApiParam(value = "项目id")
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "环境id", required = true)
-//            @RequestParam(value = "env_id") Long envId,
-//            @ApiParam(value = "排序方式")
-//            @RequestParam(value = "sort", required = false, defaultValue = "memory") String sort) {
-//        return Optional.ofNullable(devopsEnvPodService.queryEnvPodInfo(envId, sort))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.pod.ranking.query"));
-//    }
-
     /**
      * 删除实例下面的pod
      *

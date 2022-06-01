@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
@@ -16,59 +17,68 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class DeployRecordVO {
     @Encrypt
+    @ApiModelProperty("记录id")
     private Long id;
-
+    @ApiModelProperty("界面展示id")
     private String viewId;
-
+    @ApiModelProperty("部署类型: auto / manual / batch")
     private String deployType;
-
+    @ApiModelProperty("部署结果")
     private String deployResult;
 
     @Encrypt
+    @ApiModelProperty("实例id")
     private Long instanceId;
 
     @Encrypt
+    @ApiModelProperty("应用id")
     private Long appId;
-
+    @ApiModelProperty("应用名称")
     private String appName;
-
+    @ApiModelProperty("应用编码")
     private String appCode;
-
+    @ApiModelProperty("部署模式， env 环境部署，host主机部署")
     private String deployMode;
 
     @Encrypt
+    @ApiModelProperty("部署载体id, 主机id or 环境id")
     private Long deployPayloadId;
-
+    @ApiModelProperty("部署载体name 主机名/环境名")
     private String deployPayloadName;
-
+    @ApiModelProperty("部署时间")
     private Date deployTime;
-
+    @ApiModelProperty("部署对象类型 app 应用服务，jar ,image")
     private String deployObjectType;
-
+    @ApiModelProperty("部署载体id, 主机id or 环境id")
     private String deployObjectName;
-
+    @ApiModelProperty("部署对象名")
     private String deployObjectVersion;
-
+    @ApiModelProperty("集群id")
     private Long clusterId;
-
+    @ApiModelProperty("集群是否连接")
     private Boolean connect;
 
     @Encrypt
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
 
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
 
+    @ApiModelProperty("部署者")
     private IamUserDTO executeUser;
-
+    @ApiModelProperty(hidden = true)
     private Long createdBy;
-
+    @ApiModelProperty("操作状态")
     private String commandStatus;
-
+    @ApiModelProperty("部署来源")
     private DeploySourceVO deploySourceVO;
+    @ApiModelProperty("部署来源")
     private String deploySource;
+    @ApiModelProperty("错误消息")
     private String errorMessage;
-
+    @ApiModelProperty("日志")
     private String log;
 
     public Long getInstanceId() {

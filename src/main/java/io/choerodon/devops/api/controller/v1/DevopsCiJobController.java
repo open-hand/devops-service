@@ -78,10 +78,14 @@ public class DevopsCiJobController {
     @ApiOperation(value = "重试job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/retry")
     public ResponseEntity<Void> retryJob(
+            @ApiParam("项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam("gitlab project id")
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @ApiParam("流水线任务 id")
             @PathVariable(value = "job_id") Long jobId,
             @Encrypt
+            @ApiParam("应用服务 id")
             @RequestParam(value = "app_service_id") Long appServiceId) {
         devopsCiJobService.retryJob(projectId, gitlabProjectId, jobId, appServiceId);
         return ResponseEntity.noContent().build();
@@ -91,10 +95,14 @@ public class DevopsCiJobController {
     @ApiOperation(value = "执行 manul状态 job")
     @GetMapping("/gitlab_projects/{gitlab_project_id}/gitlab_jobs/{job_id}/play")
     public ResponseEntity<Void> playJob(
+            @ApiParam("项目id")
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam("gitlab project id")
             @PathVariable(value = "gitlab_project_id") Long gitlabProjectId,
+            @ApiParam("流水线任务 id")
             @PathVariable(value = "job_id") Long jobId,
             @Encrypt
+            @ApiParam("应用服务 id")
             @RequestParam(value = "app_service_id") Long appServiceId) {
         devopsCiJobService.playJob(projectId, gitlabProjectId, jobId, appServiceId);
         return ResponseEntity.noContent().build();

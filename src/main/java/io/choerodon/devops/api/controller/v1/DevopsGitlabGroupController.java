@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @since 2021/8/17 14:35
  */
 @RestController
+@Api(hidden = true)
 @RequestMapping("/v1/projects/{project_id}/groups")
 public class DevopsGitlabGroupController {
 

@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -14,20 +15,30 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class PodLiveInfoVO {
 
+    @ApiModelProperty("pod名称")
     private String podName;
+    @ApiModelProperty("pod ip")
     private String podIp;
+    @ApiModelProperty("节点名称")
     private String nodeName;
+    @ApiModelProperty("节点ip")
     private String nodeIp;
     @JsonProperty("podId")
     @Encrypt
     private Long id;
+    @ApiModelProperty("pod 中的容器列表")
     private List<ContainerVO> containers;
+    @ApiModelProperty("cpu使用信息")
     private List<Long> cpuUsedList;
+    @ApiModelProperty("内存使用信息")
     private List<Long> memoryUsedList;
     private List<Date> timeList;
+    @ApiModelProperty("创建日期")
     private Date creationDate;
     @Encrypt
+    @ApiModelProperty("所属集群id")
     private Long clusterId;
+    @ApiModelProperty("所属命名空间")
     private String namespace;
 
     public String getNamespace() {

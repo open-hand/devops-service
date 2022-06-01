@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wanghao
  * @since 2021/12/23 10:44
  */
+@Api(hidden = true)
 @RestController
 @RequestMapping("/v1/fix")
 public class DevopsDataFixController {

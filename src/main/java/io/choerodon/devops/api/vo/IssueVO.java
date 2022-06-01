@@ -2,18 +2,21 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
+
 public class IssueVO {
 
+    @ApiModelProperty("合并请求状态")
     private String mergeRequestStatus;
-
+    @ApiModelProperty("合并请求更新时间")
     private Date mergeRequestUpdateTime;
-
+    @ApiModelProperty("提交更新时间")
     private Date commitUpdateTime;
-
+    @ApiModelProperty("分支数")
     private Integer branchCount;
-
+    @ApiModelProperty("总提交数")
     private Integer totalCommit;
-
+    @ApiModelProperty("总合并请求数")
     private Integer totalMergeRequest;
 
     public String getMergeRequestStatus() {

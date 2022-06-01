@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -8,23 +9,31 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsCustomizeResourceVO extends DevopsResourceDataInfoVO{
     @Encrypt
     private Long id;
-
+    @ApiModelProperty("项目id")
     private Long projectId;
-
     @Encrypt
+    @ApiModelProperty(value = "环境id")
     private Long envId;
-
     @Encrypt
+    @ApiModelProperty(value = "集群id")
     private Long clusterId;
-
+    @ApiModelProperty(value = "环境状态")
     private Boolean envStatus;
+    @ApiModelProperty(value = "环境编码")
     private String envCode;
+    @ApiModelProperty(value = "资源内容")
     private String resourceContent;
+    @ApiModelProperty(value = "资源类型")
     private String k8sKind;
+    @ApiModelProperty(value = "commandStatus")
     private String commandStatus;
+    @ApiModelProperty(value = "commandType")
     private String commandType;
+    @ApiModelProperty(value = "错误信息")
     private String error;
+    @ApiModelProperty(value = "名称")
     private String name;
+    @ApiModelProperty(value = "描述")
     private String description;
 
     public Long getId() {

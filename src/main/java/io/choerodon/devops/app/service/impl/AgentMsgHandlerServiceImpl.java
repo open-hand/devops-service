@@ -179,8 +179,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-//    @Autowired
-//    private AppExceptionRecordService appExceptionRecordService;
+    @Autowired
+    private AppExceptionRecordService appExceptionRecordService;
 
 
     @Saga(code = SagaTopicCodeConstants.DEVOPS_POD_READY,
@@ -610,20 +610,20 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                             devopsDeploymentService.baseUpdate(deploymentDTO);
                         }
                     }
-//                    if (appServiceInstanceDTO != null) {
-//                        // 保存应用异常数据（采集监控报表数据）
-//                        appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.DEPLOYMENT.getType(), msg, appServiceInstanceDTO);
-//                    }
+                    if (appServiceInstanceDTO != null) {
+                        // 保存应用异常数据（采集监控报表数据）
+                        appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.DEPLOYMENT.getType(), msg, appServiceInstanceDTO);
+                    }
                     break;
                 case JOB:
                 case DAEMONSET:
                 case CRON_JOB:
                 case STATEFULSET:
                     handleUpdateWorkloadMsg(key, envId, msg, devopsEnvResourceDTO, devopsEnvResourceDetailDTO, appServiceInstanceDTO);
-//                    if (appServiceInstanceDTO != null) {
-//                        // 保存应用异常数据（采集监控报表数据）
-//                        appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
-//                    }
+                    if (appServiceInstanceDTO != null) {
+                        // 保存应用异常数据（采集监控报表数据）
+                        appExceptionRecordService.createOrUpdateExceptionRecord(ResourceType.STATEFULSET.getType(), msg, appServiceInstanceDTO);
+                    }
                     break;
                 default:
                     // 默认为Release对象
@@ -1701,8 +1701,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 if (chartResourceOperatorService != null) {
                     chartResourceOperatorService.saveOrUpdateChartResource(resource.getObject(), appServiceInstanceDTO);
                 }
-//                // 保存应用异常数据（采集监控报表数据）
-//                appExceptionRecordService.createOrUpdateExceptionRecord(resource.getKind(), resource.getObject(), appServiceInstanceDTO);
+                // 保存应用异常数据（采集监控报表数据）
+                appExceptionRecordService.createOrUpdateExceptionRecord(resource.getKind(), resource.getObject(), appServiceInstanceDTO);
 
 
             }

@@ -16,20 +16,28 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class StatefulSetInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("目标副本数")
     private Long desiredReplicas;
+    @ApiModelProperty("就绪副本数")
     private Long readyReplicas;
+    @ApiModelProperty("当前副本数")
     private Long currentReplicas;
+    @ApiModelProperty("存活时间")
     private String age;
+    @ApiModelProperty("端口号")
     private List<Integer> ports;
+    @ApiModelProperty("标签")
     private Map<String, String> labels;
     @Encrypt
+    @ApiModelProperty("所属实例id")
     private Long instanceId;
-
+    @ApiModelProperty("command类型")
     private String commandType;
-
+    @ApiModelProperty("command状态")
     private String commandStatus;
-
+    @ApiModelProperty("错误信息")
     private String error;
 
     @ApiModelProperty("来源类型 chart/工作负载")

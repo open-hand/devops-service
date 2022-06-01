@@ -64,14 +64,17 @@ public class DevopsDeployRecordController {
     @CustomPageRequest
     @GetMapping("/count_by_date")
     public ResponseEntity<DeployRecordCountVO> countByDate(
+            @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "开始时间", required = true)
             @RequestParam("startTime") Date startTime,
+            @ApiParam(value = "结束时间", required = true)
             @RequestParam("endTime") Date endTime) {
         return ResponseEntity.ok(devopsDeployRecordService.countByDate(projectId, startTime, endTime));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "停止hzero部署")
+    @ApiOperation(value = "停止hzero部署", hidden = true)
     @PutMapping("/{record_id}/stop")
     public ResponseEntity<Void> stop(
             @PathVariable(value = "project_id") Long projectId,
@@ -81,7 +84,7 @@ public class DevopsDeployRecordController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "重试hzero部署")
+    @ApiOperation(value = "重试hzero部署", hidden = true)
     @PostMapping("/{record_id}/retry")
     public ResponseEntity<Void> retry(
             @PathVariable(value = "project_id") Long projectId,
@@ -92,7 +95,7 @@ public class DevopsDeployRecordController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询部署记录")
+    @ApiOperation(value = "查询部署记录", hidden = true)
     @GetMapping("/{record_id}")
     public ResponseEntity<HzeroDeployRecordVO> queryHzeroDetailsById(
             @PathVariable(value = "project_id") Long projectId,

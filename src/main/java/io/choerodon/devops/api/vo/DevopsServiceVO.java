@@ -12,32 +12,51 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("名称")
     private String name;
+    @ApiModelProperty("状态")
     private String status;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
+    @ApiModelProperty("环境名称")
     private String envName;
+    @ApiModelProperty("环境类型")
     private String type;
+    @ApiModelProperty("环境状态")
     private Boolean envStatus;
     @Encrypt
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
     @Encrypt
+    @ApiModelProperty("应用服务所属项目id")
     private Long appServiceProjectId;
+    @ApiModelProperty("应用服务名称")
     private String appServiceName;
+    @ApiModelProperty("dns")
     private String dns;
     /**
      * 网络本身的标签
      */
     @ApiModelProperty("网络本身的标签")
     private Map<String, String> labels;
+    @ApiModelProperty("selectors")
     private Map<String, String> selectors;
+    @ApiModelProperty("target")
     private DevopsServiceTargetVO target;
+    @ApiModelProperty("网络配置")
     private DevopsServiceConfigVO config;
+    @ApiModelProperty("command类型")
     private String commandType;
+    @ApiModelProperty("command状态")
     private String commandStatus;
+    @ApiModelProperty("错误信息")
     private String error;
+    @ApiModelProperty("loadbalance ip")
     private String loadBalanceIp;
+    @ApiModelProperty("绑定的igress 信息")
     private List<DevopsIngressVO> devopsIngressVOS;
+    @ApiModelProperty("实例id")
     private Long instanceId;
     @ApiModelProperty("该字段包含除当前实例外，关联的其它应用实例的名称")
     private List<String> relatedApplicationName;

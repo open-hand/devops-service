@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -8,8 +10,11 @@ package io.choerodon.devops.api.vo.deploy;
  * @since 2021/8/30 20:19
  */
 public class FileInfoVO {
+    @ApiModelProperty("文件名")
     private String fileName;
+    @ApiModelProperty("jar地址")
     private String jarFileUrl;
+    @ApiModelProperty("文件地址")
     private String uploadUrl;
 
     public String getFileName() {

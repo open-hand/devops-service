@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -14,14 +15,22 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class SecretRespVO extends DevopsResourceDataInfoVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("密文名称")
     private String name;
     @Encrypt
+    @ApiModelProperty("环境id")
     private Long envId;
+    @ApiModelProperty("描述")
     private String description;
+    @ApiModelProperty("key list")
     private List<String> key;
+    @ApiModelProperty("key value")
     private Map<String, String> value;
+    @ApiModelProperty("command 状态")
     private String commandStatus;
+    @ApiModelProperty("command 类型")
     private String commandType;
+    @ApiModelProperty("错误信息")
     private String error;
 
     public Long getId() {

@@ -10,9 +10,9 @@ public class ExternalImageInfo {
     @ApiModelProperty("镜像地址")
     private String imageUrl;
 
-
+    @ApiModelProperty("用户名")
     private String username;
-
+    @ApiModelProperty("密码")
     private String password;
 
     @ApiModelProperty("仓库是不是私库有")

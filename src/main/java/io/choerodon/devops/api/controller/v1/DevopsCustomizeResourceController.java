@@ -94,8 +94,10 @@ public class DevopsCustomizeResourceController {
     @ApiOperation(value = "获取资源详情")
     @GetMapping("/{resource_id}")
     public ResponseEntity<DevopsCustomizeResourceVO> getResource(
+            @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
+            @ApiParam(value = "资源id", required = true)
             @PathVariable(value = "resource_id") Long resourceId) {
         return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
                 .map(t -> new ResponseEntity<>(t, HttpStatus.OK))

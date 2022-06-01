@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.RoleDTO;
@@ -18,9 +20,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * @author zmf
  */
 public class DevopsUserPermissionVO extends DevopsUserVO {
+    @ApiModelProperty("用户角色列表")
     private List<RoleDTO> roles;
+    @ApiModelProperty("创建日期")
     private Date creationDate;
+    @ApiModelProperty("是否是gitlab owner")
     private Boolean gitlabProjectOwner;
+    @ApiModelProperty("是否是创建者")
     private Boolean isCreator;
 
     public static DevopsUserPermissionVO iamUserTOUserPermissionVO(IamUserDTO iamUserDTO, Boolean isGitlabProjectOwner) {

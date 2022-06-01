@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -9,24 +10,25 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsConfigVO {
     @Encrypt
     private Long id;
-
+    @ApiModelProperty("名称")
     private String name;
-
+    @ApiModelProperty("配置信息")
     private ConfigVO config;
-
+    @ApiModelProperty("项目id")
     private Long projectId;
-
+    @ApiModelProperty("组织id")
     private Long organizationId;
 
     @Encrypt
+    @ApiModelProperty("应用服务id")
     private Long appServiceId;
-
+    @ApiModelProperty("harbor仓库是否是私有的")
     private Boolean harborPrivate;
-
+    @ApiModelProperty("配置类型")
     private String type;
-
+    @ApiModelProperty("是否是自定义配置")
     private Boolean custom;
-
+    @ApiModelProperty("版本号")
     private Long objectVersionNumber;
 
     public Long getId() {

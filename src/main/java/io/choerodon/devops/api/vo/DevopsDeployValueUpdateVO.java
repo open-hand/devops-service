@@ -36,11 +36,15 @@ public class DevopsDeployValueUpdateVO {
     @ApiModelProperty("部署配置描述")
     @NotBlank(message = "error.deploy.value.description.null")
     private String description;
+    @ApiModelProperty(hidden = true)
     private String createUserUrl;
+    @ApiModelProperty(hidden = true)
     private String createUserName;
+    @ApiModelProperty(hidden = true)
     private String createUserRealName;
     @ApiModelProperty("环境状态")
     private Boolean envStatus;
+    @ApiModelProperty(hidden = true)
     private Boolean index;
     @ApiModelProperty("环境名称")
     private String envName;

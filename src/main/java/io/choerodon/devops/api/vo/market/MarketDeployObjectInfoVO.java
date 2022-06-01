@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.vo.market;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -11,8 +12,10 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class MarketDeployObjectInfoVO {
     @Encrypt
+    @ApiModelProperty("市场应用版本id")
     private Long mktAppVersionId;
     @Encrypt
+    @ApiModelProperty("市场应用部署对象id")
     private Long mktDeployObjectId;
 
     public Long getMktAppVersionId() {

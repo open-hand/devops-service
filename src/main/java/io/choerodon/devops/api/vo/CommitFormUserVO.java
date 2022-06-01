@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -14,8 +15,11 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class CommitFormUserVO {
     @Encrypt
     private Long id;
+    @ApiModelProperty("用户")
     private String name;
+    @ApiModelProperty("头像")
     private String imgUrl;
+    @ApiModelProperty("提交日期")
     private List<Date> commitDates;
 
     public CommitFormUserVO() {

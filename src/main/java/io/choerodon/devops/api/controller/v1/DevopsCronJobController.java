@@ -41,9 +41,12 @@ public class DevopsCronJobController {
     public ResponseEntity<Page<CronJobInfoVO>> pagingByEnvId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") @Encrypt Long envId,
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
+            @ApiParam(value = "cronjob名称", required = true)
             @RequestParam(value = "name", required = false) String name,
+            @ApiParam(value = "是否属于实例", required = true)
             @RequestParam(value = "from_instance", required = false) Boolean fromInstance
     ) {
         return ResponseEntity.ok(devopsCronJobService.pagingByEnvId(projectId, envId, pageable, name, fromInstance));
