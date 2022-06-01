@@ -101,6 +101,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
+    @Autowired
+    private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -545,6 +547,19 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
+
+        // 开启应用监控时，同步一次应用状态
+        AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
+        List<DevopsEnvResourceDTO> devopsEnvResourceDTOS = devopsEnvResourceService.baseListByInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
+        if (!CollectionUtils.isEmpty(devopsEnvResourceDTOS)) {
+            for (DevopsEnvResourceDTO devopsEnvResourceDTO : devopsEnvResourceDTOS) {
+                if (ResourceType.STATEFULSET.getType().equals(devopsEnvResourceDTO.getKind())
+                        || ResourceType.DEPLOYMENT.getType().equals(devopsEnvResourceDTO.getKind())) {
+                    DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailService.baseQueryByResourceDetailId(devopsEnvResourceDTO.getResourceDetailId());
+                    appExceptionRecordService.createOrUpdateExceptionRecord(devopsEnvResourceDTO.getKind(), devopsEnvResourceDetailDTO.getMessage(), appServiceInstanceDTO);
+                }
+            }
+        }
     }
 
     @Override
