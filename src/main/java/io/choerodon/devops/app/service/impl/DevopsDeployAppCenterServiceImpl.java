@@ -626,7 +626,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         for (AppExceptionRecordDTO r : appExceptionRecordDTOS) {
             long duration = (r.getEndDate().getTime() - r.getStartDate().getTime()) / 1000;
-            ExceptionRecordVO exceptionRecordVO = new ExceptionRecordVO(duration, r.getStartDate(), r.getEndDate(), r.getStartDate());
+            double durationMinute = duration / 60.0;
+            ExceptionRecordVO exceptionRecordVO = new ExceptionRecordVO(duration, String.format("%.2f", durationMinute), r.getStartDate(), r.getEndDate(), r.getStartDate());
             if (Boolean.TRUE.equals(r.getDowntime())) {
                 downTimeDurationList.add(exceptionRecordVO);
             } else {

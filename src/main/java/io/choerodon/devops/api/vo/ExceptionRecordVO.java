@@ -14,6 +14,8 @@ import io.swagger.annotations.ApiModelProperty;
 public class ExceptionRecordVO {
     @ApiModelProperty("持续时长")
     private Long duration;
+    @ApiModelProperty("持续时长 - 分钟")
+    private String durationMinute;
     @ApiModelProperty("发生时间")
     private Date startTime;
     @ApiModelProperty("结束时间")
@@ -21,14 +23,20 @@ public class ExceptionRecordVO {
     @ApiModelProperty("发生日期")
     private Date date;
 
-    public ExceptionRecordVO() {
-    }
-
-    public ExceptionRecordVO(Long duration, Date startTime, Date endTime, Date date) {
+    public ExceptionRecordVO(Long duration, String durationMinute, Date startTime, Date endTime, Date date) {
         this.duration = duration;
+        this.durationMinute = durationMinute;
         this.startTime = startTime;
         this.endTime = endTime;
         this.date = date;
+    }
+
+    public String getDurationMinute() {
+        return durationMinute;
+    }
+
+    public void setDurationMinute(String durationMinute) {
+        this.durationMinute = durationMinute;
     }
 
     public Date getDate() {
