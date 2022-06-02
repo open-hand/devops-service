@@ -3346,7 +3346,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (CollectionUtils.isEmpty(viewDTOList)) {
             return new HashSet<>();
         }
-        return viewDTOList.get(0).getAppServiceIds();
+        return viewDTOList.get(0).getAppServiceIds() == null ? new HashSet<>() : viewDTOList.get(0).getAppServiceIds();
     }
 
     @Override
