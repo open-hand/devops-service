@@ -104,7 +104,7 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+        if (projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();

@@ -188,7 +188,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getProjectName(), suffix);
         // path: orgName-projectCode + suffix
         String path = GitOpsUtil.renderGroupPath(gitlabGroupPayload.getOrganizationCode(),
-                gitlabGroupPayload.getProjectCode(), suffix);
+                gitlabGroupPayload.getDevopsComponentCode(), suffix);
         group.setName(name);
         group.setPath(path);
 
