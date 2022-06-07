@@ -39,6 +39,9 @@ public class ProjectDTO extends AuditDomain {
     @ApiModelProperty(value = "项目类型（遗留旧字段，一对一）:AGILE(敏捷项目),PROGRAM(普通项目组),ANALYTICAL(分析型项目群)")
     private String category;
 
+    @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
+    private String devopsComponentCode;
+
     @ApiModelProperty(value = "项目类型")
     private List<Long> categoryIds;
 
@@ -54,6 +57,14 @@ public class ProjectDTO extends AuditDomain {
     private String applicationName;
     private String applicationCode;
     private String programName;
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
+    }
 
     public Long getAppServiceId() {
         return appServiceId;

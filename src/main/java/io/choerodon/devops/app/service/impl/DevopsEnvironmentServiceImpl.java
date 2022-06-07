@@ -259,7 +259,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         List<String> sshKeys = FileUtil.getSshKey(
-                organizationDTO.getTenantNum() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentReqVO.getCode());
+                organizationDTO.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" + devopsEnvironmentReqVO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
 
@@ -713,7 +713,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
-        vo.setGitlabUrl(String.format("%s/%s-%s-gitops/%s/", gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), envInfo.getCode()));
+        vo.setGitlabUrl(String.format("%s/%s-%s-gitops/%s/", gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), envInfo.getCode()));
         return vo;
     }
 
@@ -920,7 +920,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
-                organizationDTO.getTenantNum() + "-" + projectDTO.getCode() + "-gitops",
+                organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + "-gitops",
                 devopsEnvironmentDTO.getCode(),
                 gitlabProjectPayload.getUserId(),
                 false);
@@ -1091,7 +1091,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
-                gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(),
+                gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(),
                 devopsEnvironmentDTO.getCode()));
         return envSyncStatusDTO;
     }
@@ -1608,7 +1608,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         // 生成deployKey
         List<String> sshKeys = FileUtil.getSshKey(
-                organizationDTO.getTenantNum() + "/" + projectDTO.getCode() + "/" + devopsEnvironmentDTO.getCode());
+                organizationDTO.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" + devopsEnvironmentDTO.getCode());
         devopsEnvironmentDTO.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentDTO.setEnvIdRsaPub(sshKeys.get(1));
 
@@ -1620,7 +1620,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(),
-                        projectDTO.getCode(),
+                        projectDTO.getDevopsComponentCode(),
                         GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX),
                 envCode,
                 gitlabUserId,
@@ -1689,7 +1689,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Integer gitlabUserId = TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
             GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                     GitOpsUtil.renderGroupPath(organizationDTO.getTenantNum(),
-                            projectDTO.getCode(),
+                            projectDTO.getDevopsComponentCode(),
                             GitOpsConstants.CLUSTER_ENV_GROUP_SUFFIX),
                     systemEnvProjectCode,
                     gitlabUserId,

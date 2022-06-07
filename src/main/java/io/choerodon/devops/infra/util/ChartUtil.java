@@ -130,10 +130,10 @@ public class ChartUtil {
     public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, Tenant organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(appServiceVersionDTO.getRepository().split(organizationDTO.getTenantNum() + "/" + projectDTO.getCode())[0]);
+        configurationProperties.setBaseUrl(appServiceVersionDTO.getRepository().split(organizationDTO.getTenantNum() + "/" + projectDTO.getDevopsComponentCode())[0]);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode(), appServiceVersionDTO.getVersion());
+        Call<ResponseBody> getTaz = chartClient.downloadTaz(organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode(), appServiceVersionDTO.getVersion());
         FileOutputStream fos = null;
         try {
             Response<ResponseBody> response = getTaz.execute();
