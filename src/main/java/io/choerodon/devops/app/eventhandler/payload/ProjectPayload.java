@@ -3,6 +3,8 @@ package io.choerodon.devops.app.eventhandler.payload;
 import java.util.List;
 import java.util.Set;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.vo.ProjectCategoryVO;
 
 /**
@@ -16,6 +18,8 @@ public class ProjectPayload {
     private String projectName;
     private String organizationCode;
     private String organizationName;
+    @ApiModelProperty("devops组件编码")
+    private String devopsComponentCode;
     private String userName;
     private Long userId;
     private String imageUrl;
@@ -28,6 +32,14 @@ public class ProjectPayload {
      */
     private List<ProjectCategoryVO> projectCategoryVOS;
 
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
+    }
 
     public Long getProjectId() {
         return projectId;
