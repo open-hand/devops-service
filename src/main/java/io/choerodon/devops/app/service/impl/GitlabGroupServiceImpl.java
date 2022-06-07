@@ -153,7 +153,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GitlabGroupPayload payload = new GitlabGroupPayload();
         payload.setOrganizationCode(organizationDTO.getTenantNum());
         payload.setOrganizationName(organizationDTO.getTenantName());
-        payload.setProjectCode(projectDTO.getCode());
+        payload.setProjectCode(projectDTO.getDevopsComponentCode());
+        payload.setDevopsComponentCode(projectDTO.getDevopsComponentCode());
         payload.setProjectName(projectDTO.getName());
         payload.setProjectId(projectDTO.getId());
         payload.setUserId(userAttrDTO.getIamUserId());

@@ -1340,7 +1340,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // name: orgName-projectName + suffix
         String groupName = GitOpsUtil.renderGroupName(tenant.getTenantNum(),
-                projectDTO.getCode(), "");
+                projectDTO.getDevopsComponentCode(), "");
         String processedGitlabUrl = "";
         if (gitlabUrl.endsWith("/")) {
             processedGitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
