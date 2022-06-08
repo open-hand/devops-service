@@ -1836,7 +1836,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public InstanceValueVO getReplaceResult(String versionValue, String deployValue) {
-        if (versionValue.equals(deployValue) || deployValue.equals("")) {
+        String deployFileAfterProcessed = deleteLineStartWithPoundKey(deployValue);
+        if (versionValue.equals(deployValue) || deployFileAfterProcessed.equals("")) {
             InstanceValueVO instanceValueVO = new InstanceValueVO();
             instanceValueVO.setDeltaYaml("");
             instanceValueVO.setYaml(versionValue);
@@ -2894,6 +2895,17 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     public static boolean isMiddleware(String source) {
         return AppSourceType.MIDDLEWARE.getValue().equals(source);
+    }
+
+    private String deleteLineStartWithPoundKey(String value) {
+        String[] strings = value.split("\n");
+        StringBuilder sb = new StringBuilder();
+        for (String string : strings) {
+            if (!string.trim().startsWith("#")) {
+                sb.append(string).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     public static boolean isMarket(String source) {
