@@ -135,19 +135,12 @@ public class SagaHandler {
         if (CollectionUtils.isEmpty(projectPayload.getProjectCategoryVOS())) {
             return msg;
         }
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+        if (projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
         LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
         return msg;
-
-//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-//        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-//        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-//        loggerInfo(msg);
-//        gitlabGroupService.updateGroups(gitlabGroupPayload);
-//        return msg;
     }
 
     /**

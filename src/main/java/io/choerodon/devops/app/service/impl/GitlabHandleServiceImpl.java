@@ -46,6 +46,7 @@ public class GitlabHandleServiceImpl implements GitlabHandleService {
         gitlabGroupPayload.setOrganizationCode(projectPayload.getOrganizationCode());
         gitlabGroupPayload.setOrganizationName(projectPayload.getOrganizationName());
         gitlabGroupPayload.setProjectCode(projectPayload.getProjectCode());
+        gitlabGroupPayload.setDevopsComponentCode(projectPayload.getDevopsComponentCode());
         gitlabGroupPayload.setProjectId(projectPayload.getProjectId());
         gitlabGroupPayload.setProjectName(projectPayload.getProjectName());
         gitlabGroupPayload.setUserId(projectPayload.getUserId());
