@@ -298,7 +298,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
 
         } else {
@@ -317,7 +317,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
         }
     }
@@ -338,7 +338,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
 
         }
@@ -361,7 +361,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
 
         }
@@ -391,7 +391,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
 
         } else {
@@ -411,7 +411,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex);
+                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
             }
         }
     }
