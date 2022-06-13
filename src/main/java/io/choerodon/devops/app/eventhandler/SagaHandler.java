@@ -177,7 +177,7 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
         tempList.forEach(t -> {
             if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
-                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).stream().anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+                if (baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).stream().noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
                     gitlabGroupMemberVOList.remove(t);
                 }
             }

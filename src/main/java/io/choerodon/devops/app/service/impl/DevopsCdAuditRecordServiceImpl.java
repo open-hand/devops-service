@@ -18,14 +18,15 @@ import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
 /**
@@ -137,8 +138,6 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
 
         List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.selectByIds(StringUtils.join(jobRecordIds, ","));
 
-        devopsCdJobRecordDTOS.forEach(i -> {
-            devopsCdAuditRecordMapper.updateProjectIdByJobRecordId(i.getProjectId(), i.getId());
-        });
+        devopsCdJobRecordDTOS.forEach(i -> devopsCdAuditRecordMapper.updateProjectIdByJobRecordId(i.getProjectId(), i.getId()));
     }
 }

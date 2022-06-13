@@ -2,13 +2,12 @@ package io.choerodon.devops.api.vo.template;
 
 import java.util.Date;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.NotNull;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 

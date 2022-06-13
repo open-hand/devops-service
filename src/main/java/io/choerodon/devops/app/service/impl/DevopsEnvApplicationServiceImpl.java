@@ -7,27 +7,20 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1ContainerPort;
 import io.kubernetes.client.models.V1beta2Deployment;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.DevopsEnvMessageVO;
-import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsEnvApplicationService;
 import io.choerodon.devops.app.service.PermissionHelper;
-import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.AppSourceType;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO;
 import io.choerodon.devops.infra.enums.deploy.ApplicationCenterEnum;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.AppServiceShareRuleMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvAppServiceMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**

@@ -2,15 +2,15 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiStageVO;
 import io.choerodon.devops.app.service.DevopsCiStageService;
 import io.choerodon.devops.infra.dto.DevopsCiStageDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiStageMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 〈功能简述〉
@@ -24,7 +24,6 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
 
     private static final String CREATE_STAGE_FAILED = "create.stage.failed";
     private static final String DELETE_STAGE_FAILED = "delete.stage.failed";
-    private static final String UPDATE_STAGE_FAILED = "update.stage.failed";
     private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private DevopsCiStageMapper devopsCiStageMapper;
 

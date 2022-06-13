@@ -25,8 +25,6 @@ import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -34,38 +32,21 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsClusterResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.enums.EnvironmentType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 
 /**
  * 封装调用外部git的接口
  */
 @Component
 public class ExternalGitUtil {
-    public static final String DEV_OPS_REFS = "refs/tags/";
     public static final String TEMPLATE = "template";
-    private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String GIT_SUFFIX = "/.git";
     private static final String ERROR_GIT_CLONE = "error.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalGitUtil.class);
-    private static final Pattern PATTERN = Pattern.compile("^[-\\+]?[\\d]*$");
     private static final String ERROR_GIT_PUSH = "error.git.push";
-    @Autowired
-    private DevopsClusterMapper devopsClusterMapper;
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsClusterResourceService devopsClusterResourceService;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
     private String classPath;
-    @Value("${services.gitlab.sshUrl}")
-    private String gitlabSshUrl;
 
     /**
      * 构造方法
@@ -414,14 +395,5 @@ public class ExternalGitUtil {
         } catch (GitAPIException e) {
             throw new CommonException("delete tag fail", e);
         }
-    }
-
-    private void addFile(Git git, String relativePath) throws GitAPIException {
-        git.add().setUpdate(false).addFilepattern(relativePath).call();
-        git.add().setUpdate(true).addFilepattern(relativePath).call();
-    }
-
-    private void commitChanges(Git git, String commitMsg) throws GitAPIException {
-        git.commit().setMessage(commitMsg).call();
     }
 }

@@ -128,9 +128,9 @@ public interface DevopsHostService {
      * @param instanceId 实例id
      * @return true表示匹配
      */
-    boolean HostIdInstanceIdMatch(Long hostId, Long instanceId);
+    boolean hostIdInstanceIdMatch(Long hostId, Long instanceId);
 
-    boolean HostIdDockerInstanceMatch(Long hostId, Long instanceId);
+    boolean hostIdDockerInstanceMatch(Long hostId, Long instanceId);
 
     /**
      * 分页查询主机

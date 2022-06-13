@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;

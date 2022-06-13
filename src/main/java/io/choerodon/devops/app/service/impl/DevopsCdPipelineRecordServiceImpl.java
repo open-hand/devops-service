@@ -799,7 +799,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String deployObjectName = null;
         String image = null;
         Long appServiceId = null;
-        String serviceName = null;
         String repoName = null;
         Long repoId = null;
         String userName = null;
