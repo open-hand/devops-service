@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -31,8 +30,6 @@ import io.choerodon.devops.api.vo.ExecResultInfoVO;
 import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.dto.repo.C7nImageDeployDTO;
-import io.choerodon.devops.infra.dto.repo.C7nNexusDeployDTO;
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.devops.infra.enums.HostSourceEnum;
 import io.choerodon.devops.infra.mapper.DevopsHostMapper;
@@ -48,11 +45,6 @@ public class SshUtil {
      * 默认超时时间, 10秒
      */
     private static final int DEFAULT_TIMEOUT_MILLISECONDS = 10000;
-    private static final Integer WAIT_SECONDS = 6;
-    private static final String ERROR_DOCKER_LOGIN = "error.docker.login";
-    private static final String ERROR_DOCKER_PULL = "error.docker.pull";
-    private static final String ERROR_DOCKER_RUN = "error.docker.run";
-    private static final String ERROR_DOWNLOAD_JAY = "error.download.jar";
     private static final String CAT_FILE_TEMPLATE = "cat %s";
 
 
@@ -141,178 +133,6 @@ public class SshUtil {
         }
     }
 
-    public void sshStopJar(SSHClient ssh, String jarName, String workingPath, StringBuilder log) throws IOException {
-        if (StringUtils.isEmpty(workingPath)) {
-            workingPath = ".";
-        } else {
-            workingPath = workingPath.endsWith("/") ? workingPath.substring(0, workingPath.length() - 1) : workingPath;
-        }
-
-        if (!StringUtils.isEmpty(jarName)) {
-            StringBuilder stopJar = new StringBuilder();
-            stopJar.append(String.format("ps aux|grep %s | grep -v grep |awk '{print  $2}' |xargs kill -9 ", jarName));
-            stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("rm -f %s/temp-jar/%s", workingPath, jarName));
-            stopJar.append(System.lineSeparator());
-            stopJar.append(String.format("rm -f %s/temp-log/%s", workingPath, jarName.replace(".jar", ".log")));
-            log.append(System.lineSeparator()).append(stopJar.toString());
-            Session session = null;
-            try {
-                session = ssh.startSession();
-                final Session.Command cmd = session.exec(stopJar.toString());
-                cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-                String logInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-                String errorInfo = IOUtils.readFully(cmd.getErrorStream()).toString();
-                log.append(logInfo);
-                log.append(errorInfo);
-            } finally {
-                assert session != null;
-                session.close();
-            }
-        }
-    }
-
-    public void sshExec(SSHClient ssh, C7nNexusDeployDTO c7nNexusDeployDTO, String value, String workingPath, StringBuilder log) throws IOException {
-        StringBuilder cmdStr = new StringBuilder();
-        if (StringUtils.isEmpty(workingPath)) {
-            workingPath = ".";
-        } else {
-            workingPath = workingPath.endsWith("/") ? workingPath.substring(0, workingPath.length() - 1) : workingPath;
-        }
-        cmdStr.append(String.format("mkdir -p %s/temp-jar && ", workingPath));
-        cmdStr.append(String.format("mkdir -p %s/temp-log && ", workingPath));
-        Session session = null;
-        try {
-            session = ssh.startSession();
-            String jarPathAndName = workingPath + "/temp-jar/" + c7nNexusDeployDTO.getJarName();
-            // 2.2
-            String curlExec = String.format("curl -o %s -u %s:%s %s ",
-                    jarPathAndName,
-                    c7nNexusDeployDTO.getPullUserId(),
-                    c7nNexusDeployDTO.getPullUserPassword(),
-                    c7nNexusDeployDTO.getDownloadUrl());
-            cmdStr.append(curlExec).append(" && ");
-
-            // 2.3
-            String[] strings = value.split("\n");
-            String values = "";
-            for (String s : strings) {
-                if (s.length() > 0 && !s.contains("#") && s.contains("java")) {
-                    values = s;
-                }
-            }
-            if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("jar", values))) {
-                throw new CommonException("error.instruction");
-            }
-
-            String logName = c7nNexusDeployDTO.getJarName().replace(".jar", ".log");
-            String logPathAndName = workingPath + "/temp-log/" + logName;
-            String javaJarExec = values.replace("${jar}", jarPathAndName);
-
-            cmdStr.append(javaJarExec);
-            StringBuilder finalCmdStr = new StringBuilder("nohup bash -c \"").append(cmdStr).append("\"").append(String.format(" > %s 2>&1 &", logPathAndName));
-
-            final Session.Command cmd = session.exec(finalCmdStr.toString());
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(System.lineSeparator()).append(finalCmdStr.toString().replace(c7nNexusDeployDTO.getPullUserPassword(), "password"));
-            log.append(System.lineSeparator());
-            log.append(loggerInfo);
-            log.append(loggerError);
-            if (loggerError.contains("Unauthorized") || loggerInfo.contains("Unauthorized") || cmd.getExitStatus() != 0) {
-                throw new CommonException(ERROR_DOWNLOAD_JAY);
-            }
-            LOGGER.info(loggerInfo);
-            LOGGER.info(loggerError);
-        } finally {
-            assert session != null;
-            session.close();
-        }
-
-    }
-
-    public void dockerLogin(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
-        Session session = null;
-        try {
-            session = ssh.startSession();
-            String loginExec = String.format("sudo docker login -u '%s' -p %s %s", imageTagVo.getPullAccount(), imageTagVo.getPullPassword(), imageTagVo.getHarborUrl());
-            LOGGER.info(loginExec);
-            Session.Command cmd = session.exec(loginExec);
-
-            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            log.append(System.lineSeparator()).append(loginExec.replace(imageTagVo.getPullPassword(), "password"));
-            log.append(System.lineSeparator());
-            log.append(loggerInfo);
-            log.append(loggerError);
-            LOGGER.info(loggerInfo);
-            LOGGER.info(loggerError);
-            LOGGER.info("docker login status:{}", cmd.getExitStatus());
-
-            if (cmd.getExitStatus() != 0) {
-                throw new CommonException(ERROR_DOCKER_LOGIN);
-            }
-
-        } finally {
-            assert session != null;
-            session.close();
-        }
-    }
-
-    public void dockerPull(SSHClient ssh, C7nImageDeployDTO imageTagVo, StringBuilder log) throws IOException {
-        Session session = null;
-        try {
-            session = ssh.startSession();
-            LOGGER.info(imageTagVo.getPullCmd());
-            Session.Command cmd = session.exec("sudo " + imageTagVo.getPullCmd());
-            log.append(System.lineSeparator()).append("sudo ").append(imageTagVo.getPullCmd());
-            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            execPullImage(cmd);
-            log.append(System.lineSeparator());
-            log.append(loggerInfo);
-            log.append(loggerError);
-            LOGGER.info(loggerInfo);
-            LOGGER.info(loggerError);
-            LOGGER.info("docker pull status:{}", cmd.getExitStatus());
-            if (cmd.getExitStatus() != 0) {
-                throw new CommonException(ERROR_DOCKER_PULL);
-            }
-        } finally {
-            assert session != null;
-            session.close();
-        }
-    }
-
-    public void dockerStop(SSHClient ssh, String containerName, StringBuilder log) throws IOException {
-        Session session = null;
-        try {
-            session = ssh.startSession();
-
-            // 判断镜像是否存在 存在删除 部署
-            StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append("sudo docker stop ").append(containerName).append(" && ");
-            dockerRunExec.append("sudo docker rm ").append(containerName);
-            log.append(System.lineSeparator()).append(dockerRunExec.toString());
-            Session.Command cmd = session.exec(dockerRunExec.toString());
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            log.append(System.lineSeparator());
-            log.append(loggerInfo);
-            log.append(loggerError);
-            LOGGER.info(loggerInfo);
-            LOGGER.info(loggerError);
-            LOGGER.info("docker stop status:{}", cmd.getExitStatus());
-        } finally {
-            assert session != null;
-            session.close();
-        }
-
-    }
-
     /**
      * 执行shell命令。该函数需要一直阻塞直到命令返回
      *
@@ -343,46 +163,6 @@ public class SshUtil {
                 throw new CommonException(String.format("failed to execute command :%s ,the error is %s", c, execResultInfoVO.getStdErr()));
             }
         }
-    }
-
-    public void dockerRun(SSHClient ssh, String value, String containerName, C7nImageDeployDTO c7nImageDeployDTO, StringBuilder log) throws IOException {
-        Session session = null;
-        try {
-            session = ssh.startSession();
-            String[] strings = value.split("\n");
-            String values = "";
-            for (String s : strings) {
-                if (s.length() > 0 && !s.contains("#") && s.contains("docker")) {
-                    values = s;
-                }
-            }
-            LOGGER.info("docker run values is {}", values);
-            if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
-                throw new CommonException("error.instruction");
-            }
-
-            // 判断镜像是否存在 存在删除 部署
-            StringBuilder dockerRunExec = new StringBuilder();
-            dockerRunExec.append(values.replace("${containerName}", containerName).replace("${imageName}", c7nImageDeployDTO.getPullCmd().replace("docker pull", "")));
-            Session.Command cmd = session.exec(dockerRunExec.toString());
-            String loggerInfo = IOUtils.readFully(cmd.getInputStream()).toString();
-            String loggerError = IOUtils.readFully(cmd.getErrorStream()).toString();
-            LOGGER.info(loggerInfo);
-            LOGGER.info(loggerError);
-            cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-            log.append(System.lineSeparator()).append(dockerRunExec.toString());
-            log.append(System.lineSeparator());
-            log.append(loggerInfo);
-            log.append(loggerError);
-            LOGGER.info("docker run status:{}", cmd.getExitStatus());
-            if (cmd.getExitStatus() != 0) {
-                throw new CommonException(ERROR_DOCKER_RUN);
-            }
-        } finally {
-            assert session != null;
-            session.close();
-        }
-
     }
 
     private Boolean checkInstruction(String type, String instruction) {
@@ -439,25 +219,6 @@ public class SshUtil {
             hostConnectionVO.setUsername(devopsHostDTO.getUsername());
             hostConnectionVO.setPassword(devopsHostDTO.getPassword());
             hostConnectionVO.setAccountKey(devopsHostDTO.getPassword());
-        }
-    }
-
-    /**
-     * 解决pull 镜像时间较长
-     * 等3分钟
-     */
-    private void execPullImage(Session.Command cmd) {
-        for (int i = 0; i < 30; i++) {
-            if (cmd.getExitStatus() == null) {
-                LOGGER.info("Pulling the image!!!");
-                try {
-                    cmd.join(WAIT_SECONDS, TimeUnit.SECONDS);
-                } catch (ConnectionException e) {
-                    LOGGER.error("Pulling the image failed", e);
-                }
-            } else {
-                break;
-            }
         }
     }
 

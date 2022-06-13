@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
-
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -55,8 +53,6 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
-import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
-import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -89,9 +85,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
-    private static final String ERROR_UNSUPPORTED_STEP_TYPE = "error.unsupported.step.type";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
-    private static final String UNKNOWN_DEPLOY_TYPE = "unknown.deploy.type";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -137,7 +131,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private final DevopsCdPipelineService devopsCdPipelineService;
     private final DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
-    private final DevopsDeployValueMapper devopsDeployValueMapper;
 
     @Autowired
     private DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
@@ -218,8 +211,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             DevopsEnvironmentMapper devopsEnvironmentMapper,
             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
             @Lazy DevopsCdPipelineService devopsCdPipelineService,
-            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper,
-            DevopsDeployValueMapper devopsDeployValueMapper
+            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper
     ) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -247,7 +239,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
-        this.devopsDeployValueMapper = devopsDeployValueMapper;
         this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
@@ -1427,44 +1418,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return ciCdPipelineRecordVO;
     }
 
-    private <T> void calculateStageStatus(DevopsCiStageRecordVO stageRecord, Map<String, List<T>> statusMap) {
-        if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.CREATED.value()))) {
-            stageRecord.setStatus(JobStatusEnum.CREATED.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.PENDING.value()))) {
-            stageRecord.setStatus(JobStatusEnum.PENDING.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.RUNNING.value()))) {
-            stageRecord.setStatus(JobStatusEnum.RUNNING.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.FAILED.value()))) {
-            stageRecord.setStatus(JobStatusEnum.FAILED.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.SUCCESS.value()))) {
-            stageRecord.setStatus(JobStatusEnum.SUCCESS.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.CANCELED.value()))) {
-            stageRecord.setStatus(JobStatusEnum.CANCELED.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.SKIPPED.value()))) {
-            stageRecord.setStatus(JobStatusEnum.SKIPPED.value());
-        } else if (!CollectionUtils.isEmpty(statusMap.get(JobStatusEnum.MANUAL.value()))) {
-            stageRecord.setStatus(JobStatusEnum.MANUAL.value());
-        }
-    }
-
-    private List<DevopsCiJobRecordDTO> filterJobs(List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS) {
-        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOList = new ArrayList<>();
-        if (CollectionUtils.isEmpty(devopsCiJobRecordDTOS)) {
-            return devopsCiJobRecordDTOList;
-        }
-        Map<String, List<DevopsCiJobRecordDTO>> jobMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getName));
-        jobMap.forEach((k, v) -> {
-            if (v.size() > 1) {
-                Optional<DevopsCiJobRecordDTO> ciJobRecordDTO = v.stream().max(Comparator.comparing(DevopsCiJobRecordDTO::getId));
-                devopsCiJobRecordDTOList.add(ciJobRecordDTO.get());
-            } else if (v.size() == 1) {
-                devopsCiJobRecordDTOList.add(v.get(0));
-            }
-        });
-        return devopsCiJobRecordDTOList;
-    }
-
-
     private Long getPipelineExecuteTime(Long relId) {
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelMapper.selectByPrimaryKey(relId);
         if (Objects.isNull(devopsPipelineRecordRelDTO)) {
@@ -2068,24 +2021,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     /**
-     * 生成maven构建相关的脚本
-     *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param ciConfigTemplateVO maven构建阶段的信息
-     * @param hasSettings        这个阶段是否有配置settings
-     * @return 生成的shell脚本
-     */
-    private List<String> buildMavenScripts(final Long projectId, final Long jobId, CiConfigTemplateVO ciConfigTemplateVO, boolean hasSettings) {
-        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
-        if (hasSettings) {
-            // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
-        }
-        return shells;
-    }
-
-    /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
      * @param organizationId 组织id
@@ -2115,203 +2050,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     result.addAll(handler.buildGitlabCiScript(devopsCiStepDTO));
                 });
         return result;
-    }
-
-//    /**
-//     * 把配置转换为gitlab-ci配置（maven,sonarqube）
-//     *
-//     * @param organizationId 组织id
-//     * @param projectId      项目id
-//     * @param jobVO          生成脚本
-//     * @return 生成的脚本列表
-//     */
-//    private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobVO jobVO) {
-//        Assert.notNull(jobVO, "Job can't be null");
-//        Assert.notNull(organizationId, "Organization id can't be null");
-//        Assert.notNull(projectId, "project id can't be null");
-//        final Long jobId = jobVO.getId();
-//        Assert.notNull(jobId, "Ci job id is required.");
-//
-//        if (JobTypeEnum.SONAR.value().equals(jobVO.getType())) {
-//            return calculateSonarScript(jobVO);
-//        } else if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-//            // 将构建类型的stage中的job的每个step进行解析和转化
-//            CiConfigVO ciConfigVO = jobVO.getConfigVO();
-//            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-//                return Collections.emptyList();
-//            }
-//
-//            List<Long> existedSequences = new ArrayList<>();
-//            // 校验前端传入的sequence不为null且不重复
-//            ciConfigVO.getConfig().forEach(config -> DevopsCiPipelineAdditionalValidator.validConfigSequence(config.getSequence(), config.getName(), existedSequences));
-//
-//            // 最后生成的所有script集合
-//            List<String> result = new ArrayList<>();
-//
-//            // 同一个job中的所有step要按照sequence顺序来
-//            // 将每一个step都转为一个List<String>并将所有的list合并为一个
-//            ciConfigVO.getConfig()
-//                    .stream()
-//                    .sorted(Comparator.comparingLong(CiConfigTemplateVO::getSequence))
-//                    .forEach(config -> {
-//                        CiJobScriptTypeEnum type = CiJobScriptTypeEnum.forType(config.getType().toLowerCase());
-//                        if (type == null) {
-//                            throw new CommonException(ERROR_UNSUPPORTED_STEP_TYPE, config.getType());
-//                        }
-//
-//                        switch (type) {
-//                            // GO和NPM是一样处理
-//                            case NPM:
-//                                result.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(config.getScript()), true, true));
-//                                break;
-//                            case MAVEN:
-//                                // 处理settings文件
-//                                DevopsCiPipelineAdditionalValidator.validateMavenStep(config);
-//                                boolean hasSettings = buildAndSaveMavenSettings(projectId, jobId, config);
-//                                result.addAll(buildMavenScripts(projectId, jobId, config, hasSettings));
-//                                break;
-//                            case DOCKER:
-//                                // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
-//                                // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
-//                                Boolean doTlsVerify = config.getSkipDockerTlsVerify();
-//                                //是否开启镜像扫描 默认是关闭镜像扫描的
-//                                Boolean imageScan = config.getImageScan();
-//                                result.addAll(GitlabCiUtil.generateDockerScripts(
-//                                        config.getDockerContextDir(),
-//                                        config.getDockerFilePath(),
-//                                        doTlsVerify == null || !doTlsVerify,
-//                                        Objects.isNull(imageScan) ? false : imageScan, jobVO.getId()));
-//                                break;
-//                            // 上传JAR包阶段是没有选择项目依赖的, 同样也可以复用maven deploy的逻辑
-//                            case UPLOAD_JAR:
-//                            case MAVEN_DEPLOY:
-//                                List<MavenRepoVO> targetRepos = new ArrayList<>();
-//                                boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId, jobId, config, targetRepos);
-//                                result.addAll(buildMavenJarDeployScripts(projectId, jobId, hasMavenSettings, config, targetRepos));
-//                                break;
-//                            default:
-//                        }
-//                    });
-//
-//            return result;
-//        } else if (JobTypeEnum.CHART.value().equals(jobVO.getType())) {
-//            // 生成chart步骤
-//            return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
-//        }
-//        return Collections.emptyList();
-//    }
-
-    /**
-     * 计算sonar脚本
-     *
-     * @param jobVO
-     * @return
-     */
-    private List<String> calculateSonarScript(DevopsCiJobVO jobVO) {
-        // sonar配置转化为gitlab-ci配置
-        List<String> scripts = new ArrayList<>();
-        SonarQubeConfigVO sonarQubeConfigVO = JSONObject.parseObject(jobVO.getMetadata(), SonarQubeConfigVO.class);
-        if (SonarScannerType.SONAR_SCANNER.value().equals(sonarQubeConfigVO.getScannerType())) {
-            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
-                // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(sonarQubeConfigVO.getSources()));
-            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
-                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
-                }
-                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSources()));
-                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSources()));
-                }
-            } else {
-                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
-            }
-        } else if (SonarScannerType.SONAR_MAVEN.value().equals(sonarQubeConfigVO.getScannerType())) {
-            if (CiSonarConfigType.DEFAULT.value().equals(sonarQubeConfigVO.getConfigType())) {
-                // 查询默认的sonarqube配置
-                DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
-                scripts.add(GitlabCiUtil.getDefaultSonarCommand(sonarQubeConfigVO.getSkipTests()));
-            } else if (CiSonarConfigType.CUSTOM.value().equals(sonarQubeConfigVO.getConfigType())) {
-                if (Objects.isNull(sonarQubeConfigVO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
-                }
-                if (SonarAuthType.USERNAME_PWD.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommand(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getUsername(), sonarQubeConfigVO.getPassword(), sonarQubeConfigVO.getSkipTests()));
-                } else if (SonarAuthType.TOKEN.value().equals(sonarQubeConfigVO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarCommandForToken(sonarQubeConfigVO.getSonarUrl(), sonarQubeConfigVO.getToken(), sonarQubeConfigVO.getSkipTests()));
-                }
-            } else {
-                throw new CommonException("error.sonar.config.type.not.supported", sonarQubeConfigVO.getConfigType());
-            }
-        } else {
-            throw new CommonException(ResourceCheckConstant.ERROR_SONAR_SCANNER_TYPE_INVALID);
-        }
-        return scripts;
-    }
-
-    /**
-     * 生成并存储maven settings到数据库
-     *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param ciConfigTemplateVO 配置信息
-     * @return true表示有settings配置，false表示没有
-     */
-    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, CiConfigTemplateVO ciConfigTemplateVO) {
-        // settings文件内容
-        String settings;
-        final List<MavenRepoVO> repos = new ArrayList<>();
-
-        // 是否有手动填写仓库表单
-        final boolean hasManualRepos = !CollectionUtils.isEmpty(ciConfigTemplateVO.getRepos());
-        // 是否有选择已有的maven仓库
-        final boolean hasNexusRepos = !CollectionUtils.isEmpty(ciConfigTemplateVO.getNexusMavenRepoIds());
-
-        if (!StringUtils.isEmpty(ciConfigTemplateVO.getMavenSettings())) {
-            // 使用用户提供的xml内容，不进行内容的校验
-            settings = Base64Util.getBase64DecodedString(ciConfigTemplateVO.getMavenSettings());
-        } else if (hasManualRepos || hasNexusRepos) {
-            if (hasNexusRepos) {
-                // 用户选择的已有的maven仓库
-                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ciConfigTemplateVO.getNexusMavenRepoIds());
-                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiPipelineServiceImpl::convertRepo).collect(Collectors.toList()));
-            }
-
-            if (hasManualRepos) {
-                // 由用户填写的表单构建xml文件内容
-                repos.addAll(ciConfigTemplateVO.getRepos());
-            }
-
-            // 构建settings文件
-            settings = buildSettings(repos);
-        } else {
-            // 没有填关于settings的信息
-            return false;
-        }
-
-        // 这里存储的ci setting文件内容是解密后的
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, ciConfigTemplateVO.getSequence(), settings);
-        MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
-        return true;
-    }
-
-    @Nullable
-    private Cache buildJobCache(DevopsCiJobVO jobConfig) {
-        boolean isToUpload = Boolean.TRUE.equals(jobConfig.getToUpload());
-        boolean isToDownload = Boolean.TRUE.equals(jobConfig.getToDownload());
-        if (isToUpload && isToDownload) {
-            return constructCache(CachePolicy.PULL_PUSH.getValue());
-        } else if (isToDownload) {
-            return constructCache(CachePolicy.PULL.getValue());
-        } else if (isToUpload) {
-            return constructCache(CachePolicy.PUSH.getValue());
-        } else {
-            return null;
-        }
     }
 
     @Nullable
@@ -2349,124 +2087,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             beforeScripts.add(GitlabCiUtil.generateCreateCacheDir(GitOpsConstants.CHOERODON_CI_CACHE_DIR));
         }
         gitlabCi.setBeforeScript(beforeScripts);
-    }
-
-    /**
-     * 生成jar包发布相关的脚本
-     *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param hasSettings        是否有settings配置
-     * @param ciConfigTemplateVO maven发布软件包阶段的信息
-     * @param targetMavenRepoVO  目标制品库仓库信息
-     * @return 生成的shell脚本
-     */
-    private List<String> buildMavenJarDeployScripts(final Long projectId, final Long jobId, final boolean hasSettings, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> targetMavenRepoVO) {
-        List<String> shells = new ArrayList<>();
-        // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
-        // TODO 重构逻辑
-        List<String> templateShells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(ciConfigTemplateVO.getScript()), true, true);
-        // 如果有settings配置, 填入获取settings的指令
-        if (hasSettings) {
-            shells.add(GitlabCiUtil.downloadMavenSettings(projectId, jobId, ciConfigTemplateVO.getSequence()));
-        }
-        // 根据目标仓库信息, 渲染发布jar包的指令
-        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
-            // 插入shell指令将配置的settings文件下载到项目目录下
-
-            // 包含repoId锚点的字符串在templateShells中的索引号
-            int repoIdIndex = -1;
-            // 包含repoUrl锚点的字符串在templateShells中的索引号
-            int repoUrlIndex = -1;
-            // 寻找包含这两个锚点的字符串位置
-            for (int i = 0; i < templateShells.size(); i++) {
-                if (repoIdIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
-                    repoIdIndex = i;
-                }
-                if (repoUrlIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
-                    repoUrlIndex = i;
-                }
-                if (repoIdIndex != -1 && repoUrlIndex != -1) {
-                    // 没必要再找了
-                    break;
-                }
-            }
-
-            // 为每一个仓库都从模板的脚本中加一份生成的命令
-            for (MavenRepoVO repo : targetMavenRepoVO) {
-                // 将预定的变量(仓库名和地址)替换为settings.xml文件指定的
-                List<String> commands = new ArrayList<>(templateShells);
-                if (repoIdIndex != -1) {
-                    commands.set(repoIdIndex, commands.get(repoIdIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_ID, repo.getName()));
-                }
-                if (repoUrlIndex != -1) {
-                    commands.set(repoUrlIndex, commands.get(repoUrlIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_URL, repo.getUrl()));
-                }
-                shells.addAll(commands);
-            }
-
-            // 只生成一个jar包元数据上传指令用于CD阶段
-            //加上jobId  与sequence，用于查询jar包的时间戳
-            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getMavenDeployRepoSettings().getNexusRepoIds(), jobId, ciConfigTemplateVO.getSequence()));
-        } else {
-            // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
-            shells.addAll(templateShells);
-        }
-        return shells;
-    }
-
-    /**
-     * 生成并存储maven settings到数据库
-     *
-     * @param projectId           项目id
-     * @param jobId               job id
-     * @param ciConfigTemplateVO  配置
-     * @param targetRepoContainer 用来存放解析出的目标仓库信息
-     * @return 返回true表示有settings信息
-     */
-    private boolean buildAndSaveJarDeployMavenSettings(Long projectId, Long jobId, CiConfigTemplateVO ciConfigTemplateVO, List<MavenRepoVO> targetRepoContainer) {
-        MavenDeployRepoSettings mavenDeployRepoSettings = ciConfigTemplateVO.getMavenDeployRepoSettings();
-        Long sequence = ciConfigTemplateVO.getSequence();
-        Set<Long> dependencyRepoIds = ciConfigTemplateVO.getNexusMavenRepoIds();
-        List<MavenRepoVO> dependencyRepos = ciConfigTemplateVO.getRepos();
-
-        boolean targetRepoEmpty = mavenDeployRepoSettings.getNexusRepoIds() == null;
-        boolean dependencyRepoIdsEmpty = CollectionUtils.isEmpty(dependencyRepoIds);
-        boolean dependencyRepoEmpty = CollectionUtils.isEmpty(dependencyRepos);
-
-        // 如果都为空, 不生成settings文件
-        if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty) {
-            return false;
-        }
-
-        // 查询制品库
-        List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ArrayUtil.singleAsSet(mavenDeployRepoSettings.getNexusRepoIds()));
-
-        // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
-        if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
-            return false;
-        }
-
-        // 转化制品库信息, 并将目标仓库信息取出, 放入targetRepoContainer
-        List<MavenRepoVO> mavenRepoVOS = nexusMavenRepoDTOs.stream().map(r -> {
-            MavenRepoVO result = convertRepo(r);
-            // 目标仓库不为空, 并且目标仓库包含
-            if (!targetRepoEmpty && mavenDeployRepoSettings.getNexusRepoIds().equals(r.getRepositoryId())) {
-                targetRepoContainer.add(result);
-            }
-            return result;
-        }).collect(Collectors.toList());
-
-        // 将手动输入的仓库信息也放入列表
-        if (!dependencyRepoEmpty) {
-            mavenRepoVOS.addAll(dependencyRepos);
-        }
-
-        // 生成settings文件内容
-        String settings = buildSettings(mavenRepoVOS);
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence, settings);
-        MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
-        return true;
     }
 
     private void createUserRel(List<Long> cdAuditUserIds, Long projectId, Long pipelineId, Long jobId) {
@@ -2595,14 +2215,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             throw new CommonException("error.get.ci.job.id");
         }
         return ciJobDTOList.get(0).getId();
-    }
-
-    private void updateExtraInfoToNull(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
-        devopsCdEnvDeployInfoDTO.setId(null);
-        devopsCdEnvDeployInfoDTO.setCreatedBy(null);
-        devopsCdEnvDeployInfoDTO.setCreationDate(null);
-        devopsCdEnvDeployInfoDTO.setLastUpdatedBy(null);
-        devopsCdEnvDeployInfoDTO.setLastUpdateDate(null);
     }
 
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {

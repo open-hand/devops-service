@@ -24,7 +24,6 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -136,7 +135,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String DUPLICATE = "duplicate";
     private static final String NORMAL_SERVICE = "normal_service";
     private static final String SHARE_SERVICE = "share_service";
-    private static final String ALL = "all";
     private static final String TEMP_MODAL = "\\?version=";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
@@ -154,7 +152,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String CI_FILE_TEMPLATE;
 
     private final Gson gson = new Gson();
-    private final JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.gitlab.proxy-url:}")
@@ -727,14 +724,6 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<Long> userIds = appServiceDTOList.stream().map(AppServiceDTO::getCreatedBy).collect(toList());
             userIds.addAll(appServiceDTOList.stream().map(AppServiceDTO::getLastUpdatedBy).collect(toList()));
             List<Long> distinctIds = userIds.stream().distinct().collect(toList());
-
-//            Future<List<IamUserDTO>> userFuture = baseServiceClientOperator.listUsersByIdsCollapse(new ArrayList<>(distinctIds));
-//            List<IamUserDTO> userResult;
-//            try {
-//                userResult = userFuture.get();
-//            } catch (InterruptedException | ExecutionException e) {
-//                throw new CommonException("Failed to get user", e);
-//            }
             List<IamUserDTO> userResult = baseServiceClientOperator.listUsersByIds(distinctIds);
 
             Map<Long, IamUserDTO> users = userResult.stream().collect(Collectors.toMap(IamUserDTO::getId, u -> u));
@@ -3303,9 +3292,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String getApplicationToken(String token, Integer projectId, Integer userId) {
         List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
         if (variables.isEmpty()) {
-            gitlabServiceClientOperator.createProjectVariable(projectId, "Token", token, false, userId);
+            gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TOKEN, token, false, userId);
             //添加跳过证书扫描的变量
-            gitlabServiceClientOperator.createProjectVariable(projectId, "TRIVY_INSECURE", "true", false, userId);
+            gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TRIVY_INSECURE, "true", false, userId);
             return token;
         } else {
             return variables.get(0).getValue();
@@ -3431,7 +3420,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         // 1. 迁移gitlab代码库
-        GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
+        gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
                 appServiceTransferVO.getGitlabGroupId(),
                 userId);
 

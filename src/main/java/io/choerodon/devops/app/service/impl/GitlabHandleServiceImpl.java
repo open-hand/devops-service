@@ -79,8 +79,6 @@ public class GitlabHandleServiceImpl implements GitlabHandleService {
 
         //2.4 同步停用用户的角色
         List<IamUserDTO> disanbleUser = userDTOList.stream().filter(iamUserDTO -> !iamUserDTO.getEnabled()).collect(Collectors.toList());
-        disanbleUser.forEach(iamUserDTO -> {
-            gitlabUserService.disEnabledGitlabUser(TypeUtil.objToLong(iamUserDTO.getId()));
-        });
+        disanbleUser.forEach(iamUserDTO -> gitlabUserService.disEnabledGitlabUser(TypeUtil.objToLong(iamUserDTO.getId())));
     }
 }

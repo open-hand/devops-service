@@ -45,11 +45,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsConfigServiceImpl implements DevopsConfigService {
     private static final String HARBOR = "harbor";
     private static final String AUTHTYPE_PULL = "pull";
-    private static final String AUTHTYPE_PUSH = "push";
     private static final String CHART = "chart";
     private static final Gson gson = new Gson();
-    private static final String USER_PREFIX = "pullUser%s%s";
-    private static final String ERROR_CREATE_HARBOR_USER = "error.create.harbor.user";
 
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;

@@ -22,10 +22,8 @@ import io.choerodon.devops.infra.mapper.DevopsCdEnvDeployInfoMapper;
 @Service
 public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoService {
 
-    private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
     private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
-    private static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";
 
     private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
     private static final String ERROR_SAVE_DEPLOY_INFO = "error.save.deploy.info";

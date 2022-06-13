@@ -512,7 +512,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         // 获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-        DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(devopsCdJobRecordDTO.getJobId());
+        devopsCdJobService.queryById(devopsCdJobRecordDTO.getJobId());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         Date startDate = new Date();
         Long commandId = null;
@@ -521,7 +521,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 设置用户上下文
         log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-//        DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), DevopsDeployInfoVO.class);
 
         // 1. 校验环境是否开启一键关闭自动部署
         if (Boolean.FALSE.equals(checkEnvEnableAutoDeploy(devopsCdJobRecordDTO, devopsCdEnvDeployInfoDTO, log))) {
@@ -1260,8 +1259,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
-        // 查询部署版本
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(instanceE.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
         List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 

@@ -4,8 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.hzero.mybatis.BatchInsertHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -14,7 +12,6 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.DevopsBranchVO;
 import io.choerodon.devops.api.vo.IssueIdAndBranchIdsVO;
-import io.choerodon.devops.app.service.DevopsBranchService;
 import io.choerodon.devops.app.service.DevopsIssueRelService;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
@@ -22,12 +19,8 @@ import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
 
 @Service
 public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsIssueRelServiceImpl.class);
     @Autowired
     private DevopsIssueRelMapper devopsIssueRelMapper;
-
-    @Autowired
-    private DevopsBranchService devopsBranchService;
 
     @Autowired
     @Qualifier("devopsIssueRelBatchInsertHelper")

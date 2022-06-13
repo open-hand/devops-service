@@ -50,10 +50,10 @@ public class DevopsHostAdditionalCheckValidator {
     }
 
     public void validHostIdAndInstanceIdMatch(Long hostId, Long instanceId) {
-        CommonExAssertUtil.assertTrue(devopsHostService.HostIdInstanceIdMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+        CommonExAssertUtil.assertTrue(devopsHostService.hostIdInstanceIdMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
     }
 
     public void validHostIdAndDockerInstanceIdMatch(Long hostId, Long instanceId) {
-        CommonExAssertUtil.assertTrue(devopsHostService.HostIdDockerInstanceMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+        CommonExAssertUtil.assertTrue(devopsHostService.hostIdDockerInstanceMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
     }
 }

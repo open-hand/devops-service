@@ -2288,7 +2288,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
 
-//        AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
 
         // 设置用户上下文

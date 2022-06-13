@@ -32,7 +32,10 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class AppExceptionRecordServiceImpl implements AppExceptionRecordService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AppExceptionRecordServiceImpl.class);
-    private static JSON json = new JSON();
+
+    private static final String ERROR_UPDATE_EXCEPTION_RECORD = "error.update.exception.record";
+    private static final String ERROR_SAVE_EXCEPTION_RECORD = "error.save.exception.record";
+    private static JSON JSON = new JSON();
     @Autowired
     private AppExceptionRecordMapper appExceptionRecordMapper;
     @Autowired
@@ -51,12 +54,12 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             int desired = 1;
             String resourceName = "";
             if (ResourceType.DEPLOYMENT.getType().equals(resourceType)) {
-                V1beta2Deployment v1beta2Deployment = json.deserialize(resource, V1beta2Deployment.class);
+                V1beta2Deployment v1beta2Deployment = JSON.deserialize(resource, V1beta2Deployment.class);
                 current = v1beta2Deployment.getStatus().getReadyReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReadyReplicas();
                 desired = v1beta2Deployment.getStatus().getReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReplicas();
                 resourceName = v1beta2Deployment.getMetadata().getName();
             } else if (ResourceType.STATEFULSET.getType().equals(resourceType)) {
-                V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(resource, V1beta2StatefulSet.class);
+                V1beta2StatefulSet v1beta2StatefulSet = JSON.deserialize(resource, V1beta2StatefulSet.class);
                 current = v1beta2StatefulSet.getStatus().getReadyReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReadyReplicas();
                 desired = v1beta2StatefulSet.getStatus().getReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReplicas();
                 resourceName = v1beta2StatefulSet.getMetadata().getName();
@@ -71,7 +74,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                 AppExceptionRecordDTO appExceptionRecordDTO = appExceptionRecordMapper.queryLatestExceptionRecordFilterByType(devopsDeployAppCenterEnvDTO.getId(), resourceType, resourceName);
                 if (appExceptionRecordDTO != null) {
                     appExceptionRecordDTO.setEndDate(new Date());
-                    MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
+                    MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, ERROR_UPDATE_EXCEPTION_RECORD);
                 }
             } else if (current == 0) {
                 // 停机
@@ -85,11 +88,11 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                             resourceName,
                             new Date(),
                             true);
-                    MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+                    MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, ERROR_SAVE_EXCEPTION_RECORD);
                 } else {
                     if (Boolean.FALSE.equals(appExceptionRecordDTO.getDowntime())) {
                         appExceptionRecordDTO.setEndDate(new Date());
-                        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
+                        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, ERROR_UPDATE_EXCEPTION_RECORD);
 
                         AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
                                 devopsDeployAppCenterEnvDTO.getId(),
@@ -98,7 +101,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                                 resourceName,
                                 new Date(),
                                 true);
-                        MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+                        MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, ERROR_SAVE_EXCEPTION_RECORD);
                     }
                 }
             } else {
@@ -112,11 +115,11 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                             resourceName,
                             new Date(),
                             false);
-                    MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+                    MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, ERROR_SAVE_EXCEPTION_RECORD);
                 } else {
                     if (Boolean.TRUE.equals(appExceptionRecordDTO.getDowntime())) {
                         appExceptionRecordDTO.setEndDate(new Date());
-                        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, "error.update.exception.record");
+                        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(appExceptionRecordMapper, appExceptionRecordDTO, ERROR_UPDATE_EXCEPTION_RECORD);
 
                         AppExceptionRecordDTO appExceptionRecordDTO1 = new AppExceptionRecordDTO(devopsDeployAppCenterEnvDTO.getProjectId(),
                                 devopsDeployAppCenterEnvDTO.getId(),
@@ -125,7 +128,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
                                 resourceName,
                                 new Date(),
                                 false);
-                        MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, "error.save.exception.record");
+                        MapperUtil.resultJudgedInsertSelective(appExceptionRecordMapper, appExceptionRecordDTO1, ERROR_SAVE_EXCEPTION_RECORD);
 
                     }
                 }

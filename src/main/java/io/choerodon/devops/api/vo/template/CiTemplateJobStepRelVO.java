@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.vo.template;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;

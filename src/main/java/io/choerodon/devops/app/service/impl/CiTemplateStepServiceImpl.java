@@ -4,8 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +12,8 @@ import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateStepCategoryService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
-import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.enums.CiTemplateJobGroupTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.CiTemplateDockerMapper;
-import io.choerodon.devops.infra.mapper.CiTemplateSonarMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateStepMapper;
 
 /**
@@ -31,18 +25,10 @@ import io.choerodon.devops.infra.mapper.CiTemplateStepMapper;
 @Service
 public class CiTemplateStepServiceImpl implements CiTemplateStepService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CiTemplateStepServiceImpl.class);
-
     @Autowired
     private CiTemplateStepCategoryService ciTemplateStepCategoryService;
     @Autowired
     private CiTemplateStepMapper ciTemplateStepMapper;
-
-    @Autowired
-    private CiTemplateDockerMapper ciTemplateDockerMapper;
-
-    @Autowired
-    private CiTemplateSonarMapper ciTemplateSonarMapper;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired

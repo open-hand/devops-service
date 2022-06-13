@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.core.parameters.P;
 
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
