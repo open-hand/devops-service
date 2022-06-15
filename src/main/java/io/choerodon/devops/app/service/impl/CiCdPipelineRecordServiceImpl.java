@@ -389,7 +389,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                     if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
                         throw new CommonException(PipelineCheckConstant.ERROR_CANCEL_AUDITING_PIPELINE);
                     }
-                    devopsCdStageRecordService.updateStatusById(devopsCdStageRecordDTO.getId(), PipelineStatus.CANCELED.toValue());
                 }
             }
             cancelCreateOrRunningStageAndJob(pipelineRecordId);
