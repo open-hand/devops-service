@@ -471,6 +471,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         StringBuilder log = new StringBuilder();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>Begin envAutoDeploy,devopsCdJobRecordDTO: {}<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsCdJobRecordDTO));
         }
@@ -1208,11 +1211,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         LOGGER.info(">>>>>>>>>>>>>>>>>>>  Execute api test task. pipelineRecordId : {}, stageRecordId : {} ,jobRecordId : {} <<<<<<<<<<<<<<<<<<<<", pipelineRecordId, stageRecordId, jobRecordId);
         if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
             throw new CommonException("error.invalid.job.type");
         }
         DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
 
         ApiTestTaskRecordDTO taskRecordDTO;
 
@@ -1281,6 +1288,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         String callbackToken = UUIDUtils.generateUUID();
         // 添加回调token
         devopsCdJobRecordDTO.setCallbackToken(callbackToken);
