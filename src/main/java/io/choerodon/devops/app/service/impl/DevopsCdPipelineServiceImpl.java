@@ -1507,6 +1507,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
 
+        // 取消状态下的流水线不再更新状态
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            return;
+        }
         // 流水线状态
         // 失败：
         // 1. API测试任务执行失败
