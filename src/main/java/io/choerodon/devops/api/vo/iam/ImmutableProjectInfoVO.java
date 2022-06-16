@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 public class ImmutableProjectInfoVO {
     @ApiModelProperty("项目code")
     private String projCode;
+    @ApiModelProperty("devops基础组件中使用的编码,harbor、gitlab、sonar、chartmuserm")
+    private String devopsComponentCode;
     @ApiModelProperty("组织id")
     private Long tenantId;
     @ApiModelProperty("组织code")
@@ -23,6 +25,14 @@ public class ImmutableProjectInfoVO {
         this.projCode = projCode;
         this.tenantId = tenantId;
         this.tenantNum = tenantNum;
+    }
+
+    public String getDevopsComponentCode() {
+        return devopsComponentCode;
+    }
+
+    public void setDevopsComponentCode(String devopsComponentCode) {
+        this.devopsComponentCode = devopsComponentCode;
     }
 
     public String getProjCode() {
