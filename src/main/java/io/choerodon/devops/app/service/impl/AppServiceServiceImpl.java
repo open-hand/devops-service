@@ -3551,11 +3551,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     private void initApplicationParams(ImmutableProjectInfoVO info, AppServiceDTO appService, String urlSlash) {
         if (appService.getExternalConfigId() == null) {
             if (appService.getGitlabProjectId() != null) {
-                String projectCode = info.getProjCode();
+                String devopsComponentCode = info.getDevopsComponentCode();
                 String tenantCode = info.getTenantNum();
-                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
+                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, devopsComponentCode, appService.getCode()));
                 appService.setRepoUrl(
-                        gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                        gitlabUrl + urlSlash + tenantCode + "-" + devopsComponentCode + "/"
                                 + appService.getCode() + ".git");
             }
         } else {
