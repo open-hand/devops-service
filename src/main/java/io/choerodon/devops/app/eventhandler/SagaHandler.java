@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.eventhandler;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEVOPS;
+import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +34,6 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.LogUtil;
@@ -51,15 +52,7 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    /**
-     * devops项目类型
-     */
-    private static final String DEVOPS = "N_DEVOPS";
 
-    /**
-     * 运维项目类型
-     */
-    private static final String OPERATIONS = "N_OPERATIONS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -72,17 +65,11 @@ public class SagaHandler {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-    @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
     private ChartService chartService;
     @Autowired
     private GitlabHandleService gitlabHandleService;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
-    @Autowired
-    private DevopsMiddlewareService devopsMiddlewareService;
     @Autowired
     private UserAttrService userAttrService;
     @Autowired

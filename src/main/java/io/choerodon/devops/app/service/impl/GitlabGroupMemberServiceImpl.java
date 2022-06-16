@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.DEVOPS;
+import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 import static io.choerodon.devops.infra.enums.LabelType.GITLAB_PROJECT_OWNER;
 import static io.choerodon.devops.infra.enums.LabelType.TENANT_ADMIN;
 
@@ -48,10 +50,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private static final String PROJECT = "project";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
-    /**
-     * devops项目类型
-     */
-    private static final String DEVOPS = "N_DEVOPS";
 
     @Autowired
     private DevopsProjectService devopsProjectService;
@@ -651,7 +649,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     public void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId) {
         List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectDTO.getId());
-        if (CollectionUtils.isEmpty(categoryList) || !categoryList.contains(DEVOPS)) {
+        if (CollectionUtils.isEmpty(categoryList) || categoryList.stream().noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return;
         }
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
