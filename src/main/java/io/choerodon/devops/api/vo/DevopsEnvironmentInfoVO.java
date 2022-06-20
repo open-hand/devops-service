@@ -47,6 +47,8 @@ public class DevopsEnvironmentInfoVO {
     @ApiModelProperty("gitops同步状态")
     private String gitopsStatus;
 
+    private String clusterBelongedProjectName;
+
     public Boolean getFail() {
         return fail;
     }
@@ -165,5 +167,13 @@ public class DevopsEnvironmentInfoVO {
 
     public void setGitlabUrl(String gitlabUrl) {
         this.gitlabUrl = gitlabUrl;
+    }
+
+    public String getClusterBelongedProjectName() {
+        return clusterBelongedProjectName;
+    }
+
+    public void setClusterBelongedProjectName(String clusterBelongedProjectName) {
+        this.clusterBelongedProjectName = clusterBelongedProjectName;
     }
 }
