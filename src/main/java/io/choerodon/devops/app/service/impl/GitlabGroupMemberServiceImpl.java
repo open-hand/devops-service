@@ -130,7 +130,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (!CollectionUtils.isEmpty(roleLabels) && roleLabels.contains(TENANT_ADMIN.getValue())) {
             List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(gitlabGroupMemberVO.getResourceId());
             if (!CollectionUtils.isEmpty(projectDTOS)) {
-                projectDTOS.forEach(projectDTO -> assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId()));
+                projectDTOS.forEach(projectDTO -> {
+                    List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectDTO.getId());
+                    // 只给devops和运维类型项目分配gitlab权限
+                    if (!CollectionUtils.isEmpty(categoryList) && categoryList.stream().anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+                        assignGitLabGroupMemberForOwner(projectDTO, gitlabGroupMemberVO.getUserId());
+                    }
+                });
             }
         } else {
             // 创建用户时不需要删除之前的权限
@@ -648,10 +654,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
     public void assignGitLabGroupMemberForOwner(ProjectDTO projectDTO, Long userId) {
-        List<String> categoryList = baseServiceClientOperator.listProjectCategoryById(projectDTO.getId());
-        if (CollectionUtils.isEmpty(categoryList) || categoryList.stream().noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
-            return;
-        }
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
         DevopsProjectDTO search = new DevopsProjectDTO();
         search.setIamProjectId(projectDTO.getId());
