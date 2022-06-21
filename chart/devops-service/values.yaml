@@ -205,8 +205,10 @@ extraEnv:
     /agent/**, /ws/**, /gitlab/email, /webhook/**, /v2/choerodon/**,
     /choerodon/**, /actuator/**, /prometheus, /devops/**, /pre_stop
   CI_DFAULT_RULE_NUMBER: 4
+  # ci流水线中构建镜像的方式，可选值:kaniko、docker
+  CI_IMAGE_BUILD_TYPE: kaniko
   LOG_LEVEL: info
-  NEXUS_PROXY_URIPREFIX : /rdupm/v1/nexus/proxy
+  NEXUS_PROXY_URIPREFIX: /rdupm/v1/nexus/proxy
 
 # -- ConfigMap with extra environment variables
 ##

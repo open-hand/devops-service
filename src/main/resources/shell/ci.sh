@@ -378,18 +378,31 @@ function trivyScanImage() {
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
   trivy image  --skip-update -f json -o results-${CI_COMMIT_TAG}.json  --input ${PWD}/${PROJECT_NAME}.tar
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
+  upload_trivy_sacn_result
+}
+
+function trivyScanImageForDocker() {
+  which trivy > /dev/null || echo "cibase不包含trivy指令，请升级"
+  which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
+  export TRIVY_INSECURE='true'
+  startDate=$(date +"%Y-%m-%d %H:%M:%S")
+  trivy image ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --skip-update -f json -o results-${CI_COMMIT_TAG}.json
+  endDate=$(date +"%Y-%m-%d %H:%M:%S")
+  upload_trivy_sacn_result
+}
+function upload_trivy_sacn_result() {
   result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_id=$1" \
-    -F "token=${Token}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "start_date=${startDate}" \
-    -F "end_date=${endDate}" \
-    -F "file=@results-${CI_COMMIT_TAG}.json" \
-    "${CHOERODON_URL}/devops/ci/resolve_image_scan_json" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
+  -H 'Expect:' \
+  -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+  -F "job_id=$1" \
+  -F "token=${Token}" \
+  -F "job_name=${CI_JOB_NAME}" \
+  -F "start_date=${startDate}" \
+  -F "end_date=${endDate}" \
+  -F "file=@results-${CI_COMMIT_TAG}.json" \
+  "${CHOERODON_URL}/devops/ci/resolve_image_scan_json" \
+  -o "${CI_COMMIT_SHA}-ci.response" \
+  -w %{http_code})
   # 判断本次上传到devops是否出错
   response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
   rm "${CI_COMMIT_SHA}-ci.response"
