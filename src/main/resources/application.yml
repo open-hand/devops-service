@@ -199,6 +199,8 @@ devops:
     agent-version: ${C7N_AGENT_VERSION:1.0.0}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
+    # ci流水线中构建镜像的方式，可选值:kaniko、docker
+    image-build-type: ${CI_IMAGE_BUILD_TYPE:kaniko}
     default:
       image: ${CI_DFAULT_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}
       rule-number: ${CI_DFAULT_RULE_NUMBER:2} # 流水线的ci生成规则版本，如果有修改则加1
