@@ -1,11 +1,10 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -18,7 +17,6 @@ import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
  * 〈功能简述〉
@@ -27,12 +25,15 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
  * @author wanghao
  * @since 2021/11/29 17:35
  */
-@Service
-public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler {
-    @Autowired
+public abstract class DevopsCiImageBuildStepHandler extends AbstractDevopsCiStepHandler {
+
     private DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService;
-    @Autowired
     private CiTemplateDockerService ciTemplateDockerService;
+
+    public DevopsCiImageBuildStepHandler(DevopsCiDockerBuildConfigService devopsCiDockerBuildConfigService, CiTemplateDockerService ciTemplateDockerService) {
+        this.devopsCiDockerBuildConfigService = devopsCiDockerBuildConfigService;
+        this.ciTemplateDockerService = ciTemplateDockerService;
+    }
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
@@ -58,12 +59,36 @@ public class DevopsCiDockerBuildStepHandler extends AbstractDevopsCiStepHandler 
         Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getEnableDockerTlsVerify();
         //是否开启镜像扫描 默认是关闭镜像扫描的
         Boolean imageScan = devopsCiDockerBuildConfigDTO.getImageScan();
-        return GitlabCiUtil.generateDockerScripts(devopsCiStepDTO.getProjectId(),
+        return generateDockerScripts(devopsCiStepDTO.getProjectId(),
                 devopsCiDockerBuildConfigDTO,
                 doTlsVerify == null || !doTlsVerify,
                 !Objects.isNull(imageScan) && imageScan,
                 devopsCiStepDTO.getDevopsCiJobId());
     }
+
+    private List<String> generateDockerScripts(Long projectId,
+                                               DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO,
+                                               boolean skipTlsVerify,
+                                               boolean imageScan,
+                                               Long jobId) {
+
+        String dockerBuildContextDir = devopsCiDockerBuildConfigDTO.getDockerContextDir();
+        String dockerFilePath = devopsCiDockerBuildConfigDTO.getDockerFilePath();
+
+        List<String> commands = new ArrayList<>();
+        // 如果没有配置镜像仓库，镜像默认推送到应用服务关联的制品库,配置了则推送到指定仓库
+        if (devopsCiDockerBuildConfigDTO.getRepoId() != null
+                && org.apache.commons.lang3.StringUtils.isNotBlank(devopsCiDockerBuildConfigDTO.getRepoType())) {
+            String cmd = "rewrite_image_info %s %s %s";
+            commands.add(String.format(cmd, projectId, devopsCiDockerBuildConfigDTO.getRepoType(), devopsCiDockerBuildConfigDTO.getRepoId()));
+        }
+        generateBuildAndScanImageCmd(skipTlsVerify, imageScan, jobId, dockerBuildContextDir, dockerFilePath, commands);
+
+        commands.add("saveImageMetadata");
+        return commands;
+    }
+
+    protected abstract void generateBuildAndScanImageCmd(boolean skipTlsVerify, boolean imageScan, Long jobId, String dockerBuildContextDir, String dockerFilePath, List<String> commands);
 
     @Override
     @Transactional

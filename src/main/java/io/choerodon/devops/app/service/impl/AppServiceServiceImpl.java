@@ -3420,9 +3420,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         // 1. 迁移gitlab代码库
-        gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
-                appServiceTransferVO.getGitlabGroupId(),
-                userId);
+        if (!oldProjectDTO.getNamespace().getId().equals(appServiceTransferVO.getGitlabGroupId())) {
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
+                    appServiceTransferVO.getGitlabGroupId(),
+                    userId);
+        }
 
         // 2. 设置token等变量（创建或更新）
         List<CiVariableVO> variables = new ArrayList<>();

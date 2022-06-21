@@ -144,7 +144,7 @@ public class DevopsAnsibleCommandConstants {
     /**
      * devops中ansible相关执行脚本保存目录模板
      */
-    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/choerodon/ansible/%s";
+    public static final String ANSIBLE_CONFIG_BASE_DIR_TEMPLATE = "/opt/choerodon/ansible/%s";
 
     /**
      * 基准目录
