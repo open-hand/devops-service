@@ -386,7 +386,7 @@ function trivyScanImageForDocker() {
   which ssh > /dev/null || echo "cibase不包含ssh指令，请升级"
   export TRIVY_INSECURE='true'
   startDate=$(date +"%Y-%m-%d %H:%M:%S")
-  trivy image ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --skip-update -f json -o results-${CI_COMMIT_TAG}.json
+  trivy image --skip-update -f json -o results-${CI_COMMIT_TAG}.json ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
   endDate=$(date +"%Y-%m-%d %H:%M:%S")
   upload_trivy_sacn_result
 }
