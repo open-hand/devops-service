@@ -66,7 +66,17 @@ public interface DevopsIssueRelService {
      * @param issueId
      * @return
      */
-    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId, String object, Long issueId);
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndProjectIdAndObjectType(Long projectId, String object, Long issueId);
+
+    /**
+     * 列出关联了敏捷问题的commitId或branchId
+     *
+     * @param object
+     * @param issueId
+     * @return
+     */
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId);
+
 
     /**
      * 列出敏捷问题以及关联的分支信息
