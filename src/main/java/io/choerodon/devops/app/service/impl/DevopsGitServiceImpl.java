@@ -475,6 +475,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    public void cloneBranchIssueRelation(Long oldIssueId, Long newIssueId) {
+        Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
+        devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
+        });
+    }
+
+    @Override
     public void deleteBranch(Long projectId, Long appServiceId, String branchName) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_DELETE);
@@ -1270,7 +1278,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
 
         // 查出剩下的和敏捷问题有关联的分支
-        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndProjectIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
         List<DevopsBranchVO> devopsBranchVOS = remainBranchIssueRelation.stream().map(r -> {
             DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
             devopsBranchVO.setAppServiceCode(r.getAppServiceCode());

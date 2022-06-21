@@ -88,8 +88,13 @@ public class DevopsIssueRelServiceImpl implements DevopsIssueRelService {
     }
 
     @Override
-    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(Long projectId, String object, Long issueId) {
-        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(projectId, object, issueId);
+    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndProjectIdAndObjectType(Long projectId, String object, Long issueId) {
+        return devopsIssueRelMapper.listRelationByIssueIdAndProjectIdAndObjectType(projectId, object, issueId);
+    }
+
+    @Override
+    public Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(String object, Long issueId) {
+        return devopsIssueRelMapper.listRelationByIssueIdAndObjectType(object, issueId);
     }
 
     @Override

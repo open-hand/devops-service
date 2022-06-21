@@ -7,8 +7,10 @@ import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -51,7 +54,6 @@ public class SagaHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
-
 
 
     @Autowired
@@ -74,6 +76,8 @@ public class SagaHandler {
     private UserAttrService userAttrService;
     @Autowired
     private UserAttrMapper userAttrMapper;
+    @Autowired
+    private DevopsGitService devopsGitService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -403,6 +407,17 @@ public class SagaHandler {
     public String deleteAppTemplate(String payload) {
         Long appTemplateId = gson.fromJson(payload, Long.class);
         devopsAppTemplateService.deleteAppTemplateSagaTask(appTemplateId);
+        return payload;
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_COPY_BRANCH_RELATION,
+            description = "复制工作项与分支关联关系",
+            sagaCode = SagaTaskCodeConstants.DEVOPS_COPY_BRANCH_RELATION,
+            maxRetryCount = 5, seq = 10)
+    public String devopsCopyIssueBranchRelation(String payload) {
+        Map<String, Long> idMaps = JsonHelper.unmarshalByJackson(payload, new TypeReference<Map<String, Long>>() {
+        });
+        devopsGitService.cloneBranchIssueRelation(idMaps.get("oldIssueId"), idMaps.get("newIssueIds"));
         return payload;
     }
 

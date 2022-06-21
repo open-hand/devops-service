@@ -101,6 +101,8 @@ public interface DevopsGitService {
      */
     void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onlyInsert);
 
+    void cloneBranchIssueRelation(Long oldIssueId, Long newIssueId);
+
     /**
      * 删除分支
      *
