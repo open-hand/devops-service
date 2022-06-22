@@ -107,7 +107,7 @@ public class SagaTaskCodeConstants {
     /**
      * 复制工作项与分支关联关系
      */
-    public static final String DEVOPS_COPY_BRANCH_RELATION = "devops-copy-issue-branch-relation";
+    public static final String DEVOPS_CLONE_ISSUE = "clone_issue";
 
     /**
      * devops创建实例

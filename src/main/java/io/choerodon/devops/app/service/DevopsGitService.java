@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -101,7 +102,12 @@ public interface DevopsGitService {
      */
     void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onlyInsert);
 
-    void cloneBranchIssueRelation(Long oldIssueId, Long newIssueId);
+    /**
+     * 克隆分支与工作项关联关系
+     * @param projectId
+     * @param issueIdMap
+     */
+    void cloneBranchIssueRelation(Long projectId, Map<Long, Long> issueIdMap);
 
     /**
      * 删除分支
