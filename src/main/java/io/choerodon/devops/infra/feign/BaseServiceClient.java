@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import io.swagger.annotations.ApiParam;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -292,4 +293,13 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
     @GetMapping(value = "/choerodon/v1/users/self/is_site_administrator")
     ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id") Long userId);
+
+    /* 其他 */
+    // -------------------------------
+    @ApiOperation(value = "查询项目下指定角色的用户列表")
+    @GetMapping(value = "/choerodon/v1/projects/{project_id}/users/{role_lable}")
+    ResponseEntity<List<IamUserDTO>> listProjectUsersByProjectIdAndRoleLabel(
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "角色标签", required = true)
+            @PathVariable("role_lable") String roleLable);
 }

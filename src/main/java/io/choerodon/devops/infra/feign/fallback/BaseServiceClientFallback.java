@@ -234,4 +234,9 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     public ResponseEntity<Boolean> platformAdministratorOrAuditor(Long userId) {
         throw new CommonException("error.check.user.site.access");
     }
+
+    @Override
+    public ResponseEntity<List<IamUserDTO>> listProjectUsersByProjectIdAndRoleLabel(Long projectId, String roleLable) {
+        throw new CommonException("error.query.gitlab.owner.user");
+    }
 }
