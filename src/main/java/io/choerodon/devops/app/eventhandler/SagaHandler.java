@@ -7,10 +7,8 @@ import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -28,6 +26,7 @@ import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.CloneIssuePayload;
 import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
@@ -410,14 +409,13 @@ public class SagaHandler {
         return payload;
     }
 
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_COPY_BRANCH_RELATION,
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
             description = "复制工作项与分支关联关系",
-            sagaCode = SagaTaskCodeConstants.DEVOPS_COPY_BRANCH_RELATION,
+            sagaCode = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
             maxRetryCount = 5, seq = 10)
-    public String devopsCopyIssueBranchRelation(String payload) {
-        Map<String, Long> idMaps = JsonHelper.unmarshalByJackson(payload, new TypeReference<Map<String, Long>>() {
-        });
-        devopsGitService.cloneBranchIssueRelation(idMaps.get("oldIssueId"), idMaps.get("newIssueIds"));
+    public String devopsCloneIssueBranchRelation(String payload) {
+        CloneIssuePayload cloneIssuePayload = JsonHelper.unmarshalByJackson(payload, CloneIssuePayload.class);
+        devopsGitService.cloneBranchIssueRelation(cloneIssuePayload.getProjectId(), cloneIssuePayload.getNewIssueIdMap());
         return payload;
     }
 

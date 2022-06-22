@@ -475,10 +475,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void cloneBranchIssueRelation(Long oldIssueId, Long newIssueId) {
-        Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
-        devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
+    public void cloneBranchIssueRelation(Long projectId, Map<Long, Long> issueIdMap) {
+        issueIdMap.forEach((newIssueId, oldIssueId) -> {
+            Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
+            devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
+                devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
+            });
         });
     }
 
