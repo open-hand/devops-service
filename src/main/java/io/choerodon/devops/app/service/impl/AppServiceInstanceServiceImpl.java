@@ -1837,7 +1837,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO getReplaceResult(String versionValue, String deployValue) {
         String deployFileAfterProcessed = deleteLineStartWithPoundKey(deployValue);
-        if (versionValue.equals(deployValue) || deployFileAfterProcessed.equals("")) {
+        if (versionValue.equals(deployValue) || org.apache.commons.lang3.StringUtils.isEmpty(deployFileAfterProcessed)) {
             InstanceValueVO instanceValueVO = new InstanceValueVO();
             instanceValueVO.setDeltaYaml("");
             instanceValueVO.setYaml(versionValue);
