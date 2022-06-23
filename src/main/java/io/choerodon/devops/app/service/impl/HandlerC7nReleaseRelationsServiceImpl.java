@@ -241,7 +241,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             } catch (GitOpsExplainException ex) {
                 throw ex;
             } catch (CommonException e) {
-                LOGGER.info("addC7nHelmRelease failed", e);
                 throw new GitOpsExplainException(e.getMessage(), filePath, "", e.getParameters());
             }
         });
