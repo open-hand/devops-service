@@ -2503,8 +2503,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (DeployTypeEnum.CREATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
                 // 校验应用编码和应用名称
                 devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(devopsCdEnvDeployInfoDTO.getEnvId(), rdupmType, null, devopsCdEnvDeployInfoDTO.getAppName(), devopsCdEnvDeployInfoDTO.getAppCode());
+            } else {
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsCdEnvDeployInfoDTO.getAppId());
+                devopsCdEnvDeployInfoDTO.setAppCode(devopsDeployAppCenterEnvDTO.getName());
+                devopsCdEnvDeployInfoDTO.setAppName(devopsDeployAppCenterEnvDTO.getCode());
             }
-
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(devopsDeployInfoVO));
             devopsCdEnvDeployInfoService.save(devopsCdEnvDeployInfoDTO);
