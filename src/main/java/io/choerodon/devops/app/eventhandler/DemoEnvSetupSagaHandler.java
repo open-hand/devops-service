@@ -61,6 +61,7 @@ public class DemoEnvSetupSagaHandler {
         gitlabGroupPayload.setOrganizationCode(registerInfo.getOrganization().getCode());
         gitlabGroupPayload.setOrganizationName(registerInfo.getOrganization().getName());
         gitlabGroupPayload.setProjectCode(registerInfo.getProject().getCode());
+        gitlabGroupPayload.setDevopsComponentCode(registerInfo.getProject().getCode());
         gitlabGroupPayload.setProjectId(registerInfo.getProject().getId());
         gitlabGroupPayload.setProjectName(registerInfo.getProject().getName());
         gitlabGroupPayload.setUserId(registerInfo.getUser().getId());
