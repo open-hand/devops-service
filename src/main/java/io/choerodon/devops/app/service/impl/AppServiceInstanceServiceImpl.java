@@ -1837,7 +1837,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO getReplaceResult(String versionValue, String deployValue) {
         String deployFileAfterProcessed = deleteLineStartWithPoundKey(deployValue);
-        if (versionValue.equals(deployValue) || deployFileAfterProcessed.equals("")) {
+        if (versionValue.equals(deployValue) || !org.springframework.util.StringUtils.hasText(deployFileAfterProcessed)) {
             InstanceValueVO instanceValueVO = new InstanceValueVO();
             instanceValueVO.setDeltaYaml("");
             instanceValueVO.setYaml(versionValue);
@@ -2898,6 +2898,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     private String deleteLineStartWithPoundKey(String value) {
+        if (!org.springframework.util.StringUtils.hasText(value)) {
+            return value;
+        }
         String[] strings = value.split("\n");
         StringBuilder sb = new StringBuilder();
         for (String string : strings) {
