@@ -65,16 +65,17 @@ public class GitlabHandleServiceImpl implements GitlabHandleService {
         gitlabUserService.assignAdmins(rootIds);
 
 
-        //2.3 同步项目所有者角色
+        //2.3 同步拥有gitlab Owner  标签的用户
         List<Long> ids = orgAdministratorVOS.stream().map(OrgAdministratorVO::getId).collect(Collectors.toList());
         ids.addAll(rootIds);
         List<IamUserDTO> userDTOList = baseServiceClientOperator.queryUserByProjectId(projectDTO.getId());
-        List<IamUserDTO> iamUserDTOS = userDTOList.stream().filter(iamUserDTO -> !ids.contains(iamUserDTO.getId()) && iamUserDTO.getEnabled()).collect(Collectors.toList());
+//        List<IamUserDTO> iamUserDTOS = userDTOList.stream().filter(iamUserDTO -> !ids.contains(iamUserDTO.getId()) && iamUserDTO.getEnabled()).collect(Collectors.toList());
         //如果是项目所有者，添加该项目下的三个组的owner权限
-        iamUserDTOS.forEach(iamUserDTO -> {
-            if (iamUserDTO.getRoles().stream().map(RoleDTO::getCode).collect(Collectors.toList()).contains("project-admin")) {
-                gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, iamUserDTO.getId());
-            }
+        //拥有GITLAB_OWNER标签的项目成员
+        List<IamUserDTO> gitlabOwner = baseServiceClientOperator.listCustomGitlabOwnerLabelUser(projectPayload.getProjectId(), "GITLAB_OWNER");
+
+        gitlabOwner.forEach(iamUserDTO -> {
+            gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, iamUserDTO.getId());
         });
 
         //2.4 同步停用用户的角色

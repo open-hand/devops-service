@@ -696,4 +696,13 @@ public class BaseServiceClientOperator {
             return responseEntity.getBody();
         }
     }
+
+    public List<IamUserDTO> listCustomGitlabOwnerLabelUser(Long projectId, String roleLabel) {
+        ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLabel);
+        if (responseEntity == null || responseEntity.getBody() == null) {
+            return Collections.EMPTY_LIST;
+        } else {
+            return responseEntity.getBody();
+        }
+    }
 }
