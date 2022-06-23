@@ -9,9 +9,16 @@ package io.choerodon.devops.infra.constant;
 public final class MiscConstants {
     private MiscConstants() {
     }
+    // 项目类型相关
+    /**
+     * devops项目类型
+     */
+    public static final String DEVOPS = "N_DEVOPS";
 
-    public static final String DEFAULT_INTERNAL_APP_SERVICE_REPO_URL = "none";
-
+    /**
+     * 运维项目类型
+     */
+    public static final String OPERATIONS = "N_OPERATIONS";
     /**
      * 默认的chart配置的名称
      */

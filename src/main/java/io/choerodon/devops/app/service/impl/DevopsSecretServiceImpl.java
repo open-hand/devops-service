@@ -50,7 +50,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
-    private static final String SECRET_KIND = "secret";
     private static final String DOCKER_CONFIG_JSON = ".dockerconfigjson";
     private static final String MASTER = "master";
 
@@ -301,7 +300,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         "sct-" + devopsSecretDTO.getName() + ".yaml",
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return true;
         } else {

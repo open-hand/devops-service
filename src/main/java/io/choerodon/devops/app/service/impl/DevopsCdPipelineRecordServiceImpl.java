@@ -372,6 +372,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+
+        if (PipelineStatus.CANCELED.toValue().equals(pipelineRecordDTO.getStatus())) {
+            return;
+        }
         CustomContextUtil.setUserContext(pipelineRecordDTO.getCreatedBy());
 
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(hostDeployPayload.getJobRecordId());
@@ -799,7 +803,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String deployObjectName = null;
         String image = null;
         Long appServiceId = null;
-        String serviceName = null;
         String repoName = null;
         Long repoId = null;
         String userName = null;

@@ -35,8 +35,6 @@ public class CiTemplateSonarDTO extends AuditDomain {
     public static final String FIELD_SOURCES = "sources";
     public static final String FIELD_SONAR_URL = "sonarUrl";
     public static final String FIELD_AUTH_TYPE = "authType";
-    public static final String FIELD_USERNAME = "username";
-    public static final String FIELD_PASSWORD = "password";
     public static final String FIELD_TOKEN = "token";
 
     @Id

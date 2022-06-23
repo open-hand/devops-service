@@ -348,13 +348,13 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         String helmUrl = helmConfig.getUrl();
         appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
 
-        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
+        appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
         String storeFilePath = STORE_PATH + version;
 
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {

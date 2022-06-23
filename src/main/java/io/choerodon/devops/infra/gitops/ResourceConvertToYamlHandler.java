@@ -45,8 +45,6 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
-    private static final String PERSISTENT_VOLUME = "!!io.kubernetes.client.models.V1PersistentVolume";
-    private static final String PERSISTENT_VOLUME_CLAIM = "!!io.kubernetes.client.models.V1PersistentVolumeClaim";
     private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
     private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
 
@@ -240,23 +238,6 @@ public class ResourceConvertToYamlHandler<T> {
             }
         }
         resultBuilder.append("---").append("\n").append(getYamlObject(null, false).dump(workloadResource)).append("\n");
-    }
-
-    private void handleDeployment(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
-        Yaml yaml = new Yaml();
-        V1beta2Deployment v1beta2Deployment = yaml.loadAs(jsonObject.toJSONString(), V1beta2Deployment.class);
-        V1beta2Deployment newV1beta2Deployment;
-        if (objectType.equals(ResourceType.DEPLOYMENT.getType()) && v1beta2Deployment.getMetadata().getName().equals(((V1beta2Deployment) t).getMetadata().getName())) {
-            if (operationType.equals(UPDATE)) {
-                newV1beta2Deployment = (V1beta2Deployment) t;
-            } else {
-                return;
-            }
-        } else {
-            newV1beta2Deployment = v1beta2Deployment;
-        }
-        Tag tag = new Tag(DEPLOYMENT);
-        resultBuilder.append("\n").append(getYamlObject(tag, true).dump(newV1beta2Deployment).replace(DEPLOYMENT, "---"));
     }
 
     private void handleService(T t, String content, String objectType, String operationType, StringBuilder

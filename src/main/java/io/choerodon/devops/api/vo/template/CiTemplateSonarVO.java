@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.vo.template;
 
 
-import io.swagger.annotations.ApiModelProperty;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 

@@ -5,8 +5,6 @@ import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Secret;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +32,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
 public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsService<V1Secret> {
-
-    private static final Logger logger = LoggerFactory.getLogger(HandlerC7nSecretServiceImpl.class);
-
 
     private static final String CREATE = "create";
 

@@ -1,12 +1,11 @@
 package io.choerodon.devops.api.vo.template;
 
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;

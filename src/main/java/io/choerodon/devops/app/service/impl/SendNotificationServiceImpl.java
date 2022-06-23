@@ -479,7 +479,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
+                    Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
                     params.put(LINK, String.format(MERGE_REQUEST_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), appServiceDTO.getId()));
                     sendNotices(MessageCodeConstants.AUDIT_MERGE_REQUEST, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },
@@ -546,7 +546,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
+                    Map<String, String> params = makeMergeRequestEventParams(gitlabUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), projectDTO.getName(), appServiceDTO.getCode(), appServiceDTO.getName(), authorUser.getRealName(), mergeRequestId);
                     params.put(LINK, String.format(MERGE_REQUEST_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), appServiceDTO.getId()));
                     sendNotices(sendSettingCode, ArrayUtil.singleAsList(constructReceiver(iamUserDTO.getId())), params, projectDTO.getId());
                 },

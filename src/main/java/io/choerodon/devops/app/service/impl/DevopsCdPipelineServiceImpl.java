@@ -471,6 +471,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         StringBuilder log = new StringBuilder();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>Begin envAutoDeploy,devopsCdJobRecordDTO: {}<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(devopsCdJobRecordDTO));
         }
@@ -512,7 +515,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         // 获取数据
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
-        DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(devopsCdJobRecordDTO.getJobId());
+        devopsCdJobService.queryById(devopsCdJobRecordDTO.getJobId());
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
         Date startDate = new Date();
         Long commandId = null;
@@ -521,7 +524,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         // 设置用户上下文
         log.append("Pipeline trigger user id is :").append(devopsCdJobRecordDTO.getCreatedBy()).append(System.lineSeparator());
         CustomContextUtil.setUserContext(devopsCdJobRecordDTO.getCreatedBy());
-//        DevopsDeployInfoVO devopsDeployInfoVO = JsonHelper.unmarshalByJackson(devopsCdJobRecordDTO.getMetadata(), DevopsDeployInfoVO.class);
 
         // 1. 校验环境是否开启一键关闭自动部署
         if (Boolean.FALSE.equals(checkEnvEnableAutoDeploy(devopsCdJobRecordDTO, devopsCdEnvDeployInfoDTO, log))) {
@@ -830,6 +832,12 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>> Userdetails is {}", DetailsHelper.getUserDetails());
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
         CustomContextUtil.setUserContext(devopsCdPipelineRecordDTO.getCreatedBy());
+        // 流水线取消执行则不更新相关状态
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            LOGGER.info("Pipeline instance has canceled:pipelineRecordId: {} stageRecordId: {} taskId: {}, status: {}", pipelineRecordId, stageRecordId, jobRecordId, status);
+            return;
+        }
+
         if (Boolean.TRUE.equals(status)
                 && PipelineStatus.RUNNING.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
             LOGGER.info(">>>>>>> setAppDeployStatus, start next task, pipelineStatus is :{}<<<<<<<<<<<", devopsCdPipelineRecordDTO.getStatus());
@@ -1203,11 +1211,15 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void executeApiTestTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         LOGGER.info(">>>>>>>>>>>>>>>>>>>  Execute api test task. pipelineRecordId : {}, stageRecordId : {} ,jobRecordId : {} <<<<<<<<<<<<<<<<<<<<", pipelineRecordId, stageRecordId, jobRecordId);
         if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
             throw new CommonException("error.invalid.job.type");
         }
         DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
+
 
         ApiTestTaskRecordDTO taskRecordDTO;
 
@@ -1260,8 +1272,6 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
         // 查询实例
         AppServiceInstanceDTO instanceE = appServiceInstanceService.baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
-        // 查询部署版本
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(instanceE.getAppServiceId(), devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
         // 查询当前实例运行时pod metadata
         List<PodResourceDetailsDTO> podResourceDetailsDTOS = devopsEnvPodService.queryResourceDetailsByInstanceId(instanceE.getId());
 
@@ -1278,6 +1288,9 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Transactional
     public void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdJobRecordDTO.getStatus())) {
+            return;
+        }
         String callbackToken = UUIDUtils.generateUUID();
         // 添加回调token
         devopsCdJobRecordDTO.setCallbackToken(callbackToken);
@@ -1504,6 +1517,10 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = devopsPipelineRecordRelService.queryByCdPipelineRecordId(devopsCdPipelineRecordDTO.getId());
 
+        // 取消状态下的流水线不再更新状态
+        if (PipelineStatus.CANCELED.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
+            return;
+        }
         // 流水线状态
         // 失败：
         // 1. API测试任务执行失败

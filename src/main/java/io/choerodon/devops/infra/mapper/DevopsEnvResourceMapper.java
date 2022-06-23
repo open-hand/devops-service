@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 

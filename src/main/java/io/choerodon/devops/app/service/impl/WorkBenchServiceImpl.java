@@ -169,7 +169,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             ApprovalVO approvalVO = new ApprovalVO()
                     .setImageUrl(iamUserDTO.getImageUrl())
                     .setType(ApprovalTypeEnum.MERGE_REQUEST.getType())
-                    .setMergeRequestUrl(String.format(MERGE_REQUEST_URL, gitlabUrl, tenant.getTenantNum(), projectMap.get(devopsMergeRequestDTO.getProjectId()).getCode(), gitlabProjectAndAppMap.get(devopsMergeRequestDTO.getGitlabProjectId().intValue()).getCode(), devopsMergeRequestDTO.getGitlabMergeRequestId()))
+                    .setMergeRequestUrl(String.format(MERGE_REQUEST_URL, gitlabUrl, tenant.getTenantNum(), projectMap.get(devopsMergeRequestDTO.getProjectId()).getDevopsComponentCode(), gitlabProjectAndAppMap.get(devopsMergeRequestDTO.getGitlabProjectId().intValue()).getCode(), devopsMergeRequestDTO.getGitlabMergeRequestId()))
                     .setProjectId(devopsMergeRequestDTO.getProjectId())
                     .setProjectName(projectMap.get(devopsMergeRequestDTO.getProjectId()).getName())
                     .setGitlabProjectId(devopsMergeRequestDTO.getGitlabProjectId().intValue())
@@ -241,7 +241,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             latestAppServiceVO.setProjectName(projectDTO.getName())
                     .setProjectId(appServiceDTO.getProjectId())
                     .setCode(appServiceDTO.getCode())
-                    .setRepoUrl(gitlabUrl + urlSlash + tenant.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                    .setRepoUrl(gitlabUrl + urlSlash + tenant.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + "/"
                             + appServiceDTO.getCode() + ".git")
                     .setName(appServiceDTO.getName());
         });

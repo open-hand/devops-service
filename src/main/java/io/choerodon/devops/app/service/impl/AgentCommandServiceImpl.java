@@ -329,7 +329,7 @@ public class AgentCommandServiceImpl implements AgentCommandService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organization.getTenantNum(),
-                projectDTO.getCode(), devopsEnvironmentDTO.getCode(),
+                projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsClusterMapper.selectByPrimaryKey(devopsEnvironmentDTO.getClusterId()).getCode());
 

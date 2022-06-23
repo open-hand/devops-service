@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.eventhandler;
 
 import static io.choerodon.devops.infra.constant.GitOpsConstants.NEW_LINE;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEVOPS;
+import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +26,7 @@ import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.CloneIssuePayload;
 import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
@@ -32,9 +35,9 @@ import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -51,15 +54,6 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    /**
-     * devops项目类型
-     */
-    private static final String DEVOPS = "N_DEVOPS";
-
-    /**
-     * 运维项目类型
-     */
-    private static final String OPERATIONS = "N_OPERATIONS";
 
     @Autowired
     private GitlabGroupService gitlabGroupService;
@@ -72,21 +66,17 @@ public class SagaHandler {
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-    @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
     private ChartService chartService;
     @Autowired
     private GitlabHandleService gitlabHandleService;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
     @Autowired
-    private DevopsMiddlewareService devopsMiddlewareService;
-    @Autowired
     private UserAttrService userAttrService;
     @Autowired
     private UserAttrMapper userAttrMapper;
+    @Autowired
+    private DevopsGitService devopsGitService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
@@ -104,7 +94,7 @@ public class SagaHandler {
             seq = 1)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+        if (projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
@@ -135,19 +125,12 @@ public class SagaHandler {
         if (CollectionUtils.isEmpty(projectPayload.getProjectCategoryVOS())) {
             return msg;
         }
-        if (!projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+        if (projectPayload.getProjectCategoryVOS().stream().map(ProjectCategoryVO::getCode).noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
             return msg;
         }
         gitlabHandleService.handleProjectCategoryEvent(projectPayload);
         LOGGER.info(">>>>>>>>>end sync project devops category<<<<<<<<<<");
         return msg;
-
-//        ProjectPayload projectPayload = gson.fromJson(msg, ProjectPayload.class);
-//        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
-//        BeanUtils.copyProperties(projectPayload, gitlabGroupPayload);
-//        loggerInfo(msg);
-//        gitlabGroupService.updateGroups(gitlabGroupPayload);
-//        return msg;
     }
 
     /**
@@ -184,7 +167,7 @@ public class SagaHandler {
         List<GitlabGroupMemberVO> tempList = new ArrayList<>(gitlabGroupMemberVOList);
         tempList.forEach(t -> {
             if (t.getResourceType().equals(ResourceLevel.PROJECT.value())) {
-                if (!baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).stream().anyMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
+                if (baseServiceClientOperator.listProjectCategoryById(t.getResourceId()).stream().noneMatch(s -> DEVOPS.equals(s) || s.equals(OPERATIONS))) {
                     gitlabGroupMemberVOList.remove(t);
                 }
             }
@@ -423,6 +406,16 @@ public class SagaHandler {
     public String deleteAppTemplate(String payload) {
         Long appTemplateId = gson.fromJson(payload, Long.class);
         devopsAppTemplateService.deleteAppTemplateSagaTask(appTemplateId);
+        return payload;
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
+            description = "复制工作项与分支关联关系",
+            sagaCode = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
+            maxRetryCount = 5, seq = 10)
+    public String devopsCloneIssueBranchRelation(String payload) {
+        CloneIssuePayload cloneIssuePayload = JsonHelper.unmarshalByJackson(payload, CloneIssuePayload.class);
+        devopsGitService.cloneBranchIssueRelation(cloneIssuePayload.getProjectId(), cloneIssuePayload.getNewIssueIdMap());
         return payload;
     }
 

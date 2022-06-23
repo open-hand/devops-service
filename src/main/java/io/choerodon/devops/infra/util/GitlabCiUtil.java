@@ -118,19 +118,6 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 将字符串按行分割为字符串列表
-     *
-     * @param string 字符串
-     * @return 列表
-     */
-    public static List<String> simpleSplitLinesToList(String string) {
-        if (StringUtils.isEmpty(string)) {
-            return Collections.emptyList();
-        }
-        return Arrays.asList(simpleSplitLinesToArray(string));
-    }
-
-    /**
      * 将shell按行分割 (支持 \ 符号进行多行连接)
      *
      * @param shellContent shell脚本内容

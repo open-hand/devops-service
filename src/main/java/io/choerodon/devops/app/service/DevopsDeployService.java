@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.deploy.DeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 
 /**

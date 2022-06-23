@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.mybatis.common.BaseMapper;
 import io.choerodon.devops.infra.dto.CiScheduleVariableDTO;
-
-import java.util.List;
+import io.choerodon.mybatis.common.BaseMapper;
 
 /**
  * devops_ci_schedule_variable(CiScheduleVariable)应用服务

@@ -132,7 +132,7 @@ public class CertificationServiceImpl implements CertificationService {
 
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
+        String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getDevopsComponentCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
         String keyFileName;

@@ -151,7 +151,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",
-                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), devopsEnvironmentDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getCode());
     }
 
     private void setCommitAndFileUrl(DevopsEnvFileErrorVO devopsEnvFileErrorVO, String gitlabProjectPath) {

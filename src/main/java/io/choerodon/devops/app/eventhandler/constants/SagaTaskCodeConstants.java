@@ -105,6 +105,11 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_CREATE_BRANCH = "devopsCreateBranch";
 
     /**
+     * 复制工作项与分支关联关系
+     */
+    public static final String DEVOPS_CLONE_ISSUE = "clone_issue";
+
+    /**
      * devops创建实例
      */
     public static final String DEVOPS_CREATE_INSTANCE = "devopsCreateInstance";

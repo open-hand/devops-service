@@ -409,7 +409,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             devopsGitlabPipelineDTO.setStages(stages);
             devopsGitlabPipelineDTO.setGitlabUrl(gitlabUrl + "/"
-                    + organization.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                    + organization.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + "/"
                     + appServiceDTO.getCode() + ".git");
             devopsGiltabPipelineDTOS.add(devopsGitlabPipelineDTO);
         });
