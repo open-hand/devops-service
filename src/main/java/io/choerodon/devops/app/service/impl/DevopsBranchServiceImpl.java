@@ -224,11 +224,11 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
 
     @Override
     public List<Long> listDeletedBranchIds(Set<Long> branchIds) {
-        if (CollectionUtils.isEmpty(branchIds)){
+        if (CollectionUtils.isEmpty(branchIds)) {
             return new ArrayList<>();
         }
         List<Long> existBranchIds = devopsBranchMapper.listExistBranchIds(branchIds);
-       return  branchIds.stream().filter(id->!existBranchIds.contains(id)).collect(Collectors.toList());
+        return branchIds.stream().filter(id -> !existBranchIds.contains(id)).collect(Collectors.toList());
     }
 
     @Override
@@ -237,5 +237,18 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             return devopsBranchMapper.listByIds(branchIds);
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public Boolean checkIssueBranchRelExist(Long projectId, Long issueId) {
+        return devopsIssueRelMapper.checkIssueBranchRelExist(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), projectId, issueId);
+    }
+
+    @Override
+    public void copyIssueBranchRel(Long projectId, Long oldIssueId, Long newIssueId) {
+        Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
+        devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
+            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
+        });
     }
 }

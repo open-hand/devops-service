@@ -40,4 +40,8 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
     List<Long> listCommitRelationByBranchId(@Param("branchId") Long branchId);
 
     Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(@Param("object") String object, @Param("issueId") Long issueId);
+
+    Boolean checkIssueBranchRelExist(@Param("value") String value,
+                                     @Param("projectId") Long projectId,
+                                     @Param("issueId") Long issueId);
 }

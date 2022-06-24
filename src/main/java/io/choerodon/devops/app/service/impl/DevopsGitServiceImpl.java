@@ -475,16 +475,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void cloneBranchIssueRelation(Long projectId, Map<Long, Long> issueIdMap) {
-        issueIdMap.forEach((newIssueId, oldIssueId) -> {
-            Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
-            devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
-                devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
-            });
-        });
-    }
-
-    @Override
     public void deleteBranch(Long projectId, Long appServiceId, String branchName) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_DELETE);
