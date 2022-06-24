@@ -103,13 +103,6 @@ public interface DevopsGitService {
     void updateBranchIssue(Long projectId, Long appServiceId, DevopsBranchUpdateVO devopsBranchUpdateVO, boolean onlyInsert);
 
     /**
-     * 克隆分支与工作项关联关系
-     * @param projectId
-     * @param issueIdMap
-     */
-    void cloneBranchIssueRelation(Long projectId, Map<Long, Long> issueIdMap);
-
-    /**
      * 删除分支
      *
      * @param projectId    项目id
