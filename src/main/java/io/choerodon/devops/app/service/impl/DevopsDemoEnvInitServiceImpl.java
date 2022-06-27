@@ -279,7 +279,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private void mergeBranch(Integer gitlabProjectId) {
         try {
             // 创建merge request
-            MergeRequestDTO mergeRequest = gitlabServiceClientOperator.createMergeRequest(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
+            MergeRequestDTO mergeRequest = gitlabServiceClientOperator.createMergeRequest(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName(), demoDataVO.getBranchInfo().getOriginBranch(), "a new merge request", "[ADD] add instant push", gitlabUserId);
 
             // 确认merge request
             gitlabServiceClientOperator.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
