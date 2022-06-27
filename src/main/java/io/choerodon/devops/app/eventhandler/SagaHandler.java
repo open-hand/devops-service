@@ -26,7 +26,6 @@ import io.choerodon.devops.api.vo.iam.AssignAdminVO;
 import io.choerodon.devops.api.vo.iam.DeleteAdminVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
-import io.choerodon.devops.app.eventhandler.payload.CloneIssuePayload;
 import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayload;
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
@@ -37,7 +36,6 @@ import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
-import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -406,16 +404,6 @@ public class SagaHandler {
     public String deleteAppTemplate(String payload) {
         Long appTemplateId = gson.fromJson(payload, Long.class);
         devopsAppTemplateService.deleteAppTemplateSagaTask(appTemplateId);
-        return payload;
-    }
-
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
-            description = "复制工作项与分支关联关系",
-            sagaCode = SagaTaskCodeConstants.DEVOPS_CLONE_ISSUE,
-            maxRetryCount = 5, seq = 10)
-    public String devopsCloneIssueBranchRelation(String payload) {
-        CloneIssuePayload cloneIssuePayload = JsonHelper.unmarshalByJackson(payload, CloneIssuePayload.class);
-        devopsGitService.cloneBranchIssueRelation(cloneIssuePayload.getProjectId(), cloneIssuePayload.getNewIssueIdMap());
         return payload;
     }
 
