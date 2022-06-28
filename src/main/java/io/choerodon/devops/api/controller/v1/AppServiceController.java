@@ -73,9 +73,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody @Validated AppServiceReqVO appServiceReqVO) {
-        return Optional.ofNullable(applicationServiceService.create(projectId, appServiceReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.create"));
+        return ResponseEntity.ok(applicationServiceService.create(projectId, appServiceReqVO));
     }
 
 

@@ -71,8 +71,7 @@ public class BaseServiceClientOperator {
         if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
             return Collections.emptyList();
         } else {
-            List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
-            return externalTenantVOS;
+            return responseEntity.getBody();
         }
     }
 
@@ -81,8 +80,7 @@ public class BaseServiceClientOperator {
         if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
             return Collections.emptyList();
         } else {
-            List<ExternalTenantVO> externalTenantVOS = responseEntity.getBody();
-            return externalTenantVOS;
+            return responseEntity.getBody();
         }
     }
 
@@ -397,7 +395,7 @@ public class BaseServiceClientOperator {
         Map<String, Object> searchParamMap;
         List<String> paramList;
         // 处理搜索参数
-        if (!StringUtils.isEmpty(params)) {
+        if (StringUtils.hasText(params)) {
             Map maps = gson.fromJson(params, Map.class);
             searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             paramList = TypeUtil.cast(maps.get(TypeUtil.PARAMS));
@@ -700,7 +698,7 @@ public class BaseServiceClientOperator {
     public List<IamUserDTO> listCustomGitlabOwnerLabelUser(Long projectId, String roleLabel) {
         ResponseEntity<List<IamUserDTO>> responseEntity = baseServiceClient.listProjectUsersByProjectIdAndRoleLabel(projectId, roleLabel);
         if (responseEntity == null || responseEntity.getBody() == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             return responseEntity.getBody();
         }

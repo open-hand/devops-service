@@ -55,10 +55,10 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CiPipelineMavenServiceImpl.class);
 
-    private final String ID = "id";
-    private final String OBJECT_VERSION_NUMBER = "objectVersionNumber";
+    private static final String ID = "id";
+    private static final String OBJECT_VERSION_NUMBER = "objectVersionNumber";
 
     @Autowired
     private CiPipelineMavenMapper ciPipelineMavenMapper;
@@ -212,7 +212,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
                 logger.debug("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();
@@ -257,7 +257,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
         } catch (Exception ex) {
             if (logger.isInfoEnabled()) {
-                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
                 logger.info("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();

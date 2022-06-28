@@ -30,8 +30,6 @@ public class CiDockerAuthConfigDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_DEVOPS_PIPELINE_ID = "devopsPipelineId";
     public static final String FIELD_DOMAIN = "domain";
-    public static final String FIELD_USERNAME = "username";
-    public static final String FIELD_PASSWORD = "password";
     private static final long serialVersionUID = 989629751337871365L;
     @Id
     @GeneratedValue

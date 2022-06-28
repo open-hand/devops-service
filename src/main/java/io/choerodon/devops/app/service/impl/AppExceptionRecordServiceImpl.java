@@ -35,7 +35,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
 
     private static final String ERROR_UPDATE_EXCEPTION_RECORD = "error.update.exception.record";
     private static final String ERROR_SAVE_EXCEPTION_RECORD = "error.save.exception.record";
-    private static JSON JSON = new JSON();
+    private static final JSON JSON = new JSON();
     @Autowired
     private AppExceptionRecordMapper appExceptionRecordMapper;
     @Autowired

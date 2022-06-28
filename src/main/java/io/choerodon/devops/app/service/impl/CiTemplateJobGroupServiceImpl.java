@@ -47,8 +47,7 @@ public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService 
     @Override
     public List<CiTemplateJobGroupDTO> listNonEmptyGroups() {
         List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS = ciTemplateJobGroupMapper.listNonEmptyGroups();
-        List<CiTemplateJobGroupDTO> templateJobGroupDTOS = sortedTemplateJob(ciTemplateJobGroupDTOS);
-        return templateJobGroupDTOS;
+        return sortedTemplateJob(ciTemplateJobGroupDTOS);
     }
 
     private List<CiTemplateJobGroupDTO> sortedTemplateJob(List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS) {

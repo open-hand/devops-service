@@ -981,7 +981,6 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 
-    @Deprecated
     @ApiOperation("查询引用了实例作为替换对象的流水线信息")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{instance_id}/pipeline_reference")

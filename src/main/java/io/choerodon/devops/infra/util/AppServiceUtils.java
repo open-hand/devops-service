@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.util;
 
 import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -104,7 +105,7 @@ public class AppServiceUtils {
     }
 
     public void checkCodeExist(String appCode) {
-        if (StringUtils.isEmpty(appCode)) {
+        if (!StringUtils.hasText(appCode)) {
             throw new CommonException("error.code.is.null");
         }
     }

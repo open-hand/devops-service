@@ -33,9 +33,6 @@ public class CiPipelineImageDTO extends AuditDomain {
     private Long harborRepoId;
     private String repoType;
 
-    public CiPipelineImageDTO() {
-    }
-
     public Long getAppServiceId() {
         return appServiceId;
     }

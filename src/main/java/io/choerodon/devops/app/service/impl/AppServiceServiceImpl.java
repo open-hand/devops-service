@@ -1039,7 +1039,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         gitlabServiceClientOperator.updateProjectCiConfigPath(gitlabProjectDO.getId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), GitOpsConstants.TEMP_CI_CONFIG_PATH);
 
         if (devOpsAppServiceImportPayload.getTemplate() != null && devOpsAppServiceImportPayload.getTemplate()
-                && !StringUtils.isEmpty(devOpsAppServiceImportPayload.getRepositoryUrl())) {
+                && StringUtils.hasText(devOpsAppServiceImportPayload.getRepositoryUrl())) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
                 throw new CommonException("error.temp.git.url");
@@ -1100,7 +1100,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             try {
                 gitUtil.commitAndPushForMaster(git, appServiceDTO.getRepoUrl(), "init app from template", accessToken);
             } catch (Exception e) {
-                throw e;
+                throw new CommonException("init app from template failed", e);
             } finally {
                 releaseResources(applicationWorkDir, git);
             }
@@ -3421,7 +3421,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         // 1. 迁移gitlab代码库
         if (!oldProjectDTO.getNamespace().getId().equals(appServiceTransferVO.getGitlabGroupId())) {
-            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
+            gitlabServiceClientOperator.transferProject(appServiceTransferVO.getGitlabProjectId(),
                     appServiceTransferVO.getGitlabGroupId(),
                     userId);
         }
@@ -3847,7 +3847,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             // 校验账户权限
             appExternalConfigDTO.setRepositoryUrl(appExternalConfigDTO.getRepositoryUrl().replace(".git", ""));
             GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryExternalProjectByCode(appExternalConfigDTO);
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>gitlabProjectDTO is {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(gitlabProjectDTO));
+            }
             if (gitlabProjectDTO == null || gitlabProjectDTO.getId() == null) {
                 flag = false;
             }
@@ -3866,10 +3868,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceDTO> queryAppByProjectIds(List<Long> projectIds) {
         if (CollectionUtils.isEmpty(projectIds)) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
-        List<AppServiceDTO> appServiceDTOS = appServiceMapper.listByActiveAndProjects(projectIds);
-        return appServiceDTOS;
+        return appServiceMapper.listByActiveAndProjects(projectIds);
     }
 
     @Override

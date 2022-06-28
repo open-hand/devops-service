@@ -1712,7 +1712,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
         } else {

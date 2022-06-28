@@ -315,10 +315,7 @@ public class AppServiceVersionController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String version) {
-        return Optional.ofNullable(
-                appServiceVersionService.pageShareVersionByAppId(appServiceId, pageable, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+        return ResponseEntity.ok(appServiceVersionService.pageShareVersionByAppId(appServiceId, pageable, version));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -178,20 +178,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         return ciCdPipelineRecordVO;
     }
 
-    private boolean isFirstRecord(DevopsPipelineRecordRelVO devopsPipelineRecordRelVO) {
-        //如果为流水线的下的第一条记录则返回为null
-        Long pipelineId = devopsPipelineRecordRelVO.getPipelineId();
-        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setPipelineId(pipelineId);
-        List<DevopsPipelineRecordRelDTO> select = devopsPipelineRecordRelMapper.select(recordRelDTO);
-        if (select.size() == 1) {
-            return true;
-        }
-        List<DevopsPipelineRecordRelVO> devopsPipelineRecordRelVOS = ConvertUtils.convertList(select, this::relDtoToRelVO);
-        CiCdPipelineUtils.recordListSort(devopsPipelineRecordRelVOS);
-        return devopsPipelineRecordRelVO.getId().compareTo(devopsPipelineRecordRelVOS.get(devopsPipelineRecordRelVOS.size() - 1).getId()) == 0;
-    }
-
     private void fillPipelineVO(String userName, List<StageRecordVO> stageRecordVOS, Date executeDate, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineRecordVO ciCdPipelineRecordVO) {
         ciCdPipelineVO.setCreateUserName(userName);
         if (!CollectionUtils.isEmpty(stageRecordVOS)) {
