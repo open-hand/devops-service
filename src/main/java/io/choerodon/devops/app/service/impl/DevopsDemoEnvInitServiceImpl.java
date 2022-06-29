@@ -31,10 +31,7 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
-import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
-import io.choerodon.devops.infra.dto.gitlab.MergeRequestDTO;
+import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
@@ -133,10 +130,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 //        2. 创建分支
         BranchDTO branchDO = gitlabServiceClientOperator.queryBranch(gitlabProjectId, demoDataVO.getBranchInfo().getBranchName());
         if (branchDO.getName() == null) {
+            GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
+                    .queryProjectById(gitlabProjectId);
             gitlabServiceClientOperator.createBranch(
                     gitlabProjectId,
                     demoDataVO.getBranchInfo().getBranchName(),
-                    demoDataVO.getBranchInfo().getOriginBranch(),
+                    gitlabProjectDO.getDefaultBranch(),
                     gitlabUserId);
         }
 
