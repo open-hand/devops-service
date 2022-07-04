@@ -46,4 +46,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
             column(name: "gitlab_user_name")
         }
     }
+    changeSet(author: 'scp', id: '2022-07-06-modify-column') {
+        modifyDataType(tableName: 'devops_user', columnName: 'gitlab_user_name', newDataType: 'VARCHAR(100)')
+    }
+
 }

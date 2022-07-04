@@ -32,7 +32,7 @@
         </foreach>
     </select>
 
-    <select id="listRelationByIssueIdAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
+    <select id="listRelationByIssueIdAndProjectIdAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
         SELECT dir.object_id, dir.project_id, dir.app_service_code, dir.branch_id
         FROM devops_issue_rel dir
         WHERE dir.project_id = #{projectId}
@@ -123,5 +123,19 @@
         FROM devops_issue_rel dir
         WHERE dir.object='commit'
         AND dir.branch_id=#{branchId}
+    </select>
+
+    <select id="listRelationByIssueIdAndObjectType" resultType="io.choerodon.devops.infra.dto.DevopsIssueRelDTO">
+        SELECT dir.object_id, dir.project_id, dir.app_service_code, dir.branch_id
+        FROM devops_issue_rel dir
+        WHERE dir.issue_id = #{issueId}
+          AND dir.object = #{object}
+    </select>
+
+    <select id="checkIssueBranchRelExist" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM devops_issue_rel dir
+        WHERE dir.project_id = #{projectId}
+          AND dir.issue_id = #{issueId}
     </select>
 </mapper>

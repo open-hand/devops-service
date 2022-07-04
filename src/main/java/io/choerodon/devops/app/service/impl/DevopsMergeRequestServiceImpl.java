@@ -236,7 +236,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         mergeRequestVOPage.getContent().forEach(mergeRequestVO -> {
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
             String mergeRequestUrl = String.format("%s%s%s-%s/%s/merge_requests/%s",
-                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getCode(), mergeRequestVO.getAppServiceCode(), mergeRequestVO.getGitlabMergeRequestId());
+                    gitlabUrl, urlSlash, tenant.getTenantNum(), projectDTO.getDevopsComponentCode(), mergeRequestVO.getAppServiceCode(), mergeRequestVO.getGitlabMergeRequestId());
             mergeRequestVO.setIamAuthor(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAuthorId())), UserVO.class));
             mergeRequestVO.setIamAssignee(ConvertUtils.convertObject(iamUserDTOMap.get(gitlabIamUserIdMap.get(mergeRequestVO.getAssigneeId())), UserVO.class));
             mergeRequestVO.setGitlabUrl(mergeRequestUrl);

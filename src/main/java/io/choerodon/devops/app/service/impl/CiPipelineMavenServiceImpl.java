@@ -14,13 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
@@ -55,10 +53,10 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CiPipelineMavenServiceImpl.class);
 
-    private final String ID = "id";
-    private final String OBJECT_VERSION_NUMBER = "objectVersionNumber";
+    private static final String ID = "id";
+    private static final String OBJECT_VERSION_NUMBER = "objectVersionNumber";
 
     @Autowired
     private CiPipelineMavenMapper ciPipelineMavenMapper;
@@ -77,10 +75,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
-    @Autowired
-    @Qualifier(value = "restTemplateForIp")
-    private RestTemplate restTemplateForIp;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -212,7 +206,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
                 logger.debug("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();
@@ -257,7 +251,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
         } catch (Exception ex) {
             if (logger.isInfoEnabled()) {
-                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
                 logger.info("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();

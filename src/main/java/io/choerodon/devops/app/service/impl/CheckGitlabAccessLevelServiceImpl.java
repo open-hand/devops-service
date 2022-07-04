@@ -30,7 +30,7 @@ import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
  */
 @Service
 public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevelService {
-    private final static String EMPTY_GITLAB_ACCESS_LEVEL = "error.empty.gitlab.access.level";
+    private static final String EMPTY_GITLAB_ACCESS_LEVEL = "error.empty.gitlab.access.level";
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired

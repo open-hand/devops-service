@@ -612,17 +612,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && date.after(validFrom) && date.before(validUntil);
     }
 
-    private DevopsPvcReqVO operatePV(Long pvId, Long envId, String name) {
-        DevopsPvcReqVO devopsPvcReqVO = new DevopsPvcReqVO();
-        DevopsPvVO devopsPvVO = devopsPvService.queryById(pvId);
-        devopsPvcReqVO.setPvId(devopsPvVO.getId());
-        devopsPvcReqVO.setName(name + "-" + GenerateUUID.generateUUID().substring(0, 10));
-        devopsPvcReqVO.setAccessModes(devopsPvVO.getAccessModes());
-        devopsPvcReqVO.setRequestResource(devopsPvVO.getRequestResource());
-        devopsPvcReqVO.setEnvId(envId);
-        return devopsPvcReqVO;
-    }
-
     private DevopsClusterDTO checkClusterExist(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {

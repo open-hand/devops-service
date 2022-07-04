@@ -54,8 +54,6 @@ public abstract class DevopsCiImageBuildStepHandler extends AbstractDevopsCiStep
 
     @Override
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
-        // 不填skipDockerTlsVerify参数或者填TRUE都是跳过证书校验
-        // TODO 修复 目前后端这个参数的含义是是否跳过证书校验, 前端的含义是是否进行证书校验
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = devopsCiDockerBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
 
         Boolean doTlsVerify = devopsCiDockerBuildConfigDTO.getEnableDockerTlsVerify();

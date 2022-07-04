@@ -368,7 +368,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
         Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
                 devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
@@ -590,7 +590,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getCode(), applicationDTO.getCode());
+                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
         return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO, applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId(), checkMember), TagVO.class);
     }
 
@@ -707,10 +707,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         //本地路径
         final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(),
-                projectDTO.getCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
+                projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(
-                pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getCode(),
+                pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(),
                 devopsEnvironmentDTO.getCode(),
                 EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
                 devopsEnvironmentDTO.getClusterCode());
@@ -1270,7 +1270,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
 
         // 查出剩下的和敏捷问题有关联的分支
-        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
+        Set<DevopsIssueRelDTO> remainBranchIssueRelation = devopsIssueRelService.listRelationByIssueIdAndProjectIdAndObjectType(projectId, DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), issueId);
         List<DevopsBranchVO> devopsBranchVOS = remainBranchIssueRelation.stream().map(r -> {
             DevopsBranchVO devopsBranchVO = new DevopsBranchVO();
             devopsBranchVO.setAppServiceCode(r.getAppServiceCode());

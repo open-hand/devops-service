@@ -41,4 +41,21 @@ public interface DevopsBranchService {
     List<Long> listDeletedBranchIds(Set<Long> collect);
 
     List<DevopsBranchDTO> listByIds(List<Long> branchIds);
+
+    /**
+     * 查询工作项是否与分支有关联关系
+     *
+     * @param projectId
+     * @param issueId
+     * @return
+     */
+    Boolean checkIssueBranchRelExist(Long projectId, Long issueId);
+
+    /**
+     * 复制工作项与分支关联关系
+     * @param projectId
+     * @param oldIssueId
+     * @param newIssueId
+     */
+    void copyIssueBranchRel(Long projectId, Long oldIssueId, Long newIssueId);
 }

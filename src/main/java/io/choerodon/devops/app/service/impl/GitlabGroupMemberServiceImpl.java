@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.DEVOPS;
+import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 import static io.choerodon.devops.infra.enums.LabelType.GITLAB_PROJECT_OWNER;
 import static io.choerodon.devops.infra.enums.LabelType.TENANT_ADMIN;
 
@@ -48,14 +50,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private static final String PROJECT = "project";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
-    /**
-     * devops项目类型
-     */
-    private static final String DEVOPS = "N_DEVOPS";
-    /**
-     * 运维项目类型
-     */
-    public static final String OPERATIONS = "N_OPERATIONS";
 
     @Autowired
     private DevopsProjectService devopsProjectService;

@@ -199,7 +199,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         String helmUrl = helmConfig.getUrl();
         newVersion.setHelmConfigId(devopsConfigDTO.getId());
 
-        newVersion.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getCode() + "/");
+        newVersion.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
 
         // 取commit的一部分作为文件路径
         String commitPart = commit == null ? "" : commit.substring(0, 8);
@@ -210,7 +210,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
 
         // 上传chart包到 chart museum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
 
         FileUtil.unTarGZ(path, destFilePath);
 
@@ -473,7 +473,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionAndCommitVO.setVersion(applicationVersionDTO.getVersion());
             appServiceVersionAndCommitVO.setCreateDate(applicationVersionDTO.getCreationDate());
             appServiceVersionAndCommitVO.setCommitUrl(gitlabUrl + "/"
-                    + organization.getTenantNum() + "-" + projectDTO.getCode() + "/"
+                    + organization.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + "/"
                     + applicationDTO.getCode() + ".git");
             appServiceVersionAndCommitVOS.add(appServiceVersionAndCommitVO);
 
@@ -843,7 +843,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 deleteImagetags.add(harborImageTagDTO);
             }
             // 计算删除chart列表
-            ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getCode(), appServiceDTO.getCode(), appServiceVersionDTO);
+            ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode(), appServiceVersionDTO);
             deleteChartTags.add(chartTagVO);
 
             // 删除应用服务版本

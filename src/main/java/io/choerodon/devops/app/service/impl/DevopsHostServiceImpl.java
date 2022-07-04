@@ -14,8 +14,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -61,8 +59,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsHostServiceImpl implements DevopsHostService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostServiceImpl.class);
-
     public static final String PERMISSION_LABEL = "permissionLabel";
 
     private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
@@ -307,13 +303,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public boolean HostIdInstanceIdMatch(Long hostId, Long instanceId) {
+    public boolean hostIdInstanceIdMatch(Long hostId, Long instanceId) {
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(instanceId);
         return devopsHostAppDTO != null && devopsHostAppDTO.getHostId().equals(hostId);
     }
 
     @Override
-    public boolean HostIdDockerInstanceMatch(Long hostId, Long instanceId) {
+    public boolean hostIdDockerInstanceMatch(Long hostId, Long instanceId) {
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
         return devopsDockerInstanceDTO != null && devopsDockerInstanceDTO.getHostId().equals(hostId);
     }
@@ -328,7 +324,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         Map<Long, DevopsHostUserPermissionDTO> hostPermissionMap = new HashMap<>();
         if (projectOwnerOrRoot) {
             devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
-            List<Long> hostIds = devopsHostVOList.stream().map(DevopsHostVO::getId).collect(Collectors.toList());
         } else {
             devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
             if (CollectionUtils.isEmpty(devopsHostVOList)) {

@@ -11,5 +11,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsCdApiTestInfoMapper extends BaseMapper<DevopsCdApiTestInfoDTO> {
 
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long suiteId);
 }
 

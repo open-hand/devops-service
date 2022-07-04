@@ -247,9 +247,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsCiPipelineService.pipelineExecuteTime(pipelineIds, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+        return ResponseEntity.ok(devopsCiPipelineService.pipelineExecuteTime(pipelineIds, startTime, endTime));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION,

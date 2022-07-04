@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.template.CiTemplateJobGroupVO;
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.enums.CiTemplateJobGroupTypeEnum;
@@ -48,8 +47,7 @@ public class CiTemplateJobGroupServiceImpl implements CiTemplateJobGroupService 
     @Override
     public List<CiTemplateJobGroupDTO> listNonEmptyGroups() {
         List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS = ciTemplateJobGroupMapper.listNonEmptyGroups();
-        List<CiTemplateJobGroupDTO> templateJobGroupDTOS = sortedTemplateJob(ciTemplateJobGroupDTOS);
-        return templateJobGroupDTOS;
+        return sortedTemplateJob(ciTemplateJobGroupDTOS);
     }
 
     private List<CiTemplateJobGroupDTO> sortedTemplateJob(List<CiTemplateJobGroupDTO> ciTemplateJobGroupDTOS) {

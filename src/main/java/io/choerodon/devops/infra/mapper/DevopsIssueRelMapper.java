@@ -15,7 +15,7 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
 
     List<DevopsIssueRelDTO> listIssueIdsByObjectTypeAndObjectIds(Set<Long> objectIds, String object);
 
-    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(@Param("projectId") Long projectId, @Param("object") String object, @Param("issueId") Long issueId);
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndProjectIdAndObjectType(@Param("projectId") Long projectId, @Param("object") String object, @Param("issueId") Long issueId);
 
     List<DevopsIssueRelDTO> listRelationByIssueIdsAndObjectType(@Param("object") String object, @Param("issueIds") Set<Long> issueIds);
 
@@ -38,4 +38,10 @@ public interface DevopsIssueRelMapper extends BaseMapper<DevopsIssueRelDTO> {
     List<Long> listBranchIdsByCommitIds(@Param("commitIds") Set<Long> commitIds);
 
     List<Long> listCommitRelationByBranchId(@Param("branchId") Long branchId);
+
+    Set<DevopsIssueRelDTO> listRelationByIssueIdAndObjectType(@Param("object") String object, @Param("issueId") Long issueId);
+
+    Boolean checkIssueBranchRelExist(@Param("value") String value,
+                                     @Param("projectId") Long projectId,
+                                     @Param("issueId") Long issueId);
 }

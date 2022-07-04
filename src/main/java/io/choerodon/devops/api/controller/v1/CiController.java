@@ -180,7 +180,7 @@ public class CiController {
     @ApiOperation(value = "判断平台是否有配置sonarqube")
     @GetMapping("/has_default_sonar")
     public ResponseEntity<Boolean> hasDefaultSonarqubeConfig() {
-        return ResponseEntity.ok(!StringUtils.isEmpty(sonarqubeUrl));
+        return ResponseEntity.ok(StringUtils.hasText(sonarqubeUrl));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)

@@ -9,8 +9,6 @@ import java.util.Optional;
 
 import com.google.gson.Gson;
 import okhttp3.ResponseBody;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -42,8 +40,6 @@ import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 @Order(100)
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandRunner.class);
-
     public static final String SONAR = "sonar";
 
     private final Gson gson = new Gson();
@@ -74,7 +70,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             ConfigVO chartConfig = new ConfigVO();
             chartConfig.setUrl(servicesHelmUrl);
             // 只有helm的用户名密码都设置了, 才设置到数据库中
-            if (!StringUtils.isEmpty(servicesHelmUserName) && !StringUtils.isEmpty(servicesHelmPassword)) {
+            if (StringUtils.hasText(servicesHelmUserName) && StringUtils.hasText(servicesHelmPassword)) {
                 chartConfig.setUserName(servicesHelmUserName);
                 chartConfig.setPassword(servicesHelmPassword);
                 chartConfig.setIsPrivate(Boolean.TRUE);

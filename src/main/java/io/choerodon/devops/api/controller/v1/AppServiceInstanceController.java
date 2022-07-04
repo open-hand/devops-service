@@ -141,46 +141,6 @@ public class AppServiceInstanceController {
                 appServiceInstanceService.pageInstanceInfoByOptions(projectId, envId, pageable, params), HttpStatus.OK);
     }
 
-
-//    /**
-//     * 分页查询服务部署
-//     *
-//     * @param projectId    项目id
-//     * @param pageable  分页参数
-//     * @param envId        环境id
-//     * @param versionId    版本id
-//     * @param appServiceId 服务id
-//     * @param params       搜索参数
-//     * @return page of DevopsEnvPreviewInstanceVO
-//     */
-//    @Permission(level = ResourceLevel.ORGANIZATION,
-//            roles = {InitRoleCode.PROJECT_OWNER,
-//                    InitRoleCode.PROJECT_MEMBER})
-//    @ApiOperation(value = "分页查询服务部署")
-//    @CustomPageRequest
-//    @PostMapping(value = "/page_by_options")
-//    public ResponseEntity<Page<DevopsEnvPreviewInstanceVO>> pageByOptions(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiIgnore
-//            @ApiParam(value = "分页参数") PageRequest pageable,
-//            @ApiParam(value = "环境ID")
-//            @RequestParam(value = "env_id", required = false) Long envId,
-//            @ApiParam(value = "版本ID")
-//            @RequestParam(value = "version_id", required = false) Long versionId,
-//            @ApiParam(value = "服务ID")
-//            @RequestParam(value = "app_service_id", required = false) Long appServiceId,
-//            @ApiParam(value = "实例ID")
-//            @RequestParam(value = "instance_id", required = false) Long instanceId,
-//            @ApiParam(value = "查询参数")
-//            @RequestBody(required = false) String params) {
-//        return Optional.ofNullable(appServiceInstanceService.pageByOptions(
-//                projectId, pageable, envId, versionId, appServiceId, instanceId, params))
-//                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-//                .orElseThrow(() -> new CommonException("error.application.version.query"));
-//    }
-
-
     /**
      * 获取实例上次部署配置
      *
@@ -1021,7 +981,6 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 
-    @Deprecated
     @ApiOperation("查询引用了实例作为替换对象的流水线信息")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{instance_id}/pipeline_reference")

@@ -28,7 +28,7 @@ public enum CiTriggerType {
 
     @Nullable
     public static CiTriggerType forValue(String value) {
-        if (!StringUtils.isEmpty(value)) {
+        if (StringUtils.hasText(value)) {
             for (CiTriggerType type : values()) {
                 if (type.value.equals(value)) {
                     return type;

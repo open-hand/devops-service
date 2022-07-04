@@ -68,7 +68,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
 
     @Value("${agent.version}")

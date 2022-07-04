@@ -1712,7 +1712,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
                         "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
         } else {
@@ -1837,7 +1837,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO getReplaceResult(String versionValue, String deployValue) {
         String deployFileAfterProcessed = deleteLineStartWithPoundKey(deployValue);
-        if (versionValue.equals(deployValue) || !org.springframework.util.StringUtils.hasText(deployFileAfterProcessed)) {
+        if (versionValue.equals(deployValue) || org.apache.commons.lang3.StringUtils.isEmpty(deployFileAfterProcessed)) {
             InstanceValueVO instanceValueVO = new InstanceValueVO();
             instanceValueVO.setDeltaYaml("");
             instanceValueVO.setYaml(versionValue);
@@ -2289,7 +2289,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
 
-//        AppServiceInstanceDTO appServiceInstanceDTO = baseQueryByCodeAndEnv(devopsHzeroDeployDetailsDTO.getInstanceCode(), devopsHzeroDeployDetailsDTO.getEnvId());
         DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
 
         // 设置用户上下文
