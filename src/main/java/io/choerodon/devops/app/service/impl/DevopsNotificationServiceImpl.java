@@ -228,7 +228,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         try {
             //根据不同的通知方式发送验证码
-            messageClient.sendMessage(messageSender);
+            messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
             throw new CommonException("error.msg.send.failed");
