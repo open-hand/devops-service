@@ -22,7 +22,7 @@ public class DevopsHelmConfigDTO extends AuditDomain {
     @ApiModelProperty("仓库名称")
     private String name;
 
-    @ApiModelProperty("仓库地址")
+    @ApiModelProperty("helm仓库地址 平台层或组织层为仓库地址前缀部分 项目层是完整的仓库地址")
     private String url;
 
     @ApiModelProperty("仓库账号")
@@ -31,10 +31,10 @@ public class DevopsHelmConfigDTO extends AuditDomain {
     @ApiModelProperty("仓库密码")
     private String password;
 
-    @ApiModelProperty("关联该配置的层级 app/project/organization/platform")
-    private String level;
+    @ApiModelProperty("关联该配置的层级 project/organization/platform")
+    private String resourceType;
 
-    @ApiModelProperty("关联该仓库配置的资源id, 应用id 项目id 组织id 平台层为0")
+    @ApiModelProperty("关联该仓库配置的资源id, 项目id 组织id 平台层为0")
     private Long resourceId;
 
     @ApiModelProperty("仓库是否私有")
@@ -113,5 +113,13 @@ public class DevopsHelmConfigDTO extends AuditDomain {
 
     public void setRepoDefault(Boolean repoDefault) {
         this.repoDefault = repoDefault;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 }

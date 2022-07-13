@@ -9,13 +9,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovyovy') {
             column(name: 'name', type: 'VARCHAR(60)', remarks: '仓库名称') {
                 constraints(nullable: false)
             }
-            column(name: 'url', type: 'text', remarks: 'helm仓库地址') {
+            column(name: 'url', type: 'text', remarks: 'helm仓库地址 平台层或组织层为仓库地址前缀部分 项目层是完整的仓库地址') {
                 constraints(nullable: false)
             }
+
             column(name: 'username', type: 'VARCHAR(64)', remarks: '用户名')
             column(name: 'password', type: 'VARCHAR(128)', remarks: '密码')
-            column(name: 'level', type: 'VARCHAR(16)', remarks: '关联该仓库配置的层级 app/project/organization/platform')
-            column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '关联该仓库配置的资源id, 应用id 项目id 组织id 平台层为0')
+            column(name: 'resource_type', type: 'VARCHAR(16)', remarks: '关联该仓库配置的层级 project/organization/platform')
+            column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '关联该仓库配置的资源id, 项目id 组织id 平台层为0')
             column(name: "repo_private", type: 'TINYINT(1)', remarks: '是否私有 0 否 1是')
             column(name: 'repo_default', type: 'TINYINT(1)', remarks: '是否为默认仓库')
 
