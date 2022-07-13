@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
@@ -236,4 +235,6 @@ public interface DevopsGitService {
     Page<GitlabProjectDTO> listOwnedProjectByGroupId(Long projectId, Integer gitlabGroupId, String search, PageRequest pageRequest);
 
     Page<BranchVO> pageBranchBasicInfoByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params);
+
+    Integer syncBranch(Long projectId, Long appServiceId, Boolean sync);
 }

@@ -66,7 +66,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
 
     @Override
     public void run(String... strings) {
-        try {
+       /* try {
             ConfigVO chartConfig = new ConfigVO();
             chartConfig.setUrl(servicesHelmUrl);
             // 只有helm的用户名密码都设置了, 才设置到数据库中
@@ -82,7 +82,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             }
         } catch (Exception e) {
             throw new CommonException("error.init.project.config", e);
-        }
+        }*/
     }
 
     private void initConfig(ConfigVO configDTO, String configName, String configType) {

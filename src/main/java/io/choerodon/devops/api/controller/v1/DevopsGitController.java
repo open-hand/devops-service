@@ -484,4 +484,29 @@ public class DevopsGitController {
             @RequestParam(value = "branch_name") String branchName) {
         return ResponseEntity.ok(devopsGitService.isBranchNameUnique(projectId, appServiceId, branchName));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分支同步")
+    @PostMapping("/sync_branch")
+    public ResponseEntity<Void> syncBranch(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        devopsGitService.syncBranch(projectId, appServiceId, true);
+        return Results.success();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验分支同步")
+    @GetMapping("/check_sync_branch")
+    public ResponseEntity<Integer> checkSyncBranch(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Results.success(devopsGitService.syncBranch(projectId, appServiceId, false));
+    }
 }
