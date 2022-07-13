@@ -83,14 +83,6 @@ public class DevopsHelmConfigDTO extends AuditDomain {
         this.password = password;
     }
 
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
-    }
-
     public Long getResourceId() {
         return resourceId;
     }
