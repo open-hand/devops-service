@@ -1,6 +1,6 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovyovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovy') {
     changeSet(author: 'lihao', id: '2022-07-12-create-table') {
         createTable(tableName: "devops_helm_config", remarks: 'helm仓库配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
