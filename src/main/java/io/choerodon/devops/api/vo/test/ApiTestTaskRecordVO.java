@@ -51,6 +51,9 @@ public class ApiTestTaskRecordVO {
 
     private Double performThreshold;
 
+    @Encrypt
+    private Long folderId;
+
     public Long getSuiteId() {
         return suiteId;
     }
@@ -155,11 +158,20 @@ public class ApiTestTaskRecordVO {
         this.performThreshold = performThreshold;
     }
 
+    public Long getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(Long folderId) {
+        this.folderId = folderId;
+    }
+
     @Override
     public String toString() {
         return "ApiTestTaskRecordVO{" +
                 "id=" + id +
                 ", taskId=" + taskId +
+                ", suiteId=" + suiteId +
                 ", status='" + status + '\'' +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
@@ -169,6 +181,8 @@ public class ApiTestTaskRecordVO {
                 ", errorMessage='" + errorMessage + '\'' +
                 ", viewId='" + viewId + '\'' +
                 ", deployJobName='" + deployJobName + '\'' +
+                ", performThreshold=" + performThreshold +
+                ", folderId=" + folderId +
                 '}';
     }
 }
