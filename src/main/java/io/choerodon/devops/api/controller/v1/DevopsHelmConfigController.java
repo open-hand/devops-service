@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.choerodon.devops.api.vo.HelmConfigVO;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
 
-@RestController("ciTemplateJobController.v1")
-@RequestMapping("/v1/projects/{project_id}")
+@RestController("DevopsHelmConfigController.v1")
+@RequestMapping("/v1/projects/{project_id}/helm_config")
 public class DevopsHelmConfigController {
     @Autowired
     private DevopsHelmConfigService helmConfigService;
