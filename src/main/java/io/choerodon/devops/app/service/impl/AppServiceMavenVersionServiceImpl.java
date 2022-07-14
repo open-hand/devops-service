@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceMavenVersionDTO;
 import io.choerodon.devops.infra.mapper.AppServiceMavenVersionMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
