@@ -91,6 +91,8 @@ public class DevopsCommandRunner implements CommandLineRunner {
     }
 
     private void initHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
+        devopsHelmConfigDTO.setResourceType(ResourceLevel.SITE.value());
+        devopsHelmConfigDTO.setRepoDefault(true);
         DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value());
         if (oldConfigDTO == null) {
             devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
