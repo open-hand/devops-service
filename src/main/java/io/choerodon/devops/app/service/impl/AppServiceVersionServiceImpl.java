@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -33,6 +34,9 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
+import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
+import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
@@ -339,12 +343,59 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
         }
         Page<AppServiceVersionVO> appServiceVersionVOS = ConvertUtils.convertPage(applicationVersionDTOPageInfo, AppServiceVersionVO.class);
-        // 计算应用服务版本是否可以被删除
+
         if (!CollectionUtils.isEmpty(appServiceVersionVOS.getContent())) {
+            // 计算应用服务版本是否可以被删除
             caculateDelteFlag(appServiceId, appServiceVersionVOS.getContent());
+            // 添加版本关联的helm、image、jar版本信息
+            addVersionInfo(appServiceVersionVOS.getContent());
         }
 
         return appServiceVersionVOS;
+    }
+
+    /**
+     * 添加版本关联的helm、image、jar版本信息
+     * @param appServiceVersionVOList
+     */
+    private void addVersionInfo(List<AppServiceVersionVO> appServiceVersionVOList) {
+        Set<Long> versionIds = appServiceVersionVOList.stream().map(AppServiceVersionVO::getId).collect(Collectors.toSet());
+
+        // 批量查询各版本信息
+        Map<Long, AppServiceHelmVersionVO> helmVersionMap = new HashMap<>();
+        List<AppServiceHelmVersionVO> appServiceHelmVersionVOS = appServiceHelmVersionService.listByAppVersionIds(versionIds);
+        if (!CollectionUtils.isEmpty(appServiceHelmVersionVOS)) {
+            helmVersionMap = appServiceHelmVersionVOS.stream().collect(Collectors.toMap(AppServiceHelmVersionVO::getAppServiceVersionId, Function.identity()));
+        }
+        Map<Long, AppServiceImageVersionVO> imageVersionMap = new HashMap<>();
+        List<AppServiceImageVersionVO> appServiceImageVersionVOS = appServiceImageVersionService.listByAppVersionIds(versionIds);
+        if (!CollectionUtils.isEmpty(appServiceImageVersionVOS)) {
+            imageVersionMap = appServiceImageVersionVOS.stream().collect(Collectors.toMap(AppServiceImageVersionVO::getAppServiceVersionId, Function.identity()));
+        }
+
+        Map<Long, AppServiceMavenVersionVO> mavenVersionMap = new HashMap<>();
+        List<AppServiceMavenVersionVO> appServiceMavenVersionVOS = appServiceMavenVersionService.listByAppVersionIds(versionIds);
+        if (!CollectionUtils.isEmpty(appServiceMavenVersionVOS)) {
+            mavenVersionMap = appServiceMavenVersionVOS.stream().collect(Collectors.toMap(AppServiceMavenVersionVO::getAppServiceVersionId, Function.identity()));
+        }
+
+        // 填充版本信息
+        Map<Long, AppServiceHelmVersionVO> finalHelmVersionMap = helmVersionMap;
+        Map<Long, AppServiceImageVersionVO> finalImageVersionMap = imageVersionMap;
+        Map<Long, AppServiceMavenVersionVO> finalMavenVersionMap = mavenVersionMap;
+        appServiceVersionVOList.forEach(appServiceVersionVO -> {
+            Long appServiceVersionId = appServiceVersionVO.getId();
+
+            AppServiceHelmVersionVO appServiceHelmVersionVO = finalHelmVersionMap.get(appServiceVersionId);
+            AppServiceImageVersionVO appServiceImageVersionVO = finalImageVersionMap.get(appServiceVersionId);
+            AppServiceMavenVersionVO appServiceMavenVersionVO = finalMavenVersionMap.get(appServiceVersionId);
+
+            appServiceVersionVO.setAppServiceHelmVersionVO(appServiceHelmVersionVO);
+            appServiceVersionVO.setAppServiceImageVersionVO(appServiceImageVersionVO);
+            appServiceVersionVO.setAppServiceMavenVersionVO(appServiceMavenVersionVO);
+        });
+
+
     }
 
     /**

@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
 
 /**
@@ -13,5 +17,7 @@ public interface AppServiceImageVersionService {
     void create(AppServiceImageVersionDTO appServiceImageVersionDTO);
 
     AppServiceImageVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
+
+    List<AppServiceImageVersionVO> listByAppVersionIds(Set<Long> versionIds);
 }
 
