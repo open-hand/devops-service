@@ -75,4 +75,6 @@ public interface DevopsHelmConfigService {
 
     @Transactional(rollbackFor = Exception.class)
     void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO);
+
+    void updateDevopsHelmConfigToNonDefaultRepoOnOrganization(Long resourceId);
 }

@@ -206,6 +206,11 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper,devopsHelmConfigDTO,"error.helm.config.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+    }
+
+    @Override
+    public void updateDevopsHelmConfigToNonDefaultRepoOnOrganization(Long resourceId) {
+        devopsHelmConfigMapper.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
     }
 }
