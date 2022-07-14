@@ -150,14 +150,60 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                        Long gitlabPipelineId,
                        String jobName) {
         try {
-            AppServiceVersionDTO appServiceVersionDTO = doCreate(image,
-                    TypeUtil.objToLong(harborConfigId),
-                    repoType,
-                    token,
-                    version,
-                    commit,
-                    files,
-                    ref);
+
+            AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
+
+            AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
+
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            // 查询helm仓库配置id
+//            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
+//            ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+//            String helmUrl = helmConfig.getUrl();
+//            newVersion.setHelmConfigId(devopsConfigDTO.getId());
+//            newVersion.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
+
+            // 取commit的一部分作为文件路径
+            String commitPart = commit == null ? "" : commit.substring(0, 8);
+            String storeFilePath = String.format(STORE_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+            String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
+            String path = FileUtil.multipartFileToFile(storeFilePath, files);
+
+            // 上传chart包到 chart museum
+//            chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+
+            // 解析chart包中的values文件
+            String values = getValues(storeFilePath, destFilePath, path);
+
+            AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+            if (appServiceHelmVersionDTO == null) {
+                AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
+                appServiceVersionValueDTO.setValue(values);
+                appServiceVersionValueService.baseCreate(appServiceVersionValueDTO);
+
+                AppServiceVersionReadmeDTO appServiceVersionReadmeDTO = new AppServiceVersionReadmeDTO();
+                appServiceVersionReadmeDTO.setReadme(FileUtil.getReadme(destFilePath));
+                appServiceVersionReadmeMapper.insert(appServiceVersionReadmeDTO);
+
+                appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+                appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                appServiceHelmVersionDTO.setValueId(appServiceVersionValueDTO.getId());
+                appServiceHelmVersionDTO.setReadmeValueId(appServiceVersionReadmeDTO.getId());
+                appServiceHelmVersionDTO.setHarborRepoType(repoType);
+                appServiceHelmVersionDTO.setHarborConfigId(TypeUtil.objToLong(harborConfigId));
+                appServiceHelmVersionDTO.setHelmConfigId(appServiceVersionReadmeDTO.getId());
+
+                appServiceHelmVersionService.create(appServiceHelmVersionDTO);
+            } else {
+                updateValues(appServiceHelmVersionDTO.getValueId(), values);
+            }
+
+            FileUtil.deleteDirectories(destFilePath, storeFilePath);
+            //生成版本成功后发送webhook json
+            sendNotificationService.sendWhenAppServiceVersion(appServiceVersionDTO, appServiceDTO, projectDTO);
+
             // 保存流水线chart版本信息
             if (gitlabPipelineId != null && StringUtils.isNotBlank(jobName)) {
                 Long appServiceId = appServiceVersionDTO.getAppServiceId();
@@ -181,7 +227,42 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     }
 
-    private AppServiceVersionDTO doCreate(String image, Long harborConfigId, String repoType, String token, String version, String commit, MultipartFile files, String ref) {
+    private String getValues(String storeFilePath, String destFilePath, String path) {
+        FileUtil.unTarGZ(path, destFilePath);
+
+        // 使用深度优先遍历查找文件, 避免查询到子chart的values值
+        File valuesFile = FileUtil.queryFileFromFilesBFS(new File(destFilePath), "values.yaml");
+
+        if (valuesFile == null) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException("error.find.values.yaml.in.chart");
+        }
+
+        String values;
+        try (FileInputStream fis = new FileInputStream(valuesFile)) {
+            values = FileUtil.replaceReturnString(fis, null);
+        } catch (IOException e) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException(e);
+        }
+
+        try {
+            FileUtil.checkYamlFormat(values);
+        } catch (CommonException e) {
+            FileUtil.deleteDirectories(storeFilePath, destFilePath);
+            throw new CommonException("The format of the values.yaml in the chart is invalid!", e);
+        }
+        return values;
+    }
+
+    private AppServiceVersionDTO doCreate(String image,
+                                          Long harborConfigId,
+                                          String repoType,
+                                          String token,
+                                          String version,
+                                          String commit,
+                                          MultipartFile files,
+                                          String ref) {
         AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
@@ -951,45 +1032,51 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    @Transactional
-    public void publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName) {
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceVersionDTO publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName) {
         try {
             // 1. 创建应用服务版本
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
             Long appServiceId = appServiceDTO.getId();
-            AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
-            // 不存在才创建
-            if (appServiceVersionDTO == null) {
-                appServiceVersionDTO = create(appServiceId, version, commit, ref);
-            }
-            // 2. 创建helm版本
-
-            // 3. 创建image版本
-            // 3.1 查询流水线中最新的镜像版本
-            AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
-            if (appServiceImageVersionDTO == null) {
-                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
-                if (ciPipelineImageDTO != null) {
-                    appServiceImageVersionDTO = new AppServiceImageVersionDTO();
-                    appServiceImageVersionService.create(appServiceImageVersionDTO);
-                }
-            }
-
-            // 4. 创建jar版本
-            AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
-            if (appServiceMavenVersionDTO == null) {
-                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
-                if (ciPipelineMavenDTO != null) {
-                    appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
-                    appServiceMavenVersionService.create(appServiceMavenVersionDTO);
-                }
-            }
+            return saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceId);
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
             }
             throw new DevopsCiInvalidException(e);
         }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceVersionDTO saveAppVersion(String version, String commit, String ref, Long gitlabPipelineId, Long appServiceId) {
+        AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
+        // 不存在才创建
+        if (appServiceVersionDTO == null) {
+            appServiceVersionDTO = create(appServiceId, version, commit, ref);
+        }
+        // 2. 创建helm版本
+
+        // 3. 创建image版本
+        // 3.1 查询流水线中最新的镜像版本
+        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceImageVersionDTO == null) {
+            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
+            if (ciPipelineImageDTO != null) {
+                appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+                appServiceImageVersionService.create(appServiceImageVersionDTO);
+            }
+        }
+
+        // 4. 创建jar版本
+        AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceMavenVersionDTO == null) {
+            CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
+            if (ciPipelineMavenDTO != null) {
+                appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
+                appServiceMavenVersionService.create(appServiceMavenVersionDTO);
+            }
+        }
+        return appServiceVersionDTO;
     }
 
     @Override

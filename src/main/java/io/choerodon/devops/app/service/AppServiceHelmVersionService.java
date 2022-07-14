@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
+import io.choerodon.devops.infra.dto.AppServiceHelmVersionDTO;
 
 /**
  * 应用版本表(AppServiceHelmVersion)应用服务
@@ -14,5 +15,9 @@ import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
 public interface AppServiceHelmVersionService {
 
     List<AppServiceHelmVersionVO> listByAppVersionIds(Set<Long> versionIds);
+
+    AppServiceHelmVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
+
+    void create(AppServiceHelmVersionDTO appServiceHelmVersionDTO);
 }
 
