@@ -127,6 +127,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private AppServiceMavenVersionService appServiceMavenVersionService;
     @Autowired
     private CiPipelineMavenService ciPipelineMavenService;
+    @Autowired
+    private CiPipelineAppVersionService ciPipelineAppVersionService;
 
 
     @Autowired
@@ -1038,7 +1040,21 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 1. 创建应用服务版本
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
             Long appServiceId = appServiceDTO.getId();
-            return saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceId);
+            AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceId);
+
+            // 2. 保存流水线任务记录信息
+            if (gitlabPipelineId != null && StringUtils.isNotBlank(jobName)) {
+                CiPipelineAppVersionDTO ciPipelineAppVersionDTO = ciPipelineAppVersionService.queryByPipelineIdAndJobName(appServiceId,
+                        gitlabPipelineId,
+                        jobName);
+                if (ciPipelineAppVersionDTO == null) {
+                    ciPipelineAppVersionService.baseCreate(new CiPipelineAppVersionDTO(appServiceId,
+                            gitlabPipelineId,
+                            jobName,
+                            appServiceVersionDTO.getId()));
+                }
+            }
+            return appServiceVersionDTO;
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
@@ -1054,25 +1070,38 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (appServiceVersionDTO == null) {
             appServiceVersionDTO = create(appServiceId, version, commit, ref);
         }
+        Long appServiceVersionId = appServiceVersionDTO.getId();
         // 2. 创建helm版本
 
         // 3. 创建image版本
         // 3.1 查询流水线中最新的镜像版本
-        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
         if (appServiceImageVersionDTO == null) {
             CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
             if (ciPipelineImageDTO != null) {
                 appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+                appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);
+                appServiceImageVersionDTO.setImage(ciPipelineImageDTO.getImageTag());
+                appServiceImageVersionDTO.setHarborRepoType(ciPipelineImageDTO.getRepoType());
+                appServiceImageVersionDTO.setHarborConfigId(ciPipelineImageDTO.getHarborRepoId());
                 appServiceImageVersionService.create(appServiceImageVersionDTO);
             }
         }
 
         // 4. 创建jar版本
-        AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionId);
         if (appServiceMavenVersionDTO == null) {
             CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
             if (ciPipelineMavenDTO != null) {
                 appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
+                appServiceMavenVersionDTO.setAppServiceVersionId(appServiceVersionId);
+                appServiceMavenVersionDTO.setGroupId(ciPipelineMavenDTO.getGroupId());
+                appServiceMavenVersionDTO.setArtifactId(ciPipelineMavenDTO.getArtifactId());
+                appServiceMavenVersionDTO.setVersion(ciPipelineMavenDTO.getVersion());
+                appServiceMavenVersionDTO.setMavenRepoUrl(ciPipelineMavenDTO.getMavenRepoUrl());
+                appServiceMavenVersionDTO.setUsername(ciPipelineMavenDTO.getUsername());
+                appServiceMavenVersionDTO.setPassword(ciPipelineMavenDTO.getPassword());
+                appServiceMavenVersionDTO.setNexusRepoId(ciPipelineMavenDTO.getNexusRepoId());
                 appServiceMavenVersionService.create(appServiceMavenVersionDTO);
             }
         }
