@@ -75,6 +75,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 }
 
                 devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
+                devopsHelmConfigDTO.setResourceId(resourceId);
                 devopsHelmConfigDTO.setRepoDefault(true);
                 DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.ORGANIZATION.value());
                 if (oldConfigDTO == null) {
@@ -348,8 +349,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
         DevopsConfigVO chart;
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
-            chart = new DevopsConfigVO();
-            chart.setCustom(false);
+            if (ResourceLevel.ORGANIZATION.value().equals(resourceType))
+            devopsHelmConfigService.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
         } else {
             chart = devopsConfigRepVO.getChart();
             chart.setCustom(Boolean.TRUE);

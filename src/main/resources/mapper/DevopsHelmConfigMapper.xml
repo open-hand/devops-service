@@ -15,4 +15,11 @@
       AND resource_id = #{projectId}
       AND resource_type = 'project'
   </update>
+
+  <update id="updateDevopsHelmConfigToNonDefaultRepoOnOrganization">
+    UPDATE devops_helm_config
+    SET repo_default=0
+    WHERE resource_id=#{resourceId}
+    AND resource_type='organization'
+  </update>
 </mapper>
