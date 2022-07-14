@@ -1,16 +1,22 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsHelmConfigVO {
+    @Encrypt
     private Long id;
 
     @ApiModelProperty("仓库名称")
+    @Length(max = 60, min = 1)
     private String name;
 
     @ApiModelProperty("helm仓库地址 平台层或组织层为仓库地址前缀部分 项目层是完整的仓库地址")
+    @NotNull
     private String url;
 
     @ApiModelProperty("仓库账号")
@@ -42,6 +48,9 @@ public class DevopsHelmConfigVO {
 
     @ApiModelProperty("创建者真实名称")
     private String creatorRealName;
+
+    @ApiModelProperty("版本控制号")
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -145,5 +154,13 @@ public class DevopsHelmConfigVO {
 
     public void setCreatorRealName(String creatorRealName) {
         this.creatorRealName = creatorRealName;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

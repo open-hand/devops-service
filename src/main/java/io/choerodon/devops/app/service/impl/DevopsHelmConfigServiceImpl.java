@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
@@ -16,6 +17,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
 public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
@@ -84,6 +86,68 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             DevopsHelmConfigDTO devopsHelmConfigDTOListOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
             devopsHelmConfigDTOS.add(devopsHelmConfigDTOListOnSite);
         }
+
+        // TODO 默认排第一，然后平台、组织、项目层按照创建时间排序
+
         return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public DevopsHelmConfigVO createDevopsHelmConfig(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
+        devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+        devopsHelmConfigDTO.setResourceId(projectId);
+
+        DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+        return ConvertUtils.convertObject(result, DevopsHelmConfigVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public DevopsHelmConfigVO updateDevopsHelmConfig(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
+        devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+        devopsHelmConfigDTO.setResourceId(projectId);
+
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+
+        return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteHelmConfig(Long projectId, Long helmConfigId) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+        devopsHelmConfigDTO.setResourceId(projectId);
+        devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+        devopsHelmConfigDTO.setId(helmConfigId);
+        devopsHelmConfigMapper.delete(devopsHelmConfigDTO);
+    }
+
+    @Override
+    public DevopsHelmConfigVO queryHelmConfig(Long projectId, Long helmConfigId) {
+        DevopsHelmConfigDTO devopsHelmConfigSearchDTO = new DevopsHelmConfigDTO();
+        devopsHelmConfigSearchDTO.setResourceType(ResourceLevel.PROJECT.value());
+        devopsHelmConfigSearchDTO.setResourceId(projectId);
+        devopsHelmConfigSearchDTO.setId(helmConfigId);
+
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectOne(devopsHelmConfigSearchDTO);
+
+        return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void setDefaultHelmConfig(Long projectId, Long helmConfigId) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
+
+        // 先将项目层的所有仓库是否为默认置为false
+        devopsHelmConfigMapper.updateAllHelmConfigRepoDefaultToFalse(projectId);
+
+        // 如果helm默认仓库仍是项目层，那么将指定的仓库设置为默认仓库
+        if (!ResourceLevel.SITE.value().equals(devopsHelmConfigDTO.getResourceType()) && !ResourceLevel.ORGANIZATION.value().equals(devopsHelmConfigDTO.getResourceType())) {
+            devopsHelmConfigMapper.updateHelmConfigRepoDefaultToTrue(projectId, helmConfigId);
+        }
     }
 }
