@@ -347,10 +347,12 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void operateConfig(Long resourceId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
-        DevopsConfigVO chart;
+        DevopsConfigVO chart = null;
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
-            if (ResourceLevel.ORGANIZATION.value().equals(resourceType))
-            devopsHelmConfigService.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
+            if (ResourceLevel.ORGANIZATION.value().equals(resourceType)) {
+                devopsHelmConfigService.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
+                return;
+            }
         } else {
             chart = devopsConfigRepVO.getChart();
             chart.setCustom(Boolean.TRUE);
@@ -368,6 +370,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
 
             // 用户名和密码要么都为空, 要么都有值
             CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
+        }
+        if (chart == null) {
+            return;
         }
         chart.setType(CHART);
         configVOS.add(chart);
