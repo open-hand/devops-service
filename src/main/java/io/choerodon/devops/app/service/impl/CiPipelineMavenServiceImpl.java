@@ -280,4 +280,12 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         ciPipelineMavenDTO.setJobName(jobName);
         return ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
     }
+
+    @Override
+    public CiPipelineMavenDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+
+        return ciPipelineMavenMapper.queryPipelineLatestMaven(appServiceId, gitlabPipelineId);
+    }
 }
