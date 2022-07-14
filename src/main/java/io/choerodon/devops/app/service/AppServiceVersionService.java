@@ -236,7 +236,9 @@ public interface AppServiceVersionService {
      * @param gitlabPipelineId
      * @param jobName
      */
-    void publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName);
+    AppServiceVersionDTO publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName);
+
+    AppServiceVersionDTO saveAppVersion(String version, String commit, String ref, Long gitlabPipelineId, Long appServiceId);
 
     /**
      * 保存应用服务版本
