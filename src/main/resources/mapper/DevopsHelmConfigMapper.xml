@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper">
+  <update id="updateAllHelmConfigRepoDefaultToFalse">
+    UPDATE devops_helm_config
+    SET repo_default=0
+    WHERE resource_id = #{projectId}
+      AND resource_type = 'project'
+  </update>
+
+  <update id="updateHelmConfigRepoDefaultToTrue">
+    UPDATE devops_helm_config
+    SET repo_default=1
+    WHERE id = #{helmConfigId}
+      AND resource_id = #{projectId}
+      AND resource_type = 'project'
+  </update>
+</mapper>
