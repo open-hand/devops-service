@@ -31,7 +31,7 @@ public class DevopsHelmConfigDTO extends AuditDomain {
     @ApiModelProperty("仓库密码")
     private String password;
 
-    @ApiModelProperty("关联该配置的层级 project/organization/platform")
+    @ApiModelProperty("关联该配置的层级 project/organization/side")
     private String resourceType;
 
     @ApiModelProperty("关联该仓库配置的资源id, 项目id 组织id 平台层为0")

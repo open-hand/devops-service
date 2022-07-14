@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.vo.HelmConfigVO;
+import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
 
 public interface DevopsHelmConfigService {
-    List<HelmConfigVO> listHelmConfig(Long projectId);
+    List<DevopsHelmConfigVO> listHelmConfig(Long projectId);
 }

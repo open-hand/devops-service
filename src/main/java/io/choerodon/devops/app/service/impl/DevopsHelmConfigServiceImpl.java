@@ -4,46 +4,86 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.HelmConfigVO;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
+import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 
 @Service
 public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
+
+    @Autowired
+    private DevopsHelmConfigMapper devopsHelmConfigMapper;
+
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+
     @Override
-    public List<HelmConfigVO> listHelmConfig(Long projectId) {
+    public List<DevopsHelmConfigVO> listHelmConfig(Long projectId) {
 
-        List<HelmConfigVO> helmConfigVOList = new ArrayList<>();
+        List<DevopsHelmConfigVO> devopsHelmConfigVOList = new ArrayList<>();
 
-        HelmConfigVO helmConfigVO1 = new HelmConfigVO();
-        helmConfigVO1.setUrl("http://www.example.com/org/projects/");
-        helmConfigVO1.setUsername("username");
-        helmConfigVO1.setPassword("password");
-        helmConfigVO1.setName("测试仓库1");
-        helmConfigVO1.setRepoPrivate(true);
-        helmConfigVO1.setRepoDefault(true);
-        helmConfigVO1.setResourceType("organization");
-        helmConfigVO1.setCreationDate(new Date());
-        helmConfigVO1.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
-        helmConfigVO1.setCreatorLoginName("25147");
-        helmConfigVO1.setCreatorRealName("周扒皮");
+        DevopsHelmConfigVO devopsHelmConfigVO1 = new DevopsHelmConfigVO();
+        devopsHelmConfigVO1.setUrl("http://www.example.com/org/projects/");
+        devopsHelmConfigVO1.setUsername("username");
+        devopsHelmConfigVO1.setPassword("password");
+        devopsHelmConfigVO1.setName("测试仓库1");
+        devopsHelmConfigVO1.setRepoPrivate(true);
+        devopsHelmConfigVO1.setRepoDefault(true);
+        devopsHelmConfigVO1.setResourceType("organization");
+        devopsHelmConfigVO1.setCreationDate(new Date());
+        devopsHelmConfigVO1.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
+        devopsHelmConfigVO1.setCreatorLoginName("25147");
+        devopsHelmConfigVO1.setCreatorRealName("周扒皮");
 
-        HelmConfigVO helmConfigVO2 = new HelmConfigVO();
-        helmConfigVO2.setUrl("http://www.example.com/org/projects/");
-        helmConfigVO2.setUsername("username");
-        helmConfigVO2.setPassword("password");
-        helmConfigVO2.setName("测试仓库1");
-        helmConfigVO2.setRepoPrivate(false);
-        helmConfigVO2.setRepoDefault(false);
-        helmConfigVO2.setResourceType("project");
-        helmConfigVO2.setCreationDate(new Date());
-        helmConfigVO2.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
-        helmConfigVO2.setCreatorLoginName("25147");
-        helmConfigVO2.setCreatorRealName("周扒皮");
+        DevopsHelmConfigVO devopsHelmConfigVO2 = new DevopsHelmConfigVO();
+        devopsHelmConfigVO2.setUrl("http://www.example.com/org/projects/");
+        devopsHelmConfigVO2.setUsername("username");
+        devopsHelmConfigVO2.setPassword("password");
+        devopsHelmConfigVO2.setName("测试仓库1");
+        devopsHelmConfigVO2.setRepoPrivate(false);
+        devopsHelmConfigVO2.setRepoDefault(false);
+        devopsHelmConfigVO2.setResourceType("project");
+        devopsHelmConfigVO2.setCreationDate(new Date());
+        devopsHelmConfigVO2.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
+        devopsHelmConfigVO2.setCreatorLoginName("25147");
+        devopsHelmConfigVO2.setCreatorRealName("周扒皮");
 
-        helmConfigVOList.add(helmConfigVO1);
-        helmConfigVOList.add(helmConfigVO2);
-        return helmConfigVOList;
+        devopsHelmConfigVOList.add(devopsHelmConfigVO1);
+        devopsHelmConfigVOList.add(devopsHelmConfigVO2);
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOS = new ArrayList<>();
+
+        // 查询项目层设置helm仓库
+        DevopsHelmConfigDTO helmConfigSearchDTOOnProject = new DevopsHelmConfigDTO();
+        helmConfigSearchDTOOnProject.setResourceId(projectId);
+        helmConfigSearchDTOOnProject.setResourceType(ResourceLevel.PROJECT.value());
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnProject = devopsHelmConfigMapper.select(helmConfigSearchDTOOnProject);
+        devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnProject);
+
+        // 查询组织层helm仓库
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
+        helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
+        helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnOrganization = devopsHelmConfigMapper.select(helmConfigSearchDTOOnOrganization);
+        devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnOrganization);
+
+        // 如果组织层的仓库为空，查询平台默认
+        if (CollectionUtils.isEmpty(devopsHelmConfigDTOListOnOrganization)) {
+            DevopsHelmConfigDTO helmConfigSearchDTOOnSite = new DevopsHelmConfigDTO();
+            helmConfigSearchDTOOnSite.setResourceId(projectDTO.getOrganizationId());
+            helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.ORGANIZATION.value());
+            DevopsHelmConfigDTO devopsHelmConfigDTOListOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
+            devopsHelmConfigDTOS.add(devopsHelmConfigDTOListOnSite);
+        }
+        return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
     }
 }

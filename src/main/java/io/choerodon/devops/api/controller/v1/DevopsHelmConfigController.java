@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.choerodon.devops.api.vo.HelmConfigVO;
+import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
 
 @RestController("DevopsHelmConfigController.v1")
@@ -24,7 +24,7 @@ public class DevopsHelmConfigController {
 
     @ApiOperation("查询helm仓库")
     @GetMapping("/list")
-    public ResponseEntity<List<HelmConfigVO>> listHelmConfig(
+    public ResponseEntity<List<DevopsHelmConfigVO>> listHelmConfig(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId) {
         return Results.success(helmConfigService.listHelmConfig(projectId));
