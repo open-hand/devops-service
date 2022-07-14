@@ -38,7 +38,7 @@ public class DevopsHelmConfigController {
             @PathVariable("project_id") Long projectId,
             @ApiParam("仓库id")
             @Encrypt @PathVariable("helm_config_id") Long helmConfigId) {
-        return Results.success(helmConfigService.queryHelmConfig(projectId, helmConfigId));
+        return Results.success(helmConfigService.queryDevopsHelmConfig(projectId, helmConfigId));
     }
 
 
@@ -49,7 +49,7 @@ public class DevopsHelmConfigController {
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @RequestBody DevopsHelmConfigVO devopsHelmConfigVO) {
-        return Results.success(helmConfigService.createDevopsHelmConfig(projectId, devopsHelmConfigVO));
+        return Results.success(helmConfigService.createDevopsHelmConfigOnProjectLevel(projectId, devopsHelmConfigVO));
     }
 
     @ApiOperation("更新helm仓库")
@@ -58,7 +58,7 @@ public class DevopsHelmConfigController {
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
             @RequestBody DevopsHelmConfigVO devopsHelmConfigVO) {
-        return Results.success(helmConfigService.updateDevopsHelmConfig(projectId, devopsHelmConfigVO));
+        return Results.success(helmConfigService.updateDevopsHelmConfigOnProjectLevel(projectId, devopsHelmConfigVO));
     }
 
     @ApiOperation("删除helm仓库")
@@ -68,7 +68,7 @@ public class DevopsHelmConfigController {
                                                  @PathVariable("project_id") Long projectId,
                                                  @ApiParam("仓库id")
                                                  @Encrypt @PathVariable("helm_config_id") Long helmConfigId) {
-        helmConfigService.deleteHelmConfig(projectId, helmConfigId);
+        helmConfigService.deleteDevopsHelmConfig(projectId, helmConfigId);
         return Results.success();
     }
 
@@ -79,7 +79,7 @@ public class DevopsHelmConfigController {
                                                      @PathVariable("project_id") Long projectId,
                                                      @ApiParam("仓库id")
                                                      @Encrypt @PathVariable("helm_config_id") Long helmConfigId) {
-        helmConfigService.setDefaultHelmConfig(projectId, helmConfigId);
+        helmConfigService.setDefaultDevopsHelmConfig(projectId, helmConfigId);
         return Results.success();
     }
 }

@@ -52,6 +52,10 @@ public class DevopsHelmConfigVO {
     @ApiModelProperty("版本控制号")
     private Long objectVersionNumber;
 
+    @ApiModelProperty("创建者")
+    @Encrypt
+    private Long createdBy;
+
     public Long getId() {
         return id;
     }
@@ -162,5 +166,13 @@ public class DevopsHelmConfigVO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

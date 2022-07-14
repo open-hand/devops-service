@@ -1,18 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
 import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper;
@@ -69,32 +70,69 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         helmConfigSearchDTOOnProject.setResourceType(ResourceLevel.PROJECT.value());
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnProject = devopsHelmConfigMapper.select(helmConfigSearchDTOOnProject);
         devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnProject);
+        DevopsHelmConfigDTO defaultDevopsHelmConfigDTOOnProject = null;
+        if (devopsHelmConfigDTOS.size() != 0) {
+            for (DevopsHelmConfigDTO devopsHelmConfigDTO : devopsHelmConfigDTOS) {
+                if (Boolean.TRUE.equals(devopsHelmConfigDTO.getRepoDefault())) {
+                    defaultDevopsHelmConfigDTOOnProject = devopsHelmConfigDTO;
+                }
+            }
+        }
+        devopsHelmConfigDTOS.remove(defaultDevopsHelmConfigDTOOnProject);
+        devopsHelmConfigDTOS = devopsHelmConfigDTOS.stream().sorted(Comparator.comparing(DevopsHelmConfigDTO::getCreationDate, (i, j) -> {
+            if (i.before(j)) {
+                return -1;
+            } else if (i.equals(j)) {
+                return 0;
+            }
+            return 1;
+        }).reversed()).collect(Collectors.toList());
 
         // 查询组织层helm仓库
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
         helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
-        List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnOrganization = devopsHelmConfigMapper.select(helmConfigSearchDTOOnOrganization);
-        devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnOrganization);
-
-        // 如果组织层的仓库为空，查询平台默认
-        if (CollectionUtils.isEmpty(devopsHelmConfigDTOListOnOrganization)) {
+        helmConfigSearchDTOOnOrganization.setRepoDefault(true);
+        DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnOrganization);
+        if (devopsHelmConfigDTOtOnOrganization != null) {
+            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
+        } else {
+            // 如果组织层的仓库为空，查询平台默认
             DevopsHelmConfigDTO helmConfigSearchDTOOnSite = new DevopsHelmConfigDTO();
-            helmConfigSearchDTOOnSite.setResourceId(projectDTO.getOrganizationId());
-            helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.ORGANIZATION.value());
+            helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.SITE.value());
+            helmConfigSearchDTOOnSite.setRepoDefault(true);
             DevopsHelmConfigDTO devopsHelmConfigDTOListOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
-            devopsHelmConfigDTOS.add(devopsHelmConfigDTOListOnSite);
+            if (devopsHelmConfigDTOListOnSite == null) {
+                throw new CommonException("error.helm.config.site.exist");
+            }
+            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOListOnSite);
         }
 
-        // TODO 默认排第一，然后平台、组织、项目层按照创建时间排序
+        if (defaultDevopsHelmConfigDTOOnProject != null) {
+            devopsHelmConfigDTOS.add(0, defaultDevopsHelmConfigDTOOnProject);
+        }
 
-        return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+        List<DevopsHelmConfigVO> devopsHelmConfigVOS = ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+
+        Set<Long> creatorIds = devopsHelmConfigDTOS.stream().map(DevopsHelmConfigDTO::getCreatedBy).collect(Collectors.toSet());
+        List<IamUserDTO> iamUserDTOList = baseServiceClientOperator.listUsersByIds(new ArrayList<>(creatorIds));
+        Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOList.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
+
+        devopsHelmConfigVOS.forEach(c -> {
+            IamUserDTO creator = iamUserDTOMap.get(c.getCreatedBy());
+            if (creator != null) {
+                c.setCreatorImageUrl(creator.getImageUrl());
+                c.setCreatorLoginName(creator.getLoginName());
+                c.setCreatorRealName(creator.getRealName());
+            }
+        });
+        return devopsHelmConfigVOS;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DevopsHelmConfigVO createDevopsHelmConfig(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+    public DevopsHelmConfigVO createDevopsHelmConfigOnProjectLevel(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
@@ -105,7 +143,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public DevopsHelmConfigVO updateDevopsHelmConfig(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+    public DevopsHelmConfigVO updateDevopsHelmConfigOnProjectLevel(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
@@ -117,7 +155,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteHelmConfig(Long projectId, Long helmConfigId) {
+    public void deleteDevopsHelmConfig(Long projectId, Long helmConfigId) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
         devopsHelmConfigDTO.setResourceId(projectId);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
@@ -126,7 +164,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     }
 
     @Override
-    public DevopsHelmConfigVO queryHelmConfig(Long projectId, Long helmConfigId) {
+    public DevopsHelmConfigVO queryDevopsHelmConfig(Long projectId, Long helmConfigId) {
         DevopsHelmConfigDTO devopsHelmConfigSearchDTO = new DevopsHelmConfigDTO();
         devopsHelmConfigSearchDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigSearchDTO.setResourceId(projectId);
@@ -139,7 +177,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void setDefaultHelmConfig(Long projectId, Long helmConfigId) {
+    public void setDefaultDevopsHelmConfig(Long projectId, Long helmConfigId) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
 
         // 先将项目层的所有仓库是否为默认置为false
@@ -149,5 +187,25 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         if (!ResourceLevel.SITE.value().equals(devopsHelmConfigDTO.getResourceType()) && !ResourceLevel.ORGANIZATION.value().equals(devopsHelmConfigDTO.getResourceType())) {
             devopsHelmConfigMapper.updateHelmConfigRepoDefaultToTrue(projectId, helmConfigId);
         }
+    }
+
+    @Override
+    public DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType) {
+        DevopsHelmConfigDTO devopsHelmConfigSearchDTO = new DevopsHelmConfigDTO();
+        devopsHelmConfigSearchDTO.setRepoDefault(true);
+        devopsHelmConfigSearchDTO.setResourceType(resourceType);
+        return devopsHelmConfigMapper.selectOne(devopsHelmConfigSearchDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void createDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper,devopsHelmConfigDTO,"error.helm.config.update");
     }
 }
