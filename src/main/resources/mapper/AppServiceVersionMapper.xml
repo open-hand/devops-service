@@ -28,11 +28,16 @@
 
     <select id="listByAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
-        dav.id,
-        dav.version,
-        dav.creation_date
+            dav.id,
+            dav.version,
+            dav.creation_date,
+            dashv.value_id,
+            dashv.harbor_config_id,
+            dashv.helm_config_id,
+            dashv.harbor_repo_type as repo_type
         FROM
         devops_app_service_version dav
+        left join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
         WHERE
         dav.app_service_id = #{appServiceId}
         <if test="param != null and param != ''">
