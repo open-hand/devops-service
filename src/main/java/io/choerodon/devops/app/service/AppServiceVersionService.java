@@ -226,4 +226,25 @@ public interface AppServiceVersionService {
     AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref);
 
     AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId);
+
+    /**
+     * 发布应用服务版本
+     * @param token
+     * @param version
+     * @param commit
+     * @param ref
+     * @param gitlabPipelineId
+     * @param jobName
+     */
+    void publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName);
+
+    /**
+     * 保存应用服务版本
+     * @param appServiceId 应用服务id
+     * @param version 版本名
+     * @param commit commit sha
+     * @param ref 分支
+     * @return
+     */
+    AppServiceVersionDTO create(Long appServiceId, String version, String commit, String ref);
 }

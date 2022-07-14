@@ -4,6 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
@@ -11,6 +12,7 @@ import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
@@ -139,6 +141,14 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         }
 
         return new ImageRepoInfoVO(String.valueOf(repoId), repoType, trimPrefix(dockerRegistry), groupName);
+    }
+
+    @Override
+    public CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+
+        return ciPipelineImageMapper.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
     }
 
     private String trimPrefix(String dockerRegistry) {

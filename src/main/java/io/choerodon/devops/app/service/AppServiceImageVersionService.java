@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
+
 /**
  * 应用版本表(AppServiceImageVersion)应用服务
  *
@@ -8,5 +10,8 @@ package io.choerodon.devops.app.service;
  */
 public interface AppServiceImageVersionService {
 
+    void create(AppServiceImageVersionDTO appServiceImageVersionDTO);
+
+    AppServiceImageVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
 }
 

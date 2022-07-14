@@ -236,6 +236,36 @@ function chart_build() {
   fi
 
 }
+
+#################################### 发布应用服务版本 ####################################
+function publish_app_version() {
+  # 8位sha值
+  export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
+
+  # 通过Choerodon API上传chart包到devops-service
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "version=${CI_COMMIT_TAG}" \
+    -F "commit=${CI_COMMIT_SHA}" \
+    -F "ref=${CI_COMMIT_REF_NAME}" \
+    -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
+    -F "jobName=${CI_JOB_NAME}" \
+    "${CHOERODON_URL}/devops/app_version" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
+  fi
+
+}
 #################################### 下载settings文件 ####################################
 # $1 fileName   下载settings文件后保存为的文件名称
 # $2 project_id 项目id

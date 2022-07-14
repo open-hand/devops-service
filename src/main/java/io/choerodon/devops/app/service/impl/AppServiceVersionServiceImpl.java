@@ -106,10 +106,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
     @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private RdupmClient rdupmClient;
-    @Autowired
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
@@ -117,6 +113,17 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
     private AppServiceInstanceMapper appServiceInstanceMapper;
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private AppServiceHelmVersionService appServiceHelmVersionService;
+    @Autowired
+    private AppServiceImageVersionService appServiceImageVersionService;
+    @Autowired
+    private AppServiceMavenVersionService appServiceMavenVersionService;
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
+
 
     @Autowired
     private TransactionalProducer producer;
@@ -890,6 +897,59 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             appServiceVersionWithHelmConfigVO.setHelmConfig(JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class));
         }
         return appServiceVersionWithHelmConfigVO;
+    }
+
+    @Override
+    @Transactional
+    public void publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName) {
+        try {
+            // 1. 创建应用服务版本
+            AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
+            Long appServiceId = appServiceDTO.getId();
+            AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
+            // 不存在才创建
+            if (appServiceVersionDTO == null) {
+                appServiceVersionDTO = create(appServiceId, version, commit, ref);
+            }
+            // 2. 创建helm版本
+
+            // 3. 创建image版本
+            // 3.1 查询流水线中最新的镜像版本
+            AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+            if (appServiceImageVersionDTO == null) {
+                CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
+                if (ciPipelineImageDTO != null) {
+                    appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+                    appServiceImageVersionService.create(appServiceImageVersionDTO);
+                }
+            }
+
+            // 4. 创建jar版本
+            AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+            if (appServiceMavenVersionDTO == null) {
+                CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
+                if (ciPipelineMavenDTO != null) {
+                    appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
+                    appServiceMavenVersionService.create(appServiceMavenVersionDTO);
+                }
+            }
+        } catch (Exception e) {
+            if (e instanceof CommonException) {
+                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
+            }
+            throw new DevopsCiInvalidException(e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AppServiceVersionDTO create(Long appServiceId, String version, String commit, String ref) {
+        AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
+        appServiceVersionDTO.setAppServiceId(appServiceId);
+        appServiceVersionDTO.setVersion(version);
+        appServiceVersionDTO.setCommit(commit);
+        appServiceVersionDTO.setRef(ref);
+        return MapperUtil.resultJudgedInsertSelective(appServiceVersionMapper, appServiceVersionDTO, "error.save.version");
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
