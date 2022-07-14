@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import java.util.Set;
+
+import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
 import io.choerodon.devops.infra.dto.AppServiceMavenVersionDTO;
 
 /**
@@ -14,5 +18,6 @@ public interface AppServiceMavenVersionService {
 
     void create(AppServiceMavenVersionDTO appServiceMavenVersionDTO);
 
+    List<AppServiceMavenVersionVO> listByAppVersionIds(Set<Long> versionIds);
 }
 

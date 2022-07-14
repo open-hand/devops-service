@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.mybatis.common.BaseMapper;
 import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
 
@@ -10,5 +16,6 @@ import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
  * @since 2022-07-13 16:47:42
  */
 public interface AppServiceImageVersionMapper extends BaseMapper<AppServiceImageVersionDTO> {
+    List<AppServiceImageVersionVO> listByAppVersionIds(@Param("versionIds") Set<Long> versionIds);
 }
 

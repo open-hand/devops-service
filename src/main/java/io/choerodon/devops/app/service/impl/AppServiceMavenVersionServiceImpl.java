@@ -1,7 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
 import io.choerodon.devops.app.service.AppServiceMavenVersionService;
 
 import org.springframework.stereotype.Service;
@@ -38,6 +42,11 @@ public class AppServiceMavenVersionServiceImpl implements AppServiceMavenVersion
     @Transactional
     public void create(AppServiceMavenVersionDTO appServiceMavenVersionDTO) {
         MapperUtil.resultJudgedInsertSelective(appServiceMavenVersionMapper, appServiceMavenVersionDTO, "error.save.maven.version");
+    }
+
+    @Override
+    public List<AppServiceMavenVersionVO> listByAppVersionIds(Set<Long> versionIds) {
+        return appServiceMavenVersionMapper.listByAppVersionIds(versionIds);
     }
 }
 

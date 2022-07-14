@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
-
-import io.choerodon.devops.app.service.AppServiceHelmVersionService;
-
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
+import io.choerodon.devops.app.service.AppServiceHelmVersionService;
 import io.choerodon.devops.infra.mapper.AppServiceHelmVersionMapper;
 
 /**
@@ -18,5 +20,10 @@ import io.choerodon.devops.infra.mapper.AppServiceHelmVersionMapper;
 public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionService {
     @Autowired
     private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
+
+    @Override
+    public List<AppServiceHelmVersionVO> listByAppVersionIds(Set<Long> versionIds) {
+        return appServiceHelmVersionMapper.listByAppVersionIds(versionIds);
+    }
 }
 

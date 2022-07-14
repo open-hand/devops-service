@@ -5,6 +5,10 @@ import java.util.Date;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
+import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
+import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
+
 /**
  * Created by younger on 2018/4/14.
  */
@@ -27,6 +31,36 @@ public class AppServiceVersionVO {
 
     @ApiModelProperty("docker镜像版本")
     private String image;
+    @ApiModelProperty(value = "关联的helm版本信息")
+    private AppServiceHelmVersionVO appServiceHelmVersionVO;
+    @ApiModelProperty(value = "关联的maven版本信息")
+    private AppServiceMavenVersionVO appServiceMavenVersionVO;
+    @ApiModelProperty(value = "关联的镜像版本信息")
+    private AppServiceImageVersionVO appServiceImageVersionVO;
+
+    public AppServiceHelmVersionVO getAppServiceHelmVersionVO() {
+        return appServiceHelmVersionVO;
+    }
+
+    public void setAppServiceHelmVersionVO(AppServiceHelmVersionVO appServiceHelmVersionVO) {
+        this.appServiceHelmVersionVO = appServiceHelmVersionVO;
+    }
+
+    public AppServiceMavenVersionVO getAppServiceMavenVersionVO() {
+        return appServiceMavenVersionVO;
+    }
+
+    public void setAppServiceMavenVersionVO(AppServiceMavenVersionVO appServiceMavenVersionVO) {
+        this.appServiceMavenVersionVO = appServiceMavenVersionVO;
+    }
+
+    public AppServiceImageVersionVO getAppServiceImageVersionVO() {
+        return appServiceImageVersionVO;
+    }
+
+    public void setAppServiceImageVersionVO(AppServiceImageVersionVO appServiceImageVersionVO) {
+        this.appServiceImageVersionVO = appServiceImageVersionVO;
+    }
 
     public Date getLastUpdateDate() {
         return lastUpdateDate;

@@ -1,7 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.devops.app.service.AppServiceImageVersionService;
 
 import org.springframework.stereotype.Service;
@@ -36,6 +40,11 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
         appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);
 
         return appServiceImageVersionMapper.selectOne(appServiceImageVersionDTO);
+    }
+
+    @Override
+    public List<AppServiceImageVersionVO> listByAppVersionIds(Set<Long> versionIds) {
+        return appServiceImageVersionMapper.listByAppVersionIds(versionIds);
     }
 }
 
