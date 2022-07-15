@@ -72,6 +72,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 devopsHelmConfigDTO.setPassword(devopsConfigVO.getConfig().getPassword());
                 if (!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword())) {
                     devopsHelmConfigDTO.setRepoPrivate(true);
+                } else {
+                    devopsHelmConfigDTO.setRepoPrivate(false);
                 }
 
                 devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());

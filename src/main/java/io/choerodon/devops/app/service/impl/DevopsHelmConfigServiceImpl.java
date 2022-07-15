@@ -140,6 +140,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DevopsHelmConfigVO createDevopsHelmConfigOnProjectLevel(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+        checkNameExistsThrowEx(projectId, null, devopsHelmConfigVO.getName());
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
@@ -151,6 +152,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DevopsHelmConfigVO updateDevopsHelmConfigOnProjectLevel(Long projectId, DevopsHelmConfigVO devopsHelmConfigVO) {
+        checkNameExistsThrowEx(projectId, devopsHelmConfigVO.getId(), devopsHelmConfigVO.getName());
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
@@ -258,5 +260,17 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         devopsHelmConfigDTO = queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value(), 0L);
         return devopsHelmConfigDTO;
+    }
+
+    @Override
+    public boolean checkNameExists(Long projectId, Long helmConfigId, String name) {
+        return devopsHelmConfigMapper.checkNameExists(projectId, helmConfigId, name);
+    }
+
+    @Override
+    public void checkNameExistsThrowEx(Long projectId, Long helmConfigId, String name) {
+        if (devopsHelmConfigMapper.checkNameExists(projectId, helmConfigId, name)) {
+            throw new CommonException("error.helm.config.name.exists");
+        }
     }
 }

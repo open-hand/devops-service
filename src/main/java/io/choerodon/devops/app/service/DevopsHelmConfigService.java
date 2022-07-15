@@ -96,7 +96,20 @@ public interface DevopsHelmConfigService {
     /**
      * 查询应用服务生效的配置
      * 生效优先级 app -> project -> tenant -> site, 查到就返回
+     *
      * @return
      */
     DevopsHelmConfigDTO queryAppConfig(Long appServiceId, Long projectId, Long tenantId);
+
+    /**
+     * 检查项目下仓库名称是否已存在
+     *
+     * @param projectId
+     * @param helmConfigId
+     * @param name
+     * @return
+     */
+    boolean checkNameExists(Long projectId, Long helmConfigId, String name);
+
+    void checkNameExistsThrowEx(Long projectId, Long helmConfigId, String name);
 }

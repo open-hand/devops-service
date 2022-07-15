@@ -11,4 +11,6 @@ public interface DevopsHelmConfigMapper extends BaseMapper<DevopsHelmConfigDTO> 
     void updateHelmConfigRepoDefaultToTrue(@Param("projectId") Long projectId, @Param("helmConfigId") Long helmConfigId);
 
     void updateDevopsHelmConfigToNonDefaultRepoOnOrganization(@Param("resourceId") Long resourceId);
+
+    boolean checkNameExists(@Param("projectId") Long projectId, @Param("helmConfigId") Long helmConfigId, @Param("name") String name);
 }

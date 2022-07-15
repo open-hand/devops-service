@@ -41,6 +41,18 @@ public class DevopsHelmConfigController {
         return Results.success(helmConfigService.queryDevopsHelmConfig(projectId, helmConfigId));
     }
 
+    @ApiOperation("检查helm名称是否已存在")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/check_name_exist")
+    public ResponseEntity<Boolean> checkNameExist(@ApiParam("项目id")
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam("仓库名称")
+                                                  @RequestParam("name") String name,
+                                                  @ApiParam("仓库id")
+                                                  @Encrypt @RequestParam("helm_config_id") Long helmConfigId) {
+        return Results.success(helmConfigService.checkNameExists(projectId, helmConfigId, name));
+    }
+
 
     @ApiOperation("添加helm仓库")
     @PostMapping
