@@ -85,7 +85,7 @@ public class DevopsHelmConfigController {
     }
 
     @ApiOperation("将指定仓库设为默认仓库")
-    @DeleteMapping("/{helm_config_id}/set_default")
+    @PostMapping("/{helm_config_id}/set_default")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> setDefaultHelmConfig(@ApiParam("项目id")
                                                      @PathVariable("project_id") Long projectId,
