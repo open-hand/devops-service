@@ -629,10 +629,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
     }
 
-    @Override
-    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        agentCommandService.getTestAppStatus(testReleases);
-    }
+//    @Override
+//    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
+//        agentCommandService.getTestAppStatus(testReleases);
+//    }
 
     @Override
     public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload) {

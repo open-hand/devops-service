@@ -313,12 +313,12 @@ public interface AppServiceInstanceService {
      */
     InstanceControllerDetailVO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
 
-    /**
-     * 查询自动化测试应用实例状态
-     *
-     * @param testReleases
-     */
-    void getTestAppStatus(Map<Long, List<String>> testReleases);
+//    /**
+//     * 查询自动化测试应用实例状态
+//     *
+//     * @param testReleases
+//     */
+//    void getTestAppStatus(Map<Long, List<String>> testReleases);
 
 
     /**
