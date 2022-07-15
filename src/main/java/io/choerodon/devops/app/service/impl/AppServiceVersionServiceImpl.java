@@ -19,11 +19,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -83,6 +90,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
+    private ChartUtil chartUtil;
+    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionValueService appServiceVersionValueService;
@@ -123,7 +132,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
 
-
+    @Autowired
+    @Qualifier(value = "restTemplateForIp")
+    private RestTemplate restTemplate;
     @Autowired
     private TransactionalProducer producer;
 
@@ -154,20 +165,36 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             // 查询helm仓库配置id
+            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+
 //            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
 //            ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
-//            String helmUrl = helmConfig.getUrl();
-//            newVersion.setHelmConfigId(devopsConfigDTO.getId());
-//            newVersion.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
-
+            String repository;
+            if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
+                repository = devopsHelmConfigDTO.getUrl();
+            } else {
+                repository = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl() + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : devopsHelmConfigDTO.getUrl() + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/";
+            }
             // 取commit的一部分作为文件路径
             String commitPart = commit == null ? "" : commit.substring(0, 8);
             String storeFilePath = String.format(STORE_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
             String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
             String path = FileUtil.multipartFileToFile(storeFilePath, files);
 
+            MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+            params.add("file", files);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            if (devopsHelmConfigDTO.getRepoPrivate()) {
+                String credentials = devopsHelmConfigDTO.getUsername() + ":"
+                        + devopsHelmConfigDTO.getPassword();
+                headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
+            }
+            HttpEntity<MultiValueMap<String,Object>> requestEntity  = new HttpEntity<>(params, headers);
+
+            restTemplate.postForEntity(repository + "/api/chart", requestEntity, String.class);
             // 上传chart包到 chart museum
-//            chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+//            chartUtil.uploadChart(repository, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), devopsHelmConfigDTO.getUsername(), devopsHelmConfigDTO.getPassword());
 
             // 解析chart包中的values文件
             String values = getValues(storeFilePath, destFilePath, path);
@@ -188,7 +215,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 appServiceHelmVersionDTO.setReadmeValueId(appServiceVersionReadmeDTO.getId());
                 appServiceHelmVersionDTO.setHarborRepoType(repoType);
                 appServiceHelmVersionDTO.setHarborConfigId(TypeUtil.objToLong(harborConfigId));
-                appServiceHelmVersionDTO.setHelmConfigId(appServiceVersionReadmeDTO.getId());
+                appServiceHelmVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
+                appServiceHelmVersionDTO.setRepository(repository);
 
                 appServiceHelmVersionService.create(appServiceHelmVersionDTO);
             } else {

@@ -19,6 +19,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_service_helm_rel.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_app_service_helm_rel',
-                constraintName: 'devops_app_service_helm_rel_u1', columnNames: 'app_service_id,helm_config_id')
+                constraintName: 'devops_app_service_helm_rel_u1', columnNames: 'app_service_id')
     }
 }

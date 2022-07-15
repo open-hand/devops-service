@@ -73,5 +73,9 @@ public class ResourceCheckConstant {
     public static final String ERROR_JOB_NAME_ID_IS_NULL = "error.job.name.id.is.null";
     public static final String ERROR_JOB_TYPE_IS_NULL = "error.job.type.is.null";
 
+    // general
+    public static final String ERROR_RESOURCE_ID_IS_NULL = "error.resource.id.is.null";
+    public static final String ERROR_RESOURCE_TYPE_IS_NULL = "error.resource.type.is.null";
+
 
 }

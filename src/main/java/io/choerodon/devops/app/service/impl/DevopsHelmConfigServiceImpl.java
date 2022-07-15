@@ -7,11 +7,15 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
+import io.choerodon.devops.app.service.AppServiceHelmRelService;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -25,6 +29,9 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Autowired
     private DevopsHelmConfigMapper devopsHelmConfigMapper;
+
+    @Autowired
+    private AppServiceHelmRelService appServiceHelmRelService;
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -203,6 +210,19 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     }
 
     @Override
+    public DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType, Long resourceId) {
+        Assert.notNull(resourceType, ResourceCheckConstant.ERROR_RESOURCE_TYPE_IS_NULL);
+        Assert.notNull(resourceId, ResourceCheckConstant.ERROR_RESOURCE_ID_IS_NULL);
+
+        DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+        devopsHelmConfigDTO.setResourceType(resourceType);
+        devopsHelmConfigDTO.setResourceId(resourceId);
+        devopsHelmConfigDTO.setRepoDefault(true);
+
+        return devopsHelmConfigMapper.selectOne(devopsHelmConfigDTO);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void createDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
@@ -217,5 +237,26 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     public void updateDevopsHelmConfigToNonDefaultRepoOnOrganization(Long resourceId) {
         devopsHelmConfigMapper.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
+    }
+
+    @Override
+    public DevopsHelmConfigDTO queryAppConfig(Long appServiceId, Long projectId, Long tenantId) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO;
+        AppServiceHelmRelDTO appServiceHelmRelDTO = appServiceHelmRelService.queryByAppServiceId(appServiceId);
+        if (appServiceHelmRelDTO != null) {
+            return queryById(appServiceHelmRelDTO.getId());
+        }
+        devopsHelmConfigDTO = queryDefaultDevopsHelmConfigByLevel(ResourceLevel.PROJECT.value(), projectId);
+        if (devopsHelmConfigDTO != null) {
+            return devopsHelmConfigDTO;
+        }
+
+        devopsHelmConfigDTO = queryDefaultDevopsHelmConfigByLevel(ResourceLevel.ORGANIZATION.value(), tenantId);
+        if (devopsHelmConfigDTO != null) {
+            return devopsHelmConfigDTO;
+        }
+
+        devopsHelmConfigDTO = queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value(), 0L);
+        return devopsHelmConfigDTO;
     }
 }
