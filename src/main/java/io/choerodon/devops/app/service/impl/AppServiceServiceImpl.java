@@ -255,6 +255,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private DevopsAppServiceHelmRelService devopsAppServiceHelmRelService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -551,33 +553,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceMapper.updatePomFields(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getGroupId(), appServiceUpdateDTO.getArtifactId());
 
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-        DevopsConfigVO chart = new DevopsConfigVO();
-        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
-            chart.setCustom(false);
-        } else {
-            chart = appServiceUpdateDTO.getChart();
-            chart.setCustom(Boolean.TRUE);
-            ConfigVO configVO = chart.getConfig();
-            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
-            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
-            if (!usernameEmpty && !passwordEmpty) {
-                configVO.setUserName(configVO.getUserName());
-                configVO.setPassword(configVO.getPassword());
-                configVO.setIsPrivate(Boolean.TRUE);
-            } else {
-                configVO.setIsPrivate(Boolean.FALSE);
-            }
-
-            // 用户名和密码要么都为空, 要么都有值
-            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
-        }
-        chart.setType(CHART);
-        devopsConfigVOS.add(chart);
 
         //处理helm仓库的配置
-        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
+        devopsAppServiceHelmRelService.handleRel(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getHelmConfigId());
+
         //保存应用服务与harbor仓库的关系
         if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
             if (DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
