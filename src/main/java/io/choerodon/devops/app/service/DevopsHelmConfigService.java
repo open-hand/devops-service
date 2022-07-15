@@ -52,6 +52,14 @@ public interface DevopsHelmConfigService {
     DevopsHelmConfigVO queryDevopsHelmConfig(Long projectId, Long helmConfigId);
 
     /**
+     * 查询helm仓库信息
+     *
+     * @param id
+     * @return
+     */
+    DevopsHelmConfigDTO queryById(Long id);
+
+    /**
      * 设置默认仓库
      *
      * @param projectId

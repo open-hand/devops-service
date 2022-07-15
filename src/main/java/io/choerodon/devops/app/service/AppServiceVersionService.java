@@ -76,15 +76,6 @@ public interface AppServiceVersionService {
      */
     List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appServiceServiceId);
 
-    /**
-     * 项目下查询应用最新的版本和各环境下部署的版本
-     *
-     * @param appServiceId 应用ID
-     * @return DeployVersionVO
-     */
-    DeployVersionVO queryDeployedVersions(Long appServiceId);
-
-
     String queryVersionValue(Long appServiceServiceId);
 
     AppServiceVersionRespVO queryById(Long appServiceServiceId);
@@ -140,8 +131,6 @@ public interface AppServiceVersionService {
      * @return
      */
     Page<AppServiceVersionRespVO> pageShareVersionByAppServiceIdAndVersion(Long appServiceId, PageRequest pageable, String version);
-
-    List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
 
     List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId);
 

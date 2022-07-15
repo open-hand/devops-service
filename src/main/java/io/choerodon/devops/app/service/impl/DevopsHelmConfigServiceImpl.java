@@ -176,6 +176,11 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     }
 
     @Override
+    public DevopsHelmConfigDTO queryById(Long id) {
+        return devopsHelmConfigMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void setDefaultDevopsHelmConfig(Long projectId, Long helmConfigId) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);

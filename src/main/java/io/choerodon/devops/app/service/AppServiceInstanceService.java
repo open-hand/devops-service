@@ -285,13 +285,13 @@ public interface AppServiceInstanceService {
      */
     Page<DeployDetailTableVO> pageDeployTimeTable(Long projectId, PageRequest pageable, Long[] appServiceIds, Long envId, Date startTime, Date endTime);
 
-    /**
-     * 部署自动化测试应用
-     *
-     * @param projectId          项目id
-     * @param appServiceDeployVO 部署信息
-     */
-    void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO);
+//    /**
+//     * 部署自动化测试应用
+//     *
+//     * @param projectId          项目id
+//     * @param appServiceDeployVO 部署信息
+//     */
+//    void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO);
 
     /**
      * 根据实例id获取更多资源详情(json格式）
