@@ -194,6 +194,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void restartDockerComposeApp(Long projectId, Long appId) {
         // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
