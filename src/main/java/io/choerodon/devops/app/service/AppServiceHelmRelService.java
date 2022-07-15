@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
+
 /**
  * 应用服务和helm配置的关联关系表(AppServiceHelmRel)应用服务
  *
@@ -8,5 +10,6 @@ package io.choerodon.devops.app.service;
  */
 public interface AppServiceHelmRelService {
 
+    AppServiceHelmRelDTO queryByAppServiceId(Long appServiceId);
 }
 

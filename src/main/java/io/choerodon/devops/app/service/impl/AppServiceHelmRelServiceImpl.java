@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import io.choerodon.devops.app.service.AppServiceHelmRelService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
+import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 import io.choerodon.devops.infra.mapper.AppServiceHelmRelMapper;
 
 /**
@@ -18,5 +21,14 @@ import io.choerodon.devops.infra.mapper.AppServiceHelmRelMapper;
 public class AppServiceHelmRelServiceImpl implements AppServiceHelmRelService {
     @Autowired
     private AppServiceHelmRelMapper appServiceHelmRelMapper;
+
+    @Override
+    public AppServiceHelmRelDTO queryByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        AppServiceHelmRelDTO appServiceHelmRelDTO = new AppServiceHelmRelDTO();
+        appServiceHelmRelDTO.setAppServiceId(appServiceId);
+        return appServiceHelmRelMapper.selectOne(appServiceHelmRelDTO);
+    }
 }
 

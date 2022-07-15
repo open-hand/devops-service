@@ -75,6 +75,13 @@ public interface DevopsHelmConfigService {
     DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType);
 
     /**
+     * 查询指定层级的默认仓库
+     *
+     * @return
+     */
+    DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType, Long resourceId);
+
+    /**
      * 创建创建指定层级的仓库
      *
      * @param devopsHelmConfigDTO
@@ -85,4 +92,11 @@ public interface DevopsHelmConfigService {
     void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO);
 
     void updateDevopsHelmConfigToNonDefaultRepoOnOrganization(Long resourceId);
+
+    /**
+     * 查询应用服务生效的配置
+     * 生效优先级 app -> project -> tenant -> site, 查到就返回
+     * @return
+     */
+    DevopsHelmConfigDTO queryAppConfig(Long appServiceId, Long projectId, Long tenantId);
 }
