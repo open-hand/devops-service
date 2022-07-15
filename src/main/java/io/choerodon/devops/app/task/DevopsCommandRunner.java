@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAM
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.google.gson.Gson;
@@ -91,15 +92,15 @@ public class DevopsCommandRunner implements CommandLineRunner {
     }
 
     private void initHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        devopsHelmConfigDTO.setId(0L);
+        devopsHelmConfigDTO.setResourceId(0L);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.SITE.value());
         devopsHelmConfigDTO.setRepoDefault(true);
         DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value());
         if (oldConfigDTO == null) {
             devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
-        } else if (oldConfigDTO.getUrl().equals(devopsHelmConfigDTO.getUrl())) {
-            if (!oldConfigDTO.getUsername().equals(devopsHelmConfigDTO.getUsername())
-                    || !oldConfigDTO.getPassword().equals(devopsHelmConfigDTO.getPassword())) {
+        } else if (Objects.equals(oldConfigDTO.getUrl(), devopsHelmConfigDTO.getUrl())) {
+            if (!Objects.equals(oldConfigDTO.getUsername(), devopsHelmConfigDTO.getUsername())
+                    || !Objects.equals(oldConfigDTO.getPassword(),devopsHelmConfigDTO.getPassword())) {
                 devopsHelmConfigDTO.setId(oldConfigDTO.getId());
                 devopsHelmConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
                 devopsHelmConfigService.updateDevopsHelmConfig(devopsHelmConfigDTO);
