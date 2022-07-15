@@ -17,9 +17,7 @@ public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmR
     @Override
     public void handleRel(Long appServiceId, Long helmConfigId) {
         deleteRelationByServiceId(appServiceId);
-        // 如果helmConfigId为空，那么删除关联关系
-        if (helmConfigId == null) {
-        } else {
+        if (helmConfigId!=null){
             createRel(appServiceId, helmConfigId);
         }
     }
