@@ -89,8 +89,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
-    private ChartUtil chartUtil;
-    @Autowired
     private AppServiceVersionMapper appServiceVersionMapper;
     @Autowired
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
@@ -122,6 +120,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private CiPipelineMavenService ciPipelineMavenService;
     @Autowired
     private CiPipelineAppVersionService ciPipelineAppVersionService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
 
 
     @Autowired
@@ -642,15 +642,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        List<ProjectDTO> projectEList = baseServiceClientOperator.listIamProjectByOrgId(projectDTO.getOrganizationId());
-        List<Long> projectIds = projectEList.stream().map(ProjectDTO::getId)
-                .collect(Collectors.toCollection(ArrayList::new));
-        return appServiceVersionMapper.listAppNewestVersion(projectId, projectIds);
-    }
-
-    @Override
     public Page<AppServiceVersionRespVO> pageShareVersionByAppId(Long appServiceId, PageRequest pageable, String params) {
         Map<String, Object> paramMap = TypeUtil.castMapParams(params);
         Page<AppServiceVersionDTO> applicationDTOPageInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceVersionMapper.listShareVersionByAppId(appServiceId, TypeUtil.cast(paramMap.get(TypeUtil.PARAMS))));
@@ -921,14 +912,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         versionIds.forEach(id -> {
             // 查询应用服务版本
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(id);
+            AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
             // 删除value
-            appServiceVersionValueService.baseDeleteById(appServiceVersionDTO.getValueId());
+            appServiceVersionValueService.baseDeleteById(appServiceHelmVersionDTO.getValueId());
             // 删除readme
-            appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceVersionDTO.getReadmeValueId());
+            appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceHelmVersionDTO.getReadmeValueId());
 
             // 计算删除harbor镜像列表
-            if (DEFAULT_REPO.equals(appServiceVersionDTO.getRepoType())) {
-                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceVersionDTO.getImage());
+            if (DEFAULT_REPO.equals(appServiceHelmVersionDTO.getHarborRepoType())) {
+                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceHelmVersionDTO.getImage());
                 deleteImagetags.add(harborImageTagDTO);
             }
             // 计算删除chart列表
@@ -965,18 +957,20 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId) {
         AppServiceVersionWithHelmConfigVO appServiceVersionWithHelmConfigVO = io.choerodon.core.utils.ConvertUtils.convertObject(appServiceVersionMapper.selectByPrimaryKey(appServiceVersionId), AppServiceVersionWithHelmConfigVO.class);
-        if (appServiceVersionWithHelmConfigVO != null) {
-            Long helmConfigId = appServiceVersionWithHelmConfigVO.getHelmConfigId();
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
+        if (appServiceHelmVersionDTO != null) {
+            Long helmConfigId = appServiceHelmVersionDTO.getHelmConfigId();
             if (helmConfigId == null) {
                 throw new FeignException("error.helm.config.id.null");
             }
-
-            DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(helmConfigId);
-            if (devopsConfigDTO == null) {
+            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmConfigId);
+            if (devopsHelmConfigDTO == null) {
                 throw new FeignException("error.helm.config.not.exist");
             }
-
-            appServiceVersionWithHelmConfigVO.setHelmConfig(JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), ConfigVO.class));
+            appServiceVersionWithHelmConfigVO.setHelmConfig(new ConfigVO(devopsHelmConfigDTO.getUrl(),
+                    devopsHelmConfigDTO.getName(),
+                    devopsHelmConfigDTO.getPassword(),
+                    devopsHelmConfigDTO.getRepoPrivate()));
         }
         return appServiceVersionWithHelmConfigVO;
     }

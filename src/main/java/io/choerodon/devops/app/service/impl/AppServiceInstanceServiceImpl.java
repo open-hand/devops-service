@@ -2662,7 +2662,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
         if (appServiceImageVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), AUTHTYPE);
+                    appServiceImageVersionDTO.getHarborConfigId(), appServiceImageVersionDTO.getHarborRepoType(), AUTHTYPE);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),

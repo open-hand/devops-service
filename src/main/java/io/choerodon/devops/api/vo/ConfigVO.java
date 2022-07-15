@@ -23,6 +23,16 @@ public class ConfigVO implements Serializable {
 
     private Boolean isPrivate;
 
+    public ConfigVO() {
+    }
+
+    public ConfigVO(String url, String userName, String password, Boolean isPrivate) {
+        this.url = url;
+        this.userName = userName;
+        this.password = password;
+        this.isPrivate = isPrivate;
+    }
+
     public String getUrl() {
         return url;
     }

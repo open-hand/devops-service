@@ -132,8 +132,6 @@ public interface AppServiceVersionService {
      */
     Page<AppServiceVersionRespVO> pageShareVersionByAppServiceIdAndVersion(Long appServiceId, PageRequest pageable, String version);
 
-    List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
-
     List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId);
 
 
