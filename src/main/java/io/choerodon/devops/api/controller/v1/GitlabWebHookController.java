@@ -43,12 +43,12 @@ public class GitlabWebHookController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @ApiOperation(value = "查询自动化测试应用实例状态")
-    @Permission(permissionPublic = true)
-    @PostMapping("/get_test_status")
-    public void getTestStatus(
-            @ApiParam(value = "releaseName", required = true)
-            @RequestBody Map<Long, List<String>> testReleases) {
-        appServiceInstanceService.getTestAppStatus(testReleases);
-    }
+//    @ApiOperation(value = "查询自动化测试应用实例状态")
+//    @Permission(permissionPublic = true)
+//    @PostMapping("/get_test_status")
+//    public void getTestStatus(
+//            @ApiParam(value = "releaseName", required = true)
+//            @RequestBody Map<Long, List<String>> testReleases) {
+//        appServiceInstanceService.getTestAppStatus(testReleases);
+//    }
 }
