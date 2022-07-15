@@ -19,7 +19,17 @@
   <update id="updateDevopsHelmConfigToNonDefaultRepoOnOrganization">
     UPDATE devops_helm_config
     SET repo_default=0
-    WHERE resource_id=#{resourceId}
-    AND resource_type='organization'
+    WHERE resource_id = #{resourceId}
+      AND resource_type = 'organization'
   </update>
+
+  <select id="checkNameExists" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_helm_config
+            WHERE resource_type = 'project'
+              AND name = #{name}
+    <if test="helmConfigId != null">
+      AND resource_id = #{helmConfigId}
+    </if>
+  </select>
 </mapper>
