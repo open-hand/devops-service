@@ -38,37 +38,6 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Override
     public List<DevopsHelmConfigVO> listHelmConfig(Long projectId) {
-
-        List<DevopsHelmConfigVO> devopsHelmConfigVOList = new ArrayList<>();
-
-        DevopsHelmConfigVO devopsHelmConfigVO1 = new DevopsHelmConfigVO();
-        devopsHelmConfigVO1.setUrl("http://www.example.com/org/projects/");
-        devopsHelmConfigVO1.setUsername("username");
-        devopsHelmConfigVO1.setPassword("password");
-        devopsHelmConfigVO1.setName("测试仓库1");
-        devopsHelmConfigVO1.setRepoPrivate(true);
-        devopsHelmConfigVO1.setRepoDefault(true);
-        devopsHelmConfigVO1.setResourceType("organization");
-        devopsHelmConfigVO1.setCreationDate(new Date());
-        devopsHelmConfigVO1.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
-        devopsHelmConfigVO1.setCreatorLoginName("25147");
-        devopsHelmConfigVO1.setCreatorRealName("周扒皮");
-
-        DevopsHelmConfigVO devopsHelmConfigVO2 = new DevopsHelmConfigVO();
-        devopsHelmConfigVO2.setUrl("http://www.example.com/org/projects/");
-        devopsHelmConfigVO2.setUsername("username");
-        devopsHelmConfigVO2.setPassword("password");
-        devopsHelmConfigVO2.setName("测试仓库1");
-        devopsHelmConfigVO2.setRepoPrivate(false);
-        devopsHelmConfigVO2.setRepoDefault(false);
-        devopsHelmConfigVO2.setResourceType("project");
-        devopsHelmConfigVO2.setCreationDate(new Date());
-        devopsHelmConfigVO2.setCreatorImageUrl("http://minio.c7n.devops.hand-china.com/iam-service/0/CHOERODON-MINIO/54d21810ba514c87966d28579e65a9ec@src=http___5b0988e595225.cdn.sohucs.com_images_20200424_7c24b1d510b14d0599d69f6c4052867d.jpeg&refer=http___5b0988e595225.cdn.sohucs.jfif");
-        devopsHelmConfigVO2.setCreatorLoginName("25147");
-        devopsHelmConfigVO2.setCreatorRealName("周扒皮");
-
-        devopsHelmConfigVOList.add(devopsHelmConfigVO1);
-        devopsHelmConfigVOList.add(devopsHelmConfigVO2);
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOS = new ArrayList<>();
 
         // 查询项目层设置helm仓库
