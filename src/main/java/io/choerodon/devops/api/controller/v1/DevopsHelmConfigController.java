@@ -94,4 +94,14 @@ public class DevopsHelmConfigController {
         helmConfigService.setDefaultDevopsHelmConfig(projectId, helmConfigId);
         return Results.success();
     }
+
+    @ApiOperation("获取chart的index内容并返回给前端")
+    @GetMapping("/{helm_config_id}/index")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<String> getIndexContent(@ApiParam("项目id")
+                                                  @PathVariable("project_id") Long projectId,
+                                                  @ApiParam("仓库id")
+                                                  @Encrypt @PathVariable("helm_config_id") Long helmConfigId) {
+        return Results.success(helmConfigService.getIndexContent(projectId, helmConfigId));
+    }
 }
