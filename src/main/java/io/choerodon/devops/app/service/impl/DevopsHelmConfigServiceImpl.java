@@ -5,9 +5,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -35,6 +38,10 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+
+    @Autowired
+    @Qualifier(value = "restTemplateForIp")
+    private RestTemplate restTemplate;
 
     @Override
     public List<DevopsHelmConfigVO> listHelmConfig(Long projectId) {
@@ -241,5 +248,27 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         if (devopsHelmConfigMapper.checkNameExists(projectId, helmConfigId, name)) {
             throw new CommonException("error.helm.config.name.exists");
         }
+    }
+
+    @Override
+    public String getIndexContent(Long projectId, Long helmConfigId) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        if (devopsHelmConfigDTO.getRepoPrivate()) {
+            String credentials = devopsHelmConfigDTO.getUsername() + ":"
+                    + devopsHelmConfigDTO.getPassword();
+            headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
+        }
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl()+"/api/charts", HttpMethod.GET, requestEntity, String.class);
+
+        if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
+            throw new CommonException("error.get.helm.chart");
+        }
+        return exchange.getBody();
     }
 }

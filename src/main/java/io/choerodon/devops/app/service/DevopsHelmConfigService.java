@@ -112,4 +112,12 @@ public interface DevopsHelmConfigService {
     boolean checkNameExists(Long projectId, Long helmConfigId, String name);
 
     void checkNameExistsThrowEx(Long projectId, Long helmConfigId, String name);
+
+    /**
+     * 获取chart仓库的index内容
+     * @param projectId
+     * @param helmConfigId
+     * @return
+     */
+    String getIndexContent(Long projectId, Long helmConfigId);
 }
