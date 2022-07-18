@@ -251,7 +251,7 @@ function publish_app_version() {
     -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
     -F "jobName=${CI_JOB_NAME}" \
-    "${CHOERODON_URL}/devops/app_version" \
+    "${CHOERODON_URL}/devops/ci/app_version" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
