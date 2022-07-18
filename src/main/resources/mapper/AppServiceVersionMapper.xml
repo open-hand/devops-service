@@ -116,9 +116,8 @@
 
     <select id="queryValue" resultType="java.lang.String">
         SELECT davv.value
-        FROM devops_app_service_version dav,
-             left
-                 join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
+        FROM devops_app_service_version dav
+                 left join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
                  left join devops_app_service_version_value davv on dashv.value_id = davv.id
         WHERE dav.value_id = davv.id
           AND dav.id = #{versionId}
