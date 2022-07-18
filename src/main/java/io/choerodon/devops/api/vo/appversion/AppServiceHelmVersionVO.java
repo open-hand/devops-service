@@ -26,7 +26,16 @@ public class AppServiceHelmVersionVO {
     private String image;
     @ApiModelProperty(value = "仓库地址", required = true)
     private String repository;
+    @ApiModelProperty(value = "chart包名", required = true)
+    private String chartName;
 
+    public String getChartName() {
+        return chartName;
+    }
+
+    public void setChartName(String chartName) {
+        this.chartName = chartName;
+    }
 
     public Long getId() {
         return id;
