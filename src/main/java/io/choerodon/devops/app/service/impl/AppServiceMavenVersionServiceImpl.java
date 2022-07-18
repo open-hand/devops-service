@@ -48,5 +48,11 @@ public class AppServiceMavenVersionServiceImpl implements AppServiceMavenVersion
     public List<AppServiceMavenVersionVO> listByAppVersionIds(Set<Long> versionIds) {
         return appServiceMavenVersionMapper.listByAppVersionIds(versionIds);
     }
+
+    @Override
+    @Transactional
+    public void baseUpdate(AppServiceMavenVersionDTO appServiceMavenVersionDTO) {
+        appServiceMavenVersionMapper.updateByPrimaryKeySelective(appServiceMavenVersionDTO);
+    }
 }
 

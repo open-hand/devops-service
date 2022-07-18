@@ -9,6 +9,7 @@ import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.devops.app.service.AppServiceImageVersionService;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -45,6 +46,12 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
     @Override
     public List<AppServiceImageVersionVO> listByAppVersionIds(Set<Long> versionIds) {
         return appServiceImageVersionMapper.listByAppVersionIds(versionIds);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(AppServiceImageVersionDTO appServiceImageVersionDTO) {
+        appServiceImageVersionMapper.updateByPrimaryKeySelective(appServiceImageVersionDTO);
     }
 }
 

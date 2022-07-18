@@ -236,6 +236,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     }
 
+    /**
+     * 上传chart包到chartmuserm
+     * @param files
+     * @param devopsHelmConfigDTO
+     * @param repository
+     */
     private void uploadChart(MultipartFile files, DevopsHelmConfigDTO devopsHelmConfigDTO, String repository) {
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         ByteArrayResource fileAsResource = null;

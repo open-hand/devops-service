@@ -14,8 +14,7 @@ public interface CiPipelineMavenService {
 
     /**
      * 存储jar包元数据
-     *
-     * @param nexusRepoId      制品库id
+     *  @param nexusRepoId      制品库id
      * @param jobId            ci job 的id
      * @param sequence         job的顺序
      * @param gitlabPipelineId gitlab流水线id
@@ -25,6 +24,7 @@ public interface CiPipelineMavenService {
      * @param mavenRepoUrl
      * @param username
      * @param password
+     * @param version
      */
     void createOrUpdate(Long nexusRepoId,
                         Long jobId,
@@ -35,7 +35,8 @@ public interface CiPipelineMavenService {
                         MultipartFile file,
                         String mavenRepoUrl,
                         String username,
-                        String password);
+                        String password,
+                        String version);
 
     CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
