@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.*;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toCollection;
@@ -21,15 +22,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,7 +55,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -167,8 +166,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 查询helm仓库配置id
             DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
 
-//            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
-//            ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
             String repository;
             if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
                 repository = devopsHelmConfigDTO.getUrl();
@@ -181,20 +178,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             String destFilePath = String.format(DESTINATION_PATH_TEMPLATE, appServiceDTO.getId(), version, commitPart);
             String path = FileUtil.multipartFileToFile(storeFilePath, files);
 
-            MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-            params.add("file", files);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            if (devopsHelmConfigDTO.getRepoPrivate()) {
-                String credentials = devopsHelmConfigDTO.getUsername() + ":"
-                        + devopsHelmConfigDTO.getPassword();
-                headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
-            }
-            HttpEntity<MultiValueMap<String,Object>> requestEntity  = new HttpEntity<>(params, headers);
-
-            restTemplate.postForEntity(repository + "/api/chart", requestEntity, String.class);
-            // 上传chart包到 chart museum
-//            chartUtil.uploadChart(repository, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), devopsHelmConfigDTO.getUsername(), devopsHelmConfigDTO.getPassword());
+            uploadChart(files, devopsHelmConfigDTO, repository);
 
             // 解析chart包中的values文件
             String values = getValues(storeFilePath, destFilePath, path);
@@ -248,6 +232,33 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             throw new DevopsCiInvalidException(e);
         }
 
+    }
+
+    private void uploadChart(MultipartFile files, DevopsHelmConfigDTO devopsHelmConfigDTO, String repository) {
+        MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+        params.add("chart", files);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        if (devopsHelmConfigDTO.getRepoPrivate()) {
+            String credentials = devopsHelmConfigDTO.getUsername() + ":"
+                    + devopsHelmConfigDTO.getPassword();
+            headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
+        }
+        HttpEntity<MultiValueMap<String,Object>> requestEntity  = new HttpEntity<>(params, headers);
+
+        ResponseEntity<String> entity = null;
+        try {
+            entity = restTemplate.postForEntity(repository + "/api/chart", requestEntity, String.class);
+            if (!entity.getStatusCode().is2xxSuccessful() && !HttpStatus.CONFLICT.equals(entity.getStatusCode())) {
+                throw new CommonException("error.upload.chart");
+            }
+        } catch (HttpClientErrorException e) {
+            if (!HttpStatus.CONFLICT.equals(e.getStatusCode())) {
+                throw new CommonException("error.upload.chart");
+            }
+        } catch (RestClientException e) {
+            throw new CommonException(e);
+        }
     }
 
     private String getValues(String storeFilePath, String destFilePath, String path) {
