@@ -305,7 +305,7 @@ function saveImageMetadata() {
         \"imageTag\": \"${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}\",
         \"harborRepoId\": ${HARBOR_CONFIG_ID},
         \"repoType\": \"${REPO_TYPE}\",
-        \"version\": \"${CI_COMMIT_TAG}\",
+        \"version\": \"${CI_COMMIT_TAG}\"
       }" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code})
