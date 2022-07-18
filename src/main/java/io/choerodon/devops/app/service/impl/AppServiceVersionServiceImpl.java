@@ -482,7 +482,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 计算应用服务版本是否可以被删除
             caculateDelteFlag(appServiceId, appServiceVersionVOS.getContent());
             // 添加版本关联的helm、image、jar版本信息
-            addVersionInfo(appServiceVersionVOS.getContent());
+            addVersionInfo(appServiceId, appServiceVersionVOS.getContent());
         }
 
         return appServiceVersionVOS;
@@ -490,16 +490,21 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     /**
      * 添加版本关联的helm、image、jar版本信息
+     * @param appServiceId
      * @param appServiceVersionVOList
      */
-    private void addVersionInfo(List<AppServiceVersionVO> appServiceVersionVOList) {
+    private void addVersionInfo(Long appServiceId, List<AppServiceVersionVO> appServiceVersionVOList) {
         Set<Long> versionIds = appServiceVersionVOList.stream().map(AppServiceVersionVO::getId).collect(Collectors.toSet());
+
+        AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
 
         // 批量查询各版本信息
         Map<Long, AppServiceHelmVersionVO> helmVersionMap = new HashMap<>();
         List<AppServiceHelmVersionVO> appServiceHelmVersionVOS = appServiceHelmVersionService.listByAppVersionIds(versionIds);
         if (!CollectionUtils.isEmpty(appServiceHelmVersionVOS)) {
-            helmVersionMap = appServiceHelmVersionVOS.stream().collect(Collectors.toMap(AppServiceHelmVersionVO::getAppServiceVersionId, Function.identity()));
+            helmVersionMap = appServiceHelmVersionVOS.stream()
+                    .peek(v -> v.setChartName(appServiceDTO.getCode()))
+                    .collect(Collectors.toMap(AppServiceHelmVersionVO::getAppServiceVersionId, Function.identity()));
         }
         Map<Long, AppServiceImageVersionVO> imageVersionMap = new HashMap<>();
         List<AppServiceImageVersionVO> appServiceImageVersionVOS = appServiceImageVersionService.listByAppVersionIds(versionIds);
