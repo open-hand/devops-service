@@ -34,6 +34,16 @@ public class AppServiceHelmVersionVO {
     private String repository;
     @ApiModelProperty(value = "chart包名", required = true)
     private String chartName;
+    @ApiModelProperty("版本号")
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getChartName() {
         return chartName;

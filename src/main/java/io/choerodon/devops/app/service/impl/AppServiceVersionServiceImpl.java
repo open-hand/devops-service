@@ -508,9 +508,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         Map<Long, AppServiceHelmVersionVO> helmVersionMap = new HashMap<>();
         List<AppServiceHelmVersionVO> appServiceHelmVersionVOS = appServiceHelmVersionService.listByAppVersionIds(versionIds);
         if (!CollectionUtils.isEmpty(appServiceHelmVersionVOS)) {
-            helmVersionMap = appServiceHelmVersionVOS.stream()
-                    .peek(v -> v.setChartName(appServiceDTO.getCode()))
-                    .collect(Collectors.toMap(AppServiceHelmVersionVO::getAppServiceVersionId, Function.identity()));
+            helmVersionMap = appServiceHelmVersionVOS.stream().collect(Collectors.toMap(AppServiceHelmVersionVO::getAppServiceVersionId, Function.identity()));
         }
         Map<Long, AppServiceImageVersionVO> imageVersionMap = new HashMap<>();
         List<AppServiceImageVersionVO> appServiceImageVersionVOS = appServiceImageVersionService.listByAppVersionIds(versionIds);
@@ -532,6 +530,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Long appServiceVersionId = appServiceVersionVO.getId();
 
             AppServiceHelmVersionVO appServiceHelmVersionVO = finalHelmVersionMap.get(appServiceVersionId);
+            appServiceHelmVersionVO.setChartName(appServiceDTO.getCode());
+            appServiceHelmVersionVO.setVersion(appServiceVersionVO.getVersion());
             AppServiceImageVersionVO appServiceImageVersionVO = finalImageVersionMap.get(appServiceVersionId);
             AppServiceMavenVersionVO appServiceMavenVersionVO = finalMavenVersionMap.get(appServiceVersionId);
 
