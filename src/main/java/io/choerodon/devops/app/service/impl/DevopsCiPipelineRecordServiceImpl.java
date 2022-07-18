@@ -45,12 +45,13 @@ import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
+import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -128,6 +129,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
     @Autowired
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
+    @Autowired
+    private RdupmClientOperator rdupmClientOperator;
 
     @Value("${services.gateway.url}")
     private String api;
@@ -711,13 +714,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             String downloadUrl = null;
             Server server = null;
             if (pipelineMavenDTO.getNexusRepoId() != null) {
-                Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, devopsCiMavenSettingsDTO.getMavenSettings());
                 ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ArrayUtil.singleAsSet(pipelineMavenDTO.getNexusRepoId()));
+
                 C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();
                 if (!Objects.isNull(c7nNexusRepoDTO)) {
 
-                    if (!Objects.isNull(settings) && StringUtils.isNotBlank(c7nNexusRepoDTO.getNeRepositoryName())) {
-                        server = getServer(settings, c7nNexusRepoDTO);
+                    if (!CollectionUtils.isEmpty(nexusMavenRepoDTOs)) {
+                        NexusMavenRepoDTO nexusMavenRepoDTO = nexusMavenRepoDTOs.get(0);
+                        server = new Server(nexusMavenRepoDTO.getName(), nexusMavenRepoDTO.getNePullUserId(), nexusMavenRepoDTO.getNePullUserPassword());
                     }
                     //http://api/rdupm/v1/nexus/proxy/1/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
                     //http://nex/repository/lilly-snapshot/io/choerodon/springboot/0.0.1-SNAPSHOT/springboot-0.0.1-20210203.071047-5.jar
@@ -769,11 +774,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 BaseConstants.Symbol.SLASH + pipelineMavenDTO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + pipelineMavenDTO.getVersion() + ".jar";
         return downloadUrl;
     }
-
-    private Server getServer(Settings settings, C7nNexusRepoDTO c7nNexusRepoDTO) {
-        return settings.getServers().stream().filter(server1 -> StringUtils.equalsIgnoreCase(server1.getId(), c7nNexusRepoDTO.getNeRepositoryName())).collect(Collectors.toList()).get(0);
-    }
-
     /**
      * 添加提交信息
      */

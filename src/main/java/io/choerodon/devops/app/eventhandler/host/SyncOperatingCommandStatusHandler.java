@@ -53,10 +53,10 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
                     devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
                 }
             });
-            // 2. 同步devops丢失的命令
-            List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());
-            unSyncCommands.forEach(unSyncCommand -> commandResultHandler.handler(hostId, unSyncCommand.getCommandId(), unSyncCommand));
         }
+        // 2. 同步devops丢失的命令
+        List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());
+        unSyncCommands.forEach(unSyncCommand -> commandResultHandler.handler(hostId, unSyncCommand.getCommandId(), unSyncCommand));
     }
 
     @Override
