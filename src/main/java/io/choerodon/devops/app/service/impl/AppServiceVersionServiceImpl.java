@@ -266,13 +266,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
         ResponseEntity<String> entity = null;
         try {
-            entity = restTemplate.postForEntity(repository + "/api/chart", requestEntity, String.class);
+            entity = restTemplate.postForEntity(repository + "/api/charts", requestEntity, String.class);
             if (!entity.getStatusCode().is2xxSuccessful() && !HttpStatus.CONFLICT.equals(entity.getStatusCode())) {
                 throw new CommonException("error.upload.chart");
             }
         } catch (HttpClientErrorException e) {
             if (!HttpStatus.CONFLICT.equals(e.getStatusCode())) {
-                throw new CommonException("error.upload.chart");
+                throw new CommonException("error.upload.chart", e);
             }
         } catch (RestClientException e) {
             throw new CommonException(e);
