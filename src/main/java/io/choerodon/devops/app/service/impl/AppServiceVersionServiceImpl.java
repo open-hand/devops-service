@@ -202,6 +202,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 appServiceHelmVersionDTO.setHarborConfigId(TypeUtil.objToLong(harborConfigId));
                 appServiceHelmVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
                 appServiceHelmVersionDTO.setRepository(repository);
+                appServiceHelmVersionDTO.setImage(image);
 
                 appServiceHelmVersionService.create(appServiceHelmVersionDTO);
             } else {
