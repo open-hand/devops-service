@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.appversion;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang@zknow.com
@@ -8,9 +9,10 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceMavenVersionVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "应用服务版本，devops_app_service_version.id", required = true)
+    @Encrypt
     private Long appServiceVersionId;
     @ApiModelProperty(value = "groupId", required = true)
     private String groupId;
@@ -19,6 +21,7 @@ public class AppServiceMavenVersionVO {
     @ApiModelProperty(value = "版本", required = true)
     private String version;
     @ApiModelProperty(value = "nexus仓库id,hrds_prod_repo.rdupm_nexus_repository.repository_id")
+    @Encrypt
     private Long nexusRepoId;
 
     private String mavenRepoUrl;

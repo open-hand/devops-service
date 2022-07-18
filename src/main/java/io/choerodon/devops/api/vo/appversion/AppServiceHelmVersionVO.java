@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.appversion;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang@zknow.com
@@ -8,19 +9,24 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class AppServiceHelmVersionVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "应用服务版本，devops_app_service_version.id", required = true)
+    @Encrypt
     private Long appServiceVersionId;
     @ApiModelProperty(value = "配置Id", required = true)
+    @Encrypt
     private Long helmConfigId;
     @ApiModelProperty(value = "仓库类型(DEFAULT_REPO、CUSTOM_REPO)", required = true)
     private String harborRepoType;
     @ApiModelProperty(value = "配置Id", required = true)
+    @Encrypt
     private Long harborConfigId;
     @ApiModelProperty(value = "参数 ID", required = true)
+    @Encrypt
     private Long valueId;
     @ApiModelProperty(value = "readme value id", required = true)
+    @Encrypt
     private Long readmeValueId;
     @ApiModelProperty(value = "镜像名", required = true)
     private String image;
