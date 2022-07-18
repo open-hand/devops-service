@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsHostAppMapper;
 import io.choerodon.devops.infra.util.HostDeployUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -74,7 +75,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
-
+    @Autowired
+    private DevopsHostAppMapper devopsHostAppMapper;
 
     @Override
     @Transactional
@@ -192,51 +194,22 @@ public class DockerComposeServiceImpl implements DockerComposeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void restartDockerComposeApp(Long projectId, Long appId) {
+        // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
-        Long hostId = devopsHostAppDTO.getHostId();
 
-        DevopsHostDTO devopsHostDTO = devopsHostService.checkHostAvailable(devopsHostAppDTO.getHostId());
+        // 查询DockerCompose实例部署配置
+        DockerComposeValueDTO dockerComposeValueDTO = dockerComposeValueService.baseQuery(devopsHostAppDTO.getEffectValueId());
 
-        // 保存操作记录
-        DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
-                HostResourceType.DOCKER_COMPOSE.value(),
-                appId,
-                HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
-                HostCommandStatusEnum.OPERATING.value());
-        devopsHostCommandService.baseCreate(devopsHostCommandDTO);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        DockerComposeDeployVO dockerComposeDeployVO = new DockerComposeDeployVO();
+        dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
+        dockerComposeDeployVO.setAppCode(devopsHostAppDTO.getCode());
+        dockerComposeDeployVO.setRunCommand(devopsHostAppDTO.getRunCommand());
+        dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
-        // 保存部署记录
-        devopsDeployRecordService.saveRecord(
-                projectId,
-                DeployType.MANUAL,
-                devopsHostCommandDTO.getId(),
-                DeployModeEnum.HOST,
-                hostId,
-                devopsHostDTO.getName(),
-                PipelineStatus.SUCCESS.toValue(),
-                DeployObjectTypeEnum.DOCKER_COMPOSE,
-                "Docker Compose应用",
-                null,
-                devopsHostAppDTO.getName(),
-                devopsHostAppDTO.getCode(),
-                devopsHostAppDTO.getId(),
-                new DeploySourceVO(AppSourceType.DOCKER_COMPOSE, projectDTO.getName()));
-
-        // 发送部署指令给aegent
-        HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
-                HostCommandEnum.RESTART_DOCKER_COMPOSE.value(),
-                String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), null, null)));
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>> restart docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
-        }
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.DOCKER_COMPOSE, hostId, appId),
-                JsonHelper.marshalByJackson(hostAgentMsgVO));
-
+        updateDockerComposeApp(projectId, appId, null, dockerComposeDeployVO);
     }
 
     @Override

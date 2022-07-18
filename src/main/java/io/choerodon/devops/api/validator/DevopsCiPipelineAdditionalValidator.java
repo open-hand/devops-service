@@ -216,7 +216,7 @@ public class DevopsCiPipelineAdditionalValidator {
 
         // 校验用户直接粘贴的maven的settings文件的内容
         if (!StringUtils.isEmpty(config.getMavenSettings())
-                && !MavenSettingsUtil.isXmlFormat(Base64Util.getBase64DecodedString(config.getMavenSettings()))) {
+                && !MavenSettingsUtil.isXmlFormat(config.getMavenSettings())) {
             // 如果不符合xml格式，抛异常
             throw new CommonException(ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT);
         }

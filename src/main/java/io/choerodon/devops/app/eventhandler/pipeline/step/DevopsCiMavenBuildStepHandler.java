@@ -142,7 +142,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
         if (!StringUtils.isEmpty(devopsCiMavenBuildConfigVO.getMavenSettings())) {
             // 使用用户提供的xml内容，不进行内容的校验
-            settings = Base64Util.getBase64DecodedString(devopsCiMavenBuildConfigVO.getMavenSettings());
+            settings = devopsCiMavenBuildConfigVO.getMavenSettings();
         } else if (hasManualRepos || hasNexusRepos) {
             if (hasNexusRepos) {
                 // 用户选择的已有的maven仓库
