@@ -19,5 +19,8 @@ public interface AppServiceImageVersionService {
     AppServiceImageVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
 
     List<AppServiceImageVersionVO> listByAppVersionIds(Set<Long> versionIds);
+
+    void baseUpdate(AppServiceImageVersionDTO appServiceImageVersionDTO);
+
 }
 

@@ -173,9 +173,11 @@ public class CiController {
             @RequestParam(value = "job_name") String jobName,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
+            @ApiParam(value = "版本", required = true)
+            @RequestParam String version,
             @ApiParam(value = "pom文件", required = true)
             @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password);
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
         return ResponseEntity.ok().build();
     }
 

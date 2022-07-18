@@ -304,7 +304,8 @@ function saveImageMetadata() {
         \"jobName\": \"${CI_JOB_NAME}\",
         \"imageTag\": \"${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}\",
         \"harborRepoId\": ${HARBOR_CONFIG_ID},
-        \"repoType\": \"${REPO_TYPE}\"
+        \"repoType\": \"${REPO_TYPE}\",
+        \"version\": \"${CI_COMMIT_TAG}\",
       }" \
       -o "${CI_COMMIT_SHA}-ci.response" \
       -w %{http_code})
@@ -332,6 +333,7 @@ function saveJarMetadata() {
     -F "sequence=$3" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
+    -F "version=${CI_COMMIT_TAG}" \
     -F "file=@pom.xml" \
     "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
     -o "${CI_COMMIT_SHA}-ci.response" \

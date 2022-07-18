@@ -19,5 +19,8 @@ public interface AppServiceMavenVersionService {
     void create(AppServiceMavenVersionDTO appServiceMavenVersionDTO);
 
     List<AppServiceMavenVersionVO> listByAppVersionIds(Set<Long> versionIds);
+
+    void baseUpdate(AppServiceMavenVersionDTO appServiceMavenVersionDTO);
+
 }
 

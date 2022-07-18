@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
