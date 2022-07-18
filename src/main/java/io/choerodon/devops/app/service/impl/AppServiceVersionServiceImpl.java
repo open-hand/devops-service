@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -236,7 +237,24 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     private void uploadChart(MultipartFile files, DevopsHelmConfigDTO devopsHelmConfigDTO, String repository) {
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-        params.add("chart", files);
+        ByteArrayResource fileAsResource = null;
+        try {
+            byte[] bytes = files.getBytes();
+
+            fileAsResource = new ByteArrayResource(bytes) {
+                @Override
+                public String getFilename() {
+                    return files.getOriginalFilename();
+                }
+                @Override
+                public long contentLength() {
+                    return files.getSize();
+                }
+            };
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        params.add("chart", fileAsResource);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         if (devopsHelmConfigDTO.getRepoPrivate()) {
