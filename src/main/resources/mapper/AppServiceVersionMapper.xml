@@ -144,6 +144,7 @@
         dav.last_update_date
         FROM
         devops_app_service_version dav
+        left join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
         <if test="share!=null and share==true">
             JOIN devops_app_service_share_rule dassr ON dassr.app_service_id = dav.app_service_id
             AND (
@@ -162,7 +163,7 @@
         </if>
         <choose>
             <when test="deployOnly!=null and deployOnly==true">
-                AND dav.repository IS NOT NULL
+                AND dashv.repository IS NOT NULL
             </when>
             <otherwise>
                 AND dav.`commit` IS NOT NULL
