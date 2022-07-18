@@ -82,13 +82,13 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
                     appServiceImageVersionDTO = new AppServiceImageVersionDTO();
                     appServiceImageVersionDTO.setImage(ciPipelineImageVO.getImageTag());
                     appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
-                    appServiceImageVersionDTO.setHarborRepoType(appServiceVersionDTO.getRepoType());
-                    appServiceImageVersionDTO.setHarborConfigId(appServiceVersionDTO.getHarborConfigId());
+                    appServiceImageVersionDTO.setHarborRepoType(ciPipelineImageVO.getRepoType());
+                    appServiceImageVersionDTO.setHarborConfigId(ciPipelineImageVO.getHarborRepoId());
                     appServiceImageVersionService.create(appServiceImageVersionDTO);
                 } else {
                     appServiceImageVersionDTO.setImage(ciPipelineImageVO.getImageTag());
-                    appServiceImageVersionDTO.setHarborRepoType(appServiceVersionDTO.getRepoType());
-                    appServiceImageVersionDTO.setHarborConfigId(appServiceVersionDTO.getHarborConfigId());
+                    appServiceImageVersionDTO.setHarborRepoType(ciPipelineImageVO.getRepoType());
+                    appServiceImageVersionDTO.setHarborConfigId(ciPipelineImageVO.getHarborRepoId());
                     appServiceImageVersionService.baseUpdate(appServiceImageVersionDTO);
                 }
             }
