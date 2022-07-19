@@ -90,8 +90,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
-    private ChartUtil chartUtil;
-    @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private AppServiceVersionValueService appServiceVersionValueService;
@@ -109,10 +107,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
-    @Autowired
-    private DevopsConfigMapper devopsConfigMapper;
-    @Autowired
-    private DevopsRegistrySecretMapper devopsRegistrySecretMapper;
     @Autowired
     private AppServiceShareRuleMapper appServiceShareRuleMapper;
     @Autowired
