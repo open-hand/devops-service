@@ -17,5 +17,8 @@ import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
  */
 public interface AppServiceImageVersionMapper extends BaseMapper<AppServiceImageVersionDTO> {
     List<AppServiceImageVersionVO> listByAppVersionIds(@Param("versionIds") Set<Long> versionIds);
+
+    void batchInsert(@Param("appServiceImageVersionDTOS") List<AppServiceImageVersionDTO> appServiceImageVersionDTOS);
+
 }
 

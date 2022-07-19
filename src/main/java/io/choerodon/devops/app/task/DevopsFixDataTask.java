@@ -68,4 +68,19 @@ public class DevopsFixDataTask {
         }
     }
 
+    /**
+     * 迁移helm仓库的数据到新的表，以及应用版本与helm仓库的关联关系
+     *
+     * @param map
+     */
+    @JobTask(maxRetryCount = 3, code = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据")
+    @TimedTask(name = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixImageVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
 }

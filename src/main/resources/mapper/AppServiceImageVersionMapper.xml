@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.choerodon.devops.infra.mapper.AppServiceImageVersionMapper">
+    <insert id="batchInsert">
+        insert ignore into devops_app_service_image_version(app_service_version_id, harbor_repo_type, harbor_config_id, image)
+        values
+        <foreach collection="appServiceImageVersionDTOS" item="i" open="(" separator="," close=")" index="version">
+            (#{version.appServiceVersionId},
+            #{version.harborRepoType},
+            #{version.harborConfigId},
+            #{version.image})
+        </foreach>
+    </insert>
 
     <select id="listByAppVersionIds"
             resultType="io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO">
