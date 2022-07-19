@@ -54,6 +54,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
     public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
+    public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
 
@@ -120,6 +121,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Qualifier("appServiceVersionHelmConfigHelper")
     private BatchInsertHelper<AppServiceHelmVersionDTO> appServiceHelmVersionDTOBatchInsertHelper;
 
+    @Autowired
+    private AppServiceImageVersionMapper appServiceImageVersionMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void checkLog(String task) {
@@ -150,6 +154,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_HELM_REPO_DATA:
                 fixHelmRepoDate();
                 break;
+            case FIX_IMAGE_VERSION_DATA:
+                fixImageVersionData();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -157,6 +164,35 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void fixImageVersionData() {
+        int count = appServiceVersionService.queryCountVersionsWithHarborConfig();
+        int pageSize = 500;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version image record >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        do {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version image record {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            List<AppServiceImageVersionDTO> appServiceImageVersionDTOS = new ArrayList<>();
+
+            Page<AppServiceVersionDTO> appServiceVersionDTOPage = PageHelper.doPage(pageRequest, () -> appServiceVersionService.listAllVersionsWithHarborConfig());
+            appServiceVersionDTOPage.getContent().forEach(v -> {
+                AppServiceImageVersionDTO appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+                appServiceImageVersionDTO.setAppServiceVersionId(v.getId());
+                appServiceImageVersionDTO.setHarborRepoType(v.getRepoType());
+                appServiceImageVersionDTO.setHarborConfigId(v.getHarborConfigId());
+                appServiceImageVersionDTO.setImage(v.getImage());
+                appServiceImageVersionDTOS.add(appServiceImageVersionDTO);
+            });
+            appServiceImageVersionMapper.batchInsert(appServiceImageVersionDTOS);
+            pageNumber++;
+        } while (pageNumber <= total);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+
     }
 
     private void fixHelmRepoDate() {

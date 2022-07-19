@@ -1149,8 +1149,18 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    public List<AppServiceVersionDTO> listAllVersionsWithHarborConfig() {
+        return appServiceVersionMapper.listAllVersionsWithHarborConfig();
+    }
+
+    @Override
     public Integer queryCountVersionsWithHelmConfig() {
         return appServiceVersionMapper.queryCountVersionsWithHelmConfig();
+    }
+
+    @Override
+    public Integer queryCountVersionsWithHarborConfig() {
+        return appServiceVersionMapper.queryCountVersionsWithHarborConfig();
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {

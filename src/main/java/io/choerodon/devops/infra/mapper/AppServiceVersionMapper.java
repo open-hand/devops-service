@@ -128,4 +128,13 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfig();
 
     Integer queryCountVersionsWithHelmConfig();
+
+    /**
+     * 临时方法，迁移应用服务版本使用，下一个版本可删除
+     * @return
+     */
+    Integer queryCountVersionsWithHarborConfig();
+
+    List<AppServiceVersionDTO> listAllVersionsWithHarborConfig();
+
 }
