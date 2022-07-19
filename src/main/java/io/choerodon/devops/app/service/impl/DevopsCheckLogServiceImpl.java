@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
+import jdk.nashorn.internal.runtime.regexp.joni.encoding.IntHolder;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.mybatis.BatchInsertHelper;
@@ -178,9 +179,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         projectIds.addAll(devopsAppService.listProjectIdsByAppIds(appIds));
 
-        List<ProjectDTO> projectDTOList = baseServiceClientOperator.queryProjectsByIds(projectIds);
-        Map<Long, ProjectDTO> projectDTOMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
-
         List<AppServiceDTO> appServiceDTOList = devopsAppService.baseListByIds(new HashSet<>(appIds));
         Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
 
@@ -221,21 +219,24 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
         });
+        IntHolder index = new IntHolder();
+        index.value = 1;
         // 项目层
-        projectHelmConfig.forEach(c -> {
+        for (DevopsConfigDTO devopsConfigDTO : projectHelmConfig) {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
-            devopsHelmConfigDTO.setId(c.getId());
-            devopsHelmConfigDTO.setName(projectDTOMap.get(c.getProjectId()).getName());
-            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
+            devopsHelmConfigDTO.setId(devopsConfigDTO.getId());
+            devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), new TypeReference<Map<String, String>>() {
             });
             devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
             devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
-            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setResourceId(devopsConfigDTO.getOrganizationId());
             devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+            index.value++;
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
-        });
+        }
 
         // 应用层
         appHelmConfig.forEach(c -> {
@@ -243,7 +244,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
-            devopsHelmConfigDTO.setName(projectDTOMap.get(appServiceDTO.getProjectId()).getName());
+            devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));
             Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
             });
             devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
@@ -258,6 +259,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             appServiceHelmRelDTO.setAppServiceId(appServiceDTO.getId());
             appServiceHelmRelDTO.setHelmConfigId(c.getId());
 
+            index.value++;
             appServiceHelmRelDTOToInsert.add(appServiceHelmRelDTO);
         });
 
