@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -79,17 +80,21 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         helmConfigSearchDTOOnOrganization.setRepoDefault(true);
         DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnOrganization);
         if (devopsHelmConfigDTOtOnOrganization != null) {
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
         } else {
             // 如果组织层的仓库为空，查询平台默认
             DevopsHelmConfigDTO helmConfigSearchDTOOnSite = new DevopsHelmConfigDTO();
             helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.SITE.value());
             helmConfigSearchDTOOnSite.setRepoDefault(true);
-            DevopsHelmConfigDTO devopsHelmConfigDTOListOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
-            if (devopsHelmConfigDTOListOnSite == null) {
+            DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
+            if (devopsHelmConfigDTOOnSite == null) {
                 throw new CommonException("error.helm.config.site.exist");
             }
-            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOListOnSite);
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOOnSite);
         }
 
         if (defaultDevopsHelmConfigDTOOnProject != null) {
@@ -264,7 +269,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl()+"/api/charts", HttpMethod.GET, requestEntity, String.class);
+        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl() + "/api/charts", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
             throw new CommonException("error.get.helm.chart");
