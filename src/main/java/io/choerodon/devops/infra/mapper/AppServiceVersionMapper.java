@@ -41,32 +41,12 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
                                                             @Param("index") String index,
                                                             @Param("version") String version);
 
-    List<AppServiceVersionDTO> listByAppServiceVersionIdForMarket(@Param("appServiceId") Long appServiceId,
-                                                                  @Param("appServiceVersionIds") List<Long> appServiceVersionIds,
-                                                                  @Param("searchParam") Map<String, String> map,
-                                                                  @Param("params") List<String> params,
-                                                                  @Param("index") String index,
-                                                                  @Param("version") String version);
-
-    List<AppServiceVersionDTO> listByAppServiceVersionIdForMarketBatch(@Param("appServiceIds") List<Long> appServiceIds,
-                                                                       @Param("appServiceVersionIds") List<Long> appServiceVersionIds,
-                                                                       @Param("searchParam") Map<String, String> map,
-                                                                       @Param("params") List<String> params,
-                                                                       @Param("index") String index,
-                                                                       @Param("version") String version);
-
     List<AppServiceVersionDTO> listAppServiceDeployedVersion(@Param("projectId") Long projectId,
                                                              @Param("appServiceId") Long appServiceId);
-
-    List<AppServiceVersionDTO> listByPublished(@Param("applicationId") Long applicationId);
-
-    List<Long> listByAppServiceIdAndVersionIds(@Param("applicationId") Long applicationId);
 
     List<AppServiceVersionDTO> listUpgradeVersion(@Param("appServiceServiceId") Long appServiceServiceId);
 
     Integer checkByProjectAndVersionId(@Param("projectId") Long projectId, @Param("appServiceServiceId") Long appServiceServiceId);
-
-    AppServiceVersionDTO queryNewestVersion(@Param("appServiceId") Long appServiceId);
 
     List<AppServiceVersionDTO> listByAppServiceVersionIds(@Param("appServiceServiceIds") List<Long> appServiceServiceIds);
 
@@ -76,14 +56,7 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     String queryValueByAppServiceId(@Param("appServiceId") Long appServiceId);
 
-    void updateRepository(@Param("helmUrl") String url);
-
     List<AppServiceVersionDTO> queryByCommitSha(@Param("appServiceId") Long appServiceId, @Param("ref") String ref, @Param("commit") String commit);
-
-
-    void updateObjectVersionNumber(@Param("versionId") Long versionId);
-
-    void updatePublishTime();
 
     List<AppServiceVersionDTO> listShareVersionByAppId(@Param("appServiceId") Long appServiceId,
                                                        @Param("params") List<String> params);
@@ -112,16 +85,6 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void deleteByIds(@Param("versionIds") Set<Long> versionIds);
 
     AppServiceVersionDTO queryByShareVersion(@Param("appServiceId") Long appServiceId, @Param("projectId") Long projectId);
-
-    List<Long> selectAllAppServiceIdWithNullHarborConfig();
-
-    void updateNullHarborVersionToDefaultType(@Param("appServiceId") Long appServiceId);
-
-    void updateNullHarborVersionToCustomType(@Param("appServiceId") Long appServiceId, @Param("configId") Long harborConfigId);
-
-    void updateDefaultHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
-
-    void updateCustomHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
 
     AppServiceVersionDTO queryByCommitShaAndRef(@Param("appServiceId") Long appServiceId, @Param("commitSha") String commitSha, @Param("ref") String ref);
 
