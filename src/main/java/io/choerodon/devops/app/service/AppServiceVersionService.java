@@ -240,4 +240,8 @@ public interface AppServiceVersionService {
      * @return
      */
     AppServiceVersionDTO create(Long appServiceId, String version, String commit, String ref);
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfig();
+
+    Integer queryCountVersionsWithHelmConfig();
 }

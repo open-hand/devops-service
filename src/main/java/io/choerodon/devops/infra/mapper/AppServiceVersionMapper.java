@@ -124,4 +124,8 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
     void updateCustomHarborRecords(@Param("defaultHarborId") Long defaultHarborId);
 
     AppServiceVersionDTO queryByCommitShaAndRef(@Param("appServiceId") Long appServiceId, @Param("commitSha") String commitSha, @Param("ref") String ref);
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfig();
+
+    Integer queryCountVersionsWithHelmConfig();
 }

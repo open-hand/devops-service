@@ -82,7 +82,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private static final String CHART = "chart";
     private static final String HARBOR_DEFAULT = "harbor_default";
     private static final String ERROR_VERSION_INSERT = "error.version.insert";
-    private static final String ERROR_VERSION_UPDATE="error.version.update";
+    private static final String ERROR_VERSION_UPDATE = "error.version.update";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -238,6 +238,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     /**
      * 上传chart包到chartmuserm
+     *
      * @param files
      * @param devopsHelmConfigDTO
      * @param repository
@@ -253,6 +254,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 public String getFilename() {
                     return files.getOriginalFilename();
                 }
+
                 @Override
                 public long contentLength() {
                     return files.getSize();
@@ -269,7 +271,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                     + devopsHelmConfigDTO.getPassword();
             headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
         }
-        HttpEntity<MultiValueMap<String,Object>> requestEntity  = new HttpEntity<>(params, headers);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(params, headers);
 
         ResponseEntity<String> entity = null;
         try {
@@ -496,6 +498,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     /**
      * 添加版本关联的helm、image、jar版本信息
+     *
      * @param appServiceId
      * @param appServiceVersionVOList
      */
@@ -547,6 +550,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      * 计算应用服务版本是否可以被删除
      * 1. 有实例的版本不能删除
      * 2. 有共享规则的版本不能删除
+     *
      * @param appServiceId
      * @param content
      */
@@ -1137,6 +1141,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         appServiceVersionDTO.setCommit(commit);
         appServiceVersionDTO.setRef(ref);
         return MapperUtil.resultJudgedInsertSelective(appServiceVersionMapper, appServiceVersionDTO, "error.save.version");
+    }
+
+    @Override
+    public List<AppServiceVersionDTO> listAllVersionsWithHelmConfig() {
+        return appServiceVersionMapper.listAllVersionsWithHelmConfig();
+    }
+
+    @Override
+    public Integer queryCountVersionsWithHelmConfig() {
+        return appServiceVersionMapper.queryCountVersionsWithHelmConfig();
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
