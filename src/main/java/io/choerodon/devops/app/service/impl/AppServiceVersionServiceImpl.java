@@ -809,11 +809,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
-    public AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId) {
-        return appServiceVersionMapper.queryNewestVersion(appServiceId);
-    }
-
-    @Override
     public List<AppServiceVersionDTO> baseListByAppServiceVersionIds(List<Long> appServiceServiceIds) {
         return appServiceVersionMapper.listByAppServiceVersionIds(appServiceServiceIds);
     }
@@ -912,70 +907,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
             appServiceVersionMapper.deleteByIds(versionIds);
         }
-    }
-
-    private Long queryDefaultHarborId() {
-        DevopsConfigDTO devopsConfigDTO = new DevopsConfigDTO();
-        devopsConfigDTO.setName(MiscConstants.DEFAULT_HARBOR_NAME);
-        return devopsConfigMapper.selectOne(devopsConfigDTO).getId();
-    }
-
-    @Override
-    public void fixHarbor() {
-        //修复appVsersion表，register_secret表
-        LOGGER.info("start fix appVsersion table");
-        //根据appServiceID 进行分组
-
-        Long defaultHarborConfigId = queryDefaultHarborId();
-
-        LOGGER.info("Default harbor config id is {}", defaultHarborConfigId);
-
-        List<Long> longList = appServiceVersionMapper.selectAllAppServiceIdWithNullHarborConfig();
-        LOGGER.info("Start to fix null harbor config id versions. the app-service id size is {}", longList.size());
-        for (Long appServiceId : longList) {
-            handlerVersion(appServiceId);
-        }
-        LOGGER.info("End to fix null harbor config id versions");
-
-        // 修harbor config id 非null的
-        LOGGER.info("Start to fix default harbor config id versions");
-        appServiceVersionMapper.updateDefaultHarborRecords(defaultHarborConfigId);
-        LOGGER.info("Finish to fix default harbor config id versions");
-
-        LOGGER.info("Start to fix non default harbor config id versions");
-        appServiceVersionMapper.updateCustomHarborRecords(defaultHarborConfigId);
-        LOGGER.info("Finish to fix non default harbor config id versions");
-
-        LOGGER.info("end fix appVsersion table");
-        LOGGER.info("start fix register_secret");
-        int count = devopsRegistrySecretMapper.selectCount(null);
-        int pageSize = 100;
-        int total = (count + pageSize - 1) / pageSize;
-        int pageNumber = 0;
-        do {
-            PageRequest pageable = new PageRequest();
-            pageable.setPage(pageNumber);
-            pageable.setSize(pageSize);
-            pageable.setSort(new Sort("id"));
-            Page<DevopsRegistrySecretDTO> doPageAndSort = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-                    () -> devopsRegistrySecretMapper.selectAll());
-            if (!CollectionUtils.isEmpty(doPageAndSort.getContent())) {
-                for (DevopsRegistrySecretDTO devopsRegistrySecretDTO : doPageAndSort) {
-                    DevopsConfigDTO devopsConfigDTO = devopsConfigMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getConfigId());
-                    if (!Objects.isNull(devopsConfigDTO) && HARBOR_DEFAULT.equals(devopsConfigDTO.getName())) {
-                        devopsRegistrySecretDTO.setConfigId(null);
-                        devopsRegistrySecretDTO.setRepoType(DEFAULT_REPO);
-                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
-                    } else {
-                        devopsRegistrySecretDTO.setRepoType(CUSTOM_REPO);
-                        devopsRegistrySecretMapper.updateByPrimaryKey(devopsRegistrySecretDTO);
-                    }
-                }
-            }
-            pageNumber++;
-        } while (pageNumber <= total);
-
-        LOGGER.info("end fix register_secret");
     }
 
     @Override
@@ -1233,62 +1164,5 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         harborImageTagDTO.setTagName(tagName);
         harborImageTagDTO.setProjectId(projectId);
         return harborImageTagDTO;
-    }
-
-    @Nullable
-    private DevopsConfigDTO queryConfigByAppServiceId(Long appServiceId) {
-        DevopsConfigDTO configDTO = new DevopsConfigDTO();
-        configDTO.setAppServiceId(appServiceId);
-        return devopsConfigMapper.selectOne(configDTO);
-    }
-
-    @Nullable
-    private DevopsConfigDTO queryConfigByProjectId(Long projectId) {
-        DevopsConfigDTO configDTO = new DevopsConfigDTO();
-        configDTO.setProjectId(projectId);
-        return devopsConfigMapper.selectOne(configDTO);
-    }
-
-    @Nullable
-    private DevopsConfigDTO queryConfigByOrgId(Long orgId) {
-        DevopsConfigDTO configDTO = new DevopsConfigDTO();
-        configDTO.setOrganizationId(orgId);
-        return devopsConfigMapper.selectOne(configDTO);
-    }
-
-    private void handlerVersion(Long appServiceId) {
-        LOGGER.info("fix app service id is {} data", appServiceId);
-        DevopsConfigDTO devopsConfigDTO = queryConfigByAppServiceId(appServiceId);
-        if (!Objects.isNull(devopsConfigDTO)) {
-            //自定义仓库 ，配置和appService一样
-            LOGGER.info("Custom config {} found for app-service with id {} in app service", devopsConfigDTO.getId(), appServiceId);
-            appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
-        } else {
-            // 找项目的
-            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
-            if (!Objects.isNull(appServiceDTO)) {
-                devopsConfigDTO = queryConfigByProjectId(appServiceDTO.getProjectId());
-                if (!Objects.isNull(devopsConfigDTO)) {
-                    //自定义仓库 ，配置和project一样
-                    LOGGER.info("Custom config {} found for app-service with id {} in project with id {}", devopsConfigDTO.getId(), appServiceId, appServiceDTO.getProjectId());
-                    appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
-                } else {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
-                    if (!Objects.isNull(projectDTO)) {
-                        devopsConfigDTO = queryConfigByOrgId(projectDTO.getOrganizationId());
-                        if (!Objects.isNull(devopsConfigDTO)) {
-                            //自定义仓库 ，配置和Org一样
-                            LOGGER.info("Custom config {} found for app-service with id {} in organization with id {}", devopsConfigDTO.getId(), appServiceId, projectDTO.getOrganizationId());
-                            appServiceVersionMapper.updateNullHarborVersionToCustomType(appServiceId, devopsConfigDTO.getId());
-                        } else {
-                            //默认仓库
-                            LOGGER.info("No custom config Found for app-service with id {}, set to default", appServiceId);
-                            appServiceVersionMapper.updateNullHarborVersionToDefaultType(appServiceId);
-                        }
-                    }
-                }
-            }
-
-        }
     }
 }

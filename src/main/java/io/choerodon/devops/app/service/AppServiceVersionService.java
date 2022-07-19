@@ -155,8 +155,6 @@ public interface AppServiceVersionService {
 
     List<AppServiceVersionDTO> baseQueryByCommitSha(Long appServiceId, String ref, String sha);
 
-    AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
-
     List<AppServiceVersionDTO> baseListByAppServiceVersionIds(List<Long> appServiceServiceIds);
 
     List<AppServiceVersionDTO> baseListByAppServiceIdAndBranch(Long appServiceId, String branch);
@@ -202,8 +200,6 @@ public interface AppServiceVersionService {
     Boolean isVersionUseConfig(Long configId, String configType);
 
     void deleteByAppServiceId(Long appServiceId);
-
-    void fixHarbor();
 
     /**
      * 批量删除应用服务版本
