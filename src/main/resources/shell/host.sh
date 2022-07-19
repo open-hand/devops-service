@@ -67,7 +67,7 @@ sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
 
 # 4. 下载执行程序
 echo "Downloading c7n-agent"
-curl -o ${TAR_FILE} "{{ BINARY }}"
+curl -L -o ${TAR_FILE} "{{ BINARY }}"
 
 rm -rf /var/choerodon/c7n-agent
 
