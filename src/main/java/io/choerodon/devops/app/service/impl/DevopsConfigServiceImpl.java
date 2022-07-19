@@ -387,6 +387,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         devopsConfigDTOS.stream().filter(devopsConfigDTO -> devopsConfigDTO.getAppServiceId() != null)
                 .forEach(devopsConfigDTO -> devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId()));
     }
+
+    @Override
+    public List<DevopsConfigDTO> listAllChart() {
+        return devopsConfigMapper.listAllChart();
+    }
 }
 
 

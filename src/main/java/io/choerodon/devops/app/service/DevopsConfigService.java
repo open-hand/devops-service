@@ -74,5 +74,7 @@ public interface DevopsConfigService {
     void operateConfig(Long organizationId, String resourceType, DevopsConfigRepVO devopsConfigRepVO);
 
     void deleteByConfigIds(Set<Long> configIds);
+
+    List<DevopsConfigDTO> listAllChart();
 }
 

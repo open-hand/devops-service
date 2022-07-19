@@ -955,4 +955,12 @@
         SELECT id FROM devops_app_service
         WHERE project_id=#{projectId}
     </select>
+
+    <select id="listProjectIdsByAppIds" resultType="java.lang.Long">
+        SELECT DISTINCT project_id FROM devops_app_service
+        WHERE id IN
+        <foreach collection="appIds" open="(" close=")" separator="," item="appId">
+            #{appId}
+        </foreach>
+  </select>
 </mapper>

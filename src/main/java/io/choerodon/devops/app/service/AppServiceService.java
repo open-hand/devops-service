@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -620,4 +617,11 @@ public interface AppServiceService {
     Set<Long> listAllIdsByProjectId(Long projectId);
 
     HarborRepoConfigDTO queryRepoConfigById(Long projectId, Long appServiceId);
+
+    /**
+     * 根据应用id列出所有应用所在的项目id
+     * @param appIds
+     * @return
+     */
+    List<Long> listProjectIdsByAppIds(List<Long> appIds);
 }

@@ -696,4 +696,23 @@
            WHERE davall.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
         </if>
     </select>
+
+    <select id="listAllVersionsWithHelmConfig" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT id,
+               helm_config_id,
+               repo_type,
+               harbor_config_id,
+               value_id,
+               readme_value_id,
+               image,
+               repository
+        FROM devops_app_service_version
+        WHERE helm_config_id IS NOT NULL
+        AND harbor_config_id IS NOT NULL
+    </select>
+
+    <select id="queryCountVersionsWithHelmConfig" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM devops_app_service_version
+        WHERE helm_config_id IS NOT NULL
+    </select>
 </mapper>

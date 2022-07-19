@@ -1,23 +1,32 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
+
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
+import org.hzero.mybatis.BatchInsertHelper;
 import org.hzero.mybatis.domian.Condition;
 import org.hzero.mybatis.util.Sqls;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.WarningSettingVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
@@ -33,6 +42,8 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 
 @Service
@@ -41,6 +52,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
+    public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
 
@@ -89,9 +101,26 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private CiTemplateJobStepRelMapper ciTemplateJobStepRelMapper;
     @Autowired
     private CiTemplateJobMapper ciTemplateJobMapper;
-
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    private DevopsConfigService devopsConfigService;
+    @Autowired
+    private AppServiceService devopsAppService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    @Qualifier("devopsHelmConfigHelper")
+    private BatchInsertHelper<DevopsHelmConfigDTO> devopsHelmConfigDTOBatchInsertHelper;
+    @Autowired
+    @Qualifier("appServiceHelmConfigHelper")
+    private BatchInsertHelper<AppServiceHelmRelDTO> appServiceHelmRelDTOBatchInsertHelper;
+    @Autowired
+    @Qualifier("appServiceVersionHelmConfigHelper")
+    private BatchInsertHelper<AppServiceHelmVersionDTO> appServiceHelmVersionDTOBatchInsertHelper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void checkLog(String task) {
         DevopsCheckLogDTO devopsCheckLogDTO = new DevopsCheckLogDTO();
         devopsCheckLogDTO.setLog(task);
@@ -117,6 +146,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_PIPELINE_MAVEN_PUBLISH_DATA:
                 pipelineDataMavenPublishFix();
                 break;
+            case FIX_HELM_REPO_DATA:
+                fixHelmRepoDate();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -124,6 +156,146 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void fixHelmRepoDate() {
+        fixHelmConfig();
+    }
+
+    private void fixHelmConfig() {
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+
+        Set<Long> projectIds = new HashSet<>();
+
+        List<DevopsConfigDTO> devopsConfigDTOS = devopsConfigService.listAllChart();
+
+        List<DevopsConfigDTO> platformHelmConfig = devopsConfigDTOS.stream().filter(c -> c.getProjectId() == null && c.getAppServiceId() == null && c.getOrganizationId() == null).collect(Collectors.toList());
+        List<DevopsConfigDTO> organizationHelmConfig = devopsConfigDTOS.stream().filter(c -> c.getOrganizationId() != null).collect(Collectors.toList());
+        List<DevopsConfigDTO> projectHelmConfig = devopsConfigDTOS.stream().filter(c -> c.getProjectId() != null).collect(Collectors.toList());
+        projectIds.addAll(projectHelmConfig.stream().map(DevopsConfigDTO::getProjectId).collect(Collectors.toSet()));
+        List<DevopsConfigDTO> appHelmConfig = devopsConfigDTOS.stream().filter(c -> c.getAppServiceId() != null).collect(Collectors.toList());
+        List<Long> appIds = appHelmConfig.stream().map(DevopsConfigDTO::getAppServiceId).collect(Collectors.toList());
+
+        projectIds.addAll(devopsAppService.listProjectIdsByAppIds(appIds));
+
+        List<ProjectDTO> projectDTOList = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        Map<Long, ProjectDTO> projectDTOMap = projectDTOList.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+
+        List<AppServiceDTO> appServiceDTOList = devopsAppService.baseListByIds(new HashSet<>(appIds));
+        Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
+
+
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOToInsert = new ArrayList<>();
+        List<AppServiceHelmRelDTO> appServiceHelmRelDTOToInsert = new ArrayList<>();
+        List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert = new ArrayList<>();
+        // 平台层
+        platformHelmConfig.forEach(c -> {
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setId(c.getId());
+            devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+            if (DEFAULT_CHART_NAME.equals(c.getName())) {
+                devopsHelmConfigDTO.setRepoDefault(true);
+            }
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
+            });
+            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
+            devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
+            devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
+            devopsHelmConfigDTO.setResourceId(0L);
+            devopsHelmConfigDTO.setResourceType(ResourceLevel.SITE.value());
+            devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
+        });
+        // 组织层
+        organizationHelmConfig.forEach(c -> {
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setId(c.getId());
+            devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
+            });
+            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
+            devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
+            devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
+            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
+            devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
+        });
+        // 项目层
+        projectHelmConfig.forEach(c -> {
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setId(c.getId());
+            devopsHelmConfigDTO.setName(projectDTOMap.get(c.getProjectId()).getName());
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
+            });
+            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
+            devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
+            devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
+            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+            devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
+        });
+
+        // 应用层
+        appHelmConfig.forEach(c -> {
+            AppServiceDTO appServiceDTO = appServiceDTOMap.get(c.getAppServiceId());
+
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setId(c.getId());
+            devopsHelmConfigDTO.setName(projectDTOMap.get(appServiceDTO.getProjectId()).getName());
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
+            });
+            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
+            devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
+            devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
+            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
+            devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
+
+            AppServiceHelmRelDTO appServiceHelmRelDTO = new AppServiceHelmRelDTO();
+            appServiceHelmRelDTO.setAppServiceId(appServiceDTO.getId());
+            appServiceHelmRelDTO.setHelmConfigId(c.getId());
+
+            appServiceHelmRelDTOToInsert.add(appServiceHelmRelDTO);
+        });
+
+        devopsHelmConfigDTOBatchInsertHelper.batchInsert(devopsHelmConfigDTOToInsert);
+        appServiceHelmRelDTOBatchInsertHelper.batchInsert(appServiceHelmRelDTOToInsert);
+
+        // 应用服务版本与helm仓库关联关系
+        // 数量非常大，需要分页操作
+        int count = appServiceVersionService.queryCountVersionsWithHelmConfig();
+        int pageSize = 500;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        do {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version helm config {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+
+            Page<AppServiceVersionDTO> appServiceVersionDTOPage = PageHelper.doPage(pageRequest, () -> appServiceVersionService.listAllVersionsWithHelmConfig());
+            appServiceVersionDTOPage.getContent().forEach(v -> {
+                AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+                appServiceHelmVersionDTO.setAppServiceVersionId(v.getId());
+                appServiceHelmVersionDTO.setHelmConfigId(v.getHelmConfigId());
+                appServiceHelmVersionDTO.setHarborRepoType(v.getRepoType());
+                appServiceHelmVersionDTO.setHarborConfigId(v.getHarborConfigId());
+                appServiceHelmVersionDTO.setValueId(v.getValueId());
+                appServiceHelmVersionDTO.setReadmeValueId(v.getReadmeValueId());
+                appServiceHelmVersionDTO.setImage(v.getImage());
+                appServiceHelmVersionDTO.setRepository(v.getRepository());
+                appServiceHelmVersionDTOToInsert.add(appServiceHelmVersionDTO);
+            });
+            appServiceHelmVersionDTOBatchInsertHelper.batchInsert(appServiceHelmVersionDTOToInsert);
+            pageNumber++;
+        } while (pageNumber <= total);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
 
     private void pipelineSonarTemplateImageFix() {
@@ -138,7 +310,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         Condition condition = Condition.builder(CiTemplateJobStepRelDTO.class).where(Sqls.custom()
                 .andIn("ciTemplateStepId", stepIds)).build();
         List<CiTemplateJobStepRelDTO> ciTemplateJobStepRelDTOS = ciTemplateJobStepRelMapper.selectByCondition(condition);
-        if (CollectionUtils.isEmpty(ciTemplateJobStepRelDTOS)){
+        if (CollectionUtils.isEmpty(ciTemplateJobStepRelDTOS)) {
             return;
         }
 

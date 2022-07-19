@@ -3885,4 +3885,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         harborRepoConfig.setType(selectedHarborConfig.getRepoType());
         return harborRepoConfig;
     }
+
+    @Override
+    public List<Long> listProjectIdsByAppIds(List<Long> appIds) {
+        if (ObjectUtils.isEmpty(appIds)) {
+            return new ArrayList<>();
+        }
+        return appServiceMapper.listProjectIdsByAppIds(appIds);
+    }
 }
