@@ -222,21 +222,21 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         IntHolder index = new IntHolder();
         index.value = 1;
         // 项目层
-        for (DevopsConfigDTO devopsConfigDTO : projectHelmConfig) {
+        projectHelmConfig.forEach(c->{
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
-            devopsHelmConfigDTO.setId(devopsConfigDTO.getId());
+            devopsHelmConfigDTO.setId(c.getId());
             devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));
-            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(devopsConfigDTO.getConfig(), new TypeReference<Map<String, String>>() {
+            Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
             });
             devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
             devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
-            devopsHelmConfigDTO.setResourceId(devopsConfigDTO.getOrganizationId());
+            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
             devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
             index.value++;
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
-        }
+        });
 
         // 应用层
         appHelmConfig.forEach(c -> {
