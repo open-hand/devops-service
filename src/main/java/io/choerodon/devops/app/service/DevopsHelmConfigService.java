@@ -120,4 +120,11 @@ public interface DevopsHelmConfigService {
      * @return
      */
     String getIndexContent(Long projectId, Long helmConfigId);
+
+    /**
+     * 应用层查询helm仓库配置列表
+     * @param projectId
+     * @return
+     */
+    List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId);
 }

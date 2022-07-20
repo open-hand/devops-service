@@ -30,6 +30,15 @@ public class DevopsHelmConfigController {
         return Results.success(helmConfigService.listHelmConfig(projectId));
     }
 
+    @ApiOperation("应用层查询helm仓库列表")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @GetMapping("/app/list")
+    public ResponseEntity<List<DevopsHelmConfigVO>> listHelmConfigOnApp(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId) {
+        return Results.success(helmConfigService.listHelmConfigOnApp(projectId));
+    }
+
     @ApiOperation("查询helm仓库")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{helm_config_id}")
