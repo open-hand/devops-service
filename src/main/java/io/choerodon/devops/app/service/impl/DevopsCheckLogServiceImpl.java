@@ -188,7 +188,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 appServiceImageVersionDTO.setImage(v.getImage());
                 appServiceImageVersionDTOS.add(appServiceImageVersionDTO);
             });
-            appServiceImageVersionMapper.batchInsert(appServiceImageVersionDTOS);
+            if (!CollectionUtils.isEmpty(appServiceImageVersionDTOS)) {
+                appServiceImageVersionMapper.batchInsert(appServiceImageVersionDTOS);
+            }
             pageNumber++;
         } while (pageNumber <= total);
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
