@@ -4,7 +4,7 @@
     <insert id="batchInsert">
         insert ignore into devops_app_service_image_version(app_service_version_id, harbor_repo_type, harbor_config_id, image)
         values
-        <foreach collection="appServiceImageVersionDTOS" item="version" open="(" separator="," close=")" index="i">
+        <foreach collection="appServiceImageVersionDTOS" item="version" separator="," index="i">
             (#{version.appServiceVersionId},
             #{version.harborRepoType},
             #{version.harborConfigId},
