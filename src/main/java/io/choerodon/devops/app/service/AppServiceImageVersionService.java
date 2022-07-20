@@ -22,5 +22,6 @@ public interface AppServiceImageVersionService {
 
     void baseUpdate(AppServiceImageVersionDTO appServiceImageVersionDTO);
 
+    void deleteByAppServiceVersionId(Long appServiceVersionId);
 }
 

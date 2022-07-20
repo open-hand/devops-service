@@ -46,5 +46,15 @@ public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionSe
     public void create(AppServiceHelmVersionDTO appServiceHelmVersionDTO) {
         MapperUtil.resultJudgedInsertSelective(appServiceHelmVersionMapper, appServiceHelmVersionDTO, "error.save.helm.version");
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceVersionId(Long appServiceVersionId) {
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+        appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionId);
+        appServiceHelmVersionMapper.delete(appServiceHelmVersionDTO);
+    }
 }
 

@@ -22,5 +22,6 @@ public interface AppServiceMavenVersionService {
 
     void baseUpdate(AppServiceMavenVersionDTO appServiceMavenVersionDTO);
 
+    void deleteByAppServiceVersionId(Long appServiceVersionId);
 }
 

@@ -54,5 +54,15 @@ public class AppServiceMavenVersionServiceImpl implements AppServiceMavenVersion
     public void baseUpdate(AppServiceMavenVersionDTO appServiceMavenVersionDTO) {
         appServiceMavenVersionMapper.updateByPrimaryKeySelective(appServiceMavenVersionDTO);
     }
+
+    @Override
+    public void deleteByAppServiceVersionId(Long appServiceVersionId) {
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+
+        AppServiceMavenVersionDTO appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
+        appServiceMavenVersionDTO.setAppServiceVersionId(appServiceVersionId);
+        appServiceMavenVersionMapper.delete(appServiceMavenVersionDTO);
+
+    }
 }
 
