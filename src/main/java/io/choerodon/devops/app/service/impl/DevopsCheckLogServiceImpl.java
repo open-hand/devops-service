@@ -171,7 +171,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         int pageSize = 500;
         int total = (count + pageSize - 1) / pageSize;
         int pageNumber = 0;
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version image record >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>start fix app version image record >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
         do {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version image record {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
             PageRequest pageRequest = new PageRequest();
