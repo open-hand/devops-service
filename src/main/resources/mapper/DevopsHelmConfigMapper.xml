@@ -32,4 +32,19 @@
       AND resource_id != #{helmConfigId}
     </if>
   </select>
+
+  <select id="listHelmConfigWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT id, name
+    FROM devops_helm_config
+    WHERE resource_id = #{resourceId}
+      AND resource_type = #{resourceType}
+  </select>
+
+  <select id="selectOneWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT id, name
+    FROM devops_helm_config
+    WHERE resource_id = #{resourceId}
+      AND resource_type = #{resourceType}
+      AND repo_default = #{defaultRepo}
+  </select>
 </mapper>

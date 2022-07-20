@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -275,5 +277,66 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             throw new CommonException("error.get.helm.chart");
         }
         return exchange.getBody();
+    }
+
+
+    @Override
+    public List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId) {
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOS = new ArrayList<>();
+
+        // 查询项目层设置helm仓库
+        DevopsHelmConfigDTO helmConfigSearchDTOOnProject = new DevopsHelmConfigDTO();
+        helmConfigSearchDTOOnProject.setResourceId(projectId);
+        helmConfigSearchDTOOnProject.setResourceType(ResourceLevel.PROJECT.value());
+        List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnProject = devopsHelmConfigMapper.listHelmConfigWithIdAndName(projectId, ResourceLevel.PROJECT.value());
+        devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnProject);
+        DevopsHelmConfigDTO defaultDevopsHelmConfigDTOOnProject = null;
+        if (devopsHelmConfigDTOS.size() != 0) {
+            for (DevopsHelmConfigDTO devopsHelmConfigDTO : devopsHelmConfigDTOS) {
+                if (Boolean.TRUE.equals(devopsHelmConfigDTO.getRepoDefault())) {
+                    defaultDevopsHelmConfigDTOOnProject = devopsHelmConfigDTO;
+                }
+            }
+        }
+        devopsHelmConfigDTOS.remove(defaultDevopsHelmConfigDTOOnProject);
+        devopsHelmConfigDTOS = devopsHelmConfigDTOS.stream().sorted(Comparator.comparing(DevopsHelmConfigDTO::getCreationDate, (i, j) -> {
+            if (i.before(j)) {
+                return -1;
+            } else if (i.equals(j)) {
+                return 0;
+            }
+            return 1;
+        }).reversed()).collect(Collectors.toList());
+
+        // 查询组织层helm仓库
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
+        helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
+        helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
+        helmConfigSearchDTOOnOrganization.setRepoDefault(true);
+        DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOneWithIdAndName(projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), true);
+        if (devopsHelmConfigDTOtOnOrganization != null) {
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
+        } else {
+            // 如果组织层的仓库为空，查询平台默认
+            DevopsHelmConfigDTO helmConfigSearchDTOOnSite = new DevopsHelmConfigDTO();
+            helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.SITE.value());
+            helmConfigSearchDTOOnSite.setRepoDefault(true);
+            DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOneWithIdAndName(0L, ResourceLevel.SITE.value(), true);
+            if (devopsHelmConfigDTOOnSite == null) {
+                throw new CommonException("error.helm.config.site.exist");
+            }
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOOnSite);
+        }
+
+        if (defaultDevopsHelmConfigDTOOnProject != null) {
+            devopsHelmConfigDTOS.add(0, defaultDevopsHelmConfigDTOOnProject);
+        }
+
+        return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
     }
 }
