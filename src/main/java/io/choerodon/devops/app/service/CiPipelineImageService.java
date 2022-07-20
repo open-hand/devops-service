@@ -20,4 +20,6 @@ public interface CiPipelineImageService {
     ImageRepoInfoVO queryImageRepoInfo(String token, Long gitlabPipelineId);
 
     CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId);
+
+    void deleteByAppServiceId(Long appServiceId);
 }

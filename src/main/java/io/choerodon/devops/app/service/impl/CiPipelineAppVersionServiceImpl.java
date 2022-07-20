@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiPipelineAppVersionService;
@@ -38,6 +39,16 @@ public class CiPipelineAppVersionServiceImpl implements CiPipelineAppVersionServ
     @Override
     public void baseCreate(CiPipelineAppVersionDTO ciPipelineAppVersionDTO) {
         MapperUtil.resultJudgedInsertSelective(ciPipelineAppVersionMapper, ciPipelineAppVersionDTO, "error.save.app.version");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        CiPipelineAppVersionDTO ciPipelineAppVersionDTO = new CiPipelineAppVersionDTO();
+        ciPipelineAppVersionDTO.setAppServiceVersionId(appServiceId);
+        ciPipelineAppVersionMapper.delete(ciPipelineAppVersionDTO);
     }
 }
 

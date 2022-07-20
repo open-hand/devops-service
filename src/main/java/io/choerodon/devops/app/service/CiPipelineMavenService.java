@@ -41,4 +41,6 @@ public interface CiPipelineMavenService {
     CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
     CiPipelineMavenDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId);
+
+    void deleteByAppServiceId(Long appServiceId);
 }
