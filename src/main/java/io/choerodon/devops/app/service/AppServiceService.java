@@ -91,15 +91,15 @@ public interface AppServiceService {
      * @return Page
      */
     Page<AppServiceRepVO> pageByOptions(Long projectId,
-                                            Boolean isActive,
-                                            Boolean hasVersion,
-                                            String type,
-                                            Boolean doPage,
-                                            PageRequest pageable,
-                                            String params,
-                                            Boolean checkMember,
-                                            Boolean includeExternal,
-                                            Boolean excludeFailed);
+                                        Boolean isActive,
+                                        Boolean hasVersion,
+                                        String type,
+                                        Boolean doPage,
+                                        PageRequest pageable,
+                                        String params,
+                                        Boolean checkMember,
+                                        Boolean includeExternal,
+                                        Boolean excludeFailed);
 
     /**
      * 处理服务创建逻辑
@@ -272,7 +272,18 @@ public interface AppServiceService {
      * @param password 密码
      * @return true如果通过 (未通过则抛出错误信息)
      */
-    Boolean checkChart(String url, @Nullable String username, @Nullable String password);
+    Boolean checkChartOnOrganization(String url, @Nullable String username, @Nullable String password);
+
+    /**
+     * 项目层或应用层校验chart配置信息是否正确
+     *
+     * @param projectId
+     * @param url       ChartMuseum地址
+     * @param username  用户名
+     * @param password  密码
+     * @return true如果通过 (未通过则抛出错误信息)
+     */
+    Boolean checkChart(Long projectId, String url, @Nullable String username, @Nullable String password);
 
     /**
      * 查看sonarqube相关信息
@@ -620,6 +631,7 @@ public interface AppServiceService {
 
     /**
      * 根据应用id列出所有应用所在的项目id
+     *
      * @param appIds
      * @return
      */

@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.handler;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -10,9 +13,11 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.stream.JsonReader;
+import okhttp3.*;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import retrofit2.Converter;
@@ -55,7 +60,7 @@ public class RetrofitHandler {
                 .build();
     }
 
-    private static Retrofit initRetrofit(ConfigurationProperties configurationProperties, Converter.Factory factory) {
+    public static Retrofit initRetrofit(ConfigurationProperties configurationProperties, Converter.Factory factory) {
         String credentials = configurationProperties.getUsername() + ":"
                 + configurationProperties.getPassword();
         String token = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
@@ -193,4 +198,35 @@ public class RetrofitHandler {
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, ScalarsConverterFactory.create());
         return retrofit.create(NexusClient.class);
     }
+
+    public static class StringConverter extends Converter.Factory {
+        @Nullable
+        @Override
+        public Converter<ResponseBody, ?> responseBodyConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
+            return new StringResponseBodyConverter();
+        }
+
+        @Nullable
+        @Override
+        public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] parameterAnnotations, Annotation[] methodAnnotations, Retrofit retrofit) {
+            return super.requestBodyConverter(type, parameterAnnotations, methodAnnotations, retrofit);
+        }
+
+        @Nullable
+        @Override
+        public Converter<?, String> stringConverter(Type type, Annotation[] annotations, Retrofit retrofit) {
+            return super.stringConverter(type, annotations, retrofit);
+        }
+    }
+
+    public static final class StringResponseBodyConverter implements Converter<ResponseBody, String> {
+        StringResponseBodyConverter() {
+        }
+
+        @Override
+        public String convert(ResponseBody value) throws IOException {
+            return value.string();
+        }
+    }
+
 }

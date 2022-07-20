@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -1410,10 +1411,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
-        if (!url.endsWith("/")) {
-            throw new CommonException("error.base.url.must.end");
-        }
+    public Boolean checkChartOnOrganization(String url, @Nullable String username, @Nullable String password) {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
@@ -1451,6 +1449,43 @@ public class AppServiceServiceImpl implements AppServiceService {
             throw new CommonException("error.chart.authentication.failed");
         }
 
+        return true;
+    }
+
+    @Override
+    public Boolean checkChart(Long projectId, String url, @Nullable String username, @Nullable String password) {
+        url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        URL processedUrl;
+        try {
+            processedUrl = new URL(url);
+        } catch (Exception e) {
+            throw new CommonException("error.chart.not.available", e.getMessage());
+        }
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(processedUrl.getProtocol() + "://" + processedUrl.getHost());
+        configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        ChartClient chartClient = null;
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        Response<String> result;
+        try {
+            String[] params=processedUrl.getPath().split("/");
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties,new RetrofitHandler.StringConverter());
+            chartClient = retrofit.create(ChartClient.class);
+            Call<String> getIndex = chartClient.getIndex(params[1],params[2]);
+            result = getIndex.execute();
+        } catch (Exception ex) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
+        if (result != null && !result.isSuccessful()) {
+            throw new CommonException("error.chart.authentication.failed");
+        }
         return true;
     }
 
