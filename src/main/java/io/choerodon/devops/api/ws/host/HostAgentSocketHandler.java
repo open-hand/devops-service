@@ -42,7 +42,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HostAgentSocketHandler.class);
     private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s";
-    private static final int C7N_AGENT_MAX_UPGRADE_COUNT = 3;
+    private static final Integer C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT = 3;
 
     private final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
@@ -88,7 +88,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
             String redisKey = String.format(C7N_AGENT_UPGRADE_COUNT_REDIS_KEY, hostId);
             Integer count = (Integer) redisTemplate.opsForValue().get(redisKey);
-            if (count.equals(C7N_AGENT_MAX_UPGRADE_COUNT)) {
+            if (C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT.equals(count)) {
                 // 表示agent进行了3次尝试升级，都失败了，那么agent应该退出。手动处理升级失败问题
                 HostMsgVO hostMsgVO = new HostMsgVO();
                 hostMsgVO.setType(HostCommandEnum.EXIT_AGENT.value());
