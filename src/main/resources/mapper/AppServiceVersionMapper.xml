@@ -416,7 +416,7 @@
         das. CODE AS appServiceCode,
         das.`name` AS appServiceName,
         das.type AS appServiceType,
-        das.project_id AS projectId,
+        das.project_id AS projectId
         FROM
         devops_app_service_version dasv
         left join devops_app_service_helm_version dashv on dashv.app_service_version_id = dasv.id
