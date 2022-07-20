@@ -244,8 +244,9 @@
         SELECT *
         FROM
         devops_app_service_version dav
+        left join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
         where 1=1
-        AND dav.repository IS NOT NULL
+        AND dashv.repository IS NOT NULL
         <if test="appServiceServiceIds != null">
             AND dav.id in
             <foreach collection="appServiceServiceIds" item="appServiceServiceIds" index="index"
