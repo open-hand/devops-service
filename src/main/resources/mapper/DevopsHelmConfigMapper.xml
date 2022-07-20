@@ -47,4 +47,12 @@
       AND resource_type = #{resourceType}
       AND repo_default = #{defaultRepo}
   </select>
+
+  <select id="selectWithIdAndNameByAppServiceId" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT dhc.id   AS id,
+           dhc.name AS name
+    FROM devops_helm_config dhc
+                 JOIN devops_app_service_helm_rel dashr ON dashr.helm_config_id = dhc.id
+    WHERE dashr.app_service_id = #{appServiceId}
+  </select>
 </mapper>

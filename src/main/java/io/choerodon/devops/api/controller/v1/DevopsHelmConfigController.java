@@ -35,8 +35,11 @@ public class DevopsHelmConfigController {
     @GetMapping("/app/list")
     public ResponseEntity<List<DevopsHelmConfigVO>> listHelmConfigOnApp(
             @ApiParam("项目id")
-            @PathVariable("project_id") Long projectId) {
-        return Results.success(helmConfigService.listHelmConfigOnApp(projectId));
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("项目id")
+            @Encrypt
+            @RequestParam("app_service_id") Long appServiceId) {
+        return Results.success(helmConfigService.listHelmConfigOnApp(projectId, appServiceId));
     }
 
     @ApiOperation("查询helm仓库")

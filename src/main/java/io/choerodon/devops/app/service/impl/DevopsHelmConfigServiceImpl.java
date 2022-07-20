@@ -281,7 +281,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
 
     @Override
-    public List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId) {
+    public List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId, Long appServiceId) {
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOS = new ArrayList<>();
 
         // 查询项目层设置helm仓库
@@ -335,6 +335,14 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         if (defaultDevopsHelmConfigDTOOnProject != null) {
             devopsHelmConfigDTOS.add(0, defaultDevopsHelmConfigDTOOnProject);
+        }
+
+        if (appServiceId != null) {
+            DevopsHelmConfigDTO devopsHelmConfigDTORelatedWithAppService = devopsHelmConfigMapper.selectWithIdAndNameByAppServiceId(appServiceId);
+            List<Long> helmConfigIds = devopsHelmConfigDTOS.stream().map(DevopsHelmConfigDTO::getId).collect(Collectors.toList());
+            if (devopsHelmConfigDTORelatedWithAppService != null && !helmConfigIds.contains(devopsHelmConfigDTORelatedWithAppService.getId())) {
+                devopsHelmConfigDTOS.add(0, devopsHelmConfigDTORelatedWithAppService);
+            }
         }
 
         return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
