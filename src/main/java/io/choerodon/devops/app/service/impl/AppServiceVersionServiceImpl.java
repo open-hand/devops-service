@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang3.StringUtils;
@@ -61,7 +59,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 @Service
 public class AppServiceVersionServiceImpl implements AppServiceVersionService {
@@ -966,7 +963,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
     @Override
     public AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId) {
-        AppServiceVersionWithHelmConfigVO appServiceVersionWithHelmConfigVO = io.choerodon.core.utils.ConvertUtils.convertObject(appServiceVersionMapper.selectByPrimaryKey(appServiceVersionId), AppServiceVersionWithHelmConfigVO.class);
+        AppServiceVersionWithHelmConfigVO appServiceVersionWithHelmConfigVO = io.choerodon.core.utils.ConvertUtils.convertObject(appServiceVersionMapper.selectByAppServiceVersionId(appServiceVersionId), AppServiceVersionWithHelmConfigVO.class);
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
         if (appServiceHelmVersionDTO != null) {
             Long helmConfigId = appServiceHelmVersionDTO.getHelmConfigId();
@@ -978,7 +975,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 throw new FeignException("error.helm.config.not.exist");
             }
             appServiceVersionWithHelmConfigVO.setHelmConfig(new ConfigVO(devopsHelmConfigDTO.getUrl(),
-                    devopsHelmConfigDTO.getName(),
+                    devopsHelmConfigDTO.getUsername(),
                     devopsHelmConfigDTO.getPassword(),
                     devopsHelmConfigDTO.getRepoPrivate()));
         }
