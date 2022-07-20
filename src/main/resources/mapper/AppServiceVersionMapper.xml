@@ -195,7 +195,6 @@
             dav.app_service_id,
             dav.commit,
             dav.ref,
-            dav.repository,
             dav.object_version_number,
             dav.created_by,
             dav.creation_date,
@@ -206,7 +205,8 @@
             dashv.harbor_config_id,
             dashv.value_id,
             dashv.readme_value_id,
-            dashv.image
+            dashv.image,
+            dashv.repository
         FROM
         devops_app_service_version dav
         left join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
@@ -218,6 +218,29 @@
                 #{appServiceServiceIds}
             </foreach>
         </if>
+    </select>
+
+    <select id="selectByAppServiceVersionId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT dav.id,
+               dav.version,
+               dav.app_service_id,
+               dav.commit,
+               dav.ref,
+               dav.object_version_number,
+               dav.created_by,
+               dav.creation_date,
+               dav.last_updated_by,
+               dav.last_update_date,
+               dashv.harbor_repo_type as repo_type,
+               dashv.helm_config_id,
+               dashv.harbor_config_id,
+               dashv.value_id,
+               dashv.readme_value_id,
+               dashv.image,
+               dashv.repository
+        FROM devops_app_service_version dav
+                     join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
+        where dav.id = #{appServiceVersionId}
     </select>
 
     <select id="listByAppServiceIdAndBranch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">

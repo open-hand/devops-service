@@ -41,6 +41,8 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     List<AppServiceVersionDTO> listByAppServiceVersionIds(@Param("appServiceServiceIds") List<Long> appServiceServiceIds);
 
+    AppServiceVersionDTO selectByAppServiceVersionId(@Param("appServiceVersionId") Long appServiceVersionId);
+
     List<AppServiceVersionDTO> listByAppServiceIdAndBranch(@Param("appServiceId") Long appServiceId, @Param("branch") String branch);
 
     String queryByPipelineId(@Param("pipelineId") Long pipelineId, @Param("branch") String branch, @Param("appServiceId") Long appServiceId);
@@ -85,6 +87,7 @@ public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO
 
     /**
      * 临时方法，迁移应用服务版本使用，下一个版本可删除
+     *
      * @return
      */
     Integer queryCountVersionsWithHarborConfig();
