@@ -180,6 +180,16 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         return ciPipelineImageMapper.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+        ciPipelineImageDTO.setAppServiceId(appServiceId);
+        ciPipelineImageMapper.delete(ciPipelineImageDTO);
+    }
+
     private String trimPrefix(String dockerRegistry) {
         String dockerUrl = dockerRegistry.replace("http://", "").replace("https://", "");
         return dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;

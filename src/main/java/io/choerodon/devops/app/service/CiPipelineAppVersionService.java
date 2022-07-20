@@ -15,5 +15,7 @@ public interface CiPipelineAppVersionService {
                                                         String jobName);
 
     void baseCreate(CiPipelineAppVersionDTO ciPipelineAppVersionDTO);
+
+    void deleteByAppServiceId(Long appServiceId);
 }
 

@@ -315,4 +315,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
         return ciPipelineMavenMapper.queryPipelineLatestMaven(appServiceId, gitlabPipelineId);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+        ciPipelineMavenDTO.setAppServiceId(appServiceId);
+        ciPipelineMavenMapper.delete(ciPipelineMavenDTO);
+    }
 }
