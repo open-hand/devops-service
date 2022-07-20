@@ -353,13 +353,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             shareAppService = true;
         }
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
-        List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
-        if (!devopsConfigVOS.isEmpty()) {
-            devopsConfigVOS.forEach(devopsConfigVO -> {
-                if (devopsConfigVO.getType().equals(CHART)) {
-                    appServiceRepVO.setChart(devopsConfigVO);
-                }
-            });
+        DevopsAppServiceHelmRelDTO devopsAppServiceHelmRelDTO = devopsAppServiceHelmRelService.queryByAppServiceId(appServiceId);
+        if (devopsAppServiceHelmRelDTO != null) {
+            appServiceRepVO.setHelmConfigId(devopsAppServiceHelmRelDTO.getHelmConfigId());
         }
         //url地址拼接
         if (appServiceDTO.getGitlabProjectId() != null && !shareAppService) {

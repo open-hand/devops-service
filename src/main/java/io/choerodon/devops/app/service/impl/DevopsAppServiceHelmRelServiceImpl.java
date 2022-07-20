@@ -17,7 +17,7 @@ public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmR
     @Override
     public void handleRel(Long appServiceId, Long helmConfigId) {
         deleteRelationByServiceId(appServiceId);
-        if (helmConfigId!=null){
+        if (helmConfigId != null) {
             createRel(appServiceId, helmConfigId);
         }
     }
@@ -35,5 +35,10 @@ public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmR
         devopsAppServiceHelmRelDTO.setAppServiceId(appServiceId);
         devopsAppServiceHelmRelDTO.setHelmConfigId(helmConfigId);
         MapperUtil.resultJudgedInsertSelective(devopsAppServiceHelmRelMapper, devopsAppServiceHelmRelDTO, "error.app.service.helm.config.rel.insert");
+    }
+
+    @Override
+    public DevopsAppServiceHelmRelDTO queryByAppServiceId(Long appServiceId) {
+        return devopsAppServiceHelmRelMapper.queryByAppServiceId(appServiceId);
     }
 }

@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.DevopsAppServiceHelmRelDTO;
+import org.apache.ibatis.annotations.Param;
+
 public interface DevopsAppServiceHelmRelService {
 
     /**
@@ -21,4 +24,6 @@ public interface DevopsAppServiceHelmRelService {
      * @param helmConfigId
      */
     void createRel(Long appServiceId, Long helmConfigId);
+
+    DevopsAppServiceHelmRelDTO queryByAppServiceId(Long appServiceId);
 }
