@@ -935,6 +935,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             deleteChartTags.add(chartTagVO);
 
             // 删除应用服务版本
+            appServiceHelmVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
+            appServiceImageVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
+            appServiceMavenVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
             appServiceVersionMapper.deleteByPrimaryKey(appServiceVersionDTO.getId());
         });
         CustomResourceVO customResourceVO = new CustomResourceVO();

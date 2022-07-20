@@ -53,5 +53,15 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
     public void baseUpdate(AppServiceImageVersionDTO appServiceImageVersionDTO) {
         appServiceImageVersionMapper.updateByPrimaryKeySelective(appServiceImageVersionDTO);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceVersionId(Long appServiceVersionId) {
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+
+        AppServiceImageVersionDTO appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+        appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);
+        appServiceImageVersionMapper.delete(appServiceImageVersionDTO);
+    }
 }
 

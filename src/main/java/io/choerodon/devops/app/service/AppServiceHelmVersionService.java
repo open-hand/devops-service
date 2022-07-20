@@ -19,5 +19,7 @@ public interface AppServiceHelmVersionService {
     AppServiceHelmVersionDTO queryByAppServiceVersionId(Long appServiceVersionId);
 
     void create(AppServiceHelmVersionDTO appServiceHelmVersionDTO);
+
+    void deleteByAppServiceVersionId(Long appServiceVersionId);
 }
 
