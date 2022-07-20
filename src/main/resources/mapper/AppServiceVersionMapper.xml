@@ -21,41 +21,11 @@
         <if test="param != null and param != ''">
             and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
-        AND dav.repository IS NOT NULL
+        AND dashv.repository IS NOT NULL
         ORDER BY
         dav.id DESC
     </select>
 
-    <select id="listAppNewestVersion" resultType="io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO">
-        SELECT
-        dap.version,
-        dap.id versionId,
-        lv.app_service_id
-        FROM
-        devops_app_service_version dap
-        JOIN (
-        SELECT
-        MAX( dappv.id ) id,
-        dappv.app_service_id
-        FROM
-        devops_app_service_version dappv
-        GROUP BY
-        dappv.app_service_id
-        ) lv ON lv.id = dap.id
-        JOIN devops_app_service da ON lv.app_service_id = da.id
-        LEFT JOIN devops_app_service_share_rule dam on dam.app_service_id = da.id
-        WHERE
-        da.project_id = #{projectId}
-        AND dap.repository IS NOT NULL
-        OR (
-        da.project_id IN
-        <foreach collection="projectIds" item="project" open="(" separator="," close=")">
-            #{project}
-        </foreach>
-        AND dam.share_level = 'organization'
-        )
-        OR dam.share_level = 'public'
-    </select>
     <select id="queryByCommitSha" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
         dav.*
@@ -178,12 +148,13 @@
         dav.version
         FROM
         devops_app_service_version dav
+        join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
         JOIN devops_app_service_instance dai ON dai.app_service_version_id = dav.id
         AND dai.`status` != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
         WHERE
         de.project_id = #{projectId}
-        AND dav.repository IS NOT NULL
+        AND dashv.repository IS NOT NULL
         AND dav.app_service_id = #{appServiceId}
         AND de.type ='user'
         ORDER BY
@@ -218,7 +189,24 @@
     </select>
 
     <select id="listByAppServiceVersionIds" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT *
+        SELECT
+            dav.id,
+            dav.version,
+            dav.app_service_id,
+            dav.commit,
+            dav.ref,
+            dav.repository,
+            dav.object_version_number,
+            dav.created_by,
+            dav.creation_date,
+            dav.last_updated_by,
+            dav.last_update_date,
+            dashv.harbor_repo_type as repo_type,
+            dashv.helm_config_id,
+            dashv.harbor_config_id,
+            dashv.value_id,
+            dashv.readme_value_id,
+            dashv.image
         FROM
         devops_app_service_version dav
         left join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
@@ -226,8 +214,7 @@
         AND dashv.repository IS NOT NULL
         <if test="appServiceServiceIds != null">
             AND dav.id in
-            <foreach collection="appServiceServiceIds" item="appServiceServiceIds" index="index"
-                     open="(" close=")" separator=",">
+            <foreach collection="appServiceServiceIds" item="appServiceServiceIds" index="index" open="(" close=")" separator=",">
                 #{appServiceServiceIds}
             </foreach>
         </if>
@@ -235,15 +222,33 @@
 
     <select id="listByAppServiceIdAndBranch" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT
-        *
+            dav.id,
+            dav.version,
+            dav.app_service_id,
+            dav.commit,
+            dav.ref,
+            dav.repository,
+            dav.object_version_number,
+            dav.created_by,
+            dav.creation_date,
+            dav.last_updated_by,
+            dav.last_update_date,
+            dashv.harbor_repo_type as repo_type,
+            dashv.helm_config_id,
+            dashv.harbor_config_id,
+            dashv.value_id,
+            dashv.readme_value_id,
+            dashv.image
         FROM
-        devops_app_service_version
+             devops_app_service_version dav
+        left join devops_app_service_helm_version dashv  on dashv.app_service_version_id = dav.id
         WHERE
-        app_service_id = #{appServiceId} and commit is not null and version LIKE CONCAT(CONCAT('%',
-        #{branch, jdbcType=VARCHAR}),'%')
-        AND devops_app_service_version.repository IS NOT NULL
-        order by id desc limit
-        10
+            app_service_id = #{appServiceId}
+            and commit is not null
+            and version LIKE CONCAT(CONCAT('%',#{branch, jdbcType=VARCHAR}),'%')
+            AND dashv.repository IS NOT NULL
+        order by id desc
+        limit 10
     </select>
 
 
@@ -263,8 +268,8 @@
         davv.value
         FROM
         devops_app_service_version dav
-        LEFT JOIN devops_app_service_version_value davv
-        ON davv.id = dav.value_id
+        left join devops_app_service_helm_version dashv on dashv.app_service_version_id = dav.id
+        LEFT JOIN devops_app_service_version_value davv ON davv.id = dashv.value_id
         WHERE
         dav.app_service_id = #{appServiceId}
         ORDER BY dav.id DESC
@@ -390,7 +395,9 @@
 
     <select id="queryServiceVersionByAppServiceIdAndShare"
             resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        select * from devops_app_service_version
+        select
+               *
+        from devops_app_service_version
         where app_service_id=#{appServiceId}
         <if test="share != null and share != ''">
             and version in(select version from devops_app_service_share_rule where app_service_id=#{appServiceId})
@@ -468,10 +475,27 @@
     </select>
 
     <select id="queryByCommitShaAndRef" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT *
-        FROM devops_app_service_version dasv
-        join devops_app_service_helm_version dashv on dasv.id = dashv.app_service_version_id
-        WHERE dasv.app_service_id = #{appServiceId} AND dasv.commit = #{commitSha} and dasv.ref = #{ref}
+        SELECT
+            dav.id,
+            dav.version,
+            dav.app_service_id,
+            dav.commit,
+            dav.ref,
+            dav.repository,
+            dav.object_version_number,
+            dav.created_by,
+            dav.creation_date,
+            dav.last_updated_by,
+            dav.last_update_date,
+            dashv.harbor_repo_type as repo_type,
+            dashv.helm_config_id,
+            dashv.harbor_config_id,
+            dashv.value_id,
+            dashv.readme_value_id,
+            dashv.image
+        FROM devops_app_service_version dav
+        join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
+        WHERE dav.app_service_id = #{appServiceId} AND dav.commit = #{commitSha} and dav.ref = #{ref}
         order by id desc
         limit 1
     </select>

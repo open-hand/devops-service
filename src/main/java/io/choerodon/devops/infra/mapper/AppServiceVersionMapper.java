@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -14,9 +13,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Created by younger on 2018/3/28.
  */
 public interface AppServiceVersionMapper extends BaseMapper<AppServiceVersionDTO> {
-
-    List<AppServiceLatestVersionDTO> listAppNewestVersion(@Param("projectId") Long projectId,
-                                                          @Param("projectIds") List<Long> projectIds);
 
     List<AppServiceVersionDTO> listByAppIdAndEnvId(@Param("projectId") Long projectId,
                                                    @Param("appServiceId") Long appServiceId,
