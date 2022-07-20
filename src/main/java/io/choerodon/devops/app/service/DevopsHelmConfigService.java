@@ -115,6 +115,7 @@ public interface DevopsHelmConfigService {
 
     /**
      * 获取chart仓库的index内容
+     *
      * @param projectId
      * @param helmConfigId
      * @return
@@ -123,8 +124,10 @@ public interface DevopsHelmConfigService {
 
     /**
      * 应用层查询helm仓库配置列表
+     *
      * @param projectId
+     * @param appServiceId
      * @return
      */
-    List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId);
+    List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId, Long appServiceId);
 }
