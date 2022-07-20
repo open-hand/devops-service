@@ -90,7 +90,7 @@ public class DevopsOrganizationConfigController {
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {
         return Optional.ofNullable(
-                appServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()))
+                appServiceService.checkChartOnOrganization(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.connection.failed"));
     }
