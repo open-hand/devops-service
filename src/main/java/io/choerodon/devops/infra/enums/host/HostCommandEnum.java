@@ -28,6 +28,7 @@ public enum HostCommandEnum {
     KILL_MIDDLEWARE("kill_middleware"),
     INIT_AGENT("init_agent"),
     UPGRADE_AGENT("upgrade_agent"),
+    EXIT_AGENT("exit_agent"),
     INIT_AGENT_FAILED("init_agent_failed"),
     /**
      * 该事件返回command结果
