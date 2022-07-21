@@ -61,7 +61,7 @@ public class DevopsHelmConfigController {
                                                   @ApiParam("仓库名称")
                                                   @RequestParam("name") String name,
                                                   @ApiParam("仓库id")
-                                                  @Encrypt @RequestParam("helm_config_id") Long helmConfigId) {
+                                                  @Encrypt @RequestParam(value = "helm_config_id",required = false) Long helmConfigId) {
         return Results.success(helmConfigService.checkNameExists(projectId, helmConfigId, name));
     }
 
