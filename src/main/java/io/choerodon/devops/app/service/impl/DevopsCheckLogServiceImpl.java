@@ -122,6 +122,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private BatchInsertHelper<AppServiceHelmVersionDTO> appServiceHelmVersionDTOBatchInsertHelper;
 
     @Autowired
+    private AppServiceImageVersionService appServiceImageVersionService;
+
+    @Autowired
     private AppServiceImageVersionMapper appServiceImageVersionMapper;
 
     @Override
@@ -189,11 +192,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 appServiceImageVersionDTOS.add(appServiceImageVersionDTO);
             });
             if (!CollectionUtils.isEmpty(appServiceImageVersionDTOS)) {
-                appServiceImageVersionMapper.batchInsert(appServiceImageVersionDTOS);
+                appServiceImageVersionService.batchInsertInNewTrans(appServiceImageVersionDTOS);
             }
             pageNumber++;
         } while (pageNumber <= total);
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version image record >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
 
     }
 
