@@ -524,8 +524,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Long appServiceVersionId = appServiceVersionVO.getId();
 
             AppServiceHelmVersionVO appServiceHelmVersionVO = finalHelmVersionMap.get(appServiceVersionId);
-            appServiceHelmVersionVO.setChartName(appServiceDTO.getCode());
-            appServiceHelmVersionVO.setVersion(appServiceVersionVO.getVersion());
+            if (appServiceHelmVersionVO != null) {
+                appServiceHelmVersionVO.setChartName(appServiceDTO.getCode());
+                appServiceHelmVersionVO.setVersion(appServiceVersionVO.getVersion());
+            }
             AppServiceImageVersionVO appServiceImageVersionVO = finalImageVersionMap.get(appServiceVersionId);
             AppServiceMavenVersionVO appServiceMavenVersionVO = finalMavenVersionMap.get(appServiceVersionId);
 
