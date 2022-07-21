@@ -86,15 +86,15 @@ public class BaseServiceClientOperator {
 
 
     public ProjectDTO queryIamProjectById(Long projectId) {
-        return queryIamProjectById(projectId, true, true, true);
+        return queryIamProjectById(projectId, true, true, true, true, true);
     }
 
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
-        return queryIamProjectById(projectId, false, false, false);
+        return queryIamProjectById(projectId, false, false, false, false, false);
     }
 
-    public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo);
+    public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo, Boolean withWorkGroup, Boolean withProjectClassfication) {
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo, withWorkGroup, withProjectClassfication);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {

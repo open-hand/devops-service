@@ -1468,9 +1468,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         ChartClient chartClient = null;
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-
         Response<String> result;
         try {
             String[] params = processedUrl.getPath().split("/");
