@@ -31,6 +31,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
+        addUniqueConstraint(tableName: 'devops_helm_config', constraintName: 'devops_helm_config_n1', columnNames: 'resource_type,resource_id,name')
+
         createIndex(indexName: "devops_helm_config_n1", tableName: "devops_helm_config") {
             column(name: "resource_id")
             column(name: "resource_type")
