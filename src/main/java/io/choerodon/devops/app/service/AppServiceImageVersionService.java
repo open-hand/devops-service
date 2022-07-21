@@ -23,5 +23,12 @@ public interface AppServiceImageVersionService {
     void baseUpdate(AppServiceImageVersionDTO appServiceImageVersionDTO);
 
     void deleteByAppServiceVersionId(Long appServiceVersionId);
+
+    /**
+     * 2.2版本迁移原应服务版本数据使用，后续可删除
+     *
+     * @param appServiceImageVersionDTOS
+     */
+    void batchInsertInNewTrans(List<AppServiceImageVersionDTO> appServiceImageVersionDTOS);
 }
 
