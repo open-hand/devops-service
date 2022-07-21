@@ -22,9 +22,6 @@ public interface DevopsHzeroDeployDetailsService {
 
     DevopsHzeroDeployDetailsDTO baseQueryByAppId(Long appId);
 
-
-    DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String instanceCode);
-
     List<DevopsHzeroDeployDetailsDTO> listNotSuccessRecordId(Long recordId);
 
     List<DevopsHzeroDeployDetailsDTO> listByDeployRecordId(Long deployRecordId);

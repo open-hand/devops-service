@@ -1,19 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditService;
 import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
-import io.choerodon.devops.infra.dto.DevopsCdJobDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
@@ -41,16 +36,5 @@ public class DevopsCdAuditServiceImpl implements DevopsCdAuditService {
     public List<DevopsCdAuditDTO> baseListByOptions(Long pipelineId, Long stageId, Long taskId) {
         DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO(pipelineId, stageId, taskId);
         return devopsCdAuditMapper.select(devopsCdAuditDTO);
-    }
-
-    @Override
-    public void fixProjectId() {
-        List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditMapper.selectAll();
-        Set<Long> cdJobIds = devopsCdAuditDTOS.stream().filter(i -> i.getCdJobId() != null).map(DevopsCdAuditDTO::getCdJobId).collect(Collectors.toSet());
-
-        if (!CollectionUtils.isEmpty(cdJobIds)) {
-            List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.selectByIds(StringUtils.join(cdJobIds, ","));
-            devopsCdJobDTOS.forEach(i -> devopsCdAuditMapper.updateProjectIdByJobId(i.getProjectId(), i.getId()));
-        }
     }
 }

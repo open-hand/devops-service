@@ -1,5 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
@@ -11,14 +20,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * Creator: Runge
@@ -133,11 +134,6 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             updateCheck = devopsEnvGroupDOS.size() == 1 && id.equals(devopsEnvGroupDOS.get(0).getId());
         }
         return devopsEnvGroupDOS.isEmpty() || updateCheck;
-    }
-
-    @Override
-    public Boolean baseCheckUniqueInProject(String name, Long projectId) {
-        return baseCheckUniqueInProject(null, name, projectId);
     }
 
     @Override

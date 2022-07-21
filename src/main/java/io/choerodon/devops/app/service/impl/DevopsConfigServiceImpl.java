@@ -212,11 +212,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType) {
-        return dtoToVo(queryRealConfig(resourceId, resourceType, configType, AUTHTYPE_PULL));
-    }
-
-    @Override
     public DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.insert(devopsConfigDTO) != 1) {
             throw new CommonException("error.devops.project.config.create");
@@ -248,11 +243,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         paramDO.setProjectId(projectId);
         paramDO.setName(name);
         return devopsConfigMapper.selectOne(paramDO);
-    }
-
-    @Override
-    public DevopsConfigDTO baseCheckByName(String name) {
-        return devopsConfigMapper.queryByNameWithNoProject(name);
     }
 
     @Override

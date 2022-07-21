@@ -39,8 +39,6 @@ public interface DevopsConfigService {
 
     DevopsConfigDTO queryRealConfig(Long resourceId, String resourceType, String configType,String operateType);
 
-    DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType);
-
     DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO);
 
     DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO);
@@ -50,8 +48,6 @@ public interface DevopsConfigService {
     DevopsConfigDTO baseQuery(Long id);
 
     DevopsConfigDTO baseQueryByName(Long projectId, String name);
-
-    DevopsConfigDTO baseCheckByName(String name);
 
     Page<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageable, String params);
 

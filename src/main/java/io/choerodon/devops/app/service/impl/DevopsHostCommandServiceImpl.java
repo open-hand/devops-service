@@ -78,9 +78,4 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
         }
         return devopsHostCommandMapper.listByIds(missCommands);
     }
-
-    @Override
-    public List<DevopsHostCommandDTO> listByTypeAndInsIds(Set<Long> insIds, String instanceType) {
-        return devopsHostCommandMapper.listByTypeAndInsIds(insIds, instanceType);
-    }
 }

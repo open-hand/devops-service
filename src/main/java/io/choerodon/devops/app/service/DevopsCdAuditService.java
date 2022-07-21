@@ -9,6 +9,4 @@ public interface DevopsCdAuditService {
     void baseCreate(DevopsCdAuditDTO devopsCdAuditDTO);
 
     List<DevopsCdAuditDTO> baseListByOptions(Long pipelineId, Long stageId, Long jobId);
-
-    void fixProjectId();
 }

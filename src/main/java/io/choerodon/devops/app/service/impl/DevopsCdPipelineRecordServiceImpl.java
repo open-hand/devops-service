@@ -35,7 +35,6 @@ import org.yaml.snakeyaml.Yaml;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -71,8 +70,6 @@ import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -1194,36 +1191,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (devopsCdPipelineRecordMapper.updateByPrimaryKeySelective(devopsCdPipelineRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
         }
-    }
-
-    @Override
-    public Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
-        Page<DevopsCdPipelineRecordVO> pipelineRecordInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-                () -> devopsCdPipelineRecordMapper.listByCiPipelineId(pipelineId));
-        List<DevopsCdPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getContent();
-        if (CollectionUtils.isEmpty(pipelineRecordVOList)) {
-            return pipelineRecordInfo;
-        }
-        pipelineRecordVOList.forEach(devopsCdPipelineRecordVO -> {
-            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
-            if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
-                //封装审核数据
-                List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
-                for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
-                    //计算satge耗时
-                    if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
-                        Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-                        devopsCdStageRecordVO.setDurationSeconds(seconds);
-                    }
-                }
-                // 计算流水线当前停留的审核节点
-                addAuditStateInfo(devopsCdPipelineRecordVO);
-                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
-            } else {
-                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
-            }
-        });
-        return pipelineRecordInfo;
     }
 
     private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {

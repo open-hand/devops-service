@@ -822,13 +822,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void checkBranchName(Long projectId, Long applicationId, String branchName) {
-        if (Boolean.FALSE.equals(isBranchNameUnique(projectId, applicationId, branchName))) {
-            throw new CommonException("error.branch.exist");
-        }
-    }
-
-    @Override
     public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(applicationDTO.getGitlabProjectId(), branchName);
@@ -1217,12 +1210,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 return gitUtil.cloneBySsh(path, url, envIdRsa);
             }
         }
-    }
-
-
-    @Override
-    public BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName) {
-        return gitlabServiceClientOperator.queryBranch(gitLabProjectId, branchName);
     }
 
     @Override

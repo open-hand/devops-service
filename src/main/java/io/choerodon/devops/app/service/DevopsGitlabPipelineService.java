@@ -34,7 +34,5 @@ public interface DevopsGitlabPipelineService {
 
     Page<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageable, Date startTime, Date endTime);
 
-    void baseDeleteWithoutCommit();
-
     List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appServiceId, String branch);
 }
