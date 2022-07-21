@@ -667,7 +667,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 设置环境所属集群所在项目
         Long clusterId = vo.getClusterId();
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        ProjectDTO clusterBelongedProject = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId(), false, false, false);
+        ProjectDTO clusterBelongedProject = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId(), false, false, false, false, false);
         vo.setClusterBelongedProjectName(clusterBelongedProject.getName());
 
         return vo;
