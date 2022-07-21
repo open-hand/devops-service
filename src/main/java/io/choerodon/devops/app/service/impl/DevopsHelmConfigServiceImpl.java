@@ -271,7 +271,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl() + "/api/charts", HttpMethod.GET, requestEntity, String.class);
+        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl() + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
             throw new CommonException("error.get.helm.chart");
