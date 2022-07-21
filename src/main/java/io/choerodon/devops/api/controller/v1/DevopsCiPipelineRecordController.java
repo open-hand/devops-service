@@ -38,20 +38,6 @@ public class DevopsCiPipelineRecordController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询ci流水线执行记录")
-    @GetMapping("/{ci_pipeline_id}")
-    public ResponseEntity<Page<DevopsCiPipelineRecordVO>> pagingPipelineRecord(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "ci_pipeline_id") Long ciPipelineId,
-            @ApiIgnore
-            @SortDefault(value = DevopsCiPipelineRecordDTO.FIELD_GITLAB_PIPELINE_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
-        return ResponseEntity.ok(devopsCiPipelineRecordService.pagingPipelineRecord(projectId, ciPipelineId, pageable));
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/{gitlab_pipeline_id}/details")
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(

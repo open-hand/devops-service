@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -45,10 +41,6 @@ import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.maven.Repository;
-import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
-import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -56,7 +48,6 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -83,8 +74,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
-    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
@@ -98,8 +87,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
     private String cibase;
-
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
