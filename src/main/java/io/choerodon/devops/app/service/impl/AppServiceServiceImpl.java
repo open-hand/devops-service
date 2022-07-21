@@ -1457,7 +1457,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try {
             processedUrl = new URL(url);
         } catch (Exception e) {
-            throw new CommonException("error.chart.not.available", e.getMessage());
+            throw new CommonException("error.chart.address.invalid", e.getMessage());
         }
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(processedUrl.getProtocol() + "://" + processedUrl.getHost());
@@ -1473,15 +1473,15 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         Response<String> result;
         try {
-            String[] params=processedUrl.getPath().split("/");
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties,new RetrofitHandler.StringConverter());
+            String[] params = processedUrl.getPath().split("/");
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, new RetrofitHandler.StringConverter());
             chartClient = retrofit.create(ChartClient.class);
-            Call<String> getIndex = chartClient.getIndex(params[1],params[2]);
+            Call<String> getIndex = chartClient.getIndex(params[1], params[2]);
             result = getIndex.execute();
         } catch (Exception ex) {
-            throw new CommonException("error.chart.authentication.failed");
+            throw new CommonException("error.chart.address.unreachable");
         }
-        if (result != null && !result.isSuccessful()) {
+        if (result != null && (result.code() > 400 && result.code() < 500)) {
             throw new CommonException("error.chart.authentication.failed");
         }
         return true;
