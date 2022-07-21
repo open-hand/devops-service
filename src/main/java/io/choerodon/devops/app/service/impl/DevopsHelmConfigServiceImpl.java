@@ -4,8 +4,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
@@ -75,7 +73,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }).reversed()).collect(Collectors.toList());
 
         // 查询组织层helm仓库
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
         helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
@@ -309,7 +307,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }).reversed()).collect(Collectors.toList());
 
         // 查询组织层helm仓库
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
         helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
