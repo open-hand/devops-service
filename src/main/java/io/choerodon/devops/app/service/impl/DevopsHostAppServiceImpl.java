@@ -284,6 +284,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
             }
 
+            if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
+                devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryDockerInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_PROCESS.value()));
+            }
+
             devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         });
         return page;

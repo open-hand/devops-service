@@ -22,6 +22,8 @@ public interface DevopsHostCommandMapper extends BaseMapper<DevopsHostCommandDTO
 
     DevopsHostCommandDTO queryInstanceLatest(@Param("instanceId") Long instanceId, @Param("instanceType") String instanceType);
 
+    DevopsHostCommandDTO queryDockerInstanceLatest(@Param("appId") Long appId, @Param("instanceType") String instanceType);
+
     void batchUpdateTimeoutCommand(@Param("missCommands") Set<Long> missCommands);
 
     List<DevopsHostCommandDTO> listStagnatedRecord(@Param("hostId") String hostId, @Param("beforeDate") String beforeDate);

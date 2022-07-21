@@ -55,6 +55,12 @@ public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
         return devopsHostCommandMapper.queryInstanceLatest(instanceId, instanceType);
     }
 
+
+    @Override
+    public DevopsHostCommandDTO queryDockerInstanceLatest(Long instanceId, String instanceType) {
+        return devopsHostCommandMapper.queryDockerInstanceLatest(instanceId, instanceType);
+    }
+
     @Override
     public List<DevopsHostCommandDTO> listStagnatedRecord(String hostId) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DevopsHostConstants.DATE_PATTERN);
