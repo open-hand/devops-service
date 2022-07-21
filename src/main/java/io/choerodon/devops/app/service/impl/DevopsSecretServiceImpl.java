@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,30 +154,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         }
         devopsSecretDTO.setValueMap(encodedSecretMaps);
         return devopsSecretDTO;
-    }
-
-    @Override
-    public SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO) {
-        SecretRespVO secretRespVO = new SecretRespVO();
-        BeanUtils.copyProperties(devopsSecretDTO, secretRespVO);
-        Map<String, String> secretMaps = gson
-                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
-                }.getType());
-        secretRespVO.setValue(secretMaps);
-        for (Map.Entry<String, String> e : secretRespVO.getValue().entrySet()) {
-            if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
-                secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
-            } else {
-                secretMaps.put(e.getKey(), e.getValue());
-            }
-        }
-        List<String> key = new ArrayList<>();
-        secretMaps.forEach((key1, value) -> key.add(key1));
-        secretRespVO.setKey(key);
-        secretRespVO.setCommandStatus(devopsSecretDTO.getCommandStatus());
-        secretRespVO.setLastUpdateDate(devopsSecretDTO.getLastUpdateDate());
-        secretRespVO.setValue(secretMaps);
-        return secretRespVO;
     }
 
     @Override

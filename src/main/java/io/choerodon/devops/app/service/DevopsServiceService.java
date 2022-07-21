@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
@@ -9,8 +11,6 @@ import io.choerodon.devops.infra.dto.DevopsServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceQueryDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -179,8 +179,6 @@ public interface DevopsServiceService {
     void baseUpdateSelectors(Long id);
 
     void baseUpdateEndPoint(Long id);
-
-    List<Long> baseListEnvByRunningService();
 
     DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
 

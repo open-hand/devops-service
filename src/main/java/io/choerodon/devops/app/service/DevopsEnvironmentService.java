@@ -27,15 +27,6 @@ public interface DevopsEnvironmentService {
     void create(Long projectId, DevopsEnvironmentReqVO devopsEnvironmentReqVO);
 
     /**
-     * 项目下环境流水线查询环境
-     *
-     * @param projectId 项目id
-     * @param active    是否可用
-     * @return List
-     */
-    List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
-
-    /**
      * 项目下根据分组查看环境详情
      *
      * @param projectId 项目id
@@ -346,14 +337,6 @@ public interface DevopsEnvironmentService {
 
     DevopsEnvironmentDTO queryByTokenWithClusterCode(@Param("token") String token);
 
-    /**
-     * 查询项目下的环境
-     *
-     * @param projectId
-     * @param envName   环境名
-     * @return
-     */
-    List<DevopsEnvironmentDTO> listByProjectIdAndName(Long projectId, String envName);
 
     /**
      * 更新符合project_id和devops_env_group_id的环境的devops_env_group_id为null

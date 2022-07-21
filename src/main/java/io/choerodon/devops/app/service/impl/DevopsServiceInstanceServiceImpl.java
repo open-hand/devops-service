@@ -33,15 +33,6 @@ public class DevopsServiceInstanceServiceImpl implements DevopsServiceInstanceSe
     }
 
     @Override
-    public DevopsServiceInstanceDTO baseQueryByOptions(Long serviceId, Long instanceId) {
-        DevopsServiceInstanceDTO devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
-        devopsServiceInstanceDTO.setServiceId(serviceId);
-        devopsServiceInstanceDTO.setInstanceId(instanceId);
-        return devopsServiceInstanceMapper
-                .selectOne(devopsServiceInstanceDTO);
-    }
-
-    @Override
     public List<DevopsServiceInstanceDTO> baseListByServiceId(Long serviceId) {
         DevopsServiceInstanceDTO devopsServiceInstanceDTO = new DevopsServiceInstanceDTO();
         devopsServiceInstanceDTO.setServiceId(serviceId);

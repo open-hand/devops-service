@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.infra.dto.PodResourceDetailsDTO;
@@ -33,8 +31,6 @@ public interface DevopsEnvPodService {
 
     DevopsEnvPodDTO baseQueryByEnvIdAndName(Long envId, String name);
 
-    DevopsEnvPodDTO baseQueryByPod(DevopsEnvPodDTO devopsEnvPodDTO);
-
     void baseCreate(DevopsEnvPodDTO devopsEnvPodDTO);
 
     List<DevopsEnvPodDTO> baseListByInstanceId(Long instanceId);
@@ -48,17 +44,6 @@ public interface DevopsEnvPodService {
     void baseDeleteByNameAndEnvId(String name, Long envId);
 
     void baseDeleteById(Long id);
-
-    DevopsEnvPodDTO queryByNameAndEnvName(String name, String namespace);
-
-    /**
-     * 按资源用量列出环境下Pod信息
-     *
-     * @param envId 环境id
-     * @param sort  排序条件
-     * @return 环境下相关资源的数量
-     */
-    List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort);
 
     void deleteEnvPodById(Long projectId, Long envId, Long podId);
 

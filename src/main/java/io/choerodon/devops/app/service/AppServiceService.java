@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -588,16 +591,6 @@ public interface AppServiceService {
     List<DevopsEnvironmentRepVO> listEnvByAppServiceId(Long projectId, Long appServiceId);
 
     Boolean checkDeleteEnvApp(Long appServiceId, Long envId);
-
-    /**
-     * 根据坐标查询出项目下的应用列表
-     *
-     * @param projectId
-     * @param groupId
-     * @param artifactId
-     * @return
-     */
-    List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId);
 
     Set<Long> getMemberAppServiceIdsByAccessLevel(Long organizationId, Long projectId, Long userId, Integer value, Long appId);
 

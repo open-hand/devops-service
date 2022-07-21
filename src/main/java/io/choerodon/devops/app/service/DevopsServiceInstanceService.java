@@ -11,8 +11,6 @@ public interface DevopsServiceInstanceService {
 
     void baseCreate(DevopsServiceInstanceDTO devopsServiceInstanceDTO);
 
-    DevopsServiceInstanceDTO baseQueryByOptions(Long serviceId, Long instanceId);
-
     List<DevopsServiceInstanceDTO> baseListByServiceId(Long serviceId);
 
     void deleteByServiceId(Long serviceId);

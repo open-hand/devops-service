@@ -125,11 +125,6 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> baseListAll(Long envId) {
-        return devopsEnvUserPermissionMapper.listAll(envId);
-    }
-
-    @Override
     @Transactional
     public void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表

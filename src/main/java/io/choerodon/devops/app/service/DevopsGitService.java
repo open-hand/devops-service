@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.payload.BranchSagaPayLoad;
-import io.choerodon.devops.infra.dto.gitlab.BranchDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -111,15 +110,6 @@ public interface DevopsGitService {
     void deleteBranch(Long projectId, Long appServiceId, String branchName);
 
     /**
-     * 校验分支名唯一性
-     *
-     * @param projectId     项目id
-     * @param applicationId 应用id
-     * @param branchName    分支名
-     */
-    void checkBranchName(Long projectId, Long applicationId, String branchName);
-
-    /**
      * 判断分支名唯一性
      *
      * @param projectId     项目id
@@ -193,8 +183,6 @@ public interface DevopsGitService {
      * @param branchSagaDTO
      */
     void createBranchBySaga(BranchSagaPayLoad branchSagaDTO);
-
-    BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName);
 
     /**
      * 查询
