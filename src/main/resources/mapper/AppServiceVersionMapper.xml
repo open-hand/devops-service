@@ -591,21 +591,30 @@
                repository
         FROM devops_app_service_version
         WHERE helm_config_id IS NOT NULL
-        AND harbor_config_id IS NOT NULL
+          AND harbor_config_id IS NOT NULL
+          and repo_type is not null
     </select>
 
     <select id="queryCountVersionsWithHelmConfig" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM devops_app_service_version
+        SELECT COUNT(*)
+        FROM devops_app_service_version
         WHERE helm_config_id IS NOT NULL
+          AND harbor_config_id IS NOT NULL
+          and repo_type is not null
     </select>
     <select id="queryCountVersionsWithHarborConfig" resultType="java.lang.Integer">
-        SELECT COUNT(*) FROM devops_app_service_version
-        WHERE harbor_config_id IS NOT NULL and repo_type is not null
+        SELECT COUNT(*)
+        FROM devops_app_service_version
+        WHERE harbor_config_id IS NOT NULL
+          and repo_type is not null
+          and image is not null
     </select>
     <select id="listAllVersionsWithHarborConfig"
             resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT *
         FROM devops_app_service_version
-        WHERE harbor_config_id IS NOT NULL and repo_type is not null
+        WHERE harbor_config_id IS NOT NULL
+          and repo_type is not null
+          and image is not null
     </select>
 </mapper>

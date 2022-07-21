@@ -18,5 +18,8 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface AppServiceHelmVersionMapper extends BaseMapper<AppServiceHelmVersionDTO> {
 
     List<AppServiceHelmVersionVO> listByAppVersionIds(@Param("versionIds") Set<Long> versionIds);
+
+    void batchInsert(@Param("appServiceHelmVersionDTOToInsert") List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert);
+
 }
 

@@ -68,8 +68,18 @@ public class DevopsFixDataTask {
         }
     }
 
+    @JobTask(maxRetryCount = 3, code = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据")
+    @TimedTask(name = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixHelmVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_HELM_VERSION_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
     /**
-     * 迁移helm仓库的数据到新的表，以及应用版本与helm仓库的关联关系
+     * 迁移应用服务版本中镜像版本数据
      *
      * @param map
      */
