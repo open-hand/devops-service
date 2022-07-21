@@ -54,6 +54,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_APP_CENTER_DATA = "fixAppCenterData";
     public static final String FIX_PIPELINE_DATA = "fixPipelineData";
     public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
+    public static final String FIX_HELM_VERSION_DATA = "fixHelmVersionData";
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
     public static final String FIX_PIPELINE_MAVEN_PUBLISH_DATA = "fixPipelineMavenPublishData";
     private static final String PIPELINE_CONTENT_FIX = "pipelineContentFix";
@@ -118,14 +119,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Qualifier("appServiceHelmConfigHelper")
     private BatchInsertHelper<AppServiceHelmRelDTO> appServiceHelmRelDTOBatchInsertHelper;
     @Autowired
-    @Qualifier("appServiceVersionHelmConfigHelper")
-    private BatchInsertHelper<AppServiceHelmVersionDTO> appServiceHelmVersionDTOBatchInsertHelper;
-
-    @Autowired
     private AppServiceImageVersionService appServiceImageVersionService;
-
     @Autowired
-    private AppServiceImageVersionMapper appServiceImageVersionMapper;
+    private AppServiceHelmVersionService appServiceHelmVersionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -156,6 +152,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case FIX_HELM_REPO_DATA:
                 fixHelmRepoDate();
+                break;
+            case FIX_HELM_VERSION_DATA:
+                fixHelmVersionData();
                 break;
             case FIX_IMAGE_VERSION_DATA:
                 fixImageVersionData();
@@ -200,6 +199,51 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     }
 
+    private void fixHelmVersionData() {
+        // 应用服务版本与helm仓库关联关系
+        // 数量非常大，需要分页操作
+        int count = appServiceVersionService.queryCountVersionsWithHelmConfig();
+        int pageSize = 500;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        do {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version helm config {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert = new ArrayList<>();
+
+            Page<AppServiceVersionDTO> appServiceVersionDTOPage = PageHelper.doPage(pageRequest, () -> appServiceVersionService.listAllVersionsWithHelmConfig());
+            appServiceVersionDTOPage.getContent().forEach(v -> {
+                AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+                appServiceHelmVersionDTO.setAppServiceVersionId(v.getId());
+                appServiceHelmVersionDTO.setHelmConfigId(v.getHelmConfigId());
+                appServiceHelmVersionDTO.setHarborRepoType(v.getRepoType());
+                appServiceHelmVersionDTO.setHarborConfigId(v.getHarborConfigId());
+                appServiceHelmVersionDTO.setValueId(v.getValueId());
+                appServiceHelmVersionDTO.setReadmeValueId(v.getReadmeValueId());
+                appServiceHelmVersionDTO.setImage(v.getImage());
+                appServiceHelmVersionDTO.setRepository(v.getRepository());
+                if (appServiceHelmVersionDTO.getValueId() == null
+                        || appServiceHelmVersionDTO.getReadmeValueId() == null
+                        || appServiceHelmVersionDTO.getImage() == null
+                        || appServiceHelmVersionDTO.getRepository() == null) {
+                    LOGGER.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<",
+                            JsonHelper.marshalByJackson(appServiceHelmVersionDTO));
+                } else {
+                    appServiceHelmVersionDTOToInsert.add(appServiceHelmVersionDTO);
+                }
+
+            });
+            if (!CollectionUtils.isEmpty(appServiceHelmVersionDTOToInsert)) {
+                appServiceHelmVersionService.batchInsertInNewTrans(appServiceHelmVersionDTOToInsert);
+            }
+            pageNumber++;
+        } while (pageNumber <= total);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+    }
+
     private void fixHelmRepoDate() {
         fixHelmConfig();
     }
@@ -226,7 +270,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOToInsert = new ArrayList<>();
         List<AppServiceHelmRelDTO> appServiceHelmRelDTOToInsert = new ArrayList<>();
-        List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert = new ArrayList<>();
+
         // 平台层
         platformHelmConfig.forEach(c -> {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
@@ -306,37 +350,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         devopsHelmConfigDTOBatchInsertHelper.batchInsert(devopsHelmConfigDTOToInsert);
         appServiceHelmRelDTOBatchInsertHelper.batchInsert(appServiceHelmRelDTOToInsert);
-
-        // 应用服务版本与helm仓库关联关系
-        // 数量非常大，需要分页操作
-        int count = appServiceVersionService.queryCountVersionsWithHelmConfig();
-        int pageSize = 500;
-        int total = (count + pageSize - 1) / pageSize;
-        int pageNumber = 0;
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
-        do {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version helm config {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-
-            Page<AppServiceVersionDTO> appServiceVersionDTOPage = PageHelper.doPage(pageRequest, () -> appServiceVersionService.listAllVersionsWithHelmConfig());
-            appServiceVersionDTOPage.getContent().forEach(v -> {
-                AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
-                appServiceHelmVersionDTO.setAppServiceVersionId(v.getId());
-                appServiceHelmVersionDTO.setHelmConfigId(v.getHelmConfigId());
-                appServiceHelmVersionDTO.setHarborRepoType(v.getRepoType());
-                appServiceHelmVersionDTO.setHarborConfigId(v.getHarborConfigId());
-                appServiceHelmVersionDTO.setValueId(v.getValueId());
-                appServiceHelmVersionDTO.setReadmeValueId(v.getReadmeValueId());
-                appServiceHelmVersionDTO.setImage(v.getImage());
-                appServiceHelmVersionDTO.setRepository(v.getRepository());
-                appServiceHelmVersionDTOToInsert.add(appServiceHelmVersionDTO);
-            });
-            appServiceHelmVersionDTOBatchInsertHelper.batchInsert(appServiceHelmVersionDTOToInsert);
-            pageNumber++;
-        } while (pageNumber <= total);
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }

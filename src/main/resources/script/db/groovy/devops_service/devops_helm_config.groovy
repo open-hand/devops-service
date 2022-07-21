@@ -15,10 +15,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovy') {
 
             column(name: 'username', type: 'VARCHAR(64)', remarks: '用户名')
             column(name: 'password', type: 'VARCHAR(128)', remarks: '密码')
-            column(name: 'resource_type', type: 'VARCHAR(16)', remarks: '关联该仓库配置的层级 project/organization/site')
-            column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '关联该仓库配置的资源id, 项目id 组织id 平台层为0')
-            column(name: "repo_private", type: 'TINYINT(1)', remarks: '是否私有 0 否 1是',defaultValue: 0)
-            column(name: 'repo_default', type: 'TINYINT(1)', remarks: '是否为默认仓库',defaultValue: 0)
+            column(name: 'resource_type', type: 'VARCHAR(16)', remarks: '关联该仓库配置的层级 project/organization/site') {
+                constraints(nullable: false)
+            }
+            column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '关联该仓库配置的资源id, 项目id 组织id 平台层为0') {
+                constraints(nullable: false)
+            }
+            column(name: "repo_private", type: 'TINYINT(1)', remarks: '是否私有 0 否 1是', defaultValue: 0)
+            column(name: 'repo_default', type: 'TINYINT(1)', remarks: '是否为默认仓库', defaultValue: 0)
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

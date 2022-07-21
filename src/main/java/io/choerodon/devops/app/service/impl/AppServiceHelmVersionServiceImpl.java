@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
@@ -55,6 +56,12 @@ public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionSe
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
         appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionId);
         appServiceHelmVersionMapper.delete(appServiceHelmVersionDTO);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void batchInsertInNewTrans(List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert) {
+        appServiceHelmVersionMapper.batchInsert(appServiceHelmVersionDTOToInsert);
     }
 }
 

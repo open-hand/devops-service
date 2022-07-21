@@ -21,5 +21,7 @@ public interface AppServiceHelmVersionService {
     void create(AppServiceHelmVersionDTO appServiceHelmVersionDTO);
 
     void deleteByAppServiceVersionId(Long appServiceVersionId);
+
+    void batchInsertInNewTrans(List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert);
 }
 
