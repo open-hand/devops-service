@@ -108,6 +108,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOList.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
 
         devopsHelmConfigVOS.forEach(c -> {
+            c.setPassword(null);
             IamUserDTO creator = iamUserDTOMap.get(c.getCreatedBy());
             if (creator != null) {
                 c.setCreatorImageUrl(creator.getImageUrl());
@@ -161,6 +162,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigSearchDTO.setId(helmConfigId);
 
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectOne(devopsHelmConfigSearchDTO);
+        devopsHelmConfigDTO.setPassword(null);
 
         return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
     }
