@@ -29,7 +29,7 @@
             WHERE resource_type = 'project'
               AND name = #{name}
     <if test="helmConfigId != null">
-      AND resource_id != #{helmConfigId}
+      AND id != #{helmConfigId}
     </if>
   </select>
 

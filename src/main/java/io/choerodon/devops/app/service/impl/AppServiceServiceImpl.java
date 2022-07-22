@@ -1474,6 +1474,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         Response<String> result;
         try {
             String[] params = processedUrl.getPath().split("/");
+            if (params.length != 2) {
+                checkInfoVO.setSuccess(false);
+                checkInfoVO.setErrMsg("helm仓库地址无效，应该类似：http://localhost:8080/org1/repoa");
+            }
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, new RetrofitHandler.StringConverter());
             chartClient = retrofit.create(ChartClient.class);
             Call<String> getIndex = chartClient.getIndex(params[1], params[2]);
