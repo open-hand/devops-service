@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
 
+import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -34,6 +36,7 @@ import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHa
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
@@ -269,6 +272,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         List<AppServiceDTO> appServiceDTOList = devopsAppService.baseListByIds(new HashSet<>(appIds));
         Map<Long, AppServiceDTO> appServiceDTOMap = appServiceDTOList.stream().collect(Collectors.toMap(AppServiceDTO::getId, Function.identity()));
 
+        List<ProjectDTO> projectDTOS = baseServiceClientOperator.queryProjectsByIds(projectIds);
+        Map<Long, ProjectDTO> projectDTOMap = projectDTOS.stream().collect(Collectors.toMap(ProjectDTO::getId, Function.identity()));
+
+
+        Set<Long> organizationIds = projectDTOS.stream().map(ProjectDTO::getOrganizationId).collect(Collectors.toSet());
+        List<Tenant> tenants = baseServiceClientOperator.listOrganizationByIds(organizationIds);
+        Map<Long, Tenant> tenantMap = tenants.stream().collect(Collectors.toMap(Tenant::getTenantId, Function.identity()));
+
 
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOToInsert = new ArrayList<>();
         List<AppServiceHelmRelDTO> appServiceHelmRelDTOToInsert = new ArrayList<>();
@@ -277,7 +288,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         platformHelmConfig.forEach(c -> {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
-            devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
             if (DEFAULT_CHART_NAME.equals(c.getName())) {
                 devopsHelmConfigDTO.setRepoDefault(true);
             }
@@ -287,6 +298,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
+            devopsHelmConfigDTO.setRepoDefault(false);
             devopsHelmConfigDTO.setResourceId(0L);
             devopsHelmConfigDTO.setResourceType(ResourceLevel.SITE.value());
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
@@ -295,7 +307,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         organizationHelmConfig.forEach(c -> {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
-            devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
             Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
             });
             devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
@@ -303,23 +315,48 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
             devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setRepoDefault(false);
             devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
         });
-        IntHolder index = new IntHolder();
-        index.value = 1;
+        // 项目id为key
+        Map<Long, IntHolder> indexMap = new HashMap<>();
         // 项目层
         projectHelmConfig.forEach(c -> {
+            ProjectDTO projectDTO = projectDTOMap.get(c.getProjectId());
+            if (projectDTO == null) {
+                LOGGER.info("skip current config.id:{}", c.getId());
+                return;
+            }
+            Tenant tenant = tenantMap.get(projectDTO.getOrganizationId());
+            if (tenant == null) {
+                LOGGER.info("skip current config.id:{}", c.getId());
+                return;
+            }
+
+            IntHolder index = indexMap.get(c.getProjectId());
+            if (index == null) {
+                index = new IntHolder();
+                index.value = 1;
+                indexMap.put(c.getProjectId(), index);
+            }
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
             devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));
             Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
             });
-            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            URL processedUrl = null;
+            try {
+                processedUrl = new URL(helmConfig.get("url"));
+            } catch (Exception e) {
+                LOGGER.warn("current config:{} errorMsg:{}", c.getConfig(), e.getMessage());
+            }
+            devopsHelmConfigDTO.setUrl(String.format("%s://%s/%s/%s", processedUrl.getProtocol(), processedUrl.getHost(), tenant.getTenantNum(), projectDTO.getCode()));
             devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
-            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setRepoDefault(false);
+            devopsHelmConfigDTO.setResourceId(c.getProjectId());
             devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
             index.value++;
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
@@ -328,17 +365,41 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         // 应用层
         appHelmConfig.forEach(c -> {
             AppServiceDTO appServiceDTO = appServiceDTOMap.get(c.getAppServiceId());
+            ProjectDTO projectDTO = projectDTOMap.get(appServiceDTO.getProjectId());
+            if (projectDTO == null) {
+                LOGGER.info("skip current config.id:{}", c.getId());
+                return;
+            }
+            Tenant tenant = tenantMap.get(projectDTO.getOrganizationId());
+            if (tenant == null) {
+                LOGGER.info("skip current config.id:{}", c.getId());
+                return;
+            }
+
+            IntHolder index = indexMap.get(appServiceDTO.getProjectId());
+            if (index == null) {
+                index = new IntHolder();
+                index.value = 1;
+                indexMap.put(appServiceDTO.getProjectId(), index);
+            }
 
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
             devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));
             Map<String, String> helmConfig = JsonHelper.unmarshalByJackson(c.getConfig(), new TypeReference<Map<String, String>>() {
             });
-            devopsHelmConfigDTO.setUrl(helmConfig.get("url"));
+            URL processedUrl = null;
+            try {
+                processedUrl = new URL(helmConfig.get("url"));
+            } catch (Exception e) {
+                LOGGER.warn("current config:{} errorMsg:{}", c.getConfig(), e.getMessage());
+            }
+            devopsHelmConfigDTO.setUrl(String.format("%s://%s/%s/%s", processedUrl.getProtocol(), processedUrl.getHost(), tenant.getTenantNum(), projectDTO.getCode()));
             devopsHelmConfigDTO.setUsername(helmConfig.get("userName"));
             devopsHelmConfigDTO.setPassword(helmConfig.get("password"));
             devopsHelmConfigDTO.setRepoPrivate(Boolean.parseBoolean(helmConfig.get("isPrivate")));
-            devopsHelmConfigDTO.setResourceId(c.getOrganizationId());
+            devopsHelmConfigDTO.setRepoDefault(false);
+            devopsHelmConfigDTO.setResourceId(appServiceDTO.getProjectId());
             devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
             devopsHelmConfigDTOToInsert.add(devopsHelmConfigDTO);
 
@@ -350,8 +411,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             appServiceHelmRelDTOToInsert.add(appServiceHelmRelDTO);
         });
 
-        devopsHelmConfigService.batchInsertInNewTrans(devopsHelmConfigDTOToInsert);
-        appServiceHelmRelService.batchInsertInNewTrans(appServiceHelmRelDTOToInsert);
+        if (!ObjectUtils.isEmpty(devopsHelmConfigDTOToInsert)) {
+            devopsHelmConfigService.batchInsertInNewTrans(devopsHelmConfigDTOToInsert);
+        }
+        if (!ObjectUtils.isEmpty(appServiceHelmRelDTOToInsert)) {
+            appServiceHelmRelService.batchInsertInNewTrans(appServiceHelmRelDTOToInsert);
+        }
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
