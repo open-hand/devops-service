@@ -348,6 +348,11 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     }
 
     @Override
+    public void batchInsertInNewTrans(List<DevopsHelmConfigDTO> devopsHelmConfigDTOS) {
+        devopsHelmConfigMapper.batchInsert(devopsHelmConfigDTOS);
+    }
+
+    @Override
     public byte[] downloadChart(Long helmConfigId, String chartUrl) {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
 

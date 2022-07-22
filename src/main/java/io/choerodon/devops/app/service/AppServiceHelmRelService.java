@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 
 /**
@@ -11,5 +13,11 @@ import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 public interface AppServiceHelmRelService {
 
     AppServiceHelmRelDTO queryByAppServiceId(Long appServiceId);
+
+    /**
+     * 批量插入
+     * @param appServiceHelmRelDTOToInsert
+     */
+    void batchInsertInNewTrans(List<AppServiceHelmRelDTO> appServiceHelmRelDTOToInsert);
 }
 

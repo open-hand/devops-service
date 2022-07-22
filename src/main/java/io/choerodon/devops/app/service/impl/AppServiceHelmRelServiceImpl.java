@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-
-import io.choerodon.devops.app.service.AppServiceHelmRelService;
-
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import io.choerodon.devops.app.service.AppServiceHelmRelService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceHelmRelDTO;
 import io.choerodon.devops.infra.mapper.AppServiceHelmRelMapper;
@@ -29,6 +29,11 @@ public class AppServiceHelmRelServiceImpl implements AppServiceHelmRelService {
         AppServiceHelmRelDTO appServiceHelmRelDTO = new AppServiceHelmRelDTO();
         appServiceHelmRelDTO.setAppServiceId(appServiceId);
         return appServiceHelmRelMapper.selectOne(appServiceHelmRelDTO);
+    }
+
+    @Override
+    public void batchInsertInNewTrans(List<AppServiceHelmRelDTO> appServiceHelmRelDTOToInsert) {
+        appServiceHelmRelMapper.batchInsert(appServiceHelmRelDTOToInsert);
     }
 }
 

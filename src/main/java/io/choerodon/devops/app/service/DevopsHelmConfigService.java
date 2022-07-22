@@ -132,7 +132,13 @@ public interface DevopsHelmConfigService {
     List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId, Long appServiceId);
 
     /**
+     * 批量插入
+     */
+    void batchInsertInNewTrans(List<DevopsHelmConfigDTO> devopsHelmConfigDTOS);
+
+    /**
      * 下载chart包
+     *
      * @param helmConfigId
      * @param chartUrl
      * @return
