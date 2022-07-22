@@ -7,6 +7,8 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,7 +63,7 @@ public class DevopsHelmConfigController {
                                                   @ApiParam("仓库名称")
                                                   @RequestParam("name") String name,
                                                   @ApiParam("仓库id")
-                                                  @Encrypt @RequestParam(value = "helm_config_id",required = false) Long helmConfigId) {
+                                                  @Encrypt @RequestParam(value = "helm_config_id", required = false) Long helmConfigId) {
         return Results.success(helmConfigService.checkNameExists(projectId, helmConfigId, name));
     }
 
@@ -115,5 +117,21 @@ public class DevopsHelmConfigController {
                                                   @ApiParam("仓库id")
                                                   @Encrypt @PathVariable("helm_config_id") Long helmConfigId) {
         return Results.success(helmConfigService.getIndexContent(projectId, helmConfigId));
+    }
+
+    @ApiOperation("下载chart包")
+    @GetMapping("/{helm_config_id}/charts/download")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<byte[]> downloadCharts(
+            @ApiParam("项目id")
+            @PathVariable("project_id") Long projectId,
+            @ApiParam("仓库id")
+            @Encrypt @PathVariable("helm_config_id") Long helmConfigId,
+            @RequestParam("chart_url") String chartUrl) {
+        String[] chartInfos = chartUrl.split("/");
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Content-Disposition", String.format("attchement;filename=%s", chartInfos[2]));
+        httpHeaders.add("content-type", "application/x-tar");
+        return new ResponseEntity<>(helmConfigService.downloadChart(helmConfigId, chartUrl), httpHeaders, HttpStatus.OK);
     }
 }

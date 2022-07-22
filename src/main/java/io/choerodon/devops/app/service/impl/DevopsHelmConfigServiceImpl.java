@@ -268,8 +268,9 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-
-        ResponseEntity<String> exchange = restTemplate.exchange(devopsHelmConfigDTO.getUrl() + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
+        String helmRepoUrl = devopsHelmConfigDTO.getUrl();
+        helmRepoUrl = helmRepoUrl.endsWith("/") ? helmRepoUrl.substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : helmRepoUrl;
+        ResponseEntity<String> exchange = restTemplate.exchange(helmRepoUrl + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
             throw new CommonException("error.get.helm.chart");
@@ -344,5 +345,32 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }
 
         return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+    }
+
+    @Override
+    public byte[] downloadChart(Long helmConfigId, String chartUrl) {
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        if (devopsHelmConfigDTO.getRepoPrivate()) {
+            String credentials = devopsHelmConfigDTO.getUsername() + ":"
+                    + devopsHelmConfigDTO.getPassword();
+            headers.add("Authorization", "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes()));
+        }
+
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        String helmRepoUrl = devopsHelmConfigDTO.getUrl();
+        helmRepoUrl = helmRepoUrl.endsWith("/") ? helmRepoUrl.substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : helmRepoUrl;
+
+        ResponseEntity<byte[]> exchange;
+        try {
+            exchange = restTemplate.exchange(helmRepoUrl + chartUrl, HttpMethod.GET, requestEntity, byte[].class);
+        } catch (Exception e) {
+            throw new CommonException("error.helm.chart.download", e.getMessage());
+        }
+
+        return exchange.getBody();
     }
 }

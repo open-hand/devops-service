@@ -130,4 +130,12 @@ public interface DevopsHelmConfigService {
      * @return
      */
     List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId, Long appServiceId);
+
+    /**
+     * 下载chart包
+     * @param helmConfigId
+     * @param chartUrl
+     * @return
+     */
+    byte[] downloadChart(Long helmConfigId, String chartUrl);
 }
