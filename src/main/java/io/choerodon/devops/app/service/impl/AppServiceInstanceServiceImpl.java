@@ -229,6 +229,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private AppServiceImageVersionService appServiceImageVersionService;
     @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -2809,8 +2811,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
         if (appServiceHelmVersionDTO.getHelmConfigId() != null) {
             // 查询chart配置
-            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
-            ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryById(appServiceHelmVersionDTO.getHelmConfigId());
+            ConfigVO helmConfig = ConvertUtils.convertObject(devopsHelmConfigDTO, ConfigVO.class);
+            helmConfig.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
             // 如果是私有的, 发送认证信息给agent
             if (Boolean.TRUE.equals(helmConfig.getIsPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);

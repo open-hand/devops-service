@@ -931,6 +931,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             }
             // 计算删除chart列表
             ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode(), appServiceVersionDTO);
+            chartTagVO.setTenantId(tenant.getTenantId());
+            chartTagVO.setProjectId(projectDTO.getId());
             deleteChartTags.add(chartTagVO);
 
             // 删除应用服务版本

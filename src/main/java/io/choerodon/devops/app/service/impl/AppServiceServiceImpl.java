@@ -562,10 +562,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
         }
-        if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
-            appServiceDTO.setChartConfigId(chartConfig.getId());
-        }
+//        if (appServiceUpdateDTO.getChart() != null) {
+//            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
+//            appServiceDTO.setChartConfigId(chartConfig.getId());
+//        }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());

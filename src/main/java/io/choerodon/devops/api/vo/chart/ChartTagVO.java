@@ -14,6 +14,24 @@ public class ChartTagVO {
     private String chartName;
     private String chartVersion;
     private Long appServiceId;
+    private Long tenantId;
+    private Long projectId;
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public String getOrgCode() {
         return orgCode;
