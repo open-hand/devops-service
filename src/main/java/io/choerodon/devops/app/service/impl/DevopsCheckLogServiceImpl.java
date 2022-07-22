@@ -307,7 +307,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         IntHolder index = new IntHolder();
         index.value = 1;
         // 项目层
-        projectHelmConfig.forEach(c->{
+        projectHelmConfig.forEach(c -> {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setId(c.getId());
             devopsHelmConfigDTO.setName(String.format("自定义Helm仓库-%s", index.value));

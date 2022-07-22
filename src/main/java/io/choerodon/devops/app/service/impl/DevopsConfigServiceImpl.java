@@ -2,10 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.google.gson.Gson;
 import org.springframework.beans.BeanUtils;
@@ -67,7 +64,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (devopsConfigVO.getType().equals(CHART)) {
                 DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
                 devopsHelmConfigDTO.setUrl(devopsConfigVO.getConfig().getUrl());
-                devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+                devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
                 devopsHelmConfigDTO.setUsername(devopsConfigVO.getConfig().getUserName());
                 devopsHelmConfigDTO.setPassword(devopsConfigVO.getConfig().getPassword());
                 if (!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword())) {

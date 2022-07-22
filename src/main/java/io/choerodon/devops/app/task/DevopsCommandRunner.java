@@ -1,12 +1,8 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import com.google.gson.Gson;
 import okhttp3.ResponseBody;
@@ -74,7 +70,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         try {
             DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
             devopsHelmConfigDTO.setUrl(servicesHelmUrl);
-            devopsHelmConfigDTO.setName(DEFAULT_CHART_NAME);
+            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
             // 只有helm的用户名密码都设置了, 才设置到数据库中
             if (StringUtils.hasText(servicesHelmUserName) && StringUtils.hasText(servicesHelmPassword)) {
                 devopsHelmConfigDTO.setUsername(servicesHelmUserName);
@@ -100,7 +96,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
         } else if (Objects.equals(oldConfigDTO.getUrl(), devopsHelmConfigDTO.getUrl())) {
             if (!Objects.equals(oldConfigDTO.getUsername(), devopsHelmConfigDTO.getUsername())
-                    || !Objects.equals(oldConfigDTO.getPassword(),devopsHelmConfigDTO.getPassword())) {
+                    || !Objects.equals(oldConfigDTO.getPassword(), devopsHelmConfigDTO.getPassword())) {
                 devopsHelmConfigDTO.setId(oldConfigDTO.getId());
                 devopsHelmConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
                 devopsHelmConfigService.updateDevopsHelmConfig(devopsHelmConfigDTO);
