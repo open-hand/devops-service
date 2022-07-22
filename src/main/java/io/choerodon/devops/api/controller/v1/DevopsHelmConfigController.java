@@ -130,7 +130,7 @@ public class DevopsHelmConfigController {
             @RequestParam("chart_url") String chartUrl) {
         String[] chartInfos = chartUrl.split("/");
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Content-Disposition", String.format("attchement;filename=%s", chartInfos[2]));
+        httpHeaders.add("Content-Disposition", String.format("attchement;filename=%s", chartInfos[1]));
         httpHeaders.add("content-type", "application/x-tar");
         return new ResponseEntity<>(helmConfigService.downloadChart(helmConfigId, chartUrl), httpHeaders, HttpStatus.OK);
     }
