@@ -15,6 +15,8 @@ public class ConfigVO implements Serializable {
 
     private String userName;
 
+    private String username;
+
     private String password;
 
     private String project;
@@ -79,6 +81,14 @@ public class ConfigVO implements Serializable {
 
     public void setIsPrivate(Boolean aPrivate) {
         isPrivate = aPrivate;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Override

@@ -72,13 +72,6 @@ public interface DevopsHelmConfigService {
      *
      * @return
      */
-    DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType);
-
-    /**
-     * 查询指定层级的默认仓库
-     *
-     * @return
-     */
     DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType, Long resourceId);
 
     /**
