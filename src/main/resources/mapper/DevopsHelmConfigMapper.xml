@@ -75,7 +75,7 @@
       #{devopsHelmConfigDTO.resourceId},
       #{devopsHelmConfigDTO.url},
       #{devopsHelmConfigDTO.username},
-      #{devopsHelmConfigDTO.password}
+      #{devopsHelmConfigDTO.password},
       #{devopsHelmConfigDTO.repoPrivate},
       #{devopsHelmConfigDTO.repoDefault}
       )
