@@ -55,4 +55,30 @@
                  JOIN devops_app_service_helm_rel dashr ON dashr.helm_config_id = dhc.id
     WHERE dashr.app_service_id = #{appServiceId}
   </select>
+
+  <insert id="batchInsert">
+    insert ignore into devops_helm_config(
+    id,
+    name,
+    resource_type,
+    resource_id,
+    url,
+    username,
+    password,
+    repo_private,
+    repo_default)
+    values
+    <foreach collection="devopsHelmConfigDTOS" item="devopsHelmConfigDTO" separator=",">
+      (#{devopsHelmConfigDTO.id},
+      #{devopsHelmConfigDTO.name},
+      #{devopsHelmConfigDTO.resourceType},
+      #{devopsHelmConfigDTO.resourceId},
+      #{devopsHelmConfigDTO.url},
+      #{devopsHelmConfigDTO.username},
+      #{devopsHelmConfigDTO.password}
+      #{devopsHelmConfigDTO.repoPrivate},
+      #{devopsHelmConfigDTO.repoDefault}
+      )
+    </foreach>
+  </insert>
 </mapper>

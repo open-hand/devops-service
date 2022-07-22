@@ -20,5 +20,7 @@ public interface DevopsHelmConfigMapper extends BaseMapper<DevopsHelmConfigDTO> 
 
     DevopsHelmConfigDTO selectOneWithIdAndName(@Param("resourceId") Long resourceId, @Param("resourceType") String resourceType, @Param("defaultRepo") Boolean defaultRepo);
 
-    DevopsHelmConfigDTO selectWithIdAndNameByAppServiceId(Long appServiceId);
+    DevopsHelmConfigDTO selectWithIdAndNameByAppServiceId(@Param("appServiceId") Long appServiceId);
+
+    void batchInsert(@Param("devopsHelmConfigDTOS") List<DevopsHelmConfigDTO> devopsHelmConfigDTOS);
 }

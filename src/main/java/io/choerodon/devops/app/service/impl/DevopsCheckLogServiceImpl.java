@@ -122,6 +122,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private AppServiceImageVersionService appServiceImageVersionService;
     @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
+    @Autowired
+    private AppServiceHelmRelService appServiceHelmRelService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -348,8 +350,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             appServiceHelmRelDTOToInsert.add(appServiceHelmRelDTO);
         });
 
-        devopsHelmConfigDTOBatchInsertHelper.batchInsert(devopsHelmConfigDTOToInsert);
-        appServiceHelmRelDTOBatchInsertHelper.batchInsert(appServiceHelmRelDTOToInsert);
+        devopsHelmConfigService.batchInsertInNewTrans(devopsHelmConfigDTOToInsert);
+        appServiceHelmRelService.batchInsertInNewTrans(appServiceHelmRelDTOToInsert);
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
