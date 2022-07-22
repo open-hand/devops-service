@@ -371,7 +371,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
         ResponseEntity<byte[]> exchange;
         try {
-            exchange = restTemplate.exchange(helmRepoUrl + chartUrl, HttpMethod.GET, requestEntity, byte[].class);
+            exchange = restTemplate.exchange(helmRepoUrl + "/" + chartUrl, HttpMethod.GET, requestEntity, byte[].class);
         } catch (Exception e) {
             throw new CommonException("error.helm.chart.download", e.getMessage());
         }
