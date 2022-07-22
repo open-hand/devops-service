@@ -284,9 +284,9 @@ public interface AppServiceService {
      * @param url       ChartMuseum地址
      * @param username  用户名
      * @param password  密码
-     * @return true如果通过 (未通过则抛出错误信息)
+     * @return CheckInfoVO
      */
-    Boolean checkChart(Long projectId, String url, @Nullable String username, @Nullable String password);
+    CheckInfoVO checkChart(Long projectId, String url, @Nullable String username, @Nullable String password);
 
     /**
      * 查看sonarqube相关信息

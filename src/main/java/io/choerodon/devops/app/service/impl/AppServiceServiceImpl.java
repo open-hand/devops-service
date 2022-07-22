@@ -1451,13 +1451,16 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(Long projectId, String url, @Nullable String username, @Nullable String password) {
+    public CheckInfoVO checkChart(Long projectId, String url, @Nullable String username, @Nullable String password) {
+        CheckInfoVO checkInfoVO = new CheckInfoVO();
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
         URL processedUrl;
         try {
             processedUrl = new URL(url);
         } catch (Exception e) {
-            throw new CommonException("error.chart.address.invalid", e.getMessage());
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("helm仓库地址不正确");
+            return checkInfoVO;
         }
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(processedUrl.getProtocol() + "://" + processedUrl.getHost());
@@ -1476,12 +1479,22 @@ public class AppServiceServiceImpl implements AppServiceService {
             Call<String> getIndex = chartClient.getIndex(params[1], params[2]);
             result = getIndex.execute();
         } catch (Exception ex) {
-            throw new CommonException("error.chart.address.unreachable");
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("无法访问helm仓库:" + ex.getMessage());
+            return checkInfoVO;
+        }
+        if (result != null && result.isSuccessful()) {
+            checkInfoVO.setSuccess(true);
+            return checkInfoVO;
         }
         if (result != null && (result.code() > 400 && result.code() < 500)) {
-            throw new CommonException("error.chart.authentication.failed");
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("鉴权失败");
+            return checkInfoVO;
         }
-        return true;
+        checkInfoVO.setSuccess(false);
+        checkInfoVO.setErrMsg("测试连接失败");
+        return checkInfoVO;
     }
 
     @Override
