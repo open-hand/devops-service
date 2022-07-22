@@ -76,7 +76,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
                 devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
                 devopsHelmConfigDTO.setResourceId(resourceId);
                 devopsHelmConfigDTO.setRepoDefault(true);
-                DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.ORGANIZATION.value());
+                DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.ORGANIZATION.value(), resourceId);
                 if (oldConfigDTO == null) {
                     devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
                 } else if (oldConfigDTO.getUrl().equals(devopsHelmConfigDTO.getUrl())) {
@@ -316,8 +316,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (devopsConfigVO.getType().equals(HARBOR)) {
             devopsConfigRepVO.setHarbor(devopsConfigVO);
             devopsConfigRepVO.setHarborPrivate(devopsConfigVO.getHarborPrivate());
-        } else if (devopsConfigVO.getType().equals(CHART)) {
-            devopsConfigRepVO.setChart(devopsConfigVO);
         }
     }
 
@@ -329,6 +327,21 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (resourceType.equals(ResourceLevel.PROJECT.value())) {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
             devopsConfigRepVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
+        }
+        // 设置chart仓库
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(resourceType, resourceId);
+        if (devopsHelmConfigDTO != null) {
+            ConfigVO configVO = new ConfigVO();
+            configVO.setUrl(devopsHelmConfigDTO.getUrl());
+            configVO.setUserName(devopsHelmConfigDTO.getUsername());
+            configVO.setPassword(devopsHelmConfigDTO.getPassword());
+            configVO.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
+
+            DevopsConfigVO chart = new DevopsConfigVO();
+            chart.setType(CHART);
+            chart.setCustom(true);
+            chart.setConfig(configVO);
+            devopsConfigRepVO.setChart(chart);
         }
         return devopsConfigRepVO;
     }

@@ -582,7 +582,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {
-        applicationServiceService.checkChart(projectId,configVO.getUrl(), configVO.getUserName(), configVO.getPassword());
+        applicationServiceService.checkChart(projectId,configVO.getUrl(), configVO.getUsername(), configVO.getPassword());
     }
 
     /**
