@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import org.hzero.websocket.constant.ClientWebSocketConstant;
 import org.hzero.websocket.vo.MsgVO;
@@ -39,6 +40,8 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HostAgentSocketHandler.class);
+    private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s";
+    private static final Integer C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT = 3;
 
     private final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
@@ -79,18 +82,32 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         hostSessionVO.setRegisterKey(WebSocketTool.getGroup(session));
         redisTemplate.opsForHash().put(DevopsHostConstants.HOST_SESSION, hostSessionVO.getRegisterKey(), hostSessionVO);
 
-        MsgVO msgVO = new MsgVO();
+        MsgVO msgVO;
         // 版本不一致，需要升级
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
-            DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
-            HostMsgVO hostMsgVO = new HostMsgVO();
-            hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
-            Map<String, String> upgradeInfo = new HashMap<>();
-            upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId(), true));
-            upgradeInfo.put("version", agentVersion);
-            hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
-
-            msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
+            String redisKey = String.format(C7N_AGENT_UPGRADE_COUNT_REDIS_KEY, hostId);
+            Integer count = (Integer) redisTemplate.opsForValue().get(redisKey);
+            if (C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT.equals(count)) {
+                // 表示agent进行了3次尝试升级，都失败了，那么agent应该退出。手动处理升级失败问题
+                HostMsgVO hostMsgVO = new HostMsgVO();
+                hostMsgVO.setType(HostCommandEnum.EXIT_AGENT.value());
+                hostMsgVO.setPayload("{}");
+                msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.EXIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
+            } else {
+                if (count == null) {
+                    count = 0;
+                }
+                count++;
+                redisTemplate.opsForValue().set(redisKey, count, 1800, TimeUnit.SECONDS);
+                DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
+                HostMsgVO hostMsgVO = new HostMsgVO();
+                hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());
+                Map<String, String> upgradeInfo = new HashMap<>();
+                upgradeInfo.put("upgradeCommand", devopsHostService.queryShell(devopsHostDTO.getProjectId(), devopsHostDTO.getId(), true));
+                upgradeInfo.put("version", agentVersion);
+                hostMsgVO.setPayload(JsonHelper.marshalByJackson(upgradeInfo));
+                msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.UPGRADE_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
+            }
         } else {
             HostMsgVO hostMsgVO = new HostMsgVO();
             hostMsgVO.setType(HostCommandEnum.INIT_AGENT.value());
