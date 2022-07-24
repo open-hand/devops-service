@@ -354,6 +354,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         devopsHostAppVO.setCreator(creator);
         devopsHostAppVO.setUpdater(updater);
+        if (devopsHostAppVO.getDevopsHostCommandDTO()==null){
+            DevopsHostCommandDTO defaultDevopsHostCommandDTO = new DevopsHostCommandDTO();
+            defaultDevopsHostCommandDTO.setHostId(devopsHostAppVO.getHostId());
+            defaultDevopsHostCommandDTO.setStatus("failed");
+            defaultDevopsHostCommandDTO.setError("Operation missing");
+            devopsHostAppVO.setDevopsHostCommandDTO(defaultDevopsHostCommandDTO);
+        }
         return devopsHostAppVO;
     }
 
