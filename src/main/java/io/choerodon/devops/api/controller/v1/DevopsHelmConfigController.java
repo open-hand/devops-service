@@ -80,6 +80,7 @@ public class DevopsHelmConfigController {
 
     @ApiOperation("更新helm仓库")
     @PutMapping
+    @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<DevopsHelmConfigVO> updateDevopsHelmConfig(
             @ApiParam("项目id")
             @PathVariable("project_id") Long projectId,
