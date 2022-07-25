@@ -30,6 +30,7 @@
               AND name = #{name}
     <if test="helmConfigId != null">
       AND id != #{helmConfigId}
+      AND deleted=0
     </if>
   </select>
 
@@ -38,6 +39,7 @@
         FROM devops_helm_config
         WHERE resource_id = #{resourceId}
           AND resource_type = #{resourceType}
+      AND deleted=0
     </select>
 
   <select id="selectOneWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
@@ -46,6 +48,7 @@
     WHERE resource_id = #{resourceId}
       AND resource_type = #{resourceType}
       AND repo_default = #{defaultRepo}
+    AND deleted=0
   </select>
 
   <select id="selectWithIdAndNameByAppServiceId" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
@@ -54,6 +57,7 @@
     FROM devops_helm_config dhc
                  JOIN devops_app_service_helm_rel dashr ON dashr.helm_config_id = dhc.id
     WHERE dashr.app_service_id = #{appServiceId}
+    AND deleted=0
   </select>
 
   <insert id="batchInsert">
@@ -86,5 +90,6 @@
     SELECT id,object_version_number
     FROM devops_helm_config
     WHERE id=#{helmConfigId}
+    AND deleted=0
   </select>
 </mapper>
