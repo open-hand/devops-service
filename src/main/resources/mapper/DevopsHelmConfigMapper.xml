@@ -81,4 +81,10 @@
       )
     </foreach>
   </insert>
+
+  <select id="listObjectVersionNumberById" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT id,object_version_number
+    FROM devops_helm_config
+    WHERE id=#{helmConfigId}
+  </select>
 </mapper>

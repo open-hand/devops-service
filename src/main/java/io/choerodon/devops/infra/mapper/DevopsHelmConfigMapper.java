@@ -23,4 +23,6 @@ public interface DevopsHelmConfigMapper extends BaseMapper<DevopsHelmConfigDTO> 
     DevopsHelmConfigDTO selectWithIdAndNameByAppServiceId(@Param("appServiceId") Long appServiceId);
 
     void batchInsert(@Param("devopsHelmConfigDTOS") List<DevopsHelmConfigDTO> devopsHelmConfigDTOS);
+
+    DevopsHelmConfigDTO listObjectVersionNumberById(@Param("helmConfigId") Long helmConfigId);
 }

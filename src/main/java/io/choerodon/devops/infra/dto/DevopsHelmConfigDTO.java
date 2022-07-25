@@ -43,6 +43,9 @@ public class DevopsHelmConfigDTO extends AuditDomain {
     @ApiModelProperty("是否为默认仓库")
     private Boolean repoDefault;
 
+    @ApiModelProperty("软删除 0未删除 1已删除")
+    private Boolean deleted;
+
     public Long getId() {
         return id;
     }
@@ -113,5 +116,13 @@ public class DevopsHelmConfigDTO extends AuditDomain {
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
     }
 }
