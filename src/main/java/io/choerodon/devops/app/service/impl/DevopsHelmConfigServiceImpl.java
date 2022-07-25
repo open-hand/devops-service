@@ -165,6 +165,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setId(helmConfigId);
         devopsHelmConfigDTO.setDeleted(true);
         devopsHelmConfigDTO.setObjectVersionNumber(oldDevopsHelmConfigDTO.getObjectVersionNumber());
+        devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
 
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.delete");
     }
@@ -210,6 +211,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setResourceType(resourceType);
         devopsHelmConfigDTO.setResourceId(resourceId);
         devopsHelmConfigDTO.setRepoDefault(true);
+        devopsHelmConfigDTO.setDeleted(false);
 
         return devopsHelmConfigMapper.selectOne(devopsHelmConfigDTO);
     }
