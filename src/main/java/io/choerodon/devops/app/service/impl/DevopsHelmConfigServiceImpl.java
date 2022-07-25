@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import io.choerodon.core.exception.CommonException;
@@ -133,6 +134,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
+        devopsHelmConfigDTO.setRepoPrivate(!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword()));
 
         DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
         return ConvertUtils.convertObject(result, DevopsHelmConfigVO.class);
@@ -145,6 +147,10 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO = ConvertUtils.convertObject(devopsHelmConfigVO, DevopsHelmConfigDTO.class);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setResourceId(projectId);
+
+        devopsHelmConfigDTO.setRepoPrivate(!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword()));
+        devopsHelmConfigDTO.setRepoDefault(null);
+        devopsHelmConfigDTO.setDeleted(null);
 
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
 
