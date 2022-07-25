@@ -82,6 +82,9 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         if (devopsHelmConfigDTOtOnOrganization != null) {
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            if (defaultDevopsHelmConfigDTOOnProject != null) {
+                devopsHelmConfigDTOtOnOrganization.setRepoDefault(false);
+            }
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
         } else {
             // 如果组织层的仓库为空，查询平台默认
@@ -94,6 +97,9 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             }
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            if (defaultDevopsHelmConfigDTOOnProject != null) {
+                devopsHelmConfigDTOOnSite.setRepoDefault(false);
+            }
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOOnSite);
         }
 
