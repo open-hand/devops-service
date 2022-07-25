@@ -244,7 +244,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO;
         AppServiceHelmRelDTO appServiceHelmRelDTO = appServiceHelmRelService.queryByAppServiceId(appServiceId);
         if (appServiceHelmRelDTO != null) {
-            return queryById(appServiceHelmRelDTO.getId());
+            return queryById(appServiceHelmRelDTO.getHelmConfigId());
         }
         devopsHelmConfigDTO = queryDefaultDevopsHelmConfigByLevel(ResourceLevel.PROJECT.value(), projectId);
         if (devopsHelmConfigDTO != null) {
