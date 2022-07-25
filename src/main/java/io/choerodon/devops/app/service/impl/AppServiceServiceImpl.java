@@ -1474,9 +1474,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         Response<String> result;
         try {
             String[] params = processedUrl.getPath().split("/");
-            if (params.length != 2) {
+            if (params.length != 3) {
                 checkInfoVO.setSuccess(false);
                 checkInfoVO.setErrMsg("helm仓库地址无效，应该类似：http://localhost:8080/org1/repoa");
+                return checkInfoVO;
             }
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, new RetrofitHandler.StringConverter());
             chartClient = retrofit.create(ChartClient.class);
@@ -1493,7 +1494,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         if (result != null && (result.code() > 400 && result.code() < 500)) {
             checkInfoVO.setSuccess(false);
-            checkInfoVO.setErrMsg("鉴权失败");
+            checkInfoVO.setErrMsg("账号或密码不正确");
             return checkInfoVO;
         }
         checkInfoVO.setSuccess(false);
