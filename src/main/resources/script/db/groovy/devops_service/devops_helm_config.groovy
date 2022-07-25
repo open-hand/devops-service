@@ -21,6 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovy') {
             column(name: 'resource_id', type: 'BIGINT UNSIGNED', remarks: '关联该仓库配置的资源id, 项目id 组织id 平台层为0') {
                 constraints(nullable: false)
             }
+            column(name: "deleted",type: 'TINYINT(1)',remarks: '软删除 0未删除 1已删除',defaultValue: 0)
             column(name: "repo_private", type: 'TINYINT(1)', remarks: '是否私有 0 否 1是', defaultValue: 0)
             column(name: 'repo_default', type: 'TINYINT(1)', remarks: '是否为默认仓库', defaultValue: 0)
 

@@ -153,11 +153,19 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteDevopsHelmConfig(Long projectId, Long helmConfigId) {
+        DevopsHelmConfigDTO oldDevopsHelmConfigDTO = devopsHelmConfigMapper.listObjectVersionNumberById(helmConfigId);
+        if (oldDevopsHelmConfigDTO == null) {
+            return;
+        }
+
         DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
         devopsHelmConfigDTO.setResourceId(projectId);
         devopsHelmConfigDTO.setResourceType(ResourceLevel.PROJECT.value());
         devopsHelmConfigDTO.setId(helmConfigId);
-        devopsHelmConfigMapper.delete(devopsHelmConfigDTO);
+        devopsHelmConfigDTO.setDeleted(true);
+        devopsHelmConfigDTO.setObjectVersionNumber(oldDevopsHelmConfigDTO.getObjectVersionNumber());
+
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper,devopsHelmConfigDTO,"error.helm.config.delete");
     }
 
     @Override
