@@ -52,6 +52,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO helmConfigSearchDTOOnProject = new DevopsHelmConfigDTO();
         helmConfigSearchDTOOnProject.setResourceId(projectId);
         helmConfigSearchDTOOnProject.setResourceType(ResourceLevel.PROJECT.value());
+        helmConfigSearchDTOOnProject.setDeleted(false);
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnProject = devopsHelmConfigMapper.select(helmConfigSearchDTOOnProject);
         devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnProject);
         DevopsHelmConfigDTO defaultDevopsHelmConfigDTOOnProject = null;
@@ -165,7 +166,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setDeleted(true);
         devopsHelmConfigDTO.setObjectVersionNumber(oldDevopsHelmConfigDTO.getObjectVersionNumber());
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper,devopsHelmConfigDTO,"error.helm.config.delete");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.delete");
     }
 
     @Override
