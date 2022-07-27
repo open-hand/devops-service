@@ -17,6 +17,16 @@ public class DevopsServiceConfigVO {
     private List<String> externalIps;
     @ApiModelProperty("端口号")
     private List<PortMapVO> ports;
+    @ApiModelProperty("clusterIp")
+    private String clusterIp;
+
+    public String getClusterIp() {
+        return clusterIp;
+    }
+
+    public void setClusterIp(String clusterIp) {
+        this.clusterIp = clusterIp;
+    }
 
     public List<String> getExternalIps() {
         return externalIps;

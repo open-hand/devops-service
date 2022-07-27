@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.netflix.servo.util.Strings;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -345,7 +346,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             return false;
         }
 
-        if (!StringUtils.isEmpty(devopsServiceDTO.getEndPoints())) {
+        if (!ObjectUtils.isEmpty(devopsServiceDTO.getEndPoints())) {
             devopsServiceMapper.updateAppServiceIdToNull(devopsServiceDTO.getId());
             devopsServiceDTO.setAppServiceId(null);
         }
@@ -666,6 +667,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             devopsServiceConfigVO.setExternalIps(new ArrayList<>(
                     Arrays.asList(devopsServiceQueryDTO.getExternalIp().split(","))));
         }
+        if (devopsServiceQueryDTO.getClusterIp() != null) {
+            devopsServiceConfigVO.setClusterIp(devopsServiceQueryDTO.getClusterIp());
+        }
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
         DevopsServiceTargetVO devopsServiceTargetVO = new DevopsServiceTargetVO();
@@ -679,7 +683,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
 
         devopsServiceTargetVO.setInstances(ConvertUtils.convertList(devopsServiceQueryDTO.getInstances(), AppServiceInstanceInfoVO.class));
-        if (!StringUtils.isEmpty(devopsServiceQueryDTO.getMessage())) {
+        if (!ObjectUtils.isEmpty(devopsServiceQueryDTO.getMessage())) {
             V1Service v1Service = json.deserialize(devopsServiceQueryDTO.getMessage(), V1Service.class);
             devopsServiceTargetVO.setSelectors(v1Service.getSpec().getSelector());
             devopsServiceVO.setLabels(v1Service.getMetadata().getLabels());
@@ -1009,7 +1013,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                     return v1ServicePort;
                 }).collect(Collectors.toList());
 
-        if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
             List<String> externalIps = new ArrayList<>(
                     Arrays.asList(devopsServiceReqVO.getExternalIp().split(",")));
             spec.setExternalIPs(externalIps);
@@ -1085,10 +1089,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
      * 判断外部ip是否更新
      */
     private Boolean isUpdateExternalIp(DevopsServiceReqVO devopsServiceReqVO, DevopsServiceDTO devopsServiceDTO) {
-        return !((StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
-                && StringUtils.isEmpty(devopsServiceDTO.getExternalIp()))
-                || (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
-                && !StringUtils.isEmpty(devopsServiceDTO.getExternalIp())
+        return !((ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())
+                && ObjectUtils.isEmpty(devopsServiceDTO.getExternalIp()))
+                || (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())
+                && !ObjectUtils.isEmpty(devopsServiceDTO.getExternalIp())
                 && devopsServiceReqVO.getExternalIp().equals(devopsServiceDTO.getExternalIp())));
     }
 
@@ -1305,12 +1309,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
 
     private void fillDevopsServiceInfo(DevopsServiceDTO oldDevopsServiceDTO, V1Service v1Service) {
         oldDevopsServiceDTO.setType(v1Service.getSpec().getType());
+        if (!ObjectUtils.isEmpty(v1Service.getSpec().getExternalIPs())) {
+            oldDevopsServiceDTO.setExternalIp(Strings.join(",", v1Service.getSpec().getExternalIPs().iterator()));
+        }
 
         // 添加service类型
         if (ServiceTypeEnum.LOAD_BALANCER.value().equals(v1Service.getSpec().getType())) {
             oldDevopsServiceDTO.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
         } else if (ServiceTypeEnum.CLUSTER_IP.value().equals(v1Service.getSpec().getType())) {
-            oldDevopsServiceDTO.setExternalIp(v1Service.getSpec().getClusterIP());
+            oldDevopsServiceDTO.setClusterIp(v1Service.getSpec().getClusterIP());
         } else if (ServiceTypeEnum.NODE_PORT.value().equals(v1Service.getSpec().getType())) {
             // do nothing
         } else {

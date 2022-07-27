@@ -32,6 +32,7 @@ public class DevopsServiceDTO extends AuditDomain {
     private String ports;
     private String endPoints;
     private String type;
+    private String clusterIp;
     private String externalIp;
     private String selectors;
     private String annotations;
@@ -48,6 +49,14 @@ public class DevopsServiceDTO extends AuditDomain {
 
     @ApiModelProperty("目标对象是部署组时，部署组的id")
     private Long targetDeploymentId;
+
+    public String getClusterIp() {
+        return clusterIp;
+    }
+
+    public void setClusterIp(String clusterIp) {
+        this.clusterIp = clusterIp;
+    }
 
     public Long getInstanceId() {
         return instanceId;

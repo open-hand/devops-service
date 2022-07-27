@@ -2,13 +2,13 @@ package io.choerodon.devops.api.validator;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -47,7 +47,7 @@ public class DevopsServiceValidator {
     public static void checkService(DevopsServiceReqVO devopsServiceReqVO, Long targetServiceId) {
         devopsServiceReqVO.getPorts().forEach(DevopsServiceValidator::checkPorts);
         checkName(devopsServiceReqVO.getName());
-        if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())
                 && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqVO.getExternalIp())) {
             throw new CommonException("error.externalIp.notMatch");
         }
@@ -95,8 +95,8 @@ public class DevopsServiceValidator {
                             Long port = portMapVO.getPort();
                             String externalIp = s.getExternalIp();
                             devopsServiceReqVO.getPorts().forEach(p -> {
-                                if (!StringUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
-                                    if (ObjectUtils.equals(port, p.getPort()) && ObjectUtils.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
+                                if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
+                                    if (Objects.equals(port, p.getPort()) && Objects.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
                                         throw new CommonException("error.same.externalIp.port.exist");
                                     }
                                 }
@@ -116,7 +116,7 @@ public class DevopsServiceValidator {
                             Long nodePort = portMapVO.getNodePort();
                             if (nodePort != null) {
                                 devopsServiceReqVO.getPorts().forEach(p -> {
-                                    if (ObjectUtils.equals(nodePort, p.getNodePort())) {
+                                    if (Objects.equals(nodePort, p.getNodePort())) {
                                         throw new CommonException("error.same.nodePort.exist");
                                     }
                                 });
