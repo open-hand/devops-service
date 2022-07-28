@@ -131,7 +131,7 @@
                dh.name AS host_name
         FROM devops_host_app dha
                      JOIN devops_host dh ON dh.id = dha.host_id
-                     JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
+                     LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
         WHERE dha.id = #{id}
     </select>
 
