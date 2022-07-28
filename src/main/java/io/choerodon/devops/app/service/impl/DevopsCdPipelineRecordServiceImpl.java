@@ -548,7 +548,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             artifactId = jarDeploy.getArtifactId();
             versionRegular = jarDeploy.getVersionRegular();
         } else {
-            CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(cdPipelineRecordDTO.getPipelineId(), cdPipelineRecordDTO.getGitlabPipelineId(), jarDeploy.getPipelineTask());
+            CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(cdPipelineRecordDTO.getPipelineId());
+
+            CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(ciCdPipelineDTO.getAppServiceId(),
+                    cdPipelineRecordDTO.getGitlabPipelineId(),
+                    jarDeploy.getPipelineTask());
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info("pipeline deploy jar, ciPipelineMavenDTO is {}", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
+
+            }
             nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
             groupId = ciPipelineMavenDTO.getGroupId();
             artifactId = ciPipelineMavenDTO.getArtifactId();
