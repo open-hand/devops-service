@@ -39,14 +39,16 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException("error.token.invalid");
         }
+        Long appServiceId = appServiceDTO.getId();
 
         // 异常包装
         ExceptionUtil.wrapExWithCiEx(() -> {
 
-            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(appServiceDTO.getId(), ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
+            CiPipelineImageDTO oldCiPipelineImageDTO = queryByGitlabPipelineId(appServiceId, ciPipelineImageVO.getGitlabPipelineId(), ciPipelineImageVO.getJobName());
             if (oldCiPipelineImageDTO == null || oldCiPipelineImageDTO.getId() == null) {
                 CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
                 BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
+                ciPipelineImageDTO.setAppServiceId(appServiceId);
                 if (ciPipelineImageMapper.insertSelective(ciPipelineImageDTO) != 1) {
                     throw new CommonException("error.create.image.record");
                 }
