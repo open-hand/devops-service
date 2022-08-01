@@ -44,7 +44,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -105,10 +104,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private RdupmClient rdupmClient;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
     @Autowired
