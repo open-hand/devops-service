@@ -1568,8 +1568,9 @@ public class GitlabServiceClientOperator {
                                               Boolean owned,
                                               String search,
                                               Integer page,
-                                              Integer perPage) {
-        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage).getBody();
+                                              Integer perPage,
+                                              Integer minAccessLevel) {
+        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage, minAccessLevel).getBody();
     }
 
     public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {

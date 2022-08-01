@@ -842,7 +842,8 @@ public interface GitlabServiceClient {
             @RequestParam(value = "owned", required = false) Boolean owned,
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "perPage", required = false) Integer perPage);
+            @RequestParam(value = "perPage", required = false) Integer perPage,
+            @RequestParam(value = "minAccessLevel", required = false) Integer minAccessLevel);
 
     @ApiParam(value = "迁移应用服务")
     @PutMapping(value = "/v1/projects/{projectId}/transfer")
