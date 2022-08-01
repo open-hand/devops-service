@@ -207,6 +207,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<GroupDTO> queryGroupByIid(Integer groupIid, Integer userId) {
+        throw new CommonException("error.group.get");
+    }
+
+    @Override
     public ResponseEntity<RepositoryFileDTO> getFile(Integer projectId, String commit, String filePath) {
         throw new CommonException("error.file.get");
     }

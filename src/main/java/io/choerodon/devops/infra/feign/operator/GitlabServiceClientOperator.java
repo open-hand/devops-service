@@ -1842,4 +1842,18 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public GroupDTO queryGroupByIid(Integer groupIid, Integer userId) {
+        ResponseEntity<GroupDTO> groupDTOResponseEntity;
+        try {
+            groupDTOResponseEntity = gitlabServiceClient.queryGroupByIid(groupIid, userId);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+        if (groupDTOResponseEntity != null) {
+            return groupDTOResponseEntity.getBody();
+        } else {
+            return null;
+        }
+    }
+
 }

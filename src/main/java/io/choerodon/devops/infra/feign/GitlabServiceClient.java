@@ -154,6 +154,17 @@ public interface GitlabServiceClient {
     ResponseEntity<GroupDTO> queryGroupByName(@PathVariable("groupName") String groupName,
                                               @RequestParam(value = "userId") Integer userId);
 
+    /**
+     * 根据组的path查询组
+     *
+     * @param groupIid 组的id
+     * @param userId   用户id
+     * @return 组
+     */
+    @GetMapping(value = "/v1/groups/{group_iid}")
+    ResponseEntity<GroupDTO> queryGroupByIid(@PathVariable("group_iid") Integer groupIid,
+                                             @RequestParam(value = "userId") Integer userId);
+
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
                                                  @RequestBody FileCreationVO fileCreationVO,
