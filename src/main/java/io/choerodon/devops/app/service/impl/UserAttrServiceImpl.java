@@ -19,6 +19,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
@@ -33,6 +34,8 @@ public class UserAttrServiceImpl implements UserAttrService {
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
@@ -225,5 +228,14 @@ public class UserAttrServiceImpl implements UserAttrService {
         } else {
             throw new CommonException("error.get.iam.admin");
         }
+    }
+
+    @Override
+    public UserAttrDTO createImpersonationToken(Long iamUserId) {
+        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(iamUserId);
+        String impersonationToken = gitlabServiceClientOperator.createImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), null);
+        userAttrDTO.setGitlabToken(impersonationToken);
+        userAttrMapper.updateByPrimaryKeySelective(userAttrDTO);
+        return userAttrDTO;
     }
 }

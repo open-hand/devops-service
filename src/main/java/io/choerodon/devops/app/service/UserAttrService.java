@@ -101,4 +101,12 @@ public interface UserAttrService {
      * @return UserAttrDTO
      */
     UserAttrDTO queryGitlabAdminByIamId();
+
+    /**
+     * 创建用户的模拟令牌
+     *
+     * @param iamUserId
+     * @return
+     */
+    UserAttrDTO createImpersonationToken(Long iamUserId);
 }

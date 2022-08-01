@@ -257,6 +257,21 @@ public class GitlabServiceClientOperator {
     }
 
     /**
+     * 创建用户的模拟token
+     *
+     * @param userId
+     * @param name
+     * @return
+     */
+    public String createImpersonationToken(Integer userId, String name) {
+        ResponseEntity<ImpersonationTokenDTO> impersonationToken = gitlabServiceClient.createProjectToken(userId, name, null);
+        if (impersonationToken.getBody() == null) {
+            throw new CommonException("error.create.project.token");
+        }
+        return impersonationToken.getBody().getToken();
+    }
+
+    /**
      * 从gitlab项目创建access token
      *
      * @param userId 用户id
