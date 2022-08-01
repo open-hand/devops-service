@@ -103,10 +103,10 @@ public interface UserAttrService {
     UserAttrDTO queryGitlabAdminByIamId();
 
     /**
-     * 创建用户的模拟令牌
+     * 查询用户的模拟令牌，不存在则创建
      *
      * @param iamUserId
      * @return
      */
-    UserAttrDTO createImpersonationToken(Long iamUserId);
+    String queryOrCreateImpersonationToken(Long iamUserId);
 }

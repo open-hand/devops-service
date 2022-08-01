@@ -231,11 +231,16 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public UserAttrDTO createImpersonationToken(Long iamUserId) {
+    public String queryOrCreateImpersonationToken(Long iamUserId) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(iamUserId);
-        String impersonationToken = gitlabServiceClientOperator.createImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), null);
-        userAttrDTO.setGitlabToken(impersonationToken);
-        userAttrMapper.updateByPrimaryKeySelective(userAttrDTO);
-        return userAttrDTO;
+
+        if (org.apache.commons.lang3.StringUtils.isEmpty(userAttrDTO.getGitlabToken())) {
+            String impersonationToken = gitlabServiceClientOperator.createImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), null);
+            userAttrDTO.setGitlabToken(impersonationToken);
+            userAttrMapper.updateByPrimaryKeySelective(userAttrDTO);
+            return impersonationToken;
+        } else {
+            return userAttrDTO.getGitlabToken();
+        }
     }
 }
