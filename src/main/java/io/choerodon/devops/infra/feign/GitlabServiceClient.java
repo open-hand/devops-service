@@ -161,7 +161,7 @@ public interface GitlabServiceClient {
      * @param userId   用户id
      * @return 组
      */
-    @GetMapping(value = "/v1/groups/{group_iid}")
+    @GetMapping(value = "/v1/groups/query_by_id/{group_iid}")
     ResponseEntity<GroupDTO> queryGroupByIid(@PathVariable("group_iid") Integer groupIid,
                                              @RequestParam(value = "userId") Integer userId);
 
