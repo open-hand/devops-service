@@ -153,6 +153,8 @@ public interface DevopsEnvironmentService {
      */
     void handleCreateEnvSaga(EnvGitlabProjectPayload gitlabProjectPayload);
 
+    void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId);
+
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
     /**
