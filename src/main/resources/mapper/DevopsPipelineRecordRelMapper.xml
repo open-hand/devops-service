@@ -15,8 +15,8 @@
     </select>
     <select id="queryLatestedPipelineRecord"
             resultType="io.choerodon.devops.api.vo.pipeline.PipelineCompositeRecordVO">
-        SELECT
-        dcipr.status AS ci_status,
+        SELECT dprr.id,
+               dcipr.status AS ci_status,
         dcdpr.status AS cd_status,
         dprr.creation_date
         FROM
