@@ -1799,10 +1799,10 @@ public class GitlabServiceClientOperator {
     }
 
     public void updatePipelineSchedule(Integer projectId,
-                                                  Integer userId,
-                                                  Integer pipelineScheduleId,
-                                                  AppExternalConfigDTO appExternalConfigDTO,
-                                                   PipelineSchedule pipelineSchedule) {
+                                       Integer userId,
+                                       Integer pipelineScheduleId,
+                                       AppExternalConfigDTO appExternalConfigDTO,
+                                       PipelineSchedule pipelineSchedule) {
         if (appExternalConfigDTO == null) {
             gitlabServiceClient.updatePipelineSchedule(projectId,
                     userId,
@@ -1855,6 +1855,10 @@ public class GitlabServiceClientOperator {
                     appExternalConfigVO.getUsername(),
                     appExternalConfigVO.getPassword());
         }
+    }
+
+    public List<GitLabUserDTO> listAdminUsers() {
+        return gitlabServiceClient.listAdminUsers().getBody();
     }
 
     public GroupDTO queryGroupByIid(Integer groupIid, Integer userId) {

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -25,4 +26,8 @@ public interface UserAttrMapper extends BaseMapper<UserAttrDTO> {
     void updateByGitlabUserId(@Param("gitlabUserId") Long gitlabUserId,
                               @Param("iamUserId") Long iamUserId,
                               @Param("gitlabUserName") String gitlabUserName);
+
+    List<UserAttrVO> listAllAdmin();
+
+    void updateGitlabAdminUserToNormalUser(@Param("userIds") List<Long> userIds);
 }

@@ -904,7 +904,7 @@ public interface GitlabServiceClient {
     @PostMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
     ResponseEntity<PipelineSchedule> createPipelineSchedule(
             @PathVariable("project_id") Integer projectId,
-            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
             @RequestParam(value = "gitlabUrl") String gitlabUrl,
             @RequestParam(value = "authType") String authType,
             @RequestParam(value = "accessToken") String accessToken,
@@ -965,7 +965,7 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
     ResponseEntity<List<PipelineSchedule>> listPipelineSchedules(
             @PathVariable("project_id") Integer projectId,
-            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
             @RequestParam(value = "gitlabUrl") String gitlabUrl,
             @RequestParam(value = "authType") String authType,
             @RequestParam(value = "accessToken") String accessToken,
@@ -983,6 +983,7 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password,
             @RequestBody PipelineSchedule pipelineSchedule);
+
     @DeleteMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}")
     ResponseEntity<Void> deletePipelineSchedule(
             @PathVariable("project_id") Integer projectId,
@@ -993,5 +994,9 @@ public interface GitlabServiceClient {
             @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
+
+
+    @GetMapping(value = "/v1/users/list_admin_users")
+    ResponseEntity<List<GitLabUserDTO>> listAdminUsers();
 
 }

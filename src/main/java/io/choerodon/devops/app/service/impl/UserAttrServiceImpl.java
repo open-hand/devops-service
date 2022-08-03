@@ -231,6 +231,16 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
+    public List<UserAttrVO> listAllAdmin() {
+        return userAttrMapper.listAllAdmin();
+    }
+
+    @Override
+    public void updateGitlabAdminUserToNormalUser(List<Long> iamUserIds) {
+        userAttrMapper.updateGitlabAdminUserToNormalUser(iamUserIds);
+    }
+
+    @Override
     public String queryOrCreateImpersonationToken(Long iamUserId) {
         UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(iamUserId);
 
