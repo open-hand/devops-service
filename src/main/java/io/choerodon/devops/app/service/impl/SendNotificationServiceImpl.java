@@ -941,7 +941,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static Map<String, String> constructParamsForEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         return StringMapBuilder.newBuilder()
                 // 不是打错，模板就是这样
-                .put("enveId", devopsEnvironmentDTO.getId())
+                .put("envId", devopsEnvironmentDTO.getId())
                 .put("envCode", devopsEnvironmentDTO.getCode())
                 .put(ENV_NAME, devopsEnvironmentDTO.getName())
                 .put(CLUSTER_ID, devopsEnvironmentDTO.getClusterId())
