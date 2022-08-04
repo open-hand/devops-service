@@ -664,6 +664,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName());
                     doSendWhenResourceCreationFailure(MessageCodeConstants.SERVICE_CREATION_FAILURE, devopsEnvironmentDTO.getId(), devopsServiceDTO.getName(), creatorId, resourceCommandId, webHookParams);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), devopsEnvironmentDTO.getId(), devopsServiceDTO.getName(), creatorId, resourceCommandId, webHookParams);
                 },
                 ex -> LOGGER.info("Failed to send message WhenServiceCreationFailure.", ex)
         );
@@ -888,6 +889,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getName()
                     );
                     doSendWhenResourceCreationFailure(MessageCodeConstants.INGRESS_CREATION_FAILURE, devopsEnvironmentDTO.getId(), devopsIngressDTO.getName(), creatorId, resourceCommandId, params);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), devopsEnvironmentDTO.getId(), devopsIngressDTO.getName(), creatorId, resourceCommandId, params);
                 },
                 ex -> LOGGER.info("Failed to sendWhenIngressCreationFailure", ex));
     }
@@ -908,6 +910,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getName()
                     );
                     doSendWhenResourceCreationFailure(MessageCodeConstants.CERTIFICATION_CREATION_FAILURE, certificationDTO.getEnvId(), certificationDTO.getName(), creatorId, resourceCommandId, params);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), certificationDTO.getEnvId(), certificationDTO.getName(), creatorId, resourceCommandId, params);
                 },
                 ex -> LOGGER.info("Failed to sendWhenCertificationCreationFailure", ex));
     }
@@ -1229,7 +1232,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 webHookParams.put(LINK, String.format(INSTANCE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId()));
                                 //实例部署失败还有站内信和邮件
                                 receivers = ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(appServiceInstanceDTO.getCreatedBy())));
-
+                                sendNotices(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), receivers, webHookParams, projectDTO.getId());
                             }
                             break;
                         case UPDATE:
