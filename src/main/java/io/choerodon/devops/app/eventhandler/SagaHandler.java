@@ -213,12 +213,6 @@ public class SagaHandler {
             try {
                 gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
                 LOGGER.info("Finished to create user {}", t);
-                // 更改devops_user 登录名
-                UserAttrDTO result = userAttrService.baseQueryByIamUserId(TypeUtil.objToLong(t.getId()));
-                if (!result.getGitlabUserName().equals(t.getUsername())) {
-                    result.setGitlabUserName(t.getUsername());
-                    userAttrMapper.updateByPrimaryKey(result);
-                }
             } catch (Exception ex) {
                 // 补偿机制
                 // 根据邮箱查询到devops_user 但是对应的iam_user_id 不存在
