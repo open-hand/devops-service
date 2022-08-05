@@ -1269,6 +1269,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
+            params.put("{{ CHOERODON_URL }}", gatewayUrl);
             String ciStr = FileUtil.replaceReturnString(CI_FILE_TEMPLATE, params);
             StringBuilder stringBuilder = new StringBuilder(ciStr);
 
