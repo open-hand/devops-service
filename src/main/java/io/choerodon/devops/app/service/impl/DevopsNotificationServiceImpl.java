@@ -150,9 +150,11 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void sendMessage(Long projectId, Long envId, Long notificationId, Long objectId, String objectType) {
+        LOGGER.info("============message1==========");
         // notificationId为messageSettingVO 的ID
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         String objectCode = getObjectCode(objectId, objectType);
+        LOGGER.info("============message2==========");
 
         // 生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
@@ -162,6 +164,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         //生成发送消息需要的模板对象
         MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
+        LOGGER.info("============message3==========");
 
         StringMapBuilder params = StringMapBuilder.newBuilder();
         List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId()));
@@ -172,6 +175,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 params.put("user", userES.get(0).getLoginName());
             }
         }
+        LOGGER.info("============message4==========");
         params.put("env", devopsEnvironmentDTO.getName());
         params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
@@ -213,6 +217,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
         });
         params.put(MOBILE, StringUtils.join(phones, ","));
+        LOGGER.info("============message5==========");
 
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), devopsEnvironmentDTO.getProjectId());
