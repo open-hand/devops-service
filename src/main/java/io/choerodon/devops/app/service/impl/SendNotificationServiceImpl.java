@@ -783,7 +783,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     }
 
-    private static Receiver constructReceiver(Long userId, String email, String phone, Long userTenantId) {
+    protected static Receiver constructReceiver(Long userId, String email, String phone, Long userTenantId) {
         Receiver receiver = new Receiver();
         receiver.setUserId(Objects.requireNonNull(userId));
         receiver.setEmail(Objects.requireNonNull(email));
@@ -827,7 +827,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         sendNotices(type, users, constructCiParamsForPipeline(ciCdPipelineDTO.getName(), projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
-    private void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
+    protected void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
         if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
                 || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
             MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
@@ -848,7 +848,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+    protected Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put(PIPE_LINE_NAME, recordDTO.getPipelineName())
                 .put(PROJECT_ID, recordDTO.getProjectId())
@@ -861,7 +861,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .build();
     }
 
-    private Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+    protected Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put(PIPE_LINE_NAME, pipelineName)
                 .put(PROJECT_ID, projectDTO.getId())
@@ -1116,7 +1116,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param actionInTry   正常处理的逻辑
      * @param actionInCatch 处理异常的逻辑
      */
-    private static void doWithTryCatchAndLog(Runnable actionInTry, Consumer<Exception> actionInCatch) {
+    protected static void doWithTryCatchAndLog(Runnable actionInTry, Consumer<Exception> actionInCatch) {
         if (actionInTry == null) {
             LOGGER.info("Internal fault: parameter actionInTry is unexpectedly null. Action abort.");
             return;
