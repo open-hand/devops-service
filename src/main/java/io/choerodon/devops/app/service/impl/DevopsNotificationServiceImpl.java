@@ -45,7 +45,6 @@ import io.choerodon.devops.infra.util.StringMapBuilder;
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNotificationServiceImpl.class);
-    private static Random RANDOM;
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;
@@ -74,13 +73,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private PermissionHelper permissionHelper;
 
-    static {
-        try {
-            RANDOM = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("get random failed", e);
-        }
-    }
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long projectId, Long envId, String objectType) {
@@ -150,22 +142,18 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
     @Override
     public void sendMessage(Long projectId, Long envId, Long notificationId, Long objectId, String objectType) {
-        LOGGER.info("============message1==========");
         // notificationId为messageSettingVO 的ID
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         String objectCode = getObjectCode(objectId, objectType);
-        LOGGER.info("============message2==========");
 
         // 生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
-        LOGGER.info("============message2.1==========");
 
 
         //生成发送消息需要的模板对象
         MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(NOTIFY_TYPE, devopsEnvironmentDTO.getProjectId(), MessageCodeConstants.RESOURCE_DELETE_CONFIRMATION, envId, objectType);
-        LOGGER.info("============message3==========");
 
         StringMapBuilder params = StringMapBuilder.newBuilder();
         List<IamUserDTO> userES = baseServiceClientOperator.listUsersByIds(ArrayUtil.singleAsList(GitUserNameUtil.getUserId()));
@@ -176,7 +164,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
                 params.put("user", userES.get(0).getLoginName());
             }
         }
-        LOGGER.info("============message4==========");
         params.put("env", devopsEnvironmentDTO.getName());
         params.put("object", getObjectType(objectType));
         params.put("objectName", objectCode);
