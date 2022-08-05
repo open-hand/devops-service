@@ -160,6 +160,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         String captcha = String.valueOf(RANDOM.nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
+        LOGGER.info("============message2.1==========");
 
 
         //生成发送消息需要的模板对象
