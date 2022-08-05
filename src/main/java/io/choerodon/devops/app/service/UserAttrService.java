@@ -78,6 +78,8 @@ public interface UserAttrService {
      */
     void updateAdmin(Long iamUserId, Boolean isGitlabAdmin);
 
+    void updateAdmins(List<Long> iamUserIds, Boolean isGitlabAdmin);
+
     Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params);
 
     /**

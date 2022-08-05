@@ -62,4 +62,14 @@
             #{userId}
         </foreach>
     </update>
+
+    <update id="updateAreAdmin">
+        UPDATE devops_user
+        SET is_gitlab_admin=#{isGitlabAdmin}
+        WHERE iam_user_id
+        IN
+        <foreach collection="iamUserIds" item="iamUserId" open="(" close=")" separator=",">
+            #{iamUserId}
+        </foreach>
+    </update>
 </mapper>

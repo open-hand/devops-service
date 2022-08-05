@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -153,6 +154,14 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public void updateAdmin(Long iamUserId, Boolean isGitlabAdmin) {
         userAttrMapper.updateIsGitlabAdmin(Objects.requireNonNull(iamUserId), Objects.requireNonNull(isGitlabAdmin));
+    }
+
+    @Override
+    public void updateAdmins(List<Long> iamUserIds, Boolean isGitlabAdmin) {
+        if (ObjectUtils.isEmpty(iamUserIds)) {
+            return;
+        }
+        userAttrMapper.updateAreAdmin(iamUserIds, isGitlabAdmin);
     }
 
     @Override
