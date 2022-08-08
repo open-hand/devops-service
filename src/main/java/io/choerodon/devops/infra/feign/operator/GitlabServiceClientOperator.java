@@ -1248,6 +1248,14 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<MemberDTO> listMemberByProject(Integer projectId, String query) {
+        try {
+            return gitlabServiceClient.getAllMemberByProjectIdAndQuery(projectId, query).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public String getAdminToken() {
         try {
             return gitlabServiceClient.getAdminToken().getBody();
