@@ -30,7 +30,7 @@ export REPO_TYPE={{ REPO_TYPE }}
 export HARBOR_CONFIG_ID={{ HARBOR_CONFIG_ID }}
 # 设置docekr认证配置文件目录
 export DOCKER_CONFIG=$PWD/.choerodon/.docker
-export CHOERODON_URL={{CHOERODON_URL}}
+export CHOERODON_URL={{ CHOERODON_URL }}
 
 # 创建docekr认证配置文件目录
 mkdir -p $DOCKER_CONFIG
