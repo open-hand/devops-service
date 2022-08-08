@@ -30,4 +30,6 @@ public interface UserAttrMapper extends BaseMapper<UserAttrDTO> {
     List<UserAttrVO> listAllAdmin();
 
     void updateGitlabAdminUserToNormalUser(@Param("userIds") List<Long> userIds);
+
+    void updateAreAdmin(@Param("iamUserIds") List<Long> iamUserIds, @Param("isGitlabAdmin") Boolean isGitlabAdmin);
 }
