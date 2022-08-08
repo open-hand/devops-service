@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -188,9 +190,8 @@ public class SagaHandler {
             sagaCode = SagaTopicCodeConstants.IAM_CREATE_USER,
             maxRetryCount = 5, seq = 1)
     public List<GitlabUserVO> handleCreateUserEvent(String payload) {
-        List<GitlabUserVO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserVO>>() {
-        }.getType());
-
+        List<GitlabUserVO> gitlabUserDTO = JsonHelper.unmarshalByJackson(payload, new TypeReference<List<GitlabUserVO>>() {
+        });
         loggerInfo(gitlabUserDTO);
         StringBuilder failedUsers = new StringBuilder();
         List<Exception> exs = new ArrayList<>();
@@ -212,12 +213,6 @@ public class SagaHandler {
             try {
                 gitlabUserService.createGitlabUserInNewTx(gitlabUserReqDTO);
                 LOGGER.info("Finished to create user {}", t);
-                // 更改devops_user 登录名
-                UserAttrDTO result = userAttrService.baseQueryByIamUserId(TypeUtil.objToLong(t.getId()));
-                if (!result.getGitlabUserName().equals(t.getUsername())) {
-                    result.setGitlabUserName(t.getUsername());
-                    userAttrMapper.updateByPrimaryKey(result);
-                }
             } catch (Exception ex) {
                 // 补偿机制
                 // 根据邮箱查询到devops_user 但是对应的iam_user_id 不存在

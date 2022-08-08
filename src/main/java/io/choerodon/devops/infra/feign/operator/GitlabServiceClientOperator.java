@@ -257,6 +257,21 @@ public class GitlabServiceClientOperator {
     }
 
     /**
+     * 创建用户的模拟token
+     *
+     * @param userId
+     * @param name
+     * @return
+     */
+    public String createImpersonationToken(Integer userId, String name) {
+        ResponseEntity<ImpersonationTokenDTO> impersonationToken = gitlabServiceClient.createProjectToken(userId, name, null);
+        if (impersonationToken.getBody() == null) {
+            throw new CommonException("error.create.project.token");
+        }
+        return impersonationToken.getBody().getToken();
+    }
+
+    /**
      * 从gitlab项目创建access token
      *
      * @param userId 用户id
@@ -1233,6 +1248,14 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<MemberDTO> listMemberByProject(Integer projectId, String query) {
+        try {
+            return gitlabServiceClient.getAllMemberByProjectIdAndQuery(projectId, query).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public String getAdminToken() {
         try {
             return gitlabServiceClient.getAdminToken().getBody();
@@ -1568,8 +1591,9 @@ public class GitlabServiceClientOperator {
                                               Boolean owned,
                                               String search,
                                               Integer page,
-                                              Integer perPage) {
-        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage).getBody();
+                                              Integer perPage,
+                                              Integer minAccessLevel) {
+        return gitlabServiceClient.listProjects(groupId, userId, owned, search, page, perPage, minAccessLevel).getBody();
     }
 
     public GitlabProjectDTO transferProject(Integer gitlabProjectId, Integer gitlabGroupId, Integer userId) {
@@ -1783,10 +1807,10 @@ public class GitlabServiceClientOperator {
     }
 
     public void updatePipelineSchedule(Integer projectId,
-                                                  Integer userId,
-                                                  Integer pipelineScheduleId,
-                                                  AppExternalConfigDTO appExternalConfigDTO,
-                                                   PipelineSchedule pipelineSchedule) {
+                                       Integer userId,
+                                       Integer pipelineScheduleId,
+                                       AppExternalConfigDTO appExternalConfigDTO,
+                                       PipelineSchedule pipelineSchedule) {
         if (appExternalConfigDTO == null) {
             gitlabServiceClient.updatePipelineSchedule(projectId,
                     userId,
@@ -1838,6 +1862,24 @@ public class GitlabServiceClientOperator {
                     appExternalConfigVO.getAccessToken(),
                     appExternalConfigVO.getUsername(),
                     appExternalConfigVO.getPassword());
+        }
+    }
+
+    public List<GitLabUserDTO> listAdminUsers() {
+        return gitlabServiceClient.listAdminUsers().getBody();
+    }
+
+    public GroupDTO queryGroupByIid(Integer groupIid, Integer userId) {
+        ResponseEntity<GroupDTO> groupDTOResponseEntity;
+        try {
+            groupDTOResponseEntity = gitlabServiceClient.queryGroupByIid(groupIid, userId);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+        if (groupDTOResponseEntity != null) {
+            return groupDTOResponseEntity.getBody();
+        } else {
+            return null;
         }
     }
 

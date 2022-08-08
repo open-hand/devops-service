@@ -27,6 +27,17 @@
         ORDER BY id DESC
         limit 1
     </select>
+
+    <select id="queryDockerInstanceLatest" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
+        SELECT *
+        FROM devops_host_command dhc
+                     JOIN devops_docker_instance ddi ON ddi.id = dhc.instance_id
+        WHERE ddi.app_id = #{appId}
+          and dhc.instance_type = #{instanceType}
+        ORDER BY dhc.id DESC
+        limit 1
+    </select>
+
     <select id="listStagnatedRecord" resultType="io.choerodon.devops.infra.dto.DevopsHostCommandDTO">
         select *
         from devops_host_command dhc

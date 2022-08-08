@@ -930,9 +930,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         baseUpdate(devopsEnvironmentDTO);
     }
 
-    private void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long
-            projectId) {
-
+    @Override
+    public void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId) {
         // 跳过权限检查，项目下所有成员自动分配权限
         if (Boolean.TRUE.equals(gitlabProjectPayload.getSkipCheckPermission())) {
             List<Long> iamUserIds = baseServiceClientOperator.getAllMemberIdsWithoutOwner(gitlabProjectPayload.getIamProjectId());

@@ -100,7 +100,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
 
-        checkGitlabUser(gitlabUserReqDTO);
+//        checkGitlabUser(gitlabUserReqDTO);
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(gitlabUserReqDTO.getUsername());
         if (gitLabUserDTO == null) {
             String randomPassword = GenerateUUID.generateRandomGitlabPassword();
@@ -156,7 +156,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void updateGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
-        checkGitlabUser(gitlabUserReqDTO);
+//        checkGitlabUser(gitlabUserReqDTO);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.updateUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),

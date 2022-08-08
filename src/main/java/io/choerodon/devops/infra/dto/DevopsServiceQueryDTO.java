@@ -12,6 +12,7 @@ public class DevopsServiceQueryDTO extends AuditDomain {
     private Long id;
     private String name;
     private String externalIp;
+    private String clusterIp;
     private String ports;
     private String status;
     private Long envId;
@@ -65,6 +66,14 @@ public class DevopsServiceQueryDTO extends AuditDomain {
 
     public void setExternalIp(String externalIp) {
         this.externalIp = externalIp;
+    }
+
+    public String getClusterIp() {
+        return clusterIp;
+    }
+
+    public void setClusterIp(String clusterIp) {
+        this.clusterIp = clusterIp;
     }
 
     public String getPorts() {

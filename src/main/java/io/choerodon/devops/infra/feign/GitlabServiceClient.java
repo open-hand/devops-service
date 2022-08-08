@@ -154,6 +154,17 @@ public interface GitlabServiceClient {
     ResponseEntity<GroupDTO> queryGroupByName(@PathVariable("groupName") String groupName,
                                               @RequestParam(value = "userId") Integer userId);
 
+    /**
+     * 根据组的path查询组
+     *
+     * @param groupIid 组的id
+     * @param userId   用户id
+     * @return 组
+     */
+    @GetMapping(value = "/v1/groups/query_by_id/{group_iid}")
+    ResponseEntity<GroupDTO> queryGroupByIid(@PathVariable("group_iid") Integer groupIid,
+                                             @RequestParam(value = "userId") Integer userId);
+
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFileDTO> createFile(@PathVariable("projectId") Integer projectId,
                                                  @RequestBody FileCreationVO fileCreationVO,
@@ -543,6 +554,12 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{project_id}/members/list")
     ResponseEntity<List<MemberDTO>> listMemberByProject(@PathVariable(value = "project_id") Integer projectId);
 
+    @GetMapping(value = "/v1/projects/{project_id}/all_members/list")
+    ResponseEntity<List<MemberDTO>> getAllMemberByProjectIdAndQuery(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Integer projectId,
+            @RequestParam(value = "query") String query);
+
     @GetMapping("/v1/projects/{user_id}/projects")
     ResponseEntity<List<GitlabProjectDTO>> listProjectByUser(@PathVariable(value = "user_id") Integer id);
 
@@ -842,7 +859,8 @@ public interface GitlabServiceClient {
             @RequestParam(value = "owned", required = false) Boolean owned,
             @RequestParam(value = "search", required = false) String search,
             @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam(value = "perPage", required = false) Integer perPage);
+            @RequestParam(value = "perPage", required = false) Integer perPage,
+            @RequestParam(value = "minAccessLevel", required = false) Integer minAccessLevel);
 
     @ApiParam(value = "迁移应用服务")
     @PutMapping(value = "/v1/projects/{projectId}/transfer")
@@ -892,7 +910,7 @@ public interface GitlabServiceClient {
     @PostMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
     ResponseEntity<PipelineSchedule> createPipelineSchedule(
             @PathVariable("project_id") Integer projectId,
-            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
             @RequestParam(value = "gitlabUrl") String gitlabUrl,
             @RequestParam(value = "authType") String authType,
             @RequestParam(value = "accessToken") String accessToken,
@@ -953,7 +971,7 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{project_id}/pipeline_schedules")
     ResponseEntity<List<PipelineSchedule>> listPipelineSchedules(
             @PathVariable("project_id") Integer projectId,
-            @RequestParam(name = "user_id",required = false) Integer userId,
+            @RequestParam(name = "user_id", required = false) Integer userId,
             @RequestParam(value = "gitlabUrl") String gitlabUrl,
             @RequestParam(value = "authType") String authType,
             @RequestParam(value = "accessToken") String accessToken,
@@ -971,6 +989,7 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password,
             @RequestBody PipelineSchedule pipelineSchedule);
+
     @DeleteMapping(value = "/v1/projects/{project_id}/pipeline_schedules/{pipeline_schedule_id}")
     ResponseEntity<Void> deletePipelineSchedule(
             @PathVariable("project_id") Integer projectId,
@@ -981,5 +1000,9 @@ public interface GitlabServiceClient {
             @RequestParam(value = "accessToken") String accessToken,
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
+
+
+    @GetMapping(value = "/v1/users/list_admin_users")
+    ResponseEntity<List<GitLabUserDTO>> listAdminUsers();
 
 }

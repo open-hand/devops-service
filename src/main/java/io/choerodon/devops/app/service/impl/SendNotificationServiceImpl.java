@@ -664,6 +664,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getId(),
                             devopsEnvironmentDTO.getName());
                     doSendWhenResourceCreationFailure(MessageCodeConstants.SERVICE_CREATION_FAILURE, devopsEnvironmentDTO.getId(), devopsServiceDTO.getName(), creatorId, resourceCommandId, webHookParams);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), devopsEnvironmentDTO.getId(), devopsServiceDTO.getName(), creatorId, resourceCommandId, webHookParams);
                 },
                 ex -> LOGGER.info("Failed to send message WhenServiceCreationFailure.", ex)
         );
@@ -782,7 +783,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     }
 
-    private static Receiver constructReceiver(Long userId, String email, String phone, Long userTenantId) {
+    protected static Receiver constructReceiver(Long userId, String email, String phone, Long userTenantId) {
         Receiver receiver = new Receiver();
         receiver.setUserId(Objects.requireNonNull(userId));
         receiver.setEmail(Objects.requireNonNull(email));
@@ -826,7 +827,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         sendNotices(type, users, constructCiParamsForPipeline(ciCdPipelineDTO.getName(), projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
-    private void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
+    protected void addSpecifierList(String messageCode, Long projectId, List<Receiver> users) {
         if (messageCode.equals(MessageCodeConstants.PIPELINE_FAILED)
                 || messageCode.equals(MessageCodeConstants.PIPELINE_SUCCESS)) {
             MessageSettingVO messageSettingVO = messageClientOperator.getMessageSettingVO(ServiceNotifyType.DEVOPS_NOTIFY.getTypeName(), projectId, messageCode);
@@ -847,7 +848,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
     }
 
-    private Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+    protected Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put(PIPE_LINE_NAME, recordDTO.getPipelineName())
                 .put(PROJECT_ID, recordDTO.getProjectId())
@@ -860,7 +861,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .build();
     }
 
-    private Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
+    protected Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
                 .put(PIPE_LINE_NAME, pipelineName)
                 .put(PROJECT_ID, projectDTO.getId())
@@ -888,6 +889,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getName()
                     );
                     doSendWhenResourceCreationFailure(MessageCodeConstants.INGRESS_CREATION_FAILURE, devopsEnvironmentDTO.getId(), devopsIngressDTO.getName(), creatorId, resourceCommandId, params);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), devopsEnvironmentDTO.getId(), devopsIngressDTO.getName(), creatorId, resourceCommandId, params);
                 },
                 ex -> LOGGER.info("Failed to sendWhenIngressCreationFailure", ex));
     }
@@ -908,6 +910,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             devopsEnvironmentDTO.getName()
                     );
                     doSendWhenResourceCreationFailure(MessageCodeConstants.CERTIFICATION_CREATION_FAILURE, certificationDTO.getEnvId(), certificationDTO.getName(), creatorId, resourceCommandId, params);
+                    doSendWhenResourceCreationFailure(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), certificationDTO.getEnvId(), certificationDTO.getName(), creatorId, resourceCommandId, params);
                 },
                 ex -> LOGGER.info("Failed to sendWhenCertificationCreationFailure", ex));
     }
@@ -941,7 +944,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static Map<String, String> constructParamsForEnv(DevopsEnvironmentDTO devopsEnvironmentDTO, Long organizationId) {
         return StringMapBuilder.newBuilder()
                 // 不是打错，模板就是这样
-                .put("enveId", devopsEnvironmentDTO.getId())
+                .put("envId", devopsEnvironmentDTO.getId())
                 .put("envCode", devopsEnvironmentDTO.getCode())
                 .put(ENV_NAME, devopsEnvironmentDTO.getName())
                 .put(CLUSTER_ID, devopsEnvironmentDTO.getClusterId())
@@ -1113,7 +1116,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param actionInTry   正常处理的逻辑
      * @param actionInCatch 处理异常的逻辑
      */
-    private static void doWithTryCatchAndLog(Runnable actionInTry, Consumer<Exception> actionInCatch) {
+    protected static void doWithTryCatchAndLog(Runnable actionInTry, Consumer<Exception> actionInCatch) {
         if (actionInTry == null) {
             LOGGER.info("Internal fault: parameter actionInTry is unexpectedly null. Action abort.");
             return;
@@ -1229,7 +1232,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                                 webHookParams.put(LINK, String.format(INSTANCE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsEnvironmentDTO.getId()));
                                 //实例部署失败还有站内信和邮件
                                 receivers = ArrayUtil.singleAsList(constructReceiver(Objects.requireNonNull(appServiceInstanceDTO.getCreatedBy())));
-
+                                sendNotices(SendSettingEnum.CREATE_RESOURCE_FAILED.value(), receivers, webHookParams, projectDTO.getId());
                             }
                             break;
                         case UPDATE:

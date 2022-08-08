@@ -45,7 +45,6 @@ import io.choerodon.devops.infra.util.StringMapBuilder;
 public class DevopsNotificationServiceImpl implements DevopsNotificationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsNotificationServiceImpl.class);
-    private static Random RANDOM;
     private static final String NOTIFY_TYPE = "resourceDelete";
     public static final Gson gson = new Gson();
     private static final Long TIMEOUT = 600L;
@@ -74,13 +73,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
     @Autowired
     private PermissionHelper permissionHelper;
 
-    static {
-        try {
-            RANDOM = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.error("get random failed", e);
-        }
-    }
 
     @Override
     public ResourceCheckVO checkResourceDelete(Long projectId, Long envId, String objectType) {
@@ -156,7 +148,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
 
         // 生成验证码，存放在redis
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
-        String captcha = String.valueOf(RANDOM.nextInt(899999) + 100000);
+        String captcha = String.valueOf(new Random().nextInt(899999) + 100000);
         redisTemplate.opsForValue().set(resendKey, captcha, TIMEOUT, TimeUnit.SECONDS);
 
 
@@ -213,6 +205,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
         });
         params.put(MOBILE, StringUtils.join(phones, ","));
+        LOGGER.info("============message5==========");
 
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), devopsEnvironmentDTO.getProjectId());

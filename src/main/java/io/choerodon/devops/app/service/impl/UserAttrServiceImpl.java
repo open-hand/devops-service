@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.domain.Page;
@@ -19,6 +20,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
 import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
@@ -33,6 +35,8 @@ public class UserAttrServiceImpl implements UserAttrService {
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
@@ -153,6 +157,14 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
+    public void updateAdmins(List<Long> iamUserIds, Boolean isGitlabAdmin) {
+        if (ObjectUtils.isEmpty(iamUserIds)) {
+            return;
+        }
+        userAttrMapper.updateAreAdmin(iamUserIds, isGitlabAdmin);
+    }
+
+    @Override
     public Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
         List<Long> selectedIamUserIds = new ArrayList<>();
         String realName = null;
@@ -224,6 +236,30 @@ public class UserAttrServiceImpl implements UserAttrService {
             return userAttrMapper.selectOne(attrDTO);
         } else {
             throw new CommonException("error.get.iam.admin");
+        }
+    }
+
+    @Override
+    public List<UserAttrVO> listAllAdmin() {
+        return userAttrMapper.listAllAdmin();
+    }
+
+    @Override
+    public void updateGitlabAdminUserToNormalUser(List<Long> iamUserIds) {
+        userAttrMapper.updateGitlabAdminUserToNormalUser(iamUserIds);
+    }
+
+    @Override
+    public String queryOrCreateImpersonationToken(Long iamUserId) {
+        UserAttrDTO userAttrDTO = userAttrMapper.selectByPrimaryKey(iamUserId);
+
+        if (org.apache.commons.lang3.StringUtils.isEmpty(userAttrDTO.getGitlabToken())) {
+            String impersonationToken = gitlabServiceClientOperator.createImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), null);
+            userAttrDTO.setGitlabToken(impersonationToken);
+            userAttrMapper.updateByPrimaryKeySelective(userAttrDTO);
+            return impersonationToken;
+        } else {
+            return userAttrDTO.getGitlabToken();
         }
     }
 }

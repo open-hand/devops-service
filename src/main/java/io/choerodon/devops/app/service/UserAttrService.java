@@ -78,6 +78,8 @@ public interface UserAttrService {
      */
     void updateAdmin(Long iamUserId, Boolean isGitlabAdmin);
 
+    void updateAdmins(List<Long> iamUserIds, Boolean isGitlabAdmin);
+
     Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params);
 
     /**
@@ -101,4 +103,21 @@ public interface UserAttrService {
      * @return UserAttrDTO
      */
     UserAttrDTO queryGitlabAdminByIamId();
+
+    /**
+     * 查询猪齿鱼中的所有gitlabAdmin用户
+     *
+     * @return
+     */
+    List<UserAttrVO> listAllAdmin();
+
+    void updateGitlabAdminUserToNormalUser(List<Long> iamUserIds);
+
+    /**
+     * 查询用户的模拟令牌，不存在则创建
+     *
+     * @param iamUserId
+     * @return
+     */
+    String queryOrCreateImpersonationToken(Long iamUserId);
 }

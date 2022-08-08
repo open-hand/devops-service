@@ -759,6 +759,10 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                 // 如果数据库没有service的对象, 相关的 env_resource 纪录也不需要
                 return;
             }
+            if (devopsServiceDTO.getType().equals("ClusterIP")) {
+                devopsServiceDTO.setClusterIp(v1Service.getSpec().getClusterIP());
+                devopsServiceService.baseUpdate(devopsServiceDTO);
+            }
             if (devopsServiceDTO.getType().equals("LoadBalancer") &&
                     v1Service.getStatus() != null &&
                     v1Service.getStatus().getLoadBalancer() != null &&

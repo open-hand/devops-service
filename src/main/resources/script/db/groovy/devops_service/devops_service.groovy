@@ -121,4 +121,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2022-07-26-add-columns') {
+        addColumn(tableName: 'devops_service') {
+            column(name: 'cluster_ip', type: 'VARCHAR(128)', remarks: 'cluster_ip', afterColumn: 'external_ip')
+        }
+    }
+
 }

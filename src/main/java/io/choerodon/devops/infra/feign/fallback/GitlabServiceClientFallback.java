@@ -34,6 +34,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.update");
     }
+
     @Override
     public ResponseEntity deleteFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.file.delete");
@@ -203,6 +204,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GroupDTO> queryGroupByName(String groupName, Integer userId) {
+        throw new CommonException("error.group.get");
+    }
+
+    @Override
+    public ResponseEntity<GroupDTO> queryGroupByIid(Integer groupIid, Integer userId) {
         throw new CommonException("error.group.get");
     }
 
@@ -422,6 +428,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<MemberDTO>> getAllMemberByProjectIdAndQuery(Integer projectId, String query) {
+        throw new CommonException("error.query.project.members");
+    }
+
+    @Override
     public ResponseEntity<List<GitlabProjectDTO>> listProjectByUser(Integer id) {
         return null;
     }
@@ -547,7 +558,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage) {
+    public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage, Integer minAccessLevel) {
         throw new CommonException("error.query.group.project");
     }
 
@@ -615,5 +626,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<Void> deletePipelineSchedule(Integer projectId, Integer userId, Integer pipelineScheduleId, String gitlabUrl, String authType, String accessToken, String username, String password) {
         throw new CommonException("error.delete.Pipeline.Schedule");
+    }
+
+    @Override
+    public ResponseEntity<List<GitLabUserDTO>> listAdminUsers() {
+        throw new CommonException("error.list.admin.users");
     }
 }

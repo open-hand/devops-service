@@ -1357,7 +1357,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 true,
                 search,
                 pageRequest.getPage(),
-                pageRequest.getSize());
+                pageRequest.getSize(),
+                null);
 
         int totalElements = 0;
         if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
@@ -1368,7 +1369,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     true,
                     search,
                     pageRequest.getPage() + 1,
-                    pageRequest.getSize());
+                    pageRequest.getSize(),
+                    null);
             if (CollectionUtils.isEmpty(nextProjects)) {
                 totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize());
             } else {
