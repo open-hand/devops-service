@@ -28,26 +28,8 @@ public class AppServiceVersionDTO extends AuditDomain {
     @Encrypt
     @ApiModelProperty("版本关联的应用服务id")
     private Long appServiceId;
-    @Encrypt
-    @ApiModelProperty("版本关联的valuesId")
-    private Long valueId;
-    @Encrypt
-    @ApiModelProperty("版本关联的READMEId")
-    private Long readmeValueId;
-    @ApiModelProperty("版本关联的harbor镜像地址")
-    private String image;
     @ApiModelProperty("版本关联的Gitlab commit sha")
     private String commit;
-    @ApiModelProperty("版本关联的chart仓库地址")
-    private String repository;
-    @Encrypt
-    @ApiModelProperty("版本关联的harbor仓库id")
-    private Long harborConfigId;
-    @Encrypt
-    @ApiModelProperty("版本关联的helm仓库id")
-    private Long helmConfigId;
-    @ApiModelProperty("版本关联的harbor仓库类型")
-    private String repoType;
     @ApiModelProperty("版本关联的分支")
     private String ref;
 
@@ -75,6 +57,33 @@ public class AppServiceVersionDTO extends AuditDomain {
     @Transient
     @ApiModelProperty("版本的所属的项目id")
     private Long projectId;
+
+
+    @Encrypt
+    @Transient
+    @ApiModelProperty("版本关联的valuesId")
+    private Long valueId;
+    @Encrypt
+    @Transient
+    @ApiModelProperty("版本关联的READMEId")
+    private Long readmeValueId;
+    @ApiModelProperty("版本关联的harbor镜像地址")
+    @Transient
+    private String image;
+    @ApiModelProperty("版本关联的chart仓库地址")
+    @Transient
+    private String repository;
+    @Encrypt
+    @ApiModelProperty("版本关联的harbor仓库id")
+    @Transient
+    private Long harborConfigId;
+    @Encrypt
+    @ApiModelProperty("版本关联的helm仓库id")
+    @Transient
+    private Long helmConfigId;
+    @ApiModelProperty("版本关联的harbor仓库类型")
+    @Transient
+    private String repoType;
 
 
     public String getChartName() {

@@ -299,57 +299,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvGroupEnvsVO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
-        List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
-        List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = baseListByProjectIdAndActive(projectId, active).stream().peek(t ->
-                setEnvStatus(upgradeClusterList, t)
-        )
-                .collect(Collectors.toList());
-        List<DevopsEnvironmentRepVO> devopsEnviromentRepDTOS = ConvertUtils.convertList(devopsEnvironmentDTOS, DevopsEnvironmentRepVO.class);
-        if (!active) {
-            DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
-            devopsEnvGroupEnvsDTO.setDevopsEnvironmentRepDTOs(devopsEnviromentRepDTOS);
-            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-            return devopsEnvGroupEnvsDTOS;
-        }
-        List<DevopsEnvGroupDTO> devopsEnvGroupES = devopsEnvGroupService.baseListByProjectId(projectId);
-        devopsEnviromentRepDTOS.forEach(devopsEnviromentRepDTO -> {
-            DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnviromentRepDTO.getClusterId());
-            devopsEnviromentRepDTO.setClusterName(devopsClusterDTO == null ? null : devopsClusterDTO.getName());
-            if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
-                devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
-            }
-        });
-        //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
-        Map<Long, List<DevopsEnvironmentRepVO>> resultMaps = devopsEnviromentRepDTOS.stream()
-                .collect(Collectors.groupingBy(DevopsEnvironmentRepVO::getDevopsEnvGroupId));
-
-        List<Long> envGroupIds = new ArrayList<>();
-        resultMaps.forEach((key, value) -> {
-            envGroupIds.add(key);
-            DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
-            DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
-            if (key != 0) {
-                devopsEnvGroupDTO = devopsEnvGroupService.baseQuery(key);
-            }
-            devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
-            devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
-            devopsEnvGroupEnvsDTO.setDevopsEnvironmentRepDTOs(value);
-            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-        });
-        devopsEnvGroupES.forEach(devopsEnvGroupE -> {
-            if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
-                DevopsEnvGroupEnvsVO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsVO();
-                devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
-                devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-            }
-        });
-        return devopsEnvGroupEnvsDTOS;
-    }
-
-    @Override
     public List<DevopsEnvGroupEnvsVO> listEnvTreeMenu(Long projectId) {
         List<DevopsEnvGroupEnvsVO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         // 获得环境列表(包含激活与不激活)
@@ -718,7 +667,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 设置环境所属集群所在项目
         Long clusterId = vo.getClusterId();
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        ProjectDTO clusterBelongedProject = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId(), false, false, false);
+        ProjectDTO clusterBelongedProject = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId(), false, false, false, false, false);
         vo.setClusterBelongedProjectName(clusterBelongedProject.getName());
 
         return vo;
@@ -1715,11 +1664,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO queryByTokenWithClusterCode(String token) {
         return devopsEnvironmentMapper.queryByTokenWithClusterCode(token);
-    }
-
-    @Override
-    public List<DevopsEnvironmentDTO> listByProjectIdAndName(Long projectId, String envName) {
-        return devopsEnvironmentMapper.listByProjectIdAndName(projectId, envName);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)

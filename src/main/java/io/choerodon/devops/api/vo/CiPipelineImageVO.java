@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import javax.validation.constraints.NotNull;
 
+import io.swagger.annotations.ApiParam;
+
 /**
  * @author scp
  * @date 2020/7/21
@@ -20,6 +22,16 @@ public class CiPipelineImageVO {
     private Long harborRepoId;
     @NotNull
     private String repoType;
+    @ApiParam(value = "版本", required = true)
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getToken() {
         return token;

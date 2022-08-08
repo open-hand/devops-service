@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -45,10 +41,6 @@ import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.maven.Repository;
-import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
-import io.choerodon.devops.infra.dto.maven.Server;
-import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -56,7 +48,6 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -83,8 +74,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
     private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
     private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
-    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
     private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
@@ -99,8 +88,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
     private String cibase;
 
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
@@ -114,12 +101,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final UserAttrService userAttrService;
     private final AppServiceService appServiceService;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
-    private final DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     private final DevopsProjectService devopsProjectService;
     private final BaseServiceClientOperator baseServiceClientOperator;
-    private final RdupmClientOperator rdupmClientOperator;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
-    private final DevopsConfigService devopsConfigService;
     private final PermissionHelper permissionHelper;
     private final AppServiceMapper appServiceMapper;
     private final CiCdPipelineMapper ciCdPipelineMapper;
@@ -181,6 +165,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private CiDockerAuthConfigService ciDockerAuthConfigService;
     @Autowired
     private CiPipelineScheduleService ciPipelineScheduleService;
+    @Autowired
+    private DevopsCiPipelineChartService devopsCiPipelineChartService;
+    @Autowired
+    private CiPipelineMavenService ciPipelineMavenService;
+    @Autowired
+    private CiPipelineImageService ciPipelineImageService;
+    @Autowired
+    private CiPipelineAppVersionService ciPipelineAppVersionService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -196,11 +188,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             CheckGitlabAccessLevelService checkGitlabAccessLevelService,
             @Lazy AppServiceService appServiceService,
             DevopsCiJobRecordService devopsCiJobRecordService,
-            DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
             DevopsProjectService devopsProjectService,
             BaseServiceClientOperator baseServiceClientOperator,
-            RdupmClientOperator rdupmClientOperator,
-            DevopsConfigService devopsConfigService,
             PermissionHelper permissionHelper,
             AppServiceMapper appServiceMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
@@ -222,11 +211,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.userAttrService = userAttrService;
         this.appServiceService = appServiceService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
-        this.devopsCiMavenSettingsMapper = devopsCiMavenSettingsMapper;
         this.baseServiceClientOperator = baseServiceClientOperator;
         this.devopsProjectService = devopsProjectService;
-        this.rdupmClientOperator = rdupmClientOperator;
-        this.devopsConfigService = devopsConfigService;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
         this.permissionHelper = permissionHelper;
         this.appServiceMapper = appServiceMapper;
@@ -240,30 +226,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
         this.devopsCiJobMapper = devopsCiJobMapper;
-    }
-
-    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
-        List<Server> servers = new ArrayList<>();
-        List<Repository> repositories = new ArrayList<>();
-
-        mavenRepoList.forEach(m -> {
-            if (m.getType() != null) {
-                String[] types = m.getType().split(GitOpsConstants.COMMA);
-                if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
-                }
-            }
-            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
-                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
-            }
-            repositories.add(new Repository(
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getUrl()),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
-        });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
     }
 
     /**
@@ -616,14 +578,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     });
                 }
             });
-//            AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
-//            String ciFileIncludeUrl = String.format(GitOpsConstants.CI_CONTENT_URL_TEMPLATE, gatewayUrl, projectId, ciCdPipelineDTO.getToken());
-//            if (appServiceDTO.getExternalConfigId() != null) {
-//                AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
-//                ciCdPipelineVO.getRelatedBranches().forEach(branch -> initExternalGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl, appExternalConfigDTO));
-//            } else {
-//                ciCdPipelineVO.getRelatedBranches().forEach(branch -> initGitlabCiFile(appServiceDTO.getGitlabProjectId(), branch, ciFileIncludeUrl));
-//            }
         }
     }
 
@@ -1001,6 +955,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+
         // 删除流水线
         if (ciCdPipelineMapper.deleteByPrimaryKey(pipelineId) != 1) {
             throw new CommonException(DELETE_PIPELINE_FAILED);
@@ -1017,6 +972,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 删除 ci job记录
         devopsCiJobRecordService.deleteByAppServiceId(appServiceDTO.getId());
+
+        // 删除流水线相关产物
+        devopsCiPipelineChartService.deleteByAppServiceId(appServiceDTO.getId());
+        ciPipelineImageService.deleteByAppServiceId(appServiceDTO.getId());
+        ciPipelineMavenService.deleteByAppServiceId(appServiceDTO.getId());
+        ciPipelineAppVersionService.deleteByAppServiceId(appServiceDTO.getId());
 
         // 删除pipeline记录
         devopsCiPipelineRecordService.deleteByPipelineId(pipelineId);
@@ -1326,7 +1287,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public Map<String, String> runnerGuide(Long projectId) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         // name: orgName-projectName + suffix
@@ -1721,46 +1682,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-//    private void processCiJobVO(DevopsCiJobVO devopsCiJobVO) {
-//        // 不让数据库存加密的值
-//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-//            // 将构建类型的stage中的job的每个step进行解析和转化
-//            CiConfigVO ciConfigVO = JSONObject.parseObject(devopsCiJobVO.getMetadata(), CiConfigVO.class);
-//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-//                ciConfigVO.getConfig().forEach(c -> {
-//                    if (!org.springframework.util.ObjectUtils.isEmpty(c.getScript())) {
-//                        c.setScript(Base64Util.getBase64DecodedString(c.getScript()));
-//                    }
-//                });
-//            }
-//            devopsCiJobVO.setConfigVO(ciConfigVO);
-//            devopsCiJobVO.setMetadata(JSONObject.toJSONString(ciConfigVO));
-//        }
-//    }
-
-//    private void saveCiContent(final Long projectId, final Long organizationId, Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
-//        GitlabCi gitlabCi = buildGitLabCiObject(projectId, organizationId, ciCdPipelineVO);
-//        StringBuilder gitlabCiYaml = new StringBuilder(GitlabCiUtil.gitlabCi2yaml(gitlabCi));
-//
-//        // 拼接自定义job
-//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
-//            List<DevopsCiJobVO> ciJobVOS = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-//                    .flatMap(v -> v.getJobList().stream()).filter(job -> JobTypeEnum.CUSTOM.value().equalsIgnoreCase(job.getType()))
-//                    .collect(Collectors.toList());
-//            if (!CollectionUtils.isEmpty(ciJobVOS)) {
-//                for (DevopsCiJobVO job : ciJobVOS) {
-//                    gitlabCiYaml.append(GitOpsConstants.NEW_LINE).append(job.getMetadata());
-//                }
-//            }
-//
-//        }
-//
-//        //保存gitlab-ci配置文件
-//        DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
-//        devopsCiContentDTO.setCiPipelineId(pipelineId);
-//        devopsCiContentDTO.setCiContentFile(gitlabCiYaml.toString());
-//        devopsCiContentService.create(devopsCiContentDTO);
-//    }
 
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
@@ -1858,92 +1779,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return gitlabCi;
     }
 
-//    /**
-//     * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
-//     *
-//     * @param projectId      项目id
-//     * @param ciCdPipelineVO 流水线数据
-//     * @return 构建完的CI文件对象
-//     */
-//    private GitlabCi buildGitLabCiObject(final Long projectId, final Long organizationId, CiCdPipelineVO ciCdPipelineVO) {
-//        // 对阶段排序
-//        List<String> stages = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-//                .sorted(Comparator.comparing(DevopsCiStageVO::getSequence))
-//                .map(DevopsCiStageVO::getName)
-//                .collect(Collectors.toList());
-//
-//        GitlabCi gitlabCi = new GitlabCi();
-//
-//        // 如果用户指定了就使用用户指定的，如果没有指定就使用默认的猪齿鱼提供的镜像
-//        gitlabCi.setImage(ObjectUtils.isEmpty(ciCdPipelineVO.getImage()) ? defaultCiImage : ciCdPipelineVO.getImage());
-//
-//        gitlabCi.setStages(stages);
-//        ciCdPipelineVO.getDevopsCiStageVOS().forEach(stageVO -> {
-//            if (!CollectionUtils.isEmpty(stageVO.getJobList())) {
-//                stageVO.getJobList().forEach(job -> {
-//                    if (CiJobTypeEnum.CUSTOM.value().equals(job.getType())) {
-//                        return;
-//                    }
-//                    CiJob ciJob = new CiJob();
-//                    if (StringUtils.isNoneBlank(job.getImage())) {
-//                        ciJob.setImage(job.getImage());
-//                    }
-//                    ciJob.setStage(stageVO.getName());
-//                    ciJob.setParallel(job.getParallel());
-//                    //增加afterScript
-////                    ciJob.setAfterScript(buildAfterScript(job));
-//                    //增加services
-//                    CiJobServices ciJobServices = buildServices(job);
-//                    ciJob.setServices(Objects.isNull(ciJobServices) ? null : ArrayUtil.singleAsList(ciJobServices));
-//                    ciJob.setScript(buildScript(Objects.requireNonNull(organizationId), projectId, job));
-//                    ciJob.setCache(buildJobCache(job));
-//                    processOnlyAndExcept(job, ciJob);
-//                    gitlabCi.addJob(job.getName(), ciJob);
-//                });
-//            }
-//        });
-//        buildBeforeScript(gitlabCi, ciCdPipelineVO.getVersionName());
-//        return gitlabCi;
-//    }
-
-//    private List<String> buildAfterScript(DevopsCiJobVO jobVO) {
-//        List<String> afterScript = new ArrayList<>();
-//        if (isContainDokcerBuild(jobVO)) {
-//            afterScript.add("rm -rf /${CI_PROJECT_NAMESPACE}-${CI_PROJECT_NAME}-${CI_COMMIT_SHA}/${PROJECT_NAME}.tar");
-//            return afterScript;
-//        } else {
-//            return null;
-//        }
-//    }
-
-
-//    private CiJobServices buildServices(DevopsCiJobVO jobVO) {
-//        CiJobServices ciJobServices = new CiJobServices();
-//        if (isContainDokcerBuild(jobVO)) {
-//            ciJobServices.setName(defaultCiImage);
-//            ciJobServices.setAlias("kaniko");
-//            return ciJobServices;
-//        } else {
-//            return null;
-//        }
-//    }
-
-//    private boolean isContainDokcerBuild(DevopsCiJobVO jobVO) {
-//        if (Objects.isNull(jobVO)) {
-//            return false;
-//        }
-//        if (JobTypeEnum.BUILD.value().equals(jobVO.getType())) {
-//            CiConfigVO ciConfigVO = jobVO.getConfigVO();
-//            if (ciConfigVO == null || CollectionUtils.isEmpty(ciConfigVO.getConfig())) {
-//                return false;
-//            }
-//            if (!CollectionUtils.isEmpty(ciConfigVO.getConfig().stream().filter(ciConfigTemplateVO -> StringUtils.equalsIgnoreCase(ciConfigTemplateVO.getType().trim(), CiJobScriptTypeEnum.DOCKER.getType())).collect(Collectors.toList()))) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     /**
      * 处理job的触发方式
      *
@@ -1972,52 +1807,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 }
             }
         }
-    }
-
-    /**
-     * 处理job的触发方式
-     *
-     * @param metadata job元数据
-     * @param ciJob    ci文件的job对象
-     */
-    private void processOnlyAndExcept(DevopsCiJobVO metadata, CiJob ciJob) {
-        if (StringUtils.isNotBlank(metadata.getTriggerType())
-                && StringUtils.isNotBlank(metadata.getTriggerValue())) {
-            CiTriggerType ciTriggerType = CiTriggerType.forValue(metadata.getTriggerType());
-            if (ciTriggerType != null) {
-                String triggerValue = metadata.getTriggerValue();
-                switch (ciTriggerType) {
-                    case REFS:
-                        GitlabCiUtil.processTriggerRefs(ciJob, triggerValue);
-                        break;
-                    case EXACT_MATCH:
-                        GitlabCiUtil.processExactMatch(ciJob, triggerValue);
-                        break;
-                    case REGEX_MATCH:
-                        GitlabCiUtil.processRegexMatch(ciJob, triggerValue);
-                        break;
-                    case EXACT_EXCLUDE:
-                        GitlabCiUtil.processExactExclude(ciJob, triggerValue);
-                        break;
-                }
-            }
-        }
-    }
-
-    private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
-        MavenRepoVO mavenRepoVO = new MavenRepoVO();
-        mavenRepoVO.setName(nexusMavenRepoDTO.getName());
-        mavenRepoVO.setPrivateRepo(Boolean.TRUE);
-        if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
-            mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
-        } else {
-            // group 类型的仓库没有版本类型
-            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy() == null ? null : nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
-        }
-        mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
-        mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
-        mavenRepoVO.setPassword(nexusMavenRepoDTO.getNeUserPassword());
-        return mavenRepoVO;
     }
 
     /**
@@ -2200,26 +1989,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     }
 
-    /**
-     * 主机部署 关联ci任务
-     * 对于创建或更新根据任务名称获取id
-     *
-     * @param pipelineId
-     * @param ciJobName
-     * @return
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
-    public Long getCiJobId(Long pipelineId, String ciJobName) {
-        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-        devopsCiJobDTO.setCiPipelineId(pipelineId);
-        devopsCiJobDTO.setName(ciJobName);
-        List<DevopsCiJobDTO> ciJobDTOList = devopsCiJobMapper.select(devopsCiJobDTO);
-        if (CollectionUtils.isEmpty(ciJobDTOList)) {
-            throw new CommonException("error.get.ci.job.id");
-        }
-        return ciJobDTOList.get(0).getId();
-    }
-
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
@@ -2241,16 +2010,4 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             }
         }
     }
-
-//    /**
-//     * 将job中的metadata字段解密
-//     *
-//     * @param devopsCiJobVO job数据
-//     */
-//    private void decryptCiBuildMetadata(DevopsCiJobVO devopsCiJobVO) {
-//        if (JobTypeEnum.BUILD.value().equals(devopsCiJobVO.getType())) {
-//            // 解密json字符串中的加密的主键
-//            devopsCiJobVO.setMetadata(JsonHelper.marshalByJackson(KeyDecryptHelper.decryptJson(devopsCiJobVO.getMetadata(), CiConfigVO.class)));
-//        }
-//    }
 }

@@ -1,13 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.AppServiceShareResourceService;
 import io.choerodon.devops.infra.dto.AppServiceShareResourceDTO;
 import io.choerodon.devops.infra.mapper.AppShareResourceMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Created by Sheep on 2019/7/12.
@@ -32,13 +31,6 @@ public class AppServiceShareResourceServiceImpl implements AppServiceShareResour
         appServiceShareResourceDTO.setShareId(shareId);
         appServiceShareResourceDTO.setProjectId(projectId);
         applicationShareResourceMapper.deleteByPrimaryKey(appServiceShareResourceDTO);
-    }
-
-    @Override
-    public List<AppServiceShareResourceDTO> baseListByShareId(Long shareId) {
-        AppServiceShareResourceDTO appServiceShareResourceDTO = new AppServiceShareResourceDTO();
-        appServiceShareResourceDTO.setShareId(shareId);
-        return applicationShareResourceMapper.select(appServiceShareResourceDTO);
     }
 
 }

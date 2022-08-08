@@ -42,5 +42,16 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
     public void baseCreate(DevopsCiPipelineChartDTO devopsCiPipelineChartDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiPipelineChartMapper, devopsCiPipelineChartDTO, "error.save.chart.info");
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = new DevopsCiPipelineChartDTO();
+        devopsCiPipelineChartDTO.setAppServiceId(appServiceId);
+
+        devopsCiPipelineChartMapper.delete(devopsCiPipelineChartDTO);
+    }
 }
 

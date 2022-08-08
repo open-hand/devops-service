@@ -4,14 +4,20 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
+import io.choerodon.devops.app.service.AppServiceImageVersionService;
 import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.CiPipelineImageService;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.AppServiceImageVersionDTO;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsRegistryRepoType;
@@ -33,6 +39,10 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     private CiPipelineImageMapper ciPipelineImageMapper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private AppServiceImageVersionService appServiceImageVersionService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
 
@@ -62,6 +72,27 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
                     throw new CommonException("error.update.image.record");
                 }
             }
+
+            // 如果流水线中还包含发布应用服务版本的步骤，还需要将镜像信息保存到版本记录表中
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceId, ciPipelineImageVO.getVersion());
+            if (appServiceVersionDTO != null) {
+                AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+                // 镜像版本不存在则创建，存在则更新
+                if (appServiceImageVersionDTO == null) {
+                    appServiceImageVersionDTO = new AppServiceImageVersionDTO();
+                    appServiceImageVersionDTO.setImage(ciPipelineImageVO.getImageTag());
+                    appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                    appServiceImageVersionDTO.setHarborRepoType(ciPipelineImageVO.getRepoType());
+                    appServiceImageVersionDTO.setHarborConfigId(ciPipelineImageVO.getHarborRepoId());
+                    appServiceImageVersionService.create(appServiceImageVersionDTO);
+                } else {
+                    appServiceImageVersionDTO.setImage(ciPipelineImageVO.getImageTag());
+                    appServiceImageVersionDTO.setHarborRepoType(ciPipelineImageVO.getRepoType());
+                    appServiceImageVersionDTO.setHarborConfigId(ciPipelineImageVO.getHarborRepoId());
+                    appServiceImageVersionService.baseUpdate(appServiceImageVersionDTO);
+                }
+            }
+
         });
     }
 
@@ -139,6 +170,24 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         }
 
         return new ImageRepoInfoVO(String.valueOf(repoId), repoType, trimPrefix(dockerRegistry), groupName);
+    }
+
+    @Override
+    public CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+
+        return ciPipelineImageMapper.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
+        ciPipelineImageDTO.setAppServiceId(appServiceId);
+        ciPipelineImageMapper.delete(ciPipelineImageDTO);
     }
 
     private String trimPrefix(String dockerRegistry) {

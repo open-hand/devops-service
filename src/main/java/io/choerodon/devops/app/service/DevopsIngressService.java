@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
@@ -7,8 +9,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 
 public interface DevopsIngressService {
@@ -141,8 +141,6 @@ public interface DevopsIngressService {
     void baseDelete(Long ingressId);
 
     Long baseUpdateStatus(Long envId, String name, String status);
-
-    List<String> baseListNameByServiceId(Long serviceId);
 
     Boolean baseCheckName(Long envId, String name);
 

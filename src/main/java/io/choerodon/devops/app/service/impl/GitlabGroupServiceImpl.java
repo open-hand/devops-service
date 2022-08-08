@@ -31,7 +31,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.SaasLevelEnum;
-import io.choerodon.devops.infra.enums.Visibility;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.GitOpsUtil;
@@ -73,20 +72,6 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         updateGroup(gitlabGroupPayload, ENV_GROUP_SUFFIX);
         updateGroup(gitlabGroupPayload, CLUSTER_ENV_GROUP_SUFFIX);
         updateGroup(gitlabGroupPayload, APP_SERVICE_SUFFIX);
-    }
-
-    @Override
-    public GroupDTO createSiteAppGroup(Long iamUserId, String groupName) {
-        GroupDTO group = new GroupDTO();
-        group.setName(groupName);
-        group.setPath(groupName);
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserId);
-        GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        if (groupDTO == null) {
-            group.setVisibility(Visibility.PUBLIC);
-            groupDTO = gitlabServiceClientOperator.createGroup(group, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
-        }
-        return groupDTO;
     }
 
     @Override

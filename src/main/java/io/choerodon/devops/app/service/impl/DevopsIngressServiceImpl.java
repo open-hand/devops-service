@@ -914,11 +914,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
     @Override
-    public List<String> baseListNameByServiceId(Long serviceId) {
-        return devopsIngressMapper.listIngressNameByServiceId(serviceId);
-    }
-
-    @Override
     public Boolean baseCheckName(Long envId, String name) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO(name);
         devopsIngressDTO.setEnvId(envId);

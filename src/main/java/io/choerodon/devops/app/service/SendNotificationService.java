@@ -56,8 +56,6 @@ public interface SendNotificationService {
      */
     void sendWhenAppServiceDisabled(Long appServiceId);
 
-//    WebHookJsonSendDTO getWebHookJsonSendDTO(JSONObject JSONObject, String code, Long createdBy, Date lastUpdateDate);
-
     /**
      * 删除应用服务通知
      */

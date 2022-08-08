@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_APP_CENTER_DATA;
-import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.FIX_PIPELINE_DATA;
+import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.*;
 
 import java.util.Map;
 
@@ -49,6 +48,46 @@ public class DevopsFixDataTask {
     public void fixPipelineData(Map<String, Object> map) {
         try {
             devopsCheckLogService.checkLog(FIX_PIPELINE_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
+    /**
+     * 迁移helm仓库的数据到新的表，以及应用版本与helm仓库的关联关系
+     *
+     * @param map
+     */
+    @JobTask(maxRetryCount = 3, code = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据")
+    @TimedTask(name = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixHelmRepoData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_HELM_REPO_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
+    @JobTask(maxRetryCount = 3, code = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据")
+    @TimedTask(name = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixHelmVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_HELM_VERSION_DATA);
+        } catch (Exception e) {
+            logger.error("error.fix.data", e);
+        }
+    }
+
+    /**
+     * 迁移应用服务版本中镜像版本数据
+     *
+     * @param map
+     */
+    @JobTask(maxRetryCount = 3, code = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据")
+    @TimedTask(name = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixImageVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
         } catch (Exception e) {
             logger.error("error.fix.data", e);
         }
