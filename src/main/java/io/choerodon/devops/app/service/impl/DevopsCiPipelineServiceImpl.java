@@ -9,8 +9,6 @@ import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,11 +93,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
-
-    @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
-    private String cibase;
-
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -1840,7 +1833,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
                     })) {
                         CiJobServices ciJobServices = new CiJobServices();
-                        ciJobServices.setName(cibase);
+                        ciJobServices.setName(defaultCiImage);
                         ciJobServices.setAlias("kaniko");
                         ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
                     }
