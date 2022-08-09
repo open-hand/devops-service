@@ -77,7 +77,7 @@
             (SELECT ver.id, ver.version, ver.creation_date,dashvt.harbor_repo_type as repo_type,ver.last_update_date
             FROM devops_app_service_version ver
             left join devops_app_service_helm_version dashvt on ver.id = dashvt.app_service_version_id
-            WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT})
+            WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT} and ver.app_service_id = #{appServiceId})
             UNION ALL
         </if>
         (
