@@ -36,6 +36,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_helm_config.groovy') {
 
         createIndex(indexName: "devops_helm_config_n1", tableName: "devops_helm_config") {
             column(name: "resource_id")
+        }
+        createIndex(indexName: "devops_helm_config_n2", tableName: "devops_helm_config") {
             column(name: "resource_type")
         }
     }
