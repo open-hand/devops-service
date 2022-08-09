@@ -126,7 +126,7 @@
         <if test="appServiceVersionId != null">
             (SELECT ver.id, ver.version, ver.creation_date,ver.repo_type,ver.last_update_date
             FROM devops_app_service_version ver
-            WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT})
+            WHERE ver.id = #{appServiceVersionId,jdbcType=BIGINT} and ver.app_service_id = #{appServiceId})
             UNION ALL
         </if>
         (
