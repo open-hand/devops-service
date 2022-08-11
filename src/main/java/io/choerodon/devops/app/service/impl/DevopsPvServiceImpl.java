@@ -127,7 +127,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null) {
