@@ -25,7 +25,12 @@ public class AppServiceUpdateDTO {
     @ApiModelProperty("harbor配置")
     private DevopsConfigVO harbor;
     @ApiModelProperty("char配置")
+    @Deprecated
     private DevopsConfigVO chart;
+
+    @Encrypt
+    @ApiModelProperty("helm配置id")
+    private Long helmConfigId;
 
     @Length(max = 512, min = 1)
     @Pattern(regexp = "[A-Za-z0-9_\\-.]+")
@@ -115,4 +120,11 @@ public class AppServiceUpdateDTO {
         this.harborRepoConfigDTO = harborRepoConfigDTO;
     }
 
+    public Long getHelmConfigId() {
+        return helmConfigId;
+    }
+
+    public void setHelmConfigId(Long helmConfigId) {
+        this.helmConfigId = helmConfigId;
+    }
 }

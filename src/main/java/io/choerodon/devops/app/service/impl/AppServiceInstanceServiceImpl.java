@@ -225,6 +225,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private AppServiceImageVersionService appServiceImageVersionService;
+    @Autowired
+    private AppServiceHelmVersionService appServiceHelmVersionService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -579,26 +585,26 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
 
-    @Override
-    public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
-        // 这里的environmentId就是集群id
-        CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
-        String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
-        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
-        devopsEnvironmentDTO.setCode(CHOERODON);
-        // 测试应用没有环境id
-        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
-
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
-        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
-        String deployValue = getReplaceResult(versionValue,
-                appServiceDeployVO.getValues()).getDeltaYaml().trim();
-        agentCommandService.deployTestApp(appServiceDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);
-    }
+//    @Override
+//    public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
+//        // 这里的environmentId就是集群id
+//        CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+//
+//        String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
+//        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
+//
+//        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
+//        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
+//        devopsEnvironmentDTO.setCode(CHOERODON);
+//        // 测试应用没有环境id
+//        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
+//
+//        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
+//        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
+//        String deployValue = getReplaceResult(versionValue,
+//                appServiceDeployVO.getValues()).getDeltaYaml().trim();
+//        agentCommandService.deployTestApp(appServiceDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);
+//    }
 
 
     @Override
@@ -625,10 +631,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
     }
 
-    @Override
-    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        agentCommandService.getTestAppStatus(testReleases);
-    }
+//    @Override
+//    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
+//        agentCommandService.getTestAppStatus(testReleases);
+//    }
 
     @Override
     public void operationPodCount(Long projectId, String kind, String name, Long envId, Long count, boolean workload) {
@@ -2651,14 +2657,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
-
         // 先处理chart的认证信息
         sendChartMuseumAuthentication(devopsEnvironmentDTO.getClusterId(), appServiceDTO, appServiceVersionDTO);
 
         DevopsConfigDTO devopsConfigDTO;
-        if (appServiceVersionDTO.getHarborConfigId() != null) {
+        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
+        if (appServiceImageVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), AUTHTYPE);
+                    appServiceImageVersionDTO.getHarborConfigId(), appServiceImageVersionDTO.getHarborRepoType(), AUTHTYPE);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
@@ -2802,10 +2808,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO
             appServiceVersionDTO) {
-        if (appServiceVersionDTO.getHelmConfigId() != null) {
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceHelmVersionDTO.getHelmConfigId() != null) {
             // 查询chart配置
-            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
-            ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryById(appServiceHelmVersionDTO.getHelmConfigId());
+            ConfigVO helmConfig = ConvertUtils.convertObject(devopsHelmConfigDTO, ConfigVO.class);
+            helmConfig.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
             // 如果是私有的, 发送认证信息给agent
             if (Boolean.TRUE.equals(helmConfig.getIsPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);

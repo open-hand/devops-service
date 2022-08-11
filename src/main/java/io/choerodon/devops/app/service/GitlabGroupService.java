@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-import io.choerodon.devops.infra.dto.gitlab.GroupDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 
@@ -32,13 +31,6 @@ public interface GitlabGroupService {
      * @param userAttrDTO     当前用户
      */
     void createClusterEnvGroup(ProjectDTO projectDTO, Tenant organizationDTO, UserAttrDTO userAttrDTO);
-
-    /**
-     * 创建平台的应用组
-     *
-     * @return 创建后的组
-     */
-    GroupDTO createSiteAppGroup(Long iamUserId, String groupName);
 
     Boolean checkRepositoryAvailable(String groupName, String projectName, String token);
 }

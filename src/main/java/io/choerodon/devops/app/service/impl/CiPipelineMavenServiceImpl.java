@@ -23,14 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.CiPipelineMavenService;
-import io.choerodon.devops.app.service.DevopsCiStepService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.CiPipelineMavenDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.maven.Settings;
@@ -69,6 +64,10 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
     private DevopsCiJobMapper devopsCiJobMapper;
+    @Autowired
+    private AppServiceMavenVersionService appServiceMavenVersionService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
 
     @Autowired
     private RdupmClient rdupmClient;
@@ -104,7 +103,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                                MultipartFile file,
                                String mavenRepoUrl,
                                String username,
-                               String password) {
+                               String password,
+                               String version) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
             if (appServiceDTO == null) {
@@ -182,6 +182,33 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                 }
             }
             createOrUpdate(ciPipelineMavenDTO);
+            // 判断流水线中是否包含发布应用服务版本步骤，
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
+            if (appServiceVersionDTO != null) {
+                AppServiceMavenVersionDTO appServiceMavenVersionDTO = appServiceMavenVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+                if (appServiceMavenVersionDTO == null) {
+                    appServiceMavenVersionDTO = new AppServiceMavenVersionDTO();
+                    appServiceMavenVersionDTO.setAppServiceVersionId(appServiceVersionDTO.getId());
+                    appServiceMavenVersionDTO.setVersion(ciPipelineMavenDTO.getVersion());
+                    appServiceMavenVersionDTO.setPassword(ciPipelineMavenDTO.getPassword());
+                    appServiceMavenVersionDTO.setMavenRepoUrl(ciPipelineMavenDTO.getMavenRepoUrl());
+                    appServiceMavenVersionDTO.setUsername(ciPipelineMavenDTO.getUsername());
+                    appServiceMavenVersionDTO.setNexusRepoId(ciPipelineMavenDTO.getNexusRepoId());
+                    appServiceMavenVersionDTO.setGroupId(ciPipelineMavenDTO.getGroupId());
+                    appServiceMavenVersionDTO.setArtifactId(ciPipelineMavenDTO.getArtifactId());
+                    appServiceMavenVersionService.create(appServiceMavenVersionDTO);
+                } else {
+                    appServiceMavenVersionDTO.setVersion(ciPipelineMavenDTO.getVersion());
+                    appServiceMavenVersionDTO.setPassword(ciPipelineMavenDTO.getPassword());
+                    appServiceMavenVersionDTO.setMavenRepoUrl(ciPipelineMavenDTO.getMavenRepoUrl());
+                    appServiceMavenVersionDTO.setUsername(ciPipelineMavenDTO.getUsername());
+                    appServiceMavenVersionDTO.setNexusRepoId(ciPipelineMavenDTO.getNexusRepoId());
+                    appServiceMavenVersionDTO.setGroupId(ciPipelineMavenDTO.getGroupId());
+                    appServiceMavenVersionDTO.setArtifactId(ciPipelineMavenDTO.getArtifactId());
+                    appServiceMavenVersionService.baseUpdate(appServiceMavenVersionDTO);
+                }
+            }
+
         });
     }
 
@@ -279,5 +306,23 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         ciPipelineMavenDTO.setAppServiceId(appServiceId);
         ciPipelineMavenDTO.setJobName(jobName);
         return ciPipelineMavenMapper.selectOne(ciPipelineMavenDTO);
+    }
+
+    @Override
+    public CiPipelineMavenDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+
+        return ciPipelineMavenMapper.queryPipelineLatestMaven(appServiceId, gitlabPipelineId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByAppServiceId(Long appServiceId) {
+        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+
+        CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
+        ciPipelineMavenDTO.setAppServiceId(appServiceId);
+        ciPipelineMavenMapper.delete(ciPipelineMavenDTO);
     }
 }

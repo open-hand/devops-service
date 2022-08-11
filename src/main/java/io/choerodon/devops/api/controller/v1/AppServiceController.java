@@ -568,23 +568,6 @@ public class AppServiceController {
                 .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
-
-    /**
-     * 校验chart仓库配置信息是否正确
-     *
-     * @param configVO chartMuseum信息
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "校验chart仓库配置信息是否正确")
-    @PostMapping(value = "/check_chart")
-    public void checkChart(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "chartMuseum信息", required = true)
-            @RequestBody ConfigVO configVO) {
-        applicationServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword());
-    }
-
     /**
      * 验证用于克隆仓库的url及授权的access token是否有效
      *

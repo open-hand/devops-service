@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.devops.infra.dto.AppServiceShareResourceDTO;
 
 /**
@@ -10,7 +8,5 @@ import io.choerodon.devops.infra.dto.AppServiceShareResourceDTO;
 public interface AppServiceShareResourceService {
 
     void baseCreate(AppServiceShareResourceDTO appServiceShareResourceDTO);
-
-    List<AppServiceShareResourceDTO> baseListByShareId(Long shareId);
 
 }

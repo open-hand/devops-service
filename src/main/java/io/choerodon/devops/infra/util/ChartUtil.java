@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.AUTH_TYPE_PULL;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,14 +21,14 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.chart.ChartDeleteResponseVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
 import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.devops.app.service.DevopsHelmConfigService;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.ChartClient;
@@ -52,6 +50,8 @@ public class ChartUtil {
 
     @Autowired
     DevopsConfigService devopsConfigService;
+    @Autowired
+    DevopsHelmConfigService devopsHelmConfigService;
 
     public static void uploadChart(String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
@@ -109,13 +109,13 @@ public class ChartUtil {
     }
 
     public void deleteChart(ChartTagVO chartTagVO) {
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(chartTagVO.getAppServiceId(), APP_SERVICE, CHART, AUTH_TYPE_PULL);
-        ConfigVO helmConfig = GSON.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(chartTagVO.getAppServiceId(), chartTagVO.getProjectId(), chartTagVO.getTenantId());
 
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setType(CHART);
-        configurationProperties.setUsername(helmConfig.getUserName());
-        configurationProperties.setPassword(helmConfig.getPassword());
+        configurationProperties.setUsername(devopsHelmConfigDTO.getUsername());
+        configurationProperties.setPassword(devopsHelmConfigDTO.getPassword());
         configurationProperties.setBaseUrl(chartTagVO.getRepository().split(chartTagVO.getOrgCode() + "/" + chartTagVO.getProjectCode())[0]);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         ChartClient chartClient = retrofit.create(ChartClient.class);

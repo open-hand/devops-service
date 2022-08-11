@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.feign;
 
-import io.swagger.annotations.ApiParam;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +33,9 @@ public interface BaseServiceClient {
     ResponseEntity<ProjectDTO> queryIamProject(@PathVariable("projectId") Long projectId,
                                                @RequestParam(value = "with_category_info") Boolean withCategoryInfo,
                                                @RequestParam(value = "with_user_info") Boolean withUserInfo,
-                                               @RequestParam(value = "with_agile_info") Boolean withAgileInfo);
+                                               @RequestParam(value = "with_agile_info") Boolean withAgileInfo,
+                                               @RequestParam(value = "with_work_group") Boolean withWorkGroup,
+                                               @RequestParam(value = "with_project_classfication") Boolean withProjectClassfication);
 
     /**
      * @param organizationId 组织id

@@ -45,6 +45,16 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Date lastUpdateDate;
 
     private Long gitlabProjectId;
+    @ApiModelProperty("gitlab commit sha")
+    private String commitSha;
+
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
+    }
 
     public Long getGitlabProjectId() {
         return gitlabProjectId;

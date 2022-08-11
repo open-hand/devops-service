@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONArray;
@@ -134,17 +133,6 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
-        }
-    }
-
-    @Override
-    public void baseUpdateByPrimaryKey(DevopsProjectDTO devopsProjectDTO) {
-        DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
-        if (oldDevopsProjectDTO == null) {
-            MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, "error.project.insert", (Object[]) null);
-        } else {
-            devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
         }
     }
 

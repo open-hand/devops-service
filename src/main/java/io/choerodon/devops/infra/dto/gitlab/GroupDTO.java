@@ -19,9 +19,27 @@ public class GroupDTO {
     private Boolean requestAccessEnabled;
     private Integer parentId;
     private Integer sharedRunnersMinutesLimit;
+    private String fullName;
+    private String fullPath;
 
     private GroupStatistics statistics;
 
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getFullPath() {
+        return fullPath;
+    }
+
+    public void setFullPath(String fullPath) {
+        this.fullPath = fullPath;
+    }
 
     public GroupStatistics getStatistics() {
         return statistics;

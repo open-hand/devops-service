@@ -44,10 +44,6 @@ public interface DevopsProjectService {
     DevopsProjectDTO baseQueryByGitlabEnvGroupId(Integer envGroupId);
 
     void baseUpdate(DevopsProjectDTO devopsProjectDTO);
-
-    void baseUpdateByPrimaryKey(DevopsProjectDTO devopsProjectDTO);
-
-
     /**
      * 分页查询与该项目在同一组织的项目列表（包含自身）
      *

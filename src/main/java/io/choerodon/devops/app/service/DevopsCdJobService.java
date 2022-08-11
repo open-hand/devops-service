@@ -45,10 +45,4 @@ public interface DevopsCdJobService {
      * @return
      */
     List<CdApiTestConfigForSagaVO> listCdApiTestConfig();
-
-    /**
-     * 修复数据saga
-     * @param payload
-     */
-    void taskRepairCdJobRecordData(String payload);
 }
