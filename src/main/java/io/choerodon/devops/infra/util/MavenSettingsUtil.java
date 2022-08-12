@@ -193,6 +193,7 @@ public class MavenSettingsUtil {
     }
 
     private static List<Profile> initProfiles(List<Repository> repositories) {
-        return ArrayUtil.singleAsList(new Profile(DEFAULT_PROFILE_ID, new Activation(true), repositories));
+        List<PluginRepository> pluginRepositories = ConvertUtils.convertList(repositories, PluginRepository.class);
+        return ArrayUtil.singleAsList(new Profile(DEFAULT_PROFILE_ID, new Activation(true), repositories, pluginRepositories));
     }
 }
