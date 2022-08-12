@@ -112,6 +112,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
+    @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
