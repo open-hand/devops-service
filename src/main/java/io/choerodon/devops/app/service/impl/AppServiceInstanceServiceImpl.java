@@ -2661,10 +2661,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         sendChartMuseumAuthentication(devopsEnvironmentDTO.getClusterId(), appServiceDTO, appServiceVersionDTO);
 
         DevopsConfigDTO devopsConfigDTO;
-        AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionId);
-        if (appServiceImageVersionDTO.getHarborConfigId() != null) {
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
+        if (appServiceHelmVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
-                    appServiceImageVersionDTO.getHarborConfigId(), appServiceImageVersionDTO.getHarborRepoType(), AUTHTYPE);
+                    appServiceHelmVersionDTO.getHarborConfigId(), appServiceHelmVersionDTO.getHarborRepoType(), AUTHTYPE);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
