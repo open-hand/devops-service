@@ -1069,8 +1069,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             value.stream().min(Comparator.comparing(DevopsCiJobRecordDTO::getGitlabJobId)).ifPresent(i -> devopsCiStageRecordVO.setSequence(i.getGitlabJobId()));
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
+            List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
             Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
             calculateStageStatus(devopsCiStageRecordVO, latestedsCiJobRecordDTOS);
+            devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
             devopsCiStageRecordVOS.add(devopsCiStageRecordVO);
         }
 

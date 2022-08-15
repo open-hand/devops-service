@@ -1523,6 +1523,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
                 addAuditStateInfo(devopsCdPipelineRecordVO);
             }
+            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+
+                //计算stage耗时
+                List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(collect))
+                    devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
+            });
+
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
