@@ -40,6 +40,7 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.PipelineConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -98,6 +99,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
@@ -783,8 +786,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         CustomCommitVO customCommitVO = new CustomCommitVO();
         devopsCiPipelineRecordVO.setCommit(customCommitVO);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        String gitlabProjectUrl;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            gitlabProjectUrl = appExternalConfigDTO.getRepositoryUrl();
+        } else {
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
+            gitlabProjectUrl = gitlabProjectDTO.getWebUrl();
+        }
 
-        customCommitVO.setGitlabProjectUrl(applicationService.calculateGitlabProjectUrlWithSuffix(appServiceId));
+        customCommitVO.setGitlabProjectUrl(gitlabProjectUrl);
 
         // 可能因为GitLab webhook 失败, commit信息查不出
         if (devopsGitlabCommitDTO == null) {

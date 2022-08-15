@@ -52,6 +52,7 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -64,10 +65,7 @@ import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -197,6 +195,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    @Lazy
+    private AppServiceService appServiceService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private AppExternalConfigService appExternalConfigService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
@@ -1314,7 +1319,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         CustomCommitVO customCommitVO = new CustomCommitVO();
         devopsCPipelineRecordVO.setCommit(customCommitVO);
 
-        customCommitVO.setGitlabProjectUrl(applicationService.calculateGitlabProjectUrlWithSuffix(appServiceId));
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        String gitlabProjectUrl;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            gitlabProjectUrl = appExternalConfigDTO.getRepositoryUrl();
+        } else {
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
+            gitlabProjectUrl = gitlabProjectDTO.getWebUrl();
+        }
+
+        customCommitVO.setGitlabProjectUrl(gitlabProjectUrl);
 
         // 可能因为GitLab webhook 失败, commit信息查不出
         if (devopsGitlabCommitDTO == null) {
