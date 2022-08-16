@@ -217,7 +217,7 @@ function chart_build() {
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
     -F "repo_type=${REPO_TYPE}" \
     -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
+    -F "file=@${PROJECT_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
