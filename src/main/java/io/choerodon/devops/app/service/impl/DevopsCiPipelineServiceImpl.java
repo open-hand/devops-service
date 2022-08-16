@@ -417,6 +417,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<CiDockerAuthConfigDTO> ciDockerAuthConfigDTOList = ciCdPipelineVO.getCiDockerAuthConfigDTOList();
         if (!CollectionUtils.isEmpty(ciDockerAuthConfigDTOList)) {
             ciDockerAuthConfigDTOList.forEach(v -> {
+                if (StringUtils.isEmpty(v.getDomain())
+                        || StringUtils.isEmpty(v.getUsername())
+                        || StringUtils.isEmpty(v.getPassword())) {
+                    throw new CommonException("error.docker.auth.config.invalid");
+                }
                 v.setId(null);
                 v.setDevopsPipelineId(ciCdPipelineDTO.getId());
                 ciDockerAuthConfigService.baseCreate(v);
