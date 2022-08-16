@@ -672,6 +672,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Override
     public void sendWhenServiceCreationSuccessOrDelete(DevopsServiceDTO devopsServiceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code) {
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        LOGGER.info("==============email:{}", details.getEmail());
         doWithTryCatchAndLog(() -> {
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(devopsServiceDTO.getId(),
