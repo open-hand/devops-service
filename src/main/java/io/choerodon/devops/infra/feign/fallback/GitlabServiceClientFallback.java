@@ -632,4 +632,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GitLabUserDTO>> listAdminUsers() {
         throw new CommonException("error.list.admin.users");
     }
+
+    @Override
+    public ResponseEntity<ProjectHookDTO> updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
+        throw new CommonException("error.updateWebHook");
+    }
 }
