@@ -1050,7 +1050,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 ex -> LOGGER.info("Error occurred when sending message {}. The exception is {}.", code, ex));
     }
 
-    private Map<String, String> buildResourceParams(Long resourceId, String resourceName, String k8sKind, Long projectId, String projectName, Long envId, String envName) {
+    protected Map<String, String> buildResourceParams(Long resourceId, String resourceName, String k8sKind, Long projectId, String projectName, Long envId, String envName) {
         return StringMapBuilder.newBuilder()
                 .put("resourceId", resourceId)
                 .put("resourceName", resourceName)
