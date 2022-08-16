@@ -1005,4 +1005,10 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/list_admin_users")
     ResponseEntity<List<GitLabUserDTO>> listAdminUsers();
 
+    @PostMapping("/v1/hook/{hook_id}")
+    ResponseEntity<ProjectHookDTO> updateWebHook(
+            @RequestParam("projectId") Integer projectId,
+            @RequestParam("userId") Integer userId,
+            @PathVariable(value = "hook_id") Integer hookId,
+            @RequestBody ProjectHookDTO projectHookDTO);
 }

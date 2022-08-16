@@ -538,6 +538,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public ProjectHookDTO updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
+        try {
+            return gitlabServiceClient.updateWebHook(projectId, userId, hookId, projectHookDTO).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.projecthook.create", e);
+
+        }
+    }
+
     public ProjectHookDTO createExternalWebHook(Integer projectId, AppExternalConfigDTO appExternalConfigDTO, ProjectHookDTO projectHookDTO) {
         try {
             AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
