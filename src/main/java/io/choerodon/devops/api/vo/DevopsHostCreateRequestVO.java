@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo;
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -37,6 +38,7 @@ public class DevopsHostCreateRequestVO {
     private String password;
 
     @ApiModelProperty("主机描述")
+    @Length(max = 100,message = "error.host.description.length")
     private String description;
 
     public String getName() {
