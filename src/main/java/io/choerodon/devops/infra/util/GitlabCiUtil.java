@@ -219,7 +219,7 @@ public class GitlabCiUtil {
      * @return String  shell命令
      */
     public static String downloadMavenSettings(Long projectId, Long mvnSettingsId) {
-        String rawCommand = "downloadSettingsFile %s %s";
+        String rawCommand = "downloadSettingsFileByUId %s %s";
         return String.format(rawCommand, projectId, mvnSettingsId);
     }
 

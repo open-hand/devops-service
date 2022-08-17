@@ -268,9 +268,25 @@ function publish_app_version() {
 
 }
 #################################### 下载settings文件 ####################################
+# 临时保留一个版本，后期可删除 v2.2
+# $1 fileName   下载settings文件后保存为的文件名称
+# $2 project_id 项目id
+# $3 ciJobId    猪齿鱼的CI的JOB纪录的id
+# $4 sequence   猪齿鱼的CI流水线的步骤的序列号
+function downloadSettingsFile() {
+  rm -rf "$1"
+  http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
+
+  if [ "$http_status_code" != "200" ]; then
+    echo "failed to downloadSettingsFile: $1"
+    cat "settings.xml"
+    exit 1
+  fi
+}
+#################################### 下载settings文件 ####################################
 # $1 projectId
 # $2 devops_ci_maven_settings.id
-function downloadSettingsFile() {
+function downloadSettingsFileByUId() {
   rm -rf "$1"
   http_status_code=$(curl -o "settings.xml" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$1/ci_jobs/maven_settings/$2&token=${Token}")
 
