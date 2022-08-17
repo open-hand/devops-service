@@ -258,7 +258,7 @@ function downloadSettingsFile() {
 # $1 projectId
 # $2 devops_ci_maven_settings.id
 function downloadSettingsFileByUId() {
-  rm -rf "$1"
+  rm -rf "settings.xml"
   http_status_code=$(curl -o "settings.xml" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$1/ci_jobs/maven_settings/$2?token=${Token}")
 
   if [ "$http_status_code" != "200" ]; then
