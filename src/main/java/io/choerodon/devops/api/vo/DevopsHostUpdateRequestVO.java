@@ -41,6 +41,9 @@ public class DevopsHostUpdateRequestVO {
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 
+    @ApiModelProperty("主机描述")
+    private String description;
+
     public String getName() {
         return name;
     }
@@ -83,5 +86,17 @@ public class DevopsHostUpdateRequestVO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
