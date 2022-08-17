@@ -107,30 +107,30 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
         // 处理settings文件
         DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryUnmarshalByStepId(devopsCiStepDTO.getId());
-        boolean hasSettings = false;
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = null;
         if (devopsCiMavenBuildConfigVO != null) {
             DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);
-            hasSettings = buildAndSaveMavenSettings(projectId,
+            devopsCiMavenSettingsDTO = buildAndSaveMavenSettings(projectId,
                     devopsCiJobId,
                     devopsCiStepDTO.getSequence(),
                     devopsCiMavenBuildConfigVO);
         }
 
-        return buildMavenScripts(projectId,
-                devopsCiJobId,
+        return buildMavenScripts(
+                projectId,
                 devopsCiStepDTO,
-                hasSettings);
+                devopsCiMavenSettingsDTO);
     }
 
     /**
      * 生成并存储maven settings到数据库
      *
-     * @param projectId          项目id
-     * @param jobId              job id
+     * @param projectId                  项目id
+     * @param jobId                      job id
      * @param devopsCiMavenBuildConfigVO 配置信息
      * @return true表示有settings配置，false表示没有
      */
-    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
+    private DevopsCiMavenSettingsDTO buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
         // settings文件内容
         String settings;
         final List<MavenRepoVO> repos = new ArrayList<>();
@@ -159,7 +159,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
             settings = buildSettings(repos);
         } else {
             // 没有填关于settings的信息
-            return false;
+            return null;
         }
 
         // 这里存储的ci setting文件内容是解密后的
@@ -171,23 +171,22 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
             devopsCiMavenSettingsDTO.setMavenSettings(settings);
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         }
-        return true;
+        return devopsCiMavenSettingsDTO;
     }
 
     /**
      * 生成maven构建相关的脚本
      *
-     * @param projectId       项目id
-     * @param jobId           job id
+     * @param projectId
      * @param devopsCiStepDTO
-     * @param hasSettings     这个阶段是否有配置settings
+     * @param devopsCiMavenSettingsDTO 这个阶段是否有配置settings
      * @return 生成的shell脚本
      */
-    private List<String> buildMavenScripts(final Long projectId, final Long jobId, DevopsCiStepDTO devopsCiStepDTO, boolean hasSettings) {
+    private List<String> buildMavenScripts(Long projectId, DevopsCiStepDTO devopsCiStepDTO, DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO) {
         List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
-        if (hasSettings) {
+        if (devopsCiMavenSettingsDTO != null) {
             // 插入shell指令将配置的settings文件下载到项目目录下
-            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, jobId, devopsCiStepDTO.getSequence()));
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
         }
         return shells;
     }

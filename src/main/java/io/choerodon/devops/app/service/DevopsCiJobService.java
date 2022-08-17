@@ -105,6 +105,7 @@ public interface DevopsCiJobService {
 
     /**
      * 执行 manul 状态的job
+     *
      * @param projectId
      * @param gitlabProjectId
      * @param jobId
@@ -113,4 +114,6 @@ public interface DevopsCiJobService {
     void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId);
 
     List<DevopsCiJobDTO> listAll();
+
+    String queryMavenSettings(Long projectId, String token, Long id);
 }

@@ -100,14 +100,14 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO = dtoToVo(devopsCiMavenPublishConfigDTO);
 
         List<MavenRepoVO> targetRepos = new ArrayList<>();
-        boolean hasMavenSettings = buildAndSaveJarDeployMavenSettings(projectId,
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = buildAndSaveJarDeployMavenSettings(projectId,
                 devopsCiJobId,
                 devopsCiMavenPublishConfigVO,
                 devopsCiStepDTO,
                 targetRepos);
         return buildMavenJarDeployScripts(projectId,
                 devopsCiJobId,
-                hasMavenSettings,
+                devopsCiMavenSettingsDTO,
                 devopsCiMavenPublishConfigVO,
                 devopsCiStepDTO,
                 targetRepos);
@@ -128,11 +128,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
      * @param targetRepoContainer          用来存放解析出的目标仓库信息
      * @return 返回true表示有settings信息
      */
-    private boolean buildAndSaveJarDeployMavenSettings(Long projectId,
-                                                       Long jobId,
-                                                       DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO,
-                                                       DevopsCiStepDTO devopsCiStepDTO,
-                                                       List<MavenRepoVO> targetRepoContainer) {
+    private DevopsCiMavenSettingsDTO buildAndSaveJarDeployMavenSettings(Long projectId,
+                                                                        Long jobId,
+                                                                        DevopsCiMavenPublishConfigVO devopsCiMavenPublishConfigVO,
+                                                                        DevopsCiStepDTO devopsCiStepDTO,
+                                                                        List<MavenRepoVO> targetRepoContainer) {
         Long sequence = devopsCiStepDTO.getSequence();
         Set<Long> dependencyRepoIds = devopsCiMavenPublishConfigVO.getNexusMavenRepoIds();
         List<MavenRepoVO> dependencyRepos = devopsCiMavenPublishConfigVO.getRepos();
@@ -144,7 +144,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
         // 如果都为空, 不生成settings文件
         if (targetRepoEmpty && dependencyRepoIdsEmpty && dependencyRepoEmpty && settingsEmpty) {
-            return false;
+            return null;
         }
 
         // 查询制品库
@@ -160,7 +160,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                     ids);
             // 如果填入的仓库信息和制品库查出的结果都为空, 不生成settings文件
             if (CollectionUtils.isEmpty(nexusMavenRepoDTOs) && dependencyRepoEmpty) {
-                return false;
+                return null;
             }
             // 转化制品库信息, 并将目标仓库信息取出, 放入targetRepoContainer
 
@@ -202,7 +202,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
         }
 
-        return true;
+        return devopsCiMavenSettingsDTO1;
     }
 
     private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
@@ -225,17 +225,17 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     /**
      * 生成jar包发布相关的脚本
      *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param hasSettings        是否有settings配置
-     * @param ciConfigTemplateVO maven发布软件包阶段的信息
+     * @param projectId                项目id
+     * @param jobId                    job id
+     * @param devopsCiMavenSettingsDTO settings配置
+     * @param ciConfigTemplateVO       maven发布软件包阶段的信息
      * @param devopsCiStepDTO
-     * @param targetMavenRepoVO  目标制品库仓库信息
+     * @param targetMavenRepoVO        目标制品库仓库信息
      * @return 生成的shell脚本
      */
     private List<String> buildMavenJarDeployScripts(final Long projectId,
                                                     final Long jobId,
-                                                    final boolean hasSettings,
+                                                    final DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO,
                                                     DevopsCiMavenPublishConfigVO ciConfigTemplateVO,
                                                     DevopsCiStepDTO devopsCiStepDTO,
                                                     List<MavenRepoVO> targetMavenRepoVO) {
@@ -247,8 +247,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                         true,
                         true);
         // 如果有settings配置, 填入获取settings的指令
-        if (hasSettings) {
-            shells.add(GitlabCiUtil.downloadMavenSettings(projectId, jobId, devopsCiStepDTO.getSequence()));
+        if (devopsCiMavenSettingsDTO != null) {
+            shells.add(GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
         }
         // 根据目标仓库信息, 渲染发布jar包的指令
         if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {

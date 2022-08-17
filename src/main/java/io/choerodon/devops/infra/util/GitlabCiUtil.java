@@ -216,14 +216,11 @@ public class GitlabCiUtil {
     /**
      * 根据参数生成获取相应maven settings文件到本地的命令
      *
-     * @param projectId 项目id
-     * @param ciJobId   jobId
-     * @param sequence  序列号
      * @return String  shell命令
      */
-    public static String downloadMavenSettings(Long projectId, Long ciJobId, Long sequence) {
-        String rawCommand = "downloadSettingsFile %s %s %s %s";
-        return String.format(rawCommand, "settings.xml", projectId, ciJobId, sequence);
+    public static String downloadMavenSettings(Long projectId, Long mvnSettingsId) {
+        String rawCommand = "downloadSettingsFile %s %s";
+        return String.format(rawCommand, projectId, mvnSettingsId);
     }
 
     /**
