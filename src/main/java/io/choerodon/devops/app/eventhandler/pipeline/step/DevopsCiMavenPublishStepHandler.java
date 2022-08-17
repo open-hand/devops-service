@@ -192,17 +192,17 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             settings = devopsCiMavenPublishConfigVO.getMavenSettings();
         }
 
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO1 = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsRecordDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsRecordDTO);
 
-        if (devopsCiMavenSettingsDTO1 == null) {
-            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
+        if (devopsCiMavenSettingsDTO == null) {
+            return MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
         } else {
-            devopsCiMavenSettingsDTO1.setMavenSettings(settings);
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO1, ERROR_CI_MAVEN_SETTINGS_INSERT);
+            devopsCiMavenSettingsDTO.setMavenSettings(settings);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         }
 
-        return devopsCiMavenSettingsDTO1;
+        return devopsCiMavenSettingsDTO;
     }
 
     private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
