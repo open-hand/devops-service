@@ -322,18 +322,18 @@ public class GitlabCiUtil {
     /**
      * 存jar包元数据
      *
-     * @param nexusRepoId nexus仓库id
-     * @param jobId       流水线job Id
-     * @param sequence    步骤顺序
+     * @param nexusRepoId   nexus仓库id
+     * @param mvnSettingsId mvnSettingsId
+     * @param sequence      步骤顺序
      * @return 指令
      */
-    public static String saveJarMetadata(Long nexusRepoId, Long jobId, Long sequence) {
-        String rawCommand = "saveJarMetadata %s %s %s";
-        return String.format(rawCommand, nexusRepoId, jobId, sequence);
+    public static String saveJarMetadata(Long nexusRepoId, Long mvnSettingsId, Long sequence) {
+        String rawCommand = "saveJarInfo %s %s %s";
+        return String.format(rawCommand, nexusRepoId, mvnSettingsId, sequence);
     }
 
-    public static String saveCustomJarMetadata(Long jobId, Long sequence, String url, String username, String password) {
-        String rawCommand = "saveCustomJarMetadata %s %s %s %s %s";
-        return String.format(rawCommand, jobId, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
+    public static String saveCustomJarMetadata(Long mvnSettingsId, Long sequence, String url, String username, String password) {
+        String rawCommand = "saveCustomJarInfo %s %s %s %s %s";
+        return String.format(rawCommand, mvnSettingsId, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
     }
 }

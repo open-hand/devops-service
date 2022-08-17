@@ -300,11 +300,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             if (ciConfigTemplateVO.getNexusRepoId() != null) {
 
                 cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
-                        jobId,
+                        devopsCiMavenSettingsDTO.getId(),
                         devopsCiStepDTO.getSequence());
             } else {
                 MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
-                cmd = GitlabCiUtil.saveCustomJarMetadata(jobId,
+                cmd = GitlabCiUtil.saveCustomJarMetadata(devopsCiMavenSettingsDTO.getId(),
                         devopsCiStepDTO.getSequence(),
                         targetRepo.getUrl(),
                         targetRepo.getUsername(),
