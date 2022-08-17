@@ -106,25 +106,20 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         }
     }
 
-    @Override
-    public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
-        Long projectId = devopsCiStepDTO.getProjectId();
-        Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
-        // 处理settings文件
-        DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryUnmarshalByStepId(devopsCiStepDTO.getId());
-        boolean hasSettings = false;
-        if (devopsCiMavenBuildConfigVO != null) {
-            DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);
-            hasSettings = buildAndSaveMavenSettings(projectId,
-                    devopsCiJobId,
-                    devopsCiStepDTO.getSequence(),
-                    devopsCiMavenBuildConfigVO);
+    private static MavenRepoVO convertRepo(NexusMavenRepoDTO nexusMavenRepoDTO) {
+        MavenRepoVO mavenRepoVO = new MavenRepoVO();
+        mavenRepoVO.setName(nexusMavenRepoDTO.getName());
+        mavenRepoVO.setPrivateRepo(Boolean.TRUE);
+        if ("MIXED".equals(nexusMavenRepoDTO.getVersionPolicy())) {
+            mavenRepoVO.setType(GitOpsConstants.SNAPSHOT + "," + GitOpsConstants.RELEASE);
+        } else {
+            // group 类型的仓库没有版本类型
+            mavenRepoVO.setType(nexusMavenRepoDTO.getVersionPolicy() == null ? null : nexusMavenRepoDTO.getVersionPolicy().toLowerCase());
         }
-
-        return buildMavenScripts(projectId,
-                devopsCiJobId,
-                devopsCiStepDTO,
-                hasSettings);
+        mavenRepoVO.setUrl(nexusMavenRepoDTO.getUrl());
+        mavenRepoVO.setUsername(nexusMavenRepoDTO.getNeUserId());
+        mavenRepoVO.setPassword(nexusMavenRepoDTO.getNeUserPassword());
+        return mavenRepoVO;
     }
 
     private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
@@ -185,6 +180,51 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         return mavenRepoVO;
     }
 
+    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
+        List<Server> servers = new ArrayList<>();
+        List<Repository> repositories = new ArrayList<>();
+
+        mavenRepoList.forEach(m -> {
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
+            }
+            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
+                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
+            }
+            repositories.add(new Repository(
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getUrl()),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+        });
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+    }
+
+    @Override
+    public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
+        Long projectId = devopsCiStepDTO.getProjectId();
+        Long devopsCiJobId = devopsCiStepDTO.getDevopsCiJobId();
+        // 处理settings文件
+        DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO = devopsCiMavenBuildConfigService.queryUnmarshalByStepId(devopsCiStepDTO.getId());
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = null;
+        if (devopsCiMavenBuildConfigVO != null) {
+            DevopsCiPipelineAdditionalValidator.validateMavenBuildStep(devopsCiMavenBuildConfigVO);
+            devopsCiMavenSettingsDTO = buildAndSaveMavenSettings(projectId,
+                    devopsCiJobId,
+                    devopsCiStepDTO.getSequence(),
+                    devopsCiMavenBuildConfigVO);
+        }
+
+        return buildMavenScripts(
+                projectId,
+                devopsCiStepDTO,
+                devopsCiMavenSettingsDTO);
+    }
+
     /**
      * 生成并存储maven settings到数据库
      *
@@ -193,7 +233,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
      * @param devopsCiMavenBuildConfigVO 配置信息
      * @return true表示有settings配置，false表示没有
      */
-    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
+    private DevopsCiMavenSettingsDTO buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
         // settings文件内容
         String settings;
         final List<MavenRepoVO> repos = new ArrayList<>();
@@ -227,7 +267,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
             settings = buildSettings(repos, proxies);
         } else {
             // 没有填关于settings的信息
-            return false;
+            return null;
         }
 
         // 这里存储的ci setting文件内容是解密后的
@@ -239,7 +279,24 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
             devopsCiMavenSettingsDTO.setMavenSettings(settings);
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
         }
-        return true;
+        return devopsCiMavenSettingsDTO;
+    }
+
+    /**
+     * 生成maven构建相关的脚本
+     *
+     * @param projectId
+     * @param devopsCiStepDTO
+     * @param devopsCiMavenSettingsDTO 这个阶段是否有配置settings
+     * @return 生成的shell脚本
+     */
+    private List<String> buildMavenScripts(Long projectId, DevopsCiStepDTO devopsCiStepDTO, DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO) {
+        List<String> shells = GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true);
+        if (devopsCiMavenSettingsDTO != null) {
+            // 插入shell指令将配置的settings文件下载到项目目录下
+            shells.add(0, GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
+        }
+        return shells;
     }
 
     @Nullable
