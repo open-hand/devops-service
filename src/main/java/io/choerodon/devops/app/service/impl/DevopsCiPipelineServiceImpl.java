@@ -990,6 +990,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public void deletePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        if (ciCdPipelineDTO == null) {
+            return;
+        }
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
