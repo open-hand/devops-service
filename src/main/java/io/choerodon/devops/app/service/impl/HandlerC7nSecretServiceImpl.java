@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Secret;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Secret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
@@ -193,7 +193,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         // 这两种其实是一样的处理方式, 都从data里面取数据(2020/10/10)
         if (DOCKER_REGISTRY_SECRET_TYPE.equals(c7nSecret.getType())) {
             Map<String, String> map = new HashMap<>();
-            c7nSecret.getData().forEach(map::put);
+            Objects.requireNonNull(c7nSecret.getData()).forEach((k, v) -> map.put(k, Arrays.toString(v)));
             secretReqVO.setValue(map);
         } else {
             secretReqVO.setValue(mergeSecretData(c7nSecret.getData(), c7nSecret.getStringData()));
@@ -201,7 +201,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         return secretReqVO;
     }
 
-    private Map<String, String> mergeSecretData(Map<String, String> data, Map<String, String> stringData) {
+    private Map<String, String> mergeSecretData(Map<String, byte[]> data, Map<String, String> stringData) {
         // k8s处理stringData和data的逻辑是将stringData的value进行base64加密后, 与data合并,
         // 如果键相同, stringData覆盖data的值
         Map<String, String> converted = new LinkedHashMap<>();
@@ -210,7 +210,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
             stringData.forEach((k, v) -> converted.put(k, Base64Util.getBase64EncodedString(v)));
         }
         if (data != null) {
-            data.forEach(converted::putIfAbsent);
+            data.forEach((k, v) -> converted.putIfAbsent(k, Arrays.toString(v)));
         }
         return converted;
     }

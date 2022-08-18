@@ -1,20 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -329,7 +330,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         Long restart = 0L;
         if (v1Pod.getStatus().getContainerStatuses() != null) {
             for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
-                if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
+                if (v1ContainerStatus.getReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
                     ready = ready + 1;
                 }
                 restart = restart + v1ContainerStatus.getRestartCount();

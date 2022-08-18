@@ -1,16 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1beta2Deployment;
 import io.kubernetes.client.models.V1beta2StatefulSet;
+import io.kubernetes.client.openapi.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
 
 import io.choerodon.devops.app.service.AppExceptionRecordService;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
@@ -35,7 +35,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
 
     private static final String ERROR_UPDATE_EXCEPTION_RECORD = "error.update.exception.record";
     private static final String ERROR_SAVE_EXCEPTION_RECORD = "error.save.exception.record";
-    private static final JSON JSON = new JSON();
+    private static final io.kubernetes.client.openapi.JSON JSON = new JSON();
     @Autowired
     private AppExceptionRecordMapper appExceptionRecordMapper;
     @Autowired

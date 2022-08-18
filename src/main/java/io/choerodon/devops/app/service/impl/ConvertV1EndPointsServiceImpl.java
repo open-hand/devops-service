@@ -1,18 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.kubernetes.client.openapi.models.CoreV1EndpointPort;
+import io.kubernetes.client.openapi.models.V1EndpointAddress;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
 
-import io.kubernetes.client.models.V1EndpointAddress;
-import io.kubernetes.client.models.V1EndpointPort;
-import io.kubernetes.client.models.V1Endpoints;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
+import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.choerodon.devops.infra.enums.GitOpsObjectError;
 
 @Component
 public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1Endpoints> {
@@ -45,8 +45,8 @@ public class ConvertV1EndPointsServiceImpl extends ConvertK8sObjectService<V1End
             if (v1Endpoints.getSubsets().get(0).getPorts().isEmpty()) {
                 throw new GitOpsExplainException(GitOpsObjectError.END_POINT_PORTS_NOT_FOUND.getError());
             } else {
-                for (V1EndpointPort v1EndpointPort : v1Endpoints.getSubsets().get(0).getPorts()) {
-                    if (v1EndpointPort.getPort() == null) {
+                for (CoreV1EndpointPort coreV1EndpointPort : v1Endpoints.getSubsets().get(0).getPorts()) {
+                    if (coreV1EndpointPort.getPort() == null) {
                         throw new GitOpsExplainException(GitOpsObjectError.END_POINT_ADDRESS_IP_NOT_FOUND.getError());
                     }
                 }

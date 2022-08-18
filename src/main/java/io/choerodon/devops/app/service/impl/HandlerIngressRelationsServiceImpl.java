@@ -1,21 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1Ingress;
+import io.kubernetes.client.models.V1IngressBackend;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressBackend;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
@@ -30,7 +31,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
-public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
+public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1Ingress> {
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
@@ -46,7 +47,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {

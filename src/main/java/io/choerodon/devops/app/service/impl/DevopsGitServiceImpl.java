@@ -1,19 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +19,18 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;

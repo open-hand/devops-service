@@ -1,14 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.util.GitOpsUtil.*;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
 
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
+import static io.choerodon.devops.infra.util.GitOpsUtil.*;
 
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsPvcService;

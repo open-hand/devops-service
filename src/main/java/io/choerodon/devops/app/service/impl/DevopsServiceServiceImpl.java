@@ -12,9 +12,9 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.netflix.servo.util.Strings;
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -1067,11 +1067,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             }).collect(Collectors.toList()));
             final Integer[] serialNumber = {0};
             v1EndpointSubset.setPorts(value.stream().map(port -> {
-                V1EndpointPort v1EndpointPort = new V1EndpointPort();
-                v1EndpointPort.setPort(port.getPort());
+                CoreV1EndpointPort coreV1EndpointPort = new CoreV1EndpointPort();
+                coreV1EndpointPort.setPort(port.getPort());
                 serialNumber[0] = serialNumber[0] + 1;
-                v1EndpointPort.setName(port.getName() == null ? "http" + serialNumber[0] : port.getName());
-                return v1EndpointPort;
+                coreV1EndpointPort.setName(port.getName() == null ? "http" + serialNumber[0] : port.getName());
+                return coreV1EndpointPort;
             }).collect(Collectors.toList()));
             v1EndpointSubsets.add(v1EndpointSubset);
         });

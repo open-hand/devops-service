@@ -1,10 +1,8 @@
 package io.choerodon.devops.infra.util;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
@@ -12,6 +10,9 @@ import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Created by younger on 2018/4/25.
@@ -49,7 +50,7 @@ public class K8sUtil {
      */
     public static final Pattern LABEL_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
 
-    public static final Pattern PORT_NAME_PATTERN=Pattern.compile("^[0-9a-z]([0-9a-z]+-)*[0-9a-z]*[0-9a-z]$");
+    public static final Pattern PORT_NAME_PATTERN = Pattern.compile("^[0-9a-z]([0-9a-z]+-)*[0-9a-z]*[0-9a-z]$");
 
 
     private K8sUtil() {

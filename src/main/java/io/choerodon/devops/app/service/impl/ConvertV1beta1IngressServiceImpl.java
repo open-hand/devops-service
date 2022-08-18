@@ -1,13 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressRule;
+import io.kubernetes.client.openapi.models.V1Ingress;
+import io.kubernetes.client.proto.V1beta1Extensions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
@@ -20,7 +19,7 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
-public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1beta1Ingress> {
+public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1Ingress> {
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
