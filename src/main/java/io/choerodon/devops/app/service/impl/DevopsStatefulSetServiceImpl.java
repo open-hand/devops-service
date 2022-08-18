@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             StatefulSetInfoVO statefulSetInfoVO = ConvertUtils.convertObject(v, StatefulSetInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1beta2StatefulSet.class);
+                V1StatefulSet v1beta2StatefulSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1StatefulSet.class);
 
 
                 statefulSetInfoVO.setName(v1beta2StatefulSet.getMetadata().getName());
@@ -195,7 +196,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1beta2StatefulSet.class);
+        V1StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1StatefulSet.class);
 
         DevopsStatefulSetDTO oldDevopsStatefulSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2StatefulSet.getMetadata().getName());
         if (oldDevopsStatefulSetDTO != null) {

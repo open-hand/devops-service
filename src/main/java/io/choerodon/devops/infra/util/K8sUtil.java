@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
@@ -245,7 +244,7 @@ public class K8sUtil {
      * @param ingress ingress对象
      * @return 空的不可修改的Set, 如果没有
      */
-    public static Set<String> analyzeIngressServices(V1beta1Ingress ingress) {
+    public static Set<String> analyzeIngressServices(V1Ingress ingress) {
         if (ingress == null || ingress.getSpec() == null) {
             return Collections.emptySet();
         }
@@ -256,17 +255,19 @@ public class K8sUtil {
                 if (rule.getHttp() != null && !CollectionUtils.isEmpty(rule.getHttp().getPaths())) {
                     rule.getHttp().getPaths().forEach(path -> {
                         if (path.getBackend() != null) {
-                            services.add(path.getBackend().getServiceName());
+                            // TODO 兼容旧版本
+//                            services.add(path.getBackend().getServiceName());
                         }
                     });
                 }
             });
         }
 
+        // TODO 兼容旧版本
         // 将默认的backend相关的service加入集合
-        if (ingress.getSpec().getBackend() != null) {
-            services.add(ingress.getSpec().getBackend().getServiceName());
-        }
+//        if (ingress.getSpec().getBackend() != null) {
+//            services.add(ingress.getSpec().getBackend().getServiceName());
+//        }
 
         return services;
     }
@@ -296,11 +297,11 @@ public class K8sUtil {
      * @param v1beta1IngressRules ingress对象
      * @return string
      */
-    public static String formatHosts(List<V1beta1IngressRule> v1beta1IngressRules) {
+    public static String formatHosts(List<V1IngressRule> v1beta1IngressRules) {
         List<String> results = new ArrayList<>();
         int max = 3;
         boolean more = false;
-        for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
+        for (V1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
             if (results.size() == max) {
                 more = true;
             }
@@ -324,7 +325,7 @@ public class K8sUtil {
      * @param v1beta1IngressTLS ingress对象
      * @return string
      */
-    public static String formatPorts(List<V1beta1IngressTLS> v1beta1IngressTLS) {
+    public static String formatPorts(List<V1IngressTLS> v1beta1IngressTLS) {
         if (v1beta1IngressTLS != null && !v1beta1IngressTLS.isEmpty()) {
             return "80,443";
         }

@@ -2,8 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.hzero.core.util.EncryptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,7 +196,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
             devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
-        V1beta2Deployment deployment = new V1beta2Deployment();
+        V1Deployment deployment = new V1Deployment();
         deployment.setKind(DEPLOYMENT.getType());
         deployment.setApiVersion("apps/v1");
         try {
@@ -216,8 +216,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
-    private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
-            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
@@ -231,14 +231,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         deployment.setMetadata(metadata);
 
         // 设置spec
-        V1beta2DeploymentSpec v1beta2DeploymentSpec = new V1beta2DeploymentSpec();
+        V1DeploymentSpec v1beta2DeploymentSpec = new V1DeploymentSpec();
         v1beta2DeploymentSpec.setReplicas(devopsDeployGroupAppConfigVO.getReplicas());
 
         // 设置升级策略
-        V1beta2DeploymentStrategy v1beta2DeploymentStrategy = new V1beta2DeploymentStrategy();
+        V1DeploymentStrategy v1beta2DeploymentStrategy = new V1DeploymentStrategy();
         v1beta2DeploymentStrategy.setType(devopsDeployGroupAppConfigVO.getStrategyType());
         if (devopsDeployGroupAppConfigVO.getStrategyType().equals("RollingUpdate")) {
-            V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
+            V1RollingUpdateDeployment rollingUpdate = new V1RollingUpdateDeployment();
             if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
                 rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
             }
@@ -310,8 +310,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return deployment;
     }
 
-    private V1beta2Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
-            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1Deployment deployment) throws IOException {
         List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = devopsDeployGroupVO.getContainerConfig();
         List<V1Container> containers = new ArrayList<>();
         boolean hasJarRdupm = false;

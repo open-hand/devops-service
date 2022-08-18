@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Ingress;
 import io.kubernetes.client.openapi.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.core.base.BaseConstants;
@@ -2218,8 +2218,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         for (IngressSagaPayload ingressSagaPayload : batchDeploymentPayload.getIngressSagaPayloads()) {
-            ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
+            ResourceConvertToYamlHandler<V1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1Ingress());
             String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
             String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
             pathContentMap.put(fileName, ingressContent);

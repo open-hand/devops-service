@@ -44,7 +44,7 @@ public class ResourceConvertToYamlHandler<T> {
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
     private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
-    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
+    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1Deployment";
     private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
 
     @Value(value = "${devops.deploy.enableDeleteBlankLine:true}")
@@ -278,14 +278,14 @@ public class ResourceConvertToYamlHandler<T> {
         V1Ingress newV1Ingress;
 
         // 如果这个Ingress对象是被修改的对象
-        if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
+        if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1Ingress) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
-                newV1beta1Ingress = (V1beta1Ingress) t;
+                newV1Ingress = (V1Ingress) t;
                 if (!deleteCert) {
-                    if (newV1beta1Ingress.getSpec().getTls() != null && !newV1beta1Ingress.getSpec().getTls().isEmpty()) {
-                        newV1beta1Ingress.getSpec().setTls(newV1beta1Ingress.getSpec().getTls());
+                    if (newV1Ingress.getSpec().getTls() != null && !newV1Ingress.getSpec().getTls().isEmpty()) {
+                        newV1Ingress.getSpec().setTls(newV1Ingress.getSpec().getTls());
                     } else {
-                        newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                        newV1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
                     }
                 }
             } else {
@@ -294,10 +294,10 @@ public class ResourceConvertToYamlHandler<T> {
             }
         } else {
             // 如果不是，进行保留
-            newV1beta1Ingress = v1beta1Ingress;
+            newV1Ingress = v1beta1Ingress;
         }
         Tag tag2 = new Tag(INGTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1beta1Ingress).replace(INGTAG, "---"));
+        resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1Ingress).replace(INGTAG, "---"));
     }
 
     private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder

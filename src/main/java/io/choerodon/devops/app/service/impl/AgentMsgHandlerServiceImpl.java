@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -602,11 +601,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
-                        V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
-                        if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
+                        V1Deployment v1Deployment = K8sUtil.deserialize(msg, V1Deployment.class);
+                        if (v1Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
-                        } else if (v1beta2Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
+                        } else if (v1Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
                         }
@@ -947,7 +946,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
+        V1Ingress ingress = json.deserialize(msg, V1Ingress.class);
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
