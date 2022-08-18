@@ -63,6 +63,9 @@ public class DevopsHostVO {
     @ApiModelProperty("权限标签")
     private String permissionLabel;
 
+    @ApiModelProperty("主机描述")
+    private String description;
+
     public Long getId() {
         return id;
     }
@@ -165,5 +168,13 @@ public class DevopsHostVO {
 
     public void setPermissionLabel(String permissionLabel) {
         this.permissionLabel = permissionLabel;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

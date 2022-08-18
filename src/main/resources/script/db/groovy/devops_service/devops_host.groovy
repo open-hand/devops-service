@@ -121,4 +121,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
     changeSet(author: 'lihao', id: '2022-03-17-modify-column') {
         modifyDataType(tableName: 'devops_host', columnName: 'password', newDataType: 'TEXT')
     }
+
+    changeSet(author: 'lihao', id: '2022-08-17-add-description') {
+        addColumn(tableName: 'devops_host') {
+            column(name: 'description', type: 'TEXT', remarks: '主机描述', afterColumn: 'name')
+        }
+    }
 }
