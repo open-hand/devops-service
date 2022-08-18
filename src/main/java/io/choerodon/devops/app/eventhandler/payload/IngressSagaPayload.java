@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.openapi.models.V1Ingress;
 
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
@@ -15,7 +15,7 @@ public class IngressSagaPayload {
     private Boolean created;
     private DevopsEnvironmentDTO devopsEnvironmentDTO;
     private DevopsIngressDTO devopsIngressDTO;
-    private V1beta1Ingress v1beta1Ingress;
+    private V1Ingress v1beta1Ingress;
 
 
     public IngressSagaPayload() {
@@ -59,11 +59,11 @@ public class IngressSagaPayload {
         this.devopsIngressDTO = devopsIngressDTO;
     }
 
-    public V1beta1Ingress getV1beta1Ingress() {
+    public V1Ingress getV1Ingress() {
         return v1beta1Ingress;
     }
 
-    public void setV1beta1Ingress(V1beta1Ingress v1beta1Ingress) {
+    public void setV1Ingress(V1Ingress v1beta1Ingress) {
         this.v1beta1Ingress = v1beta1Ingress;
     }
 

@@ -1,10 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
-import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;

@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.Map;
-
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressRule;
+import io.kubernetes.client.openapi.models.V1HTTPIngressPath;
+import io.kubernetes.client.openapi.models.V1Ingress;
+import io.kubernetes.client.openapi.models.V1IngressRule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
@@ -20,18 +20,18 @@ import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
-public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1beta1Ingress> {
+public class ConvertV1IngressServiceImpl extends ConvertK8sObjectService<V1Ingress> {
     @Autowired
     private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
-    public ConvertV1beta1IngressServiceImpl() {
-        super(V1beta1Ingress.class);
+    public ConvertV1IngressServiceImpl() {
+        super(V1Ingress.class);
     }
 
     @Override
-    public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
+    public void checkIfExist(List<V1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete, Map<String, String> objectPath, V1Ingress v1beta1Ingress) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
         if (devopsIngressDTO != null
@@ -56,7 +56,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
     }
 
     @Override
-    public void checkParameters(V1beta1Ingress v1beta1Ingress, Map<String, String> objectPath) {
+    public void checkParameters(V1Ingress v1beta1Ingress, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         if (v1beta1Ingress.getMetadata() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_META_DATA_NOT_FOUND.getError(), filePath);
@@ -68,7 +68,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         if (v1beta1Ingress.getSpec() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_SPEC_NOT_FOUND.getError(), filePath);
         } else {
-            checkV1beta1IngressRules(v1beta1Ingress, filePath);
+            checkV1IngressRules(v1beta1Ingress, filePath);
         }
         if (v1beta1Ingress.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_API_VERSION_NOT_FOUND.getError(), filePath);
@@ -79,30 +79,30 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
     }
 
 
-    private void checkV1beta1IngressRules(V1beta1Ingress v1beta1Ingress, String filePath) {
-        List<V1beta1IngressRule> v1beta1IngressRules = v1beta1Ingress.getSpec().getRules();
+    private void checkV1IngressRules(V1Ingress v1beta1Ingress, String filePath) {
+        List<V1IngressRule> v1beta1IngressRules = v1beta1Ingress.getSpec().getRules();
         if (v1beta1IngressRules.isEmpty()) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_RULES_NOT_FOUND.getError(), filePath);
         } else {
-            for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
+            for (V1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
                 if (v1beta1IngressRule.getHost() == null) {
                     throw new GitOpsExplainException(GitOpsObjectError.INGRESS_RULE_HOST_NOT_FOUND.getError(), filePath);
                 }
                 if (v1beta1IngressRule.getHttp() == null) {
                     throw new GitOpsExplainException(GitOpsObjectError.INGRESS_RULE_HTTP_NOT_FOUND.getError(), filePath);
                 } else {
-                    checkV1beta1HTTPIngressPaths(v1beta1IngressRule, filePath);
+                    checkV1HTTPIngressPaths(v1beta1IngressRule, filePath);
                 }
             }
         }
     }
 
-    private void checkV1beta1HTTPIngressPaths(V1beta1IngressRule v1beta1IngressRule, String filePath) {
-        List<V1beta1HTTPIngressPath> v1beta1HTTPIngressPaths = v1beta1IngressRule.getHttp().getPaths();
-        if (v1beta1HTTPIngressPaths.isEmpty()) {
+    private void checkV1HTTPIngressPaths(V1IngressRule v1beta1IngressRule, String filePath) {
+        List<V1HTTPIngressPath> v1HTTPIngressPaths = v1beta1IngressRule.getHttp().getPaths();
+        if (v1HTTPIngressPaths.isEmpty()) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATHS_NOT_FOUND.getError(), filePath);
         } else {
-            for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : v1beta1HTTPIngressPaths) {
+            for (V1HTTPIngressPath v1beta1HTTPIngressPath : v1HTTPIngressPaths) {
                 if (v1beta1HTTPIngressPath.getPath() == null) {
                     throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATHS_PATH_NOT_FOUND.getError(), filePath);
                 }
@@ -115,12 +115,13 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         }
     }
 
-    private void checkBackend(V1beta1HTTPIngressPath v1beta1HTTPIngressPath, String filePath) {
-        if (v1beta1HTTPIngressPath.getBackend().getServiceName() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_NAME_NOT_FOUND.getError(), filePath);
-        }
-        if (v1beta1HTTPIngressPath.getBackend().getServicePort() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_PORT_NOT_FOUND.getError(), filePath);
-        }
+    private void checkBackend(V1HTTPIngressPath v1beta1HTTPIngressPath, String filePath) {
+        // TODO 兼容旧版本
+//        if (v1beta1HTTPIngressPath.getBackend().getServiceName() == null) {
+//            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_NAME_NOT_FOUND.getError(), filePath);
+//        }
+//        if (v1beta1HTTPIngressPath.getBackend().getServicePort() == null) {
+//            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_PORT_NOT_FOUND.getError(), filePath);
+//        }
     }
 }

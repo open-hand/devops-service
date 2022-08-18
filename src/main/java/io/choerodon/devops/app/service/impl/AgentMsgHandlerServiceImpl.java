@@ -1,24 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
-import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
-import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
-
-import java.io.IOException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +15,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
+import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+import static io.choerodon.devops.infra.constant.MiscConstants.UPDATE_TYPE;
+import static org.springframework.transaction.annotation.Isolation.READ_COMMITTED;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -311,7 +311,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
      * @return true 当状态不等于Pending时，所有container都ready
      */
     private Boolean getReadyValue(String podStatus, V1Pod v1Pod) {
-        return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::isReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
+        return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::getReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
     }
 
 
@@ -601,11 +601,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
-                        V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
-                        if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
+                        V1Deployment v1Deployment = K8sUtil.deserialize(msg, V1Deployment.class);
+                        if (v1Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
-                        } else if (v1beta2Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
+                        } else if (v1Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
                         }
@@ -946,7 +946,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
+        V1Ingress ingress = json.deserialize(msg, V1Ingress.class);
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);

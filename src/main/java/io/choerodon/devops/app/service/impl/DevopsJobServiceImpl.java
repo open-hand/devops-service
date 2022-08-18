@@ -1,17 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1Job;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +12,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -101,7 +101,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                 }
                 jobInfoVO.setPorts(portRes);
                 if (v1Job.getStatus() != null && v1Job.getStatus().getCompletionTime() != null) {
-                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toLocalTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
                     jobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));

@@ -1,15 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -248,7 +248,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
     private Boolean checkIsNotChange(DevopsServiceDTO devopsServiceDTO, DevopsServiceReqVO devopsServiceReqVO) {
-        List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {}.getType());
+        List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+        }.getType());
         //查询网络对应的实例
         List<DevopsServiceInstanceDTO> devopsServiceInstanceDTOS =
                 devopsServiceInstanceService.baseListByServiceId(devopsServiceDTO.getId());

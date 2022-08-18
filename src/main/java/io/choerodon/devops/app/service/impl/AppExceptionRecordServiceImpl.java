@@ -1,16 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1beta2Deployment;
-import io.kubernetes.client.models.V1beta2StatefulSet;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Deployment;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
 
 import io.choerodon.devops.app.service.AppExceptionRecordService;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
@@ -35,7 +35,7 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
 
     private static final String ERROR_UPDATE_EXCEPTION_RECORD = "error.update.exception.record";
     private static final String ERROR_SAVE_EXCEPTION_RECORD = "error.save.exception.record";
-    private static final JSON JSON = new JSON();
+    private static final io.kubernetes.client.openapi.JSON JSON = new JSON();
     @Autowired
     private AppExceptionRecordMapper appExceptionRecordMapper;
     @Autowired
@@ -54,12 +54,12 @@ public class AppExceptionRecordServiceImpl implements AppExceptionRecordService 
             int desired = 1;
             String resourceName = "";
             if (ResourceType.DEPLOYMENT.getType().equals(resourceType)) {
-                V1beta2Deployment v1beta2Deployment = JSON.deserialize(resource, V1beta2Deployment.class);
+                V1Deployment v1beta2Deployment = JSON.deserialize(resource, V1Deployment.class);
                 current = v1beta2Deployment.getStatus().getReadyReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReadyReplicas();
                 desired = v1beta2Deployment.getStatus().getReplicas() == null ? 0 : v1beta2Deployment.getStatus().getReplicas();
                 resourceName = v1beta2Deployment.getMetadata().getName();
             } else if (ResourceType.STATEFULSET.getType().equals(resourceType)) {
-                V1beta2StatefulSet v1beta2StatefulSet = JSON.deserialize(resource, V1beta2StatefulSet.class);
+                V1StatefulSet v1beta2StatefulSet = JSON.deserialize(resource, V1StatefulSet.class);
                 current = v1beta2StatefulSet.getStatus().getReadyReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReadyReplicas();
                 desired = v1beta2StatefulSet.getStatus().getReplicas() == null ? 0 : v1beta2StatefulSet.getStatus().getReplicas();
                 resourceName = v1beta2StatefulSet.getMetadata().getName();

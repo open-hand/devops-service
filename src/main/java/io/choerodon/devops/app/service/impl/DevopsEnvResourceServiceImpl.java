@@ -1,20 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -98,9 +98,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             // 获取相关的pod
             List<DevopsEnvPodVO> devopsEnvPodVOs = devopsEnvPodService.listWorkloadPod(ResourceType.DEPLOYMENT.getType(), devopsDeploymentVO.getName());
 
-            V1beta2Deployment v1beta2Deployment = json.deserialize(
+            V1Deployment v1beta2Deployment = json.deserialize(
                     devopsEnvResourceDetailDTO.getMessage(),
-                    V1beta2Deployment.class);
+                    V1Deployment.class);
 
             addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, deploymentId);
 
@@ -147,9 +147,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 addPodToResource(devopsEnvResourceVO, v1Pod);
                 break;
             case DEPLOYMENT:
-                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                V1Deployment v1beta2Deployment = json.deserialize(
                         devopsEnvResourceDetailDTO.getMessage(),
-                        V1beta2Deployment.class);
+                        V1Deployment.class);
 
                 addDeploymentToResource(devopsEnvResourceVO, v1beta2Deployment, devopsEnvResourceDTO.getInstanceId());
                 break;
@@ -160,24 +160,24 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 break;
             case INGRESS:
                 if (devopsEnvResourceDTO.getInstanceId() != null) {
-                    V1beta1Ingress v1beta1Ingress = json.deserialize(
+                    V1Ingress v1beta1Ingress = json.deserialize(
                             devopsEnvResourceDetailDTO.getMessage(),
-                            V1beta1Ingress.class);
+                            V1Ingress.class);
                     devopsEnvResourceVO.getIngressVOS().add(addIngressToResource(v1beta1Ingress));
                 }
                 break;
             case REPLICASET:
-                V1beta2ReplicaSet v1beta2ReplicaSet = json.deserialize(
+                V1ReplicaSet v1beta2ReplicaSet = json.deserialize(
                         devopsEnvResourceDetailDTO.getMessage(),
-                        V1beta2ReplicaSet.class);
+                        V1ReplicaSet.class);
                 addReplicaSetToResource(devopsEnvResourceVO, v1beta2ReplicaSet);
                 break;
             case DAEMONSET:
-                V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1beta2DaemonSet.class);
+                V1DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1DaemonSet.class);
                 addDaemonSetToResource(devopsEnvResourceVO, v1beta2DaemonSet, devopsEnvResourceDTO.getInstanceId());
                 break;
             case STATEFULSET:
-                V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1beta2StatefulSet.class);
+                V1StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1StatefulSet.class);
                 addStatefulSetSetToResource(devopsEnvResourceVO, v1beta2StatefulSet, devopsEnvResourceDTO.getInstanceId());
                 break;
             case PERSISTENT_VOLUME_CLAIM:
@@ -329,7 +329,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         Long restart = 0L;
         if (v1Pod.getStatus().getContainerStatuses() != null) {
             for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
-                if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
+                if (v1ContainerStatus.getReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
                     ready = ready + 1;
                 }
                 restart = restart + v1ContainerStatus.getRestartCount();
@@ -348,7 +348,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2Deployment    deployment对象
      */
-    public void addDeploymentToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2Deployment v1beta2Deployment, Long instanceId) {
+    public void addDeploymentToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1Deployment v1beta2Deployment, Long instanceId) {
         DeploymentVO deploymentVO = new DeploymentVO();
         deploymentVO.setName(v1beta2Deployment.getMetadata().getName());
         deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
@@ -413,7 +413,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      *
      * @param v1beta1Ingress ingress对象
      */
-    private IngressVO addIngressToResource(V1beta1Ingress v1beta1Ingress) {
+    private IngressVO addIngressToResource(V1Ingress v1beta1Ingress) {
         IngressVO ingressVO = new IngressVO();
         ingressVO.setName(v1beta1Ingress.getMetadata().getName());
         ingressVO.setHosts(K8sUtil.formatHosts(v1beta1Ingress.getSpec().getRules()));
@@ -430,7 +430,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2ReplicaSet    replicaSet对象
      */
-    public void addReplicaSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2ReplicaSet v1beta2ReplicaSet) {
+    public void addReplicaSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1ReplicaSet v1beta2ReplicaSet) {
         if (v1beta2ReplicaSet.getSpec().getReplicas() == 0) {
             return;
         }
@@ -449,7 +449,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2DaemonSet     daemonSet对象
      */
-    private void addDaemonSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet, Long instanceId) {
+    private void addDaemonSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1DaemonSet v1beta2DaemonSet, Long instanceId) {
         DaemonSetVO daemonSetVO = new DaemonSetVO();
         daemonSetVO.setName(v1beta2DaemonSet.getMetadata().getName());
         daemonSetVO.setAge(v1beta2DaemonSet.getMetadata().getCreationTimestamp().toString());
@@ -467,7 +467,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1beta2StatefulSet   statefulSet对象
      */
-    private void addStatefulSetSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet, Long instanceId) {
+    private void addStatefulSetSetToResource(DevopsEnvResourceVO devopsEnvResourceDTO, V1StatefulSet v1beta2StatefulSet, Long instanceId) {
         StatefulSetVO statefulSetVO = new StatefulSetVO();
         statefulSetVO.setName(v1beta2StatefulSet.getMetadata().getName());
         statefulSetVO.setDesiredReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getSpec().getReplicas()));
