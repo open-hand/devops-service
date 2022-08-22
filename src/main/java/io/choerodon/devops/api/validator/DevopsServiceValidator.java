@@ -64,7 +64,7 @@ public class DevopsServiceValidator {
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }
-        if (!checkPort(Long.valueOf(port.getTargetPort()))) {
+        if (!checkPort(Integer.valueOf(port.getTargetPort()))) {
             throw new CommonException("error.targetPort.illegal");
         }
         if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
@@ -73,7 +73,7 @@ public class DevopsServiceValidator {
 
     }
 
-    private static Boolean checkPort(Long port) {
+    private static Boolean checkPort(Integer port) {
         return port >= 0 && port <= 65535;
     }
 
@@ -92,7 +92,7 @@ public class DevopsServiceValidator {
                         List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
                         });
                         portMapVOList.forEach(portMapVO -> {
-                            Long port = portMapVO.getPort();
+                            Integer port = portMapVO.getPort();
                             String externalIp = s.getExternalIp();
                             devopsServiceReqVO.getPorts().forEach(p -> {
                                 if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
@@ -113,7 +113,7 @@ public class DevopsServiceValidator {
                         List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
                         });
                         portMapVOList.forEach(portMapVO -> {
-                            Long nodePort = portMapVO.getNodePort();
+                            Integer nodePort = portMapVO.getNodePort();
                             if (nodePort != null) {
                                 devopsServiceReqVO.getPorts().forEach(p -> {
                                     if (Objects.equals(nodePort, p.getNodePort())) {

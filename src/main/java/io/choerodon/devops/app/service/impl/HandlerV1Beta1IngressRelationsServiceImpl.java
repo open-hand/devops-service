@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.V1beta1IngressBackend;
 import io.kubernetes.client.openapi.models.V1Endpoints;
-import io.kubernetes.client.openapi.models.V1HTTPIngressPath;
-import io.kubernetes.client.openapi.models.V1Ingress;
-import io.kubernetes.client.openapi.models.V1IngressBackend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +22,7 @@ import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
-import io.choerodon.devops.infra.dto.DevopsIngressDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitOpsUtil;
@@ -30,7 +30,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
-public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1Ingress> {
+public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
@@ -46,7 +46,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {
@@ -62,9 +62,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
-        List<V1Ingress> addV1Ingress = new ArrayList<>();
-        List<V1Ingress> updateV1Ingress = new ArrayList<>();
-        GitOpsUtil.pickCUDResource(beforeIngress, v1beta1Ingresses, addV1Ingress, updateV1Ingress, v1beta1Ingress -> v1beta1Ingress.getMetadata().getName());
+        List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
+        List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();
+        GitOpsUtil.pickCUDResource(beforeIngress, v1beta1Ingresses, addV1beta1Ingress, updateV1beta1Ingress, v1beta1Ingress -> v1beta1Ingress.getMetadata().getName());
 
         //删除ingress,删除文件对象关联关系
         beforeIngress.forEach(ingressName -> {
@@ -75,18 +75,18 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             }
         });
         //新增ingress
-        addIngress(objectPath, envId, projectId, addV1Ingress, path, userId);
+        addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);
         //更新ingress
-        updateIngress(objectPath, envId, projectId, updateV1Ingress, path, userId);
+        updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
     }
 
     @Override
-    public Class<V1Ingress> getTarget() {
-        return V1Ingress.class;
+    public Class<V1beta1Ingress> getTarget() {
+        return V1beta1Ingress.class;
     }
 
-    private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1Ingress> addV1Ingress, String path, Long userId) {
-        addV1Ingress
+    private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path, Long userId) {
+        addV1beta1Ingress
                 .forEach(v1beta1Ingress -> {
                     String filePath = "";
                     try {
@@ -127,8 +127,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 });
     }
 
-    private void updateIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1Ingress> updateV1Ingress, String path, Long userId) {
-        updateV1Ingress
+    private void updateIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> updateV1beta1Ingress, String path, Long userId) {
+        updateV1beta1Ingress
                 .forEach(v1beta1Ingress -> {
                     String filePath = "";
                     try {
@@ -178,7 +178,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     }
 
     private void checkIngressAppVersion(
-            V1Ingress v1beta1Ingress) {
+            V1beta1Ingress v1beta1Ingress) {
         try {
             DevopsIngressValidator.checkIngressName(v1beta1Ingress.getMetadata().getName());
         } catch (Exception e) {
@@ -186,7 +186,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         }
     }
 
-    private DevopsIngressVO getDevopsIngressDTO(V1Ingress v1beta1Ingress,
+    private DevopsIngressVO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
                                                 Long envId, String filePath) {
         DevopsIngressVO devopsIngressVO = new DevopsIngressVO();
         devopsIngressVO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
@@ -196,11 +196,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         devopsIngressVO.setEnvId(envId);
         List<String> pathCheckList = new ArrayList<>();
         List<DevopsIngressPathVO> devopsIngressPathVOS = new ArrayList<>();
-        List<V1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
+        List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
         if (paths == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError(), filePath);
         }
-        for (V1HTTPIngressPath v1HTTPIngressPath : paths) {
+        for (V1beta1HTTPIngressPath v1HTTPIngressPath : paths) {
             String path = v1HTTPIngressPath.getPath();
             try {
                 DevopsIngressValidator.checkPath(path);
@@ -211,29 +211,28 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             } catch (Exception e) {
                 throw new GitOpsExplainException(e.getMessage(), filePath);
             }
-            V1IngressBackend backend = v1HTTPIngressPath.getBackend();
-            // TODO 兼容旧版本
-//            String serviceName = backend.getServiceName();
-//            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
-//                    serviceName, envId);
-//
-//            Long servicePort = null;
-//            IntOrString backendServicePort = backend.getServicePort();
-//            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
-//                servicePort = TypeUtil.objToLong(backendServicePort);
-//            } else {
-//                if (devopsServiceDTO != null) {
-//                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
-//                    }.getType());
-//                    servicePort = listPorts.get(0).getPort();
-//                }
-//            }
-//            DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();
-//            devopsIngressPathVO.setPath(path);
-//            devopsIngressPathVO.setServicePort(servicePort);
-//            devopsIngressPathVO.setServiceName(serviceName);
-//            devopsIngressPathVO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
-//            devopsIngressPathVOS.add(devopsIngressPathVO);
+            V1beta1IngressBackend backend = v1HTTPIngressPath.getBackend();
+            String serviceName = backend.getServiceName();
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
+                    serviceName, envId);
+
+            Integer servicePort = null;
+            IntOrString backendServicePort = backend.getServicePort();
+            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+                servicePort = TypeUtil.objToInteger(backendServicePort);
+            } else {
+                if (devopsServiceDTO != null) {
+                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+                    }.getType());
+                    servicePort = listPorts.get(0).getPort();
+                }
+            }
+            DevopsIngressPathVO devopsIngressPathVO = new DevopsIngressPathVO();
+            devopsIngressPathVO.setPath(path);
+            devopsIngressPathVO.setServicePort(servicePort);
+            devopsIngressPathVO.setServiceName(serviceName);
+            devopsIngressPathVO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
+            devopsIngressPathVOS.add(devopsIngressPathVO);
         }
         devopsIngressVO.setPathList(devopsIngressPathVOS);
         return devopsIngressVO;
