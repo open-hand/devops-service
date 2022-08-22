@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
 import io.kubernetes.client.openapi.models.V1Service;
@@ -2218,11 +2219,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         for (IngressSagaPayload ingressSagaPayload : batchDeploymentPayload.getIngressSagaPayloads()) {
-            ResourceConvertToYamlHandler<V1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1Ingress());
-            String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
-            String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
-            pathContentMap.put(fileName, ingressContent);
+            if (batchDeploymentPayload.getOperateForOldIngress()) {
+                ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                ingressResourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1beta1Ingress.class));
+                String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+                String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+                pathContentMap.put(fileName, ingressContent);
+            } else {
+                ResourceConvertToYamlHandler<V1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                ingressResourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1Ingress.class));
+                String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+                String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+                pathContentMap.put(fileName, ingressContent);
+            }
+
         }
 
         gitlabServiceClientOperator.createGitlabFiles(

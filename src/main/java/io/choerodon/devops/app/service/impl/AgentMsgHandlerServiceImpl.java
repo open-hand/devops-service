@@ -822,9 +822,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private List<PortMapVO> getPortMapES(V1Service v1Service) {
         return v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
             PortMapVO portMapVO = new PortMapVO();
-            portMapVO.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+            portMapVO.setPort(v1ServicePort.getPort());
             portMapVO.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
-            portMapVO.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+            portMapVO.setNodePort(v1ServicePort.getNodePort());
             portMapVO.setProtocol(v1ServicePort.getProtocol());
             portMapVO.setName(v1ServicePort.getName());
             return portMapVO;

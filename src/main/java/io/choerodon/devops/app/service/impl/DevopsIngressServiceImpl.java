@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.common.KubernetesObject;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
@@ -9,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +30,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
+import io.choerodon.devops.api.vo.ClusterSummaryInfoVO;
 import io.choerodon.devops.api.vo.DevopsIngressPathVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceVO;
@@ -101,6 +106,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private SendNotificationService sendNotificationService;
     @Autowired
     PermissionHelper permissionHelper;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     private JSON json = new JSON();
 
@@ -141,18 +148,19 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
         }
 
-        // 初始化V1Ingress对象
+        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        // 初始化Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1Ingress v1beta1Ingress = initV1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
+        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
 
         // 处理创建域名数据
-        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, ingress, operateForOldIngress);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CREATE);
 
         // 在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, v1beta1Ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds);
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), false, ingress, true, null, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds, operateForOldIngress);
     }
 
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
@@ -174,12 +182,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
         }
 
-        // 初始化V1Ingress对象
+        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+
+        // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1Ingress v1beta1Ingress = initV1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
+        KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
 
         // 处理创建域名数据
-        DevopsIngressDTO devopsIngressDTO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+        DevopsIngressDTO devopsIngressDTO = handlerIngress(devopsIngressVO, projectId, ingress, operateForOldIngress);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CREATE);
 
@@ -192,7 +202,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(true);
-        ingressSagaPayload.setV1Ingress(v1beta1Ingress);
+        ingressSagaPayload.setIngressJson(JsonHelper.marshalByJackson(ingress));
         ingressSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
         return ingressSagaPayload;
     }
@@ -229,11 +239,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        // 初始化V1Ingress对象
+        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+
+        // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1Ingress v1beta1Ingress = initV1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
+        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
         // 处理域名数据
-        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress, operateForOldIngress);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CREATE);
 
@@ -298,13 +310,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
 
-        // 初始化V1Ingress对象
+        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+
+        // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
-        V1Ingress v1beta1Ingress = initV1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
+        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
 
         // 处理域名数据
         devopsIngressVO.setId(id);
-        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress, operateForOldIngress);
 
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -312,7 +326,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds);
+                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), deleteCert, v1beta1Ingress, false, path, devopsIngressDO, userAttrDTO, devopsEnvCommandDTO, appServiceIds, operateForOldIngress);
     }
 
     /**
@@ -339,13 +353,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             return;
         }
 
-        // 初始化V1Ingress对象
+        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+
+        // 初始化ingress对象
         String certName = devopsIngressVO.getCertName();
-        V1Ingress v1beta1Ingress = initV1Ingress(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations());
+        KubernetesObject v1beta1Ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
 
         // 处理域名数据
         devopsIngressVO.setId(id);
-        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress);
+        DevopsIngressDTO devopsIngressDO = handlerIngress(devopsIngressVO, projectId, v1beta1Ingress, operateForOldIngress);
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
 
@@ -546,66 +562,123 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         return baseCheckPath(envId, domain, path, id);
     }
 
-    private V1HTTPIngressPath createPath(String hostPath, String serviceName, Long port) {
+    private V1HTTPIngressPath createV1Path(String hostPath, String serviceName, Integer port) {
         V1HTTPIngressPath path = new V1HTTPIngressPath();
-        V1IngressBackend backend = new V1IngressBackend();
-        // TODO 兼容旧版本
-//        backend.setServiceName(serviceName.toLowerCase());
-//        if (port != null) {
-//            backend.setServicePort(new IntOrString(port.intValue()));
-//        }
+        V1IngressBackend v1IngressBackend = new V1IngressBackend();
+        V1IngressServiceBackend v1IngressServiceBackend = new V1IngressServiceBackend();
+        V1ServiceBackendPort v1ServiceBackendPort = new V1ServiceBackendPort();
+        v1IngressBackend.setService(v1IngressServiceBackend);
+        v1IngressServiceBackend.setPort(v1ServiceBackendPort);
+
+
+        v1IngressServiceBackend.setName(serviceName.toLowerCase());
+
+        if (port != null) {
+            v1ServiceBackendPort.setNumber(port);
+        }
+
+        path.setBackend(v1IngressBackend);
+        path.setPath(hostPath);
+        return path;
+    }
+
+    private V1beta1HTTPIngressPath createV1Beta1Path(String hostPath, String serviceName, Integer port) {
+        V1beta1HTTPIngressPath path = new V1beta1HTTPIngressPath();
+        V1beta1IngressBackend backend = new V1beta1IngressBackend();
+        backend.setServiceName(serviceName.toLowerCase());
+        if (port != null) {
+            backend.setServicePort(new IntOrString(port.intValue()));
+        }
         path.setBackend(backend);
         path.setPath(hostPath);
         return path;
     }
 
 
-    private V1Ingress initV1Ingress(String host, String name, @Nullable String certName, @Nullable Map<String, String> annotations) {
-        V1Ingress ingress = new V1Ingress();
-        ingress.setKind(INGRESS);
-        ingress.setApiVersion("extensions/v1beta1");
-        V1ObjectMeta metadata = new V1ObjectMeta();
-        metadata.setName(name);
-        Map<String, String> labels = new HashMap<>();
-        labels.put("choerodon.io/network", "ingress");
+    private KubernetesObject initIngressByK8sVersion(String host, String name, @Nullable String certName, @Nullable Map<String, String> annotations, boolean operateForOldIngress) {
+        if (operateForOldIngress) {
+            V1beta1Ingress ingress = new V1beta1Ingress();
+            ingress.setKind(INGRESS);
+            ingress.setApiVersion("extensions/v1beta1");
+            V1ObjectMeta metadata = new V1ObjectMeta();
+            metadata.setName(name);
+            Map<String, String> labels = new HashMap<>();
+            labels.put("choerodon.io/network", "ingress");
 
-        metadata.setLabels(labels);
-        metadata.setAnnotations(annotations == null ? new HashMap<>() : annotations);
-        ingress.setMetadata(metadata);
-        V1IngressSpec spec = new V1IngressSpec();
+            metadata.setLabels(labels);
+            metadata.setAnnotations(annotations == null ? new HashMap<>() : annotations);
+            ingress.setMetadata(metadata);
+            V1beta1IngressSpec spec = new V1beta1IngressSpec();
 
-        List<V1IngressRule> rules = new ArrayList<>();
-        V1IngressRule rule = new V1IngressRule();
-        V1HTTPIngressRuleValue http = new V1HTTPIngressRuleValue();
-        List<V1HTTPIngressPath> paths = new ArrayList<>();
-        http.setPaths(paths);
-        rule.setHost(host);
-        rule.setHttp(http);
-        rules.add(rule);
-        spec.setRules(rules);
+            List<V1beta1IngressRule> rules = new ArrayList<>();
+            V1beta1IngressRule rule = new V1beta1IngressRule();
+            V1beta1HTTPIngressRuleValue http = new V1beta1HTTPIngressRuleValue();
+            List<V1beta1HTTPIngressPath> paths = new ArrayList<>();
+            http.setPaths(paths);
+            rule.setHost(host);
+            rule.setHttp(http);
+            rules.add(rule);
+            spec.setRules(rules);
 
-        if (certName != null) {
-            List<V1IngressTLS> tlsList = new ArrayList<>();
-            V1IngressTLS tls = new V1IngressTLS();
-            tls.addHostsItem(host);
-            tls.setSecretName(certName);
-            tlsList.add(tls);
-            spec.setTls(tlsList);
+            if (certName != null) {
+                List<V1beta1IngressTLS> tlsList = new ArrayList<>();
+                V1beta1IngressTLS tls = new V1beta1IngressTLS();
+                tls.addHostsItem(host);
+                tls.setSecretName(certName);
+                tlsList.add(tls);
+                spec.setTls(tlsList);
+            }
+
+            ingress.setSpec(spec);
+            return ingress;
+        } else {
+            V1Ingress ingress = new V1Ingress();
+            ingress.setKind(INGRESS);
+            ingress.setApiVersion("networking.k8s.io/v1");
+            V1ObjectMeta metadata = new V1ObjectMeta();
+            metadata.setName(name);
+            Map<String, String> labels = new HashMap<>();
+            labels.put("choerodon.io/network", "ingress");
+
+            metadata.setLabels(labels);
+            metadata.setAnnotations(annotations == null ? new HashMap<>() : annotations);
+            ingress.setMetadata(metadata);
+            V1IngressSpec spec = new V1IngressSpec();
+
+            List<V1IngressRule> rules = new ArrayList<>();
+            V1IngressRule rule = new V1IngressRule();
+            V1HTTPIngressRuleValue http = new V1HTTPIngressRuleValue();
+            List<V1HTTPIngressPath> paths = new ArrayList<>();
+            http.setPaths(paths);
+            rule.setHost(host);
+            rule.setHttp(http);
+            rules.add(rule);
+            spec.setRules(rules);
+
+            if (certName != null) {
+                List<V1IngressTLS> tlsList = new ArrayList<>();
+                V1IngressTLS tls = new V1IngressTLS();
+                tls.addHostsItem(host);
+                tls.setSecretName(certName);
+                tlsList.add(tls);
+                spec.setTls(tlsList);
+            }
+
+            ingress.setSpec(spec);
+            return ingress;
         }
-
-        ingress.setSpec(spec);
-        return ingress;
     }
 
     private void operateEnvGitLabFile(Integer envGitLabProjectId,
                                       Boolean deleteCert,
-                                      V1Ingress ingress,
+                                      KubernetesObject ingress,
                                       Boolean isCreate,
                                       String path,
                                       DevopsIngressDTO devopsIngressDTO,
                                       UserAttrDTO userAttrDTO,
                                       DevopsEnvCommandDTO devopsEnvCommandDTO,
-                                      Set<Long> appServiceIds) {
+                                      Set<Long> appServiceIds,
+                                      boolean operateForOldIngress) {
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
 
@@ -626,8 +699,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(isCreate);
-        ingressSagaPayload.setV1Ingress(ingress);
+        ingressSagaPayload.setIngressJson(JsonHelper.marshalByJackson(ingress));
         ingressSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        ingressSagaPayload.setOperateForOldIngress(operateForOldIngress);
 
         producer.apply(
                 StartSagaBuilder
@@ -658,17 +732,30 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
                         ingressSagaPayload.getDevopsEnvironmentDTO().getClusterCode());
             }
             //在gitops库处理instance文件
-            ResourceConvertToYamlHandler<V1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-            resourceConvertToYamlHandler.setType(ingressSagaPayload.getV1Ingress());
-
-            resourceConvertToYamlHandler.operationEnvGitlabFile(
-                    GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
-                    ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
-                    ingressSagaPayload.getCreated() ? CREATE : UPDATE,
-                    ingressSagaPayload.getGitlabUserId(),
-                    ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
-            if (ingressSagaPayload.getCreated()) {
-                sendNotificationService.sendWhenIngressSuccessOrDelete(ingressSagaPayload.getDevopsIngressDTO(), SendSettingEnum.CREATE_RESOURCE.value());
+            if (ingressSagaPayload.getOperateForOldIngress()) {
+                ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                resourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1beta1Ingress.class));
+                resourceConvertToYamlHandler.operationEnvGitlabFile(
+                        GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                        ingressSagaPayload.getCreated() ? CREATE : UPDATE,
+                        ingressSagaPayload.getGitlabUserId(),
+                        ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+                if (ingressSagaPayload.getCreated()) {
+                    sendNotificationService.sendWhenIngressSuccessOrDelete(ingressSagaPayload.getDevopsIngressDTO(), SendSettingEnum.CREATE_RESOURCE.value());
+                }
+            } else {
+                ResourceConvertToYamlHandler<V1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                resourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1Ingress.class));
+                resourceConvertToYamlHandler.operationEnvGitlabFile(
+                        GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName(),
+                        ingressSagaPayload.getDevopsEnvironmentDTO().getGitlabEnvProjectId().intValue(),
+                        ingressSagaPayload.getCreated() ? CREATE : UPDATE,
+                        ingressSagaPayload.getGitlabUserId(),
+                        ingressSagaPayload.getDevopsIngressDTO().getId(), INGRESS, null, false, ingressSagaPayload.getDevopsEnvironmentDTO().getId(), filePath);
+                if (ingressSagaPayload.getCreated()) {
+                    sendNotificationService.sendWhenIngressSuccessOrDelete(ingressSagaPayload.getDevopsIngressDTO(), SendSettingEnum.CREATE_RESOURCE.value());
+                }
             }
         } catch (Exception e) {
             LOGGER.info("create or update Ingress failed!", e);
@@ -696,7 +783,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
 
-    private DevopsIngressDTO handlerIngress(DevopsIngressVO devopsIngressVO, Long projectId, V1Ingress v1beta1Ingress) {
+    private DevopsIngressDTO handlerIngress(DevopsIngressVO devopsIngressVO, Long projectId, KubernetesObject ingress, boolean operateForOldIngress) {
         Long envId = devopsIngressVO.getEnvId();
         String ingressName = devopsIngressVO.getName();
         DevopsIngressValidator.checkIngressName(ingressName);
@@ -705,8 +792,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         //初始化ingressDO对象
         DevopsIngressDTO devopsIngressDO = new DevopsIngressDTO(devopsIngressVO.getId(), projectId, envId, domain, ingressName, IngressStatus.OPERATING.getStatus());
 
-        if (v1beta1Ingress.getMetadata().getAnnotations() != null) {
-            String annotations = gson.toJson(v1beta1Ingress.getMetadata().getAnnotations());
+        if (ingress.getMetadata().getAnnotations() != null) {
+            String annotations = gson.toJson(ingress.getMetadata().getAnnotations());
             // 避免数据比数据库结构的size还大
             if (annotations.length() > 2000) {
                 throw new CommonException("error.ingress.annotations.too.large");
@@ -715,7 +802,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         }
 
         //处理pathlist,生成域名和service的关联对象列表
-        List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, v1beta1Ingress);
+        List<DevopsIngressPathDTO> devopsIngressPathDTOS = handlerPathList(devopsIngressVO.getPathList(), devopsIngressVO, ingress, operateForOldIngress);
 
         //校验域名的domain和path是否在数据库中已存在
         if (devopsIngressPathDTOS.stream().noneMatch(
@@ -728,7 +815,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
 
-    private List<DevopsIngressPathDTO> handlerPathList(List<DevopsIngressPathVO> pathList, DevopsIngressVO devopsIngressVO, V1Ingress v1beta1Ingress) {
+    private List<DevopsIngressPathDTO> handlerPathList(List<DevopsIngressPathVO> pathList, DevopsIngressVO devopsIngressVO, KubernetesObject ingress, boolean operateForOldIngress) {
         if (pathList == null || pathList.isEmpty()) {
             throw new CommonException(PATH_ERROR);
         }
@@ -736,7 +823,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         List<String> pathCheckList = new ArrayList<>();
         pathList.forEach(t -> {
             Long serviceId = t.getServiceId();
-            Long servicePort = t.getServicePort();
+            Integer servicePort = t.getServicePort();
             String hostPath = t.getPath();
 
             if (hostPath == null) {
@@ -753,8 +840,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             devopsIngressPathDTOS.add(new DevopsIngressPathDTO(
                     devopsIngressVO.getId(), hostPath,
                     devopsServiceDTO == null ? null : devopsServiceDTO.getId(), devopsServiceDTO == null ? t.getServiceName() : devopsServiceDTO.getName(), servicePort));
-            v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                    createPath(hostPath, t.getServiceName(), servicePort));
+            if (operateForOldIngress) {
+                V1beta1Ingress v1beta1Ingress = (V1beta1Ingress) ingress;
+                v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
+                        createV1Beta1Path(hostPath, t.getServiceName(), servicePort));
+            } else {
+                V1Ingress v1Ingress = (V1Ingress) ingress;
+                v1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
+                        createV1Path(hostPath, t.getServiceName(), servicePort));
+            }
+
         });
         return devopsIngressPathDTOS;
     }
@@ -1072,6 +1167,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Override
     public ResourceType getType() {
         return ResourceType.INGRESS;
+    }
+
+    @Override
+    public boolean operateForOldTypeIngress(Long clusterId) {
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId)), ClusterSummaryInfoVO.class);
+        String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
+        int minorVersion = Integer.parseInt(split[1]);
+        if (minorVersion <= 21) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private DevopsIngressDTO getDevopsIngressDTO(V1Ingress v1beta1Ingress, Long envId) {

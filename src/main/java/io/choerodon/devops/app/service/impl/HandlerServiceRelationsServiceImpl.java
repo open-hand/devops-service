@@ -205,9 +205,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     PortMapVO portMap = new PortMapVO();
                     portMap.setName(t.getName());
                     if (t.getNodePort() != null) {
-                        portMap.setNodePort(t.getNodePort().longValue());
+                        portMap.setNodePort(t.getNodePort());
                     }
-                    portMap.setPort(t.getPort().longValue());
+                    portMap.setPort(t.getPort());
                     portMap.setProtocol(t.getProtocol());
                     portMap.setTargetPort(TypeUtil.objToString(t.getTargetPort()));
                     return portMap;

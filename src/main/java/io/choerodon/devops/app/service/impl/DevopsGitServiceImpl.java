@@ -149,6 +149,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -970,6 +972,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
                     // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                } else if (ResourceType.INGRESS.getType().equals(type)) {
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+                    if (operateForOldTypeIngress) {
+                        currentHandler = converters.get(ResourceType.V1BETA1_INGRESS.getType());
+                    } else {
+                        currentHandler = converters.get(ResourceType.V1_INGRESS.getType());
+                    }
                 } else {
                     currentHandler = converters.get(type);
                     if (currentHandler == null) {

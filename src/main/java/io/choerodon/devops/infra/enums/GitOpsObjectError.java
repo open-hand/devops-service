@@ -33,6 +33,7 @@ public enum GitOpsObjectError {
     INGRESS_API_VERSION_NOT_FOUND("ingress.api.version.not.found"),
     INGRESS_DOMAIN_PATH_IS_EXIST("ingress.domain.path.is.exist"),
     INGRESS_PATHS_NOT_FOUND("ingress.paths.not.found"),
+    INGRESS_RULE_VALUES_NOT_FOUND("ingress.rule.values.not.found"),
     INGRESS_PATHS_PATH_NOT_FOUND("ingress.paths.path.not.found"),
     INGRESS_PATHS_BACKEND_NOT_FOUND("ingress.paths.backend.not.found"),
     INGRESS_PATH_DUPLICATED("ingress.path.duplicated"),
