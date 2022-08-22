@@ -1,6 +1,8 @@
 package io.choerodon.devops;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,10 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.util.PageInfoUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
 @EnableFeignClients("io.choerodon")
@@ -32,6 +38,18 @@ public class DevopsServiceApplication {
 
     public static void main(String[] args) {
         try {
+            PageRequest pageRequest = new PageRequest(0, 10);
+            List<IamUserDTO> userDTOS = new ArrayList<>();
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            userDTOS.add(new IamUserDTO(1L));
+            Page<IamUserDTO> pageFromList = PageInfoUtil.createPageFromList(userDTOS, pageRequest);
             SpringApplication.run(DevopsServiceApplication.class, args);
         } catch (Exception e) {
             LOGGER.error("start error",e);
