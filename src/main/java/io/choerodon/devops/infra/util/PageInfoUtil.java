@@ -100,7 +100,7 @@ public class PageInfoUtil {
                 size = pageable.getSize();
             }
             result.setNumberOfElements(queryAll ? all.size() : size);
-            result.setContent(queryAll ? all : all.subList(fromIndex, fromIndex + result.getSize()));
+            result.setContent(queryAll ? all : all.subList(fromIndex, fromIndex + result.getNumberOfElements()));
         } else {
             size = 0;
             result.setNumberOfElements(queryAll ? all.size() : size);
