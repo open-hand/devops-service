@@ -1239,6 +1239,15 @@ public class GitlabServiceClientOperator {
         }
         return memberDTO;
     }
+    public MemberDTO getProjectAllMember(Integer projectId, Integer userId) {
+
+        MemberDTO memberDTO = gitlabServiceClient.getProjectAllMember(
+                projectId, userId).getBody();
+        if (memberDTO == null || memberDTO.getId() == null) {
+            return null;
+        }
+        return memberDTO;
+    }
 
 
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {

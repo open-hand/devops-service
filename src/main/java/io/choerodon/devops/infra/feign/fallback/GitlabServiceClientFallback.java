@@ -418,6 +418,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<MemberDTO> getProjectAllMember(Integer projectId, Integer userId) {
+        throw new CommonException("error.query.project.member");
+    }
+
+    @Override
     public ResponseEntity deleteProjectMember(Integer projectId, Integer userId) {
         return null;
     }

@@ -542,6 +542,10 @@ public interface GitlabServiceClient {
     ResponseEntity<MemberDTO> getProjectMember(@PathVariable("projectId") Integer projectId,
                                                @PathVariable("userId") Integer userId);
 
+    @GetMapping("/v1/projects/{projectId}/members/all/{userId}")
+    ResponseEntity<MemberDTO> getProjectAllMember(@PathVariable("projectId") Integer projectId,
+                                               @PathVariable("userId") Integer userId);
+
     @GetMapping("/v1/projects/{projectId}/merge_requests/ids")
     ResponseEntity<List<Long>> listIds(
             @ApiParam(value = "gitlab项目id", required = true)
