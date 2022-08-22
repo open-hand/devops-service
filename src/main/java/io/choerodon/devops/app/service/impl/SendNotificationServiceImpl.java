@@ -1295,7 +1295,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return constructReceiver(userId, user.getEmail(), user.getPhone(), user.getOrganizationId());
     }
 
-    private static MessageSender constructMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> addition, Long projectId) {
+    protected static MessageSender constructMessageSender(String sendSettingCode, List<Receiver> targetUsers, String receiveType, Map<String, String> params, Map<String, Object> addition, Long projectId) {
         MessageSender messageSender = new MessageSender();
         messageSender.setTenantId(0L);
         messageSender.setReceiverAddressList(targetUsers);
@@ -1365,7 +1365,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         messageClient.async().sendMessage(sender);
     }
 
-    private void setParamsForUserInfo(Map<String, String> params) {
+    protected void setParamsForUserInfo(Map<String, String> params) {
         CustomUserDetails details = DetailsHelper.getUserDetails();
         if (details == null) {
             params.put(LOGIN_NAME, DetailsHelper.getAnonymousDetails().getUsername());
