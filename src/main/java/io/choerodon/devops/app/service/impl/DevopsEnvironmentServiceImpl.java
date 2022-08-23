@@ -88,7 +88,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     /**
      * gitlab用于环境库的webhook地址
      */
-    private String gitOpsWebHookUrl;
+    protected String gitOpsWebHookUrl;
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
