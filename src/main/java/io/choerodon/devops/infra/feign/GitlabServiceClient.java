@@ -8,6 +8,8 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.gitlab4j.api.Pager;
+import org.gitlab4j.api.models.Member;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,6 +46,14 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/groups/{groupId}/members")
     ResponseEntity<List<MemberDTO>> listGroupMember(
             @PathVariable("groupId") Integer groupId);
+
+    @GetMapping(value = "/v1/groups/{groupId}/members/page")
+    ResponseEntity<Pager<Member>> pageMember(
+            @PathVariable(value = "groupId") Integer groupId,
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "search", required = false) String search);
 
     @DeleteMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity deleteMember(

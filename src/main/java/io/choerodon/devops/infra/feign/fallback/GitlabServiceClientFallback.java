@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import org.gitlab4j.api.Pager;
+import org.gitlab4j.api.models.Member;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -57,6 +59,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<MemberDTO>> listGroupMember(Integer groupId) {
+        throw new CommonException("error.group.member.list");
+    }
+
+    @Override
+    public ResponseEntity<Pager<Member>> pageMember(Integer groupId, Integer page, Integer size, Integer userId, String search) {
         throw new CommonException("error.group.member.list");
     }
 
