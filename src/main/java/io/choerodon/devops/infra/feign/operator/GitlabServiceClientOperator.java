@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.Functions;
 import feign.RetryableException;
-import org.gitlab4j.api.models.Member;
 import org.hzero.core.util.ResponseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -172,7 +171,7 @@ public class GitlabServiceClientOperator {
         return memberDTO;
     }
 
-    public Page<Member> pageMember(Integer groupId, Integer page, Integer size, String search, Integer userId) {
+    public Page<MemberDTO> pageMember(Integer groupId, Integer page, Integer size, String search, Integer userId) {
         return gitlabServiceClient.pageMember(groupId, page, size, userId, search).getBody();
     }
 
