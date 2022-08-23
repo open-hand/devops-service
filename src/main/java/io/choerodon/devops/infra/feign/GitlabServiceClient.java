@@ -553,7 +553,7 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{projectId}/members/all/{userId}")
     ResponseEntity<MemberDTO> getProjectAllMember(@PathVariable("projectId") Integer projectId,
-                                               @PathVariable("userId") Integer userId);
+                                                  @PathVariable("userId") Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/merge_requests/ids")
     ResponseEntity<List<Long>> listIds(
@@ -861,6 +861,16 @@ public interface GitlabServiceClient {
                                                        @RequestParam(value = "owned", required = false) Boolean owned,
                                                        @RequestParam(value = "search", required = false) String search,
                                                        @RequestBody List<Integer> skipGroups);
+
+    @ApiOperation(value = "分頁查询有权限的所有组")
+    @PostMapping("/v1/groups/{userId}/paging")
+    ResponseEntity<Page<GroupDTO>> pagingGroupWithParam(@ApiParam(value = "userId")
+                                                        @PathVariable(value = "userId") Integer userId,
+                                                        @RequestParam(value = "owned", required = false) Boolean owned,
+                                                        @RequestParam(value = "search", required = false) String search,
+                                                        @RequestParam(value = "page") Integer page,
+                                                        @RequestParam(value = "size") Integer size,
+                                                        @RequestBody List<Integer> skipGroups);
 
     @ApiOperation(value = "获取项目列表")
     @GetMapping(value = "/v1/groups/{groupId}/projects")

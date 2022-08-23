@@ -569,6 +569,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Page<GroupDTO>> pagingGroupWithParam(Integer userId, Boolean owned, String search, Integer page, Integer size, List<Integer> skipGroups) {
+        throw new CommonException("error.query.group");
+    }
+
+    @Override
     public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage, Integer minAccessLevel) {
         throw new CommonException("error.query.group.project");
     }

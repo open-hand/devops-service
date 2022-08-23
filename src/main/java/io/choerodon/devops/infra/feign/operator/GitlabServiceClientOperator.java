@@ -1243,6 +1243,7 @@ public class GitlabServiceClientOperator {
         }
         return memberDTO;
     }
+
     public MemberDTO getProjectAllMember(Integer projectId, Integer userId) {
 
         MemberDTO memberDTO = gitlabServiceClient.getProjectAllMember(
@@ -1606,6 +1607,15 @@ public class GitlabServiceClientOperator {
                                               String search,
                                               List<Integer> skipGroups) {
         return gitlabServiceClient.listGroupsWithParam(userId, owned, search, skipGroups).getBody();
+    }
+
+    public Page<GroupDTO> pagingGroupsWithParam(Integer userId,
+                                                Boolean owned,
+                                                String search,
+                                                Integer page,
+                                                Integer size,
+                                                List<Integer> skipGroups) {
+        return gitlabServiceClient.pagingGroupWithParam(userId, owned, search, page, size, skipGroups).getBody();
     }
 
     public List<GitlabProjectDTO> listProject(Integer groupId,
