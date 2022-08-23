@@ -8,12 +8,12 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.gitlab4j.api.Pager;
 import org.gitlab4j.api.models.Member;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
@@ -48,7 +48,7 @@ public interface GitlabServiceClient {
             @PathVariable("groupId") Integer groupId);
 
     @GetMapping(value = "/v1/groups/{groupId}/members/page")
-    ResponseEntity<Pager<Member>> pageMember(
+    ResponseEntity<Page<Member>> pageMember(
             @PathVariable(value = "groupId") Integer groupId,
             @RequestParam(value = "page") Integer page,
             @RequestParam(value = "size") Integer size,
