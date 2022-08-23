@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,10 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public DevopsEnvResourceVO listResourcesInHelmRelease(Long instanceId) {
@@ -160,10 +165,18 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 break;
             case INGRESS:
                 if (devopsEnvResourceDTO.getInstanceId() != null) {
-                    V1Ingress v1beta1Ingress = json.deserialize(
-                            devopsEnvResourceDetailDTO.getMessage(),
-                            V1Ingress.class);
-                    devopsEnvResourceVO.getIngressVOS().add(addIngressToResource(v1beta1Ingress));
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                    if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+                        V1beta1Ingress v1beta1Ingress = json.deserialize(
+                                devopsEnvResourceDetailDTO.getMessage(),
+                                V1beta1Ingress.class);
+                        devopsEnvResourceVO.getIngressVOS().add(addIngressToResourceOfV1Beta1Ingress(v1beta1Ingress));
+                    } else {
+                        V1Ingress v1ingre = json.deserialize(
+                                devopsEnvResourceDetailDTO.getMessage(),
+                                V1Ingress.class);
+                        devopsEnvResourceVO.getIngressVOS().add(addIngressToResourceOfV1Ingress(v1ingre));
+                    }
                 }
                 break;
             case REPLICASET:
@@ -187,6 +200,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             default:
                 break;
         }
+
     }
 
     @Override
@@ -411,18 +425,35 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     /**
      * 增加ingress资源
      *
-     * @param v1beta1Ingress ingress对象
+     * @param v1Ingress ingress对象
      */
-    private IngressVO addIngressToResource(V1Ingress v1beta1Ingress) {
+    private IngressVO addIngressToResourceOfV1Ingress(V1Ingress v1Ingress) {
         IngressVO ingressVO = new IngressVO();
-        ingressVO.setName(v1beta1Ingress.getMetadata().getName());
-        ingressVO.setHosts(K8sUtil.formatHosts(v1beta1Ingress.getSpec().getRules()));
-        ingressVO.setPorts(K8sUtil.formatPorts(v1beta1Ingress.getSpec().getTls()));
-        ingressVO.setAddress(K8sUtil.loadBalancerStatusStringer(v1beta1Ingress.getStatus().getLoadBalancer()));
-        ingressVO.setAge(v1beta1Ingress.getMetadata().getCreationTimestamp().toString());
-        ingressVO.setServices(K8sUtil.analyzeIngressServices(v1beta1Ingress));
+        ingressVO.setName(v1Ingress.getMetadata().getName());
+        ingressVO.setHosts(K8sUtil.formatHostsOfV1Ingress(v1Ingress.getSpec().getRules()));
+        ingressVO.setPorts(K8sUtil.formatPortsOfV1Ingress(v1Ingress.getSpec().getTls()));
+        ingressVO.setAddress(K8sUtil.loadBalancerStatusStringer(v1Ingress.getStatus().getLoadBalancer()));
+        ingressVO.setAge(v1Ingress.getMetadata().getCreationTimestamp().toString());
+        ingressVO.setServices(K8sUtil.analyzeIngressServicesV1Ingress(v1Ingress));
         return ingressVO;
     }
+
+    /**
+     * 增加ingress资源
+     *
+     * @param v1beta1Ingress ingress对象
+     */
+    private IngressVO addIngressToResourceOfV1Beta1Ingress(V1beta1Ingress v1beta1Ingress) {
+        IngressVO ingressVO = new IngressVO();
+        ingressVO.setName(v1beta1Ingress.getMetadata().getName());
+        ingressVO.setHosts(K8sUtil.formatHostsOfV1beta1Ingress(v1beta1Ingress.getSpec().getRules()));
+        ingressVO.setPorts(K8sUtil.formatPortsOfV1Beta1Ingress(v1beta1Ingress.getSpec().getTls()));
+        ingressVO.setAddress(K8sUtil.loadBalancerStatusStringer(v1beta1Ingress.getStatus().getLoadBalancer()));
+        ingressVO.setAge(v1beta1Ingress.getMetadata().getCreationTimestamp().toString());
+        ingressVO.setServices(K8sUtil.analyzeIngressServicesV1Beta1Ingress(v1beta1Ingress));
+        return ingressVO;
+    }
+
 
     /**
      * 增加replicaSet资源

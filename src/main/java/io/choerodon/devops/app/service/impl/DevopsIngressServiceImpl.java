@@ -1093,9 +1093,24 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1Ingress.class);
-        DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
-        DevopsIngressDTO oldDevopsIngressDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta1Ingress.getMetadata().getName());
+        DevopsIngressDTO devopsIngressDTO;
+        String ingressName;
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
+        if (devopsEnvironmentDTO == null) {
+            LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
+            return;
+        }
+        if (operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+            V1beta1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
+            devopsIngressDTO = getDevopsIngressDTOOfV1Beta1Ingress(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
+            ingressName = v1beta1Ingress.getMetadata().getName();
+        } else {
+            V1Ingress v1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
+            devopsIngressDTO = getDevopsIngressDTOOfV1Ingress(v1Ingress, appServiceInstanceDTO.getEnvId());
+            ingressName = v1Ingress.getMetadata().getName();
+        }
+
+        DevopsIngressDTO oldDevopsIngressDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), ingressName);
         // 更新ingress
         if (oldDevopsIngressDTO != null) {
             // 更新ingress记录
@@ -1116,18 +1131,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             });
         } else {
             // 添加ingress
-            DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
-            if (devopsEnvironmentDTO == null) {
-                LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
-                return;
-            }
-
             // 插入ingress记录
             devopsIngressDTO.setStatus(IngressStatus.RUNNING.getStatus());
             devopsIngressDTO.setEnvId(appServiceInstanceDTO.getEnvId());
             devopsIngressDTO.setCommandId(appServiceInstanceDTO.getId());
             devopsIngressDTO.setProjectId(devopsEnvironmentDTO.getProjectId());
-            devopsIngressDTO.setName(v1beta1Ingress.getMetadata().getName());
+            devopsIngressDTO.setName(ingressName);
             devopsIngressDTO.setInstanceId(appServiceInstanceDTO.getId());
             devopsIngressDTO.setCreatedBy(appServiceInstanceDTO.getCreatedBy());
             devopsIngressDTO.setLastUpdatedBy(appServiceInstanceDTO.getLastUpdatedBy());
@@ -1181,7 +1190,55 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         }
     }
 
-    private DevopsIngressDTO getDevopsIngressDTO(V1Ingress v1beta1Ingress, Long envId) {
+    private DevopsIngressDTO getDevopsIngressDTOOfV1Ingress(V1Ingress v1Ingress, Long envId) {
+        DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
+        devopsIngressDTO.setDomain(v1Ingress.getSpec().getRules().get(0).getHost()
+        );
+        devopsIngressDTO.setName(v1Ingress.getMetadata().getName());
+        String annotations = gson.toJson(v1Ingress.getMetadata().getAnnotations());
+        // 避免数据比数据库结构的size还大
+        if (annotations.length() > 2000) {
+            throw new CommonException("error.ingress.annotations.too.large");
+        }
+        devopsIngressDTO.setAnnotations(annotations);
+        devopsIngressDTO.setEnvId(envId);
+        List<String> pathCheckList = new ArrayList<>();
+        List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
+        List<V1HTTPIngressPath> paths = v1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
+        for (V1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
+            String path = v1beta1HTTPIngressPath.getPath();
+            DevopsIngressValidator.checkPath(path);
+            pathCheckList.add(path);
+            V1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            V1IngressServiceBackend v1IngressServiceBackend = backend.getService();
+            V1ServiceBackendPort port = v1IngressServiceBackend.getPort();
+            String serviceName = v1IngressServiceBackend.getName();
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
+                    serviceName, envId);
+
+            Integer servicePort = null;
+            Integer number = port.getNumber();
+            if (PATTERN.matcher(TypeUtil.objToString(number)).matches()) {
+                servicePort = TypeUtil.objToInteger(number);
+            } else {
+                if (devopsServiceDTO != null) {
+                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+                    }.getType());
+                    servicePort = listPorts.get(0).getPort();
+                }
+            }
+            DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
+            devopsIngressPathDTO.setPath(path);
+            devopsIngressPathDTO.setServicePort(servicePort);
+            devopsIngressPathDTO.setServiceName(serviceName);
+            devopsIngressPathDTO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
+            devopsIngressPathDTOS.add(devopsIngressPathDTO);
+        }
+        devopsIngressDTO.setDevopsIngressPathDTOS(devopsIngressPathDTOS);
+        return devopsIngressDTO;
+    }
+
+    private DevopsIngressDTO getDevopsIngressDTOOfV1Beta1Ingress(V1beta1Ingress v1beta1Ingress, Long envId) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
@@ -1195,34 +1252,33 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         devopsIngressDTO.setEnvId(envId);
         List<String> pathCheckList = new ArrayList<>();
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
-        List<V1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
-        for (V1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
+        List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
+        for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
             String path = v1beta1HTTPIngressPath.getPath();
             DevopsIngressValidator.checkPath(path);
             pathCheckList.add(path);
-            V1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
-            // TODO 兼容旧版本
-//            String serviceName = backend.getServiceName();
-//            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
-//                    serviceName, envId);
-//
-//            Long servicePort = null;
-//            IntOrString backendServicePort = backend.getServicePort();
-//            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
-//                servicePort = TypeUtil.objToLong(backendServicePort);
-//            } else {
-//                if (devopsServiceDTO != null) {
-//                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
-//                    }.getType());
-//                    servicePort = listPorts.get(0).getPort();
-//                }
-//            }
-//            DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
-//            devopsIngressPathDTO.setPath(path);
-//            devopsIngressPathDTO.setServicePort(servicePort);
-//            devopsIngressPathDTO.setServiceName(serviceName);
-//            devopsIngressPathDTO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
-//            devopsIngressPathDTOS.add(devopsIngressPathDTO);
+            V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            String serviceName = backend.getServiceName();
+            DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
+                    serviceName, envId);
+
+            Integer servicePort = null;
+            IntOrString backendServicePort = backend.getServicePort();
+            if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+                servicePort = TypeUtil.objToInteger(backendServicePort);
+            } else {
+                if (devopsServiceDTO != null) {
+                    List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
+                    }.getType());
+                    servicePort = listPorts.get(0).getPort();
+                }
+            }
+            DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
+            devopsIngressPathDTO.setPath(path);
+            devopsIngressPathDTO.setServicePort(servicePort);
+            devopsIngressPathDTO.setServiceName(serviceName);
+            devopsIngressPathDTO.setServiceId(devopsServiceDTO == null ? null : devopsServiceDTO.getId());
+            devopsIngressPathDTOS.add(devopsIngressPathDTO);
         }
         devopsIngressDTO.setDevopsIngressPathDTOS(devopsIngressPathDTOS);
         return devopsIngressDTO;
