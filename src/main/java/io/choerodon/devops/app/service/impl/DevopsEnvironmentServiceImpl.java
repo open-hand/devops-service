@@ -74,9 +74,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String SYSTEM_ENV_NAME = "%s-env";
 
     private static final Gson gson = new Gson();
-    private static final String MASTER = "master";
-    private static final String README = "README.md";
-    private static final String README_CONTENT = "# This is gitops env repository!";
+    protected static final String MASTER = "master";
+    protected static final String README = "README.md";
+    protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
