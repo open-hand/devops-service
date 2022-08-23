@@ -64,6 +64,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
+    public static final String V1_INGRESS_PATH_TYPE_PREFIX = "Prefix";
+    public static final String V1_INGRESS_PATH_TYPE_IMPLEMENT = "ImplementationSpecific";
+    public static final String V1_INGRESS_PATH_TYPE_EXACT = "Exact";
     private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
@@ -579,6 +582,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         path.setBackend(v1IngressBackend);
         path.setPath(hostPath);
+        path.setPathType(V1_INGRESS_PATH_TYPE_PREFIX);
         return path;
     }
 
@@ -1205,11 +1209,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         List<String> pathCheckList = new ArrayList<>();
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
         List<V1HTTPIngressPath> paths = v1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
-        for (V1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
-            String path = v1beta1HTTPIngressPath.getPath();
+        for (V1HTTPIngressPath v1HTTPIngressPath : paths) {
+            String path = v1HTTPIngressPath.getPath();
             DevopsIngressValidator.checkPath(path);
             pathCheckList.add(path);
-            V1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            V1IngressBackend backend = v1HTTPIngressPath.getBackend();
             V1IngressServiceBackend v1IngressServiceBackend = backend.getService();
             V1ServiceBackendPort port = v1IngressServiceBackend.getPort();
             String serviceName = v1IngressServiceBackend.getName();
