@@ -1,10 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -129,15 +127,15 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
 
-        List<DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOS = devopsCiMavenSettingsMapper.listByJobIds(jobIds);
-        Map<Long, DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOMap = new HashMap<>();
-        if (!CollectionUtils.isEmpty(devopsCiMavenSettingsDTOS)) {
-            devopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOS.stream().collect(Collectors.toMap(DevopsCiMavenSettingsDTO::getCiJobId, Function.identity()));
-        }
-        if (logger.isInfoEnabled()) {
-            logger.info("devopsCiMavenSettingsDTOMap is : {}", JsonHelper.marshalByJackson(devopsCiMavenSettingsDTOMap));
-        }
-        Map<Long, DevopsCiMavenSettingsDTO> finalDevopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOMap;
+//        List<DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOS = devopsCiMavenSettingsMapper.listByJobIds(jobIds);
+//        Map<Long, DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOMap = new HashMap<>();
+//        if (!CollectionUtils.isEmpty(devopsCiMavenSettingsDTOS)) {
+//            devopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOS.stream().collect(Collectors.toMap(DevopsCiMavenSettingsDTO::getCiJobId, Function.identity()));
+//        }
+//        if (logger.isInfoEnabled()) {
+//            logger.info("devopsCiMavenSettingsDTOMap is : {}", JsonHelper.marshalByJackson(devopsCiMavenSettingsDTOMap));
+//        }
+//        Map<Long, DevopsCiMavenSettingsDTO> finalDevopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOMap;
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = jobDTOS.stream().map(jobDTO -> {
             DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
             recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
@@ -157,15 +155,15 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
                 recordDTO.setType(existDevopsCiJobDTO.getType());
                 recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
-                if (!CollectionUtils.isEmpty(finalDevopsCiMavenSettingsDTOMap)) {
-                    DevopsCiMavenSettingsDTO ciMavenSettingsDTO = finalDevopsCiMavenSettingsDTOMap.get(existDevopsCiJobDTO.getId());
-                    if (logger.isInfoEnabled()) {
-                        logger.info("ciMavenSettingsDTO is : {}", JsonHelper.marshalByJackson(ciMavenSettingsDTO));
-                    }
-                    if (!Objects.isNull(ciMavenSettingsDTO)) {
-                        recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
-                    }
-                }
+//                if (!CollectionUtils.isEmpty(finalDevopsCiMavenSettingsDTOMap)) {
+//                    DevopsCiMavenSettingsDTO ciMavenSettingsDTO = finalDevopsCiMavenSettingsDTOMap.get(existDevopsCiJobDTO.getId());
+//                    if (logger.isInfoEnabled()) {
+//                        logger.info("ciMavenSettingsDTO is : {}", JsonHelper.marshalByJackson(ciMavenSettingsDTO));
+//                    }
+//                    if (!Objects.isNull(ciMavenSettingsDTO)) {
+//                        recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
+//                    }
+//                }
             }
 
             return recordDTO;
