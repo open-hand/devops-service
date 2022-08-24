@@ -158,6 +158,8 @@ public interface DevopsEnvironmentService {
 
     void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId);
 
+    void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId);
+
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
     /**

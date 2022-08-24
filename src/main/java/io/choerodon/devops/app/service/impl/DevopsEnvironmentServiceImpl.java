@@ -284,6 +284,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
                     gitlabProjectPayload.setIamProjectId(projectId);
                     gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
+                    gitlabProjectPayload.setIamUserId(DetailsHelper.getUserDetails().getUserId());
 
                     agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 
@@ -1048,7 +1049,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * @param gitlabProjectId gitlab project id
      * @param gitlabUserId    gitlab user id
      */
-    private void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
+    @Override
+    public void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
         // 删除组和用户之间的关系，如果存在
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
         if (memberDTO != null) {
