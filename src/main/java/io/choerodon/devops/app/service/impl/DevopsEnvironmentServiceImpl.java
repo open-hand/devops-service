@@ -444,7 +444,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
-    private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
+    @Override
+    public Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
 
         devopsEnvironmentRepDTOS.forEach(devopsEnvironmentRepDTO -> {
             if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
@@ -766,7 +767,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return ConvertUtils.convertObject(baseUpdate(toUpdate), DevopsEnvironmentUpdateVO.class);
     }
 
-    private void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
+    @Override
+    public void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
         t.setConnected(upgradeEnvList.contains(t.getClusterId()));
     }
 
