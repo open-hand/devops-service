@@ -92,7 +92,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     protected static final String CUSTOM_REPO = "CUSTOM_REPO";
     private static final String CREATE = "create";
-    private static final BASE64Decoder decoder = new BASE64Decoder();
+    protected static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Autowired
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
@@ -187,7 +187,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     protected DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
-    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+    protected DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
     private DockerComposeService dockerComposeService;
     @Autowired
@@ -1084,7 +1084,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {
+    protected DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {
         if (org.apache.commons.lang3.StringUtils.equals(CREATE, devopsCdHostDeployInfoDTO.getDeployType())) {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
@@ -1108,7 +1108,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
+    protected String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
         String regexStr = null;
         if (!org.springframework.util.StringUtils.isEmpty(imageDeploy.getMatchType())
                 && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
