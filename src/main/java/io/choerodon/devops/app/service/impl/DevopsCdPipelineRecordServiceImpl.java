@@ -1421,17 +1421,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
                 // 指定审核人员 已审核人员 审核状态
                 DevopsCdJobRecordVO.Audit audit = devopsCdJobRecordVO.new Audit();
-                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobRecordVO.getJobId());
-                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
-                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
-                    audit.setAppointUsers(iamUserDTOS);
-                }
                 List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(devopsCdJobRecordVO.getId());
                 if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+                    List<Long> uids = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
+                    List<IamUserDTO> allIamUserDTOS = baseServiceClientOperator.listUsersByIds(uids);
+
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditRecordDTOS.stream()
                             .filter(devopsCdAuditRecordDTO -> AuditStatusEnum.PASSED.value().equals(devopsCdAuditRecordDTO.getStatus()) || AuditStatusEnum.REFUSED.value().equals(devopsCdAuditRecordDTO.getStatus()))
                             .map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList()));
                     audit.setReviewedUsers(iamUserDTOS);
+                    audit.setAppointUsers(allIamUserDTOS);
                     audit.setStatus(devopsCdJobRecordVO.getStatus());
                 }
                 devopsCdJobRecordVO.setAudit(audit);
