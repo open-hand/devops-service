@@ -90,7 +90,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private static final String CUSTOM_REPO = "CUSTOM_REPO";
+    protected static final String CUSTOM_REPO = "CUSTOM_REPO";
     private static final String CREATE = "create";
     private static final BASE64Decoder decoder = new BASE64Decoder();
 
@@ -98,13 +98,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Autowired
-    private DevopsCdJobRecordService devopsCdJobRecordService;
+    protected DevopsCdJobRecordService devopsCdJobRecordService;
 
     @Autowired
-    private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
+    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
     @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     @Autowired
     private DevopsCdStageRecordService devopsCdStageRecordService;
@@ -113,10 +113,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
     @Autowired
-    private RdupmClientOperator rdupmClientOperator;
+    protected RdupmClientOperator rdupmClientOperator;
 
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
+    protected BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
@@ -149,13 +149,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     private SshUtil sshUtil;
 
     @Autowired
-    private DevopsDeployRecordService devopsDeployRecordService;
+    protected DevopsDeployRecordService devopsDeployRecordService;
 
     @Autowired
-    private DevopsHostCommandService devopsHostCommandService;
+    protected DevopsHostCommandService devopsHostCommandService;
 
     @Autowired
-    private KeySocketSendHelper webSocketHelper;
+    protected KeySocketSendHelper webSocketHelper;
     @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
@@ -171,7 +171,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private DevopsCdJobService devopsCdJobService;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    protected DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
@@ -181,11 +181,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
     @Autowired
-    private DevopsHostService devopsHostService;
+    protected DevopsHostService devopsHostService;
     @Autowired
-    private CiPipelineImageService ciPipelineImageService;
+    protected CiPipelineImageService ciPipelineImageService;
     @Autowired
-    private DevopsDockerInstanceService devopsDockerInstanceService;
+    protected DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
@@ -1134,7 +1134,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return regexStr;
     }
 
-    private void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+    protected void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         Long cdJobRecordId = devopsCdJobRecordDTO.getId();
         Long projectId = devopsCdPipelineRecordDTO.getProjectId();
         Long pipelineRecordId = devopsCdPipelineRecordDTO.getId();
