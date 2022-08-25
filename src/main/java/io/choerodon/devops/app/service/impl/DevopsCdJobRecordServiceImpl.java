@@ -177,7 +177,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
             // 4.1 重试环境部署任务
             devopsCdPipelineService.envAutoDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         } else if (JobTypeEnum.CD_HOST.value().equals(devopsCdJobRecordDTO.getType())) {
-            devopsCdPipelineRecordService.retryHostDeployJob(pipelineRecordId, stageRecordId, jobRecordId);
+            devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId);
         }
     }
 

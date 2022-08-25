@@ -28,13 +28,13 @@ public interface DevopsCdPipelineRecordService {
 
     void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
-    void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log);
 
-    void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log);
 
-    void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log);
 
-    void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
+    void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log);
 
     void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
 
