@@ -347,7 +347,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //        return regexStr;
 //    }
 
-    private String getMavenVersion(String version) {
+    protected String getMavenVersion(String version) {
         if (version.contains(SLASH)) {
             return version.split(SLASH)[0];
         } else {
