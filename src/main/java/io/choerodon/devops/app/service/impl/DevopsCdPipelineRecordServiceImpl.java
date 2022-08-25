@@ -82,20 +82,20 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecordService {
 
-    private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
-    private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
-    private static final String ENV = "env";
-    private static final String HOST = "host";
+    protected static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
+    protected static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    protected static final String ENV = "env";
+    protected static final String HOST = "host";
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    protected static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     protected static final String CUSTOM_REPO = "CUSTOM_REPO";
-    private static final String CREATE = "create";
+    protected static final String CREATE = "create";
     protected static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Autowired
-    private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Autowired
     protected DevopsCdJobRecordService devopsCdJobRecordService;
@@ -107,10 +107,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     @Autowired
-    private DevopsCdStageRecordService devopsCdStageRecordService;
+    protected DevopsCdStageRecordService devopsCdStageRecordService;
 
     @Autowired
-    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
     @Autowired
     protected RdupmClientOperator rdupmClientOperator;
@@ -119,34 +119,34 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     protected BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
-    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Autowired
-    private AppServiceMapper appServiceMapper;
+    protected AppServiceMapper appServiceMapper;
 
     @Autowired
-    private DevopsCdAuditService devopsCdAuditService;
+    protected DevopsCdAuditService devopsCdAuditService;
 
     @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    protected DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     @Autowired
-    private DevopsGitlabCommitService devopsGitlabCommitService;
+    protected DevopsGitlabCommitService devopsGitlabCommitService;
 
     @Autowired
-    private AppServiceService applicationService;
+    protected AppServiceService applicationService;
 
     @Autowired
-    private CiPipelineMavenService ciPipelineMavenService;
+    protected CiPipelineMavenService ciPipelineMavenService;
 
     @Autowired
-    private TestServiceClientOperator testServiceClientoperator;
+    protected TestServiceClientOperator testServiceClientoperator;
 
     @Autowired
-    private DevopsHostMapper devopsHostMapper;
+    protected DevopsHostMapper devopsHostMapper;
 
     @Autowired
-    private SshUtil sshUtil;
+    protected SshUtil sshUtil;
 
     @Autowired
     protected DevopsDeployRecordService devopsDeployRecordService;
@@ -157,29 +157,29 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     protected KeySocketSendHelper webSocketHelper;
     @Autowired
-    private WorkFlowServiceOperator workFlowServiceOperator;
+    protected WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
-    private DevopsHostAppMapper devopsHostAppMapper;
+    protected DevopsHostAppMapper devopsHostAppMapper;
 
     @Autowired
-    private DevopsHostAppService devopsHostAppService;
+    protected DevopsHostAppService devopsHostAppService;
     @Autowired
     @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    protected DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
-    private DevopsHostAppInstanceService devopsHostAppInstanceService;
+    protected DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
-    private DevopsCdJobService devopsCdJobService;
+    protected DevopsCdJobService devopsCdJobService;
     @Autowired
     protected DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    protected DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
-    private DevopsDeploymentService devopsDeploymentService;
+    protected DevopsDeploymentService devopsDeploymentService;
     @Autowired
-    private AppServiceInstanceService appServiceInstanceService;
+    protected AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private HostConnectionHandler hostConnectionHandler;
+    protected HostConnectionHandler hostConnectionHandler;
     @Autowired
     protected DevopsHostService devopsHostService;
     @Autowired
@@ -189,19 +189,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Autowired
     protected DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
-    private DockerComposeService dockerComposeService;
+    protected DockerComposeService dockerComposeService;
     @Autowired
-    private DockerComposeValueService dockerComposeValueService;
-    @Autowired
-    @Lazy
-    private DevopsCiPipelineService devopsCiPipelineService;
+    protected DockerComposeValueService dockerComposeValueService;
     @Autowired
     @Lazy
-    private AppServiceService appServiceService;
+    protected DevopsCiPipelineService devopsCiPipelineService;
     @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Lazy
+    protected AppServiceService appServiceService;
     @Autowired
-    private AppExternalConfigService appExternalConfigService;
+    protected GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    protected AppExternalConfigService appExternalConfigService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
