@@ -848,8 +848,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             password = harborRepoDTO.getHarborRepoConfig().getPassword();
             repoType = harborRepoDTO.getRepoType();
             repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
-
-
         } else {
             dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
                     harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
@@ -866,14 +864,12 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String imageVersion = imageTag.substring(indexOf + 1);
         String repoImageName = imageTag.substring(0, indexOf);
         tag = imageVersion;
-
-        log.append("Image version is: ").append(imageTag).append(System.lineSeparator());
-        log.append("Container name is: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-
         image = ciPipelineImageDTO.getImageTag();
         deployVersion = imageVersion;
         deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
 
+        log.append("Deploy image is: ").append(imageTag).append(System.lineSeparator());
+        log.append("Container name is: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
 
         // 1. 更新状态 记录镜像信息
         DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, devopsCdHostDeployInfoDTO, hostId);
@@ -895,7 +891,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsDockerInstanceDTO.setUserName(userName);
             devopsDockerInstanceDTO.setRepoType(repoType);
             devopsDockerInstanceDTO.setTag(tag);
-
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
             // 保存appId
@@ -957,6 +952,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+
         log.append("Sending deploy command to agent success.").append(System.lineSeparator());
 
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
