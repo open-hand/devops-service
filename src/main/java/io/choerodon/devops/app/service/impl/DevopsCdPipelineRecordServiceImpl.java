@@ -956,7 +956,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         log.append("Sending deploy command to agent success.").append(System.lineSeparator());
 
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
-        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
         devopsCdJobRecordDTO.setLog(log.toString());
         devopsCdJobRecordService.update(devopsCdJobRecordDTO);
     }

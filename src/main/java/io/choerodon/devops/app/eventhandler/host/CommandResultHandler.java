@@ -29,7 +29,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 @Component
 public class CommandResultHandler implements HostMsgHandler {
 
-    private Map<String, BiConsumer<String, String>> resultHandlerMap = new HashMap<>();
+    protected Map<String, BiConsumer<String, String>> resultHandlerMap = new HashMap<>();
 
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
