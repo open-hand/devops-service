@@ -159,5 +159,5 @@ public interface DevopsCdPipelineService {
     @Nullable
     PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
 
-    void hostDeployStatusUpdate(Long jobRecordId, Boolean status, String error);
+    void hostDeployStatusUpdate(Long commandId, Long jobRecordId, Boolean status, String error);
 }
