@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.common.KubernetesObject;
@@ -17,11 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -74,6 +74,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
+    private static final JSON k8sJson = new JSON();
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
 
     @Autowired
@@ -703,7 +704,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         IngressSagaPayload ingressSagaPayload = new IngressSagaPayload(devopsEnvironmentDTO.getProjectId(), userAttrDTO.getGitlabUserId());
         ingressSagaPayload.setDevopsIngressDTO(devopsIngressDTO);
         ingressSagaPayload.setCreated(isCreate);
-        ingressSagaPayload.setIngressJson(JsonHelper.marshalByJackson(ingress));
+        ingressSagaPayload.setIngressJson(k8sJson.serialize(ingress));
         ingressSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
         ingressSagaPayload.setOperateForOldIngress(operateForOldIngress);
 
@@ -1105,11 +1106,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             return;
         }
         if (operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
-            V1beta1Ingress v1beta1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
+            V1beta1Ingress v1beta1Ingress = k8sJson.deserialize(detailsJson, V1beta1Ingress.class);
             devopsIngressDTO = getDevopsIngressDTOOfV1Beta1Ingress(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
             ingressName = v1beta1Ingress.getMetadata().getName();
         } else {
-            V1Ingress v1Ingress = json.deserialize(detailsJson, V1beta1Ingress.class);
+            V1Ingress v1Ingress = k8sJson.deserialize(detailsJson, V1beta1Ingress.class);
             devopsIngressDTO = getDevopsIngressDTOOfV1Ingress(v1Ingress, appServiceInstanceDTO.getEnvId());
             ingressName = v1Ingress.getMetadata().getName();
         }
