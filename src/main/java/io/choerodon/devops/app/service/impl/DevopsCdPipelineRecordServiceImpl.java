@@ -957,6 +957,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordDTO.setLog(log.toString());
+        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
         devopsCdJobRecordService.update(devopsCdJobRecordDTO);
     }
 
@@ -1312,7 +1313,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+    protected void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {

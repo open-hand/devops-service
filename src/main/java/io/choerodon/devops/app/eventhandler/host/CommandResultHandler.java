@@ -154,7 +154,7 @@ public class CommandResultHandler implements HostMsgHandler {
         }
         devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
         if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
+            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
         }
     }
 

@@ -44,7 +44,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
     private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s";
     private static final Integer C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT = 3;
 
-    private final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
+    protected final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
     @Value("${devops.host.agent-version}")
     private String agentVersion;
@@ -180,7 +180,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         }
     }
 
-    private void doHandle(WebSocketSession session, TextMessage message) {
+    protected void doHandle(WebSocketSession session, TextMessage message) {
         String payload = message.getPayload();
         LOGGER.info("Received agent msg: {}", payload);
         HostMsgVO msg = JsonHelper.unmarshalByJackson(payload, HostMsgVO.class);
