@@ -67,7 +67,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
     /**
      * 集群对应的环境name clusterName-env
      */
@@ -910,7 +910,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-    private void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
+    protected void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
         DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
         condition.setGitlabEnvProjectId(gitlabProjectId);
         CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "error.gitlab.project.associated.with.other.env");
