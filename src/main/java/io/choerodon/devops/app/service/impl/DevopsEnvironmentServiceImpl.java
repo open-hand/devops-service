@@ -281,10 +281,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
                     gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
                     gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
+                    gitlabProjectPayload.setIamUserId(userAttrDTO.getIamUserId());
                     gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
                     gitlabProjectPayload.setIamProjectId(projectId);
                     gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
-                    gitlabProjectPayload.setIamUserId(DetailsHelper.getUserDetails().getUserId());
 
                     agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 
