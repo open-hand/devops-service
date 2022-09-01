@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.gitops;
 
 import com.alibaba.fastjson.JSONObject;
+
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -13,6 +14,7 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
+
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
@@ -38,13 +40,13 @@ public class ResourceConvertToYamlHandler<T> {
 
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
-    private static final String INGTAG = "!!io.kubernetes.client.models.V1Ingress";
-    private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
+    private static final String INGTAG = "!!io.kubernetes.client.openapi.models.V1Ingress";
+    private static final String SVCTAG = "!!io.kubernetes.client.openapi.models.V1Service";
     private static final String CERTTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nCertification";
-    private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
-    private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
-    private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
-    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1Deployment";
+    private static final String CONFIGMAPTAG = "!!io.kubernetes.client.openapi.models.V1ConfigMap";
+    private static final String SECRET = "!!io.kubernetes.client.openapi.models.V1Secret";
+    private static final String ENDPOINTS = "!!io.kubernetes.client.openapi.models.V1Endpoints";
+    private static final String DEPLOYMENT = "!!io.kubernetes.client.openapi.models.V1Deployment";
     private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
 
     @Value(value = "${devops.deploy.enableDeleteBlankLine:true}")
