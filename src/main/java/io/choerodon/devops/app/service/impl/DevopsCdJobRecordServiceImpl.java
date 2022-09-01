@@ -94,6 +94,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         }
         if (status.equals(PipelineStatus.RUNNING.toValue())) {
             cdJobRecordDTO.setStartedDate(new Date());
+            cdJobRecordDTO.setLog(null);
             cdJobRecordDTO.setFinishedDate(null);
         }
 
