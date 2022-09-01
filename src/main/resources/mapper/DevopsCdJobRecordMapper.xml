@@ -20,7 +20,7 @@
             devops_cd_job_record dcsr
         WHERE
             dcsr.stage_record_id = #{stageRecordId}
-            AND (dcsr.`status` = 'failed' OR dcsr. STATUS = 'canceled')
+            AND (dcsr.`status` = 'failed' OR dcsr.status = 'canceled')
 
     </select>
 
