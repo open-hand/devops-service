@@ -52,7 +52,7 @@ public class DevopsCdPipelineController {
             @Encrypt
             @ApiParam(value = "任务记录Id", required = true)
             @RequestParam(value = "job_record_id") Long jobRecordId) {
-        devopsCdPipelineRecordService.cdHostDeploy(pipelineRecordId, stageRecordId, jobRecordId);
+        devopsCdPipelineRecordService.cdHostDeployAsync(pipelineRecordId, stageRecordId, jobRecordId);
         return Results.success();
     }
 
