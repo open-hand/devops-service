@@ -370,7 +370,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    @Async
     @Transactional
     public void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
@@ -416,6 +415,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
 
+    }
+
+    @Override
+    @Async
+    @Transactional
+    public void cdHostDeployAsync(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        cdHostDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
