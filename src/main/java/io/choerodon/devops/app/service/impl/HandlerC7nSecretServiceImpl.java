@@ -210,7 +210,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
             stringData.forEach((k, v) -> converted.put(k, Base64Util.getBase64EncodedString(v)));
         }
         if (data != null) {
-            data.forEach((k, v) -> converted.putIfAbsent(k, Arrays.toString(v)));
+            data.forEach((k, v) -> converted.putIfAbsent(k, new String(v)));
         }
         return converted;
     }
