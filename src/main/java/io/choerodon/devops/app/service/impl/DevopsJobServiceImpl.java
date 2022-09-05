@@ -101,7 +101,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                 }
                 jobInfoVO.setPorts(portRes);
                 if (v1Job.getStatus() != null && v1Job.getStatus().getCompletionTime() != null) {
-                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toLocalTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
                     jobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
