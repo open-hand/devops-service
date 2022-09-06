@@ -734,7 +734,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdJobVO.setCdAuditUserIds(longs);
     }
 
-    private void handCdHost(DevopsCdJobVO devopsCdJobVO) {
+    protected void handCdHost(DevopsCdJobVO devopsCdJobVO) {
         // 加密json中主键
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         CdHostDeployConfigVO cdHostDeployConfigVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, CdHostDeployConfigVO.class);
@@ -1761,7 +1761,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
      *
-     * @param CiCdPipelineDTO 流水线数据
      * @return 构建完的CI文件对象
      */
     private GitlabCi buildGitLabCiObject(CiCdPipelineDTO ciCdPipelineDTO) {
