@@ -200,7 +200,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
         devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
         devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
-
+        devopsHostDTO.setDescription(devopsHostUpdateRequestVO.getDescription());
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
     }
 
