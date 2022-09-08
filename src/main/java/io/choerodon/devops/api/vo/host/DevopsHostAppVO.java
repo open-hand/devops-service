@@ -9,6 +9,7 @@ import io.choerodon.devops.api.vo.deploy.FileInfoVO;
 import io.choerodon.devops.api.vo.market.MarketDeployObjectInfoVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
@@ -81,6 +82,16 @@ public class DevopsHostAppVO {
     private DevopsDockerInstanceVO devopsDockerInstanceVO;
 
     private DockerComposeValueDTO dockerComposeValueDTO;
+
+    private DevopsHostDTO devopsHostDTO;
+
+    public DevopsHostDTO getDevopsHostDTO() {
+        return devopsHostDTO;
+    }
+
+    public void setDevopsHostDTO(DevopsHostDTO devopsHostDTO) {
+        this.devopsHostDTO = devopsHostDTO;
+    }
 
     public Long getEffectValueId() {
         return effectValueId;

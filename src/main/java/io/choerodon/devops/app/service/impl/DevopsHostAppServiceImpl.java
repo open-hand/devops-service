@@ -243,6 +243,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (CollectionUtils.isEmpty(page.getContent())) {
             return page;
         }
+        Set<Long> hostIds = page.getContent().stream().map(DevopsHostAppVO::getHostId).collect(Collectors.toSet());
+        List<DevopsHostDTO> devopsHostDTOS = devopsHostService.listByIds(hostIds);
+        Map<Long, DevopsHostDTO> hostDTOMap = devopsHostDTOS.stream().collect(Collectors.toMap(DevopsHostDTO::getId, Function.identity()));
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
         Set<Long> appIds = page.getContent().stream()
                 .filter(v -> RdupmTypeEnum.JAR.value().equals(v.getRdupmType()) || RdupmTypeEnum.OTHER.value().equals(v.getRdupmType()))
@@ -287,7 +290,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             if (RdupmTypeEnum.DOCKER.value().equals(devopsHostAppVO.getRdupmType())) {
                 devopsHostAppVO.setDevopsHostCommandDTO(devopsHostCommandService.queryDockerInstanceLatest(devopsHostAppVO.getId(), HostResourceType.DOCKER_PROCESS.value()));
             }
-
+            DevopsHostDTO devopsHostDTO = hostDTOMap.get(devopsHostAppVO.getHostId());
+            devopsHostAppVO.setDevopsHostDTO(devopsHostDTO);
             devopsHostAppVO.setHostStatus(hostConnectionHandler.getHostConnectionStatus(devopsHostAppVO.getHostId()) ? CONNECTED : DISCONNECTED);
         });
         return page;

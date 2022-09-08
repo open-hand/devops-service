@@ -785,6 +785,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
+    public List<DevopsHostDTO> listByIds(Set<Long> ids) {
+        return devopsHostMapper.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
+    }
+
+    @Override
     public Page<DevopsUserVO> pageNonRelatedMembers(Long projectId, Long hostId, Long selectedIamUserId, PageRequest pageable, String params) {
         DevopsHostDTO devopsHostDTO = baseQuery(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
