@@ -1,6 +1,24 @@
 package io.choerodon.devops.infra.gitops;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.fastjson.JSONObject;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -14,25 +32,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
 import io.choerodon.devops.infra.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-
-import io.kubernetes.client.openapi.JSON;
-import io.kubernetes.client.openapi.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ResourceConvertToYamlHandler<T> {
 
@@ -354,8 +353,8 @@ public class ResourceConvertToYamlHandler<T> {
 
     private void handleSecret(T t, String objectType, String operationType, StringBuilder resultBuilder,
                               JSONObject jsonObject) {
-        Yaml yaml6 = new Yaml();
-        V1Secret v1Secret = yaml6.loadAs(jsonObject.toJSONString(), V1Secret.class);
+        JSON json = new JSON();
+        V1Secret v1Secret = json.deserialize(jsonObject.toJSONString(), V1Secret.class);
         V1Secret newV1Secret;
         if (objectType.equals(ResourceType.SECRET.getType()) && v1Secret.getMetadata().getName()
                 .equals(((V1Secret) t).getMetadata().getName())) {
