@@ -10,6 +10,8 @@ public class OrganizationRegisterEventPayload {
     private User userA;
     private User userB;
     private Project project;
+
+    private Project waterfallProject;
     private Application application;
 
     public Organization getOrganization() {
@@ -26,6 +28,14 @@ public class OrganizationRegisterEventPayload {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Project getWaterfallProject() {
+        return waterfallProject;
+    }
+
+    public void setWaterfallProject(Project waterfallProject) {
+        this.waterfallProject = waterfallProject;
     }
 
     public User getUserA() {
