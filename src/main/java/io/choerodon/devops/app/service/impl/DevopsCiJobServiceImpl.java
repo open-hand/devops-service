@@ -358,6 +358,19 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return devopsCiJobMapper.selectAll();
     }
 
+    @Override
+    public String queryMavenSettings(Long projectId, String token, Long id) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+        }
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(id);
+        if (devopsCiMavenSettingsDTO == null) {
+            throw new DevopsCiInvalidException("error.ci.maven.settings.not.found");
+        }
+        return devopsCiMavenSettingsDTO.getMavenSettings();
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();

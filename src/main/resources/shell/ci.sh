@@ -269,6 +269,7 @@ function publish_app_version() {
 
 }
 #################################### 下载settings文件 ####################################
+# 临时保留一个版本，后期可删除 v2.2
 # $1 fileName   下载settings文件后保存为的文件名称
 # $2 project_id 项目id
 # $3 ciJobId    猪齿鱼的CI的JOB纪录的id
@@ -278,6 +279,20 @@ function downloadSettingsFile() {
   http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
 
   if [ "$http_status_code" != "200" ]; then
+    echo "failed to downloadSettingsFile: $1"
+    cat "settings.xml"
+    exit 1
+  fi
+}
+#################################### 下载settings文件 ####################################
+# $1 projectId
+# $2 devops_ci_maven_settings.id
+function downloadSettingsFileByUId() {
+  rm -rf "settings.xml"
+  http_status_code=$(curl -o "settings.xml" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$1/ci_jobs/maven_settings/$2?token=${Token}")
+
+  if [ "$http_status_code" != "200" ]; then
+    cat "settings.xml"
     echo "failed to downloadSettingsFile: $1"
     exit 1
   fi
@@ -349,6 +364,34 @@ function saveJarMetadata() {
     exit 1
   fi
 }
+
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 maven制品库id
+# $2 mvn_settings_id    mvn_settings_id
+# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
+function saveJarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "nexus_repo_id=$1" \
+    -F "mvn_settings_id=$2" \
+    -F "sequence=$3" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "version=${CI_COMMIT_TAG}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_info" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
 # $1 ciJobId    猪齿鱼的CI的JOB纪录的id
 # $2 sequence   猪齿鱼的CI流水线的步骤的序列号
@@ -368,6 +411,36 @@ function saveCustomJarMetadata() {
     -F "job_name=${CI_JOB_NAME}" \
     -F "file=@pom.xml" \
     "${CHOERODON_URL}/devops/ci/save_jar_metadata" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+  rm "${CI_COMMIT_SHA}-ci.response"
+  if [ "$result_upload_to_devops" != "200" ]; then
+    echo "$response_upload_to_devops"
+    echo "upload to devops error"
+    exit 1
+  fi
+}
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 mvn_settings_id   mvn_settings_id
+# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
+# $3 maven_repo_url   目标仓库地址
+# $4 username   目标仓库用户名
+# $5 password   目标仓库用户密码
+function saveCustomJarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "mvn_settings_id=$1" \
+    -F "sequence=$2" \
+    -F "maven_repo_url=$3" \
+    -F "username=$4" \
+    -F "password=$5" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_info" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
