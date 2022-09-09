@@ -1,17 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2DaemonSet;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1DaemonSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +12,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -82,7 +82,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
             DaemonSetInfoVO daemonSetInfoVO = ConvertUtils.convertObject(v, DaemonSetInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1beta2DaemonSet.class);
+                V1DaemonSet v1beta2DaemonSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1DaemonSet.class);
 
 
                 daemonSetInfoVO.setName(v1beta2DaemonSet.getMetadata().getName());
@@ -158,7 +158,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(detailsJson, V1beta2DaemonSet.class);
+        V1DaemonSet v1beta2DaemonSet = json.deserialize(detailsJson, V1DaemonSet.class);
 
         DevopsDaemonSetDTO oldDevopsDaemonSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2DaemonSet.getMetadata().getName());
         if (oldDevopsDaemonSetDTO != null) {

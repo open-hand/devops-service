@@ -32,6 +32,8 @@ public class BatchDeploymentPayload {
     @ApiModelProperty("域名相关信息，可为空,其中元素不需要环境的信息")
     private List<IngressSagaPayload> ingressSagaPayloads;
 
+    private Boolean operateForOldIngress;
+
     public Long getEnvId() {
         return envId;
     }
@@ -86,5 +88,13 @@ public class BatchDeploymentPayload {
 
     public void setIngressSagaPayloads(List<IngressSagaPayload> ingressSagaPayloads) {
         this.ingressSagaPayloads = ingressSagaPayloads;
+    }
+
+    public Boolean getOperateForOldIngress() {
+        return operateForOldIngress;
+    }
+
+    public void setOperateForOldIngress(Boolean operateForOldIngress) {
+        this.operateForOldIngress = operateForOldIngress;
     }
 }

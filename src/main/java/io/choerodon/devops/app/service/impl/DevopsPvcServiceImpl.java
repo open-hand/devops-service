@@ -1,14 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
-import io.kubernetes.client.models.V1PersistentVolumeClaimSpec;
-import io.kubernetes.client.models.V1ResourceRequirements;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimSpec;
+import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;

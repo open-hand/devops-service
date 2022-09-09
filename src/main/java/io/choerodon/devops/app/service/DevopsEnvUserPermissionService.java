@@ -37,8 +37,6 @@ public interface DevopsEnvUserPermissionService {
 
     List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId);
 
-    List<DevopsEnvUserPermissionDTO> baseListAll(Long envId);
-
     void baseUpdate(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
 
     void baseDelete(Long envId, Long userId);

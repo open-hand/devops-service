@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,7 +45,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -82,7 +82,6 @@ import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
-import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
@@ -255,6 +254,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private DevopsAppServiceHelmRelService devopsAppServiceHelmRelService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -351,13 +352,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             shareAppService = true;
         }
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
-        List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
-        if (!devopsConfigVOS.isEmpty()) {
-            devopsConfigVOS.forEach(devopsConfigVO -> {
-                if (devopsConfigVO.getType().equals(CHART)) {
-                    appServiceRepVO.setChart(devopsConfigVO);
-                }
-            });
+        DevopsAppServiceHelmRelDTO devopsAppServiceHelmRelDTO = devopsAppServiceHelmRelService.queryByAppServiceId(appServiceId);
+        if (devopsAppServiceHelmRelDTO != null) {
+            appServiceRepVO.setHelmConfigId(devopsAppServiceHelmRelDTO.getHelmConfigId());
         }
         //url地址拼接
         if (appServiceDTO.getGitlabProjectId() != null && !shareAppService) {
@@ -551,33 +548,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceMapper.updatePomFields(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getGroupId(), appServiceUpdateDTO.getArtifactId());
 
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-        DevopsConfigVO chart = new DevopsConfigVO();
-        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
-            chart.setCustom(false);
-        } else {
-            chart = appServiceUpdateDTO.getChart();
-            chart.setCustom(Boolean.TRUE);
-            ConfigVO configVO = chart.getConfig();
-            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
-            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
-            if (!usernameEmpty && !passwordEmpty) {
-                configVO.setUserName(configVO.getUserName());
-                configVO.setPassword(configVO.getPassword());
-                configVO.setIsPrivate(Boolean.TRUE);
-            } else {
-                configVO.setIsPrivate(Boolean.FALSE);
-            }
-
-            // 用户名和密码要么都为空, 要么都有值
-            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
-        }
-        chart.setType(CHART);
-        devopsConfigVOS.add(chart);
 
         //处理helm仓库的配置
-        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
+        devopsAppServiceHelmRelService.handleRel(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getHelmConfigId());
+
         //保存应用服务与harbor仓库的关系
         if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
             if (DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
@@ -588,10 +562,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
         }
-        if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
-            appServiceDTO.setChartConfigId(chartConfig.getId());
-        }
+//        if (appServiceUpdateDTO.getChart() != null) {
+//            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
+//            appServiceDTO.setChartConfigId(chartConfig.getId());
+//        }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
@@ -766,7 +740,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -1436,10 +1410,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
-        if (!url.endsWith("/")) {
-            throw new CommonException("error.base.url.must.end");
-        }
+    public Boolean checkChartOnOrganization(String url, @Nullable String username, @Nullable String password) {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
@@ -1478,6 +1449,58 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         return true;
+    }
+
+    @Override
+    public CheckInfoVO checkChart(Long projectId, String url, @Nullable String username, @Nullable String password) {
+        CheckInfoVO checkInfoVO = new CheckInfoVO();
+        url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        URL processedUrl;
+        try {
+            processedUrl = new URL(url);
+        } catch (Exception e) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("helm仓库地址不正确");
+            return checkInfoVO;
+        }
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(processedUrl.getProtocol() + "://" + processedUrl.getHost());
+        configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        ChartClient chartClient = null;
+
+        Response<String> result;
+        try {
+            String[] params = processedUrl.getPath().split("/");
+            if (params.length != 3) {
+                checkInfoVO.setSuccess(false);
+                checkInfoVO.setErrMsg("helm仓库地址无效，应该类似：http://localhost:8080/org1/repoa");
+                return checkInfoVO;
+            }
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, new RetrofitHandler.StringConverter());
+            chartClient = retrofit.create(ChartClient.class);
+            Call<String> getIndex = chartClient.getIndex(params[1], params[2]);
+            result = getIndex.execute();
+        } catch (Exception ex) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("无法访问helm仓库:" + ex.getMessage());
+            return checkInfoVO;
+        }
+        if (result != null && result.isSuccessful()) {
+            checkInfoVO.setSuccess(true);
+            return checkInfoVO;
+        }
+        if (result != null && (result.code() > 400 && result.code() < 500)) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("账号或密码不正确");
+            return checkInfoVO;
+        }
+        checkInfoVO.setSuccess(false);
+        checkInfoVO.setErrMsg("测试连接失败");
+        return checkInfoVO;
     }
 
     @Override
@@ -2410,19 +2433,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Boolean checkDeleteEnvApp(Long appServiceId, Long envId) {
         return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
-    }
-
-    @Override
-    public List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
-        Assert.notNull(groupId, ResourceCheckConstant.ERROR_APP_GROUP_ID_IS_NULL);
-        Assert.notNull(artifactId, ResourceCheckConstant.ERROR_APP_ARTIFACT_ID_IS_NULL);
-
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        appServiceDTO.setGroupId(groupId);
-        appServiceDTO.setArtifactId(artifactId);
-        return appServiceMapper.select(appServiceDTO);
     }
 
 
@@ -3673,7 +3683,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
 
         UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
         // 待查询的appService列表
@@ -3885,7 +3895,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
         Page<AppServiceDTO> appServiceDTOPage;
         if (projectOwner) {
@@ -3914,5 +3924,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         HarborRepoConfigDTO harborRepoConfig = selectedHarborConfig.getHarborRepoConfig();
         harborRepoConfig.setType(selectedHarborConfig.getRepoType());
         return harborRepoConfig;
+    }
+
+    @Override
+    public List<Long> listProjectIdsByAppIds(List<Long> appIds) {
+        if (ObjectUtils.isEmpty(appIds)) {
+            return new ArrayList<>();
+        }
+        return appServiceMapper.listProjectIdsByAppIds(appIds);
     }
 }

@@ -41,4 +41,7 @@ public interface DevopsConfigMapper extends BaseMapper<DevopsConfigDTO> {
     void updateConfigFieldsNull(@Param("configId") Long configId);
 
     List<DevopsConfigDTO> listByConfigs(@Param("configIds") Set<Long> configIds);
+
+    List<DevopsConfigDTO> listAllChart();
+
 }

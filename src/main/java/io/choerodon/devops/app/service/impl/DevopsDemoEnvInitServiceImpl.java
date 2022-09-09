@@ -36,7 +36,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -95,6 +94,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
 
     private final Gson gson = new Gson();
 
@@ -342,10 +343,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         appServiceVersionDTO.setRef(GitOpsConstants.MASTER);
 
         // 查询helm仓库配置id
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), MiscConstants.APP_SERVICE, ProjectConfigType.CHART.getType(), null);
-        ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+
+        ConfigVO helmConfig = ConvertUtils.convertObject(devopsHelmConfigDTO, ConfigVO.class);
+        helmConfig.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
         String helmUrl = helmConfig.getUrl();
-        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
+        appServiceVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
         String storeFilePath = STORE_PATH + version;
@@ -353,7 +356,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUsername(), helmConfig.getPassword());
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {

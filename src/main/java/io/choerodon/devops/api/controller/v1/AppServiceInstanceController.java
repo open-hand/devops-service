@@ -860,22 +860,22 @@ public class AppServiceInstanceController {
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
 
-    /**
-     * 部署自动化测试服务
-     *
-     * @param projectId          项目id
-     * @param appServiceDeployVO 部署信息
-     */
-    @ApiOperation(value = "部署自动化测试服务")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/deploy_test_app")
-    public void deployTestApp(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "部署信息", required = true)
-            @RequestBody AppServiceDeployVO appServiceDeployVO) {
-        appServiceInstanceService.deployTestApp(projectId, appServiceDeployVO);
-    }
+//    /**
+//     * 部署自动化测试服务
+//     *
+//     * @param projectId          项目id
+//     * @param appServiceDeployVO 部署信息
+//     */
+//    @ApiOperation(value = "部署自动化测试服务")
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @PostMapping("/deploy_test_app")
+//    public void deployTestApp(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "部署信息", required = true)
+//            @RequestBody AppServiceDeployVO appServiceDeployVO) {
+//        appServiceInstanceService.deployTestApp(projectId, appServiceDeployVO);
+//    }
 
     /**
      * 操作pod的数量

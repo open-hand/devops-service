@@ -44,8 +44,6 @@ public interface DevopsEnvFileService {
 
     void baseDelete(DevopsEnvFileDTO devopsEnvFileDTO);
 
-    List<DevopsEnvFileDTO> baseListByEnvIdAndPath(Long envId, String path);
-
     /**
      * 根据环境id删除相应的纪录
      * 删除环境时使用

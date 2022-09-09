@@ -117,6 +117,25 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
+    @ApiOperation(value = "发布应用服务版本")
+    @PostMapping("/app_version")
+    public ResponseEntity<Void> publishAppVersion(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "版本", required = true)
+            @RequestParam String version,
+            @ApiParam(value = "commit", required = true)
+            @RequestParam String commit,
+            @ApiParam(value = "GitLab流水线id")
+            @RequestParam(value = "gitlabPipelineId", required = false) Long gitlabPipelineId,
+            @ApiParam(value = "job_name")
+            @RequestParam(value = "jobName", required = false) String jobName,
+            @RequestParam String ref) {
+        appServiceVersionService.publishAppVersion(token, version, commit, ref, gitlabPipelineId, jobName);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "查询CI流水线默认的镜像地址")
     @GetMapping("/default_image")
     public ResponseEntity<String> queryDefaultCiImageUrl() {
@@ -154,9 +173,11 @@ public class CiController {
             @RequestParam(value = "job_name") String jobName,
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
+            @ApiParam(value = "版本", required = true)
+            @RequestParam String version,
             @ApiParam(value = "pom文件", required = true)
             @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password);
+        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
         return ResponseEntity.ok().build();
     }
 

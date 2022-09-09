@@ -73,10 +73,6 @@ public interface DevopsDeployRecordService {
 
     void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
-    void updateRecord(Long recordId, String status, String errorMsg);
-
-    void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO);
-
     List<DevopsDeployRecordDTO> baseList(DevopsDeployRecordDTO devopsDeployRecordDTO);
 
     void baseDelete(DevopsDeployRecordDTO devopsDeployRecordDTO);
