@@ -50,7 +50,7 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
             devopsHostCommandDTOS.forEach(devopsHostCommandDTO ->
             {
                 if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-                    devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
+                    devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
                 }
             });
         }

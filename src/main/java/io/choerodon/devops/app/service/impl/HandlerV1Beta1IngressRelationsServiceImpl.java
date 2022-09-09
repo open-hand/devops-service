@@ -1,21 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.V1beta1IngressBackend;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressBackend;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
@@ -30,7 +30,7 @@ import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Service
-public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
+public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     private static final Pattern PATTERN = Pattern.compile("^[-+]?[\\d]*$");
@@ -200,8 +200,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         if (paths == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError(), filePath);
         }
-        for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
-            String path = v1beta1HTTPIngressPath.getPath();
+        for (V1beta1HTTPIngressPath v1HTTPIngressPath : paths) {
+            String path = v1HTTPIngressPath.getPath();
             try {
                 DevopsIngressValidator.checkPath(path);
                 if (pathCheckList.contains(path)) {
@@ -211,15 +211,15 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             } catch (Exception e) {
                 throw new GitOpsExplainException(e.getMessage(), filePath);
             }
-            V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            V1beta1IngressBackend backend = v1HTTPIngressPath.getBackend();
             String serviceName = backend.getServiceName();
             DevopsServiceDTO devopsServiceDTO = devopsServiceService.baseQueryByNameAndEnvId(
                     serviceName, envId);
 
-            Long servicePort = null;
+            Integer servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || PATTERN.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
-                servicePort = TypeUtil.objToLong(backendServicePort);
+                servicePort = TypeUtil.objToInteger(backendServicePort);
             } else {
                 if (devopsServiceDTO != null) {
                     List<PortMapVO> listPorts = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {

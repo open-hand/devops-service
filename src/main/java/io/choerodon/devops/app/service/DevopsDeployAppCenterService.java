@@ -2,11 +2,15 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -62,6 +66,8 @@ public interface DevopsDeployAppCenterService {
     Page<DevopsDeployAppCenterVO> listApp(Long projectId, Long envId, String name, String rdupmType, String operationType, String params, PageRequest pageable);
 
     AppCenterEnvDetailVO envAppDetail(Long projectId, Long appCenterId);
+
+    void calculatePodStatus(List<DevopsEnvPodDTO> devopsEnvPodDTOS, AppCenterEnvDetailVO detailVO);
 
     List<InstanceEventVO> envAppEvent(Long projectId, Long appCenterId);
 
@@ -128,6 +134,12 @@ public interface DevopsDeployAppCenterService {
     Page<DevopsDeployAppCenterVO> pageByProjectIdAndEnvIdAndAppId(Long projectId, Long envId, Long appServiceId, PageRequest pageRequest);
 
     void delete(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO);
+
+    void setAppInstanceInfoToAppCenter(Long projectId, DevopsDeployAppCenterVO devopsDeployAppCenterVO, AppServiceInstanceInfoDTO appServiceInstanceInfoDTO);
+
+    Map<Long, DevopsEnvironmentDTO> combineDevopsEnvironmentDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList);
+
+    Map<Long, AppServiceInstanceInfoDTO> devopsInstanceDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList);
 
     /**
      * @Description 批量插入DevopsDeployAppCenterEnvDTO

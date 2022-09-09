@@ -1,18 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2Deployment;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,6 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -191,9 +191,9 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             DeploymentInfoVO deploymentVO = ConvertUtils.convertObject(v, DeploymentInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                V1Deployment v1beta2Deployment = json.deserialize(
                         detailDTOMap.get(v.getResourceDetailId()).getMessage(),
-                        V1beta2Deployment.class);
+                        V1Deployment.class);
                 deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
                 deploymentVO.setCurrent(TypeUtil.objToLong(v1beta2Deployment.getStatus().getReplicas()));
                 deploymentVO.setUpToDate(TypeUtil.objToLong(v1beta2Deployment.getStatus().getUpdatedReplicas()));
@@ -226,7 +226,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2Deployment v1beta2Deployment = json.deserialize(detailsJson, V1beta2Deployment.class);
+        V1Deployment v1beta2Deployment = json.deserialize(detailsJson, V1Deployment.class);
 
         DevopsDeploymentDTO oldDevopsDeploymentDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {

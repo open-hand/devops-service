@@ -205,7 +205,6 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             }
         });
         params.put(MOBILE, StringUtils.join(phones, ","));
-        LOGGER.info("============message5==========");
 
         Map<String, Object> additionalParams = new HashMap<>();
         additionalParams.put(MessageAdditionalType.PARAM_PROJECT_ID.getTypeName(), devopsEnvironmentDTO.getProjectId());

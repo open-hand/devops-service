@@ -310,4 +310,6 @@ public interface DevopsHostService {
      * @param hostId
      */
     DevopsHostDTO checkHostAvailable(Long hostId);
+
+    List<DevopsHostDTO> listByIds(Set<Long> ids);
 }

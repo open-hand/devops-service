@@ -12,6 +12,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
 import io.choerodon.devops.infra.dto.RepositoryFileDTO;
@@ -44,6 +45,14 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/groups/{groupId}/members")
     ResponseEntity<List<MemberDTO>> listGroupMember(
             @PathVariable("groupId") Integer groupId);
+
+    @GetMapping(value = "/v1/groups/{groupId}/members/page")
+    ResponseEntity<Page<MemberDTO>> pageMember(
+            @PathVariable(value = "groupId") Integer groupId,
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "userId", required = false) Integer userId,
+            @RequestParam(value = "search", required = false) String search);
 
     @DeleteMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity deleteMember(
@@ -542,6 +551,10 @@ public interface GitlabServiceClient {
     ResponseEntity<MemberDTO> getProjectMember(@PathVariable("projectId") Integer projectId,
                                                @PathVariable("userId") Integer userId);
 
+    @GetMapping("/v1/projects/{projectId}/members/all/{userId}")
+    ResponseEntity<MemberDTO> getProjectAllMember(@PathVariable("projectId") Integer projectId,
+                                                  @PathVariable("userId") Integer userId);
+
     @GetMapping("/v1/projects/{projectId}/merge_requests/ids")
     ResponseEntity<List<Long>> listIds(
             @ApiParam(value = "gitlab项目id", required = true)
@@ -849,6 +862,16 @@ public interface GitlabServiceClient {
                                                        @RequestParam(value = "search", required = false) String search,
                                                        @RequestBody List<Integer> skipGroups);
 
+    @ApiOperation(value = "分頁查询有权限的所有组")
+    @PostMapping("/v1/groups/{userId}/paging")
+    ResponseEntity<Page<GroupDTO>> pagingGroupWithParam(@ApiParam(value = "userId")
+                                                        @PathVariable(value = "userId") Integer userId,
+                                                        @RequestParam(value = "owned", required = false) Boolean owned,
+                                                        @RequestParam(value = "search", required = false) String search,
+                                                        @RequestParam(value = "page") Integer page,
+                                                        @RequestParam(value = "size") Integer size,
+                                                        @RequestBody List<Integer> skipGroups);
+
     @ApiOperation(value = "获取项目列表")
     @GetMapping(value = "/v1/groups/{groupId}/projects")
     ResponseEntity<List<GitlabProjectDTO>> listProjects(
@@ -1005,4 +1028,10 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/list_admin_users")
     ResponseEntity<List<GitLabUserDTO>> listAdminUsers();
 
+    @PostMapping("/v1/hook/{hook_id}")
+    ResponseEntity<ProjectHookDTO> updateWebHook(
+            @RequestParam("projectId") Integer projectId,
+            @RequestParam("userId") Integer userId,
+            @PathVariable(value = "hook_id") Integer hookId,
+            @RequestBody ProjectHookDTO projectHookDTO);
 }

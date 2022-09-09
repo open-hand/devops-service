@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum UserEnvSupportedResourceType {
     SERVICE("Service"),
-    INGRESS("Ingress"),
+    V1_INGRESS("V1Ingress"),
+    V1BETA1_INGRESS("V1Beta1Ingress"),
     C7NHELMRELEASE("C7NHelmRelease"),
     CERTIFICATE("Certificate"),
     CONFIGMAP("ConfigMap"),

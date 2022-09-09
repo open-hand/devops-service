@@ -200,7 +200,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
         devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
         devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
-
+        devopsHostDTO.setDescription(devopsHostUpdateRequestVO.getDescription());
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
     }
 
@@ -782,6 +782,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         // 3. 校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
         return hostDTO;
+    }
+
+    @Override
+    public List<DevopsHostDTO> listByIds(Set<Long> ids) {
+        return devopsHostMapper.selectByIds(ids.stream().map(Object::toString).collect(Collectors.joining(",")));
     }
 
     @Override

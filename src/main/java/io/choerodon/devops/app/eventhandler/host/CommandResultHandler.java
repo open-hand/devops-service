@@ -29,7 +29,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 @Component
 public class CommandResultHandler implements HostMsgHandler {
 
-    private Map<String, BiConsumer<String, String>> resultHandlerMap = new HashMap<>();
+    protected Map<String, BiConsumer<String, String>> resultHandlerMap = new HashMap<>();
 
     @Autowired
     private DevopsHostCommandService devopsHostCommandService;
@@ -154,7 +154,7 @@ public class CommandResultHandler implements HostMsgHandler {
         }
         devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
         if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
+            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
         }
     }
 

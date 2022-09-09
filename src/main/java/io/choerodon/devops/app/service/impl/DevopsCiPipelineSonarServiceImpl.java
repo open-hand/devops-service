@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiPipelineSonarService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -26,8 +25,6 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     @Autowired
     private AppServiceService appServiceService;
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
     private DevopsCiPipelineSonarMapper devopsCiPipelineSonarMapper;

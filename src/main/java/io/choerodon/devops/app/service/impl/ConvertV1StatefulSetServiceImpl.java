@@ -19,9 +19,9 @@ import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
-public class ConvertV1beta2StatefulSetServiceImpl extends ConvertK8sObjectService<DevopsStatefulSetDTO> {
+public class ConvertV1StatefulSetServiceImpl extends ConvertK8sObjectService<DevopsStatefulSetDTO> {
 
-    public ConvertV1beta2StatefulSetServiceImpl() {
+    public ConvertV1StatefulSetServiceImpl() {
         super(DevopsStatefulSetDTO.class);
     }
 

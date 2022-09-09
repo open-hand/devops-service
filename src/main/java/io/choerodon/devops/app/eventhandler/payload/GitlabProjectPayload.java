@@ -8,6 +8,7 @@ import java.util.List;
 public class GitlabProjectPayload {
 
     private Integer userId;
+    private Long iamUserId;
     private String path;
     private Integer gitlabProjectId;
     private Integer groupId;
@@ -105,5 +106,13 @@ public class GitlabProjectPayload {
 
     public void setIamProjectId(Long iamProjectId) {
         this.iamProjectId = iamProjectId;
+    }
+
+    public Long getIamUserId() {
+        return iamUserId;
+    }
+
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 }
