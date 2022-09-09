@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiVariableVO;
 import io.choerodon.devops.api.vo.FileCreationVO;
@@ -57,6 +58,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<MemberDTO>> listGroupMember(Integer groupId) {
+        throw new CommonException("error.group.member.list");
+    }
+
+    @Override
+    public ResponseEntity<Page<MemberDTO>> pageMember(Integer groupId, Integer page, Integer size, Integer userId, String search) {
         throw new CommonException("error.group.member.list");
     }
 
@@ -418,6 +424,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<MemberDTO> getProjectAllMember(Integer projectId, Integer userId) {
+        throw new CommonException("error.query.project.member");
+    }
+
+    @Override
     public ResponseEntity deleteProjectMember(Integer projectId, Integer userId) {
         return null;
     }
@@ -558,6 +569,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<Page<GroupDTO>> pagingGroupWithParam(Integer userId, Boolean owned, String search, Integer page, Integer size, List<Integer> skipGroups) {
+        throw new CommonException("error.query.group");
+    }
+
+    @Override
     public ResponseEntity<List<GitlabProjectDTO>> listProjects(Integer groupId, Integer userId, Boolean owned, String search, Integer page, Integer perPage, Integer minAccessLevel) {
         throw new CommonException("error.query.group.project");
     }
@@ -631,5 +647,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<GitLabUserDTO>> listAdminUsers() {
         throw new CommonException("error.list.admin.users");
+    }
+
+    @Override
+    public ResponseEntity<ProjectHookDTO> updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
+        throw new CommonException("error.updateWebHook");
     }
 }

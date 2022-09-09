@@ -9,8 +9,6 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  * @description 主机部署配置信息
  */
 public class CdHostDeployConfigVO {
-    @ApiModelProperty("主机详情")
-    private HostConnectionVO hostConnectionVO;
 
     @Encrypt
     @ApiModelProperty("应用id")
@@ -369,14 +367,6 @@ public class CdHostDeployConfigVO {
 
     public void setJarDeploy(JarDeploy jarDeploy) {
         this.jarDeploy = jarDeploy;
-    }
-
-    public HostConnectionVO getHostConnectionVO() {
-        return hostConnectionVO;
-    }
-
-    public void setHostConnectionVO(HostConnectionVO hostConnectionVO) {
-        this.hostConnectionVO = hostConnectionVO;
     }
 
     public ImageDeploy getImageDeploy() {

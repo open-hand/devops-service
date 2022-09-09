@@ -20,6 +20,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 public class CiCdPipelineRecordVO extends BaseDomain {
 
     @ApiModelProperty("流水线记录id")
+    @Encrypt
     private Long devopsPipelineRecordRelId;
     @Encrypt
     @ApiModelProperty("ci 执行记录的id")

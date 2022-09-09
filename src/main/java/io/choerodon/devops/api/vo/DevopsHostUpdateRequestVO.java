@@ -4,6 +4,7 @@ import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.Range;
 
 import javax.validation.constraints.NotEmpty;
@@ -40,6 +41,10 @@ public class DevopsHostUpdateRequestVO {
 
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
+
+    @ApiModelProperty("主机描述")
+    @Length(max = 100,message = "error.host.description.length")
+    private String description;
 
     public String getName() {
         return name;
@@ -83,5 +88,17 @@ public class DevopsHostUpdateRequestVO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

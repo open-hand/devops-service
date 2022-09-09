@@ -84,4 +84,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: "issue_id")
         }
     }
+    changeSet(author: 'wanghao', id: '2020-08-09-devops_branch-modify-column') {
+        modifyDataType(tableName: 'devops_branch', columnName: 'branch_name', newDataType: 'VARCHAR(512)')
+    }
 }

@@ -309,7 +309,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return detailVO;
     }
 
-    private void calculatePodStatus(List<DevopsEnvPodDTO> devopsEnvPodDTOS, AppCenterEnvDetailVO detailVO) {
+    @Override
+    public void calculatePodStatus(List<DevopsEnvPodDTO> devopsEnvPodDTOS, AppCenterEnvDetailVO detailVO) {
         if (CollectionUtils.isEmpty(devopsEnvPodDTOS)) {
             detailVO.setPodRunningCount(devopsEnvPodDTOS.size());
         } else {
@@ -670,7 +671,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return devopsDeployAppCenterVOS;
     }
 
-    private void setAppInstanceInfoToAppCenter(Long projectId, DevopsDeployAppCenterVO devopsDeployAppCenterVO, AppServiceInstanceInfoDTO appServiceInstanceInfoDTO) {
+    @Override
+    public void setAppInstanceInfoToAppCenter(Long projectId, DevopsDeployAppCenterVO devopsDeployAppCenterVO, AppServiceInstanceInfoDTO appServiceInstanceInfoDTO) {
         devopsDeployAppCenterVO.setAppServiceId(appServiceInstanceInfoDTO.getAppServiceId());
         devopsDeployAppCenterVO.setStatus(appServiceInstanceInfoDTO.getStatus());
         devopsDeployAppCenterVO.setError(appServiceInstanceInfoDTO.getError());
@@ -691,7 +693,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         }
     }
 
-    private Map<Long, DevopsEnvironmentDTO> combineDevopsEnvironmentDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
+    @Override
+    public Map<Long, DevopsEnvironmentDTO> combineDevopsEnvironmentDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
         List<DevopsEnvironmentDTO> environmentDTOS = environmentService.baseListByIds(devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getEnvId).collect(Collectors.toList()));
         return environmentDTOS.stream().collect(Collectors.toMap(DevopsEnvironmentDTO::getId, Function.identity()));
     }
@@ -713,7 +716,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         return devopsMarketDTOMap;
     }
 
-    private Map<Long, AppServiceInstanceInfoDTO> devopsInstanceDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
+    @Override
+    public Map<Long, AppServiceInstanceInfoDTO> devopsInstanceDTOMap(List<DevopsDeployAppCenterVO> devopsDeployAppCenterVOList) {
         List<Long> instanceIds = devopsDeployAppCenterVOList.stream().map(DevopsDeployAppCenterVO::getObjectId).collect(Collectors.toList());
         List<AppServiceInstanceInfoDTO> appServiceInstanceInfoDTOList = appServiceInstanceMapper.listInfoById(instanceIds);
         Map<Long, AppServiceInstanceInfoDTO> devopsMarketDTOMap = new HashMap<>();

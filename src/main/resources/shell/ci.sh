@@ -187,12 +187,7 @@ function chart_build() {
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
 
   rewrite_image_info_for_chart
-  #判断chart主目录名是否与应用编码保持一致
-  CHART_DIRECTORY_PATH=$(find . -maxdepth 2 -name ${PROJECT_NAME})
-  if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
-    echo "The chart's home directory should be consistent with the application code!"
-    exit 1
-  fi
+
   # 查找Chart.yaml文件
   CHART_PATH=$(find . -maxdepth 3 -name Chart.yaml)
   # 重置values.yaml文件中image属性
@@ -205,6 +200,12 @@ function chart_build() {
     yq e -i '.image.registry=strenv(DOCKER_REGISTRY)' ${CHART_PATH%/*}/values.yaml
     yq e -i '.image.repository=strenv(DOCKER_REPOSITORY)' ${CHART_PATH%/*}/values.yaml
   fi
+  nameInChart=$(grep -e '^name:' ${CHART_PATH%/*}/Chart.yaml| awk '{print $2}')
+  # 重置Chart.yaml中的name属性，与当前应用的code保持一致
+  if [ $nameInChart != ${PROJECT_NAME} ]; then
+    echo "Rewrite chart name from ${nameInChart} to ${PROJECT_NAME} "
+    sed -i "s,^name:.*$,name: ${PROJECT_NAME},g" ${CHART_PATH%/*}/Chart.yaml
+  fi
   # 构建chart包，重写version与app-version为当前版本
   helm package -u ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
   TEMP=${CHART_PATH%/*}
@@ -216,7 +217,7 @@ function chart_build() {
     -F "harbor_config_id=${HARBOR_CONFIG_ID}" \
     -F "repo_type=${REPO_TYPE}" \
     -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
+    -F "file=@${PROJECT_NAME}-${CI_COMMIT_TAG}.tgz" \
     -F "commit=${CI_COMMIT_SHA}" \
     -F "ref=${CI_COMMIT_REF_NAME}" \
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
@@ -361,8 +362,8 @@ function saveCustomJarMetadata() {
     -F "job_id=$1" \
     -F "sequence=$2" \
     -F "maven_repo_url=$3" \
-    -F "username=$4" \
-    -F "password=$5" \
+    -F "username='$4'" \
+    -F "password='$5'" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
     -F "file=@pom.xml" \

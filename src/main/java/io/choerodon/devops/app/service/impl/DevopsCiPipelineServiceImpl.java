@@ -700,7 +700,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdJobVO.setCdAuditUserIds(longs);
     }
 
-    private void handCdHost(DevopsCdJobVO devopsCdJobVO) {
+    protected void handCdHost(DevopsCdJobVO devopsCdJobVO) {
         // 加密json中主键
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         CdHostDeployConfigVO cdHostDeployConfigVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, CdHostDeployConfigVO.class);
@@ -818,7 +818,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
     }
 
-    private void fillEditPipelinePermission(Long projectId, CiCdPipelineVO ciCdPipelineVO, AppServiceDTO appServiceDTO) {
+    protected void fillEditPipelinePermission(Long projectId, CiCdPipelineVO ciCdPipelineVO, AppServiceDTO appServiceDTO) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         //当前用户是否对这条流水线有修改的权限
         Set<Long> memberAppServiceIds = appServiceService.getMemberAppServiceIdsByAccessLevel(projectDTO.getOrganizationId(), projectId, DetailsHelper.getUserDetails().getUserId(), AccessLevel.DEVELOPER.value, appServiceDTO.getId());
@@ -956,6 +956,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Transactional
     public void deletePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        if (ciCdPipelineDTO == null) {
+            return;
+        }
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
@@ -1691,7 +1694,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     /**
      * 构建gitlab-ci对象，用于转换为gitlab-ci.yaml
      *
-     * @param CiCdPipelineDTO 流水线数据
      * @return 构建完的CI文件对象
      */
     private GitlabCi buildGitLabCiObject(CiCdPipelineDTO ciCdPipelineDTO) {
@@ -1766,7 +1768,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         return SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType());
                     })) {
                         CiJobServices ciJobServices = new CiJobServices();
-                        ciJobServices.setName(cibase);
+                        ciJobServices.setName(defaultCiImage);
                         ciJobServices.setAlias("kaniko");
                         ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
                     }

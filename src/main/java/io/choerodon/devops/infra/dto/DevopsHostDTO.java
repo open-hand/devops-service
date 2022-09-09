@@ -65,6 +65,9 @@ public class DevopsHostDTO extends AuditDomain {
     @ApiModelProperty("主机连接token")
     private String token;
 
+    @ApiModelProperty("主机描述")
+    private String description;
+
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostType}
      */
@@ -190,5 +193,13 @@ public class DevopsHostDTO extends AuditDomain {
 
     public void setPrivatePort(Integer privatePort) {
         this.privatePort = privatePort;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
