@@ -1,14 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -768,13 +768,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(s -> !StringUtils.isEmpty(s))
                 .map(s -> JsonHelper.unmarshalByJackson(s, new TypeReference<Map<String, String>>() {
                 }))
-                .forEach(l -> l.forEach((k, v)->{
+                .forEach(l -> l.forEach((k, v) -> {
                     DevopsPvLabelVO devopsPvLabelVO = new DevopsPvLabelVO();
                     devopsPvLabelVO.setKey(k);
                     devopsPvLabelVO.setValue(v);
-                  if (!labels.contains(devopsPvLabelVO)){
-                      labels.add(devopsPvLabelVO);
-                  }
+                    if (!labels.contains(devopsPvLabelVO)) {
+                        labels.add(devopsPvLabelVO);
+                    }
                 }));
         return labels;
     }

@@ -71,7 +71,7 @@ public class DevopsIngressValidator {
         }
     }
 
-    private static Boolean checkPort(Long port) {
+    private static Boolean checkPort(Integer port) {
         return port >= 0 && port <= 65535;
     }
 

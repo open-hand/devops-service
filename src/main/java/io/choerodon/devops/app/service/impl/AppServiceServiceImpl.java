@@ -3330,12 +3330,20 @@ public class AppServiceServiceImpl implements AppServiceService {
         uri += "devops/webhook";
         projectHookDTO.setUrl(uri);
         List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(projectId, userId);
-        if (projectHookDTOS.isEmpty()) {
-            appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createWebHook(
-                    projectId, userId, projectHookDTO)
-                    .getId()));
+        String finalUri = uri;
+        Optional<ProjectHookDTO> first = projectHookDTOS.stream().filter(v -> v.getUrl().equals(finalUri)).findFirst();
+        if (first.isPresent()) {
+            // 存在则更新
+            ProjectHookDTO projectHookDTO1 = first.get();
+            Integer hookId = projectHookDTO1.getId();
+            projectHookDTO1.setEnableSslVerification(true);
+            projectHookDTO1.setProjectId(projectId);
+            projectHookDTO1.setToken(token);
+            gitlabServiceClientOperator.updateWebHook(projectId, userId, hookId, projectHookDTO1);
+            appServiceDTO.setHookId(TypeUtil.objToLong(hookId));
         } else {
-            appServiceDTO.setHookId(TypeUtil.objToLong(projectHookDTOS.get(0).getId()));
+            // 不存在则新建
+            appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createWebHook(projectId, userId, projectHookDTO).getId()));
         }
     }
 

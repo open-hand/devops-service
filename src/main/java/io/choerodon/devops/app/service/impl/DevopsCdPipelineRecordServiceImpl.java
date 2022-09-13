@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
@@ -41,7 +40,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.host.HostAgentMsgVO;
-import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.pipeline.ExternalApprovalJobVO;
 import io.choerodon.devops.api.vo.rdupm.ProdJarInfoVO;
 import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
@@ -51,6 +49,7 @@ import io.choerodon.devops.infra.constant.DevopsHostConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.GitlabProjectDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -63,10 +62,7 @@ import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
-import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
+import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -81,119 +77,126 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecordService {
 
-    private static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
-    private static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
-    private static final String ENV = "env";
-    private static final String HOST = "host";
+    protected static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
+    protected static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    protected static final String ENV = "env";
+    protected static final String HOST = "host";
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdPipelineRecordServiceImpl.class);
 
-    private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-    private static final String CUSTOM_REPO = "CUSTOM_REPO";
-    private static final String CREATE = "create";
-    private static final BASE64Decoder decoder = new BASE64Decoder();
-
-    @Autowired
-    private DevopsCdAuditRecordService devopsCdAuditRecordService;
+    protected static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    protected static final String CUSTOM_REPO = "CUSTOM_REPO";
+    protected static final String CREATE = "create";
+    protected static final BASE64Decoder decoder = new BASE64Decoder();
 
     @Autowired
-    private DevopsCdJobRecordService devopsCdJobRecordService;
+    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
 
     @Autowired
-    private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
+    protected DevopsCdJobRecordService devopsCdJobRecordService;
 
     @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
     @Autowired
-    private DevopsCdStageRecordService devopsCdStageRecordService;
+    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
     @Autowired
-    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+    protected DevopsCdStageRecordService devopsCdStageRecordService;
 
     @Autowired
-    private RdupmClientOperator rdupmClientOperator;
+    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
     @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
+    protected RdupmClientOperator rdupmClientOperator;
 
     @Autowired
-    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    protected BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
-    private AppServiceMapper appServiceMapper;
+    protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Autowired
-    private DevopsCdAuditService devopsCdAuditService;
+    protected AppServiceMapper appServiceMapper;
 
     @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    protected DevopsCdAuditService devopsCdAuditService;
 
     @Autowired
-    private DevopsGitlabCommitService devopsGitlabCommitService;
+    protected DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
 
     @Autowired
-    private AppServiceService applicationService;
+    protected DevopsGitlabCommitService devopsGitlabCommitService;
 
     @Autowired
-    private CiPipelineMavenService ciPipelineMavenService;
+    protected AppServiceService applicationService;
 
     @Autowired
-    private TestServiceClientOperator testServiceClientoperator;
+    protected CiPipelineMavenService ciPipelineMavenService;
 
     @Autowired
-    private DevopsHostMapper devopsHostMapper;
+    protected TestServiceClientOperator testServiceClientoperator;
 
     @Autowired
-    private SshUtil sshUtil;
+    protected DevopsHostMapper devopsHostMapper;
 
     @Autowired
-    private DevopsDeployRecordService devopsDeployRecordService;
+    protected SshUtil sshUtil;
 
     @Autowired
-    private DevopsHostCommandService devopsHostCommandService;
+    protected DevopsDeployRecordService devopsDeployRecordService;
 
     @Autowired
-    private KeySocketSendHelper webSocketHelper;
-    @Autowired
-    private WorkFlowServiceOperator workFlowServiceOperator;
-    @Autowired
-    private DevopsHostAppMapper devopsHostAppMapper;
+    protected DevopsHostCommandService devopsHostCommandService;
 
     @Autowired
-    private DevopsHostAppService devopsHostAppService;
+    protected KeySocketSendHelper webSocketHelper;
+    @Autowired
+    protected WorkFlowServiceOperator workFlowServiceOperator;
+    @Autowired
+    protected DevopsHostAppMapper devopsHostAppMapper;
+
+    @Autowired
+    protected DevopsHostAppService devopsHostAppService;
     @Autowired
     @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    protected DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
-    private DevopsHostAppInstanceService devopsHostAppInstanceService;
+    protected DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
-    private DevopsCdJobService devopsCdJobService;
+    protected DevopsCdJobService devopsCdJobService;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    protected DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
     @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    protected DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
-    private DevopsDeploymentService devopsDeploymentService;
+    protected DevopsDeploymentService devopsDeploymentService;
     @Autowired
-    private AppServiceInstanceService appServiceInstanceService;
+    protected AppServiceInstanceService appServiceInstanceService;
     @Autowired
-    private HostConnectionHandler hostConnectionHandler;
+    protected HostConnectionHandler hostConnectionHandler;
     @Autowired
-    private DevopsHostService devopsHostService;
+    protected DevopsHostService devopsHostService;
     @Autowired
-    private CiPipelineImageService ciPipelineImageService;
+    protected CiPipelineImageService ciPipelineImageService;
     @Autowired
-    private DevopsDockerInstanceService devopsDockerInstanceService;
+    protected DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
-    private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
+    protected DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
-    private DockerComposeService dockerComposeService;
+    protected DockerComposeService dockerComposeService;
     @Autowired
-    private DockerComposeValueService dockerComposeValueService;
+    protected DockerComposeValueService dockerComposeValueService;
     @Autowired
     @Lazy
-    private DevopsCiPipelineService devopsCiPipelineService;
+    protected DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    @Lazy
+    protected AppServiceService appServiceService;
+    @Autowired
+    protected GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    protected AppExternalConfigService appExternalConfigService;
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
@@ -339,7 +342,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //        return regexStr;
 //    }
 
-    private String getMavenVersion(String version) {
+    protected String getMavenVersion(String version) {
         if (version.contains(SLASH)) {
             return version.split(SLASH)[0];
         } else {
@@ -364,12 +367,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    @Async
     @Transactional
     public void cdHostDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
         HostDeployPayload hostDeployPayload = new HostDeployPayload(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         DevopsCdPipelineRecordDTO pipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-
+        StringBuilder log = new StringBuilder();
         if (PipelineStatus.CANCELED.toValue().equals(pipelineRecordDTO.getStatus())) {
             return;
         }
@@ -382,26 +384,28 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
-                        .pipelineDeployImage(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                        .pipelineDeployImage(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId(), log);
             } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
-                        .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                        .pipelineDeployJar(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId(), log);
             } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
-                        .pipelineDeployDockerCompose(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                        .pipelineDeployDockerCompose(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId(), log);
             } else {
                 ApplicationContextHelper
                         .getSpringFactory()
                         .getBean(DevopsCdPipelineRecordService.class)
-                        .pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId());
+                        .pipelineCustomDeploy(hostDeployPayload.getPipelineRecordId(), hostDeployPayload.getStageRecordId(), hostDeployPayload.getJobRecordId(), log);
             }
         } catch (Exception e) {
             LOGGER.error(" deploy failed!, error msg is", e);
-            devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId, LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500));
+            log.append("Deploy app instance failed").append(System.lineSeparator());
+            log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
+            devopsCdJobRecordService.updateJobStatusFailed(cdJobRecordId, log.toString());
             devopsCdStageRecordService.updateStageStatusFailed(cdStageRecordId);
             updatePipelineStatusFailed(pipelineRecordId);
             workFlowServiceOperator.stopInstance(pipelineRecordDTO.getProjectId(), pipelineRecordDTO.getBusinessKey());
@@ -410,8 +414,15 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
+    @Override
+    @Async
+    @Transactional
+    public void cdHostDeployAsync(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+        cdHostDeploy(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log) {
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
 
         DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
@@ -545,7 +556,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public void pipelineDeployJar(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log) {
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
 
         DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
@@ -793,9 +804,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public void pipelineDeployImage(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log) {
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-
+        log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         String deployVersion = null;
         String deployObjectName = null;
         String image = null;
@@ -819,89 +830,54 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
         DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
+        log.append("Start deploy image to host: ").append(devopsHostDTO.getName()).append(System.lineSeparator());
 
-        // 0.2
-        if (imageDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
-            HarborC7nRepoImageTagVo imageTagVo = rdupmClientOperator.listImageTag(imageDeploy.getRepoType(), TypeUtil.objToLong(imageDeploy.getRepoId()), imageDeploy.getImageName(), null);
-            List<HarborC7nImageTagVo> filterImageTagVoList;
-            if (CollectionUtils.isEmpty(imageTagVo.getImageTagList())) {
-                LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
-                return;
-            } else {
-                String pattern = getRegexStr(imageDeploy);
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>> cd deploy pattern is :{}, filterImageTagVoList is : {} <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", pattern, JsonHelper.marshalByJackson(imageTagVo.getImageTagList()));
-                }
-                filterImageTagVoList = imageTagVo.getImageTagList().stream().filter(t -> Pattern.matches(pattern, t.getTagName())).collect(Collectors.toList());
-                if (CollectionUtils.isEmpty(filterImageTagVoList)) {
-                    if (LOGGER.isInfoEnabled()) {
-                        LOGGER.info("no image to deploy,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-                    }
-                    updateStatusToSkip(devopsCdPipelineRecordDTO, devopsCdJobRecordDTO);
-                    return;
-                }
-            }
-            image = filterImageTagVoList.get(0).getPullCmd().replace("docker pull", "");
-            // 设置拉取账户
+        if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
+            throw new CommonException("error.no.gitlab.pipeline.id");
+        }
+        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
+        if (ciPipelineImageDTO == null) {
+            throw new CommonException("error.deploy.images.not.exist");
+        }
+        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
+
+        // 设置拉取账户
+        if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
             dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-                    imageTagVo.getHarborUrl(),
-                    imageTagVo.getPullAccount(),
-                    imageTagVo.getPullPassword()));
-
-            deployVersion = filterImageTagVoList.get(0).getTagName();
-            deployObjectName = imageDeploy.getImageName();
+                    harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
+                    harborRepoDTO.getHarborRepoConfig().getLoginName(),
+                    harborRepoDTO.getHarborRepoConfig().getPassword()));
+            userName = harborRepoDTO.getHarborRepoConfig().getLoginName();
+            password = harborRepoDTO.getHarborRepoConfig().getPassword();
+            repoType = harborRepoDTO.getRepoType();
+            repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
         } else {
-            if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
-                throw new CommonException("error.no.gitlab.pipeline.id");
-            }
-            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
-            if (ciPipelineImageDTO == null) {
-                throw new CommonException("error.deploy.images.not.exist");
-            }
-            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
-
-            // 设置拉取账户
-            if (ciPipelineImageDTO.getRepoType().equals(CUSTOM_REPO)) {
-                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
-                        harborRepoDTO.getHarborRepoConfig().getLoginName(),
-                        harborRepoDTO.getHarborRepoConfig().getPassword()));
-                userName = harborRepoDTO.getHarborRepoConfig().getLoginName();
-                password = harborRepoDTO.getHarborRepoConfig().getPassword();
-                repoType = harborRepoDTO.getRepoType();
-                repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
-
-
-            } else {
-                dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
-                        harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
-                        harborRepoDTO.getPullRobot().getName(),
-                        harborRepoDTO.getPullRobot().getToken()));
-                repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
-                repoName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-                repoType = harborRepoDTO.getRepoType();
-            }
-
-            // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
-            String imageTag = ciPipelineImageDTO.getImageTag();
-            int indexOf = imageTag.lastIndexOf(":");
-            String imageVersion = imageTag.substring(indexOf + 1);
-            String repoImageName = imageTag.substring(0, indexOf);
-            tag = imageVersion;
-
-            image = ciPipelineImageDTO.getImageTag();
-            deployVersion = imageVersion;
-            deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
+            dockerDeployDTO.setDockerPullAccountDTO(new DockerPullAccountDTO(
+                    harborRepoDTO.getHarborRepoConfig().getRepoUrl(),
+                    harborRepoDTO.getPullRobot().getName(),
+                    harborRepoDTO.getPullRobot().getToken()));
+            repoId = harborRepoDTO.getHarborRepoConfig().getRepoId();
+            repoName = harborRepoDTO.getHarborRepoConfig().getRepoName();
+            repoType = harborRepoDTO.getRepoType();
         }
 
-        // 1. 更新状态 记录镜像信息
-        // 保存 应用服务与主机之间的关系
-        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, devopsCdHostDeployInfoDTO, hostId);
+        // 添加应用服务名用于部署记录  iamgeTag:172.23.xx.xx:30003/dev-25-test-25-4/go:2021.5.17-155211-master
+        String imageTag = ciPipelineImageDTO.getImageTag();
+        int indexOf = imageTag.lastIndexOf(":");
+        String imageVersion = imageTag.substring(indexOf + 1);
+        String repoImageName = imageTag.substring(0, indexOf);
+        tag = imageVersion;
+        image = ciPipelineImageDTO.getImageTag();
+        deployVersion = imageVersion;
+        deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
 
+        log.append("Deploy image is: ").append(imageTag).append(System.lineSeparator());
+        log.append("Container name is: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
+
+        // 1. 更新状态 记录镜像信息
+        DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, devopsCdHostDeployInfoDTO, hostId);
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
-
         if (devopsDockerInstanceDTO == null) {
             // 新建实例
             devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
@@ -918,8 +894,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsDockerInstanceDTO.setUserName(userName);
             devopsDockerInstanceDTO.setRepoType(repoType);
             devopsDockerInstanceDTO.setTag(tag);
-
-
             MapperUtil.resultJudgedInsertSelective(devopsDockerInstanceMapper, devopsDockerInstanceDTO, DevopsHostConstants.ERROR_SAVE_DOCKER_INSTANCE_FAILED);
             // 保存应用实例关系
             // 保存appId
@@ -938,10 +912,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsHostCommandDTO.setInstanceId(devopsDockerInstanceDTO.getId());
         devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-
-        //跟新commond id
-        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
-        devopsCdJobRecordMapper.updateByPrimaryKey(devopsCdJobRecordDTO);
 
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
@@ -970,9 +940,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
-        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-
         // 4. 发送部署指令给agent
+        log.append("Sending deploy command to agent.").append(System.lineSeparator());
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
@@ -987,14 +956,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
 
+        log.append("Sending deploy command to agent success.").append(System.lineSeparator());
+
+        devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
+        devopsCdJobRecordDTO.setLog(log.toString());
+        devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
+        devopsCdJobRecordService.update(devopsCdJobRecordDTO);
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
+    public void pipelineDeployDockerCompose(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log) {
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{},cdStageRecordId:{},cdJobRecordId{}", pipelineRecordId, cdStageRecordId, cdJobRecordId);
-
-        StringBuilder log = new StringBuilder();
 
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
@@ -1076,7 +1049,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {
+    protected DevopsHostAppDTO getDevopsHostAppDTO(Long projectId, DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO, Long hostId) {
         if (org.apache.commons.lang3.StringUtils.equals(CREATE, devopsCdHostDeployInfoDTO.getDeployType())) {
             DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO();
             devopsHostAppDTO.setRdupmType(RdupmTypeEnum.DOCKER.value());
@@ -1100,7 +1073,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
+    protected String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
         String regexStr = null;
         if (!org.springframework.util.StringUtils.isEmpty(imageDeploy.getMatchType())
                 && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
@@ -1126,7 +1099,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return regexStr;
     }
 
-    private void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
+    protected void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         Long cdJobRecordId = devopsCdJobRecordDTO.getId();
         Long projectId = devopsCdPipelineRecordDTO.getProjectId();
         Long pipelineRecordId = devopsCdPipelineRecordDTO.getId();
@@ -1149,10 +1122,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //                    .getBean(DevopsCdPipelineRecordService.class)
 //                    .pipelineDeployImage(pipelineRecordId, cdStageRecordId, cdJobRecordId);
         } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            ApplicationContextHelper
-                    .getSpringFactory()
-                    .getBean(DevopsCdPipelineRecordService.class)
-                    .pipelineDeployJar(pipelineRecordId, cdStageRecordId, cdJobRecordId);
+//            ApplicationContextHelper
+//                    .getSpringFactory()
+//                    .getBean(DevopsCdPipelineRecordService.class)
+//                    .pipelineDeployJar(pipelineRecordId, cdStageRecordId, cdJobRecordId, log);
         }
     }
 
@@ -1275,13 +1248,23 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
 
-    private void addCommitInfo(Long appServiceId, DevopsCdPipelineRecordVO devopsCPipelineRecordVO, DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
+    protected void addCommitInfo(Long appServiceId, DevopsCdPipelineRecordVO devopsCPipelineRecordVO, DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO) {
         DevopsGitlabCommitDTO devopsGitlabCommitDTO = devopsGitlabCommitService.baseQueryByShaAndRef(devopsCdPipelineRecordDTO.getCommitSha(), devopsCdPipelineRecordDTO.getRef());
 
         CustomCommitVO customCommitVO = new CustomCommitVO();
         devopsCPipelineRecordVO.setCommit(customCommitVO);
 
-        customCommitVO.setGitlabProjectUrl(applicationService.calculateGitlabProjectUrlWithSuffix(appServiceId));
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        String gitlabProjectUrl;
+        if (appServiceDTO.getExternalConfigId() != null) {
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            gitlabProjectUrl = appExternalConfigDTO.getRepositoryUrl();
+        } else {
+            GitlabProjectDTO gitlabProjectDTO = gitlabServiceClientOperator.queryProjectById(appServiceDTO.getGitlabProjectId());
+            gitlabProjectUrl = gitlabProjectDTO.getWebUrl();
+        }
+
+        customCommitVO.setGitlabProjectUrl(gitlabProjectUrl);
 
         // 可能因为GitLab webhook 失败, commit信息查不出
         if (devopsGitlabCommitDTO == null) {
@@ -1303,7 +1286,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    private void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
+    protected void calculateJob(List<DevopsCdJobRecordVO> devopsCdJobRecordVOS) {
         devopsCdJobRecordVOS.forEach(devopsCdJobRecordVO -> {
             //如果是自动部署返回 能点击查看生成实例的相关信息
             if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobRecordVO.getType())) {
@@ -1373,17 +1356,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordVO.getType())) {
                 // 指定审核人员 已审核人员 审核状态
                 DevopsCdJobRecordVO.Audit audit = devopsCdJobRecordVO.new Audit();
-                List<DevopsCdAuditDTO> devopsCdAuditDTOS = devopsCdAuditService.baseListByOptions(null, null, devopsCdJobRecordVO.getJobId());
-                if (!CollectionUtils.isEmpty(devopsCdAuditDTOS)) {
-                    List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditDTOS.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toList()));
-                    audit.setAppointUsers(iamUserDTOS);
-                }
                 List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(devopsCdJobRecordVO.getId());
                 if (!CollectionUtils.isEmpty(devopsCdAuditRecordDTOS)) {
+                    List<Long> uids = devopsCdAuditRecordDTOS.stream().map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList());
+                    List<IamUserDTO> allIamUserDTOS = baseServiceClientOperator.listUsersByIds(uids);
+
                     List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(devopsCdAuditRecordDTOS.stream()
                             .filter(devopsCdAuditRecordDTO -> AuditStatusEnum.PASSED.value().equals(devopsCdAuditRecordDTO.getStatus()) || AuditStatusEnum.REFUSED.value().equals(devopsCdAuditRecordDTO.getStatus()))
                             .map(DevopsCdAuditRecordDTO::getUserId).collect(Collectors.toList()));
                     audit.setReviewedUsers(iamUserDTOS);
+                    audit.setAppointUsers(allIamUserDTOS);
                     audit.setStatus(devopsCdJobRecordVO.getStatus());
                 }
                 devopsCdJobRecordVO.setAudit(audit);
@@ -1490,6 +1472,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (PipelineStatus.NOT_AUDIT.toValue().equals(devopsCdPipelineRecordDTO.getStatus())) {
                 addAuditStateInfo(devopsCdPipelineRecordVO);
             }
+            devopsCdStageRecordVOS.forEach(devopsCdStageRecordVO -> {
+                List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordService.queryByStageRecordId(devopsCdStageRecordVO.getId());
+                List<DevopsCdJobRecordVO> devopsCdJobRecordVOS = ConvertUtils.convertList(devopsCdJobRecordDTOS, DevopsCdJobRecordVO.class);
+
+                //计算stage耗时
+                List<Long> collect = devopsCdJobRecordVOS.stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).collect(Collectors.toList());
+                if (!CollectionUtils.isEmpty(collect))
+                    devopsCdStageRecordVO.setDurationSeconds(collect.stream().reduce((aLong, aLong2) -> aLong + aLong2).get());
+            });
+
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
         } else {
             devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());

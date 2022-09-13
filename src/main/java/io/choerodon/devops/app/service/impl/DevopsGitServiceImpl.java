@@ -1,19 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
-import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
-
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +19,18 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
+
+import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
+import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -149,6 +149,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private AppExternalConfigService appExternalConfigService;
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -970,6 +972,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
                     // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                } else if (ResourceType.INGRESS.getType().equals(type)) {
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+                    if (operateForOldTypeIngress) {
+                        currentHandler = converters.get(ResourceType.V1BETA1_INGRESS.getType());
+                    } else {
+                        currentHandler = converters.get(ResourceType.V1_INGRESS.getType());
+                    }
                 } else {
                     currentHandler = converters.get(type);
                     if (currentHandler == null) {

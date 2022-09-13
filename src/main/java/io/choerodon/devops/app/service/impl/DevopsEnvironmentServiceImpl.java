@@ -67,16 +67,16 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
     /**
      * 集群对应的环境name clusterName-env
      */
     private static final String SYSTEM_ENV_NAME = "%s-env";
 
     private static final Gson gson = new Gson();
-    private static final String MASTER = "master";
-    private static final String README = "README.md";
-    private static final String README_CONTENT = "# This is gitops env repository!";
+    protected static final String MASTER = "master";
+    protected static final String README = "README.md";
+    protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
     private static final String ERROR_CODE_EXIST = "error.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
@@ -88,7 +88,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     /**
      * gitlab用于环境库的webhook地址
      */
-    private String gitOpsWebHookUrl;
+    protected String gitOpsWebHookUrl;
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -281,6 +281,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userAttrDTO.getIamUserId());
                     gitlabProjectPayload.setLoginName(iamUserDTO.getLoginName());
                     gitlabProjectPayload.setRealName(iamUserDTO.getRealName());
+                    gitlabProjectPayload.setIamUserId(userAttrDTO.getIamUserId());
                     gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
                     gitlabProjectPayload.setIamProjectId(projectId);
                     gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
@@ -393,7 +394,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return sort(devopsEnvironmentRepVOS).get(groupId);
     }
 
-    private Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
+    @Override
+    public Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS) {
 
         devopsEnvironmentRepDTOS.forEach(devopsEnvironmentRepDTO -> {
             if (devopsEnvironmentRepDTO.getDevopsEnvGroupId() == null) {
@@ -715,7 +717,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return ConvertUtils.convertObject(baseUpdate(toUpdate), DevopsEnvironmentUpdateVO.class);
     }
 
-    private void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
+    @Override
+    public void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t) {
         t.setConnected(upgradeEnvList.contains(t.getClusterId()));
     }
 
@@ -856,7 +859,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-    private void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
+    protected void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
         DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
         condition.setGitlabEnvProjectId(gitlabProjectId);
         CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "error.gitlab.project.associated.with.other.env");
@@ -995,7 +998,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * @param gitlabProjectId gitlab project id
      * @param gitlabUserId    gitlab user id
      */
-    private void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
+    @Override
+    public void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId) {
         // 删除组和用户之间的关系，如果存在
         MemberDTO memberDTO = gitlabServiceClientOperator.queryGroupMember(gitlabGroupId, TypeUtil.objToInteger(gitlabUserId));
         if (memberDTO != null) {

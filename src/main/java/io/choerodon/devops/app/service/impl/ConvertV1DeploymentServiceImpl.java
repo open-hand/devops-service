@@ -19,9 +19,9 @@ import io.choerodon.devops.infra.util.FileUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
-public class ConvertV1beta2DeploymentServiceImpl extends ConvertK8sObjectService<DevopsDeploymentDTO> {
+public class ConvertV1DeploymentServiceImpl extends ConvertK8sObjectService<DevopsDeploymentDTO> {
 
-    public ConvertV1beta2DeploymentServiceImpl() {
+    public ConvertV1DeploymentServiceImpl() {
         super(DevopsDeploymentDTO.class);
     }
 
@@ -37,7 +37,7 @@ public class ConvertV1beta2DeploymentServiceImpl extends ConvertK8sObjectService
     }
 
 //    @Override
-//    public void checkParameters(V1beta2Deployment v1beta2Deployment, Map<String, String> objectPath) {
+//    public void checkParameters(V1Deployment v1beta2Deployment, Map<String, String> objectPath) {
 //        String filePath = objectPath.get(TypeUtil.objToString(v1beta2Deployment.hashCode()));
 //        if (v1beta2Deployment.getMetadata() == null) {
 //            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_META_DATA_NOT_FOUND.getError(), filePath);

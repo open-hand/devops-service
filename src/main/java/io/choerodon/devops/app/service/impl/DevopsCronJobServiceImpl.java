@@ -1,17 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
-
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta1CronJob;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1beta1CronJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +12,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -89,7 +89,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
 
                 cronJobInfoVO.setActive(v1beta1CronJob.getStatus().getActive() == null ? 0 : v1beta1CronJob.getStatus().getActive().size());
                 cronJobInfoVO.setSchedule(v1beta1CronJob.getSpec().getSchedule());
-                cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().isSuspend());
+                cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().getSuspend());
                 cronJobInfoVO.setLabels(v1beta1CronJob.getMetadata().getLabels());
                 cronJobInfoVO.setCreationTimestamp(v1beta1CronJob.getMetadata().getCreationTimestamp().toString());
                 List<Integer> portRes = new ArrayList<>();
@@ -103,7 +103,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                 }
                 cronJobInfoVO.setPorts(portRes);
                 if (v1beta1CronJob.getStatus() != null && v1beta1CronJob.getStatus().getLastScheduleTime() != null) {
-                    cronJobInfoVO.setLastScheduleTime(v1beta1CronJob.getStatus().getLastScheduleTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    cronJobInfoVO.setLastScheduleTime(v1beta1CronJob.getStatus().getLastScheduleTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
                     cronJobInfoVO.setLastScheduleTime(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));

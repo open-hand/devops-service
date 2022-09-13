@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.validator;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,8 +29,6 @@ public class DevopsServiceValidator {
     // ip
     private static final String IP_PATTERN =
             String.format("(%s\\.%s\\.%s\\.%s)", NUM_0_255, NUM_0_255, NUM_0_255, NUM_0_255);
-    // ip,ip,ip ...
-    private static final String EXTERNAL_IP_PATTERN = String.format("(%s,)*%s", IP_PATTERN, IP_PATTERN);
 
     //service name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
@@ -47,9 +46,16 @@ public class DevopsServiceValidator {
     public static void checkService(DevopsServiceReqVO devopsServiceReqVO, Long targetServiceId) {
         devopsServiceReqVO.getPorts().forEach(DevopsServiceValidator::checkPorts);
         checkName(devopsServiceReqVO.getName());
-        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())
-                && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqVO.getExternalIp())) {
-            throw new CommonException("error.externalIp.notMatch");
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
+            if (devopsServiceReqVO.getExternalIp().startsWith(",")) {
+                devopsServiceReqVO.setExternalIp(devopsServiceReqVO.getExternalIp().substring(1));
+            }
+            String[] ips = devopsServiceReqVO.getExternalIp().split(",");
+            Arrays.asList(ips).forEach(ip -> {
+                if (!ObjectUtils.isEmpty(ip) && !Pattern.matches(IP_PATTERN, ip)) {
+                    throw new CommonException("error.externalIp.notMatch");
+                }
+            });
         }
         checkIPAndPortUnique(devopsServiceReqVO, targetServiceId);
     }
@@ -64,7 +70,7 @@ public class DevopsServiceValidator {
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }
-        if (!checkPort(Long.valueOf(port.getTargetPort()))) {
+        if (!checkPort(Integer.valueOf(port.getTargetPort()))) {
             throw new CommonException("error.targetPort.illegal");
         }
         if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
@@ -73,7 +79,7 @@ public class DevopsServiceValidator {
 
     }
 
-    private static Boolean checkPort(Long port) {
+    private static Boolean checkPort(Integer port) {
         return port >= 0 && port <= 65535;
     }
 
@@ -92,7 +98,7 @@ public class DevopsServiceValidator {
                         List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
                         });
                         portMapVOList.forEach(portMapVO -> {
-                            Long port = portMapVO.getPort();
+                            Integer port = portMapVO.getPort();
                             String externalIp = s.getExternalIp();
                             devopsServiceReqVO.getPorts().forEach(p -> {
                                 if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
@@ -113,7 +119,7 @@ public class DevopsServiceValidator {
                         List<PortMapVO> portMapVOList = JsonHelper.unmarshalByJackson(s.getPorts(), new TypeReference<List<PortMapVO>>() {
                         });
                         portMapVOList.forEach(portMapVO -> {
-                            Long nodePort = portMapVO.getNodePort();
+                            Integer nodePort = portMapVO.getNodePort();
                             if (nodePort != null) {
                                 devopsServiceReqVO.getPorts().forEach(p -> {
                                     if (Objects.equals(nodePort, p.getNodePort())) {

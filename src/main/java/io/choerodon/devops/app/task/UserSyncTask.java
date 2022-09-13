@@ -17,7 +17,7 @@ import io.choerodon.devops.infra.enums.UserSyncType;
  * @author zmf
  * @since 2020/12/30
  */
-@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(value = "devops.user.sync", havingValue = "true", matchIfMissing = true)
 @Order(300)
 @Component
 public class UserSyncTask implements CommandLineRunner {

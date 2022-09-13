@@ -171,6 +171,10 @@ public class GitlabServiceClientOperator {
         return memberDTO;
     }
 
+    public Page<MemberDTO> pageMember(Integer groupId, Integer page, Integer size, String search, Integer userId) {
+        return gitlabServiceClient.pageMember(groupId, page, size, userId, search).getBody();
+    }
+
     public void deleteGroupMember(Integer groupId, Integer userId) {
         gitlabServiceClient.deleteMember(groupId, userId);
     }
@@ -532,6 +536,15 @@ public class GitlabServiceClientOperator {
     public ProjectHookDTO createWebHook(Integer projectId, Integer userId, ProjectHookDTO projectHookDTO) {
         try {
             return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
+        } catch (Exception e) {
+            throw new CommonException("error.projecthook.create", e);
+
+        }
+    }
+
+    public ProjectHookDTO updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
+        try {
+            return gitlabServiceClient.updateWebHook(projectId, userId, hookId, projectHookDTO).getBody();
         } catch (Exception e) {
             throw new CommonException("error.projecthook.create", e);
 
@@ -1231,6 +1244,16 @@ public class GitlabServiceClientOperator {
         return memberDTO;
     }
 
+    public MemberDTO getProjectAllMember(Integer projectId, Integer userId) {
+
+        MemberDTO memberDTO = gitlabServiceClient.getProjectAllMember(
+                projectId, userId).getBody();
+        if (memberDTO == null || memberDTO.getId() == null) {
+            return null;
+        }
+        return memberDTO;
+    }
+
 
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {
         try {
@@ -1584,6 +1607,15 @@ public class GitlabServiceClientOperator {
                                               String search,
                                               List<Integer> skipGroups) {
         return gitlabServiceClient.listGroupsWithParam(userId, owned, search, skipGroups).getBody();
+    }
+
+    public Page<GroupDTO> pagingGroupsWithParam(Integer userId,
+                                                Boolean owned,
+                                                String search,
+                                                Integer page,
+                                                Integer size,
+                                                List<Integer> skipGroups) {
+        return gitlabServiceClient.pagingGroupWithParam(userId, owned, search, page, size, skipGroups).getBody();
     }
 
     public List<GitlabProjectDTO> listProject(Integer groupId,

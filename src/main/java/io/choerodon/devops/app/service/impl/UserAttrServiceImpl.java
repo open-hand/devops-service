@@ -199,7 +199,7 @@ public class UserAttrServiceImpl implements UserAttrService {
             return iamUserDTO;
         }).collect(Collectors.toList());
 
-        Page<IamUserDTO> page = PageInfoUtil.createPageFromList(userDTOS, pageRequest);
+        Page<IamUserDTO> page = PageInfoUtil.doPageFromList(userDTOS, pageRequest);
 
         List<Long> userIds = page.getContent().stream().map(IamUserDTO::getId).collect(Collectors.toList());
         List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);

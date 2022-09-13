@@ -112,6 +112,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Autowired
     private AppServiceService applicationService;
     @Autowired
+    @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
 
     @Autowired
@@ -1653,7 +1654,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
 
     @Override
     @Transactional
-    public void hostDeployStatusUpdate(Long jobRecordId, Boolean status, String error) {
+    public void hostDeployStatusUpdate(Long commandId, Long jobRecordId, Boolean status, String error) {
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(jobRecordId);
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordService.queryById(devopsCdJobRecordDTO.getStageRecordId());
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryById(devopsCdStageRecordDTO.getPipelineRecordId());

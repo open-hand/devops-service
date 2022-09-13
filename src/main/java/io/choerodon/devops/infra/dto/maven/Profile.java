@@ -13,7 +13,16 @@ public class Profile {
     private Activation activation;
     private List<Repository> repositories;
 
+    private List<PluginRepository> pluginRepositories;
+
     public Profile() {
+    }
+
+    public Profile(String id, Activation activation, List<Repository> repositories, List<PluginRepository> pluginRepositories) {
+        this.id = id;
+        this.activation = activation;
+        this.repositories = repositories;
+        this.pluginRepositories = pluginRepositories;
     }
 
     public Profile(String id, Activation activation, List<Repository> repositories) {
@@ -38,6 +47,16 @@ public class Profile {
 
     public void setRepositories(List<Repository> repositories) {
         this.repositories = repositories;
+    }
+
+    @XmlElement(name = "pluginRepository")
+    @XmlElementWrapper(name = "pluginRepositories")
+    public List<PluginRepository> getPluginRepositories() {
+        return pluginRepositories;
+    }
+
+    public void setPluginRepositories(List<PluginRepository> pluginRepositories) {
+        this.pluginRepositories = pluginRepositories;
     }
 
     public String getId() {

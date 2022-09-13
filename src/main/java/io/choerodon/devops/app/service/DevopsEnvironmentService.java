@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
@@ -34,6 +35,8 @@ public interface DevopsEnvironmentService {
      * @return
      */
     List<DevopsEnvironmentRepVO> listByGroup(Long projectId, Long groupId);
+
+    Map<Long, List<DevopsEnvironmentRepVO>> sort(List<DevopsEnvironmentRepVO> devopsEnvironmentRepDTOS);
 
     /**
      * 项目下查询环境
@@ -146,6 +149,8 @@ public interface DevopsEnvironmentService {
 
     void initUserPermissionWhenCreatingEnv(EnvGitlabProjectPayload gitlabProjectPayload, Long envId, Long projectId);
 
+    void updateGitlabMemberPermission(Integer gitlabGroupId, Integer gitlabProjectId, Integer gitlabUserId);
+
     EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId);
 
     /**
@@ -228,6 +233,8 @@ public interface DevopsEnvironmentService {
      */
     DevopsEnvironmentRepVO queryByCode(Long projectId, String code);
 
+
+    void setEnvStatus(List<Long> upgradeEnvList, DevopsEnvironmentDTO t);
 
     /**
      * 重试GitOps同步
