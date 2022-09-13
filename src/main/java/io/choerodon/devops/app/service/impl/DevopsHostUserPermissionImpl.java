@@ -84,7 +84,8 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return;
         }
         // 检查用户有权限（只要有权限标签，就代表有使用权限）
-        if (!StringUtils.isEmpty(devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId))) {
+        List<String> stringList = devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId);
+        if (!CollectionUtils.isEmpty(stringList)) {
             return;
         }
         // 抛出异常
@@ -103,8 +104,8 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return;
         }
         // 检查用户有主机管理权限（必须拥有administrator标签，才有管理权限）
-        String permissionLabel = devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId);
-        if (DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue().equals(permissionLabel)) {
+        List<String> labels = devopsHostUserPermissionMapper.queryPermissionLabelByHostIdAndUserId(devopsHostDTO.getId(), userId);
+        if (!CollectionUtils.isEmpty(labels) && labels.contains(DevopsHostUserPermissionLabelEnums.ADMINISTRATOR.getValue())) {
             return;
         }
         // 抛出异常
