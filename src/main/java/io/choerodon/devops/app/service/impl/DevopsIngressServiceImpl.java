@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.common.KubernetesObject;
@@ -22,6 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -470,6 +470,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        boolean operateForOldTypeIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE);
 
         // 更新ingress
@@ -522,19 +524,35 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
-            ResourceConvertToYamlHandler<V1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-            V1Ingress v1beta1Ingress = new V1Ingress();
-            V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-            v1ObjectMeta.setName(ingressDO.getName());
-            v1beta1Ingress.setMetadata(v1ObjectMeta);
-            resourceConvertToYamlHandler.setType(v1beta1Ingress);
-            Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
-            resourceConvertToYamlHandler.operationEnvGitlabFile(
-                    null,
-                    gitlabEnvProjectId,
-                    DELETE,
-                    userAttrDTO.getGitlabUserId(),
-                    ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);
+            if (operateForOldTypeIngress) {
+                ResourceConvertToYamlHandler<V1beta1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
+                V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+                v1ObjectMeta.setName(ingressDO.getName());
+                v1beta1Ingress.setMetadata(v1ObjectMeta);
+                resourceConvertToYamlHandler.setType(v1beta1Ingress);
+                Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+                resourceConvertToYamlHandler.operationEnvGitlabFile(
+                        null,
+                        gitlabEnvProjectId,
+                        DELETE,
+                        userAttrDTO.getGitlabUserId(),
+                        ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);
+            }else{
+                ResourceConvertToYamlHandler<V1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                V1Ingress v1beta1Ingress = new V1Ingress();
+                V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+                v1ObjectMeta.setName(ingressDO.getName());
+                v1beta1Ingress.setMetadata(v1ObjectMeta);
+                resourceConvertToYamlHandler.setType(v1beta1Ingress);
+                Integer gitlabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId());
+                resourceConvertToYamlHandler.operationEnvGitlabFile(
+                        null,
+                        gitlabEnvProjectId,
+                        DELETE,
+                        userAttrDTO.getGitlabUserId(),
+                        ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);
+            }
         }
 
         //删除域名成功发送web hook json
