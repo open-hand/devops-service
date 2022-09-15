@@ -750,7 +750,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
 
-    private void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
+    protected void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         DevopsDeployInfoVO devopsDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsDeployInfoVO.class);
         if (devopsCdEnvDeployInfoDTO.getAppConfigJson() != null) {
