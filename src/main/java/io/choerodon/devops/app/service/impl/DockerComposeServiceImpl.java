@@ -120,7 +120,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     @Transactional
-    public DevopsHostCommandDTO updateDockerComposeApp(Long projectId, Long appId, @Nullable Long cdJobRecordId, DockerComposeDeployVO dockerComposeDeployVO) {
+    public DevopsHostCommandDTO updateDockerComposeApp(Long projectId,
+                                                       Long appId,
+                                                       @Nullable Long cdJobRecordId,
+                                                       DockerComposeDeployVO dockerComposeDeployVO,
+                                                       Boolean fromPipeline) {
         // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
@@ -160,7 +164,9 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         boolean downFlag = isRemoveService(currentValue, value);
 
         // 更新应用信息
-        devopsHostAppDTO.setRunCommand(runCommand);
+        if (Boolean.FALSE.equals(fromPipeline)) {
+            devopsHostAppDTO.setRunCommand(runCommand);
+        }
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
@@ -209,7 +215,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         dockerComposeDeployVO.setRunCommand(devopsHostAppDTO.getRunCommand());
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
-        updateDockerComposeApp(projectId, appId, null, dockerComposeDeployVO);
+        updateDockerComposeApp(projectId, appId, null, dockerComposeDeployVO, false);
     }
 
     @Override
