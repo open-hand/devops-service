@@ -167,10 +167,10 @@
                 and dha.host_id = #{hostId}
             </if>
             <if test="operationType != null">
-                and dha.operationType = #{operationType}
+                and dha.operation_type = #{operationType}
             </if>
             <if test="rdupmType != null">
-                and dha.rdupmType = #{rdupmType}
+                and dha.rdupm_type = #{rdupmType}
             </if>
             <if test="params != null">
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
@@ -210,10 +210,10 @@
                 and dha.host_id = #{hostId}
             </if>
             <if test="operationType != null">
-                and dha.operationType = #{operationType}
+                and dha.operation_type = #{operationType}
             </if>
             <if test="rdupmType != null">
-                and dha.rdupmType = #{rdupmType}
+                and dha.rdupm_type = #{rdupmType}
             </if>
             <if test="params != null">
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
@@ -284,10 +284,10 @@
                 and dha.host_id = #{hostId}
             </if>
             <if test="operationType != null">
-                and dha.operationType = #{operationType}
+                and dha.operation_type = #{operationType}
             </if>
             <if test="rdupmType != null">
-                and dha.rdupmType = #{rdupmType}
+                and dha.rdupm_type = #{rdupmType}
             </if>
             <if test="params != null">
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
