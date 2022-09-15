@@ -3,10 +3,7 @@ package io.choerodon.devops.app.task;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import com.google.gson.Gson;
 import okhttp3.ResponseBody;
@@ -16,6 +13,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
@@ -71,16 +69,16 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-//            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
-//            devopsHelmConfigDTO.setUrl(servicesHelmUrl);
-//            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
-//            // 只有helm的用户名密码都设置了, 才设置到数据库中
-//            if (StringUtils.hasText(servicesHelmUserName) && StringUtils.hasText(servicesHelmPassword)) {
-//                devopsHelmConfigDTO.setUsername(servicesHelmUserName);
-//                devopsHelmConfigDTO.setPassword(servicesHelmPassword);
-//                devopsHelmConfigDTO.setRepoPrivate(Boolean.TRUE);
-//            }
-//            initHelmConfig(devopsHelmConfigDTO);
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setUrl(servicesHelmUrl);
+            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
+            // 只有helm的用户名密码都设置了, 才设置到数据库中
+            if (StringUtils.hasText(servicesHelmUserName) && StringUtils.hasText(servicesHelmPassword)) {
+                devopsHelmConfigDTO.setUsername(servicesHelmUserName);
+                devopsHelmConfigDTO.setPassword(servicesHelmPassword);
+                devopsHelmConfigDTO.setRepoPrivate(Boolean.TRUE);
+            }
+            initHelmConfig(devopsHelmConfigDTO);
 
             if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
                 createSonarToken();
