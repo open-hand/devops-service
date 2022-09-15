@@ -954,7 +954,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 StartSagaBuilder
                         .newBuilder()
                         .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(appServiceDTO.getId())
+                        .withSourceId(projectId)
                         .withRefType("app")
                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_DELETE_APPLICATION_SERVICE_VERSION),
                 builder -> builder
