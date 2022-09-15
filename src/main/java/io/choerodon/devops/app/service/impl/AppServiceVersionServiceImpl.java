@@ -930,9 +930,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 deleteImagetags.add(harborImageTagDTO);
             }
             // 计算删除chart列表
-            ChartTagVO chartTagVO = caculateChartTag(tenant.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode(), appServiceVersionDTO);
-            chartTagVO.setTenantId(tenant.getTenantId());
-            chartTagVO.setProjectId(projectDTO.getId());
+            ChartTagVO chartTagVO = new ChartTagVO();
+            chartTagVO.setChartName(appServiceDTO.getCode());
+            chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
+            chartTagVO.setHelmConfigId(appServiceHelmVersionDTO.getHelmConfigId());
+            chartTagVO.setRepository(appServiceHelmVersionDTO.getRepository());
             deleteChartTags.add(chartTagVO);
 
             // 删除应用服务版本
@@ -1142,7 +1144,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         chartTagVO.setProjectCode(projectCode);
         chartTagVO.setChartName(chartName);
         chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
-        chartTagVO.setRepository(appServiceVersionDTO.getRepository());
         chartTagVO.setAppServiceId(appServiceVersionDTO.getAppServiceId());
         return chartTagVO;
     }
