@@ -919,27 +919,28 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             // 查询应用服务版本
             AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(id);
             AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
-            // 删除value
-            appServiceVersionValueService.baseDeleteById(appServiceHelmVersionDTO.getValueId());
-            // 删除readme
-            appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceHelmVersionDTO.getReadmeValueId());
-
-            // 计算删除harbor镜像列表
-            if (DEFAULT_REPO.equals(appServiceHelmVersionDTO.getHarborRepoType())) {
-                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceHelmVersionDTO.getImage());
-                deleteImagetags.add(harborImageTagDTO);
+            if (appServiceHelmVersionDTO != null) {
+                // 删除value
+                appServiceVersionValueService.baseDeleteById(appServiceHelmVersionDTO.getValueId());
+                // 删除readme
+                appServiceVersionReadmeMapper.deleteByPrimaryKey(appServiceHelmVersionDTO.getReadmeValueId());
+                // 计算删除chart列表
+                ChartTagVO chartTagVO = new ChartTagVO();
+                chartTagVO.setChartName(appServiceDTO.getCode());
+                chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
+                chartTagVO.setHelmConfigId(appServiceHelmVersionDTO.getHelmConfigId());
+                chartTagVO.setRepository(appServiceHelmVersionDTO.getRepository());
+                deleteChartTags.add(chartTagVO);
+                // 删除应用服务版本
+                appServiceHelmVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
             }
-            // 计算删除chart列表
-            ChartTagVO chartTagVO = new ChartTagVO();
-            chartTagVO.setChartName(appServiceDTO.getCode());
-            chartTagVO.setChartVersion(appServiceVersionDTO.getVersion());
-            chartTagVO.setHelmConfigId(appServiceHelmVersionDTO.getHelmConfigId());
-            chartTagVO.setRepository(appServiceHelmVersionDTO.getRepository());
-            deleteChartTags.add(chartTagVO);
+            AppServiceImageVersionDTO appServiceImageVersionDTO = appServiceImageVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+            if (appServiceImageVersionDTO != null && DEFAULT_REPO.equals(appServiceImageVersionDTO.getHarborRepoType())) {
+                HarborImageTagDTO harborImageTagDTO = caculateHarborImageTagDTO(appServiceDTO.getProjectId(), appServiceImageVersionDTO.getImage());
+                deleteImagetags.add(harborImageTagDTO);
+                appServiceImageVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
+            }
 
-            // 删除应用服务版本
-            appServiceHelmVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
-            appServiceImageVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
             appServiceMavenVersionService.deleteByAppServiceVersionId(appServiceVersionDTO.getId());
             appServiceVersionMapper.deleteByPrimaryKey(appServiceVersionDTO.getId());
         });
