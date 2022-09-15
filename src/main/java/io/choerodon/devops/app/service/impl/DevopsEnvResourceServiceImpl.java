@@ -580,8 +580,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
     @Override
-    public DevopsEnvResourceDTO baseQueryByKindAndName(String kind, String name) {
-        return devopsEnvResourceMapper.queryLatestJob(kind, name);
+    public DevopsEnvResourceDTO baseQueryByKindAndName(Long envId, String kind, String name) {
+        return devopsEnvResourceMapper.queryLatestJob(envId, kind, name);
     }
 
     @Override

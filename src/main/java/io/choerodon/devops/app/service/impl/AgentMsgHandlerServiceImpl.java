@@ -1143,15 +1143,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void helmJobEvent(String msg) {
+    public void helmJobEvent(String key, String msg, Long clusterId) {
         try {
+            Long envId = getEnvId(key, clusterId);
             Event event = JSONArray.parseObject(msg, Event.class);
             if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
                 event.getInvolvedObject().setKind(ResourceType.JOB.getType());
                 event.getInvolvedObject().setName(
                         event.getInvolvedObject().getName()
                                 .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
-                insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
+                insertDevopsCommandEvent(envId, event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
             }
         } catch (Exception e) {
             LOGGER.info("job event:{}", msg);
@@ -1161,16 +1162,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void helmPodEvent(String msg) {
+    public void helmPodEvent(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.HELM);
+        insertDevopsCommandEvent(envId, event, ResourceType.POD.getType(), PodSourceEnums.HELM);
     }
 
     @Transactional
     @Override
-    public void workloadPodEvent(String msg) {
+    public void workloadPodEvent(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
+        insertDevopsCommandEvent(envId, event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
     }
 
     @Override
@@ -1736,9 +1739,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 
-    private void insertDevopsCommandEvent(Event event, String type, PodSourceEnums source) {
+    private void insertDevopsCommandEvent(Long envId, Event event, String type, PodSourceEnums source) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
-                .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+                .baseQueryByKindAndName(envId, event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
         if (devopsEnvResourceDTO == null) {
             // TODO 0.21版本修复Agent没有过滤非平台的Pod和Job的问题
@@ -2320,7 +2323,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private Long getEnvId(String key, Long clusterId) {
         String namespace = KeyParseUtil.getNamespace(key);
-        if (StringUtils.isEmpty(namespace)) {
+        if (ObjectUtils.isEmpty(namespace)) {
             return null;
         }
 
