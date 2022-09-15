@@ -538,7 +538,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
                         DELETE,
                         userAttrDTO.getGitlabUserId(),
                         ingressDO.getId(), INGRESS, null, false, devopsEnvironmentDTO.getId(), path);
-            }else{
+            } else {
                 ResourceConvertToYamlHandler<V1Ingress> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
                 V1Ingress v1beta1Ingress = new V1Ingress();
                 V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
