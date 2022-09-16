@@ -21,7 +21,8 @@ public interface DockerComposeService {
     DevopsHostCommandDTO updateDockerComposeApp(Long projectId,
                                                 Long id,
                                                 Long cdJobRecordId,
-                                                DockerComposeDeployVO dockerComposeDeployVO);
+                                                DockerComposeDeployVO dockerComposeDeployVO,
+                                                Boolean fromPipeline);
 
     void restartDockerComposeApp(Long projectId, Long id);
 

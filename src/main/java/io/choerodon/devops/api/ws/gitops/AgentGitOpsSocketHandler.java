@@ -1,12 +1,5 @@
 package io.choerodon.devops.api.ws.gitops;
 
-import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import org.hzero.websocket.redis.BrokerSessionRedis;
 import org.hzero.websocket.registry.GroupSessionRegistry;
 import org.slf4j.Logger;
@@ -17,6 +10,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
 import io.choerodon.devops.api.vo.AgentMsgVO;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
@@ -233,15 +233,13 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_JOB_EVENT:
-                agentMsgHandlerService.helmJobEvent(msg.getPayload());
+                agentMsgHandlerService.helmJobEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case HELM_POD_EVENT:
-                agentMsgHandlerService.helmPodEvent(
-                        msg.getPayload());
+                agentMsgHandlerService.helmPodEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case WORKLOAD_POD_EVENT:
-                agentMsgHandlerService.workloadPodEvent(
-                        msg.getPayload());
+                agentMsgHandlerService.workloadPodEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             // Agent解析GitOps后发送
             case GIT_OPS_SYNC_EVENT:

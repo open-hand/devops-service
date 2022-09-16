@@ -58,7 +58,7 @@ public interface DevopsEnvResourceService {
 
     List<DevopsEnvResourceDTO> baseListByEnvAndType(Long envId, String type);
 
-    DevopsEnvResourceDTO baseQueryByKindAndName(String kind, String name);
+    DevopsEnvResourceDTO baseQueryByKindAndName(Long envId, String kind, String name);
 
     void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId);
 

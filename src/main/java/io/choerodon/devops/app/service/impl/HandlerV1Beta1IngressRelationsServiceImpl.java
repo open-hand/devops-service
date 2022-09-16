@@ -44,40 +44,45 @@ public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectF
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
 
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
-        List<String> beforeIngress = beforeSync.stream()
-                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
-                .map(devopsEnvFileResourceE -> {
-                    DevopsIngressDTO devopsIngressDTO = devopsIngressService
-                            .baseQuery(devopsEnvFileResourceE.getResourceId());
-                    if (devopsIngressDTO == null) {
-                        devopsEnvFileResourceService
-                                .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
-                        return null;
-                    }
-                    return devopsIngressDTO.getName();
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
-        List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
-        List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();
-        GitOpsUtil.pickCUDResource(beforeIngress, v1beta1Ingresses, addV1beta1Ingress, updateV1beta1Ingress, v1beta1Ingress -> v1beta1Ingress.getMetadata().getName());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+        if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+            List<String> beforeIngress = beforeSync.stream()
+                    .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
+                    .map(devopsEnvFileResourceE -> {
+                        DevopsIngressDTO devopsIngressDTO = devopsIngressService
+                                .baseQuery(devopsEnvFileResourceE.getResourceId());
+                        if (devopsIngressDTO == null) {
+                            devopsEnvFileResourceService
+                                    .baseDeleteByEnvIdAndResourceId(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
+                            return null;
+                        }
+                        return devopsIngressDTO.getName();
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
+            List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
+            List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();
+            GitOpsUtil.pickCUDResource(beforeIngress, v1beta1Ingresses, addV1beta1Ingress, updateV1beta1Ingress, v1beta1Ingress -> v1beta1Ingress.getMetadata().getName());
 
-        //删除ingress,删除文件对象关联关系
-        beforeIngress.forEach(ingressName -> {
-            DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, ingressName);
-            if (devopsIngressDTO != null) {
-                devopsIngressService.deleteIngressByGitOps(devopsIngressDTO.getId());
-                devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), INGRESS);
-            }
-        });
-        //新增ingress
-        addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);
-        //更新ingress
-        updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
+            //删除ingress,删除文件对象关联关系
+            beforeIngress.forEach(ingressName -> {
+                DevopsIngressDTO devopsIngressDTO = devopsIngressService.baseCheckByEnvAndName(envId, ingressName);
+                if (devopsIngressDTO != null) {
+                    devopsIngressService.deleteIngressByGitOps(devopsIngressDTO.getId());
+                    devopsEnvFileResourceService.baseDeleteByEnvIdAndResourceId(envId, devopsIngressDTO.getId(), INGRESS);
+                }
+            });
+            //新增ingress
+            addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);
+            //更新ingress
+            updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
+        }
     }
 
     @Override

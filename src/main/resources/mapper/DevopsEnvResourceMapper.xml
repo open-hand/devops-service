@@ -45,8 +45,9 @@
     <select id="queryLatestJob" resultType="io.choerodon.devops.infra.dto.DevopsEnvResourceDTO">
         SELECT *
         FROM devops_env_resource dir
-        where dir.kind = #{kind}
-          and dir.name = #{name}
+        WHERE dir.env_id = #{envId}
+          AND dir.kind = #{kind}
+          AND dir.name = #{name}
         ORDER BY dir.creation_date DESC
         LIMIT 1
     </select>

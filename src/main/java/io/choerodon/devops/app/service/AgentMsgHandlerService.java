@@ -44,9 +44,9 @@ public interface AgentMsgHandlerService {
 
     void resourceSync(String key, String msg, Long clusterId);
 
-    void helmJobEvent(String msg);
+    void helmJobEvent(String key, String msg, Long clusterId);
 
-    void helmPodEvent(String msg);
+    void helmPodEvent(String key, String msg, Long clusterId);
 
     void gitOpsSyncEvent(String key, String msg, Long clusterId);
 
@@ -88,9 +88,8 @@ public interface AgentMsgHandlerService {
     /**
      * 处理工作负载产生的pod事件
      *
-     * @param payload
      */
-    void workloadPodEvent(String payload);
+    void workloadPodEvent(String key, String msg, Long clusterId);
 
     void handleDeletePod(Long clusterId, String payload);
 }

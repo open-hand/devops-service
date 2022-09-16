@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -18,6 +12,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -339,6 +339,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
                 devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                 devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
+                devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
             }
 
         }
@@ -358,7 +359,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         devopsHostAppVO.setCreator(creator);
         devopsHostAppVO.setUpdater(updater);
-        if (devopsHostAppVO.getDevopsHostCommandDTO()==null){
+        if (devopsHostAppVO.getDevopsHostCommandDTO() == null) {
             DevopsHostCommandDTO defaultDevopsHostCommandDTO = new DevopsHostCommandDTO();
             defaultDevopsHostCommandDTO.setHostId(devopsHostAppVO.getHostId());
             defaultDevopsHostCommandDTO.setStatus("failed");
