@@ -1952,6 +1952,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
                 devopsCdHostDeployInfoDTO.setAppId(null);
             }
+            {
+                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
+                devopsCdHostDeployInfoDTO.setHostId(devopsHostAppDTO.getHostId());
+            }
             devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
             devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
 
