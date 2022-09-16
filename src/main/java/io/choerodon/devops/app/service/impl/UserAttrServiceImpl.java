@@ -14,11 +14,13 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.UserAttrVO;
+import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.devops.infra.dto.repo.RdmMemberQueryDTO;
-import io.choerodon.devops.infra.dto.repo.RdmMemberViewDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
@@ -37,6 +39,9 @@ public class UserAttrServiceImpl implements UserAttrService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+
+    @Autowired
+    private AppServiceService appServiceService;
 
     @Override
     public UserAttrVO queryByUserId(Long userId) {
@@ -167,26 +172,33 @@ public class UserAttrServiceImpl implements UserAttrService {
     @Override
     public Page<IamUserDTO> queryByAppServiceId(Long projectId, Long appServiceId, PageRequest pageRequest, String params) {
         List<Long> selectedIamUserIds = new ArrayList<>();
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
         String realName = null;
         if (!StringUtils.isEmpty(params)) {
             Map maps = JSONObject.parseObject(params, Map.class);
             selectedIamUserIds = KeyDecryptHelper.decryptIdList((JSONArray) maps.get("ids"));
             realName = (String) maps.get("userName");
         }
-        RdmMemberQueryDTO rdmMemberQueryDTO = new RdmMemberQueryDTO();
-        rdmMemberQueryDTO.setRepositoryIds(Collections.singleton(appServiceId));
-        rdmMemberQueryDTO.setRealName(realName);
-        List<RdmMemberViewDTO> rdmMemberViewDTOS = hrdsCodeRepoClientOperator.listMembers(null, projectId, rdmMemberQueryDTO);
+        List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), realName);
+        if (CollectionUtils.isEmpty(memberDTOS)) {
+            return new Page<>();
+        }
+        Set<Long> guids = memberDTOS.stream().filter(v -> v.getAccessLevel() >= AccessLevel.DEVELOPER.value).map(m -> m.getId().longValue()).collect(Collectors.toSet());
+
+        List<UserAttrVO> userAttrVOS = listUsersByGitlabUserIds(guids);
+
+        List<Long> uids = userAttrVOS.stream().filter(u -> u.getIamUserId() != null).map(UserAttrVO::getIamUserId).collect(Collectors.toList());
 
         // allUserIds构成
         // 1. 用户选中的
         // 2. 项目下搜索到的
         List<Long> allUserIds = new ArrayList<>(new HashSet<>(selectedIamUserIds));
 
-        if (!CollectionUtils.isEmpty(rdmMemberViewDTOS)) {
-            rdmMemberViewDTOS.forEach(user -> {
-                if (!allUserIds.contains(user.getUserId())) {
-                    allUserIds.add(user.getUserId());
+        if (!CollectionUtils.isEmpty(uids)) {
+            uids.forEach(uid -> {
+                if (!allUserIds.contains(uid)) {
+                    allUserIds.add(uid);
                 }
             });
         }

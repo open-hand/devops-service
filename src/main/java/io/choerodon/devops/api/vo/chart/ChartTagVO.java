@@ -16,6 +16,15 @@ public class ChartTagVO {
     private Long appServiceId;
     private Long tenantId;
     private Long projectId;
+    private Long helmConfigId;
+
+    public Long getHelmConfigId() {
+        return helmConfigId;
+    }
+
+    public void setHelmConfigId(Long helmConfigId) {
+        this.helmConfigId = helmConfigId;
+    }
 
     public Long getTenantId() {
         return tenantId;

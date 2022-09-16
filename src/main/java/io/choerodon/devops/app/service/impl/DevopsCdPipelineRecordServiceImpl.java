@@ -1017,7 +1017,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         // 3. 更新docker-compose应用
         log.append("[info] Start update app").append(System.lineSeparator());
-        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
+        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO, true);
         log.append("[info] Update app success").append(System.lineSeparator());
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());

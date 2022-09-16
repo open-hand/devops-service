@@ -2,6 +2,7 @@ package io.choerodon.devops.app.task;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
+import java.io.IOException;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -119,11 +120,15 @@ public class DevopsCommandRunner implements CommandLineRunner {
         Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
         UserToken userToken;
         if (userTokenOptional.isPresent()) {
-            userToken = userTokenOptional.get();
-        } else {
-            Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-            userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
+            Call<Void> revokeToken = sonarClient.revokeToken(map);
+            try {
+                revokeToken.execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
+        userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
         if (oldConfigDTO == null) {
             DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
             newConfigDTO.setConfig(userToken.getToken());

@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import javax.annotation.Nullable;
 
-import com.google.gson.Gson;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -15,13 +15,19 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.chart.ChartDeleteResponseVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
@@ -42,16 +48,16 @@ import io.choerodon.devops.infra.handler.RetrofitHandler;
 public class ChartUtil {
     public static final Logger LOGGER = LoggerFactory.getLogger(ChartUtil.class);
     private static final String FILE_SEPARATOR = "/";
-    private static final String APP_SERVICE = "appService";
     private static final String CHART = "chart";
     private static final String DEFAULT_ERROR_MESSAGE_FOR_UPLOADING = "error.upload.with.null.response";
-
-    private static final Gson GSON = new Gson();
 
     @Autowired
     DevopsConfigService devopsConfigService;
     @Autowired
     DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    @Qualifier(value = "restTemplateForIp")
+    private RestTemplate restTemplate;
 
     public static void uploadChart(String repository, String organizationCode, String projectCode, File file, @Nullable String username, @Nullable String password) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
@@ -110,21 +116,42 @@ public class ChartUtil {
 
     public void deleteChart(ChartTagVO chartTagVO) {
 
-        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(chartTagVO.getAppServiceId(), chartTagVO.getProjectId(), chartTagVO.getTenantId());
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryById(chartTagVO.getHelmConfigId());
 
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setType(CHART);
-        configurationProperties.setUsername(devopsHelmConfigDTO.getUsername());
-        configurationProperties.setPassword(devopsHelmConfigDTO.getPassword());
-        configurationProperties.setBaseUrl(chartTagVO.getRepository().split(chartTagVO.getOrgCode() + "/" + chartTagVO.getProjectCode())[0]);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<ChartDeleteResponseVO> call = chartClient.deleteChartVersion(chartTagVO.getOrgCode(), chartTagVO.getProjectCode(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
-        try {
-            call.execute();
-        } catch (Exception e) {
-            LOGGER.error("error.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
+        String credentials = devopsHelmConfigDTO.getUsername() + ":"
+                + devopsHelmConfigDTO.getPassword();
+        String token = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authorization", token);
+        headers.add("Content-Type", "application/json");
+        String repo = chartTagVO.getRepository().endsWith("/") ? chartTagVO.getRepository() : chartTagVO.getRepository() + "/";
+        String url = repo + "api/charts/{chartName}/{chartVersion}";
+
+        ResponseEntity<Void> exchange = restTemplate.exchange(url,
+                HttpMethod.DELETE,
+                new HttpEntity<>(headers),
+                Void.class,
+                chartTagVO.getChartName(),
+                chartTagVO.getChartVersion());
+
+        if (!exchange.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.delete.chart");
         }
+
+//        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+//        configurationProperties.setType(CHART);
+//        configurationProperties.setUsername(devopsHelmConfigDTO.getUsername());
+//        configurationProperties.setPassword(devopsHelmConfigDTO.getPassword());
+//        configurationProperties.setBaseUrl(chartTagVO.getRepository().split(chartTagVO.getOrgCode() + "/" + chartTagVO.getProjectCode())[0]);
+//        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+//        ChartClient chartClient = retrofit.create(ChartClient.class);
+//        Call<ChartDeleteResponseVO> call = chartClient.deleteChartVersion(chartTagVO.getOrgCode(), chartTagVO.getProjectCode(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
+//        try {
+//            call.execute();
+//        } catch (Exception e) {
+//            LOGGER.error("error.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
+//        }
     }
 
     public void downloadChart(AppServiceVersionDTO appServiceVersionDTO, Tenant organizationDTO, ProjectDTO projectDTO, AppServiceDTO applicationDTO, String destpath) {

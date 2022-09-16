@@ -91,6 +91,11 @@ public class SonarClientFallback implements SonarClient {
     }
 
     @Override
+    public Call<Void> revokeToken(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
     public Call<ResponseBody> listToken() {
         return null;
     }
