@@ -2132,6 +2132,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
+            addtionnalCheck(cdHostDeployConfigVO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
             if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
@@ -2192,6 +2193,15 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
+
+    }
+
+    /**
+     * 供子类拓展
+     *
+     * @param cdHostDeployConfigVO
+     */
+    protected void additionalCheck(CdHostDeployConfigVO cdHostDeployConfigVO) {
 
     }
 
