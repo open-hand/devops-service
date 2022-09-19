@@ -2132,7 +2132,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
-            addtionnalCheck(cdHostDeployConfigVO);
+            additionalCheck(cdHostDeployConfigVO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
             if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
@@ -2202,7 +2202,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * @param cdHostDeployConfigVO
      */
     protected void additionalCheck(CdHostDeployConfigVO cdHostDeployConfigVO) {
-
+        // 创建主机应用，必须输入主机id
+        if (DeployTypeEnum.CREATE.value().equals(cdHostDeployConfigVO.getDeployType()) && cdHostDeployConfigVO.getHostId() == null) {
+            throw new CommonException("error.host.id.is.null");
+        }
     }
 
     /**
