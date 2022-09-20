@@ -322,7 +322,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
-            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
+            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
         }

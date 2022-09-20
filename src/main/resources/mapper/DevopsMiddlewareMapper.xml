@@ -16,6 +16,9 @@
     </delete>
 
     <select id="queryByInstanceId" resultType="io.choerodon.devops.infra.dto.DevopsMiddlewareDTO">
-        SELECT * FROM devops_middleware WHERE instance_id=#{instanceId}
+        SELECT * FROM devops_middleware dm
+        JOIN devops_host_app_instance dhai ON dhai.id=dm.instance_id
+        JOIN devops_host_app dha ON dha.id=dhai.app_id
+        WHERE dha.id=#{instanceId}
     </select>
 </mapper>
