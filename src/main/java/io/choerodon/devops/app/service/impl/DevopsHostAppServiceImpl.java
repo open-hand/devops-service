@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.hzero.core.base.BaseConstants;
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
@@ -12,12 +18,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -465,6 +465,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsDockerInstanceDTO.setAppId(appId);
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
             if (CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+                devopsHostAppMapper.deleteByPrimaryKey(appId);
                 return;
             }
             DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.get(0);
