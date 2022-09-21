@@ -27,6 +27,7 @@ import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
+import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
@@ -60,6 +61,9 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
+
+    @Autowired
+    private Proxy proxy;
 
     @Override
     @Transactional
@@ -122,56 +126,28 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
                 hasSettings);
     }
 
-    /**
-     * 生成并存储maven settings到数据库
-     *
-     * @param projectId          项目id
-     * @param jobId              job id
-     * @param devopsCiMavenBuildConfigVO 配置信息
-     * @return true表示有settings配置，false表示没有
-     */
-    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
-        // settings文件内容
-        String settings;
-        final List<MavenRepoVO> repos = new ArrayList<>();
+    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
+        List<Server> servers = new ArrayList<>();
+        List<Repository> repositories = new ArrayList<>();
 
-        // 是否有手动填写仓库表单
-        final boolean hasManualRepos = !CollectionUtils.isEmpty(devopsCiMavenBuildConfigVO.getRepos());
-        // 是否有选择已有的maven仓库
-        final boolean hasNexusRepos = !CollectionUtils.isEmpty(devopsCiMavenBuildConfigVO.getNexusMavenRepoIds());
-
-        if (!StringUtils.isEmpty(devopsCiMavenBuildConfigVO.getMavenSettings())) {
-            // 使用用户提供的xml内容，不进行内容的校验
-            settings = devopsCiMavenBuildConfigVO.getMavenSettings();
-        } else if (hasManualRepos || hasNexusRepos) {
-            if (hasNexusRepos) {
-                // 用户选择的已有的maven仓库
-                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, devopsCiMavenBuildConfigVO.getNexusMavenRepoIds());
-                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiMavenBuildStepHandler::convertRepo).collect(Collectors.toList()));
+        mavenRepoList.forEach(m -> {
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
             }
-
-            if (hasManualRepos) {
-                // 由用户填写的表单构建xml文件内容
-                repos.addAll(devopsCiMavenBuildConfigVO.getRepos());
+            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
+                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
             }
-
-            // 构建settings文件
-            settings = buildSettings(repos);
-        } else {
-            // 没有填关于settings的信息
-            return false;
-        }
-
-        // 这里存储的ci setting文件内容是解密后的
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsRecordDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
-        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsRecordDTO);
-        if (devopsCiMavenSettingsDTO == null) {
-            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
-        } else {
-            devopsCiMavenSettingsDTO.setMavenSettings(settings);
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
-        }
-        return true;
+            repositories.add(new Repository(
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getUrl()),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+        });
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
     }
 
     /**
@@ -208,28 +184,61 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         return mavenRepoVO;
     }
 
-    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
-        List<Server> servers = new ArrayList<>();
-        List<Repository> repositories = new ArrayList<>();
+    /**
+     * 生成并存储maven settings到数据库
+     *
+     * @param projectId                  项目id
+     * @param jobId                      job id
+     * @param devopsCiMavenBuildConfigVO 配置信息
+     * @return true表示有settings配置，false表示没有
+     */
+    private boolean buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO) {
+        // settings文件内容
+        String settings;
+        final List<MavenRepoVO> repos = new ArrayList<>();
 
-        mavenRepoList.forEach(m -> {
-            if (m.getType() != null) {
-                String[] types = m.getType().split(GitOpsConstants.COMMA);
-                if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
-                }
+        List<Proxy> proxies = new ArrayList<>();
+        if (proxy != null && Boolean.TRUE.equals(proxy.getActive())) {
+            proxies.add(proxy);
+        }
+
+        // 是否有手动填写仓库表单
+        final boolean hasManualRepos = !CollectionUtils.isEmpty(devopsCiMavenBuildConfigVO.getRepos());
+        // 是否有选择已有的maven仓库
+        final boolean hasNexusRepos = !CollectionUtils.isEmpty(devopsCiMavenBuildConfigVO.getNexusMavenRepoIds());
+
+        if (!StringUtils.isEmpty(devopsCiMavenBuildConfigVO.getMavenSettings())) {
+            // 使用用户提供的xml内容，不进行内容的校验
+            settings = devopsCiMavenBuildConfigVO.getMavenSettings();
+        } else if (hasManualRepos || hasNexusRepos) {
+            if (hasNexusRepos) {
+                // 用户选择的已有的maven仓库
+                List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, devopsCiMavenBuildConfigVO.getNexusMavenRepoIds());
+                repos.addAll(nexusMavenRepoDTOs.stream().map(DevopsCiMavenBuildStepHandler::convertRepo).collect(Collectors.toList()));
             }
-            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
-                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
+
+            if (hasManualRepos) {
+                // 由用户填写的表单构建xml文件内容
+                repos.addAll(devopsCiMavenBuildConfigVO.getRepos());
             }
-            repositories.add(new Repository(
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getUrl()),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
-        });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+
+            // 构建settings文件
+            settings = buildSettings(repos, proxies);
+        } else {
+            // 没有填关于settings的信息
+            return false;
+        }
+
+        // 这里存储的ci setting文件内容是解密后的
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsRecordDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsRecordDTO);
+        if (devopsCiMavenSettingsDTO == null) {
+            MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
+        } else {
+            devopsCiMavenSettingsDTO.setMavenSettings(settings);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+        }
+        return true;
     }
 
     @Nullable

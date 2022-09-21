@@ -53,7 +53,7 @@ public class MavenSettingsUtil {
     private static final String ARTIFACT_ID = "artifactId";
 
 
-    public static String buildSettings(List<MavenRepoVO> mavenRepoList) {
+    public static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
         List<Server> servers = new ArrayList<>();
         List<Repository> repositories = new ArrayList<>();
 
@@ -74,7 +74,7 @@ public class MavenSettingsUtil {
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
     }
 
     /**
@@ -84,7 +84,7 @@ public class MavenSettingsUtil {
      * @param repositories 仓库信息
      * @return 生成的settings文件
      */
-    public static String generateMavenSettings(List<Server> servers, List<Repository> repositories) {
+    public static String generateMavenSettings(List<Server> servers, List<Repository> repositories, List<Proxy> proxies) {
         try {
             // 获取JAXB的上下文环境，需要传入具体的 Java bean -> 这里使用Settings
             JAXBContext context = JAXBContext.newInstance(Settings.class);
@@ -97,7 +97,7 @@ public class MavenSettingsUtil {
 
             // 将所需对象序列化到字节数组流中
             ByteArrayOutputStream out = new ByteArrayOutputStream(BYTE_ARRAY_INIT_SIZE);
-            marshaller.marshal(initSettings(servers, repositories), out);
+            marshaller.marshal(initSettings(servers, repositories, proxies), out);
 
             // 将字节流转为字节数组再转到字符串
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
@@ -188,8 +188,8 @@ public class MavenSettingsUtil {
         return true;
     }
 
-    private static Settings initSettings(List<Server> servers, List<Repository> repositories) {
-        return new Settings(servers, initProfiles(repositories));
+    private static Settings initSettings(List<Server> servers, List<Repository> repositories, List<Proxy> proxies) {
+        return new Settings(servers, initProfiles(repositories), proxies);
     }
 
     private static List<Profile> initProfiles(List<Repository> repositories) {

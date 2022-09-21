@@ -43,6 +43,7 @@ import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.maven.Repository;
 import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
 import io.choerodon.devops.infra.dto.maven.Server;
@@ -235,7 +236,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
-    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {
+    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
         List<Server> servers = new ArrayList<>();
         List<Repository> repositories = new ArrayList<>();
 
@@ -256,7 +257,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
     }
 
     /**

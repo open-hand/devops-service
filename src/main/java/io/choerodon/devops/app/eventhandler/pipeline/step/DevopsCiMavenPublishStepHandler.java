@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
+import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -53,6 +54,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
+    @Autowired
+    private Proxy proxy;
 
     @Override
     @Transactional
@@ -147,6 +150,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             return false;
         }
 
+        List<Proxy> proxies = new ArrayList<>();
+        if (proxy != null && Boolean.TRUE.equals(proxy.getActive())) {
+            proxies.add(proxy);
+        }
+
         // 查询制品库
         List<MavenRepoVO> mavenRepoVOS = new ArrayList<>();
         if (devopsCiMavenPublishConfigVO.getNexusRepoId() != null) {
@@ -187,7 +195,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         String settings;
         // 如果填了自定义的settings文件则直接使用用户填的
         if (settingsEmpty) {
-            settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
+            settings = MavenSettingsUtil.buildSettings(mavenRepoVOS, proxies);
         } else {
             settings = devopsCiMavenPublishConfigVO.getMavenSettings();
         }
