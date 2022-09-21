@@ -1,12 +1,16 @@
-package io.choerodon.devops.infra.dto.maven;
+package io.choerodon.devops.infra.config;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
 /**
  * @author zmf
  * @since 20-4-14
  */
-public class Proxy {
+@Component
+@ConfigurationProperties(prefix = "devops.ci.maven.proxy")
+public class ProxyProperties {
     @ApiModelProperty("认证id")
     private String id;
     @ApiModelProperty("用户名")
@@ -22,10 +26,10 @@ public class Proxy {
     @ApiModelProperty("port")
     private Integer port;
 
-    public Proxy() {
+    public ProxyProperties() {
     }
 
-    public Proxy(String id, String username, String password, Boolean active, String protocol, String host, Integer port) {
+    public ProxyProperties(String id, String username, String password, Boolean active, String protocol, String host, Integer port) {
         this.id = id;
         this.username = username;
         this.password = password;

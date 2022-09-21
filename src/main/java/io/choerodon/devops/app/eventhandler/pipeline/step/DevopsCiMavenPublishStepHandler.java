@@ -20,6 +20,7 @@ import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
+import io.choerodon.devops.infra.config.ProxyProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
@@ -55,7 +56,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
     @Autowired
-    private Proxy proxy;
+    private ProxyProperties proxyProperties;
 
     @Override
     @Transactional
@@ -151,8 +152,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         }
 
         List<Proxy> proxies = new ArrayList<>();
-        if (proxy != null && Boolean.TRUE.equals(proxy.getActive())) {
-            proxies.add(proxy);
+        if (proxyProperties != null && Boolean.TRUE.equals(proxyProperties.getActive())) {
+            proxies.add(ConvertUtils.convertObject(proxyProperties, Proxy.class));
         }
 
         // 查询制品库

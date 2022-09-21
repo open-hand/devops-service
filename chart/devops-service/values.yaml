@@ -209,6 +209,13 @@ extraEnv:
   CI_IMAGE_BUILD_TYPE: kaniko
   LOG_LEVEL: info
   NEXUS_PROXY_URIPREFIX: /rdupm/v1/nexus/proxy
+  DEVOPS_CI_MAVEN_PROXY_ID: default
+  DEVOPS_CI_MAVEN_PROXY_ACTIVE: false
+  DEVOPS_CI_MAVEN_PROXY_PROTOCOL: http
+  DEVOPS_CI_MAVEN_PROXY_USERNAME: proxyuser
+  DEVOPS_CI_MAVEN_PROXY_PASSWORD: proxypass
+  DEVOPS_CI_MAVEN_PROXY_HOST: proxy.host.net
+  DEVOPS_CI_MAVEN_PROXY_PORT: 80
 
 # -- ConfigMap with extra environment variables
 ##

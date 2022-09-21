@@ -22,6 +22,7 @@ import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
 import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
+import io.choerodon.devops.infra.config.ProxyProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
@@ -63,7 +64,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     private RdupmClientOperator rdupmClientOperator;
 
     @Autowired
-    private Proxy proxy;
+    private ProxyProperties proxyProperties;
 
     @Override
     @Transactional
@@ -198,8 +199,8 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
         final List<MavenRepoVO> repos = new ArrayList<>();
 
         List<Proxy> proxies = new ArrayList<>();
-        if (proxy != null && Boolean.TRUE.equals(proxy.getActive())) {
-            proxies.add(proxy);
+        if (proxyProperties != null && Boolean.TRUE.equals(proxyProperties.getActive())) {
+            proxies.add(ConvertUtils.convertObject(proxyProperties, Proxy.class));
         }
 
         // 是否有手动填写仓库表单

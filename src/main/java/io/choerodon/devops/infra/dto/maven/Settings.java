@@ -45,7 +45,7 @@ public class Settings {
     }
 
     @XmlElementWrapper(name = "proxies")
-    @XmlElement(name = "proxies")
+    @XmlElement(name = "proxy")
     public List<Proxy> getProxies() {
         return proxies;
     }
