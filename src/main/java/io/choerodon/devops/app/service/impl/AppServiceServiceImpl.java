@@ -1254,7 +1254,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ ORG_CODE }}", organizationDTO.getTenantNum());
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
             params.put("{{ DOCKER_USERNAME }}", "'" + harborProjectConfig.getUserName() + "'");
-            params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
+            params.put("{{ DOCKER_PASSWORD }}", "'" + harborProjectConfig.getPassword() + "'");
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             params.put("{{ CHOERODON_URL }}", gatewayUrl);
