@@ -1495,7 +1495,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+        String key = getSonarKey(appServiceDTO, projectDTO, organization);
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
 
         //校验sonarqube地址是否正确
@@ -1797,6 +1797,10 @@ public class AppServiceServiceImpl implements AppServiceService {
         return sonarContentsVO;
     }
 
+    protected String getSonarKey(AppServiceDTO appServiceDTO, ProjectDTO projectDTO, Tenant organization) {
+        return String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+    }
+
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
         redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO));
     }
@@ -1840,7 +1844,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
+        String key = getSonarKey(applicationDTO, projectDTO, organizationDTO);
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);
