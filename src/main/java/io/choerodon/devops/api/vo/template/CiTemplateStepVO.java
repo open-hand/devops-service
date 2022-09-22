@@ -26,7 +26,6 @@ public class CiTemplateStepVO {
     private Long id;
     @ApiModelProperty(value = "任务名称", required = true)
     @NotNull
-    @Length(max = 30)
     private String name;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;

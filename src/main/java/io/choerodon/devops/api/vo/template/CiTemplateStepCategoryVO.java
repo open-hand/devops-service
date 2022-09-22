@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -26,6 +27,7 @@ public class CiTemplateStepCategoryVO {
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
+    @Length(max = 60)
     private String name;
 
 
