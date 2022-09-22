@@ -65,7 +65,7 @@ public class DevopsCiPipelineAdditionalValidator {
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
                 .forEach(stage -> {
                     if (CollectionUtils.isEmpty(stage.getJobList())) {
-                        return;
+                        throw new CommonException("error.ci.job.is.empty", stage.getName());
                     }
 
                     // 校验stage名称唯一
