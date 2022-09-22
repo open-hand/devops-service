@@ -2,9 +2,11 @@ package io.choerodon.devops.api.vo.template;
 
 import java.util.Date;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
@@ -24,6 +26,7 @@ public class CiTemplateStepVO {
     private Long id;
     @ApiModelProperty(value = "任务名称", required = true)
     @NotNull
+    @Length(max = 30)
     private String name;
     @ApiModelProperty(value = "层级", required = true)
     private String sourceType;
