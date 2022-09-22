@@ -293,6 +293,7 @@
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>
         </where>
+        GROUP BY dha.id
         <if test="appId == null">
             order by dha.id desc
         </if>
