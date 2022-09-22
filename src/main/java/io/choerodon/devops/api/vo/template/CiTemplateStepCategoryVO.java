@@ -27,7 +27,7 @@ public class CiTemplateStepCategoryVO {
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
-    @Size(max = 30)
+    @Size(max = 15)
     private String name;
 
 
