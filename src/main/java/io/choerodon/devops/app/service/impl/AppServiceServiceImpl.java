@@ -153,7 +153,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private final Gson gson = new Gson();
     @Value("${services.gitlab.url}")
-    private String gitlabUrl;
+    protected String gitlabUrl;
     @Value("${services.gitlab.proxy-url:}")
     private String gitlabProxyUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -792,7 +792,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
     }
 
-    private void initApplicationParamsWithProxyUrl(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+    protected void initApplicationParamsWithProxyUrl(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         for (AppServiceDTO t : applicationDTOS) {
             initApplicationParamsWithProxyUrl(info, t, urlSlash);
