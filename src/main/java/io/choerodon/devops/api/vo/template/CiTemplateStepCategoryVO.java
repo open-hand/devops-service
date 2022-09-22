@@ -5,9 +5,9 @@ import java.util.Date;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -27,7 +27,7 @@ public class CiTemplateStepCategoryVO {
 
     @ApiModelProperty(value = "任务名称", required = true)
     @NotBlank
-    @Length(max = 30)
+    @Size(max = 15)
     private String name;
 
 
