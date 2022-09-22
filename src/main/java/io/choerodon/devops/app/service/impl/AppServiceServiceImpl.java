@@ -119,7 +119,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String GIT = ".git";
-    private static final String SONAR_KEY = "%s-%s:%s";
+    protected static final String SONAR_KEY = "%s-%s:%s";
     private static final String PRIVATE_TOKEN_FORMAT = "private-token:%s";
     private static final String PRIVATE_TOKEN_ID_FORMAT = "private-token-id:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*");
