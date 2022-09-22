@@ -424,7 +424,7 @@
     </select>
 
     <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dto.AppServiceDTO">
-        SELECT da.gitlab_project_id
+        SELECT *
         FROM devops_app_service da
         WHERE da.gitlab_project_id IN
         <foreach collection="gitlabProjectIds" item="gitlabProjectId" open="(" close=")" separator=",">
