@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -28,7 +29,9 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     @Autowired
     private DevopsCiPipelineSonarMapper devopsCiPipelineSonarMapper;
-
+    private static final String SONAR = "sonar";
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     @Transactional
@@ -40,6 +43,9 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
             if (devopsCiPipelineSonarDTO == null) {
                 baseCreate(new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName, scannerType));
             }
+            // 删除缓存
+            stringRedisTemplate.delete(SONAR + ":" + appServiceDTO.getProjectId() + ":" + appServiceId);
+
         });
     }
 

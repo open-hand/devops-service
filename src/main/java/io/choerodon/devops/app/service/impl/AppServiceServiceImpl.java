@@ -1790,7 +1790,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             });
             sonarContentsVO.setSonarContents(sonarContentVOS);
-//            cacheSonarContents(projectId, appServiceId, sonarContentsVO);
+            cacheSonarContents(projectId, appServiceId, sonarContentsVO);
         } catch (IOException e) {
             throw new CommonException(e);
         }
@@ -1802,7 +1802,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
-        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO));
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.HOURS);
     }
 
     public String getTimestampTimeV17(String str) {
@@ -3740,12 +3740,12 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public SonarContentsVO getSonarContentFromCache(Long projectId, Long appServiceId) {
-//        String jsonBody = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
-//        if (StringUtils.isEmpty(jsonBody)) {
-        return getSonarContent(projectId, appServiceId);
-//        } else {
-//            return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
-//        }
+        String jsonBody = redisTemplate.opsForValue().get(SONAR + ":" + projectId + ":" + appServiceId);
+        if (StringUtils.isEmpty(jsonBody)) {
+            return getSonarContent(projectId, appServiceId);
+        } else {
+            return JsonHelper.unmarshalByJackson(jsonBody, SonarContentsVO.class);
+        }
     }
 
     @Override
