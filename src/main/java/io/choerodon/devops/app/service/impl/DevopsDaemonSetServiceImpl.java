@@ -106,6 +106,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
                 daemonSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
             }
             daemonSetInfoVO.setSourceType(daemonSetInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
+            daemonSetInfoVO.setEnvId(envId);
             return daemonSetInfoVO;
         });
     }

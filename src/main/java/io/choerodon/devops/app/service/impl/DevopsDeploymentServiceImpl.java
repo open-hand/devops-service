@@ -218,6 +218,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
                     });
                 }
             }
+            deploymentVO.setEnvId(envId);
             return deploymentVO;
         });
         return deploymentVOPage;

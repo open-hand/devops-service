@@ -110,6 +110,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                 }
             }
             cronJobInfoVO.setSourceType(cronJobInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
+            cronJobInfoVO.setEnvId(envId);
             return cronJobInfoVO;
         });
     }
