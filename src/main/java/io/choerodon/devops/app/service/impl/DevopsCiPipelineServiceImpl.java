@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -41,10 +43,6 @@ import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
-import io.choerodon.devops.infra.dto.maven.Proxy;
-import io.choerodon.devops.infra.dto.maven.Repository;
-import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
-import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -232,29 +230,29 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCiJobMapper = devopsCiJobMapper;
     }
 
-    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
-        List<Server> servers = new ArrayList<>();
-        List<Repository> repositories = new ArrayList<>();
-
-        mavenRepoList.forEach(m -> {
-            if (m.getType() != null) {
-                String[] types = m.getType().split(GitOpsConstants.COMMA);
-                if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
-                }
-            }
-            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
-                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
-            }
-            repositories.add(new Repository(
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getName()),
-                    Objects.requireNonNull(m.getUrl()),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
-        });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
-    }
+//    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
+//        List<Server> servers = new ArrayList<>();
+//        List<Repository> repositories = new ArrayList<>();
+//
+//        mavenRepoList.forEach(m -> {
+//            if (m.getType() != null) {
+//                String[] types = m.getType().split(GitOpsConstants.COMMA);
+//                if (types.length > 2) {
+//                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+//                }
+//            }
+//            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
+//                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
+//            }
+//            repositories.add(new Repository(
+//                    Objects.requireNonNull(m.getName()),
+//                    Objects.requireNonNull(m.getName()),
+//                    Objects.requireNonNull(m.getUrl()),
+//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+//        });
+//        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
+//    }
 
     /**
      * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
