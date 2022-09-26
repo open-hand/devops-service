@@ -106,7 +106,7 @@ public class AppServiceUtils {
 
     public void checkCodeExist(String appCode) {
         if (!StringUtils.hasText(appCode)) {
-            throw new CommonException("error.code.is.null");
+            throw new CommonException("error.app.code.notExist");
         }
     }
 }
