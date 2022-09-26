@@ -285,6 +285,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
                     gitlabProjectPayload.setIamProjectId(projectId);
                     gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
+                    gitlabProjectPayload.setEnvId(envId);
 
                     agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 

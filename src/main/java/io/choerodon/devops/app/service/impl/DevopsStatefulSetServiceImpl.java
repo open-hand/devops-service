@@ -107,6 +107,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
                 statefulSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
             }
             statefulSetInfoVO.setSourceType(statefulSetInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
+            statefulSetInfoVO.setEnvId(envId);
             return statefulSetInfoVO;
         });
     }

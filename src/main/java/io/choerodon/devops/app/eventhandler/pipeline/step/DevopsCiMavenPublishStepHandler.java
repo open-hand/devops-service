@@ -20,11 +20,13 @@ import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.DevopsCiMavenPublishConfigService;
+import io.choerodon.devops.infra.config.ProxyProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
+import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
@@ -53,6 +55,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
+    @Autowired
+    private ProxyProperties proxyProperties;
 
     @Override
     @Transactional
@@ -147,6 +151,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             return null;
         }
 
+        List<Proxy> proxies = new ArrayList<>();
+        if (proxyProperties != null && Boolean.TRUE.equals(proxyProperties.getActive())) {
+            proxies.add(ConvertUtils.convertObject(proxyProperties, Proxy.class));
+        }
+
         // 查询制品库
         List<MavenRepoVO> mavenRepoVOS = new ArrayList<>();
         if (devopsCiMavenPublishConfigVO.getNexusRepoId() != null) {
@@ -187,7 +196,7 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         String settings;
         // 如果填了自定义的settings文件则直接使用用户填的
         if (settingsEmpty) {
-            settings = MavenSettingsUtil.buildSettings(mavenRepoVOS);
+            settings = MavenSettingsUtil.buildSettings(mavenRepoVOS, proxies);
         } else {
             settings = devopsCiMavenPublishConfigVO.getMavenSettings();
         }

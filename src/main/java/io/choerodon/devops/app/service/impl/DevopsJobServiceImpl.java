@@ -108,6 +108,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                 }
             }
             jobInfoVO.setSourceType(jobInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
+            jobInfoVO.setEnvId(envId);
             return jobInfoVO;
         });
     }

@@ -41,6 +41,10 @@ import io.choerodon.devops.infra.dto.gitlab.ci.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.dto.maven.Proxy;
+import io.choerodon.devops.infra.dto.maven.Repository;
+import io.choerodon.devops.infra.dto.maven.RepositoryPolicy;
+import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -226,6 +230,30 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsCdPipelineService = devopsCdPipelineService;
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
         this.devopsCiJobMapper = devopsCiJobMapper;
+    }
+
+    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
+        List<Server> servers = new ArrayList<>();
+        List<Repository> repositories = new ArrayList<>();
+
+        mavenRepoList.forEach(m -> {
+            if (m.getType() != null) {
+                String[] types = m.getType().split(GitOpsConstants.COMMA);
+                if (types.length > 2) {
+                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                }
+            }
+            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
+                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
+            }
+            repositories.add(new Repository(
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getName()),
+                    Objects.requireNonNull(m.getUrl()),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
+                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
+        });
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
     }
 
     /**
@@ -716,7 +744,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
 
-    private void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
+    protected void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         DevopsDeployInfoVO devopsDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsDeployInfoVO.class);
         if (devopsCdEnvDeployInfoDTO.getAppConfigJson() != null) {
@@ -1933,6 +1961,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 使用能够解密主键加密的json工具解密
             CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
             checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
+            additionalCheck(cdHostDeployConfigVO);
             // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
             DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
             if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
@@ -1998,6 +2027,38 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
 
+    }
+
+    /**
+     * 供子类拓展
+     *
+     * @param cdHostDeployConfigVO
+     */
+    protected void additionalCheck(CdHostDeployConfigVO cdHostDeployConfigVO) {
+        // 创建主机应用，必须输入主机id
+        if (DeployTypeEnum.CREATE.value().equals(cdHostDeployConfigVO.getDeployType()) && cdHostDeployConfigVO.getHostId() == null) {
+            throw new CommonException("error.host.id.is.null");
+        }
+    }
+
+    /**
+     * 主机部署 关联ci任务
+     * 对于创建或更新根据任务名称获取id
+     *
+     * @param pipelineId
+     * @param ciJobName
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
+    public Long getCiJobId(Long pipelineId, String ciJobName) {
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(pipelineId);
+        devopsCiJobDTO.setName(ciJobName);
+        List<DevopsCiJobDTO> ciJobDTOList = devopsCiJobMapper.select(devopsCiJobDTO);
+        if (CollectionUtils.isEmpty(ciJobDTOList)) {
+            throw new CommonException("error.get.ci.job.id");
+        }
+        return ciJobDTOList.get(0).getId();
     }
 
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {

@@ -1614,8 +1614,9 @@ public class GitlabServiceClientOperator {
                                                 String search,
                                                 Integer page,
                                                 Integer size,
+                                                Integer minAccessLevel,
                                                 List<Integer> skipGroups) {
-        return gitlabServiceClient.pagingGroupWithParam(userId, owned, search, page, size, skipGroups).getBody();
+        return gitlabServiceClient.pagingGroupWithParam(userId, owned, search, page, size, minAccessLevel, skipGroups).getBody();
     }
 
     public List<GitlabProjectDTO> listProject(Integer groupId,

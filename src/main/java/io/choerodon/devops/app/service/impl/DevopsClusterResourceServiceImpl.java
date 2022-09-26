@@ -612,7 +612,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
                 && date.after(validFrom) && date.before(validUntil);
     }
 
-    private DevopsClusterDTO checkClusterExist(Long clusterId) {
+    protected DevopsClusterDTO checkClusterExist(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
             throw new CommonException(ERROR_CLUSTER_NOT_EXIST);
@@ -620,7 +620,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         return devopsClusterDTO;
     }
 
-    private ClientVO registerClient(DevopsClusterDTO devopsClusterDTO) {
+    protected ClientVO registerClient(DevopsClusterDTO devopsClusterDTO) {
 
         String clientName = GRAFANA_CLIENT_PREFIX + UUID.randomUUID().toString().substring(0, 6);
         // 添加客户端

@@ -118,7 +118,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String AUTHTYPE_PULL = "pull";
     private static final String CHART = "chart";
     private static final String GIT = ".git";
-    private static final String SONAR_KEY = "%s-%s:%s";
+    protected static final String SONAR_KEY = "%s-%s:%s";
     private static final String PRIVATE_TOKEN_FORMAT = "private-token:%s";
     private static final String PRIVATE_TOKEN_ID_FORMAT = "private-token-id:%s";
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*");
@@ -152,7 +152,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private final Gson gson = new Gson();
     @Value("${services.gitlab.url}")
-    private String gitlabUrl;
+    protected String gitlabUrl;
     @Value("${services.gitlab.proxy-url:}")
     private String gitlabProxyUrl;
     @Value("${services.gitlab.sshUrl}")
@@ -766,7 +766,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         return applicationDTOServiceList.stream().map(appServiceDTO -> dtoToRepVo(appServiceDTO, users)).collect(toList());
     }
 
-    private void initApplicationParamsWithProxyUrl(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
+    protected void initApplicationParamsWithProxyUrl(Long projectId, List<AppServiceDTO> applicationDTOS, String urlSlash) {
         ImmutableProjectInfoVO info = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         for (AppServiceDTO t : applicationDTOS) {
             initApplicationParamsWithProxyUrl(info, t, urlSlash);
@@ -1228,7 +1228,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             params.put("{{ ORG_CODE }}", organizationDTO.getTenantNum());
             params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
             params.put("{{ DOCKER_USERNAME }}", "'" + harborProjectConfig.getUserName() + "'");
-            params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
+            params.put("{{ DOCKER_PASSWORD }}", "'" + harborProjectConfig.getPassword() + "'");
             params.put("{{ HARBOR_CONFIG_ID }}", harborConfigDTO.getId().toString());
             params.put("{{ REPO_TYPE }}", harborConfigDTO.getType());
             params.put("{{ CHOERODON_URL }}", gatewayUrl);
@@ -1518,7 +1518,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+        String key = getSonarKey(appServiceDTO, projectDTO, organization);
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
 
         //校验sonarqube地址是否正确
@@ -1820,8 +1820,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         return sonarContentsVO;
     }
 
+    protected String getSonarKey(AppServiceDTO appServiceDTO, ProjectDTO projectDTO, Tenant organization) {
+        return String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+    }
+
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
-        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO));
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.HOURS);
     }
 
     public String getTimestampTimeV17(String str) {
@@ -1863,7 +1867,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = String.format(SONAR_KEY, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
+        String key = getSonarKey(applicationDTO, projectDTO, organizationDTO);
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);

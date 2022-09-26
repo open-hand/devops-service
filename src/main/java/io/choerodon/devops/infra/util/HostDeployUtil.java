@@ -22,8 +22,8 @@ import io.choerodon.devops.infra.dto.repo.DockerDeployDTO;
 public class HostDeployUtil {
 
     private static final String HOST_COMMAND_TEMPLATE;
-    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "curl -fsSLo \"%s\" -u \"%s:%s\" \"%s\"";
-    private static final String FILE_DOWNLOAD_COMMAND = "curl -fsSLo \"%s\" \"%s\"";
+    private static final String FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND = "rm -rf %s && curl -fsSLo \"%s\" -u \"%s:%s\" \"%s\"";
+    private static final String FILE_DOWNLOAD_COMMAND = "rm -rf %s && curl -fsSLo \"%s\" \"%s\"";
 
     private HostDeployUtil() {
     }
@@ -60,9 +60,9 @@ public class HostDeployUtil {
 
     public static String getDownloadCommand(String pullUserId, String pullUserPassword, String downloadUrl, String appFile) {
         if (!ObjectUtils.isEmpty(pullUserId) && !ObjectUtils.isEmpty(pullUserPassword)) {
-            return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, pullUserId, pullUserPassword, downloadUrl);
+            return String.format(FILE_DOWNLOAD_WITH_AUTHENTICATION_COMMAND, appFile, appFile, pullUserId, pullUserPassword, downloadUrl);
         } else {
-            return String.format(FILE_DOWNLOAD_COMMAND, appFile, downloadUrl);
+            return String.format(FILE_DOWNLOAD_COMMAND, appFile, appFile, downloadUrl);
         }
     }
 

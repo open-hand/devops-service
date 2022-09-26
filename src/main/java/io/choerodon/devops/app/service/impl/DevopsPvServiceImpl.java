@@ -159,7 +159,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         assignPermission(null, permissionUpdateVO);
     }
 
-    private void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
+    protected void checkEnv(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         //校验用户是否有环境的权限
         devopsEnvUserPermissionService.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsEnvironmentDTO.getId());
 

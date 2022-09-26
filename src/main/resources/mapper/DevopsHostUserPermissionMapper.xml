@@ -27,7 +27,7 @@
     </sql>
 
     <select id="queryPermissionLabelByHostIdAndUserId"
-            resultType="java.lang.String">
+            resultType="java.lang.String" flushCache="true">
     SELECT permission_label FROM devops_host_user_permission dhup
         WHERE dhup.host_id=#{hostId}
         AND dhup.iam_user_id=#{userId}

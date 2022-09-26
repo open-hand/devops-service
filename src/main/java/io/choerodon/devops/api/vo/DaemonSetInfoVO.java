@@ -45,6 +45,18 @@ public class DaemonSetInfoVO {
     @ApiModelProperty("来源类型 chart/工作负载")
     private String sourceType;
 
+    @Encrypt
+    @ApiModelProperty("环境id")
+    Long envId;
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
     public Long getNumberReady() {
         return numberReady;
     }
