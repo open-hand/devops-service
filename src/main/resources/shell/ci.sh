@@ -584,6 +584,15 @@ function mvnCompile() {
         ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1"
     fi
 }
+
+# $1 是否跳过单元测试
+function mvnCompileUseSettings() {
+    if [ -z $KUBERNETES_SERVICE_HOST ];then
+        ssh -o StrictHostKeyChecking=no root@kaniko "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1 -s settings.xml"
+    else
+        ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1 -s settings.xml"
+    fi
+}
 # 重新镜像上传相关变量，用于控制推送到不同镜像仓库
 # $1 projectId
 # $2 repoType
