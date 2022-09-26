@@ -34,10 +34,11 @@ public class DevopsCiDockerBuildStepHandlerImpl extends DevopsCiImageBuildStepHa
         String dockerBuildCmd = "docker build -t ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} --file %s %s";
         String dockerPushCmd = "docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}";
         commands.add(String.format(dockerBuildCmd, dockerFilePath, dockerBuildContextDir));
-        commands.add(dockerPushCmd);
         if (imageScan) {
             String resolveCommond = "trivyScanImageForDocker %s";
             commands.add(String.format(resolveCommond, jobId));
         }
+        commands.add(dockerPushCmd);
+
     }
 }
