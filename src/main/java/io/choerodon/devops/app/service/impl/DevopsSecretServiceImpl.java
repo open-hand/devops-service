@@ -1,18 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1Secret;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -158,30 +157,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
-    public SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO) {
-        SecretRespVO secretRespVO = new SecretRespVO();
-        BeanUtils.copyProperties(devopsSecretDTO, secretRespVO);
-        Map<String, String> secretMaps = gson
-                .fromJson(devopsSecretDTO.getValue(), new TypeToken<Map<String, String>>() {
-                }.getType());
-        secretRespVO.setValue(secretMaps);
-        for (Map.Entry<String, String> e : secretRespVO.getValue().entrySet()) {
-            if (!e.getKey().equals(DOCKER_CONFIG_JSON)) {
-                secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
-            } else {
-                secretMaps.put(e.getKey(), e.getValue());
-            }
-        }
-        List<String> key = new ArrayList<>();
-        secretMaps.forEach((key1, value) -> key.add(key1));
-        secretRespVO.setKey(key);
-        secretRespVO.setCommandStatus(devopsSecretDTO.getCommandStatus());
-        secretRespVO.setLastUpdateDate(devopsSecretDTO.getLastUpdateDate());
-        secretRespVO.setValue(secretMaps);
-        return secretRespVO;
-    }
-
-    @Override
     public SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO) {
         SecretReqVO secretReqVO = new SecretReqVO();
         BeanUtils.copyProperties(devopsSecretDTO, secretReqVO);
@@ -227,7 +202,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         metadata.setName(devopsSecretDTO.getName());
         secret.setMetadata(metadata);
         secret.setType("Opaque");
-        secret.setData(devopsSecretDTO.getValueMap());
+        Map<String, byte[]> data = new HashMap<>();
+        devopsSecretDTO.getValueMap().forEach((k, v) -> {
+            data.put(k, v.getBytes());
+        });
+        secret.setData(data);
         return secret;
     }
 

@@ -48,8 +48,6 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
                        @Param("appServiceId") Long appServiceId,
                        @Param("appServiceInstanceCode") String appServiceInstanceCode);
 
-    String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appServiceId") Long appServiceId);
-
     List<AppServiceInstanceOverViewDTO> listApplicationInstanceOverView(@Param("projectId") Long projectId, @Param("appServiceId") Long appServiceId, @Param("envIds") List<Long> envIds);
 
     String queryValueByInstanceId(@Param("instanceId") Long instanceId);
@@ -97,8 +95,6 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
     void updateStatus(@Param("instanceId") Long instanceId,
                       @Param("status") String status);
 
-    List<DevopsEnvAppServiceDTO> listAllDistinctWithoutDeleted();
-
     List<AppServiceInstanceDTO> listByProjectIdsAndAppServiceId(@Param("projectIds") Set<Long> projectIds,
                                                                 @Param("appServiceId") Long appServiceId);
 
@@ -121,11 +117,6 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
      * @return 信息
      */
     List<AppServiceInstanceDTO> queryByInstanceIds(@Param("instanceIds") List<Long> instanceIds);
-
-    /**
-     * 查询指定时间内到现在的应用实例id
-     */
-    List<AppServiceInstanceDTO> queryInstanceByAppServiceIds(@Param("appServiceIds") List<Long> appServiceIds);
 
     /**
      * 查询实例的版本

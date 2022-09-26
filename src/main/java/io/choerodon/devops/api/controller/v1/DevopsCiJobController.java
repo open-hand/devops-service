@@ -123,4 +123,18 @@ public class DevopsCiJobController {
         String response = devopsCiJobService.queryMavenSettings(projectId, token, job_id, sequence);
         return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
     }
+
+    @ApiOperation("获取job指定sequence的step的maven构建的settings文件内容")
+    @Permission(permissionPublic = true)
+    @GetMapping("/maven_settings/{id}")
+    public ResponseEntity<String> querySettingsById(
+            @ApiParam("猪齿鱼项目id")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用服务token", required = true)
+            @RequestParam(value = "token") String token,
+            @ApiParam("猪齿鱼中流水线job id")
+            @PathVariable(value = "id") Long id) {
+        String response = devopsCiJobService.queryMavenSettings(projectId, token, id);
+        return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
+    }
 }

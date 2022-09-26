@@ -1,9 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
+
+import java.util.*;
 
 import com.google.gson.Gson;
 import org.springframework.beans.BeanUtils;
@@ -19,13 +18,11 @@ import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
 import io.choerodon.devops.api.vo.DevopsConfigVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.AppServiceVersionService;
-import io.choerodon.devops.app.service.DevopsConfigService;
-import io.choerodon.devops.app.service.DevopsProjectService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
@@ -58,39 +55,73 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     private AppServiceService appServiceService;
     @Autowired
     private AppServiceVersionService appServiceVersionService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
 
     @Override
     public void operate(Long resourceId, String resourceType, List<DevopsConfigVO> devopsConfigVOS) {
         devopsConfigVOS.forEach(devopsConfigVO -> {
-            //根据每个配置的默认还是自定义执行不同逻辑
-            DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
-            if (devopsConfigVO.getCustom()) {
-                //根据配置所在的资源层级，查询出数据库中是否存在
-                DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
-                if (devopsConfigDTO != null) {
-                    // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
-                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
-                        updateResourceId(devopsConfigDTO.getId());
+            if (devopsConfigVO.getType().equals(CHART)) {
+                DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+                devopsHelmConfigDTO.setUrl(devopsConfigVO.getConfig().getUrl());
+                devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
+                devopsHelmConfigDTO.setUsername(devopsConfigVO.getConfig().getUserName());
+                devopsHelmConfigDTO.setPassword(devopsConfigVO.getConfig().getPassword());
+                if (!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword())) {
+                    devopsHelmConfigDTO.setRepoPrivate(true);
+                } else {
+                    devopsHelmConfigDTO.setRepoPrivate(false);
+                }
+
+                devopsHelmConfigDTO.setResourceType(ResourceLevel.ORGANIZATION.value());
+                devopsHelmConfigDTO.setResourceId(resourceId);
+                devopsHelmConfigDTO.setRepoDefault(true);
+                DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.ORGANIZATION.value(), resourceId);
+                if (oldConfigDTO == null) {
+                    devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
+                } else if (oldConfigDTO.getUrl().equals(devopsHelmConfigDTO.getUrl())) {
+                    if (!oldConfigDTO.getUsername().equals(devopsHelmConfigDTO.getUsername())
+                            || !oldConfigDTO.getPassword().equals(devopsHelmConfigDTO.getPassword())) {
+                        devopsHelmConfigDTO.setId(oldConfigDTO.getId());
+                        devopsHelmConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
+                        devopsHelmConfigService.updateDevopsHelmConfig(devopsHelmConfigDTO);
+                    }
+                } else {
+                    oldConfigDTO.setRepoDefault(false);
+                    devopsHelmConfigService.updateDevopsHelmConfig(oldConfigDTO);
+                    devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
+                }
+            } else {
+                //根据每个配置的默认还是自定义执行不同逻辑
+                DevopsConfigDTO devopsConfigDTO = baseQueryByResourceAndType(resourceId, resourceType, devopsConfigVO.getType());
+                if (devopsConfigVO.getCustom()) {
+                    //根据配置所在的资源层级，查询出数据库中是否存在
+                    DevopsConfigDTO newDevopsConfigDTO = voToDto(devopsConfigVO);
+                    if (devopsConfigDTO != null) {
+                        // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
+                        if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                            updateResourceId(devopsConfigDTO.getId());
+                            setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                            newDevopsConfigDTO.setId(null);
+                            baseCreate(newDevopsConfigDTO);
+                        } else {
+                            newDevopsConfigDTO.setId(devopsConfigDTO.getId());
+                            setResourceId(resourceId, resourceType, newDevopsConfigDTO);
+                            baseUpdate(newDevopsConfigDTO);
+                        }
+                    } else {
                         setResourceId(resourceId, resourceType, newDevopsConfigDTO);
                         newDevopsConfigDTO.setId(null);
                         baseCreate(newDevopsConfigDTO);
-                    } else {
-                        newDevopsConfigDTO.setId(devopsConfigDTO.getId());
-                        setResourceId(resourceId, resourceType, newDevopsConfigDTO);
-                        baseUpdate(newDevopsConfigDTO);
                     }
                 } else {
-                    setResourceId(resourceId, resourceType, newDevopsConfigDTO);
-                    newDevopsConfigDTO.setId(null);
-                    baseCreate(newDevopsConfigDTO);
-                }
-            } else {
-                //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
-                if (devopsConfigDTO != null) {
-                    if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
-                        updateResourceId(devopsConfigDTO.getId());
-                    } else {
-                        baseDelete(devopsConfigDTO.getId());
+                    //根据配置所在的资源层级，查询出数据库中是否存在，存在则删除
+                    if (devopsConfigDTO != null) {
+                        if (appServiceVersionService.isVersionUseConfig(devopsConfigDTO.getId(), devopsConfigVO.getType())) {
+                            updateResourceId(devopsConfigDTO.getId());
+                        } else {
+                            baseDelete(devopsConfigDTO.getId());
+                        }
                     }
                 }
             }
@@ -178,11 +209,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigVO queryRealConfigVO(Long resourceId, String resourceType, String configType) {
-        return dtoToVo(queryRealConfig(resourceId, resourceType, configType, AUTHTYPE_PULL));
-    }
-
-    @Override
     public DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.insert(devopsConfigDTO) != 1) {
             throw new CommonException("error.devops.project.config.create");
@@ -217,11 +243,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     }
 
     @Override
-    public DevopsConfigDTO baseCheckByName(String name) {
-        return devopsConfigMapper.queryByNameWithNoProject(name);
-    }
-
-    @Override
     public Page<DevopsConfigDTO> basePageByOptions(Long projectId, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
@@ -252,7 +273,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (type.equals(HARBOR)) {
             devopsConfigDTO.setName(MiscConstants.DEFAULT_HARBOR_NAME);
         } else {
-            devopsConfigDTO.setName(MiscConstants.DEFAULT_CHART_NAME);
+            devopsConfigDTO.setName(DEFAULT_CHART_NAME);
         }
         return devopsConfigMapper.selectOne(devopsConfigDTO);
     }
@@ -295,8 +316,6 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         if (devopsConfigVO.getType().equals(HARBOR)) {
             devopsConfigRepVO.setHarbor(devopsConfigVO);
             devopsConfigRepVO.setHarborPrivate(devopsConfigVO.getHarborPrivate());
-        } else if (devopsConfigVO.getType().equals(CHART)) {
-            devopsConfigRepVO.setChart(devopsConfigVO);
         }
     }
 
@@ -309,16 +328,33 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(resourceId);
             devopsConfigRepVO.setHarborPrivate(devopsProjectDTO.getHarborProjectIsPrivate());
         }
+        // 设置chart仓库
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(resourceType, resourceId);
+        if (devopsHelmConfigDTO != null) {
+            ConfigVO configVO = new ConfigVO();
+            configVO.setUrl(devopsHelmConfigDTO.getUrl());
+            configVO.setUserName(devopsHelmConfigDTO.getUsername());
+            configVO.setPassword(devopsHelmConfigDTO.getPassword());
+            configVO.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
+
+            DevopsConfigVO chart = new DevopsConfigVO();
+            chart.setType(CHART);
+            chart.setCustom(true);
+            chart.setConfig(configVO);
+            devopsConfigRepVO.setChart(chart);
+        }
         return devopsConfigRepVO;
     }
 
     @Override
     public void operateConfig(Long resourceId, String resourceType, DevopsConfigRepVO devopsConfigRepVO) {
         List<DevopsConfigVO> configVOS = new ArrayList<>();
-        DevopsConfigVO chart;
+        DevopsConfigVO chart = null;
         if (ObjectUtils.isEmpty(devopsConfigRepVO.getChart())) {
-            chart = new DevopsConfigVO();
-            chart.setCustom(false);
+            if (ResourceLevel.ORGANIZATION.value().equals(resourceType)) {
+                devopsHelmConfigService.updateDevopsHelmConfigToNonDefaultRepoOnOrganization(resourceId);
+                return;
+            }
         } else {
             chart = devopsConfigRepVO.getChart();
             chart.setCustom(Boolean.TRUE);
@@ -337,6 +373,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             // 用户名和密码要么都为空, 要么都有值
             CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
         }
+        if (chart == null) {
+            return;
+        }
         chart.setType(CHART);
         configVOS.add(chart);
         operate(resourceId, resourceType, configVOS);
@@ -347,6 +386,11 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
         List<DevopsConfigDTO> devopsConfigDTOS = devopsConfigMapper.listByConfigs(configIds);
         devopsConfigDTOS.stream().filter(devopsConfigDTO -> devopsConfigDTO.getAppServiceId() != null)
                 .forEach(devopsConfigDTO -> devopsConfigMapper.deleteByPrimaryKey(devopsConfigDTO.getId()));
+    }
+
+    @Override
+    public List<DevopsConfigDTO> listAllChart() {
+        return devopsConfigMapper.listAllChart();
     }
 }
 

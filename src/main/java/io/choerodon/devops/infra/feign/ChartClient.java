@@ -15,6 +15,7 @@ public interface ChartClient {
 
     /**
      * 用于获取ChartMuseum首页以校验用户名密码的正确性
+     *
      * @return 首页的html内容
      */
     @GET("/")
@@ -38,4 +39,8 @@ public interface ChartClient {
                                                 @Path("proCode") String proCode,
                                                 @Path("chartName") String chartName,
                                                 @Path("chartVersion") String chartVersion);
+
+    @GET("{orgCode}/{proCode}/index.yaml")
+    Call<String> getIndex(@Path("orgCode") String orgCode,
+                          @Path("proCode") String proCode);
 }

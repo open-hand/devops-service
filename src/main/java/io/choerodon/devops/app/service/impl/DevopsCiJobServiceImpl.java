@@ -264,8 +264,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
         }
 
+        List<DevopsCiJobDTO> devopsCiJobDTOS = listByPipelineId(ciPipelineId);
+        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
+            return;
+        }
+        List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         // 删除maven settings
-        deleteMavenSettingsRecordByJobIds(listByPipelineId(ciPipelineId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList()));
+        deleteMavenSettingsRecordByJobIds(jobIds);
+
+        // 删除步骤
+        devopsCiStepService.deleteByJobIds(jobIds);
 
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
@@ -348,6 +356,19 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public List<DevopsCiJobDTO> listAll() {
         return devopsCiJobMapper.selectAll();
+    }
+
+    @Override
+    public String queryMavenSettings(Long projectId, String token, Long id) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+        }
+        DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(id);
+        if (devopsCiMavenSettingsDTO == null) {
+            throw new DevopsCiInvalidException("error.ci.maven.settings.not.found");
+        }
+        return devopsCiMavenSettingsDTO.getMavenSettings();
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

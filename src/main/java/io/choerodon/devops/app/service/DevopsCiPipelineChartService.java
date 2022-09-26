@@ -14,5 +14,6 @@ public interface DevopsCiPipelineChartService {
 
     void baseCreate(DevopsCiPipelineChartDTO devopsCiPipelineChartDTO);
 
+    void deleteByAppServiceId(Long appServiceId);
 }
 

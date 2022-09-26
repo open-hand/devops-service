@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
-import io.choerodon.devops.infra.dto.DevopsHostUserPermissionDTO;
-import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
+import io.choerodon.devops.infra.dto.*;
 
 /**
  * 批量插入的配置
@@ -31,6 +29,21 @@ public class BatchInsertHelperConfig {
 
     @Bean("devopsAppCenterHelper")
     public BatchInsertHelper<DevopsDeployAppCenterEnvDTO> devopsAppCenterHelper(SqlSessionFactory sqlSessionFactory) {
+        return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
+    }
+
+    @Bean("devopsHelmConfigHelper")
+    public BatchInsertHelper<DevopsHelmConfigDTO> devopsHelmConfigDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
+        return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
+    }
+
+    @Bean("appServiceHelmConfigHelper")
+    public BatchInsertHelper<AppServiceHelmRelDTO> appServiceHelmRelDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
+        return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
+    }
+
+    @Bean("appServiceVersionHelmConfigHelper")
+    public BatchInsertHelper<AppServiceHelmVersionDTO> appServiceHelmVersionDTOBatchInsertHelper(SqlSessionFactory sqlSessionFactory) {
         return new BatchInsertHelper<>(sqlSessionFactory, this.sliceSize);
     }
 }

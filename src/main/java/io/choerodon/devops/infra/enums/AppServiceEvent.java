@@ -23,6 +23,11 @@ public enum AppServiceEvent {
     BRANCH_DELETE(20),
 
     /**
+     * 分支同步
+     */
+    BRANCH_SYNC(30),
+
+    /**
      * 标记List
      */
     TAG_LIST(10),

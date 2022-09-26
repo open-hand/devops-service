@@ -1,19 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1PersistentVolume;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1PersistentVolume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsPvReqVO;
@@ -182,7 +182,7 @@ public class HandlerPersistentVolumeServiceImpl implements HandlerObjectFileRela
         devopsPvReqVO.setEnvId(envId);
         devopsPvReqVO.setName(pv.getMetadata().getName());
         devopsPvReqVO.setCommandType(type);
-        Map<String,String> labels=pv.getMetadata().getLabels();
+        Map<String, String> labels = pv.getMetadata().getLabels();
         if (!CollectionUtils.isEmpty(labels)) {
             devopsPvReqVO.setLabels(JsonHelper.marshalByJackson(pv.getMetadata().getLabels()));
         }

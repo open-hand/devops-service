@@ -61,10 +61,15 @@ public class AppServiceVersionController {
             @RequestBody(required = false) String params,
             @ApiParam(value = "指定版本")
             @RequestParam(required = false) String version) {
-        return Optional.ofNullable(appServiceVersionService.pageByOptions(
-                projectId, appServiceId, appServiceVersionId, deployOnly, doPage, params, pageable, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.pageByOptions(
+                projectId,
+                appServiceId,
+                appServiceVersionId,
+                deployOnly,
+                doPage,
+                params,
+                pageable,
+                version));
     }
 
 

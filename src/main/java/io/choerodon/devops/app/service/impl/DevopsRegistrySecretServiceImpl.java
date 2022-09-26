@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -94,13 +93,6 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
                 Objects.requireNonNull(clusterId),
                 Objects.requireNonNull(namespace),
                 Objects.requireNonNull(projectId));
-    }
-
-    @Override
-    public List<DevopsRegistrySecretDTO> baseListByConfig(Long configId) {
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-        devopsRegistrySecretDTO.setConfigId(configId);
-        return devopsRegistrySecretMapper.select(devopsRegistrySecretDTO);
     }
 
     @Override

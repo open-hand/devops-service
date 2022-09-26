@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -129,15 +131,5 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
         devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);
         devopsCdAuditRecordDTO.setUserId(userId);
         return devopsCdAuditRecordMapper.selectOne(devopsCdAuditRecordDTO);
-    }
-
-    @Override
-    public void fixProjectId() {
-        List<DevopsCdAuditRecordDTO> devopsCdAuditDTOS = devopsCdAuditRecordMapper.selectAll();
-        Set<Long> jobRecordIds = devopsCdAuditDTOS.stream().filter(i -> i.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toSet());
-
-        List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.selectByIds(StringUtils.join(jobRecordIds, ","));
-
-        devopsCdJobRecordDTOS.forEach(i -> devopsCdAuditRecordMapper.updateProjectIdByJobRecordId(i.getProjectId(), i.getId()));
     }
 }

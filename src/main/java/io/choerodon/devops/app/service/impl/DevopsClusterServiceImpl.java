@@ -145,7 +145,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      * @param clusterId 集群id
      * @return key
      */
-    private String renderClusterInfoRedisKey(Long clusterId) {
+    public static String renderClusterInfoRedisKey(Long clusterId) {
         return String.format(CLUSTER_INFO_KEY_TEMPLATE, Objects.requireNonNull(clusterId));
     }
 

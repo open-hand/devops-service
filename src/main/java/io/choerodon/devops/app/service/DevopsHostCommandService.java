@@ -40,6 +40,4 @@ public interface DevopsHostCommandService {
     void batchUpdateTimeoutCommand(Set<Long> missCommands);
 
     List<DevopsHostCommandDTO> listByIds(Set<Long> missCommands);
-
-    List<DevopsHostCommandDTO> listByTypeAndInsIds(Set<Long> insIds, String instanceType);
 }
