@@ -108,6 +108,14 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
     }
 
     @Override
+    public void baseCreate(Long stepId, DevopsCiMavenBuildConfigVO mavenBuildConfig) {
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
+        devopsCiMavenBuildConfigDTO.setId(null);
+        devopsCiMavenBuildConfigDTO.setStepId(stepId);
+        baseCreate(devopsCiMavenBuildConfigDTO);
+    }
+
+    @Override
     public void batchDeleteByStepIds(Set<Long> stepIds) {
         devopsCiMavenBuildConfigMapper.batchDeleteByStepIds(stepIds);
     }
