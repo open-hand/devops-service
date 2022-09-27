@@ -180,6 +180,8 @@ public interface DevopsServiceService {
 
     void baseUpdateEndPoint(Long id);
 
+    void baseUpdateAnnotations(Long id);
+
     DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId);
 
     Boolean baseCheckServiceByEnv(Long envId);

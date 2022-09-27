@@ -27,6 +27,15 @@ public class AppServiceVO {
     @Encrypt
     @ApiModelProperty("外部仓库配置id")
     private Long externalConfigId;
+    private String annotations;
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
+    }
 
     public List<AppServiceVersionVO> getAllAppServiceVersions() {
         return allAppServiceVersions;

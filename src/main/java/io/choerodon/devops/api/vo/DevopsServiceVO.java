@@ -66,6 +66,16 @@ public class DevopsServiceVO extends DevopsResourceDataInfoVO {
     @ApiModelProperty("pod实时信息")
     private List<PodLiveInfoVO> podLiveInfos;
 
+    private Map<String, String> annotations;
+
+    public Map<String, String> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(Map<String, String> annotations) {
+        this.annotations = annotations;
+    }
+
     public Long getInstanceId() {
         return instanceId;
     }

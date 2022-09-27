@@ -57,6 +57,17 @@ public class DevopsServiceReqVO {
     @ApiModelProperty("绑定的igress")
     private DevopsIngressVO devopsIngressVO;
 
+    @ApiModelProperty("注解")
+    private Map<String, String> annotations;
+
+    public Map<String, String> getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(Map<String, String> annotations) {
+        this.annotations = annotations;
+    }
+
     public Map<String, String> getSelectors() {
         return selectors;
     }
