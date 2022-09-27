@@ -16,8 +16,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiTemplateSonarService;
+import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
 import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -38,7 +40,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
  * @since 2021/11/29 16:19
  */
 @Service
-public class DevopsSonarStepHandler extends DevopsCiMavenBuildStepHandler {
+public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
     private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
@@ -50,14 +52,21 @@ public class DevopsSonarStepHandler extends DevopsCiMavenBuildStepHandler {
     private DevopsConfigService devopsConfigService;
     @Autowired
     private CiTemplateSonarService ciTemplateSonarService;
-
+    @Autowired
+    private DevopsCiMavenBuildConfigService devopsCiMavenBuildConfigService;
 
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        super.saveConfig(stepId, devopsCiStepVO);
+        DevopsCiSonarConfigVO sonarConfig = devopsCiStepVO.getSonarConfig();
+        // 报错mvn配置
+        DevopsCiMavenBuildConfigVO mavenBuildConfig = sonarConfig.getMavenBuildConfig();
+        if (mavenBuildConfig != null) {
+            devopsCiMavenBuildConfigService.baseCreate(stepId, mavenBuildConfig);
+        }
+
         // 保存任务配置
-        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiStepVO.getSonarConfig();
+        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(sonarConfig, DevopsCiSonarConfigDTO.class);
         devopsCiSonarConfigDTO.setStepId(stepId);
         devopsCiSonarConfigDTO.setId(null);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
@@ -66,22 +75,28 @@ public class DevopsSonarStepHandler extends DevopsCiMavenBuildStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        super.fillTemplateStepConfigInfo((ciTemplateStepVO));
+        // 步骤模板没有mvn配置,所以只填充maven信息
         ciTemplateStepVO.setSonarConfig(ciTemplateSonarService.queryByStepId(ciTemplateStepVO.getId()));
     }
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        super.fillTemplateStepConfigInfo(devopsCiStepVO);
         CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setSonarConfig(ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigDTO.class));
+        devopsCiStepVO.setSonarConfig(ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigVO.class));
     }
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        super.fillStepConfigInfo(devopsCiStepVO);
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigDTO);
+        DevopsCiSonarConfigVO devopsCiSonarConfigVO = ConvertUtils.convertObject(devopsCiSonarConfigDTO, DevopsCiSonarConfigVO.class);
+
+        // 添加maven配置
+        DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepVO.getId());
+        if (devopsCiMavenBuildConfigDTO != null) {
+            devopsCiSonarConfigVO.setMavenBuildConfig(devopsCiMavenBuildConfigService.dtoToVo(devopsCiMavenBuildConfigDTO));
+        }
+
+        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigVO);
     }
 
     @Override
@@ -160,7 +175,7 @@ public class DevopsSonarStepHandler extends DevopsCiMavenBuildStepHandler {
 
     @Override
     public void batchDeleteConfig(Set<Long> stepIds) {
-        super.batchDeleteConfig(stepIds);
+        devopsCiMavenBuildConfigService.batchDeleteByStepIds(stepIds);
         devopsCiSonarConfigService.batchDeleteByStepIds(stepIds);
     }
 
@@ -171,7 +186,7 @@ public class DevopsSonarStepHandler extends DevopsCiMavenBuildStepHandler {
 
     @Override
     protected Boolean isConfigComplete(DevopsCiStepVO ciTemplateStepVO) {
-        DevopsCiSonarConfigDTO sonarConfig = ciTemplateStepVO.getSonarConfig();
+        DevopsCiSonarConfigVO sonarConfig = ciTemplateStepVO.getSonarConfig();
         if (sonarConfig == null) {
             return false;
         }

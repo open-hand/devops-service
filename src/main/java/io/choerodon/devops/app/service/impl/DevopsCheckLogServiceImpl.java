@@ -551,7 +551,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public void devopsCiPipelineDataFix() {
 
         fixBuildJob();
-        fixSonarJob();
         fixChartJob();
         fixCustomJob();
     }
@@ -657,73 +656,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         } else {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline ci chart job data, but exist errors! Failed job ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
-            }
-        }
-    }
-
-    private void fixSonarJob() {
-        List<DevopsCiJobDTO> devopsCiJobDTOList = devopsCiJobMapper.listOldDataByType(JobTypeEnum.SONAR.value());
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Start fix pipeline ci sonar job data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        Set<Long> errorJobIds = new HashSet<>();
-        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOList) {
-            try {
-                if (devopsCiJobDTO != null) {
-                    CiCdPipelineVO ciCdPipelineVO = devopsCiCdPipelineMapper.queryById(devopsCiJobDTO.getCiPipelineId());
-                    Long devopsCiJobId = devopsCiJobDTO.getId();
-                    Long projectId = ciCdPipelineVO.getProjectId();
-
-                    // 需要修复的内容
-                    // 1. job的所属分组信息
-                    // 将构建任务拆分为单步骤的任务
-                    List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                    if (JobTypeEnum.SONAR.value().equals(devopsCiJobDTO.getOldType())) {
-                        SonarQubeConfigVO sonarQubeConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), SonarQubeConfigVO.class);
-                        DevopsCiStepVO devopsCiStepVO = new DevopsCiStepVO();
-                        devopsCiStepVO.setDevopsCiJobId(devopsCiJobId);
-                        devopsCiStepVO.setName("SonarQube代码检查");
-                        devopsCiStepVO.setSequence(0L);
-                        devopsCiStepVO.setType(DevopsCiStepTypeEnum.SONAR.value());
-                        DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = ConvertUtils.convertObject(sonarQubeConfigVO, DevopsCiSonarConfigDTO.class);
-                        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigDTO);
-                        devopsCiStepVOList.add(devopsCiStepVO);
-
-                        devopsCiJobDTO.setType(CiJobTypeEnum.NORMAL.value());
-                        devopsCiJobDTO.setGroupType(CiTemplateJobGroupTypeEnum.CODE_SCAN.value());
-
-                    }
-
-                    // 保证可重复执行，报错step信息前先删除旧数据
-                    List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(devopsCiJobId);
-                    if (!CollectionUtils.isEmpty(devopsCiStepDTOS)) {
-                        Map<String, List<DevopsCiStepDTO>> stepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getType));
-                        // 按类型级联删除
-                        stepMap.forEach((k, v) -> {
-                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(k);
-                            handler.batchDeleteCascade(v);
-                        });
-                    }
-
-                    // 更新job step信息
-                    if (!CollectionUtils.isEmpty(devopsCiStepVOList)) {
-                        for (DevopsCiStepVO devopsCiStepVO : devopsCiStepVOList) {
-                            AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(devopsCiStepVO.getType());
-                            handler.save(projectId, devopsCiJobId, devopsCiStepVO);
-                        }
-                    }
-                    // 更新job信息
-                    devopsCiJobMapper.updateByPrimaryKeySelective(devopsCiJobDTO);
-                }
-            } catch (Exception e) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>Fix pipeline ci sonar job data : {} failed! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", devopsCiJobDTO.getId());
-                errorJobIds.add(devopsCiJobDTO.getId());
-            }
-        }
-
-        if (CollectionUtils.isEmpty(errorJobIds)) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline ci sonar job data! <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-        } else {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>End fix pipeline ci sonar job data, but exist errors! Failed job ids is : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(errorJobIds));
             }
         }
     }

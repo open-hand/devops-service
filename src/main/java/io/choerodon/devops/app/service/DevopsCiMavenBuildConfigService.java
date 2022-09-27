@@ -23,6 +23,8 @@ public interface DevopsCiMavenBuildConfigService {
 
     void baseCreate(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO);
 
+    void baseCreate(Long stepId, DevopsCiMavenBuildConfigVO mavenBuildConfig);
+
     void batchDeleteByStepIds(Set<Long> stepIds);
 
     DevopsCiMavenBuildConfigDTO voToDto(DevopsCiMavenBuildConfigVO mavenBuildConfigVO);
