@@ -64,4 +64,6 @@ public interface DevopsServiceMapper extends BaseMapper<DevopsServiceDTO> {
 
     boolean isAllServicesInTheAppService(@Param("serviceIds") Set<Long> serviceIds,
                                          @Param("appServiceId") Long appServiceId);
+
+    void updateAnnotationsToNull(@Param("id") Long id);
 }

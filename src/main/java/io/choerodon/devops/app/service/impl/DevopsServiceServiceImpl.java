@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -580,6 +581,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     }
 
     @Override
+    public void baseUpdateAnnotations(Long id) {
+        devopsServiceMapper.updateAnnotationsToNull(id);
+    }
+
+    @Override
     public DevopsServiceDTO baseQueryByNameAndEnvId(String name, Long envId) {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setName(name);
@@ -664,6 +670,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
         if (devopsServiceQueryDTO.getClusterIp() != null) {
             devopsServiceConfigVO.setClusterIp(devopsServiceQueryDTO.getClusterIp());
+        }
+        if (!ObjectUtils.isEmpty(devopsServiceQueryDTO.getAnnotations())) {
+            devopsServiceVO.setAnnotations(JsonHelper.unmarshalByJackson(devopsServiceQueryDTO.getAnnotations(), new TypeReference<Map<String, String>>() {
+            }));
         }
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
@@ -857,6 +867,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             baseUpdateSelectors(devopsServiceDTO.getId());
             devopsServiceDTO.setSelectors(null);
         }
+        if (devopsServiceReqVO.getAnnotations() != null) {
+            devopsServiceDTO.setAnnotations(JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()));
+        } else {
+            baseUpdateAnnotations(devopsServiceDTO.getId());
+            devopsServiceDTO.setAnnotations(null);
+        }
         if (devopsServiceReqVO.getEndPoints() != null) {
             devopsServiceDTO.setEndPoints(gson.toJson(devopsServiceReqVO.getEndPoints()));
         } else {
@@ -938,6 +954,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 isUpdate = true;
             }
         }
+        if (!isUpdate && devopsServiceReqVO.getAnnotations() != null && devopsServiceDTO.getAnnotations() != null) {
+            if (!JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()).equals(devopsServiceDTO.getAnnotations())) {
+                isUpdate = true;
+            }
+        }
+
         if (!isUpdate && devopsServiceReqVO.getEndPoints() != null && devopsServiceDTO.getEndPoints() != null) {
             if (!gson.toJson(devopsServiceReqVO.getEndPoints()).equals(devopsServiceDTO.getEndPoints())) {
                 isUpdate = true;
