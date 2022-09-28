@@ -85,7 +85,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     @Override
     public List<PipelineTemplateVO> listTemplateForProject(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        return pipelineTemplatemapper.listTemplateForProject(projectDTO.getOrganizationId());
+        return pipelineTemplatemapper.listTemplateForProject(projectId, projectDTO.getOrganizationId());
     }
 
     @Override

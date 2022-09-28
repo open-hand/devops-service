@@ -58,7 +58,9 @@
                  left join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
         where dpt.enable = 1
           and ((dpt.source_type = 'site' and dpt.source_id = 0)
-            or (dpt.source_type = 'organization' and dpt.source_id = #{organizationId}))
+            or (dpt.source_type = 'organization' and dpt.source_id = #{organizationId})
+            or ( dpt.source_type = 'project' and dpt.source_id = #{projectId} )
+            )
         order by dpt.ci_template_category_id
     </select>
 </mapper>
