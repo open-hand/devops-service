@@ -54,10 +54,9 @@ public class CiTemplateStepServiceImpl implements CiTemplateStepService {
 
     @Override
     public List<CiTemplateStepCategoryVO> listStepsByProjectId(Long projectId) {
-
         // 先查询所有步骤
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateStepMapper.listStepsByOrganizationIdId(projectDTO.getOrganizationId());
+        List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateStepMapper.listStepsByOrganizationIdId(projectId, projectDTO.getOrganizationId());
         ciTemplateStepVOS.forEach(ciTemplateStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(ciTemplateStepVO.getType());
             devopsCiStepHandler.fillTemplateStepConfigInfo(ciTemplateStepVO);
