@@ -16,6 +16,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineTemplateMapper extends BaseMapper<PipelineTemplateDTO> {
 
-    List<PipelineTemplateVO> listTemplateForProject(@Param("organizationId") Long organizationId);
+    List<PipelineTemplateVO> listTemplateForProject(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId);
 }
 
