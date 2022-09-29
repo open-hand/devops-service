@@ -1,3 +1,4 @@
+#!/bin/bash
 # 获取的组织编码
 export ORG_CODE={{ ORG_CODE }}
 # 获取的项目编码
