@@ -324,12 +324,14 @@ function saveJarMetadata() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 
@@ -352,12 +354,14 @@ function saveJarInfo() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
@@ -382,12 +386,14 @@ function saveCustomJarMetadata() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
@@ -413,12 +419,14 @@ function saveCustomJarInfo() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 
