@@ -402,7 +402,7 @@ function saveCustomJarInfo() {
     -F "token=${Token}" \
     -F "mvn_settings_id=$1" \
     -F "sequence=$2" \
-    -F "maven_repo_url='$3'" \
+    -F "maven_repo_url=$3" \
     -F "username='$4'" \
     -F "password='$5'" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
