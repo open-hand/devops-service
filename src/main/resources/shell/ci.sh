@@ -407,6 +407,7 @@ function saveCustomJarInfo() {
     -F "password='$5'" \
     -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
     -F "job_name=${CI_JOB_NAME}" \
+    -F "version=${CI_COMMIT_TAG}" \
     -F "file=@pom.xml" \
     "${CHOERODON_URL}/devops/ci/save_jar_info" \
     -o "${CI_COMMIT_SHA}-ci.response" \
