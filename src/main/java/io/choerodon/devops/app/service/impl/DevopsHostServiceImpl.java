@@ -5,15 +5,20 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.AssertUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -221,6 +226,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
         checkEnableHostDelete(hostId);
+        //校验流水线是否引用了该主机
+        List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
+        AssertUtils.isTrue(CollectionUtils.isEmpty(ciCdPipelineDTOS), handHostCheckMsg(ciCdPipelineDTOS));
         CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         try {
             devopsHostMapper.deleteByPrimaryKey(hostId);
@@ -888,5 +896,12 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         map.put("status", status);
         map.put("exception", exception);
         return map;
+    }
+
+    @NotNull
+    private static Supplier<String> handHostCheckMsg(List<CiCdPipelineDTO> ciCdPipelineDTOS) {
+        return () -> {
+            throw new CommonException("error.host.linked.pipeline.delete", ciCdPipelineDTOS.get(0) == null ? "" : ciCdPipelineDTOS.get(0).getName());
+        };
     }
 }
