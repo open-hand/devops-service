@@ -115,9 +115,13 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "searchParam", required = false) String searchParam,
+            @ApiParam(value = "是否启用")
+            @RequestParam(value = "enableFlag", required = false) Boolean enableFlag,
+            @ApiParam(value = "最近执行状态")
+            @RequestParam(value = "status", required = false) String status,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest));
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest, enableFlag, status));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
