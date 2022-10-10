@@ -224,11 +224,10 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Override
     public void deleteHost(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        if (devopsHostDTO == null) {
-            return;
-        }
+        if (devopsHostDTO == null) return;
         devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        checkEnableHostDelete(hostId);
+        //不在校验主机的连接状态
+//        checkEnableHostDelete(hostId);
         //校验流水线是否引用了该主机
         List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
         AssertUtils.isTrue(CollectionUtils.isEmpty(ciCdPipelineDTOS), handHostCheckMsg(ciCdPipelineDTOS));
@@ -380,7 +379,6 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     public boolean checkHostDelete(Long projectId, Long hostId) {
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         if (Objects.isNull(devopsHostDTO)) return Boolean.TRUE;
-        AssertUtils.isTrue(!hostConnectionHandler.getHostConnectionStatus(hostId), "error.host.linked.not.delete");
         //主机关联流水线任务不能删除
         List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
         if (!CollectionUtils.isEmpty(ciCdPipelineDTOS)) return Boolean.FALSE;
