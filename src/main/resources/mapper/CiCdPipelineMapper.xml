@@ -40,7 +40,7 @@
                 </foreach>
             </if>
             <if test="enableFlag!=null">
-                and dcp.enableFlag = #{enableFlag}
+                and dcp.is_enabled = #{enableFlag}
             </if>
             <if test="status != null">
                 <choose>
