@@ -19,8 +19,8 @@
         FROM devops_cicd_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
         <if test="status != null">
-            left join (select * from devops_pipeline_record_rel order by id desc limit 1) ldprr on ldprr.pipeline_id =
-            dcp.id
+            LEFT JOIN devops_pipeline_record_rel ldprr ON ldprr.id = (SELECT max(id) FROM devops_pipeline_record_rel
+            WHERE pipeline_id = dcp.id)
             left join devops_ci_pipeline_record dcpr on dcpr.id = ldprr.ci_pipeline_record_id
             left join devops_cd_pipeline_record dcpr2 on dcpr2.id = ldprr.cd_pipeline_record_id
         </if>
@@ -50,19 +50,18 @@
                     <when test="status != null and status == 'success'">
                         and (
                         dcpr2.status = 'success'
-                        or (dcpr2.status = null and dcpr.status = 'success')
+                        or (dcpr2.status is null and dcpr.status = 'success')
                         )
                     </when>
                     <when test="status != null and status == 'skipped'">
                         and (dcpr2.status = 'skipped'
                         or dcpr.status = 'skipped'
-                        or (dcpr2.status = null and dcpr.status = null)
+                        or (dcpr2.status is null and dcpr.status is null)
                         )
                     </when>
                     <when test="status != null and status == 'failed'">
                         and (dcpr2.status = 'failed' or dcpr.status = 'failed' )
                     </when>
-
                     <otherwise>
                         and (dcpr2.status = #{status} or dcpr.status = #{status} )
                     </otherwise>
