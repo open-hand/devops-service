@@ -889,13 +889,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
             appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             //如果是项目成员，需要developer及以上的权限
+            ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getTenantId(), projectId, userId);
             // 添加外部应用服务
             appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));

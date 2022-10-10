@@ -42,29 +42,32 @@
             <if test="enableFlag!=null">
                 and dcp.enableFlag = #{enableFlag}
             </if>
-            <choose>
-                <when test="status != null and status = 'not_audit'">
-                    and dcpr2.status = 'not_audit'
-                </when>
-                <when test="status != null and status = 'success'">
-                    and (
-                    dcpr2.status = 'success'
-                    or (dcpr2.status = null and dcpr.status = 'success')
-                    )
-                </when>
-                <when test="status != null and status = 'skipped'">
-                    and (dcpr2.status = 'skipped'
-                    or dcpr.status = 'skipped'
-                    or (dcpr2.status = null and dcpr.status = null)
-                    )
-                </when>
-                <when test="status != null and status = 'failed'">
-                    and (dcpr2.status = 'failed' or dcpr.status = 'failed' )
-                </when>
-                <otherwise>
-                    and (dcpr2.status = #{status} or dcpr.status = #{status} )
-                </otherwise>
-            </choose>
+            <if test="status != null">
+                <choose>
+                    <when test="status != null and status == 'not_audit'">
+                        and dcpr2.status = 'not_audit'
+                    </when>
+                    <when test="status != null and status == 'success'">
+                        and (
+                        dcpr2.status = 'success'
+                        or (dcpr2.status = null and dcpr.status = 'success')
+                        )
+                    </when>
+                    <when test="status != null and status == 'skipped'">
+                        and (dcpr2.status = 'skipped'
+                        or dcpr.status = 'skipped'
+                        or (dcpr2.status = null and dcpr.status = null)
+                        )
+                    </when>
+                    <when test="status != null and status == 'failed'">
+                        and (dcpr2.status = 'failed' or dcpr.status = 'failed' )
+                    </when>
+
+                    <otherwise>
+                        and (dcpr2.status = #{status} or dcpr.status = #{status} )
+                    </otherwise>
+                </choose>
+            </if>
         </where>
         ORDER BY dcp.id DESC
     </select>
