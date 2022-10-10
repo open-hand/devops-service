@@ -18,11 +18,19 @@
         dcp.last_updated_by,dcp.creation_date
         FROM devops_cicd_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
+        <if test="status != null">
+            left join (select * from devops_pipeline_record_rel order by id desc limit 1) ldprr on ldprr.pipeline_id =
+            dcp.id
+            left join devops_ci_pipeline_record dcpr on dcpr.id = ldprr.ci_pipeline_record_id
+            left join devops_cd_pipeline_record dcpr2 on dcpr2.id = ldprr.cd_pipeline_record_id
+        </if>
         <where>
             dcp.project_id = #{projectId}
             <if test="searchParam != null">
-                and das.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                and (das.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                or das.code like CONCAT(CONCAT('%', #{searchParam}),'%')
                 or dcp.name like CONCAT(CONCAT('%', #{searchParam}),'%')
+                )
             </if>
             <if test="appServiceIds!=null and appServiceIds.size>0">
                 and dcp.app_service_id in
@@ -31,6 +39,32 @@
                     #{appServiceId}
                 </foreach>
             </if>
+            <if test="enableFlag!=null">
+                and dcp.enableFlag = #{enableFlag}
+            </if>
+            <choose>
+                <when test="status != null and status = 'not_audit'">
+                    and dcpr2.status = 'not_audit'
+                </when>
+                <when test="status != null and status = 'success'">
+                    and (
+                    dcpr2.status = 'success'
+                    or (dcpr2.status = null and dcpr.status = 'success')
+                    )
+                </when>
+                <when test="status != null and status = 'skipped'">
+                    and (dcpr2.status = 'skipped'
+                    or dcpr.status = 'skipped'
+                    or (dcpr2.status = null and dcpr.status = null)
+                    )
+                </when>
+                <when test="status != null and status = 'failed'">
+                    and (dcpr2.status = 'failed' or dcpr.status = 'failed' )
+                </when>
+                <otherwise>
+                    and (dcpr2.status = #{status} or dcpr.status = #{status} )
+                </otherwise>
+            </choose>
         </where>
         ORDER BY dcp.id DESC
     </select>
