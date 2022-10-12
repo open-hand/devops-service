@@ -2130,31 +2130,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
 
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
-            // 使用能够解密主键加密的json工具解密
-            CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
-            additionalCheck(cdHostDeployConfigVO);
-            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
-            DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
-            if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
-            }
-            if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
-                devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
-                devopsCdHostDeployInfoDTO.setKillCommand(null);
-                devopsCdHostDeployInfoDTO.setPreCommand(null);
-                devopsCdHostDeployInfoDTO.setRunCommand(null);
-                devopsCdHostDeployInfoDTO.setPostCommand(null);
-            }
-
-            if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
-                // 校验应用编码和应用名称
-                devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
-                devopsCdHostDeployInfoDTO.setAppId(null);
-            }
-            devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
-            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
+            handlerHostInfo(t, projectId, pipelineId, devopsCdJobDTO);
 
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             // 如果审核任务，审核人员只有一个人，则默认设置为或签
@@ -2195,6 +2171,34 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             createUserRel(t.getCdAuditUserIds(), projectId, pipelineId, jobId);
         }
 
+    }
+
+    protected void handlerHostInfo(DevopsCdJobVO t, Long projectId, Long pipelineId, DevopsCdJobDTO devopsCdJobDTO) {
+        // 使用能够解密主键加密的json工具解密
+        CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+        checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
+        additionalCheck(cdHostDeployConfigVO);
+        // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
+        if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+        }
+        if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
+            devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
+            devopsCdHostDeployInfoDTO.setKillCommand(null);
+            devopsCdHostDeployInfoDTO.setPreCommand(null);
+            devopsCdHostDeployInfoDTO.setRunCommand(null);
+            devopsCdHostDeployInfoDTO.setPostCommand(null);
+        }
+
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
+            // 校验应用编码和应用名称
+            devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+            devopsCdHostDeployInfoDTO.setAppId(null);
+        }
+        devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
+        devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
     }
 
     /**
