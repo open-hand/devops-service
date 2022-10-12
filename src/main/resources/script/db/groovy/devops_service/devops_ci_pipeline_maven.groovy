@@ -62,4 +62,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_maven.groovy') {
             column(name: "password", type: "VARCHAR(255)", afterColumn: "username")
         }
     }
+
+    changeSet(author: 'lihao', id: '2022-10-12-add-column') {
+        addColumn(tableName: 'devops_ci_pipeline_maven') {
+            column(name: "artifact_type", type: "VARCHAR(32)", afterColumn: "maven_repo_url",defaultValue: 'jar')
+        }
+    }
 }
