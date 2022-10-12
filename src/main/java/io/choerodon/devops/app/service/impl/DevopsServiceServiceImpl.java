@@ -867,7 +867,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             baseUpdateSelectors(devopsServiceDTO.getId());
             devopsServiceDTO.setSelectors(null);
         }
-        if (devopsServiceReqVO.getAnnotations() != null) {
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations())) {
             devopsServiceDTO.setAnnotations(JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()));
         } else {
             baseUpdateAnnotations(devopsServiceDTO.getId());
@@ -954,8 +954,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 isUpdate = true;
             }
         }
-        if (!isUpdate && devopsServiceReqVO.getAnnotations() != null && devopsServiceDTO.getAnnotations() != null) {
-            if (!JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()).equals(devopsServiceDTO.getAnnotations())) {
+        if (!isUpdate) {
+            // 将annotations去掉
+            if (ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && !ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations())) {
+                isUpdate = true;
+            } else if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations())) {
+                // 添加annotations
+                isUpdate = true;
+            } else if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && !ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations()) && !JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()).equals(devopsServiceDTO.getAnnotations())) {
+                // 修改annotations
                 isUpdate = true;
             }
         }
