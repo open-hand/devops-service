@@ -6,17 +6,11 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
-import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -37,7 +31,7 @@ public class DevopsCiPipelineRecordController {
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/{gitlab_pipeline_id}/details")
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
@@ -65,7 +59,7 @@ public class DevopsCiPipelineRecordController {
     /**
      * Cancel jobs in a pipeline
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "取消GitLab流水线")
     @PostMapping(value = "/{gitlab_pipeline_id}/cancel")
     public ResponseEntity<Boolean> cancel(
