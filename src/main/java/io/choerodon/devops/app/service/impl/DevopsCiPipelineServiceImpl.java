@@ -2196,6 +2196,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             // 校验应用编码和应用名称
             devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
             devopsCdHostDeployInfoDTO.setAppId(null);
+        } else {
+            if (devopsCdHostDeployInfoDTO.getAppId() != null) {
+                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
+                devopsCdHostDeployInfoDTO.setHostId(devopsHostAppDTO.getHostId());
+            }
         }
         devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
         devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
