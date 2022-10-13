@@ -523,12 +523,6 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
 
-    @PutMapping("/v1/hook")
-    ResponseEntity<ProjectHookDTO> updateProjectHook(
-            @RequestParam("projectId") Integer projectId,
-            @RequestParam("hookId") Integer hookId,
-            @RequestParam("userId") Integer userId);
-
     @GetMapping("/v1/hook")
     ResponseEntity<List<ProjectHookDTO>> listProjectHook(
             @RequestParam("projectId") Integer projectId,
