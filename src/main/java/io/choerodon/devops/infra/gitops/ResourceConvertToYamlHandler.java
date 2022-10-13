@@ -1,5 +1,14 @@
 package io.choerodon.devops.infra.gitops;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
@@ -11,15 +20,6 @@ import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -252,12 +252,17 @@ public class ResourceConvertToYamlHandler<T> {
                 Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
                 Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
+                if (newAnnotations == null) {
+                    newAnnotations = new java.util.HashMap<>();
+                }
                 if (!CollectionUtils.isEmpty(oldAnnotations)) {
-                    oldAnnotations.forEach((key, value) -> {
+                    for (java.util.Map.Entry<String, String> entry : oldAnnotations.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
                         if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
                             newAnnotations.put(key, value);
                         }
-                    });
+                    }
                 }
                 newV1Service.getMetadata().setAnnotations(newAnnotations);
             } else {
