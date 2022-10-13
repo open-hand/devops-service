@@ -209,7 +209,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
 
         //初始化V1Service对象
-        V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+        V1Service v1Service = initV1Service(devopsServiceReqVO);
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqVO.getEndPoints() != null) {
             // 应用服务下不能创建endpoints类型网络
@@ -236,7 +236,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
 
         //初始化V1Service对象
-        V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+        V1Service v1Service = initV1Service(devopsServiceReqVO);
 
         // 先创建网络纪录
         baseCreate(devopsServiceDTO);
@@ -310,7 +310,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             return false;
         } else {
             //初始化V1Service对象
-            V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+            V1Service v1Service = initV1Service(devopsServiceReqVO);
             if (devopsServiceReqVO.getEndPoints() != null) {
                 // 应用服务下的网络更新为EndPoints类型时，应用服务id更新为null
                 if (devopsServiceDTO.getTargetAppServiceId() != null) {
@@ -993,13 +993,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     /**
      * 获取k8s service的yaml格式
      */
-    private V1Service initV1Service(DevopsServiceReqVO devopsServiceReqVO, Map<String, String> annotations) {
+    private V1Service initV1Service(DevopsServiceReqVO devopsServiceReqVO) {
         V1Service service = new V1Service();
         service.setKind(SERVICE);
         service.setApiVersion("v1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsServiceReqVO.getName());
-        metadata.setAnnotations(annotations);
+        metadata.setAnnotations(devopsServiceReqVO.getAnnotations());
         Map<String, String> label = new HashMap<>();
         label.put(SERVICE_LABLE, SERVICE_LABLE_VALUE);
         metadata.setLabels(label);
