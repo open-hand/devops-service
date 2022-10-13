@@ -249,22 +249,7 @@ public class ResourceConvertToYamlHandler<T> {
         V1Service newV1Service;
         if (objectType.equals(ResourceType.SERVICE.getType()) && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
-                Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
-                Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
-                if (newAnnotations == null) {
-                    newAnnotations = new java.util.HashMap<>();
-                }
-                if (!CollectionUtils.isEmpty(oldAnnotations)) {
-                    for (java.util.Map.Entry<String, String> entry : oldAnnotations.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
-                            newAnnotations.put(key, value);
-                        }
-                    }
-                }
-                newV1Service.getMetadata().setAnnotations(newAnnotations);
             } else {
                 return;
             }
