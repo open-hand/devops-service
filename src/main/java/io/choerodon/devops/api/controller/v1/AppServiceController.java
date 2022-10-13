@@ -39,7 +39,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/app_service")
 public class AppServiceController {
 
-    private static final String ERROR_APPLICATION_GET = "error.app.service.get";
     private final AppServiceService applicationServiceService;
 
     public AppServiceController(AppServiceService applicationServiceService) {
@@ -431,9 +430,7 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceRepVO>> listByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(applicationServiceService.listByActive(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+        return ResponseEntity.ok(applicationServiceService.listByActive(projectId));
     }
 
     /**
@@ -454,9 +451,7 @@ public class AppServiceController {
             @RequestParam("target_project_id") Long targetProjectId,
             @Encrypt @RequestParam(value = "target_app_service_id", required = false) Long targetAppServiceId
     ) {
-        return Optional.ofNullable(applicationServiceService.pageByActive(projectId, targetProjectId, targetAppServiceId, pageRequest, param))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+        return ResponseEntity.ok(applicationServiceService.pageByActive(projectId, targetProjectId, targetAppServiceId, pageRequest, param));
     }
 
     /**
@@ -472,9 +467,7 @@ public class AppServiceController {
     public ResponseEntity<Integer> countByActive(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(applicationServiceService.countByActive(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+        return ResponseEntity.ok(applicationServiceService.countByActive(projectId));
     }
 
     /**
@@ -563,9 +556,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务编码", required = true)
             @RequestParam String code) {
-        return Optional.ofNullable(applicationServiceService.queryByCode(projectId, code))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
+        return ResponseEntity.ok(applicationServiceService.queryByCode(projectId, code));
     }
 
     /**

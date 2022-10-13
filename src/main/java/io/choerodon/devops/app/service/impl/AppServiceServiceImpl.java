@@ -2,6 +2,9 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.ERROR_CODE_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.ERROR_NAME_EXIST;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -261,7 +264,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
             CI_FILE_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.ci.sh");
+            throw new CommonException(ERROR_LOAD_CI_SH);
         }
     }
 
@@ -284,7 +287,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         boolean isTemplateVersionNull = appServiceReqVO.getTemplateAppServiceVersionId() == null;
 
         if ((isTemplateNull && !isTemplateVersionNull) || (!isTemplateNull && isTemplateVersionNull)) {
-            throw new CommonException("error.template.fields");
+            throw new CommonException(ERROR_TEMPLATE_FIELDS);
         }
 
         // 查询创建应用服务所在的gitlab应用组
@@ -410,23 +413,23 @@ public class AppServiceServiceImpl implements AppServiceService {
         // 禁止删除未失败或者启用状态的应用服务
         if (Boolean.TRUE.equals(appServiceDTO.getActive())
                 && Boolean.FALSE.equals(appServiceDTO.getFailed())) {
-            throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
+            throw new CommonException(ERROR_DELETE_NONFAILED_APP_SERVICE, appServiceDTO.getName());
         }
         // 验证改应用服务在其他项目是否被生成实例
         checkAppserviceIsShareDeploy(projectId, appServiceId);
         AppServiceMsgVO checkResult = checkCanDisable(appServiceId, projectId);
         if (checkResult.getCheckResources()) {
-            throw new CommonException("error.delete.application.service.due.to.share");
+            throw new CommonException(ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_SHARE);
         }
         if (checkResult.getCheckRule()) {
-            throw new CommonException("error.delete.application.service.due.to.resources");
+            throw new CommonException(ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_RESOURCES);
         }
         if (checkResult.getCheckCi()) {
-            throw new CommonException("error.delete.application.service.due.to.ci.pipeline");
+            throw new CommonException(ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_CI_PIPELINE);
         }
 
         if (devopsCiPipelineService.selectCountByAppServiceId(appServiceId) != 0) {
-            throw new CommonException("error.delete.app.service.due.to.ci.pipeline", appServiceId);
+            throw new CommonException(ERROR_DELETE_APP_SERVICE_DUE_TO_CI_PIPELINE, appServiceId);
         }
 
         appServiceDTO.setSynchro(Boolean.FALSE);
@@ -467,7 +470,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            throw new CommonException("error.not.delete.service.by.other.project.deployment");
+            throw new CommonException(ERROR_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT);
         }
     }
 
@@ -602,7 +605,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 // 如果能停用，删除其和他所属项目下的环境之间的关联关系
                 devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
             } else {
-                throw new CommonException("error.disable.or.enable.application.service");
+                throw new CommonException(ERROR_DISABLE_OR_ENABLE_APPLICATION_SERVICE);
             }
         }
 
@@ -827,14 +830,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void checkName(Long projectId, String name) {
         if (!isNameUnique(projectId, name)) {
-            throw new CommonException("error.name.exist");
+            throw new CommonException(ERROR_NAME_EXIST);
         }
     }
 
     @Override
     public void checkCode(Long projectId, String code) {
         if (!isCodeUnique(projectId, code)) {
-            throw new CommonException("error.code.exist");
+            throw new CommonException(ERROR_CODE_EXIST);
         }
     }
 
@@ -1016,7 +1019,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 && StringUtils.hasText(devOpsAppServiceImportPayload.getRepositoryUrl())) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
-                throw new CommonException("error.temp.git.url");
+                throw new CommonException(ERROR_TEMP_GIT_URL);
             }
             String templateVersion = tempUrl[1];
             String repositoryUrl = tempUrl[0];
@@ -1074,7 +1077,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             try {
                 gitUtil.commitAndPushForMaster(git, appServiceDTO.getRepoUrl(), "init app from template", accessToken);
             } catch (Exception e) {
-                throw new CommonException("init app from template failed", e);
+                throw new CommonException(ERROR_INIT_APP_FROM_TEMPLATE_FAILED, e);
             } finally {
                 releaseResources(applicationWorkDir, git);
             }
@@ -1429,9 +1432,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             getHealth.execute();
         } catch (Exception e) {
             if (e instanceof IllegalArgumentException) {
-                throw new CommonException("error.chart.url.base", e.getMessage());
+                throw new CommonException(ERROR_CHART_URL_BASE, e.getMessage());
             } else {
-                throw new CommonException("error.chart.not.available", e.getMessage());
+                throw new CommonException(ERROR_CHART_NOT_AVAILABLE, e.getMessage());
             }
         }
 
@@ -1442,10 +1445,10 @@ public class AppServiceServiceImpl implements AppServiceService {
             Call<Void> getHomePage = chartClient.getHomePage();
             response = getHomePage.execute();
         } catch (Exception ex) {
-            throw new CommonException("error.chart.authentication.failed");
+            throw new CommonException(ERROR_CHART_AUTHENTICATION_FAILED);
         }
         if (response != null && !response.isSuccessful()) {
-            throw new CommonException("error.chart.authentication.failed");
+            throw new CommonException(ERROR_CHART_AUTHENTICATION_FAILED);
         }
 
         return true;
@@ -1542,7 +1545,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     return new SonarContentsVO();
                 }
                 if (sonarComponentResponse.raw().code() == 401) {
-                    throw new CommonException("error.sonarqube.user");
+                    throw new CommonException(ERROR_SONARQUBE_USER);
                 }
                 throw new CommonException(sonarComponentResponse.errorBody().string());
             }
@@ -1881,7 +1884,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         return new SonarTableVO();
                     }
                     if (sonarTablesResponse.raw().code() == 401) {
-                        throw new CommonException("error.sonarqube.user");
+                        throw new CommonException(ERROR_SONARQUBE_USER);
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
                 }
@@ -2446,8 +2449,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         String applicationDir = APPLICATION + System.currentTimeMillis();
         String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
-        //获取admin的token
-        String pullToken = gitlabServiceClientOperator.getAdminToken();
         //拿到部署对象id 查询文件的地址 project并没有使用
         Long deployObjectId = appServiceImportPayload.getDeployObjectId();
         List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.listDeployObjectsByIds(0L, Stream.of(deployObjectId).collect(toSet()));
@@ -2457,11 +2458,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
         if (StringUtils.isEmpty(marketServiceDeployObjectVO.getMarketSourceCode())) {
-            throw new CommonException("source code vo is null:{}", JsonHelper.marshalByJackson(marketServiceDeployObjectVO));
+            throw new CommonException(ERROR_SOURCE_CODE_VO_IS_NULL, JsonHelper.marshalByJackson(marketServiceDeployObjectVO));
         }
         MarketSourceCodeVO marketSourceCodeVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketSourceCode(), MarketSourceCodeVO.class);
         if (StringUtils.isEmpty(marketSourceCodeVO.getMarketSourceCodeUrl())) {
-            throw new CommonException("source code url is null");
+            throw new CommonException(ERROR_SOURCE_CODE_URL_IS_NULL);
         }
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(marketSourceCodeVO.getDevopsAppServiceVersionId());
 
@@ -2570,7 +2571,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
         applicationDTO.setObjectVersionNumber(oldAppServiceDTO.getObjectVersionNumber());
         if (appServiceMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
-            throw new CommonException("error.app.service.update");
+            throw new CommonException(ERROR_APP_SERVICE_UPDATE);
         }
         return appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
     }
@@ -2780,7 +2781,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceDTO baseCreate(AppServiceDTO appServiceDTO) {
         if (appServiceMapper.insertSelective(appServiceDTO) != 1) {
-            throw new CommonException("error.application.create.insert");
+            throw new CommonException(ERROR_APPLICATION_CREATE_INSERT);
         }
         return appServiceDTO;
     }
@@ -2855,7 +2856,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     return listAllAppServicesHavingVersion(projectId, params, serviceType, includeExternal);
                 }
                 default: {
-                    throw new CommonException("error.list.deploy.app.service.type");
+                    throw new CommonException(ERROR_LIST_DEPLOY_APP_SERVICE_TYPE);
                 }
             }
         } else {
@@ -2945,18 +2946,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             accessToken) {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
         if (Boolean.FALSE.equals(validationResult)) {
-            throw new CommonException("error.repository.token.invalid");
+            throw new CommonException(ERROR_REPOSITORY_TOKEN_INVALID);
         } else if (validationResult == null) {
-            throw new CommonException("error.repository.empty");
+            throw new CommonException(ERROR_REPOSITORY_EMPTY);
         }
     }
 
     private void checkRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String userName, String password) {
         Boolean validationResult = validateRepositoryUrlAndUsernameAndPassword(repositoryUrl, userName, password);
         if (Boolean.FALSE.equals(validationResult)) {
-            throw new CommonException("error.repository.account.invalid");
+            throw new CommonException(ERROR_REPOSITORY_ACCOUNT_INVALID);
         } else if (validationResult == null) {
-            throw new CommonException("error.repository.empty");
+            throw new CommonException(ERROR_REPOSITORY_EMPTY);
         }
     }
 
@@ -3382,7 +3383,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceDTO> appServiceDTOList = appServiceMapper.select(appServiceDTO);
             if (!CollectionUtils.isEmpty(appServiceDTOList)
                     && appServiceDTOList.stream().anyMatch(app -> "none".equals(app.getExternalGitlabUrl()))) {
-                throw new CommonException("error.app.is.already.bind");
+                throw new CommonException(ERROR_APP_IS_ALREADY_BIND);
             }
         });
 
@@ -3562,7 +3563,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void baseCheckApp(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
-            throw new CommonException("error.app.project.notMatch");
+            throw new CommonException(ERROR_APP_PROJECT_NOTMATCH);
         }
     }
 

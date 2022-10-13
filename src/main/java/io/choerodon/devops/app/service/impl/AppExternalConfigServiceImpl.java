@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppExternalConfigServiceCode.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class AppExternalConfigServiceImpl implements AppExternalConfigService {
-
-    private static final String ERROR_INVALID_APP_AUTH_TYPE = "error.invalid.app.auth.type";
-    private static final String ERROR_SAVE_APP_CONFIG_FAILED = "error.save.app.config.failed";
-    private static final String ERROR_UPDATE_APP_CONFIG_FAILED = "error.update.app.config.failed";
 
     @Autowired
     private AppExternalConfigMapper appExternalConfigMapper;
