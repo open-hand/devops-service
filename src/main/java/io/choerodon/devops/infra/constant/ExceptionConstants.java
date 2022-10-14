@@ -39,6 +39,11 @@ public class ExceptionConstants {
         public static final String DEVOPS_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT = "devops.not.delete.service.by.other.project.deployment";
         public static final String DEVOPS_APP_SERVICE_NOT_EXIST = "devops.app.service.not.exist";
         public static final String DEVOPS_APP_SERVICE_DISABLED = "devops.app.service.disabled";
+        public static final String DEVOPS_GITLAB_PROJECT_ID_ASSOCIATED_WITH_OTHER_APP_SERVICE = "devops.gitlab.project.id.associated.with.other.app.service";
+        public static final String DEVOPS_RENAME_FAIL = "devops.rename.fail";
+        public static final String DEVOPS_APP_SERVICE_SYNC = "devops.app.service.sync";
+        public static final String DEVOPS_USER_NOT_GITLAB_PROJECT_OWNER = "devops.user.not.gitlab.project.owner";
+        public static final String DEVOPS_CREATE_PRIVATE_TOKEN = "devops.create.private.token";
 
     }
 
@@ -46,10 +51,17 @@ public class ExceptionConstants {
         public static final String DEVOPS_INSTANCE_NOT_STOP = "devops.instance.not.stop";
         public static final String DEVOPS_INSTANCE_NOT_RUNNING = "devops.instance.not.running";
         public static final String DEVOPS_INSTANCE_RESOURCE_NOT_FOUND = "devops.instance.resource.not.found";
+        public static final String DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST = "devops.app.instance.name.already.exist";
+        public static final String DEVOPS_APPLICATION_INSTANCE_CREATE = "devops.application.instance.create";
+        public static final String DEVOPS_INSTANCE_UPDATE = "devops.instance.update";
     }
 
     public static class AppServiceVersionCode {
         public static final String DEVOPS_VERSION_ID_NOT_EXIST = "devops.version.id.not.exist";
+    }
+
+    public static class EnvCommandCode {
+        public static final String DEVOPS_COMMAND_NOT_EXIST = "devops.command.not.exist";
     }
 
 

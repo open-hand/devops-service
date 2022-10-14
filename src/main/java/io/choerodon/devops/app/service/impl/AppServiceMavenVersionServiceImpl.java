@@ -23,6 +23,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class AppServiceMavenVersionServiceImpl implements AppServiceMavenVersionService {
+
+    public static final String DEVOPS_SAVE_MAVEN_VERSION = "devops.save.maven.version";
+
     @Autowired
     private AppServiceMavenVersionMapper appServiceMavenVersionMapper;
 
@@ -39,7 +42,7 @@ public class AppServiceMavenVersionServiceImpl implements AppServiceMavenVersion
     @Override
     @Transactional
     public void create(AppServiceMavenVersionDTO appServiceMavenVersionDTO) {
-        MapperUtil.resultJudgedInsertSelective(appServiceMavenVersionMapper, appServiceMavenVersionDTO, "error.save.maven.version");
+        MapperUtil.resultJudgedInsertSelective(appServiceMavenVersionMapper, appServiceMavenVersionDTO, DEVOPS_SAVE_MAVEN_VERSION);
     }
 
     @Override

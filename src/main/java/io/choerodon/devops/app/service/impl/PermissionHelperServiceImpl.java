@@ -156,7 +156,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
             throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
 
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
     }
 
@@ -166,7 +166,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
         if (appServiceDTO == null) {
             throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return appServiceDTO;
     }
 
@@ -177,7 +177,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
                 .stream()
                 .map(AppServiceDTO::getId)
                 .collect(Collectors.toList());
-        CommonExAssertUtil.assertTrue(appServiceIdsBelongToProject.containsAll(appServiceIds), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(appServiceIdsBelongToProject.containsAll(appServiceIds), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
     }
 
     @Override

@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_DISABLED;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
@@ -116,7 +116,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * gateway(%s)+市场应用名称(market)+下载地址(market/repo)
      */
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
-    private static final String ERROR_INSTANCE_RESOURCE_JSON_READ_FAILED = "error.instance.resource.json.read.failed";
+    private static final String DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED = "devops.instance.resource.json.read.failed";
 
     @Value("${services.gateway.url}")
     private String gateway;
@@ -591,7 +591,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         try {
             return new InstanceControllerDetailVO(instanceId, new ObjectMapper().readTree(message));
         } catch (IOException e) {
-            throw new CommonException(ERROR_INSTANCE_RESOURCE_JSON_READ_FAILED, instanceId, message);
+            throw new CommonException(DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED, instanceId, message);
         }
     }
 
@@ -725,7 +725,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 自动部署传入的项目id是空的, 不用校验
         if (projectId != null) {
-            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -739,11 +739,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
         if (appServiceDTO == null) {
-            throw new CommonException(DEVOPS_APP_SERVICE_DISABLED);
+            throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
         }
 
         if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
-            throw new CommonException(DEVOPS_APP_SERVICE_DISABLED);
+            throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
         }
 
         AppServiceVersionDTO appServiceVersionDTO =
@@ -1103,7 +1103,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
         // 校验环境和项目匹配
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
     }
 
@@ -1301,7 +1301,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public AppServiceInstanceRepVO queryByCommandId(Long commandId) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
         if (commandId == null) {
-            throw new CommonException("error.command.not.exist", commandId);
+            throw new CommonException(DEVOPS_COMMAND_NOT_EXIST, commandId);
         }
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
         AppServiceInstanceRepVO appServiceInstanceRepVO = new AppServiceInstanceRepVO();
@@ -1640,7 +1640,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 加锁
         if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
-            throw new CommonException(ERROR_INSTANCE_RESOURCE_JSON_READ_FAILED);
+            throw new CommonException(DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED);
         }
 
 
@@ -1648,7 +1648,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 内部调用不需要校验
         if (projectId != null) {
-            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1806,7 +1806,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
-            throw new CommonException("error.app.instance.name.already.exist");
+            throw new CommonException(DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST);
         }
     }
 
@@ -1857,7 +1857,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceInstanceDTO baseCreate(AppServiceInstanceDTO appServiceInstanceDTO) {
         if (appServiceInstanceMapper.insert(appServiceInstanceDTO) != 1) {
-            throw new CommonException("error.application.instance.create");
+            throw new CommonException(DEVOPS_APPLICATION_INSTANCE_CREATE);
         }
         return appServiceInstanceDTO;
     }
@@ -1872,7 +1872,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setObjectVersionNumber(
                 appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId()).getObjectVersionNumber());
         if (appServiceInstanceMapper.updateByPrimaryKeySelective(appServiceInstanceDTO) != 1) {
-            throw new CommonException("error.instance.update");
+            throw new CommonException(DEVOPS_INSTANCE_UPDATE);
         }
     }
 

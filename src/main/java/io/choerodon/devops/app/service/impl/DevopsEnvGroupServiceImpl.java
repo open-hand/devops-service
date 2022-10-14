@@ -50,7 +50,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     @Override
     public DevopsEnvGroupVO update(DevopsEnvGroupVO devopsEnvGroupVO, Long projectId) {
         DevopsEnvGroupDTO devopsEnvGroupDTOToCheck = devopsEnvGroupMapper.selectByPrimaryKey(devopsEnvGroupVO.getId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTOToCheck.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTOToCheck.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupVO.getId(), devopsEnvGroupVO.getName(), projectId);
         DevopsEnvGroupDTO devopsEnvGroupDTO = ConvertUtils.convertObject(devopsEnvGroupVO, DevopsEnvGroupDTO.class);
         devopsEnvGroupDTO.setProjectId(projectId);
@@ -91,7 +91,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             return;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         baseDelete(id);
         //删除环境组，将原环境组内所有环境的env_group_id置为null
