@@ -21,6 +21,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class AppServiceVersionValueServiceImpl implements AppServiceVersionValueService {
 
+    private static final String DEVOPS_VERSION_VALUE_INSERT = "devops.version.value.insert";
+    private static final String DEVOPS_VERSION_VALUE_UPDATE = "devops.version.value.update";
 
     @Autowired
     private AppServiceVersionValueMapper appServiceVersionValueMapper;
@@ -28,14 +30,14 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
     @Override
     public AppServiceVersionValueDTO baseCreate(AppServiceVersionValueDTO appServiceVersionValueDTO) {
         if (appServiceVersionValueMapper.insert(appServiceVersionValueDTO) != 1) {
-            throw new CommonException("error.version.value.insert");
+            throw new CommonException(DEVOPS_VERSION_VALUE_INSERT);
         }
         return appServiceVersionValueDTO;
     }
 
     @Override
     public AppServiceVersionValueDTO baseUpdate(AppServiceVersionValueDTO appServiceVersionValueDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceVersionValueMapper, appServiceVersionValueDTO, "error.version.value.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceVersionValueMapper, appServiceVersionValueDTO, DEVOPS_VERSION_VALUE_UPDATE);
         return appServiceVersionValueDTO;
     }
 

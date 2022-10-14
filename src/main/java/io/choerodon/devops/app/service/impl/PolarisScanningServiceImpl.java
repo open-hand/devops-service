@@ -205,7 +205,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (devopsEnvironmentDTO == null) {
             throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         Long clusterId = devopsEnvironmentDTO.getClusterId();
 
@@ -236,7 +236,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
             if (CollectionUtils.isEmpty(devopsClusterProPermissionDTOS)
                     || devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).noneMatch(v -> v.equals(projectId))) {
-                throw new CommonException(MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+                throw new CommonException(MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             }
         }
         // 校验集群是否连接

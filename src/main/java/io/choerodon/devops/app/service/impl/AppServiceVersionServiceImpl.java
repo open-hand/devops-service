@@ -910,7 +910,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         // 校验版本是否能够删除
         checkVersion(appServiceId, versionIds);
 
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();

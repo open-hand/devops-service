@@ -113,7 +113,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
             if (appServiceDTO == null) {
                 throw new CommonException("error.app.svc.not.found");
             }
-            CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
             String dockerRegistry;
             String groupName;

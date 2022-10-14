@@ -408,7 +408,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 禁止删除未失败或者启用状态的应用服务
         if (Boolean.TRUE.equals(appServiceDTO.getActive())
@@ -470,7 +470,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            throw new CommonException(DEVOPS_APP_SERVICE_DISABLED);
+            throw new CommonException(DEVOPS_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT);
         }
     }
 
@@ -545,7 +545,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return false;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 更新跟pom相关的两个字段
         appServiceMapper.updatePomFields(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getGroupId(), appServiceUpdateDTO.getArtifactId());
@@ -884,7 +884,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param gitlabProjectId gitlab项目id
      */
     private void checkGitlabProjectIdNotUsedBefore(Integer gitlabProjectId) {
-        CommonExAssertUtil.assertTrue(selectCountByGitlabProjectId(gitlabProjectId) == 0, "error.gitlab.project.id.associated.with.other.app.service");
+        CommonExAssertUtil.assertTrue(selectCountByGitlabProjectId(gitlabProjectId) == 0, DEVOPS_GITLAB_PROJECT_ID_ASSOCIATED_WITH_OTHER_APP_SERVICE);
     }
 
     private int selectCountByGitlabProjectId(Integer gitlabProjectId) {
@@ -2502,7 +2502,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 //修改他的名字为new code
                 boolean renameTo = listFile.renameTo(new File(applicationDir + File.separator + newCode));
                 if (!renameTo) {
-                    LOGGER.error("error.rename.fail");
+                    LOGGER.error(DEVOPS_RENAME_FAIL);
                 }
             }
         }
@@ -3771,11 +3771,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String getPrivateToken(Long projectId, String serviceCode, String email) {
         AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
         if (appServiceDTO.getGitlabProjectId() == null) {
-            throw new CommonException("error.app.service.sync");
+            throw new CommonException(DEVOPS_APP_SERVICE_SYNC);
         }
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserDTO.getId())) {
-            throw new CommonException("user.not.gitlab.project.owner");
+            throw new CommonException(DEVOPS_USER_NOT_GITLAB_PROJECT_OWNER);
         }
         String key = String.format(PRIVATE_TOKEN_FORMAT, appServiceDTO.getGitlabProjectId());
         String privateToken = stringRedisTemplate.opsForValue().get(key);
@@ -3788,7 +3788,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             ImpersonationTokenDTO tokenDTO = gitlabServiceClientOperator.createPrivateToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "c7nToken", DateUtil.subOrAddDay(new Date(), 7));
             if (tokenDTO == null) {
-                throw new CommonException("error.create.private.token");
+                throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
             }
             privateToken = tokenDTO.getToken();
             stringRedisTemplate.opsForValue().set(key, privateToken, 7, TimeUnit.DAYS);

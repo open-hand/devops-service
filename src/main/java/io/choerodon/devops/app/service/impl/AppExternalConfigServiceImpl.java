@@ -59,7 +59,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Transactional
     public void update(Long projectId, Long id, AppExternalConfigDTO appExternalConfigDTO) {
         AppExternalConfigDTO appExternalConfigDTORecord = appExternalConfigMapper.selectByPrimaryKey(id);
-        CommonExAssertUtil.assertTrue(projectId.equals(appExternalConfigDTORecord.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appExternalConfigDTORecord.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         appExternalConfigDTO.setId(id);
         appExternalConfigDTO.setProjectId(projectId);
 
