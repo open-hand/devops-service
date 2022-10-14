@@ -51,7 +51,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Transactional
     public void baseSave(AppExternalConfigDTO appExternalConfigDTO) {
         handlerAppExternalConfigDTO(appExternalConfigDTO);
-        MapperUtil.resultJudgedInsertSelective(appExternalConfigMapper, appExternalConfigDTO, ERROR_SAVE_APP_CONFIG_FAILED);
+        MapperUtil.resultJudgedInsertSelective(appExternalConfigMapper, appExternalConfigDTO, DEVOPS_SAVE_APP_CONFIG_FAILED);
 
     }
 
@@ -64,7 +64,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
         appExternalConfigDTO.setProjectId(projectId);
 
         handlerAppExternalConfigDTO(appExternalConfigDTO);
-        MapperUtil.resultJudgedUpdateByPrimaryKey(appExternalConfigMapper, appExternalConfigDTO, ERROR_UPDATE_APP_CONFIG_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appExternalConfigMapper, appExternalConfigDTO, DEVOPS_UPDATE_APP_CONFIG_FAILED);
     }
 
     @Override
@@ -88,7 +88,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
             appExternalConfigDTO.setAccessToken(null);
             appExternalConfigDTO.setPassword(DESEncryptUtil.encode(appExternalConfigDTO.getPassword()));
         } else {
-            throw new CommonException(ERROR_INVALID_APP_AUTH_TYPE);
+            throw new CommonException(DEVOPS_INVALID_APP_AUTH_TYPE);
         }
     }
 }

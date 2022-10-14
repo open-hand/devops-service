@@ -3,49 +3,67 @@ package io.choerodon.devops.infra.constant;
 public class ExceptionConstants {
 
     public static class PublicCode {
-        public static final String ERROR_CODE_EXIST = "error.code.exist";
-        public static final String ERROR_NAME_EXIST = "error.name.exist";
+        public static final String DEVOPS_CODE_EXIST = "devops.code.exist";
+        public static final String DEVOPS_NAME_EXIST = "devops.name.exist";
+        public static final String DEVOPS_RESOURCE_INSERT = "devops.resource.insert";
     }
 
     /**
      * 应用服务相关
      */
     public static class AppServiceCode {
-        public static final String ERROR_DELETE_NONFAILED_APP_SERVICE = "error.delete.nonfailed.app.service";
-        public static final String ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_SHARE = "error.delete.application.service.due.to.share";
-        public static final String ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_RESOURCES = "error.delete.application.service.due.to.resources";
-        public static final String ERROR_DELETE_APPLICATION_SERVICE_DUE_TO_CI_PIPELINE = "error.delete.application.service.due.to.ci.pipeline";
-        public static final String ERROR_DELETE_APP_SERVICE_DUE_TO_CI_PIPELINE = "error.delete.app.service.due.to.ci.pipeline";
-        public static final String ERROR_TEMPLATE_FIELDS = "error.template.fields";
-        public static final String ERROR_LOAD_CI_SH = "error.load.ci.sh";
-        public static final String ERROR_APP_PROJECT_NOTMATCH = "error.app.project.notMatch";
-        public static final String ERROR_APP_IS_ALREADY_BIND = "error.app.is.already.bind";
-        public static final String ERROR_REPOSITORY_EMPTY = "error.repository.empty";
-        public static final String ERROR_REPOSITORY_ACCOUNT_INVALID = "error.repository.account.invalid";
-        public static final String ERROR_REPOSITORY_TOKEN_INVALID = "error.repository.token.invalid";
-        public static final String ERROR_LIST_DEPLOY_APP_SERVICE_TYPE = "error.list.deploy.app.service.type";
-        public static final String ERROR_APPLICATION_CREATE_INSERT = "error.application.create.insert";
-        public static final String ERROR_APP_SERVICE_UPDATE = "error.app.service.update";
-        public static final String ERROR_SOURCE_CODE_URL_IS_NULL = "error.source.code.url.is.null";
-        public static final String ERROR_SOURCE_CODE_VO_IS_NULL = "error.source.code.vo.is.null: {}";
-        public static final String ERROR_SONARQUBE_USER = "error.sonarqube.user";
-        public static final String ERROR_CHART_AUTHENTICATION_FAILED = "error.chart.authentication.failed";
-        public static final String ERROR_CHART_URL_BASE = "error.chart.url.base";
-        public static final String ERROR_CHART_NOT_AVAILABLE = "error.chart.not.available";
-        public static final String ERROR_INIT_APP_FROM_TEMPLATE_FAILED = "error.init.app.from.template.failed";
-        public static final String ERROR_TEMP_GIT_URL = "error.temp.git.url";
-        public static final String ERROR_DISABLE_OR_ENABLE_APPLICATION_SERVICE = "error.disable.or.enable.application.service";
-        public static final String ERROR_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT = "error.not.delete.service.by.other.project.deployment";
+        public static final String DEVOPS_DELETE_NONFAILED_APP_SERVICE = "devops.delete.nonfailed.app.service";
+        public static final String DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_SHARE = "devops.delete.application.service.due.to.share";
+        public static final String DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_RESOURCES = "devops.delete.application.service.due.to.resources";
+        public static final String DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_CI_PIPELINE = "devops.delete.application.service.due.to.ci.pipeline";
+        public static final String DEVOPS_DELETE_APP_SERVICE_DUE_TO_CI_PIPELINE = "devops.delete.app.service.due.to.ci.pipeline";
+        public static final String DEVOPS_TEMPLATE_FIELDS = "devops.template.fields";
+        public static final String DEVOPS_LOAD_CI_SH = "devops.load.ci.sh";
+        public static final String DEVOPS_APP_PROJECT_NOT_MATCH = "devops.app.project.notMatch";
+        public static final String DEVOPS_APP_IS_ALREADY_BIND = "devops.app.is.already.bind";
+        public static final String DEVOPS_REPOSITORY_EMPTY = "devops.repository.empty";
+        public static final String DEVOPS_REPOSITORY_ACCOUNT_INVALID = "devops.repository.account.invalid";
+        public static final String DEVOPS_REPOSITORY_TOKEN_INVALID = "devops.repository.token.invalid";
+        public static final String DEVOPS_LIST_DEPLOY_APP_SERVICE_TYPE = "devops.list.deploy.app.service.type";
+        public static final String DEVOPS_APPLICATION_CREATE_INSERT = "devops.application.create.insert";
+        public static final String DEVOPS_APP_SERVICE_UPDATE = "devops.app.service.update";
+        public static final String DEVOPS_SOURCE_CODE_URL_IS_NULL = "devops.source.code.url.is.null";
+        public static final String DEVOPS_SOURCE_CODE_VO_IS_NULL = "devops.source.code.vo.is.null: {}";
+        public static final String DEVOPS_SONARQUBE_USER = "devops.sonarqube.user";
+        public static final String DEVOPS_CHART_AUTHENTICATION_FAILED = "devops.chart.authentication.failed";
+        public static final String DEVOPS_CHART_URL_BASE = "devops.chart.url.base";
+        public static final String DEVOPS_CHART_NOT_AVAILABLE = "devops.chart.not.available";
+        public static final String DEVOPS_INIT_APP_FROM_TEMPLATE_FAILED = "devops.init.app.from.template.failed";
+        public static final String DEVOPS_TEMP_GIT_URL = "devops.temp.git.url";
+        public static final String DEVOPS_DISABLE_OR_ENABLE_APPLICATION_SERVICE = "devops.disable.or.enable.application.service";
+        public static final String DEVOPS_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT = "devops.not.delete.service.by.other.project.deployment";
+        public static final String DEVOPS_APP_SERVICE_NOT_EXIST = "devops.app.service.not.exist";
+        public static final String DEVOPS_APP_SERVICE_DISABLED = "devops.app.service.disabled";
 
+    }
+
+    public static class AppServiceInstanceCode {
+        public static final String DEVOPS_INSTANCE_NOT_STOP = "devops.instance.not.stop";
+        public static final String DEVOPS_INSTANCE_NOT_RUNNING = "devops.instance.not.running";
+        public static final String DEVOPS_INSTANCE_RESOURCE_NOT_FOUND = "devops.instance.resource.not.found";
+    }
+
+    public static class AppServiceVersionCode {
+        public static final String DEVOPS_VERSION_ID_NOT_EXIST = "devops.version.id.not.exist";
+    }
+
+
+    public static class EnvironmentCode {
+        public static final String DEVOPS_ENV_ID_NOT_EXIST = "devops.env.id.not.exist";
     }
 
     /**
      * 外置仓库配置相关
      */
     public static class AppExternalConfigServiceCode {
-        public static final String ERROR_INVALID_APP_AUTH_TYPE = "devops.invalid.app.auth.type";
-        public static final String ERROR_SAVE_APP_CONFIG_FAILED = "devops.save.app.config.failed";
-        public static final String ERROR_UPDATE_APP_CONFIG_FAILED = "devops.update.app.config.failed";
+        public static final String DEVOPS_INVALID_APP_AUTH_TYPE = "devops.invalid.app.auth.type";
+        public static final String DEVOPS_SAVE_APP_CONFIG_FAILED = "devops.save.app.config.failed";
+        public static final String DEVOPS_UPDATE_APP_CONFIG_FAILED = "devops.update.app.config.failed";
     }
 
 }

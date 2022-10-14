@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
 import java.util.*;
@@ -78,7 +79,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected static final String README = "README.md";
     protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
-    private static final String ERROR_CODE_EXIST = "error.code.exist";
+    private static final String ERROR_CODE_EXIST = "devops.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
@@ -872,7 +873,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
 
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", gitlabProjectPayload.getPath());
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, gitlabProjectPayload.getPath());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupE.getIamProjectId());
         CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
@@ -1369,7 +1370,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
@@ -1992,7 +1993,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
         // 查询环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
         // 校验环境和项目匹配
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;

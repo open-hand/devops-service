@@ -233,9 +233,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody AppServiceUpdateDTO appServiceUpdateDTO) {
-        return Optional.ofNullable(applicationServiceService.update(projectId, appServiceUpdateDTO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.update"));
+        return ResponseEntity.ok(applicationServiceService.update(projectId, appServiceUpdateDTO));
     }
 
     /**

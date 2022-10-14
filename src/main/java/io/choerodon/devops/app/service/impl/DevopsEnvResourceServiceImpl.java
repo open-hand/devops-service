@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.models.V1beta1Ingress;
@@ -11,11 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -535,7 +537,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO) {
         if (devopsEnvResourceMapper.insert(devopsEnvResourceDTO) != 1) {
-            throw new CommonException("error.resource.insert");
+            throw new CommonException(DEVOPS_RESOURCE_INSERT);
         }
     }
 

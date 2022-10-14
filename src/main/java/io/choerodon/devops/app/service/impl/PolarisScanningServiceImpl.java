@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -39,7 +41,6 @@ import io.choerodon.devops.infra.util.*;
 public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
 
-    private static final String ERROR_ENV_ID_NOT_EXIST = "error.env.id.not.exist";
     private static final String ERROR_PROJECT_NOT_FOUND = "error.project.not.found";
 
     /**
@@ -103,7 +104,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (PolarisScopeType.ENV == scopeType) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
             if (devopsEnvironmentDTO == null) {
-                throw new CommonException(ERROR_ENV_ID_NOT_EXIST, scopeId);
+                throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, scopeId);
             }
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
@@ -181,7 +182,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public String queryEnvPolarisResult(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
 
         // 校验用户权限
@@ -202,7 +203,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 

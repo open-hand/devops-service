@@ -48,7 +48,7 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
     @Override
     @Transactional
     public void baseDeleteById(Long appServiceServiceValueId) {
-        Assert.notNull(appServiceServiceValueId, ResourceCheckConstant.ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL);
+        Assert.notNull(appServiceServiceValueId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_VALUE_ID_IS_NULL);
         appServiceVersionValueMapper.deleteByPrimaryKey(appServiceServiceValueId);
     }
 
