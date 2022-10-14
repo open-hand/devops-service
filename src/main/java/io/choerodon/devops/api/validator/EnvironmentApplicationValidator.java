@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.validator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,7 @@ public class EnvironmentApplicationValidator {
         }
 
         if (devopsEnvironmentMapper.selectByPrimaryKey(envId) == null) {
-            throw new CommonException("error.env.id.not.exist", envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
     }
 

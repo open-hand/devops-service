@@ -11,6 +11,7 @@ public class ResourceCheckConstant {
     private ResourceCheckConstant() {
 
     }
+
     // app
     public static final String ERROR_APP_GROUP_ID_IS_NULL = "error.app.group.id.is.null";
     public static final String ERROR_APP_ARTIFACT_ID_IS_NULL = "error.app.artifact.id.is.null";
@@ -18,8 +19,8 @@ public class ResourceCheckConstant {
 
 
     // app service version
-    public static final String ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL = "error.service.version.value.id.is.null";
-    public static final String ERROR_SERVICE_VERSION_ID_IS_NULL = "error.service.version.id.is.null";
+    public static final String DEVOPS_SERVICE_VERSION_VALUE_ID_IS_NULL = "devops.service.version.value.id.is.null";
+    public static final String DEVOPS_SERVICE_VERSION_ID_IS_NULL = "devops.service.version.id.is.null";
 
 
     public static final String ERROR_PARAM_IS_INVALID = "error.param.is.invalid";

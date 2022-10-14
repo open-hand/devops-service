@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -150,7 +153,8 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     public DevopsEnvironmentDTO checkEnvBelongToProject(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.queryByIdWithClusterCode(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException("error.env.id.not.exist", envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
+
         }
         CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
@@ -160,7 +164,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     public AppServiceDTO checkAppServiceBelongToProject(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.service.not.exists");
+            throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
         }
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return appServiceDTO;

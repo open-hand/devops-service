@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -219,7 +221,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private void checkAppServiceAndEnvInProject(Long projectId, Long envId, Long appServiceId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException("error.env.id.not.exist", envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
         if (!projectId.equals(devopsEnvironmentDTO.getProjectId())) {
             throw new CommonException("error.env.not.in.this.project", envId, projectId);

@@ -246,7 +246,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         Long appServiceId = applicationDTO.getId();
         if (appServiceId == null) {
-            throw new CommonException("error.application.create.insert");
+            throw new CommonException("devops.application.create.insert");
         }
 
         devOpsAppServicePayload.setAppServiceId(applicationDTO.getId());
