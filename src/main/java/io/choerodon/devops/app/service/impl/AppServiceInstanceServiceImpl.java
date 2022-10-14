@@ -1640,7 +1640,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 加锁
         if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
-            throw new CommonException(DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED);
+            throw new CommonException(DEVOPS_APP_INSTANCE_IS_OPERATING);
         }
 
 
