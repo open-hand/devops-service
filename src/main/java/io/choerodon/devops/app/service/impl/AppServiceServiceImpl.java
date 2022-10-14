@@ -4,7 +4,7 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -830,7 +830,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void checkName(Long projectId, String name) {
         if (!isNameUnique(projectId, name)) {
-            throw new CommonException(DEVOPS_RESOURCE_INSERT);
+            throw new CommonException(DEVOPS_NAME_EXIST);
         }
     }
 

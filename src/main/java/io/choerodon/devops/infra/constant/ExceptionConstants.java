@@ -54,6 +54,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST = "devops.app.instance.name.already.exist";
         public static final String DEVOPS_APPLICATION_INSTANCE_CREATE = "devops.application.instance.create";
         public static final String DEVOPS_INSTANCE_UPDATE = "devops.instance.update";
+        public static final String DEVOPS_APP_INSTANCE_IS_OPERATING = "devops.app.instance.is.operating";
     }
 
     public static class AppServiceVersionCode {
