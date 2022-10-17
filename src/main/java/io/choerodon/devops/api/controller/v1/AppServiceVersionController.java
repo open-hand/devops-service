@@ -1,18 +1,19 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
@@ -89,9 +90,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "服务Id")
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(appServiceVersionService.listDeployedByAppId(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listDeployedByAppId(projectId, appServiceId));
     }
 
     /**
@@ -114,9 +113,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "环境 ID", required = true)
             @PathVariable Long envId) {
-        return Optional.ofNullable(appServiceVersionService.listByAppIdAndEnvId(projectId, appServiceId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listByAppIdAndEnvId(projectId, appServiceId, envId));
     }
 
     /**
@@ -136,9 +133,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "服务版本ID", required = true)
             @PathVariable(value = "app_version_id") Long appServiceServiceId) {
-        return Optional.ofNullable(appServiceVersionService.listUpgradeableAppVersion(projectId, appServiceServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listUpgradeableAppVersion(projectId, appServiceServiceId));
     }
 
 
@@ -159,9 +154,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "服务版本ID", required = true)
             @PathVariable(value = "versionId") Long versionId) {
-        return Optional.ofNullable(appServiceVersionService.queryVersionValue(versionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.value.query"));
+        return ResponseEntity.ok(appServiceVersionService.queryVersionValue(versionId));
     }
 
 
@@ -182,9 +175,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "服务ID", required = true)
             @RequestParam Long[] versionIds) {
-        return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(Arrays.asList(versionIds)))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listByAppServiceVersionIds(Arrays.asList(versionIds)));
     }
 
     /**
@@ -204,9 +195,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "应用服务id", required = true)
             @RequestBody Set<Long> versionIds) {
-        return Optional.ofNullable(appServiceVersionService.listByAppServiceVersionIds(new ArrayList<>(versionIds)))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listByAppServiceVersionIds(new ArrayList<>(versionIds)));
     }
 
 
@@ -229,9 +218,7 @@ public class AppServiceVersionController {
             @RequestParam Long appServiceId,
             @ApiParam(value = "分支", required = true)
             @RequestParam String branch) {
-        return Optional.ofNullable(appServiceVersionService.listByAppIdAndBranch(appServiceId, branch))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.listByAppIdAndBranch(appServiceId, branch));
     }
 
 
@@ -257,9 +244,7 @@ public class AppServiceVersionController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支", required = true)
             @RequestParam String branch) {
-        return Optional.ofNullable(appServiceVersionService.queryByPipelineId(pipelineId, branch, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.queryByPipelineId(pipelineId, branch, appServiceId));
     }
 
     /**
@@ -300,9 +285,7 @@ public class AppServiceVersionController {
             @RequestParam(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "版本号", required = true)
             @RequestParam String version) {
-        return Optional.ofNullable(appServiceVersionService.queryByAppAndVersion(appServiceId, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+        return ResponseEntity.ok(appServiceVersionService.queryByAppAndVersion(appServiceId, version));
     }
 
 
@@ -337,10 +320,7 @@ public class AppServiceVersionController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "版本信息")
             @RequestParam(value = "version", required = false) String version) {
-        return Optional.ofNullable(
-                        appServiceVersionService.pageShareVersionByAppServiceIdAndVersion(appServiceId, pageable, version))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+        return ResponseEntity.ok(appServiceVersionService.pageShareVersionByAppServiceIdAndVersion(appServiceId, pageable, version));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -354,10 +334,7 @@ public class AppServiceVersionController {
             @PathVariable(value = "app_service_id", required = true) Long appServiceId,
             @ApiParam(value = "共享形式")
             @RequestParam(required = false, value = "share") String share) {
-        return Optional.ofNullable(
-                appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.remote.application.versions.get"));
+        return ResponseEntity.ok(appServiceVersionService.queryServiceVersionByAppServiceIdAndShare(appServiceId, share));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -369,10 +346,7 @@ public class AppServiceVersionController {
             @Encrypt
             @ApiParam(value = "应用服务id集合", required = true)
             @RequestParam(value = "app_service_ids", required = true) Set<Long> ids) {
-        return Optional.ofNullable(
-                appServiceVersionService.listServiceVersionVoByIds(ids))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.versions.get"));
+        return ResponseEntity.ok(appServiceVersionService.listServiceVersionVoByIds(ids));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -386,10 +360,7 @@ public class AppServiceVersionController {
             @RequestParam(value = "app_service_id", required = true) Long id,
             @ApiParam(value = "查询参数", required = false)
             @RequestParam(value = "params", required = false) String params) {
-        return Optional.ofNullable(
-                appServiceVersionService.listVersionById(projectId, id, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.versions.get"));
+        return ResponseEntity.ok(appServiceVersionService.listVersionById(projectId, id, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
