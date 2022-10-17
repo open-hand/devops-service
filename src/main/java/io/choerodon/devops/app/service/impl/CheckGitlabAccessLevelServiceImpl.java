@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_ACCESS_LEVEL;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +32,7 @@ import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
  */
 @Service
 public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevelService {
-    private static final String EMPTY_GITLAB_ACCESS_LEVEL = "error.empty.gitlab.access.level";
+    private static final String EMPTY_GITLAB_ACCESS_LEVEL = "devops.empty.gitlab.access.level";
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
@@ -59,7 +61,7 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
             if (max.isPresent()) {
                 Integer maxAccessLevel = max.get();
                 if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
-                    throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
+                    throw new GitlabAccessInvalidException(DEVOPS_GITLAB_ACCESS_LEVEL, AccessLevel.getAccessLevelName(maxAccessLevel));
                 }
             } else {
                 throw new CommonException(EMPTY_GITLAB_ACCESS_LEVEL);

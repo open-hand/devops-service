@@ -44,6 +44,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_APP_SERVICE_SYNC = "devops.app.service.sync";
         public static final String DEVOPS_USER_NOT_GITLAB_PROJECT_OWNER = "devops.user.not.gitlab.project.owner";
         public static final String DEVOPS_CREATE_PRIVATE_TOKEN = "devops.create.private.token";
+        public static final String DEVOPS_TOKEN_INVALID = "devops.token.invalid";
 
     }
 
@@ -61,6 +62,16 @@ public class ExceptionConstants {
         public static final String DEVOPS_VERSION_ID_NOT_EXIST = "devops.version.id.not.exist";
     }
 
+    public static class AppServiceHelmVersionCode {
+        public static final String DEVOPS_HELM_CONFIG_ID_NULL = "devops.helm.config.id.null";
+        public static final String DEVOPS_HELM_CONFIG_NOT_EXIST = "devops.helm.config.not.exist";
+    }
+
+    public static class CiPipelineImageCode {
+        public static final String DEVOPS_CREATE_IMAGE_RECORD = "devops.create.image.record";
+        public static final String DEVOPS_UPDATE_IMAGE_RECORD = "devops.update.image.record";
+    }
+
     public static class EnvCommandCode {
         public static final String DEVOPS_COMMAND_NOT_EXIST = "devops.command.not.exist";
     }
@@ -68,6 +79,10 @@ public class ExceptionConstants {
 
     public static class EnvironmentCode {
         public static final String DEVOPS_ENV_ID_NOT_EXIST = "devops.env.id.not.exist";
+    }
+
+    public static class GitlabCode {
+        public static final String DEVOPS_GITLAB_ACCESS_LEVEL = "devops.gitlab.access.level";
     }
 
     /**

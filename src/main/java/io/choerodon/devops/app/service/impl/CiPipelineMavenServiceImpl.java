@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_TOKEN_INVALID;
+
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
@@ -37,7 +39,6 @@ import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.CiPipelineMavenMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiJobMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -52,6 +53,11 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     private static final String ID = "id";
     private static final String OBJECT_VERSION_NUMBER = "objectVersionNumber";
+    private static final String DEVOPS_CREATE_MAVEN_RECORD = "devops.create.maven.record";
+    private static final String DEVOPS_UPDATE_MAVEN_RECORD = "devops.update.maven.record";
+    private static final String DEVOPS_FAILED_TO_READ_POM_FILE = "devops.failed.to.read.pom.file";
+    private static final String DEVOPS_PULL_USER_AUTH_FAIL = "devops.pull.user.auth.fail";
+    private static final String DEVOPS_PULL_METADATA_FAIL = "devops.pull.metadata.fail";
 
     @Autowired
     private CiPipelineMavenMapper ciPipelineMavenMapper;
@@ -62,8 +68,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-    @Autowired
-    private DevopsCiJobMapper devopsCiJobMapper;
     @Autowired
     private AppServiceMavenVersionService appServiceMavenVersionService;
     @Autowired
@@ -81,13 +85,13 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         CiPipelineMavenDTO oldCiPipelineMavenDTO = queryByGitlabPipelineId(ciPipelineMavenDTO.getAppServiceId(), ciPipelineMavenDTO.getGitlabPipelineId(), ciPipelineMavenDTO.getJobName());
         if (oldCiPipelineMavenDTO == null) {
             if (ciPipelineMavenMapper.insertSelective(ciPipelineMavenDTO) != 1) {
-                throw new CommonException("error.create.maven.record");
+                throw new CommonException(DEVOPS_CREATE_MAVEN_RECORD);
             }
         } else {
             //拷贝的时候忽略id与乐观锁
             BeanUtils.copyProperties(ciPipelineMavenDTO, oldCiPipelineMavenDTO, ID, OBJECT_VERSION_NUMBER);
             if (ciPipelineMavenMapper.updateByPrimaryKeySelective(oldCiPipelineMavenDTO) != 1) {
-                throw new CommonException("error.update.maven.record");
+                throw new CommonException(DEVOPS_UPDATE_MAVEN_RECORD);
             }
         }
     }
@@ -97,14 +101,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
             if (appServiceDTO == null) {
-                throw new DevopsCiInvalidException("error.token.invalid");
+                throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
             }
             CiPipelineMavenDTO ciPipelineMavenDTO;
 
             try {
                 ciPipelineMavenDTO = MavenSettingsUtil.parsePom(new String(file.getBytes(), StandardCharsets.UTF_8));
             } catch (Exception e) {
-                throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
+                throw new DevopsCiInvalidException(DEVOPS_FAILED_TO_READ_POM_FILE);
             }
             ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
@@ -203,14 +207,14 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
             if (appServiceDTO == null) {
-                throw new DevopsCiInvalidException("error.token.invalid");
+                throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
             }
             CiPipelineMavenDTO ciPipelineMavenDTO;
 
             try {
                 ciPipelineMavenDTO = MavenSettingsUtil.parsePom(new String(file.getBytes(), StandardCharsets.UTF_8));
             } catch (Exception e) {
-                throw new DevopsCiInvalidException("error.failed.to.read.pom.file");
+                throw new DevopsCiInvalidException(DEVOPS_FAILED_TO_READ_POM_FILE);
             }
             ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
@@ -220,11 +224,6 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             ciPipelineMavenDTO.setUsername(username);
             ciPipelineMavenDTO.setPassword(password);
             //填充每次跑完ci后生成的准确的版本  下载maven-metadata basic登录  用户名密码要从setting里面获取
-            //根据jobId 拿到JOb  判断job的类型是 maven_deploy 才请求maven
-            DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
-            if (Objects.isNull(devopsCiJobDTO)) {
-                throw new DevopsCiInvalidException("error.ci.job.not.exist");
-            }
             List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(jobId);
             // seq 与 type确定一个job内唯一的构建步骤CiConfigTemplateVO
             List<DevopsCiStepDTO> ciStepDTOS = devopsCiStepDTOS.stream()
@@ -322,7 +321,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                 return ciPipelineMavenDTO.getVersion();
             }
             if (metadataXml.code() == HttpStatus.UNAUTHORIZED.value()) {
-                throw new CommonException("error.pull.user.auth.fail");
+                throw new CommonException(DEVOPS_PULL_USER_AUTH_FAIL);
             }
             String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.body());
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
@@ -366,9 +365,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             } else if (execute.code() == HttpStatus.NOT_FOUND.value()) {
                 return ciPipelineMavenDTO.getVersion();
             } else if (execute.code() == HttpStatus.UNAUTHORIZED.value()) {
-                throw new CommonException("error.pull.user.auth.fail");
+                throw new CommonException(DEVOPS_PULL_USER_AUTH_FAIL);
             } else {
-                throw new CommonException("error.pull.metadata.fail");
+                throw new CommonException(DEVOPS_PULL_METADATA_FAIL);
             }
 
         } catch (Exception ex) {

@@ -40,6 +40,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CiCdPipelineRecordServiceImpl.class);
 
+    private static final String DEVOPS_REF_NO_COMMIT = "devops.ref.no.commit";
+
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
@@ -75,9 +77,6 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
-
-    @Autowired
-    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
 
     @Autowired
     private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
@@ -332,19 +331,9 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
             String sha;
             List<CommitDTO> commitDTOList;
             if (appExternalConfigDTO == null) {
-//                DevopsGitlabCommitDTO devopsGitlabCommitDTO = new DevopsGitlabCommitDTO();
-//                devopsGitlabCommitDTO.setAppServiceId(appServiceDTO.getId());
-//                devopsGitlabCommitDTO.setRef(ref);
-//                List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitMapper.select(devopsGitlabCommitDTO);
-//                if (CollectionUtils.isEmpty(devopsGitlabCommitDTOS)) {
-//                    throw new CommonException("error.no.commit.information.under.the.application.service");
-//                }
-//                Date commitDate = devopsGitlabCommitDTOS.get(0).getCommitDate();
-//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzz");
-//                String sinceDate = simpleDateFormat.format(commitDate);
                 commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref);
                 if (CollectionUtils.isEmpty(commitDTOList)) {
-                    throw new CommonException("error.ref.no.commit");
+                    throw new CommonException(DEVOPS_REF_NO_COMMIT);
                 }
             } else {
                 commitDTOList = gitlabServiceClientOperator.listExternalCommits(TypeUtil.objToInteger(gitlabProjectId), 1, 5, appExternalConfigDTO);

@@ -19,6 +19,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class CiPipelineAppVersionServiceImpl implements CiPipelineAppVersionService {
+
+    private static final String DEVOPS_SAVE_APP_VERSION = "devops.save.app.version";
     @Autowired
     private CiPipelineAppVersionMapper ciPipelineAppVersionMapper;
 
@@ -38,7 +40,7 @@ public class CiPipelineAppVersionServiceImpl implements CiPipelineAppVersionServ
 
     @Override
     public void baseCreate(CiPipelineAppVersionDTO ciPipelineAppVersionDTO) {
-        MapperUtil.resultJudgedInsertSelective(ciPipelineAppVersionMapper, ciPipelineAppVersionDTO, "error.save.app.version");
+        MapperUtil.resultJudgedInsertSelective(ciPipelineAppVersionMapper, ciPipelineAppVersionDTO, DEVOPS_SAVE_APP_VERSION);
     }
 
     @Override
