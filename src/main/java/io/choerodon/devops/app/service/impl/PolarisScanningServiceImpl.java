@@ -497,6 +497,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         // 处理record信息
         LOGGER.info("Polaris: auditTime: {}", polarisScanResultVO.getAuditData().getAuditTime());
+        recordDTO.setKubernetesVersion(polarisScanResultVO.getAuditData().getClusterInfo().getVersion());
         recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditData().getAuditTime());
         recordDTO.setSuccesses(summaryVO.getSuccesses());
         recordDTO.setWarnings(summaryVO.getWarnings());

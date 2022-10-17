@@ -16,6 +16,8 @@ import org.yaml.snakeyaml.nodes.Tag;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import io.choerodon.core.exception.CommonException;
+
 /**
  * Created by younger on 2018/4/25.
  */
@@ -52,10 +54,30 @@ public class K8sUtil {
      */
     public static final Pattern LABEL_NAME_PATTERN = Pattern.compile("^([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9]$");
 
-    public static final Pattern PORT_NAME_PATTERN = Pattern.compile("^[0-9a-z]([0-9a-z]+-)*[0-9a-z]*[0-9a-z]$");
+    public static final Pattern PORT_NAME_CHARSET_PATTERN = Pattern.compile("^[-a-z0-9]+$");
+
+    public static final Pattern PORT_NAME_ONE_LETTER_PATTERN=Pattern.compile("[a-z]");
 
 
     private K8sUtil() {
+    }
+
+    public static void checkPortName(String portName) {
+        if (portName.length() > 15) {
+            throw new CommonException("error.container.port.name.illegal");
+        }
+        if (portName.contains("--")) {
+            throw new CommonException("error.container.port.name.illegal");
+        }
+        if (!K8sUtil.PORT_NAME_CHARSET_PATTERN.matcher(portName).matches()) {
+            throw new CommonException("error.container.port.name.illegal");
+        }
+        if (!K8sUtil.PORT_NAME_ONE_LETTER_PATTERN.matcher(portName).find()) {
+            throw new CommonException("error.container.port.name.illegal");
+        }
+        if (portName.startsWith("-") || portName.endsWith("-")) {
+            throw new CommonException("error.container.port.name.illegal");
+        }
     }
 
 

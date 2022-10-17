@@ -570,17 +570,6 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public ProjectHookDTO updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
-        ResponseEntity<ProjectHookDTO> projectHookResponseEntity;
-        try {
-            projectHookResponseEntity = gitlabServiceClient
-                    .updateProjectHook(projectId, hookId, userId);
-        } catch (Exception e) {
-            throw new CommonException(e.getMessage(), e);
-        }
-        return projectHookResponseEntity.getBody();
-    }
-
     public GitlabProjectDTO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
         try {
             return gitlabServiceClient
