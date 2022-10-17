@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.Api;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
@@ -48,9 +46,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_service_instances")
 public class AppServiceInstanceController {
-
-    private static final String ERROR_APP_INSTANCE_QUERY = "error.instance.query";
-    private static final String ERROR_APP_INSTANCE_GET = "error.instance.value.get";
 
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
@@ -158,9 +153,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "部署ID", required = true)
             @PathVariable(value = "instance_Id") Long instanceId) {
-        return Optional.ofNullable(appServiceInstanceService.queryLastDeployValue(instanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
+        return ResponseEntity.ok(appServiceInstanceService.queryLastDeployValue(instanceId));
     }
 
 
@@ -324,9 +317,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "版本Id", required = true)
             @PathVariable(value = "version_id") Long versionId) {
-        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValue(instanceId, versionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
+        return ResponseEntity.ok(appServiceInstanceService.queryUpgradeValue(instanceId, versionId));
     }
 
     /**
@@ -373,9 +364,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "市场发布包Id", required = true)
             @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
-        return Optional.ofNullable(appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, instanceId, marketDeployObjectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
+        return ResponseEntity.ok(appServiceInstanceService.queryUpgradeValueForMarketInstance(projectId, instanceId, marketDeployObjectId));
     }
 
     /**
@@ -400,9 +389,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "市场发布包Id", required = true)
             @RequestParam(value = "market_deploy_object_id") Long marketDeployObjectId) {
-        return Optional.ofNullable(appServiceInstanceService.queryValueForMarketInstance(projectId, instanceId, marketDeployObjectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_GET));
+        return ResponseEntity.ok(appServiceInstanceService.queryValueForMarketInstance(projectId, instanceId, marketDeployObjectId));
     }
 
     /**
@@ -429,9 +416,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "版本ID")
             @RequestParam(value = "version_id") Long versionId) {
-        return Optional.ofNullable(appServiceInstanceService.queryDeployValue(type, instanceId, versionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.values.query"));
+        return ResponseEntity.ok(appServiceInstanceService.queryDeployValue(type, instanceId, versionId));
     }
 
 
@@ -452,9 +437,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "版本ID", required = true)
             @RequestParam Long versionId) {
-        return Optional.ofNullable(appServiceInstanceService.queryPreviewValues(instanceValueVO, versionId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.values.query"));
+        return ResponseEntity.ok(appServiceInstanceService.queryPreviewValues(instanceValueVO, versionId));
     }
 
     /**
@@ -493,9 +476,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "部署信息", required = true)
             @RequestBody @Valid AppServiceDeployVO appServiceDeployVO) {
         appServiceDeployVO.setType("create");
-        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.deploy"));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false));
     }
 
     /**
@@ -516,9 +497,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "更新信息", required = true)
             @RequestBody @Valid AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
         appServiceDeployUpdateVO.setType("update");
-        return Optional.ofNullable(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.deploy"));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false));
     }
 
     /**
@@ -546,9 +525,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "服务版本 ID")
             @RequestParam(value = "version_id", required = false) Long versionId) {
-        return Optional.ofNullable(appServiceInstanceService.listRunningInstance(projectId, appServiceId, versionId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
+        return ResponseEntity.ok(appServiceInstanceService.listRunningInstance(projectId, appServiceId, versionId, envId));
     }
 
     /**
@@ -572,9 +549,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "服务 Id")
             @RequestParam(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(appServiceInstanceService.listByAppIdAndEnvId(projectId, appServiceId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_INSTANCE_QUERY));
+        return ResponseEntity.ok(appServiceInstanceService.listByAppIdAndEnvId(projectId, appServiceId, envId));
     }
 
 
@@ -595,9 +570,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return Optional.ofNullable(appServiceInstanceService.listResourcesInHelmRelease(instanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.resource.query"));
+        return ResponseEntity.ok(appServiceInstanceService.listResourcesInHelmRelease(instanceId));
     }
 
     /**
@@ -617,9 +590,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return Optional.ofNullable(devopsEnvResourceService.listInstancePodEvent(instanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.event.query"));
+        return ResponseEntity.ok(devopsEnvResourceService.listInstancePodEvent(instanceId));
     }
 
     /**
@@ -753,9 +724,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.listDeployTime(projectId, envId, KeyDecryptHelper.decryptIdArray(appServiceIds), startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.deploy.time.get"));
+        return ResponseEntity.ok(appServiceInstanceService.listDeployTime(projectId, envId, KeyDecryptHelper.decryptIdArray(appServiceIds), startTime, endTime));
     }
 
     /**
@@ -785,9 +754,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.listDeployFrequency(projectId, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
+        return ResponseEntity.ok(appServiceInstanceService.listDeployFrequency(projectId, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime));
     }
 
 
@@ -820,9 +787,7 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
+        return ResponseEntity.ok(appServiceInstanceService.pageDeployFrequencyTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(envIds), appServiceId, startTime, endTime));
     }
 
 
@@ -855,27 +820,8 @@ public class AppServiceInstanceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(appServiceIds), envId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.deploy.time.get"));
+        return ResponseEntity.ok(appServiceInstanceService.pageDeployTimeTable(projectId, pageable, KeyDecryptHelper.decryptIdArray(appServiceIds), envId, startTime, endTime));
     }
-
-//    /**
-//     * 部署自动化测试服务
-//     *
-//     * @param projectId          项目id
-//     * @param appServiceDeployVO 部署信息
-//     */
-//    @ApiOperation(value = "部署自动化测试服务")
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @PostMapping("/deploy_test_app")
-//    public void deployTestApp(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "部署信息", required = true)
-//            @RequestBody AppServiceDeployVO appServiceDeployVO) {
-//        appServiceInstanceService.deployTestApp(projectId, appServiceDeployVO);
-//    }
 
     /**
      * 操作pod的数量
@@ -926,9 +872,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "commandId", required = true)
             @PathVariable(value = "command_id") Long commandId) {
-        return Optional.ofNullable(appServiceInstanceService.queryByCommandId(commandId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.instance.get"));
+        return ResponseEntity.ok(appServiceInstanceService.queryByCommandId(commandId));
     }
 
 
@@ -947,9 +891,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "应用服务id", required = false)
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-        return Optional.ofNullable(appServiceInstanceService.countByOptions(envId, status, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.query.instance.count"));
+        return ResponseEntity.ok(appServiceInstanceService.countByOptions(envId, status, appServiceId));
     }
 
     @ApiOperation("根据批量部署的部署纪录id查询对应的实例")

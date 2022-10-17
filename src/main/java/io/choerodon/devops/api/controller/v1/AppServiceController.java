@@ -1,6 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -136,9 +138,7 @@ public class AppServiceController {
             @RequestParam(value = "is_template", required = false) Boolean isTemplate,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody AppServiceImportVO appServiceImportVO) {
-        return Optional.ofNullable(applicationServiceService.importApp(projectId, appServiceImportVO, isTemplate))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.create"));
+        return ResponseEntity.ok(applicationServiceService.importApp(projectId, appServiceImportVO, isTemplate));
     }
 
     /**
@@ -156,9 +156,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务信息", required = true)
             @RequestBody AppServiceImportVO appServiceImportVO) {
-        return Optional.ofNullable(applicationServiceService.importFromGeneralGit(projectId, appServiceImportVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.create"));
+        return ResponseEntity.ok(applicationServiceService.importFromGeneralGit(projectId, appServiceImportVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -195,9 +193,7 @@ public class AppServiceController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.query(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.query"));
+        return ResponseEntity.ok(applicationServiceService.query(projectId, appServiceId));
     }
 
     /**
@@ -212,9 +208,7 @@ public class AppServiceController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.queryOtherProjectAppServiceWithRepositoryInfo(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.query"));
+        return ResponseEntity.ok(applicationServiceService.queryOtherProjectAppServiceWithRepositoryInfo(projectId, appServiceId));
     }
 
 
@@ -255,9 +249,7 @@ public class AppServiceController {
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "启用停用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(applicationServiceService.updateActive(projectId, appServiceId, active))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.active"));
+        return ResponseEntity.ok(applicationServiceService.updateActive(projectId, appServiceId, active));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -269,9 +261,7 @@ public class AppServiceController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.checkAppService(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.check"));
+        return ResponseEntity.ok(applicationServiceService.checkAppService(projectId, appServiceId));
     }
 
     /**
@@ -328,10 +318,7 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, null))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.baseList"));
+        return ResponseEntity.ok(applicationServiceService.pageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, null));
     }
 
     /**
@@ -353,10 +340,7 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.pageInternalByOptionsWithAccessLevel(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.baseList"));
+        return ResponseEntity.ok(applicationServiceService.pageInternalByOptionsWithAccessLevel(projectId, pageable, params));
     }
 
     /**
@@ -381,9 +365,7 @@ public class AppServiceController {
             @RequestParam(value = "app_service_id", required = false) Long appServiceId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable) {
-        return Optional.ofNullable(applicationServiceService.pageByIds(projectId, envId, appServiceId, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.query.ids"));
+        return ResponseEntity.ok(applicationServiceService.pageByIds(projectId, envId, appServiceId, pageable));
     }
 
 
@@ -410,9 +392,7 @@ public class AppServiceController {
             @ApiParam(value = "服务 Id")
             @Encrypt
             @RequestParam(required = false) Long appServiceId) {
-        return Optional.ofNullable(applicationServiceService.listByEnvId(projectId, envId, status, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.query.env"));
+        return ResponseEntity.ok(applicationServiceService.listByEnvId(projectId, envId, status, appServiceId));
     }
 
     /**
@@ -482,9 +462,7 @@ public class AppServiceController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt @RequestParam(value = "env_id", required = false) Long envId) {
-        return Optional.ofNullable(applicationServiceService.listAll(projectId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.baseList.all"));
+        return ResponseEntity.ok(applicationServiceService.listAll(projectId, envId));
     }
 
     /**
@@ -535,9 +513,7 @@ public class AppServiceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "校验数据", required = true)
             @RequestBody AppServiceBatchCheckVO appServiceBatchCheckVO) {
-        return Optional.ofNullable(applicationServiceService.checkCodeByProjectId(projectId, appServiceBatchCheckVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.check"));
+        return ResponseEntity.ok(applicationServiceService.checkCodeByProjectId(projectId, appServiceBatchCheckVO));
     }
 
     /**
@@ -622,9 +598,7 @@ public class AppServiceController {
             @RequestParam(required = true) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = true) Date endTime) {
-        return Optional.ofNullable(applicationServiceService.getSonarTable(projectId, appServiceId, type, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.service.sonarqube.content.get"));
+        return ResponseEntity.ok(applicationServiceService.getSonarTable(projectId, appServiceId, type, startTime, endTime));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -640,10 +614,7 @@ public class AppServiceController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(
-                applicationServiceService.pageShareAppService(projectId, doPage, pageable, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.app.service.get"));
+        return ResponseEntity.ok(applicationServiceService.pageShareAppService(projectId, doPage, pageable, searchParam));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -660,10 +631,7 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(
-                applicationServiceService.pagePermissionUsers(projectId, appServiceId, pageable, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.app.service.user.permission.get"));
+        return ResponseEntity.ok(applicationServiceService.pagePermissionUsers(projectId, appServiceId, pageable, searchParam));
     }
 
 
@@ -678,10 +646,7 @@ public class AppServiceController {
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "查询参数", required = true)
             @RequestParam(value = "params", required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.listProjects(organizationId, projectId, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.projects"));
+        return ResponseEntity.ok(applicationServiceService.listProjects(organizationId, projectId, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -712,10 +677,7 @@ public class AppServiceController {
             @RequestParam(value = "search_project_id", required = false) Long searchProjectId,
             @ApiParam(value = "查询条件", required = false)
             @RequestParam(required = false) String param) {
-        return Optional.ofNullable(
-                applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, includeExternal, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.group.error"));
+        return ResponseEntity.ok(applicationServiceService.pageAppServiceByMode(projectId, Boolean.TRUE, searchProjectId, param, includeExternal, pageable));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -730,10 +692,7 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.listAppByProjectId(projectId, doPage, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.projectId.query"));
+        return ResponseEntity.ok(applicationServiceService.listAppByProjectId(projectId, doPage, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -752,10 +711,7 @@ public class AppServiceController {
             @RequestParam(value = "app_service_id", required = false) @Encrypt Long appServiceId,
             @ApiParam(value = "是否包含外部应用服务")
             @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
-        return Optional.ofNullable(
-                applicationServiceService.listAllAppServices(projectId, type, param, serviceType, appServiceId, includeExternal))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.service.deploy"));
+        return ResponseEntity.ok(applicationServiceService.listAllAppServices(projectId, type, param, serviceType, appServiceId, includeExternal));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -775,10 +731,7 @@ public class AppServiceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(projectId, ids, doPage, withVersion, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+        return ResponseEntity.ok(applicationServiceService.listAppServiceByIds(projectId, ids, doPage, withVersion, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -794,10 +747,7 @@ public class AppServiceController {
             @ApiParam(value = "应用服务Ids")
             @Encrypt
             @RequestBody(required = false) Set<Long> ids) {
-        return Optional.ofNullable(
-                applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+        return ResponseEntity.ok(applicationServiceService.listByIdsOrPage(projectId, ids, doPage, pageable));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -810,7 +760,7 @@ public class AppServiceController {
             @RequestParam(value = "share") Boolean share,
             @ApiParam(value = "是否包含外部应用服务")
             @RequestParam(value = "include_external", defaultValue = "true") Boolean includeExternal) {
-        return new ResponseEntity<>(applicationServiceService.listProjectByShare(projectId, share, includeExternal), HttpStatus.OK);
+        return ResponseEntity.ok(applicationServiceService.listProjectByShare(projectId, share, includeExternal));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -822,10 +772,7 @@ public class AppServiceController {
             @ApiParam(value = "应用服务Ids")
             @Encrypt
             @RequestParam(value = "version_ids") Set<Long> ids) {
-        return Optional.ofNullable(
-                applicationServiceService.listServiceByVersionIds(ids))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.service.by.version.ids"));
+        return ResponseEntity.ok(applicationServiceService.listServiceByVersionIds(ids));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -834,10 +781,7 @@ public class AppServiceController {
     public ResponseEntity<List<AppServiceTemplateVO>> listServiceTemplates(
             @ApiParam(value = "项目Id")
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(
-                applicationServiceService.listServiceTemplates())
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.service.templates"));
+        return ResponseEntity.ok(applicationServiceService.listServiceTemplates());
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
