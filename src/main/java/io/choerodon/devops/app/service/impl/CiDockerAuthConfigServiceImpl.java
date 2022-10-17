@@ -21,6 +21,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class CiDockerAuthConfigServiceImpl implements CiDockerAuthConfigService {
+
+    private static final String DEVOPS_SAVE_DOCKER_AUTH_CONFIG = "devops.save.docker.auth.config";
+
     @Autowired
     private CiDockerAuthConfigMapper ciDockerAuthConfigMapper;
 
@@ -28,7 +31,7 @@ public class CiDockerAuthConfigServiceImpl implements CiDockerAuthConfigService 
     @Override
     @Transactional
     public void baseCreate(CiDockerAuthConfigDTO ciDockerAuthConfigDTO) {
-        MapperUtil.resultJudgedInsertSelective(ciDockerAuthConfigMapper, ciDockerAuthConfigDTO, "error.save.docker.auth.config");
+        MapperUtil.resultJudgedInsertSelective(ciDockerAuthConfigMapper, ciDockerAuthConfigDTO, DEVOPS_SAVE_DOCKER_AUTH_CONFIG);
     }
 
     @Override

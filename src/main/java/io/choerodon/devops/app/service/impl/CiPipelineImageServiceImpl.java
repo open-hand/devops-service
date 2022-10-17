@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_TOKEN_INVALID;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiPipelineImageCode.DEVOPS_CREATE_IMAGE_RECORD;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiPipelineImageCode.DEVOPS_UPDATE_IMAGE_RECORD;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,7 +56,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     public void createOrUpdate(CiPipelineImageVO ciPipelineImageVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(ciPipelineImageVO.getToken());
         if (appServiceDTO == null) {
-            throw new DevopsCiInvalidException("error.token.invalid");
+            throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
         }
         Long appServiceId = appServiceDTO.getId();
 
@@ -64,12 +69,12 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
                 BeanUtils.copyProperties(ciPipelineImageVO, ciPipelineImageDTO);
                 ciPipelineImageDTO.setAppServiceId(appServiceId);
                 if (ciPipelineImageMapper.insertSelective(ciPipelineImageDTO) != 1) {
-                    throw new CommonException("error.create.image.record");
+                    throw new CommonException(DEVOPS_CREATE_IMAGE_RECORD);
                 }
             } else {
                 BeanUtils.copyProperties(ciPipelineImageVO, oldCiPipelineImageDTO);
                 if (ciPipelineImageMapper.updateByPrimaryKey(oldCiPipelineImageDTO) != 1) {
-                    throw new CommonException("error.update.image.record");
+                    throw new CommonException(DEVOPS_UPDATE_IMAGE_RECORD);
                 }
             }
 
@@ -111,7 +116,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         try {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
             if (appServiceDTO == null) {
-                throw new CommonException("error.app.svc.not.found");
+                throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
             }
             CommonExAssertUtil.assertTrue((projectId.equals(appServiceDTO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, repoId, repoType);
@@ -154,7 +159,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         try {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
             if (appServiceDTO == null) {
-                throw new CommonException("error.app.svc.not.found");
+                throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
             }
             Long projectId = appServiceDTO.getProjectId();
 
