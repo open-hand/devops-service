@@ -32,6 +32,7 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                                  @Param("rdupmType") String rdupmType,
                                                  @Param("operationType") String operationType,
                                                  @Param("params") String params,
+                                                 @Param("name") String name,
                                                  @Param("appId") Long appId);
 
     /**
@@ -55,6 +56,7 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                                       @Param("rdupmType") String rdupmType,
                                                       @Param("operationType") String operationType,
                                                       @Param("params") String params,
+                                                      @Param("name") String name,
                                                       @Param("appId") Long appId);
 
     Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("name") String name);

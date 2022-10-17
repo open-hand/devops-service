@@ -47,10 +47,12 @@ public class DevopsHostAppController {
             @RequestParam(value = "operation_type", required = false) String operationType,
             @ApiParam(value = "搜索参数", required = true)
             @RequestParam(value = "params", required = false) String params,
+            @ApiParam(value = "应用名称")
+            @RequestParam(value = "name", required = false) String name,
             @Encrypt
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiIgnore @PageableDefault() PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsHostAppService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params, appId));
+        return ResponseEntity.ok(devopsHostAppService.pagingAppByHost(projectId, hostId, pageRequest, rdupmType, operationType, params, name, appId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
