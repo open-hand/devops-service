@@ -27,8 +27,8 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
     @Override
     public DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long appServiceId, Long gitlabPipelineId, String jobName) {
         Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
-        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(jobName, PipelineCheckConstant.ERROR_JOB_NAME_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(jobName, PipelineCheckConstant.DEVOPS_JOB_NAME_IS_NULL);
 
         DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = new DevopsCiPipelineChartDTO();
         devopsCiPipelineChartDTO.setGitlabPipelineId(gitlabPipelineId);

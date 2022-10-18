@@ -362,7 +362,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
                 if (!CollectionUtils.isEmpty(devopsCdJobRecordDTOS)) {
                     DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordDTOS.get(0);
                     if (JobTypeEnum.CD_AUDIT.value().equals(devopsCdJobRecordDTO.getType())) {
-                        throw new CommonException(PipelineCheckConstant.ERROR_CANCEL_AUDITING_PIPELINE);
+                        throw new CommonException(PipelineCheckConstant.DEVOPS_CANCEL_AUDITING_PIPELINE);
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -22,8 +24,6 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
  * Description:
  */
 public class PageRequestUtil {
-
-    private static final String SORT_EXCETION_CODE = "error.field.not.supported.for.sort";
 
     private PageRequestUtil() {
     }
@@ -103,7 +103,7 @@ public class PageRequestUtil {
         sort.iterator().forEachRemaining(s -> {
             String field = orderByFieldMap.get(s.getProperty());
             if (field == null) {
-                throw new CommonException(SORT_EXCETION_CODE, s.getProperty());
+                throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, s.getProperty());
             }
             newOrders.add(new Sort.Order(s.getDirection(), field));
         });
@@ -122,7 +122,7 @@ public class PageRequestUtil {
                 case "creationDate":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
                 default:
-                    throw new CommonException(SORT_EXCETION_CODE, order.getProperty());
+                    throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, order.getProperty());
             }
         } else {
             return toBeSorted;
@@ -141,7 +141,7 @@ public class PageRequestUtil {
                 case "creationDate":
                     return PageRequestUtil.sortByComparableKey(toBeSorted, DevopsUserPermissionVO::getCreationDate, order.getDirection());
                 default:
-                    throw new CommonException(SORT_EXCETION_CODE, order.getProperty());
+                    throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, order.getProperty());
             }
         } else {
             return toBeSorted;

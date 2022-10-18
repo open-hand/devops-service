@@ -49,7 +49,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
 
     @Override
     public List<DevopsCdJobDTO> listByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setPipelineId(pipelineId);
         return devopsCdJobMapper.select(devopsCdJobDTO);
@@ -96,7 +96,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
 
     @Override
     public DevopsCdJobDTO queryById(Long stageId) {
-        Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
+        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
         return devopsCdJobMapper.selectByPrimaryKey(stageId);
     }
 

@@ -14,6 +14,7 @@ import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportHandle
 import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportOperator;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiUnitTestReportService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiUnitTestReportDTO;
@@ -82,7 +83,7 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
     @Override
     public DevopsCiUnitTestReportDTO queryByUniqueIndex(Long appServiceId, Long gitlabPipelineId, String jobName, String type) {
         Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
-        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = new DevopsCiUnitTestReportDTO();
@@ -97,7 +98,7 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
     @Override
     public List<DevopsCiUnitTestReportDTO> listByJobName(Long appServiceId, Long gitlabPipelineId, String jobName) {
         Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
-        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
 
         DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO = new DevopsCiUnitTestReportDTO();

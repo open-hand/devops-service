@@ -10,24 +10,20 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCdAuditService;
 import io.choerodon.devops.infra.dto.DevopsCdAuditDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdJobMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
 
 @Service
 public class DevopsCdAuditServiceImpl implements DevopsCdAuditService {
 
+    private static final String DEVOPS_INSERT_PIPELINE_USER = "devops.insert.pipeline.user";
+
     @Autowired
     private DevopsCdAuditMapper devopsCdAuditMapper;
-    @Autowired
-    private DevopsCdStageMapper devopsCdStageMapper;
-    @Autowired
-    private DevopsCdJobMapper devopsCdJobMapper;
 
     @Override
     @Transactional
     public void baseCreate(DevopsCdAuditDTO devopsCdAuditDTO) {
         if (devopsCdAuditMapper.insertSelective(devopsCdAuditDTO) != 1) {
-            throw new CommonException("error.insert.pipeline.user");
+            throw new CommonException(DEVOPS_INSERT_PIPELINE_USER);
         }
     }
 

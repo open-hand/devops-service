@@ -10,6 +10,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
 public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmRelService {
+
+    private static final String ERROR_APP_SERVICE_HELM_CONFIG_REL_INSERT = "error.app.service.helm.config.rel.insert";
     @Autowired
     private DevopsAppServiceHelmRelMapper devopsAppServiceHelmRelMapper;
 
@@ -34,7 +36,7 @@ public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmR
         DevopsAppServiceHelmRelDTO devopsAppServiceHelmRelDTO = new DevopsAppServiceHelmRelDTO();
         devopsAppServiceHelmRelDTO.setAppServiceId(appServiceId);
         devopsAppServiceHelmRelDTO.setHelmConfigId(helmConfigId);
-        MapperUtil.resultJudgedInsertSelective(devopsAppServiceHelmRelMapper, devopsAppServiceHelmRelDTO, "error.app.service.helm.config.rel.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsAppServiceHelmRelMapper, devopsAppServiceHelmRelDTO, ERROR_APP_SERVICE_HELM_CONFIG_REL_INSERT);
     }
 
     @Override

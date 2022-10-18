@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiScheduleVariableService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiScheduleVariableDTO;
 import io.choerodon.devops.infra.mapper.CiScheduleVariableMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -20,6 +21,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class CiScheduleVariableServiceImpl implements CiScheduleVariableService {
+
+    private static final String DEVOPS_SAVE_VARIABLE_FAILED = "devops.save.variable.failed";
+
     @Autowired
     private CiScheduleVariableMapper ciScheduleVariableMapper;
 
@@ -27,12 +31,13 @@ public class CiScheduleVariableServiceImpl implements CiScheduleVariableService 
     @Override
     @Transactional
     public void baseCreate(CiScheduleVariableDTO ciScheduleVariableDTO) {
-        MapperUtil.resultJudgedInsertSelective(ciScheduleVariableMapper, ciScheduleVariableDTO, "error.save.variable.failed");
+        MapperUtil.resultJudgedInsertSelective(ciScheduleVariableMapper, ciScheduleVariableDTO, DEVOPS_SAVE_VARIABLE_FAILED);
     }
 
     @Override
     public void deleteByPipelineScheduleId(Long id) {
-        Assert.notNull(id, "error.ci.pipeline.id.is.null");
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
         CiScheduleVariableDTO ciScheduleVariableDTO = new CiScheduleVariableDTO();
         ciScheduleVariableDTO.setCiPipelineScheduleId(id);
         ciScheduleVariableMapper.delete(ciScheduleVariableDTO);
@@ -40,7 +45,8 @@ public class CiScheduleVariableServiceImpl implements CiScheduleVariableService 
 
     @Override
     public List<CiScheduleVariableDTO> listByScheduleId(Long id) {
-        Assert.notNull(id, "error.ci.pipeline.id.is.null");
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
         CiScheduleVariableDTO ciScheduleVariableDTO = new CiScheduleVariableDTO();
         ciScheduleVariableDTO.setCiPipelineScheduleId(id);
         return ciScheduleVariableMapper.select(ciScheduleVariableDTO);

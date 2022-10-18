@@ -62,6 +62,15 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
 
     private static final String GITLAB_GROUP_CODE = "choerodon_%s-app-template";
     private static final String GITLAB_GROUP_NAME = "choerodon_%s应用模板库";
+    private static final String DEVOPS_APP_TEMPLATE_NAME_ALREADY_EXISTS = "devops.app.template.name.already.exists";
+    private static final String DEVOPS_APP_TEMPLATE_CODE_ALREADY_EXISTS = "devops.app.template.code.already.exists";
+    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE = "devops.error.insert.app.template";
+    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE_PERMISSION = "devops.error.insert.app.template.permission";
+    private static final String DEVOPS_ERROR_GET_APP_TEMPLATE = "devops.error.get.app.template";
+    private static final String DEVOPS_ERROR_GET_RESOURCE_LEVEL = "devops.error.get.resource.level";
+    private static final String DEVOPS_ERROR_UPDATE_APP_TEMPLATE = "devops.error.update.app.template";
+    private static final String DEVOPS_APP_TEMPLATE_IS_STATUS = "devops.app.template.is.status";
+
     private static final String GIT = ".git";
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -113,23 +122,23 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         devopsAppTemplateDTO.setSourceId(sourceId);
         devopsAppTemplateDTO.setSourceType(sourceType);
         if (!checkNameAndCode(devopsAppTemplateDTO, "name")) {
-            throw new CommonException("app.template.name.already.exists");
+            throw new CommonException(DEVOPS_APP_TEMPLATE_NAME_ALREADY_EXISTS);
         }
         if (!checkNameAndCode(devopsAppTemplateDTO, "code")) {
-            throw new CommonException("app.template.code.already.exists");
+            throw new CommonException(DEVOPS_APP_TEMPLATE_CODE_ALREADY_EXISTS);
         }
         // 创建模板 状态为创建中
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
         devopsAppTemplateDTO.setType("C");
         if (devopsAppTemplateMapper.insertSelective(devopsAppTemplateDTO) != 1) {
-            throw new CommonException("error.insert.app.template");
+            throw new CommonException(DEVOPS_ERROR_INSERT_APP_TEMPLATE);
         }
 
         // 更新权限
         DevopsAppTemplatePermissionDTO permissionDTO = new DevopsAppTemplatePermissionDTO(devopsAppTemplateDTO.getId(), DetailsHelper.getUserDetails().getUserId());
         if (appTemplatePermissionMapper.selectOne(permissionDTO) == null) {
             if (appTemplatePermissionMapper.insert(permissionDTO) != 1) {
-                throw new CommonException("error.insert.app.template.permission");
+                throw new CommonException(DEVOPS_ERROR_INSERT_APP_TEMPLATE_PERMISSION);
             }
         }
 
@@ -153,7 +162,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     public void createTemplateSagaTask(DevopsAppTemplateCreateVO appTemplateCreateVO) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateCreateVO.getAppTemplateId());
         if (devopsAppTemplateDTO == null) {
-            throw new CommonException("error.get.app.template");
+            throw new CommonException(DEVOPS_ERROR_GET_APP_TEMPLATE);
         }
         // 获取平台层 gitlab group
         GroupDTO group = new GroupDTO();
@@ -167,7 +176,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             groupName = String.format(GITLAB_GROUP_NAME, tenant.getTenantName());
             groupPath = String.format(GITLAB_GROUP_CODE, tenant.getTenantNum());
         } else {
-            throw new CommonException("error.get.resource.level");
+            throw new CommonException(DEVOPS_ERROR_GET_RESOURCE_LEVEL);
         }
         group.setName(groupName);
         group.setPath(groupPath);
@@ -234,7 +243,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         devopsAppTemplateDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectDTO.getId()));
         devopsAppTemplateDTO.setGitlabUrl(repositoryUrl);
         if (devopsAppTemplateMapper.updateByPrimaryKey(devopsAppTemplateDTO) != 1) {
-            throw new CommonException("error.update.app.template");
+            throw new CommonException(DEVOPS_ERROR_UPDATE_APP_TEMPLATE);
         }
     }
 
@@ -266,7 +275,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         DevopsAppTemplateDTO devopsAppTemplateDTO = new DevopsAppTemplateDTO(appTemplateId, sourceId, sourceType);
         devopsAppTemplateDTO.setName(name);
         if (!checkNameAndCode(devopsAppTemplateDTO, "name")) {
-            throw new CommonException("app.template.name.already.exists");
+            throw new CommonException(DEVOPS_APP_TEMPLATE_NAME_ALREADY_EXISTS);
         }
         DevopsAppTemplateDTO resultDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         resultDTO.setName(name);
@@ -280,7 +289,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         DevopsAppTemplatePermissionDTO permissionDTO = new DevopsAppTemplatePermissionDTO(appTemplateId, DetailsHelper.getUserDetails().getUserId());
         if (appTemplatePermissionMapper.selectOne(permissionDTO) == null) {
             if (appTemplatePermissionMapper.insert(permissionDTO) != 1) {
-                throw new CommonException("error.insert.app.template.permission");
+                throw new CommonException(DEVOPS_ERROR_INSERT_APP_TEMPLATE_PERMISSION);
             }
         }
         UserAttrDTO createByUser = userAttrService.baseQueryById(DetailsHelper.getUserDetails().getUserId());
@@ -304,7 +313,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     public void deleteAppTemplate(Long sourceId, String sourceType, Long appTemplateId) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         if (devopsAppTemplateDTO.getEnable() && !devopsAppTemplateDTO.getStatus().equals(DevopsAppTemplateStatusEnum.FAILED.getType())) {
-            throw new CommonException("app.template.is.status");
+            throw new CommonException(DEVOPS_APP_TEMPLATE_IS_STATUS);
         }
         devopsAppTemplateDTO.setStatus(DevopsAppTemplateStatusEnum.CREATING.getType());
         devopsAppTemplateMapper.updateByPrimaryKeySelective(devopsAppTemplateDTO);
@@ -335,7 +344,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         devopsAppTemplateDTO.setEnable(enable);
         if (devopsAppTemplateMapper.updateByPrimaryKey(devopsAppTemplateDTO) != 1) {
-            throw new CommonException("error.update.app.template");
+            throw new CommonException(DEVOPS_ERROR_UPDATE_APP_TEMPLATE);
         }
     }
 
@@ -343,7 +352,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     public String getTemplateGroupPath(Long appTemplateId) {
         DevopsAppTemplateDTO devopsAppTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         if (devopsAppTemplateDTO == null) {
-            throw new CommonException("error.get.app.template");
+            throw new CommonException(DEVOPS_ERROR_GET_APP_TEMPLATE);
         }
         if (devopsAppTemplateDTO.getSourceType().equals(ResourceLevel.SITE.value())) {
             return String.format(GITLAB_GROUP_CODE, "site");
@@ -351,7 +360,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(devopsAppTemplateDTO.getSourceId());
             return String.format(GITLAB_GROUP_CODE, tenant.getTenantNum());
         } else {
-            throw new CommonException("error.get.resource.level");
+            throw new CommonException(DEVOPS_ERROR_GET_RESOURCE_LEVEL);
         }
     }
 
@@ -373,10 +382,10 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         DevopsAppTemplateDTO appTemplateDTO = devopsAppTemplateMapper.selectByPrimaryKey(appTemplateId);
         appTemplateDTO.setName(name);
         if (!checkNameAndCode(appTemplateDTO, "name")) {
-            throw new CommonException("app.template.name.already.exists");
+            throw new CommonException(DEVOPS_APP_TEMPLATE_NAME_ALREADY_EXISTS);
         }
         if (devopsAppTemplateMapper.updateByPrimaryKeySelective(appTemplateDTO) != 1) {
-            throw new CommonException("error.update.app.template");
+            throw new CommonException(DEVOPS_ERROR_UPDATE_APP_TEMPLATE);
         }
     }
 }

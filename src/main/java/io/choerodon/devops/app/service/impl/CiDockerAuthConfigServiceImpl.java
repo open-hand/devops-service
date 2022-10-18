@@ -37,7 +37,7 @@ public class CiDockerAuthConfigServiceImpl implements CiDockerAuthConfigService 
     @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         CiDockerAuthConfigDTO ciDockerAuthConfigDTO = new CiDockerAuthConfigDTO();
         ciDockerAuthConfigDTO.setDevopsPipelineId(pipelineId);
@@ -46,7 +46,7 @@ public class CiDockerAuthConfigServiceImpl implements CiDockerAuthConfigService 
 
     @Override
     public List<CiDockerAuthConfigDTO> listByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         CiDockerAuthConfigDTO ciDockerAuthConfigDTO = new CiDockerAuthConfigDTO();
         ciDockerAuthConfigDTO.setDevopsPipelineId(pipelineId);

@@ -20,6 +20,7 @@ import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiStageService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
@@ -41,7 +42,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private static final String ERROR_PIPELINE_TOKEN_MISMATCH = "error.pipeline.token.mismatch";
     private static final String CREATE_CI_CONTENT_FAILED = "create.ci.content.failed";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH = "/component/empty-gitlabci-config-for-cd.yml";
@@ -152,7 +152,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
         devopsCiContentDTO.setCiPipelineId(ciPipelineId);

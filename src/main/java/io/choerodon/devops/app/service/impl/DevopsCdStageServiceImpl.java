@@ -24,7 +24,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
 
     @Override
     public List<DevopsCdStageDTO> queryByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdStageDTO devopsCdStageDTO = new DevopsCdStageDTO();
         devopsCdStageDTO.setPipelineId(pipelineId);
         return devopsCdStageMapper.select(devopsCdStageDTO);
@@ -49,7 +49,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
     @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdStageDTO cdStageDTO = new DevopsCdStageDTO();
         cdStageDTO.setProjectId(pipelineId);
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.select(cdStageDTO);
@@ -60,7 +60,7 @@ public class DevopsCdStageServiceImpl implements DevopsCdStageService {
 
     @Override
     public DevopsCdStageDTO queryById(Long stageId) {
-        Assert.notNull(stageId, PipelineCheckConstant.ERROR_STAGE_ID_IS_NULL);
+        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
         return devopsCdStageMapper.selectByPrimaryKey(stageId);
     }
 }

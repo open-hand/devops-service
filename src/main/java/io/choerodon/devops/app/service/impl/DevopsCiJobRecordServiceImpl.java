@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,7 +42,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
@@ -88,7 +89,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         // 查询流水线记录
         List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordService.queryByPipelineId(ciPipelineId);

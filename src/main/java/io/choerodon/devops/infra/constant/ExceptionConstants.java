@@ -6,6 +6,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_CODE_EXIST = "devops.code.exist";
         public static final String DEVOPS_NAME_EXIST = "devops.name.exist";
         public static final String DEVOPS_RESOURCE_INSERT = "devops.resource.insert";
+        public static final String DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT = "devops.field.not.supported.for.sort";
     }
 
     /**
@@ -83,6 +84,10 @@ public class ExceptionConstants {
 
     public static class GitlabCode {
         public static final String DEVOPS_GITLAB_ACCESS_LEVEL = "devops.gitlab.access.level";
+    }
+
+    public static class BranchCode {
+        public static final String DEVOPS_BRANCH_EXIST = "devops.branch.exist";
     }
 
     /**
