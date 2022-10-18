@@ -20,6 +20,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartService {
+
+    private static final String DEVOPS_SAVE_CHART_INFO = "devops.save.chart.info";
+
     @Autowired
     private DevopsCiPipelineChartMapper devopsCiPipelineChartMapper;
 
@@ -40,7 +43,7 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
     @Override
     @Transactional
     public void baseCreate(DevopsCiPipelineChartDTO devopsCiPipelineChartDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineChartMapper, devopsCiPipelineChartDTO, "error.save.chart.info");
+        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineChartMapper, devopsCiPipelineChartDTO, DEVOPS_SAVE_CHART_INFO);
     }
 
     @Override

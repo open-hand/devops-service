@@ -14,6 +14,7 @@ import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportHandle
 import io.choerodon.devops.app.eventhandler.pipeline.test.CiUnitTestReportOperator;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiUnitTestReportService;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -30,6 +31,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReportService {
+
+    private static final String DEVOPS_SAVE_UNIT_TEST_REPORT_FAILED = "devops.save.unit.test.report.failed";
+
     @Autowired
     private DevopsCiUnitTestReportMapper devopsCiUnitTestReportMapper;
     @Autowired
@@ -48,7 +52,7 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
                                DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.svc.not.found");
+            throw new CommonException(ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST);
         }
         Long appServiceId = appServiceDTO.getId();
         // 解析测试报告
@@ -114,7 +118,7 @@ public class DevopsCiUnitTestReportServiceImpl implements DevopsCiUnitTestReport
     public void baseCreate(DevopsCiUnitTestReportDTO devopsCiUnitTestReportDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiUnitTestReportMapper,
                 devopsCiUnitTestReportDTO,
-                "error.save.unit.test.report.failed");
+                DEVOPS_SAVE_UNIT_TEST_REPORT_FAILED);
     }
 
     @Override

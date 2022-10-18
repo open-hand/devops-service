@@ -31,7 +31,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdJobServiceImpl.class);
-    private static final String ERROR_UPDATE_JOB_FAILED = "error.update.job.failed";
+    private static final String DEVOPS_UPDATE_JOB_FAILED = "devops.update.job.failed";
+    private static final String DEVOPS_INSERT_CD_JOB = "devops.insert.cd.job";
 
     @Autowired
     private DevopsCdJobMapper devopsCdJobMapper;
@@ -42,7 +43,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     @Override
     public DevopsCdJobDTO create(DevopsCdJobDTO devopsCdJobDTO) {
         if (devopsCdJobMapper.insert(devopsCdJobDTO) != 1) {
-            throw new CommonException("error.insert.cd.job");
+            throw new CommonException(DEVOPS_INSERT_CD_JOB);
         }
         return devopsCdJobMapper.selectByPrimaryKey(devopsCdJobDTO.getId());
     }
@@ -64,7 +65,8 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
 
     @Override
     public void deleteByStageId(Long stageId) {
-        Assert.notNull(stageId, "error.cd.stage.id.is.null");
+        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
+
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setStageId(stageId);
         List<DevopsCdJobDTO> cdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
@@ -80,7 +82,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
 
     @Override
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, "error.cd.job.pipeline.id.is.null");
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setPipelineId(pipelineId);
         List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobMapper.select(devopsCdJobDTO);
@@ -103,7 +105,7 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
     @Override
     @Transactional
     public void baseUpdate(DevopsCdJobDTO devopsCdJobDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdJobMapper, devopsCdJobDTO, ERROR_UPDATE_JOB_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdJobMapper, devopsCdJobDTO, DEVOPS_UPDATE_JOB_FAILED);
     }
 
     @Override

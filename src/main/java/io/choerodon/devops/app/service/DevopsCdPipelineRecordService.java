@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
-import io.choerodon.devops.api.vo.HostConnectionVO;
 import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 
@@ -36,8 +35,6 @@ public interface DevopsCdPipelineRecordService {
 
     void pipelineCustomDeploy(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId, StringBuilder log);
 
-    void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId);
-
     void update(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO);
 
     void deleteByPipelineId(Long pipelineId);
@@ -49,7 +46,7 @@ public interface DevopsCdPipelineRecordService {
     DevopsCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long cdPipelineId);
 
 
-    Boolean testConnection(HostConnectionVO hostConnectionVO);
+//    Boolean testConnection(HostConnectionVO hostConnectionVO);
 
     DevopsCdPipelineRecordVO queryByCdPipelineRecordId(Long cdPipelineRecordId);
 }

@@ -25,12 +25,13 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarService {
 
-    @Autowired
-    private AppServiceService appServiceService;
+    private static final String SONAR = "sonar";
+    private static final String DEVOPS_SAVE_SONAR_INFO = "devops.save.sonar.info";
 
     @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
     private DevopsCiPipelineSonarMapper devopsCiPipelineSonarMapper;
-    private static final String SONAR = "sonar";
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -63,7 +64,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
     @Override
     @Transactional
     public void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, "error.save.sonar.info");
+        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, DEVOPS_SAVE_SONAR_INFO);
     }
 }
 

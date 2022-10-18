@@ -31,9 +31,11 @@ public class PipelineCheckConstant {
     // job
     public static final String DEVOPS_JOB_RECORD_ID_IS_NULL = "devops.job.record.id.is.null";
     public static final String DEVOPS_JOB_ID_IS_NULL = "devops.job.id.is.null";
+    public static final String DEVOPS_GITLAB_JOB_ID_IS_NULL = "devops.gitlab.job.id.is.null";
     public static final String DEVOPS_JOB_NAME_IS_NULL = "devops.job.name.is.null";
     public static final String DEVOPS_JOB_STATUS_IS_NULL = "devops.job.status.is.null";
 
     // step
     public static final String DEVOPS_STEP_TYPE_IS_INVALID = "devops.step.type.is.invalid";
+    public static final String DEVOPS_STEP_ID_IS_NULL = "devops.step.id.is.null";
 }

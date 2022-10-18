@@ -27,6 +27,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCiStepServiceImpl implements DevopsCiStepService {
 
+    private static final String DEVOPS_SAVE_CI_STEP_FAILED = "devops.save.ci.step.failed";
+
     // dependency service
     @Autowired
     private DevopsCiStepOperator devopsCiStepOperator;
@@ -40,7 +42,7 @@ public class DevopsCiStepServiceImpl implements DevopsCiStepService {
     public void baseCreate(DevopsCiStepDTO devopsCiStepDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiStepMapper,
                 devopsCiStepDTO,
-                "error.save.ci.step.failed");
+                DEVOPS_SAVE_CI_STEP_FAILED);
     }
 
     @Override

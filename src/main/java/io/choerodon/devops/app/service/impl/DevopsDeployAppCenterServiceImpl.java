@@ -35,7 +35,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -409,54 +408,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterEnvDTO.setRdupmType(rdupmTypeEnum.value());
         devopsDeployAppCenterEnvDTO.setObjectId(objectId);
         return devopsDeployAppCenterEnvMapper.selectOne(devopsDeployAppCenterEnvDTO);
-    }
-
-    @Override
-    public void fixData() {
-        int totalCount = appServiceInstanceService.countInstance();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
-        do {
-            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage - 1);
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<AppServiceInstanceDTO> result = PageHelper.doPage(pageRequest, () -> appServiceInstanceService.listInstances());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = result.getContent().stream().map(i -> {
-                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-                    devopsDeployAppCenterEnvDTO.setName(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setCode(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setProjectId(i.getProjectId());
-                    devopsDeployAppCenterEnvDTO.setEnvId(i.getEnvId());
-                    devopsDeployAppCenterEnvDTO.setObjectId(i.getId());
-                    devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-                    devopsDeployAppCenterEnvDTO.setOperationType(AppSourceType.MIDDLEWARE.getValue().equals(i.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value());
-
-                    // 如果是normal，需要具体判断本项目还是共享应用
-                    if (AppSourceType.NORMAL.getValue().equals(i.getSource())) {
-                        AppServiceDTO appServiceDTO = appServiceService.baseQuery(i.getAppServiceId());
-                        if (appServiceDTO == null) {
-                            // 该实例对应的应用服务信息不存在
-                            return null;
-                        }
-                        if (appServiceDTO.getProjectId().equals(i.getProjectId())) {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-                        } else {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.SHARE.getValue());
-                        }
-                    } else {
-                        devopsDeployAppCenterEnvDTO.setChartSource(i.getSource());
-                    }
-                    return devopsDeployAppCenterEnvDTO;
-                }).filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                batchInsertHelper.batchInsert(devopsDeployAppCenterEnvDTOList);
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
     }
 
     @Override
