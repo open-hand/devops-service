@@ -585,6 +585,8 @@ function rewrite_image_info() {
       export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
       export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
       export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+      # 设成docekr认证配置文件
+      echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
     fi
   fi
 
