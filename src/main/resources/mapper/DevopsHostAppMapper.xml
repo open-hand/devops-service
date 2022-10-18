@@ -296,7 +296,7 @@
                 and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>
             <if test="name != null and name != ''">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                and dha.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
         </where>
         GROUP BY dha.id
