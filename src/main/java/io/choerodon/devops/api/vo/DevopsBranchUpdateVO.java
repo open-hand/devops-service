@@ -26,7 +26,7 @@ public class DevopsBranchUpdateVO {
     private String branchName;
 
     @ApiModelProperty("分支纪录的版本号 / 必填")
-    @NotNull(message = "error.object.version.number.null")
+    @NotNull(message = "{devops.object.version.number.null}")
     private Long objectVersionNumber;
 
     public Long getAppServiceId() {

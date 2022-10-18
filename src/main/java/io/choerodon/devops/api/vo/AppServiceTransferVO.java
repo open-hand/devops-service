@@ -14,12 +14,12 @@ import org.hibernate.validator.constraints.Length;
  */
 public class AppServiceTransferVO {
     @ApiModelProperty("应用服务名称")
-    @NotNull(message = "error.app.name.null")
-    @Length(message = "error.app.service.name.length", min = 1, max = 40)
+    @NotNull(message = "{devops.app.name.null}")
+    @Length(message = "{devops.app.service.name.length}", min = 1, max = 40)
     private String name;
 
     @ApiModelProperty("应用服务code")
-    @NotNull(message = "error.app.code.null")
+    @NotNull(message = "{devops.app.code.null}")
     private String code;
 
     @ApiModelProperty("应用服务的类型")

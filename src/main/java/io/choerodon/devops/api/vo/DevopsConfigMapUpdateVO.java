@@ -15,7 +15,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsConfigMapUpdateVO {
     @Encrypt
     @ApiModelProperty("配置映射id/必填")
-    @NotNull(message = "error.id.null")
+    @NotNull(message = "{devops.id.nulll}")
     private Long id;
 
     @Encrypt
@@ -24,10 +24,10 @@ public class DevopsConfigMapUpdateVO {
 
     @Encrypt
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
     @ApiModelProperty("配置名称")
-    @NotBlank(message = "error.name.null")
+    @NotBlank(message = "{devops.name.null}")
     private String name;
     @ApiModelProperty("配置描述/非必填")
     private String description;

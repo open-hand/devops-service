@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
 public class DevopsHostUserPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("主机id / 必需")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long hostId;
 
     @Encrypt

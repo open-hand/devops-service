@@ -661,8 +661,7 @@ public class AppServiceInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "实例删除")
     @DeleteMapping(value = "/{instance_id}/delete")
     public ResponseEntity<Void> delete(
@@ -681,8 +680,7 @@ public class AppServiceInstanceController {
      * @param projectId    项目id
      * @param instanceName 实例名
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验实例名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
@@ -707,9 +705,7 @@ public class AppServiceInstanceController {
      * @param endTime       结束时间
      * @return List
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "获取部署时长报表")
     @PostMapping(value = "/env_commands/time")
     public ResponseEntity<DeployTimeVO> listDeployTimeReport(
@@ -768,9 +764,7 @@ public class AppServiceInstanceController {
      * @param endTime      结束时间
      * @return List
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页获取部署次数列表")
     @CustomPageRequest
     @PostMapping(value = "/env_commands/frequencyTable")
@@ -801,9 +795,7 @@ public class AppServiceInstanceController {
      * @param endTime       结束时间
      * @return PageInfo
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页获取部署时长列表")
     @CustomPageRequest
     @PostMapping(value = "/env_commands/timeTable")
@@ -832,9 +824,7 @@ public class AppServiceInstanceController {
      * @param count     pod数量
      */
     @ApiOperation(value = "操作pod的数量")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping("/operate_pod_count")
     public void operatePodCount(
             @ApiParam(value = "项目ID", required = true)
@@ -862,9 +852,7 @@ public class AppServiceInstanceController {
      * @return 实例信息
      */
     @ApiOperation(value = "根据实例commandId查询实例信息")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping(value = "/query_by_command/{command_id}")
     public ResponseEntity<AppServiceInstanceRepVO> deployRemoteApp(
             @ApiParam(value = "项目ID", required = true)
@@ -877,8 +865,7 @@ public class AppServiceInstanceController {
 
 
     @ApiOperation("计算环境下实例的数量")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/count_by_options")
     public ResponseEntity<Integer> countByOptions(
             @ApiParam(value = "项目ID", required = true)
@@ -895,9 +882,7 @@ public class AppServiceInstanceController {
     }
 
     @ApiOperation("根据批量部署的部署纪录id查询对应的实例")
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/query_by_deploy_record_id")
     public ResponseEntity<List<AppServiceInstanceForRecordVO>> queryByBatchDeployRecordId(
             @ApiParam(value = "项目ID", required = true)

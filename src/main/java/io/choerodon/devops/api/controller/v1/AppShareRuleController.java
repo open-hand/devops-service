@@ -35,7 +35,6 @@ public class AppShareRuleController {
         this.applicationShareService = applicationShareService;
     }
 
-
     /**
      * 创建服务共享规则
      *

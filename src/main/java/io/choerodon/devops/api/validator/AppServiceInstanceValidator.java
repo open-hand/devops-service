@@ -67,7 +67,7 @@ public class AppServiceInstanceValidator {
         }
 
         Long envId = appServiceDeployVOS.get(0).getEnvironmentId();
-        CommonExAssertUtil.assertTrue(envId != null, "error.env.id.null");
+        CommonExAssertUtil.assertTrue(envId != null, "devops.env.id.null");
         appServiceDeployVOS.forEach(ins -> ins.setEnvironmentId(envId));
 
         List<String> serviceNames = new ArrayList<>(size);

@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.dto.PortMapVO;
  */
 public class DevopsServiceReqVO {
     @ApiModelProperty("环境ID / 必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     @Encrypt
     private Long envId;
 
@@ -24,18 +24,18 @@ public class DevopsServiceReqVO {
     private Long appServiceId;
 
     @ApiModelProperty("网络名称 / 必填，长度1-30")
-    @NotNull(message = "error.name.null")
-    @Size(min = 1, max = 30, message = "error.service.name.size")
+    @NotNull(message = "{devops.name.null}")
+    @Size(min = 1, max = 30, message = "{devops.service.name.size}")
     private String name;
 
     @ApiModelProperty("配置类型 / 必填")
-    @NotNull(message = "error.type.null")
+    @NotNull(message = "{devops.type.null}")
     private String type;
 
     private String externalIp;
 
     @ApiModelProperty("端口数据 / 必填")
-    @NotNull(message = "error.ports.null")
+    @NotNull(message = "{devops.ports.null}")
     private List<PortMapVO> ports;
 
     @ApiModelProperty("目标对象为Endpoints，相应的信息")

@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobService;
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
@@ -43,16 +42,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines")
 public class CiCdPipelineController {
 
-    private final DevopsCiPipelineService devopsCiPipelineService;
-    private final CiCdPipelineRecordService ciCdPipelineRecordService;
-    private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-
-    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService, DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
-        this.devopsCiPipelineService = devopsCiPipelineService;
-        this.ciCdPipelineRecordService = ciCdPipelineRecordService;
-        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-    }
-
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
 
