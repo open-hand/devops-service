@@ -1,5 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+import static io.choerodon.devops.infra.util.K8sUtil.checkPortName;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.*;
+
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.JSON;
@@ -13,16 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
-
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
-import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
-import static io.choerodon.devops.infra.util.K8sUtil.checkPortName;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -399,7 +399,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 53) {
-                throw new CommonException("error.env.app.center.name.length");
+                throw new CommonException("devops.env.app.center.name.length");
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
@@ -407,7 +407,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 53) {
-                throw new CommonException("error.env.app.center.code.length");
+                throw new CommonException("devops.env.app.center.code.length");
             }
 
 

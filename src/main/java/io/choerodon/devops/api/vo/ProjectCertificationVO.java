@@ -11,7 +11,7 @@ public class ProjectCertificationVO {
     private Long id;
 
     @ApiModelProperty("证书名称")
-    @NotNull(message = "error.name.null")
+    @NotNull(message = "{devops.name.null}")
     private String name;
 
     @ApiModelProperty("key文件内容")

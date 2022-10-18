@@ -13,19 +13,19 @@ public class OpenAppServiceReqVO {
     private Long id;
 
     @ApiModelProperty("服务名称/必填")
-    @NotNull(message = "error.app.name.null")
-    @Length(message = "error.app.service.name.length", min = 1, max = 40)
+    @NotNull(message = "devops.app.name.null")
+    @Length(message = "devops.app.service.name.length", min = 1, max = 40)
     private String name;
 
     @ApiModelProperty("服务code/必填")
-    @NotNull(message = "error.app.code.null")
+    @NotNull(message = "{devops.app.code.null}")
     private String code;
 
     @ApiModelProperty("项目id/必填")
     private Long projectId;
 
     @ApiModelProperty("服务类型/必填 normal")
-    @NotNull(message = "error.app.type.null")
+    @NotNull(message = "{devops.app.type.null}")
     private String type;
 
     @ApiModelProperty("项目所有者邮箱")

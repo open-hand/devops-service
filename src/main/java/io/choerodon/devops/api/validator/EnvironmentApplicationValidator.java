@@ -42,7 +42,7 @@ public class EnvironmentApplicationValidator {
      */
     public void checkEnvIdExist(Long envId) {
         if (envId == null) {
-            throw new CommonException("error.env.id.null");
+            throw new CommonException("devops.env.id.null");
         }
 
         if (devopsEnvironmentMapper.selectByPrimaryKey(envId) == null) {
@@ -73,10 +73,10 @@ public class EnvironmentApplicationValidator {
      */
     public void checkEnvIdAndAppIdsExist(Long projectId, Long envId, Long appServiceId) {
         if (envId == null) {
-            throw new CommonException("error.env.id.null");
+            throw new CommonException("devops.env.id.null");
         }
         if (appServiceId == null) {
-            throw new CommonException("error.app.id.null");
+            throw new CommonException("devops.app.id.null");
         }
         permissionHelper.checkEnvBelongToProject(projectId, envId);
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
