@@ -44,7 +44,7 @@ public interface DevopsHostAppService {
 
     DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String name);
 
-    Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, Long appId);
+    Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, String name, Long appId);
 
     /**
      * 查询主机下的应用实例详情

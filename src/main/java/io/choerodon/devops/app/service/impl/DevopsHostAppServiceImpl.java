@@ -232,12 +232,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, Long appId) {
+    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, String name, Long appId) {
         Page<DevopsHostAppVO> page;
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params, appId));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params, name, appId));
         } else {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params, appId));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params, name, appId));
         }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
@@ -358,7 +358,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         devopsHostAppVO.setCreator(creator);
         devopsHostAppVO.setUpdater(updater);
-        if (devopsHostAppVO.getDevopsHostCommandDTO()==null){
+        if (devopsHostAppVO.getDevopsHostCommandDTO() == null) {
             DevopsHostCommandDTO defaultDevopsHostCommandDTO = new DevopsHostCommandDTO();
             defaultDevopsHostCommandDTO.setHostId(devopsHostAppVO.getHostId());
             defaultDevopsHostCommandDTO.setStatus("failed");
