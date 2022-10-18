@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.BranchCode.DEVOPS_BRANCH_EXIST;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
@@ -302,7 +303,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
 
             if (branchDTO.getCommit() == null) {
-                throw new CommonException("error.branch.exist");
+                throw new CommonException(DEVOPS_BRANCH_EXIST);
             }
             CommitDTO commitDTO = branchDTO.getCommit();
             Date checkoutDate = commitDTO.getCommittedDate();

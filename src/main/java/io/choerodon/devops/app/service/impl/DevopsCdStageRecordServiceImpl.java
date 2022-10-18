@@ -100,7 +100,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Override
     public DevopsCdStageRecordDTO queryById(Long id) {
-        Assert.notNull(id, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         return devopsCdStageRecordMapper.selectByPrimaryKey(id);
     }
 
@@ -115,7 +115,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Override
     @Transactional
     public void deleteByPipelineRecordId(Long pipelineRecordId) {
-        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.select(devopsCdStageRecordDTO);
@@ -134,7 +134,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Override
     @Transactional
     public void updateStageStatusStop(Long stageRecordId) {
-        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(stageRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         // 更新阶段状态为stop
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         devopsCdStageRecordDTO.setStatus(PipelineStatus.STOP.toValue());
@@ -146,8 +146,8 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Override
     public List<DevopsCdStageRecordDTO> queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status) {
-        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
-        Assert.notNull(status, PipelineCheckConstant.ERROR_STAGE_STATUS_IS_NULL);
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(status, PipelineCheckConstant.DEVOPS_STAGE_STATUS_IS_NULL);
 
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);

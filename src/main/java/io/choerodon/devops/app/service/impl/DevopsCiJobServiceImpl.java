@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -49,8 +52,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiJobServiceImpl.class);
 
     private static final String CREATE_JOB_FAILED = "create.job.failed";
-    private static final String ERROR_STAGE_ID_IS_NULL = "error.stage.id.is.null";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
     private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
     private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
@@ -121,7 +122,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Transactional
     public void deleteByStageId(Long stageId) {
         if (stageId == null) {
-            throw new CommonException(ERROR_STAGE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_STAGE_ID_IS_NULL);
         }
 
         List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
@@ -134,7 +135,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Override
     public void deleteByStageIdCascade(Long stageId) {
-        Assert.notNull(stageId, ERROR_STAGE_ID_IS_NULL);
+        Assert.notNull(stageId, DEVOPS_STAGE_ID_IS_NULL);
 
         List<Long> jobIds = listByStageId(stageId).stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         if (!jobIds.isEmpty()) {
@@ -149,7 +150,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public List<DevopsCiJobDTO> listByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
@@ -159,7 +160,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public List<DevopsCiJobVO> listCustomByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
 
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
@@ -261,7 +262,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
 
         List<DevopsCiJobDTO> devopsCiJobDTOS = listByPipelineId(ciPipelineId);

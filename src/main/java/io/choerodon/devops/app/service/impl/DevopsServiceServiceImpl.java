@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import java.util.*;
@@ -499,7 +500,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                         } else if ("id".equals(property)) {
                             property = "ds.id";
                         } else {
-                            throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
+                            throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, t.getProperty());
                         }
                         return property + " " + t.getDirection();
                     })

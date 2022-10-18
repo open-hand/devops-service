@@ -43,6 +43,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_project_id_%s_cluster_id_%s";
+    private static final String DEVOPS_CLUSTER_GET = "devops.cluster.get";
     private static final String CPU_MEASURE_FORMAT = "%.2f";
     private static final String MEMORY_MEASURE_FORMAT = "%.2f%s";
     private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
@@ -66,7 +67,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         if (devopsClusterDTO != null) {
             return getRedisClusterKey(clusterId, devopsClusterDTO.getProjectId());
         } else {
-            throw new CommonException("error.cluster.get");
+            throw new CommonException(DEVOPS_CLUSTER_GET);
         }
     }
 

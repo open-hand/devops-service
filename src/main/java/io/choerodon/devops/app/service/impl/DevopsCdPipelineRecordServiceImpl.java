@@ -200,8 +200,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
-        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         return devopsCdPipelineRecordMapper.queryByPipelineIdAndGitlabPipelineId(devopsPipelineId, gitlabPipelineId);
     }
@@ -1132,7 +1132,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, "error.pipeline.id.is.null");
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setPipelineId(pipelineId);
         List<DevopsCdPipelineRecordDTO> devopsCdPipelineRecordDTOS = devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO);
@@ -1145,7 +1145,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public DevopsCdPipelineRecordDTO queryById(Long id) {
-        Assert.notNull(id, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
         return devopsCdPipelineRecordMapper.selectByPrimaryKey(id);
     }
 

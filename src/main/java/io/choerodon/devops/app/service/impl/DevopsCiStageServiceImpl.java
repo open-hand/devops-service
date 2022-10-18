@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -24,7 +26,6 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
 
     private static final String CREATE_STAGE_FAILED = "create.stage.failed";
     private static final String DELETE_STAGE_FAILED = "delete.stage.failed";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
     private DevopsCiStageMapper devopsCiStageMapper;
 
     public DevopsCiStageServiceImpl(DevopsCiStageMapper devopsCiStageMapper) {
@@ -44,7 +45,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     @Override
     public List<DevopsCiStageDTO> listByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
         devopsCiStageDTO.setCiPipelineId(ciPipelineId);
@@ -72,7 +73,7 @@ public class DevopsCiStageServiceImpl implements DevopsCiStageService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiStageDTO record = new DevopsCiStageDTO();
         record.setCiPipelineId(ciPipelineId);

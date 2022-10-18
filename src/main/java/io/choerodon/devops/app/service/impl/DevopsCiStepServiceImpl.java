@@ -12,6 +12,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.DevopsCiStepService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiStepMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -67,7 +68,7 @@ public class DevopsCiStepServiceImpl implements DevopsCiStepService {
 
     @Override
     public List<DevopsCiStepDTO> listByJobId(Long jobId) {
-        Assert.notNull(jobId, "error.job.id.is.null");
+        Assert.notNull(jobId, PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL);
         DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
         devopsCiStepDTO.setDevopsCiJobId(jobId);
         return devopsCiStepMapper.select(devopsCiStepDTO);
