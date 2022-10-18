@@ -16,6 +16,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCiPipelineFunctionServiceImpl implements DevopsCiPipelineFunctionService {
 
+    private static final String DEVOPS_SAVE_PIPELINE_FUNCTION_FAILED = "devops.save.pipeline.function.failed";
+
     @Autowired
     private DevopsCiPipelineFunctionMapper devopsCiPipelineFunctionMapper;
 
@@ -33,7 +35,7 @@ public class DevopsCiPipelineFunctionServiceImpl implements DevopsCiPipelineFunc
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(DevopsCiPipelineFunctionDTO devopsCiPipelineFunctionDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineFunctionMapper, devopsCiPipelineFunctionDTO, "error.save.pipeline.function.failed");
+        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineFunctionMapper, devopsCiPipelineFunctionDTO, DEVOPS_SAVE_PIPELINE_FUNCTION_FAILED);
     }
 
     @Override

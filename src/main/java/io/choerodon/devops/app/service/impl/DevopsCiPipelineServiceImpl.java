@@ -16,8 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -86,9 +84,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
-
-    @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
-    private String cibase;
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -229,30 +224,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.devopsPipelineRecordRelMapper = devopsPipelineRecordRelMapper;
         this.devopsCiJobMapper = devopsCiJobMapper;
     }
-
-//    private static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
-//        List<Server> servers = new ArrayList<>();
-//        List<Repository> repositories = new ArrayList<>();
-//
-//        mavenRepoList.forEach(m -> {
-//            if (m.getType() != null) {
-//                String[] types = m.getType().split(GitOpsConstants.COMMA);
-//                if (types.length > 2) {
-//                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
-//                }
-//            }
-//            if (Boolean.TRUE.equals(m.getPrivateRepo())) {
-//                servers.add(new Server(Objects.requireNonNull(m.getName()), Objects.requireNonNull(m.getUsername()), Objects.requireNonNull(m.getPassword())));
-//            }
-//            repositories.add(new Repository(
-//                    Objects.requireNonNull(m.getName()),
-//                    Objects.requireNonNull(m.getName()),
-//                    Objects.requireNonNull(m.getUrl()),
-//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
-//                    m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
-//        });
-//        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
-//    }
 
     /**
      * 第一次创建CI流水线时初始化仓库下的.gitlab-ci.yml文件
@@ -2038,33 +2009,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    /**
-     * 主机部署 关联ci任务
-     * 对于创建或更新根据任务名称获取id
-     *
-     * @param pipelineId
-     * @param ciJobName
-     * @return
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.READ_UNCOMMITTED)
-    public Long getCiJobId(Long pipelineId, String ciJobName) {
-        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
-        devopsCiJobDTO.setCiPipelineId(pipelineId);
-        devopsCiJobDTO.setName(ciJobName);
-        List<DevopsCiJobDTO> ciJobDTOList = devopsCiJobMapper.select(devopsCiJobDTO);
-        if (CollectionUtils.isEmpty(ciJobDTOList)) {
-            throw new CommonException("error.get.ci.job.id");
-        }
-        return ciJobDTOList.get(0).getId();
-    }
-
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-//        if (deployConfigVO.getImageDeploy() != null
-//                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
-//            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
-//        }
         if (deployConfigVO.getJarDeploy() != null
                 && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
             devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +49,7 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
 
     private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
+    private static final String DEVOPS_SAVE_MAVEN_BUILD_CONFIG_FAILED = "devops.save.maven.build.config.failed";
 
     @Autowired
     private DevopsCiMavenBuildConfigMapper devopsCiMavenBuildConfigMapper;
@@ -91,7 +94,7 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
 
     @Override
     public DevopsCiMavenBuildConfigDTO queryByStepId(Long stepId) {
-        Assert.notNull(stepId, "error.step.id.is.null");
+        Assert.notNull(stepId, DEVOPS_STEP_ID_IS_NULL);
 
         DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = new DevopsCiMavenBuildConfigDTO();
         devopsCiMavenBuildConfigDTO.setStepId(stepId);
@@ -104,7 +107,7 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
     public void baseCreate(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiMavenBuildConfigMapper,
                 devopsCiMavenBuildConfigDTO,
-                "error.save.maven.build.config.failed");
+                DEVOPS_SAVE_MAVEN_BUILD_CONFIG_FAILED);
     }
 
     @Override

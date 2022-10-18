@@ -177,15 +177,15 @@ public class CiCdPipelineController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "测试主机连接")
-    @PostMapping(value = "/test_connection")
-    public ResponseEntity<Boolean> testConnection(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody HostConnectionVO hostConnectionVO) {
-        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "测试主机连接")
+//    @PostMapping(value = "/test_connection")
+//    public ResponseEntity<Boolean> testConnection(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @RequestBody HostConnectionVO hostConnectionVO) {
+//        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
+//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表，查询项目下流水线名称")

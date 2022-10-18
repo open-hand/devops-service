@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiDockerBuildConfigMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -21,6 +22,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiDockerBuildConfigServiceImpl implements DevopsCiDockerBuildConfigService {
+
+    private static final String DEVOPS_SAVE_DOCKER_BUILD_CONFIG_FAILED = "devops.save.docker.build.config.failed";
+
     @Autowired
     private DevopsCiDockerBuildConfigMapper devopsCiDockerBuildConfigMapper;
 
@@ -31,7 +35,7 @@ public class DevopsCiDockerBuildConfigServiceImpl implements DevopsCiDockerBuild
 
     @Override
     public DevopsCiDockerBuildConfigDTO queryByStepId(Long stepId) {
-        Assert.notNull(stepId, "error.step.id.is.null");
+        Assert.notNull(stepId, PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL);
         DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO = new DevopsCiDockerBuildConfigDTO();
         devopsCiDockerBuildConfigDTO.setStepId(stepId);
 
@@ -43,7 +47,7 @@ public class DevopsCiDockerBuildConfigServiceImpl implements DevopsCiDockerBuild
     public void baseCreate(DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiDockerBuildConfigMapper,
                 devopsCiDockerBuildConfigDTO,
-                "error.save.docker.build.config.failed");
+                DEVOPS_SAVE_DOCKER_BUILD_CONFIG_FAILED);
     }
 
     @Override

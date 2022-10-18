@@ -42,6 +42,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     private static final String ERROR_PIPELINE_TOKEN_MISMATCH = "error.pipeline.token.mismatch";
     private static final String CREATE_CI_CONTENT_FAILED = "create.ci.content.failed";
+    private static final String DEVOPS_SAVE_CONTENT_FAILED = "devops.save.content.failed";
+    private static final String DEVOPS_UPDATE_CONTENT_FAILED = "devops.update.content.failed";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH = "/component/empty-gitlabci-config-for-cd.yml";
@@ -120,7 +122,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,
                     devopsCiContentDTO,
-                    "error.save.content.failed");
+                    DEVOPS_SAVE_CONTENT_FAILED);
         } else if (devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
                 || devopsCiContentDTO.getDevopsDefaultRuleNumber() < defaultRuleNumber) {
             ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
@@ -130,7 +132,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiContentMapper,
                     devopsCiContentDTO,
-                    "error.update.content.failed");
+                    DEVOPS_UPDATE_CONTENT_FAILED);
         } else {
             ciContent = devopsCiContentDTO.getCiContentFile();
         }

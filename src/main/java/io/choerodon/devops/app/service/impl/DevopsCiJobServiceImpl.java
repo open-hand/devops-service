@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -53,7 +52,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     private static final String CREATE_JOB_FAILED = "create.job.failed";
     private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
-    private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
     private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
     private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
     private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.app.service.token.pipeline.mismatch";
@@ -230,7 +228,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
-        Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+        Assert.notNull(jobId, DEVOPS_GITLAB_JOB_ID_IS_NULL);
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
 
@@ -330,7 +328,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Transactional
     public void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
         Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
-        Assert.notNull(jobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+        Assert.notNull(jobId, DEVOPS_GITLAB_JOB_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
