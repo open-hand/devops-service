@@ -116,8 +116,8 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
 
     @Override
     public List<DevopsCdJobDTO> listByProjectIdAndType(Long projectId, JobTypeEnum typeEnum) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_JOB_TYPE_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_JOB_TYPE_IS_NULL);
 
         DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
         devopsCdJobDTO.setProjectId(projectId);

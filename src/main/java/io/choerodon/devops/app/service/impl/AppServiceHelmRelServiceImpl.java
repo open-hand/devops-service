@@ -24,7 +24,7 @@ public class AppServiceHelmRelServiceImpl implements AppServiceHelmRelService {
 
     @Override
     public AppServiceHelmRelDTO queryByAppServiceId(Long appServiceId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
 
         AppServiceHelmRelDTO appServiceHelmRelDTO = new AppServiceHelmRelDTO();
         appServiceHelmRelDTO.setAppServiceId(appServiceId);

@@ -7,6 +7,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_NAME_EXIST = "devops.name.exist";
         public static final String DEVOPS_RESOURCE_INSERT = "devops.resource.insert";
         public static final String DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT = "devops.field.not.supported.for.sort";
+        public static final String DEVOPS_YAML_FORMAT_INVALID = "devops.yaml.format.invalid";
     }
 
     /**
@@ -84,6 +85,7 @@ public class ExceptionConstants {
 
     public static class GitlabCode {
         public static final String DEVOPS_GITLAB_ACCESS_LEVEL = "devops.gitlab.access.level";
+        public static final String DEVOPS_GITLAB_PROJECT_ID_IS_NULL = "devops.gitlab.project.id.is.null";
     }
 
     public static class BranchCode {

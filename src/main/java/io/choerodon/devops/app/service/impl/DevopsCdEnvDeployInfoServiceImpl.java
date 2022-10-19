@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,6 @@ import io.choerodon.devops.infra.mapper.DevopsCdEnvDeployInfoMapper;
 @Service
 public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoService {
 
-    private static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
     private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
 
     private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
@@ -36,7 +37,7 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     @Transactional
     public DevopsCdEnvDeployInfoDTO save(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
         // 参数校验
-        Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), DEVOPS_ENV_ID_IS_NULL);
 
         // 保存记录
         if (devopsCdEnvDeployInfoMapper.insertSelective(devopsCdEnvDeployInfoDTO) != 1) {

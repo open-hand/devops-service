@@ -186,7 +186,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     @Transactional
     public void deleteByInstanceId(Long instanceId) {
-        Assert.notNull(instanceId, ResourceCheckConstant.ERROR_INSTANCE_ID_IS_NULL);
+        Assert.notNull(instanceId, ResourceCheckConstant.DEVOPS_INSTANCE_ID_IS_NULL);
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         devopsEnvCommandDTO.setObjectId(instanceId);
         devopsEnvCommandDTO.setObject(ObjectType.INSTANCE.getType());

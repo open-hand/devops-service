@@ -334,7 +334,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId) {
-        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+        Assert.notNull(commandId, ResourceCheckConstant.DEVOPS_COMMAND_ID_IS_NULL);
 
         DeployRecordVO deployRecordVO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
         if (deployRecordVO == null) {
@@ -352,7 +352,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public DeployRecordVO queryHostDeployRecordByCommandId(Long commandId) {
-        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+        Assert.notNull(commandId, ResourceCheckConstant.DEVOPS_COMMAND_ID_IS_NULL);
 
         return devopsDeployRecordMapper.queryHostDeployRecordByCommandId(commandId);
     }

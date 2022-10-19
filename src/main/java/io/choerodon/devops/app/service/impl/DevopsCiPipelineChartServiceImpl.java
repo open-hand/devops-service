@@ -29,7 +29,7 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
 
     @Override
     public DevopsCiPipelineChartDTO queryByPipelineIdAndJobName(Long appServiceId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(jobName, PipelineCheckConstant.DEVOPS_JOB_NAME_IS_NULL);
 
@@ -49,7 +49,7 @@ public class DevopsCiPipelineChartServiceImpl implements DevopsCiPipelineChartSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAppServiceId(Long appServiceId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
 
         DevopsCiPipelineChartDTO devopsCiPipelineChartDTO = new DevopsCiPipelineChartDTO();
         devopsCiPipelineChartDTO.setAppServiceId(appServiceId);

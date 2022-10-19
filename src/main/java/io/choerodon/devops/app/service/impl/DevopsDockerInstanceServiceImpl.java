@@ -321,8 +321,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public DevopsDockerInstanceDTO queryByAppIdAndContainerId(Long appId, String containerId) {
-        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
-        notNull(containerId, ResourceCheckConstant.ERROR_APP_CONTAINER_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
+        notNull(containerId, ResourceCheckConstant.DEVOPS_APP_CONTAINER_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);
@@ -344,14 +344,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public List<DevopsDockerInstanceDTO> listByHostId(Long hostId) {
-        notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
 
         return devopsDockerInstanceMapper.listByHostId(hostId);
     }
 
     @Override
     public List<DevopsDockerInstanceDTO> listByAppId(Long appId) {
-        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);
@@ -361,15 +361,15 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     @Override
     public DevopsDockerInstanceDTO queryByHostIdAndName(Long hostId, String containerName) {
-        notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        notNull(containerName, ResourceCheckConstant.ERROR_CONTAINER_NAME_IS_NULL);
+        notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
+        notNull(containerName, ResourceCheckConstant.DEVOPS_CONTAINER_NAME_IS_NULL);
         return devopsDockerInstanceMapper.selectOne(new DevopsDockerInstanceDTO(hostId, containerName));
     }
 
     @Override
     @Transactional
     public void deleteByAppId(Long appId) {
-        notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = new DevopsDockerInstanceDTO();
         devopsDockerInstanceDTO.setAppId(appId);

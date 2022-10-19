@@ -56,7 +56,7 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
 
     @Override
     public List<DockerComposeValueDTO> listRemarkValuesByAppId(Long appId, String searchParam) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        Assert.notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
 
         return dockerComposeValueMapper.listRemarkValuesByAppId(appId, searchParam);
     }
