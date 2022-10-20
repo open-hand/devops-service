@@ -72,12 +72,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
     private static final Long DEFAULT_PIPELINE_ID = 0L;
-    private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
-    private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
-    private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
-    private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
-    private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
-    private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
+    private static final String DEVOPS_CREATE_PIPELINE_FAILED = "devops.create.pipeline.failed";
+    private static final String DEVOPS_UPDATE_PIPELINE_FAILED = "devops.update.pipeline.failed";
+    private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
+    private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
+    private static final String DEVOPSDELETE_PIPELINE_FAILED = "devopsdelete.pipeline.failed";
+    private static final String DEVOPS_BRANCH_PERMISSION_MISMATCH = "devops.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -388,7 +388,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineDTO.setToken(GenerateUUID.generateUUID());
         ciCdPipelineDTO.setEnabled(true);
         if (ciCdPipelineMapper.insertSelective(ciCdPipelineDTO) != 1) {
-            throw new CommonException(CREATE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_CREATE_PIPELINE_FAILED);
         }
         // 保存流水线分支关系
         saveBranchRel(ciCdPipelineVO, ciCdPipelineDTO);
@@ -947,7 +947,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (ciCdPipelineMapper.disablePipeline(pipelineId) != 1) {
-            throw new CommonException(DISABLE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_DISABLE_PIPELINE_FAILED);
         }
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
@@ -966,7 +966,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 删除流水线
         if (ciCdPipelineMapper.deleteByPrimaryKey(pipelineId) != 1) {
-            throw new CommonException(DELETE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPSDELETE_PIPELINE_FAILED);
         }
         // 删除stage
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
@@ -1031,7 +1031,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.enablePipeline(pipelineId) != 1) {
-            throw new CommonException(ENABLE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_ENABLE_PIPELINE_FAILED);
         }
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
@@ -1103,7 +1103,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 && Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge())
                 && Boolean.FALSE.equals(branchDTO.getDevelopersCanPush())
                 && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
-            throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+            throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
         }
     }
 
@@ -1122,10 +1122,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         if (Boolean.TRUE.equals(branchDTO.getProtected())) {
             if (Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() < AccessLevel.MASTER.toValue()) {
-                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+                throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
             }
             if (Boolean.TRUE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() < AccessLevel.DEVELOPER.toValue()) {
-                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+                throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
             }
         }
 
@@ -1539,7 +1539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
         if (ciCdPipelineMapper.updateByPrimaryKey(ciCdPipelineDTO) != 1) {
-            throw new CommonException(UPDATE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_PIPELINE_FAILED);
         }
 
 

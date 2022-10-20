@@ -38,8 +38,17 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String GRAFANA_NODE = "/d/choerodon-default-node/jie-dian";
     private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
     private static final String ERROR_FORMAT = "%s;";
-    private static final String ERROR_BOUND_PVC_FORMAT = "%s绑定PV失败;";
     private static final String GRAFANA_CLIENT_PREFIX = "grafana";
+    private static final String DEVOPS_INSERT_CLUSTER_RESOURCE = "devops.insert.cluster.resource";
+    private static final String DEVOPS_UPDATE_CLUSTER_RESOURCE = "devops.update.cluster.resource";
+    private static final String DEVOPS_CREATE_CERT_MANAGER_EXIST = "devops.create.cert.manager.exist";
+    private static final String DEVOPS_INSERT_CERT_MANAGER_RECORD = "devops.insert.cert.manager.record";
+    private static final String DEVOPS_INSERT_CERT_MANAGER = "devops.insert.cert.manager";
+    private static final String DEVOPS_DELETE_PROMETHEUS = "devops.delete.prometheus";
+    private static final String DEVOPS_DELETE_CLUSTER_RESOURCE = "devops.delete.cluster.resource";
+    private static final String DEVOPS_NO_CLUSTER_SYSTEM_ENV = "devops.no.cluster.system.env";
+    private static final String DEVOPS_INSERT_PROMETHEUS = "devops.insert.prometheus";
+    private static final String DEVOPS_CLUSTER_SYSTEM_ENV_ID_NULL = "devops.cluster.system.envId.null";
 
     @Autowired
     private DevopsClusterResourceMapper devopsClusterResourceMapper;
@@ -84,14 +93,14 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
         if (devopsClusterResourceMapper.insertSelective(devopsClusterResourceDTO) != 1) {
-            throw new CommonException("error.insert.cluster.resource");
+            throw new CommonException(DEVOPS_INSERT_CLUSTER_RESOURCE);
         }
     }
 
     @Override
     public void baseUpdate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
         if (devopsClusterResourceMapper.updateByPrimaryKeySelective(devopsClusterResourceDTO) != 1) {
-            throw new CommonException("error.update.cluster.resource");
+            throw new CommonException(DEVOPS_UPDATE_CLUSTER_RESOURCE);
         }
     }
 
@@ -101,7 +110,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsClusterResourceDTO devopsClusterResourceDTO1 = queryByClusterIdAndType(clusterId, ClusterResourceType.CERTMANAGER.getType());
         if (!ObjectUtils.isEmpty(devopsClusterResourceDTO1)) {
-            throw new CommonException("error.create.cert.manager.exist");
+            throw new CommonException(DEVOPS_CREATE_CERT_MANAGER_EXIST);
         }
         DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
         devopsClusterResourceDTO.setType(ClusterResourceType.CERTMANAGER.getType());
@@ -109,13 +118,13 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
 
         DevopsCertManagerRecordDTO devopsCertManagerRecordDTO = new DevopsCertManagerRecordDTO();
         devopsCertManagerRecordDTO.setStatus(ClusterResourceStatus.PROCESSING.getStatus());
-        MapperUtil.resultJudgedInsertSelective(devopsCertManagerRecordMapper, devopsCertManagerRecordDTO, "error.insert.cert.manager.record");
+        MapperUtil.resultJudgedInsertSelective(devopsCertManagerRecordMapper, devopsCertManagerRecordDTO, DEVOPS_INSERT_CERT_MANAGER_RECORD);
         //记录chart信息
         DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
         devopsCertManagerDTO.setReleaseName(certManagerProperties.getReleaseName());
         devopsCertManagerDTO.setNamespace(certManagerProperties.getNamespace());
         devopsCertManagerDTO.setChartVersion(certManagerProperties.getChartVersion());
-        MapperUtil.resultJudgedInsertSelective(devopsCertManagerMapper, devopsCertManagerDTO, "error.insert.cert.manager");
+        MapperUtil.resultJudgedInsertSelective(devopsCertManagerMapper, devopsCertManagerDTO, DEVOPS_INSERT_CERT_MANAGER);
         // 插入数据
         devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
         devopsClusterResourceDTO.setClusterId(clusterId);
@@ -246,10 +255,10 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     public void baseDeletePrometheus(Long clusterId) {
         DevopsClusterResourceDTO devopsClusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (devopsPrometheusMapper.deleteByPrimaryKey(devopsClusterResourceDTO.getConfigId()) != 1) {
-            throw new CommonException("error.delete.devopsPrometheus");
+            throw new CommonException(DEVOPS_DELETE_PROMETHEUS);
         }
         if (devopsClusterResourceMapper.delete(devopsClusterResourceDTO) != 1) {
-            throw new CommonException("error.delete.cluster.resource");
+            throw new CommonException(DEVOPS_DELETE_CLUSTER_RESOURCE);
         }
 
     }
@@ -261,7 +270,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         Long systemEnvId = devopsClusterDTO.getSystemEnvId();
         if (systemEnvId == null) {
-            throw new CommonException("no.cluster.system.env");
+            throw new CommonException(DEVOPS_NO_CLUSTER_SYSTEM_ENV);
         }
         // 校验环境相关信息
 
@@ -285,7 +294,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
             //首次点击安装
             newPrometheusDTO.setClusterId(clusterId);
             if (devopsPrometheusMapper.insertSelective(newPrometheusDTO) != 1) {
-                throw new CommonException("error.insert.prometheus");
+                throw new CommonException(DEVOPS_INSERT_PROMETHEUS);
             }
 
             DevopsClusterResourceDTO devopsClusterResourceDTO = new DevopsClusterResourceDTO();
@@ -310,7 +319,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsClusterDTO devopsClusterDTO = checkClusterExist(clusterId);
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (devopsClusterDTO.getSystemEnvId() == null) {
-            throw new CommonException("error.cluster.system.envId.null");
+            throw new CommonException(DEVOPS_CLUSTER_SYSTEM_ENV_ID_NULL);
         }
         DevopsPrometheusDTO devopsPrometheusDTO = devopsPrometheusMapper.selectByPrimaryKey(devopsPrometheusVO.getId());
         if (devopsPrometheusDTO.getAdminPassword().equals(devopsPrometheusVO.getAdminPassword())
