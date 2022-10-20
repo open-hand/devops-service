@@ -197,24 +197,24 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // 检验是否是手动修改gitlab-ci.yaml文件生成的流水线记录
         for (CiJobWebHookVO job : pipelineWebHookVO.getBuilds()) {
             DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(), jobMap);
-//            if (devopsCiJobDTO == null) {
-//                LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
-//                return;
-//            }
-//            DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
-//            if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
-//                LOGGER.debug("the stage name of the job {} mismatch...", job.getStage());
-//                return;
-//            } else {
-//                job.setType(devopsCiJobDTO.getType());
-//                job.setGroupType(devopsCiJobDTO.getGroupType());
-//                job.setMetadata(devopsCiJobDTO.getMetadata());
-//            }
-            if (devopsCiJobDTO != null) {
+            if (devopsCiJobDTO == null) {
+                LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
+                return;
+            }
+            DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
+            if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
+                LOGGER.debug("the stage name of the job {} mismatch...", job.getStage());
+                return;
+            } else {
                 job.setType(devopsCiJobDTO.getType());
                 job.setGroupType(devopsCiJobDTO.getGroupType());
                 job.setMetadata(devopsCiJobDTO.getMetadata());
             }
+//            if (devopsCiJobDTO != null) {
+//                job.setType(devopsCiJobDTO.getType());
+//                job.setGroupType(devopsCiJobDTO.getGroupType());
+//                job.setMetadata(devopsCiJobDTO.getMetadata());
+//            }
         }
         pipelineWebHookVO.setToken(token);
         try {
