@@ -7,6 +7,7 @@ import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import io.kubernetes.client.JSON;
@@ -216,18 +217,26 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
+    public static void main(String[] args) {
+        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("");
+        System.out.println(simpleDateFormat.format(new Date()));
+    }
+
     private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
             devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsDeployGroupVO.getAppCode());
+        Map<String, String> annotations = new HashMap<>();
+        annotations.put("choerodon.io/modify-time", new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getLabels())) {
             metadata.setLabels(devopsDeployGroupAppConfigVO.getLabels());
         }
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getAnnotations())) {
-            metadata.setAnnotations(devopsDeployGroupAppConfigVO.getAnnotations());
+            annotations.putAll(devopsDeployGroupAppConfigVO.getAnnotations());
         }
+        metadata.setAnnotations(annotations);
         deployment.setMetadata(metadata);
 
         // 设置spec
