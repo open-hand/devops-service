@@ -211,6 +211,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO, "id");
+            detailVO.setLastUpdateDate(appServiceInstanceInfoDTO.getLastUpdateDate());
+            detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(appServiceInstanceInfoDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : appServiceInstanceInfoDTO.getLastUpdatedBy()));
             if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
@@ -293,6 +295,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
             detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
             }));
+            detailVO.setLastUpdateDate(devopsDeploymentDTO.getLastUpdateDate());
+            detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(devopsDeploymentDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : devopsDeploymentDTO.getLastUpdatedBy()));
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
@@ -304,7 +308,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
 
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
-        detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getLastUpdatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
