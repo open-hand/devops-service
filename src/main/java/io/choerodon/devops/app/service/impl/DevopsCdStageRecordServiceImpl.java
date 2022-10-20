@@ -31,8 +31,8 @@ import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordService {
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdStageRecordServiceImpl.class);
 
-    private static final String SAVE_STAGE_RECORD_FAILED = "save.stage.record.failed";
-    private static final String UPDATE_STAGE_RECORD_FAILED = "update.stage.record.failed";
+    private static final String DEVOPS_SAVE_STAGE_RECORD_FAILED = "devops.save.stage.record.failed";
+    private static final String DEVOPS_UPDATE_STAGE_RECORD_FAILED = "devops.update.stage.record.failed";
 
     @Autowired
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
@@ -45,7 +45,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Transactional
     public void save(DevopsCdStageRecordDTO devopsCdStageRecordDTO) {
         if (devopsCdStageRecordMapper.insert(devopsCdStageRecordDTO) != 1) {
-            throw new CommonException(SAVE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_SAVE_STAGE_RECORD_FAILED);
         }
     }
 
@@ -65,7 +65,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Transactional
     public void update(DevopsCdStageRecordDTO devopsCdStageRecord) {
         if (devopsCdStageRecordMapper.updateByPrimaryKeySelective(devopsCdStageRecord) != 1) {
-            throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_STAGE_RECORD_FAILED);
         }
     }
 
@@ -83,7 +83,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
         recordDTO.setStatus(status);
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
-            throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_STAGE_RECORD_FAILED);
         }
     }
 
