@@ -217,6 +217,11 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
+    public static void main(String[] args) {
+        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("");
+        System.out.println(simpleDateFormat.format(new Date()));
+    }
+
     private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
             devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
@@ -224,7 +229,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsDeployGroupVO.getAppCode());
         Map<String, String> annotations = new HashMap<>();
-        annotations.put("choerodon.io/modify-time", new SimpleDateFormat("yyyy-MM-dd hh:mm").format(new Date()));
+        annotations.put("choerodon.io/modify-time", new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getLabels())) {
             metadata.setLabels(devopsDeployGroupAppConfigVO.getLabels());
         }
