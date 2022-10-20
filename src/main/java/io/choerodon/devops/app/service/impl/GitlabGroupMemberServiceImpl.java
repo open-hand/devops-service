@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_GROUP_ID_SELECT;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEVOPS;
 import static io.choerodon.devops.infra.constant.MiscConstants.OPERATIONS;
 import static io.choerodon.devops.infra.enums.LabelType.GITLAB_PROJECT_OWNER;
@@ -46,7 +47,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
-    private static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
     private static final String PROJECT = "project";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
@@ -105,8 +105,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 memberHelper,
                                 gitlabGroupMemberVO.getUserId());
                     } catch (Exception e) {
-                        if (e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
-                            LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
+                        if (e.getMessage().equals(DEVOPS_GITLAB_GROUP_ID_SELECT)) {
+                            LOGGER.info(DEVOPS_GITLAB_GROUP_ID_SELECT);
                             return;
                         }
                         throw new CommonException(e);

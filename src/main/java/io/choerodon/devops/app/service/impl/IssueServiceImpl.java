@@ -34,6 +34,8 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 @Service
 public class IssueServiceImpl implements IssueService {
 
+    private static final String DEVOPS_APPLICATION_SELECT = "devops.application.select";
+
     @Autowired
     private DevopsBranchService devopsBranchService;
     @Autowired
@@ -216,7 +218,7 @@ public class IssueServiceImpl implements IssueService {
         if (applicationDO != null) {
             return applicationDO.getGitlabProjectId();
         } else {
-            throw new CommonException("error.application.select");
+            throw new CommonException(DEVOPS_APPLICATION_SELECT);
         }
     }
 }

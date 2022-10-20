@@ -36,23 +36,16 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-
     @Autowired
     private CiTemplateStageService ciTemplateStageService;
-
     @Autowired
     private CiTemplateJobService ciTemplateJobService;
     @Autowired
     private CiTemplateCategoryService ciTemplateCategoryService;
     @Autowired
-    private CiTemplateStepService ciTemplateStepService;
-    @Autowired
     private CiTemplateJobStepRelService ciTemplateJobStepRelService;
     @Autowired
     private CiTemplateJobGroupService ciTemplateJobGroupService;
-    @Autowired
-    private CiTemplateVariableService ciTemplateVariableService;
-
     @Autowired
     private PipelineTemplateMapper pipelineTemplatemapper;
     @Autowired

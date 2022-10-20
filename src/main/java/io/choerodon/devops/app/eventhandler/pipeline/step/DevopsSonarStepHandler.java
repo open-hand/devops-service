@@ -167,7 +167,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                 throw new CommonException("error.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
             }
         } else {
-            throw new CommonException(ResourceCheckConstant.ERROR_SONAR_SCANNER_TYPE_INVALID);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_SONAR_SCANNER_TYPE_INVALID);
         }
         scripts.add(String.format(SAVE_SONAR_INFO_FUNCTION, devopsCiSonarConfigDTO.getScannerType()));
         return scripts;

@@ -7,6 +7,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_NAME_EXIST = "devops.name.exist";
         public static final String DEVOPS_RESOURCE_INSERT = "devops.resource.insert";
         public static final String DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT = "devops.field.not.supported.for.sort";
+        public static final String DEVOPS_YAML_FORMAT_INVALID = "devops.yaml.format.invalid";
+        public static final String DEVOPS_READ_MULTIPART_FILE = "devops.read.multipart.file";
     }
 
     /**
@@ -77,6 +79,18 @@ public class ExceptionConstants {
         public static final String DEVOPS_COMMAND_NOT_EXIST = "devops.command.not.exist";
     }
 
+    public static class ClusterCode {
+        public static final String DEVOPS_CLUSTER_NOT_EXIST = "devops.cluster.not.exist";
+    }
+
+    public static class CertificationCode {
+        public static final String DEVOPS_CERTIFICATION_NOT_EXIST_IN_DATABASE = "devops.certification.not.exist.in.database";
+    }
+
+    public static class GitopsCode {
+        public static final String DEVOPS_FILE_RESOURCE_NOT_EXIST = "devops.fileResource.not.exist";
+    }
+
 
     public static class EnvironmentCode {
         public static final String DEVOPS_ENV_ID_NOT_EXIST = "devops.env.id.not.exist";
@@ -84,6 +98,11 @@ public class ExceptionConstants {
 
     public static class GitlabCode {
         public static final String DEVOPS_GITLAB_ACCESS_LEVEL = "devops.gitlab.access.level";
+        public static final String DEVOPS_GITLAB_PROJECT_ID_IS_NULL = "devops.gitlab.project.id.is.null";
+        public static final String DEVOPS_IAM_USER_SYNC_TO_GITLAB = "devops.iam.user.sync.to.gitlab";
+        public static final String DEVOPS_GROUP_NOT_SYNC = "devops.group.not.sync";
+        public static final String DEVOPS_GITLAB_GROUP_ID_SELECT = "devops.gitlab.groupId.select";
+        public static final String DEVOPS_USER_NOT_GITLAB_OWNER = "devops.user.not.gitlab.owner";
     }
 
     public static class BranchCode {

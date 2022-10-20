@@ -64,7 +64,7 @@ public class DevopsHostAppInstanceServiceImpl implements DevopsHostAppInstanceSe
 
     @Override
     public List<DevopsHostAppInstanceDTO> listByHostId(Long hostId) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        Assert.notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = new DevopsHostAppInstanceDTO();
         devopsHostAppInstanceDTO.setHostId(hostId);
         return devopsHostAppInstanceMapper.select(devopsHostAppInstanceDTO);

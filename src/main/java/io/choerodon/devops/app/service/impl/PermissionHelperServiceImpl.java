@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CertificationCode.DEVOPS_CERTIFICATION_NOT_EXIST_IN_DATABASE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +34,9 @@ import io.choerodon.devops.infra.util.CommonExAssertUtil;
  */
 @Service
 public class PermissionHelperServiceImpl implements PermissionHelper {
+
+    private static final String DEVOPS_DEPLOYMENT_WAY_NOT_ONLY = "devops.deployment.way.not.only";
+
     @Autowired
     @Lazy
     private UserAttrService userAttrService;
@@ -89,14 +95,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public void checkProjectOwnerOrGitlabAdmin(Long projectId, Long iamUserId) {
         if (!isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserId)) {
-            throw new CommonException("error.user.not.gitlab.owner");
-        }
-    }
-
-    @Override
-    public void checkProjectOwnerOrGitlabAdmin(Long projectId, @Nullable UserAttrDTO userAttrDTO) {
-        if (!isGitlabProjectOwnerOrGitlabAdmin(projectId, userAttrDTO)) {
-            throw new CommonException("error.user.not.owner");
+            throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
         }
     }
 
@@ -123,7 +122,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public boolean projectPermittedToCluster(Long clusterId, Long projectId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(Objects.requireNonNull(clusterId));
-        CommonExAssertUtil.assertTrue(devopsClusterDTO != null, "error.cluster.not.exist", clusterId);
+        CommonExAssertUtil.assertTrue(devopsClusterDTO != null, DEVOPS_CLUSTER_NOT_EXIST, clusterId);
 
         if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
             return true;
@@ -138,7 +137,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
     @Override
     public boolean projectPermittedToCert(Long certId, Long projectId) {
         CertificationDTO certificationDTO = devopsCertificationMapper.selectByPrimaryKey(Objects.requireNonNull(certId));
-        CommonExAssertUtil.assertNotNull(certificationDTO, "certification.not.exist.in.database", certId);
+        CommonExAssertUtil.assertNotNull(certificationDTO, DEVOPS_CERTIFICATION_NOT_EXIST_IN_DATABASE, certId);
         if (Boolean.TRUE.equals(certificationDTO.getSkipCheckProjectPermission())) {
             return true;
         }
@@ -191,7 +190,7 @@ public class PermissionHelperServiceImpl implements PermissionHelper {
 
 
         if (count != 1) {
-            throw new CommonException("error.deployment.way.not.only");
+            throw new CommonException(DEVOPS_DEPLOYMENT_WAY_NOT_ONLY);
         }
     }
 }

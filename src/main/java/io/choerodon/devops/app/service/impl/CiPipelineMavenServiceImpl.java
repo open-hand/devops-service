@@ -392,9 +392,9 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Override
     public CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
+        Assert.notNull(jobName, ResourceCheckConstant.DEVOPS_JOB_NAME_ID_IS_NULL);
 
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setGitlabPipelineId(gitlabPipelineId);
@@ -405,7 +405,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Override
     public CiPipelineMavenDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
 
         return ciPipelineMavenMapper.queryPipelineLatestMaven(appServiceId, gitlabPipelineId);
@@ -414,7 +414,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAppServiceId(Long appServiceId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
 
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setAppServiceId(appServiceId);

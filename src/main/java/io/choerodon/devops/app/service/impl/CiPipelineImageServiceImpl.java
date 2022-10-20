@@ -180,7 +180,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
 
     @Override
     public CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
         Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
 
         return ciPipelineImageMapper.queryPipelineLatestImage(appServiceId, gitlabPipelineId);
@@ -189,7 +189,7 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAppServiceId(Long appServiceId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
 
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setAppServiceId(appServiceId);

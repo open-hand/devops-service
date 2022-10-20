@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
 
 import java.io.IOException;
@@ -50,11 +51,11 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiJobServiceImpl.class);
 
-    private static final String CREATE_JOB_FAILED = "create.job.failed";
-    private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
-    private static final String ERROR_TOKEN_MISMATCH = "error.app.service.token.mismatch";
-    private static final String ERROR_CI_JOB_NON_EXIST = "error.ci.job.non.exist";
-    private static final String ERROR_TOKEN_PIPELINE_MISMATCH = "error.app.service.token.pipeline.mismatch";
+    private static final String DEVOPS_JOB_CREATE_FAILED = "devops.job.create.failed";
+    private static final String DEVOPS_APP_SERVICE_TOKEN_MISMATCH = "devops.app.service.token.mismatch";
+    private static final String DEVOPS_CI_JOB_NON_EXIST = "devops.ci.job.non.exist";
+    private static final String DEVOPS_APP_SERVICE_TOKEN_PIPELINE_MISMATCH = "devops.app.service.token.pipeline.mismatch";
+    private static final String DEVOPS_CI_MAVEN_SETTINGS_NOT_FOUND = "devops.ci.maven.settings.not.found";
 
     private static final String SONAR = "sonar";
 
@@ -111,7 +112,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public DevopsCiJobDTO create(DevopsCiJobDTO devopsCiJobDTO) {
         devopsCiJobDTO.setId(null);
         if (devopsCiJobMapper.insertSelective(devopsCiJobDTO) != 1) {
-            throw new CommonException(CREATE_JOB_FAILED);
+            throw new CommonException(DEVOPS_JOB_CREATE_FAILED);
         }
         return devopsCiJobMapper.selectByPrimaryKey(devopsCiJobDTO.getId());
     }
@@ -227,7 +228,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
     @Override
     public void retryJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
-        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, DEVOPS_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, DEVOPS_GITLAB_JOB_ID_IS_NULL);
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, jobId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
@@ -283,16 +284,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public String queryMavenSettings(Long projectId, String appServiceToken, Long jobId, Long sequence) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(appServiceToken);
         if (appServiceDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+            throw new DevopsCiInvalidException(DEVOPS_APP_SERVICE_TOKEN_MISMATCH);
         }
         DevopsCiJobDTO devopsCiJobDTO = devopsCiJobMapper.selectByPrimaryKey(jobId);
         if (devopsCiJobDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_CI_JOB_NON_EXIST);
+            throw new DevopsCiInvalidException(DEVOPS_CI_JOB_NON_EXIST);
         }
 
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(devopsCiJobDTO.getCiPipelineId());
         if (devopsCiPipelineDTO == null || !Objects.equals(devopsCiPipelineDTO.getAppServiceId(), appServiceDTO.getId())) {
-            throw new DevopsCiInvalidException(ERROR_TOKEN_PIPELINE_MISMATCH);
+            throw new DevopsCiInvalidException(DEVOPS_APP_SERVICE_TOKEN_PIPELINE_MISMATCH);
         }
 
         return devopsCiMavenSettingsMapper.queryMavenSettings(jobId, sequence);
@@ -327,7 +328,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     @Override
     @Transactional
     public void playJob(Long projectId, Long gitlabProjectId, Long jobId, Long appServiceId) {
-        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, DEVOPS_GITLAB_PROJECT_ID_IS_NULL);
         Assert.notNull(jobId, DEVOPS_GITLAB_JOB_ID_IS_NULL);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
@@ -361,11 +362,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     public String queryMavenSettings(Long projectId, String token, Long id) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
         if (appServiceDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_TOKEN_MISMATCH);
+            throw new DevopsCiInvalidException(DEVOPS_APP_SERVICE_TOKEN_MISMATCH);
         }
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectByPrimaryKey(id);
         if (devopsCiMavenSettingsDTO == null) {
-            throw new DevopsCiInvalidException("error.ci.maven.settings.not.found");
+            throw new DevopsCiInvalidException(DEVOPS_CI_MAVEN_SETTINGS_NOT_FOUND);
         }
         return devopsCiMavenSettingsDTO.getMavenSettings();
     }

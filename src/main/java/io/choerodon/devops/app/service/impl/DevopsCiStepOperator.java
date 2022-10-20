@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_UNSUPPORTED_STEP_TYPE;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,7 +43,7 @@ public class DevopsCiStepOperator {
     public AbstractDevopsCiStepHandler getHandlerOrThrowE(String type) {
         AbstractDevopsCiStepHandler handler = getHandler(type);
         if (handler == null) {
-            throw new CommonException("error.unsupported.step.type", type);
+            throw new CommonException(DEVOPS_UNSUPPORTED_STEP_TYPE, type);
         }
         return handler;
     }

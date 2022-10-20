@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_IAM_USER_SYNC_TO_GITLAB;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,7 +25,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -31,10 +32,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class UserAttrServiceImpl implements UserAttrService {
 
+    private static final String DEVOPS_INSERT_USER = "devops.insert.user";
+    private static final String DEVOPS_GET_IAM_ADMIN = "devops.get.iam.admin";
+
     @Autowired
     private UserAttrMapper userAttrMapper;
-    @Autowired
-    private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
@@ -75,7 +77,7 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public UserAttrDTO checkUserSync(UserAttrDTO userAttrDTO, Long iamUserId) {
-        CommonExAssertUtil.assertTrue(userAttrDTO != null && userAttrDTO.getGitlabUserId() != null, "error.iam.user.sync.to.gitlab", iamUserId);
+        CommonExAssertUtil.assertTrue(userAttrDTO != null && userAttrDTO.getGitlabUserId() != null, DEVOPS_IAM_USER_SYNC_TO_GITLAB, iamUserId);
         return userAttrDTO;
     }
 
@@ -90,7 +92,7 @@ public class UserAttrServiceImpl implements UserAttrService {
 
     @Override
     public void baseInsert(UserAttrDTO userAttrDTO) {
-        MapperUtil.resultJudgedInsertSelective(userAttrMapper, userAttrDTO, "error.insert.user");
+        MapperUtil.resultJudgedInsertSelective(userAttrMapper, userAttrDTO, DEVOPS_INSERT_USER);
     }
 
     @Override
@@ -247,7 +249,7 @@ public class UserAttrServiceImpl implements UserAttrService {
             attrDTO.setIamUserId(optional.get().getId());
             return userAttrMapper.selectOne(attrDTO);
         } else {
-            throw new CommonException("error.get.iam.admin");
+            throw new CommonException(DEVOPS_GET_IAM_ADMIN);
         }
     }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +39,6 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private static final String GRAFANA_CLUSTER = "/d/choerodon-default-cluster/ji-qun";
     private static final String ERROR_FORMAT = "%s;";
     private static final String ERROR_BOUND_PVC_FORMAT = "%s绑定PV失败;";
-    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String GRAFANA_CLIENT_PREFIX = "grafana";
 
     @Autowired
@@ -616,7 +617,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     protected DevopsClusterDTO checkClusterExist(Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST);
         }
         return devopsClusterDTO;
     }

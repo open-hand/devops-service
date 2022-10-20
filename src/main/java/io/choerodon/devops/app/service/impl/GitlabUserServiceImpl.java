@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 import io.netty.util.internal.IntegerHolder;
 import org.slf4j.Logger;
@@ -48,7 +47,6 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class GitlabUserServiceImpl implements GitlabUserService {
-    private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabUserService.class);
     private static final String ANONYMOUS_USER_LOGIN_NAME = "ANONYMOUS";
     /**
@@ -99,8 +97,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
-
-//        checkGitlabUser(gitlabUserReqDTO);
         GitLabUserDTO gitLabUserDTO = gitlabServiceClientOperator.queryUserByUserName(gitlabUserReqDTO.getUsername());
         if (gitLabUserDTO == null) {
             String randomPassword = GenerateUUID.generateRandomGitlabPassword();
@@ -373,20 +369,6 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         if (userAttrDTO != null) {
             gitlabServiceClientOperator.disableUser(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         }
-    }
-
-
-    private void checkGitlabUser(GitlabUserRequestVO gitlabUserRequestVO) {
-        String userName = gitlabUserRequestVO.getUsername();
-        StringBuilder newUserName = new StringBuilder();
-        for (int i = 0; i < userName.length(); i++) {
-            if (!Pattern.matches(SERVICE_PATTERN, String.valueOf(userName.charAt(i)))) {
-                newUserName.append("_");
-            } else {
-                newUserName.append(userName.charAt(i));
-            }
-        }
-        gitlabUserRequestVO.setUsername(newUserName.toString());
     }
 
     @Override

@@ -1,5 +1,24 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ContainerVO;
@@ -15,24 +34,6 @@ import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
-import io.kubernetes.client.openapi.JSON;
-import io.kubernetes.client.openapi.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -138,8 +139,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public DevopsEnvPodDTO baseQueryByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_POD_NAME_IS_NULL);
 
         DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
         devopsEnvPodDTO.setEnvId(envId);
@@ -218,8 +219,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Override
     @Transactional
     public void baseDeleteByNameAndEnvId(String name, Long envId) {
-        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_POD_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
 
         DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
         devopsEnvPodDTO.setEnvId(envId);

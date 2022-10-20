@@ -111,7 +111,7 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     @Override
     public DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId) {
         Assert.notNull(jobRecordId, PipelineCheckConstant.DEVOPS_JOB_RECORD_ID_IS_NULL);
-        Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
+        Assert.notNull(userId, ResourceCheckConstant.DEVOPS_USER_ID_IS_NULL);
 
         DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
         devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);

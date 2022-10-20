@@ -32,7 +32,6 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -60,8 +59,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsClusterService devopsClusterService;
-    @Autowired
-    private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
     public void addNode(Long projectId, Long clusterId, String operatingId, DevopsClusterNodeVO nodeVO) {

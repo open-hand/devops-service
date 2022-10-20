@@ -40,7 +40,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
-    private static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
     private static final String LINE_SEPARATOR = "line.separator";
     private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
@@ -565,9 +564,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(kind, ResourceCheckConstant.ERROR_KIND_NAME_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(kind, ResourceCheckConstant.DEVOPS_KIND_NAME_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
 
         DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
         devopsEnvResourceDO.setEnvId(envId);

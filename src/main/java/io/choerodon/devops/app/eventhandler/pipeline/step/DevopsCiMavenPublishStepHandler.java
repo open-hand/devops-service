@@ -43,7 +43,7 @@ import io.choerodon.devops.infra.util.*;
 @Component
 public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler {
 
-    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
+    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "devops.maven.settings.insert";
 
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;

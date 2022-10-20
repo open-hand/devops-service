@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 
 import java.util.*;
@@ -228,7 +229,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         LOGGER.info("scanning cluster  {}", clusterId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         // 校验项目是否拥有集群权限
@@ -254,7 +255,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public DevopsPolarisSummaryVO clusterPolarisSummary(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
@@ -287,7 +288,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public ClusterPolarisEnvDetailsVO clusterPolarisEnvDetail(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
 

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_MAVEN_REPOSITORY_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +48,7 @@ import io.choerodon.devops.infra.util.MavenSettingsUtil;
 @Service
 public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildConfigService {
 
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
-    private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "error.maven.settings.insert";
+    public static final String DEVOPS_MAVEN_SETTINGS_INSERT = "devops.maven.settings.insert";
     private static final String DEVOPS_SAVE_MAVEN_BUILD_CONFIG_FAILED = "devops.save.maven.build.config.failed";
 
     @Autowired
@@ -131,7 +131,7 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
             if (m.getType() != null) {
                 String[] types = m.getType().split(GitOpsConstants.COMMA);
                 if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                    throw new CommonException(DEVOPS_CI_MAVEN_REPOSITORY_TYPE, m.getType());
                 }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {
@@ -231,10 +231,10 @@ public class DevopsCiMavenBuildConfigServiceImpl implements DevopsCiMavenBuildCo
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsRecordDTO = new DevopsCiMavenSettingsDTO(jobId, sequence);
         DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsRecordDTO);
         if (devopsCiMavenSettingsDTO == null) {
-            return MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), ERROR_CI_MAVEN_SETTINGS_INSERT);
+            return MapperUtil.resultJudgedInsert(devopsCiMavenSettingsMapper, new DevopsCiMavenSettingsDTO(jobId, sequence, settings), DEVOPS_MAVEN_SETTINGS_INSERT);
         } else {
             devopsCiMavenSettingsDTO.setMavenSettings(settings);
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, ERROR_CI_MAVEN_SETTINGS_INSERT);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiMavenSettingsMapper, devopsCiMavenSettingsDTO, DEVOPS_MAVEN_SETTINGS_INSERT);
         }
         return devopsCiMavenSettingsDTO;
     }

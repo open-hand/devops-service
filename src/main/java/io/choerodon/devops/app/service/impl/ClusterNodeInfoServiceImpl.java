@@ -167,7 +167,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     @Override
     public Page<ClusterNodeInfoVO> pageClusterNodeInfo(Long clusterId, Long projectId, PageRequest pageable) {
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
-        Assert.notNull(clusterId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(clusterId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
 
 
         Page<ClusterNodeInfoVO> result = new Page<>();
