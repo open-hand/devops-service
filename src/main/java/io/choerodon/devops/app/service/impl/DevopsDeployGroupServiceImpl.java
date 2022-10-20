@@ -13,7 +13,10 @@ import java.util.*;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.models.V1PodDNSConfig;
+import io.kubernetes.client.models.V1PodDNSConfigOption;
+import io.kubernetes.client.models.V1PodSpec;
+import io.kubernetes.client.openapi.models.*;
 import org.hzero.core.util.EncryptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -152,6 +155,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             // 如果名称发生变化，更新名称
             if (!devopsDeployAppCenterEnvDTO.getName().equals(devopsDeployGroupVO.getAppName())) {
                 devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
+                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            } else {
+                devopsDeployAppCenterEnvDTO.setLastUpdatedBy(DetailsHelper.getUserDetails().getUserId());
+                devopsDeployAppCenterEnvDTO.setLastUpdateDate(new Date());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
         }
