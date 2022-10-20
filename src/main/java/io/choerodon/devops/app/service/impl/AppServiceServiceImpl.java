@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
 import static java.util.Comparator.comparing;
@@ -130,7 +131,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR = "sonar";
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
-    private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -306,7 +306,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
 
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -1368,8 +1368,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             // 校验用户的gitlab权限
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -2152,7 +2151,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                 if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
 
-                    throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                    throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
                 }
             }
 
@@ -3401,7 +3400,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
 
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -3507,7 +3506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
         AppServiceReqVO appServiceReqVO = new AppServiceReqVO();

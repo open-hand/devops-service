@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
 import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
 import java.util.*;
@@ -255,7 +257,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.gitlab.owner");
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -827,7 +829,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         // 考虑创建环境时,集群已删除的情况
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
         if (devopsClusterDTO.getNamespaces() != null) {
             return JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).stream().anyMatch(namespace -> namespace.equals(code));
@@ -1511,7 +1513,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO cluster = devopsClusterMapper.queryClusterForUpdate(clusterId);
 
         if (cluster == null) {
-            throw new CommonException("error.cluster.not.exists");
+            throw new CommonException("devops.cluster.not.exists");
         }
 
         if (cluster.getSystemEnvId() != null) {

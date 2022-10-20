@@ -1,9 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
+
 import java.util.List;
 import java.util.Objects;
-
 import javax.annotation.Nullable;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsClusterProPermissionService;
@@ -11,10 +17,6 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.dto.DevopsClusterDTO;
 import io.choerodon.devops.infra.dto.DevopsClusterProPermissionDTO;
 import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author zmf
@@ -46,7 +48,7 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
     public boolean projectHasClusterPermission(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(Objects.requireNonNull(clusterId));
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
         if (Boolean.TRUE.equals(devopsClusterDTO.getSkipCheckProjectPermission())) {
             return true;

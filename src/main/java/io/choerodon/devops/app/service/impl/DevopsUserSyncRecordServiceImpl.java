@@ -84,7 +84,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
         devopsUserSyncRecordDTO.setType(userSyncType.getValue());
         devopsUserSyncRecordDTO.setStartTime(new Date());
         devopsUserSyncRecordDTO.setStatus(UserSyncRecordStatus.OPERATING.getValue());
-        MapperUtil.resultJudgedInsertSelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "error.insert.user.sync.record");
+        MapperUtil.resultJudgedInsertSelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "devops.insert.user.sync.record");
         return devopsUserSyncRecordMapper.selectByPrimaryKey(devopsUserSyncRecordDTO.getId());
     }
 

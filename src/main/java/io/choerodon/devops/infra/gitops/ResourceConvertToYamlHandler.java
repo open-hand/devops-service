@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.gitops;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,7 +18,6 @@ import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -121,7 +122,7 @@ public class ResourceConvertToYamlHandler<T> {
             DevopsEnvFileResourceService devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, objectId, objectType);
             if (devopsEnvFileResourceDTO == null) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),

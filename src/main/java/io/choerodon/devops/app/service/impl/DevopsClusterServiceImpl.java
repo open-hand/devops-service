@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.CLUSTER_INFO_REDIS_KEY_TEMPLATE;
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,7 +67,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
-    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
 
@@ -410,7 +410,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, PageRequest pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, String> searchParamMap = new HashMap<>();
@@ -461,7 +461,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void assignPermission(Long projectId, DevopsClusterPermissionUpdateVO update) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, update.getClusterId());
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, update.getClusterId());
         }
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
@@ -589,7 +589,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
