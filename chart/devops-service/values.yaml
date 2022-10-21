@@ -209,6 +209,8 @@ extraEnv:
   CI_IMAGE_BUILD_TYPE: kaniko
   LOG_LEVEL: info
   NEXUS_PROXY_URIPREFIX: /rdupm/v1/nexus/proxy
+  # 流水线执行代码扫描的用户token.需要Analysis和Create权限
+  SERVICES_SONARQUBE_ANALYSIS_USER_TOKEN:
 
 # -- ConfigMap with extra environment variables
 ##

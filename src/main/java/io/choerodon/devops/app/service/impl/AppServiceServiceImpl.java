@@ -165,6 +165,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     private String userName;
     @Value("${services.sonarqube.password:}")
     private String password;
+    @Value("${services.sonarqube.analysis-user-token:}")
+    private String analysisUserToken;
     @Autowired
     private GitUtil gitUtil;
     @Autowired
@@ -1215,7 +1217,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
             DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, SONAR_NAME);
             if (sonarConfig != null) {
-                params.put("{{ SONAR_LOGIN }}", sonarConfig.getConfig());
+                params.put("{{ SONAR_LOGIN }}", StringUtils.hasText(analysisUserToken) ? analysisUserToken : sonarConfig.getConfig());
                 params.put("{{ SONAR_URL }}", sonarqubeUrl);
             } else {
                 params.put("{{ SONAR_LOGIN }}", "");
