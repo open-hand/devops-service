@@ -221,11 +221,6 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
-    public static void main(String[] args) {
-        SimpleDateFormat simpleDateFormat=new SimpleDateFormat("");
-        System.out.println(simpleDateFormat.format(new Date()));
-    }
-
     private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
             devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
