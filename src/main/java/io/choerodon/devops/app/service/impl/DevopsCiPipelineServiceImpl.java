@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
+import static io.choerodon.devops.infra.constant.PipelineConstants.*;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
+
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -67,14 +72,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
 
     private static final Long DEFAULT_PIPELINE_ID = 0L;
-    private static final String CREATE_PIPELINE_FAILED = "create.pipeline.failed";
-    private static final String UPDATE_PIPELINE_FAILED = "update.pipeline.failed";
-    private static final String DISABLE_PIPELINE_FAILED = "disable.pipeline.failed";
-    private static final String ENABLE_PIPELINE_FAILED = "enable.pipeline.failed";
-    private static final String DELETE_PIPELINE_FAILED = "delete.pipeline.failed";
-    private static final String ERROR_APP_SVC_ID_IS_NULL = "error.app.svc.id.is.null";
-    private static final String ERROR_PROJECT_ID_IS_NULL = "error.project.id.is.null";
-    private static final String ERROR_BRANCH_PERMISSION_MISMATCH = "error.branch.permission.mismatch";
+    private static final String DEVOPS_CREATE_PIPELINE_FAILED = "devops.create.pipeline.failed";
+    private static final String DEVOPS_UPDATE_PIPELINE_FAILED = "devops.update.pipeline.failed";
+    private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
+    private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
+    private static final String DEVOPSDELETE_PIPELINE_FAILED = "devopsdelete.pipeline.failed";
+    private static final String DEVOPS_BRANCH_PERMISSION_MISMATCH = "devops.branch.permission.mismatch";
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -84,9 +87,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
-
-    @Value("${devops.ci.base.image:registry.cn-shanghai.aliyuncs.com/c7n/cibase:0.11.4}")
-    private String cibase;
 
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
@@ -251,7 +251,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
 
         } else {
@@ -270,7 +270,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
         }
     }
@@ -291,7 +291,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
 
         }
@@ -314,7 +314,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
 
         }
@@ -344,7 +344,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
 
         } else {
@@ -364,7 +364,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception ex) {
-                throw new CommonException("error.create.or.update.gitlab.ci", ex, branch);
+                throw new CommonException(DEVOPS_CREATE_OR_UPDATE_GITLAB_CI, ex, branch);
             }
         }
     }
@@ -388,7 +388,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineDTO.setToken(GenerateUUID.generateUUID());
         ciCdPipelineDTO.setEnabled(true);
         if (ciCdPipelineMapper.insertSelective(ciCdPipelineDTO) != 1) {
-            throw new CommonException(CREATE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_CREATE_PIPELINE_FAILED);
         }
         // 保存流水线分支关系
         saveBranchRel(ciCdPipelineVO, ciCdPipelineDTO);
@@ -420,7 +420,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 if (StringUtils.isEmpty(v.getDomain())
                         || StringUtils.isEmpty(v.getUsername())
                         || StringUtils.isEmpty(v.getPassword())) {
-                    throw new CommonException("error.docker.auth.config.invalid");
+                    throw new CommonException(DEVOPS_DOCKER_AUTH_CONFIG_INVALID);
                 }
                 v.setId(null);
                 v.setDevopsPipelineId(ciCdPipelineDTO.getId());
@@ -467,7 +467,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsPipelineBranchRelDTO.setId(null);
             devopsPipelineBranchRelDTO.setBranch(branch);
             devopsPipelineBranchRelDTO.setPipelineId(ciCdPipelineDTO.getId());
-            MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, "error.save.pipeline.branch.rel");
+            MapperUtil.resultJudgedInsertSelective(devopsPipelineBranchRelMapper, devopsPipelineBranchRelDTO, DEVOPS_SAVE_PIPELINE_BRANCH_REL);
         });
     }
 
@@ -539,7 +539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return yaml.dump(jsonObject);
 
         } catch (Exception e) {
-            throw new CommonException("error.yaml.format.invalid", e);
+            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
         }
     }
 
@@ -600,7 +600,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
             if (Boolean.FALSE.equals(devopsCiStepHandler.isComplete(devopsCiStepVO))) {
-                throw new CommonException("error.step.not.complete", devopsCiStepVO.getName());
+                throw new CommonException(DEVOPS_STEP_NOT_COMPLETE, devopsCiStepVO.getName());
             }
             devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
         });
@@ -716,7 +716,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
 
-    private void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
+    protected void handleCdDeploy(DevopsCdJobVO devopsCdJobVO) {
         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobVO.getDeployInfoId());
         DevopsDeployInfoVO devopsDeployInfoVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, DevopsDeployInfoVO.class);
         if (devopsCdEnvDeployInfoDTO.getAppConfigJson() != null) {
@@ -832,7 +832,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private AppServiceDTO getAppServiceDTO(CiCdPipelineVO ciCdPipelineVO) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.service.null");
+            throw new CommonException(ExceptionConstants.AppServiceCode.DEVOPS_APP_SERVICE_NOT_EXIST);
         }
         ciCdPipelineVO.setAppServiceCode(appServiceDTO.getCode());
         ciCdPipelineVO.setAppServiceType(appServiceDTO.getType());
@@ -842,14 +842,14 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private CiCdPipelineVO getCiCdPipelineVO(Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
-        CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, "error.pipeline.not.exist", pipelineId);
+        CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, DEVOPS_PIPELINE_NOT_EXIST, pipelineId);
         return ConvertUtils.convertObject(ciCdPipelineDTO, CiCdPipelineVO.class);
     }
 
     @Override
     public CiCdPipelineDTO queryByAppSvcId(Long id) {
         if (id == null) {
-            throw new CommonException(ERROR_APP_SVC_ID_IS_NULL);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
         }
         CiCdPipelineDTO ciCdPipelineDTO = new CiCdPipelineDTO();
         ciCdPipelineDTO.setAppServiceId(id);
@@ -857,19 +857,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest) {
+    public Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status) {
         if (projectId == null) {
-            throw new CommonException(ERROR_PROJECT_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PROJECT_ID_IS_NULL);
         }
         // 应用有权限的应用服务
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
             appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
         } else {
             //如果是项目成员，需要developer及以上的权限
+            ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
             appServiceIds = appServiceService.getMemberAppServiceIds(projectDTO.getTenantId(), projectId, userId);
             // 添加外部应用服务
             appServiceIds.addAll(appServiceService.listExternalAppIdByProjectId(projectId));
@@ -879,7 +879,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
 
         // 查询流水线
-        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam));
+        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status));
 
         if (CollectionUtils.isEmpty(pipelinePage.getContent())) {
             return pipelinePage;
@@ -924,7 +924,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private void checkNonCiPipelineBefore(Long appServiceId) {
         if (countByAppServiceId(appServiceId) > 0) {
-            throw new CommonException("error.ci.pipeline.exists.for.app.service");
+            throw new CommonException(DEVOPS_CI_PIPELINE_EXISTS_FOR_APP_SERVICE);
         }
     }
 
@@ -945,9 +945,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
-        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (ciCdPipelineMapper.disablePipeline(pipelineId) != 1) {
-            throw new CommonException(DISABLE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_DISABLE_PIPELINE_FAILED);
         }
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
@@ -960,13 +960,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             return;
         }
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_DELETE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
 
         // 删除流水线
         if (ciCdPipelineMapper.deleteByPrimaryKey(pipelineId) != 1) {
-            throw new CommonException(DELETE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPSDELETE_PIPELINE_FAILED);
         }
         // 删除stage
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
@@ -1028,10 +1028,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     public CiCdPipelineDTO enablePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineDTO.getAppServiceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, ciCdPipelineDTO.getAppServiceId(), AppServiceEvent.CICD_PIPELINE_STATUS_UPDATE);
         if (ciCdPipelineMapper.enablePipeline(pipelineId) != 1) {
-            throw new CommonException(ENABLE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_ENABLE_PIPELINE_FAILED);
         }
         return ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
     }
@@ -1103,7 +1103,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 && Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge())
                 && Boolean.FALSE.equals(branchDTO.getDevelopersCanPush())
                 && memberDTO.getAccessLevel() <= AccessLevel.DEVELOPER.toValue()) {
-            throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+            throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
         }
     }
 
@@ -1122,10 +1122,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         if (Boolean.TRUE.equals(branchDTO.getProtected())) {
             if (Boolean.FALSE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() < AccessLevel.MASTER.toValue()) {
-                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+                throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
             }
             if (Boolean.TRUE.equals(branchDTO.getDevelopersCanMerge()) && memberDTO.getAccessLevel() < AccessLevel.DEVELOPER.toValue()) {
-                throw new CommonException(ERROR_BRANCH_PERMISSION_MISMATCH, ref);
+                throw new CommonException(DEVOPS_BRANCH_PERMISSION_MISMATCH, ref);
             }
         }
 
@@ -1318,7 +1318,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public List<DevopsPipelineBranchRelDTO> listPipelineBranchRel(Long pipelineId) {
-        Assert.notNull(pipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         DevopsPipelineBranchRelDTO devopsPipelineBranchRelDTO = new DevopsPipelineBranchRelDTO();
         devopsPipelineBranchRelDTO.setPipelineId(pipelineId);
@@ -1488,7 +1488,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         GitUserNameUtil.getAdminId(),
                         branch);
             } catch (Exception e) {
-                throw new CommonException("error.delete.gitlab-ci.file", e);
+                throw new CommonException(DEVOPS_DELETE_GITLAB_CI_FILE, e);
             }
 
         }
@@ -1507,7 +1507,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         branch,
                         appExternalConfigDTO);
             } catch (Exception e) {
-                throw new CommonException("error.delete.gitlab-ci.file", e);
+                throw new CommonException(DEVOPS_DELETE_GITLAB_CI_FILE, e);
             }
 
         }
@@ -1527,7 +1527,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         permissionHelper.checkAppServiceBelongToProject(projectId, ciCdPipelineVO.getAppServiceId());
         // 校验自定义任务格式
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
-        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(ciCdPipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 没有指定基础镜像，则使用默认镜像
         if (StringUtils.isEmpty(ciCdPipelineVO.getImage())) {
             ciCdPipelineDTO.setImage(defaultCiImage);
@@ -1539,7 +1539,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         ciCdPipelineDTO.setObjectVersionNumber(ciCdPipelineVO.getObjectVersionNumber());
         ciCdPipelineDTO.setVersionName(ciCdPipelineVO.getVersionName());
         if (ciCdPipelineMapper.updateByPrimaryKey(ciCdPipelineDTO) != 1) {
-            throw new CommonException(UPDATE_PIPELINE_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_PIPELINE_FAILED);
         }
 
 
@@ -1588,17 +1588,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     private void checkResourceId(Long pipelineId, CiCdPipelineVO ciCdPipelineVO) {
         if (ciCdPipelineVO.getId() != null && !pipelineId.equals(ciCdPipelineVO.getId())) {
-            throw new CommonException("error.pipeline.id.invalid");
+            throw new CommonException(DEVOPS_PIPELINE_ID_INVALID);
         }
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             ciCdPipelineVO.getDevopsCiStageVOS().forEach(devopsCiStageVO -> {
                 if (devopsCiStageVO.getCiPipelineId() != null && !devopsCiStageVO.getCiPipelineId().equals(pipelineId)) {
-                    throw new CommonException("error.stage.pipeline.id.invalid");
+                    throw new CommonException(DEVOPS_STAGE_PIPELINE_ID_INVALID);
                 }
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         if (devopsCiJobVO.getCiPipelineId() != null && !devopsCiJobVO.getCiPipelineId().equals(pipelineId)) {
-                            throw new CommonException("error.job.pipeline.id.invalid");
+                            throw new CommonException(DEVOPS_JOB_PIPELINE_ID_INVALID);
                         }
                     });
                 }
@@ -1826,10 +1826,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private List<String> buildScript(final Long organizationId, final Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
         Assert.notNull(devopsCiJobDTO, "Job can't be null");
-        Assert.notNull(organizationId, "Organization id can't be null");
-        Assert.notNull(projectId, "project id can't be null");
+        Assert.notNull(organizationId, DEVOPS_ORGANIZATION_ID_IS_NULL);
+        Assert.notNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
         final Long jobId = devopsCiJobDTO.getId();
-        Assert.notNull(jobId, "Ci job id is required.");
+        Assert.notNull(jobId, DEVOPS_JOB_ID_IS_NULL);
 
         List<DevopsCiStepDTO> devopsCiStepDTOS = devopsCiStepService.listByJobId(jobId);
 
@@ -1930,38 +1930,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdJobDTO.setDeployInfoId(devopsCdEnvDeployInfoDTO.getId());
 
         } else if (JobTypeEnum.CD_HOST.value().equals(t.getType())) {
-            // 使用能够解密主键加密的json工具解密
-            CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
-            checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
-            // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
-            DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
-            if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
-            }
-            if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
-                devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
-                devopsCdHostDeployInfoDTO.setKillCommand(null);
-                devopsCdHostDeployInfoDTO.setPreCommand(null);
-                devopsCdHostDeployInfoDTO.setRunCommand(null);
-                devopsCdHostDeployInfoDTO.setPostCommand(null);
-            }
-
-            if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
-                // 校验应用编码和应用名称
-                devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
-                devopsCdHostDeployInfoDTO.setAppId(null);
-            } else {
-                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
-                devopsCdHostDeployInfoDTO.setHostId(devopsHostAppDTO.getHostId());
-            }
-            devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
-            devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
+            handlerHostInfo(t, projectId, pipelineId, devopsCdJobDTO);
 
         } else if (JobTypeEnum.CD_AUDIT.value().equals(t.getType())) {
             // 如果审核任务，审核人员只有一个人，则默认设置为或签
             if (CollectionUtils.isEmpty(t.getCdAuditUserIds())) {
-                throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
+                throw new CommonException(ResourceCheckConstant.DEVOPS_PARAM_IS_INVALID);
             }
             if (t.getCdAuditUserIds().size() == 1) {
                 devopsCdJobDTO.setCountersigned(1);
@@ -1999,13 +1973,54 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     }
 
+    protected void handlerHostInfo(DevopsCdJobVO t, Long projectId, Long pipelineId, DevopsCdJobDTO devopsCdJobDTO) {
+        // 使用能够解密主键加密的json工具解密
+        CdHostDeployConfigVO cdHostDeployConfigVO = KeyDecryptHelper.decryptJson(devopsCdJobDTO.getMetadata(), CdHostDeployConfigVO.class);
+        checkCdHostJobName(pipelineId, cdHostDeployConfigVO, t.getName(), devopsCdJobDTO);
+        additionalCheck(cdHostDeployConfigVO);
+        // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
+        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = ConvertUtils.convertObject(cdHostDeployConfigVO, DevopsCdHostDeployInfoDTO.class);
+        if (cdHostDeployConfigVO.getJarDeploy() != null && !StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getJarDeploy()));
+        }
+        if (cdHostDeployConfigVO.getImageDeploy() != null && StringUtils.equals(cdHostDeployConfigVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+            devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(cdHostDeployConfigVO.getImageDeploy()));
+            devopsCdHostDeployInfoDTO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
+            devopsCdHostDeployInfoDTO.setKillCommand(null);
+            devopsCdHostDeployInfoDTO.setPreCommand(null);
+            devopsCdHostDeployInfoDTO.setRunCommand(null);
+            devopsCdHostDeployInfoDTO.setPostCommand(null);
+        }
+
+        if (DeployTypeEnum.CREATE.value().equals(devopsCdHostDeployInfoDTO.getDeployType())) {
+            // 校验应用编码和应用名称
+            devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCdHostDeployInfoDTO.getAppName(), devopsCdHostDeployInfoDTO.getAppCode());
+            devopsCdHostDeployInfoDTO.setAppId(null);
+        } else {
+            if (devopsCdHostDeployInfoDTO.getAppId() != null) {
+                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCdHostDeployInfoDTO.getAppId());
+                devopsCdHostDeployInfoDTO.setHostId(devopsHostAppDTO.getHostId());
+            }
+        }
+        devopsCdJobDTO.setDeployInfoId(devopsCdHostDeployInfoService.baseCreate(devopsCdHostDeployInfoDTO).getId());
+        devopsCdJobDTO.setMetadata(JsonHelper.marshalByJackson(cdHostDeployConfigVO));
+    }
+
+    /**
+     * 供子类拓展
+     *
+     * @param cdHostDeployConfigVO
+     */
+    protected void additionalCheck(CdHostDeployConfigVO cdHostDeployConfigVO) {
+        // 创建主机应用，必须输入主机id
+        if (DeployTypeEnum.CREATE.value().equals(cdHostDeployConfigVO.getDeployType()) && cdHostDeployConfigVO.getHostId() == null) {
+            throw new CommonException(DEVOPS_HOST_ID_IS_NULL);
+        }
+    }
+
     public void checkCdHostJobName(Long ciPipelineId, CdHostDeployConfigVO deployConfigVO, String cdHostName, DevopsCdJobDTO devopsCdJobDTO) {
         DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
-//        if (deployConfigVO.getImageDeploy() != null
-//                && deployConfigVO.getImageDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
-//            devopsCiJobDTO.setName(deployConfigVO.getImageDeploy().getPipelineTask());
-//        }
         if (deployConfigVO.getJarDeploy() != null
                 && deployConfigVO.getJarDeploy().getDeploySource().equals(HostDeploySource.PIPELINE_DEPLOY.getValue())) {
             devopsCiJobDTO.setName(deployConfigVO.getJarDeploy().getPipelineTask());
@@ -2013,10 +2028,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (!StringUtils.isEmpty(devopsCiJobDTO.getName())) {
             DevopsCiJobDTO ciJobDTO = devopsCiJobMapper.selectOne(devopsCiJobDTO);
             if (ciJobDTO == null) {
-                throw new CommonException("error.cd.host.job.union.ci.job", devopsCiJobDTO.getName(), cdHostName);
+                throw new CommonException(DEVOPS_CD_HOST_JOB_UNION_CI_JOB, devopsCiJobDTO.getName(), cdHostName);
             }
             if (!ciJobDTO.getTriggerType().equals(devopsCdJobDTO.getTriggerType())) {
-                throw new CommonException("error.ci.cd.trigger.type.invalid");
+                throw new CommonException(DEVOPS_CI_CD_TRIGGER_TYPE_INVALID);
             }
         }
     }

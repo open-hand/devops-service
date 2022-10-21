@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.hzero.boot.message.entity.Receiver;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -26,8 +25,6 @@ import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCdAuditRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
 
@@ -44,13 +41,6 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private static final String PIPELINE_ID = "pipelineId";
     private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
     private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
-    public static final String RESULT_DETAIL_URL = "resultDetailUrl";
-
-    @Value(value = "${services.front.url: http://app.example.com}")
-    private String frontUrl;
-
-    private static final String DETAILS_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
-
 
     @Autowired
     private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
@@ -61,10 +51,6 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private SendNotificationService sendNotificationService;
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
-    @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-    @Autowired
-    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
     @Override
     public List<DevopsCdAuditRecordDTO> queryByJobRecordId(Long jobRecordId) {
@@ -124,8 +110,8 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
 
     @Override
     public DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId) {
-        Assert.notNull(jobRecordId, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
-        Assert.notNull(userId, ResourceCheckConstant.ERROR_USER_ID_IS_NULL);
+        Assert.notNull(jobRecordId, PipelineCheckConstant.DEVOPS_JOB_RECORD_ID_IS_NULL);
+        Assert.notNull(userId, ResourceCheckConstant.DEVOPS_USER_ID_IS_NULL);
 
         DevopsCdAuditRecordDTO devopsCdAuditRecordDTO = new DevopsCdAuditRecordDTO();
         devopsCdAuditRecordDTO.setJobRecordId(jobRecordId);

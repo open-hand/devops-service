@@ -202,7 +202,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public List<DevopsHostAppDTO> listByHostId(Long hostId) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        Assert.notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
         return devopsHostAppMapper.listByHostId(hostId);
     }
 
@@ -225,19 +225,19 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String code) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        Assert.notNull(code, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
+        Assert.notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
+        Assert.notNull(code, ResourceCheckConstant.DEVOPS_JAR_NAME_IS_NULL);
         DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, code);
         return devopsHostAppMapper.selectOne(devopsHostAppDTO);
     }
 
     @Override
-    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, Long appId) {
+    public Page<DevopsHostAppVO> pagingAppByHost(Long projectId, Long hostId, PageRequest pageRequest, String rdupmType, String operationType, String params, String name, Long appId) {
         Page<DevopsHostAppVO> page;
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, DetailsHelper.getUserDetails().getUserId())) {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params, appId));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listBasicInfoByOptions(projectId, hostId, rdupmType, operationType, params, name, appId));
         } else {
-            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params, appId));
+            page = PageHelper.doPage(pageRequest, () -> devopsHostAppMapper.listOwnedBasicInfoByOptions(projectId, DetailsHelper.getUserDetails().getUserId(), hostId, rdupmType, operationType, params, name, appId));
         }
 
         if (CollectionUtils.isEmpty(page.getContent())) {
@@ -421,7 +421,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
-            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
         // 校验主机是否处于连接状态，未连接则抛出异常，不能删除
         hostConnectionHandler.checkHostConnection(hostId);

@@ -1,6 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_GITLAB_CI_PIPELINE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_PROJECT_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,9 +73,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
 
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
-    private static final String ERROR_GITLAB_PIPELINE_ID_IS_NULL = "error.gitlab.pipeline.id.is.null";
-    private static final String ERROR_GITLAB_PROJECT_ID_IS_NULL = "error.gitlab.project.id.is.null";
     private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
@@ -209,6 +210,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 job.setGroupType(devopsCiJobDTO.getGroupType());
                 job.setMetadata(devopsCiJobDTO.getMetadata());
             }
+//            if (devopsCiJobDTO != null) {
+//                job.setType(devopsCiJobDTO.getType());
+//                job.setGroupType(devopsCiJobDTO.getGroupType());
+//                job.setMetadata(devopsCiJobDTO.getMetadata());
+//            }
         }
         pipelineWebHookVO.setToken(token);
         try {
@@ -329,7 +335,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
             }
         });
     }
@@ -369,7 +375,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public void asyncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId) {
         LOGGER.info("Start to update pipeline asynchronously...record id {}, gitlab pipeline id {}", pipelineRecordId, gitlabPipelineId);
-        Assert.notNull(pipelineRecordId, "pipelineRecordId shouldn't be null");
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
 
         AppServiceDTO appServiceDTO = devopsCiPipelineRecordMapper.queryGitlabProjectIdByRecordId(pipelineRecordId);
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
@@ -466,7 +472,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus().toValue());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, "error.update.ci.job.record", ciJobWebHookVO.getId());
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
             }
         });
     }
@@ -500,9 +506,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
-
-
-//        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -773,7 +776,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setCiPipelineId(ciPipelineId);
@@ -783,7 +786,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiPipelineRecordDTO pipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         pipelineRecordDTO.setCiPipelineId(ciPipelineId);
@@ -809,8 +812,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public void retry(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
-        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, DEVOPS_GITLAB_PROJECT_ID_IS_NULL);
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
@@ -842,8 +845,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public void cancel(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
-        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(gitlabProjectId, ERROR_GITLAB_PROJECT_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(gitlabProjectId, DEVOPS_GITLAB_PROJECT_ID_IS_NULL);
         AppServiceDTO appServiceDTO = appServiceMapper.selectOne(new AppServiceDTO().setGitlabProjectId(TypeUtil.objToInteger(gitlabProjectId)));
         AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
 
@@ -876,8 +879,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Override
     public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
-        Assert.notNull(gitlabPipelineId, ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(gitlabPipelineId, DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(devopsPipelineId, DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
         devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsCiPipelineRecordDTO.setCiPipelineId(devopsPipelineId);
@@ -1010,7 +1013,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             // 只返回job的最新记录
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
-            Map<String, List<DevopsCiJobRecordDTO>> statusMap = latestedsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStatus));
             calculateStageStatus(devopsCiStageRecordVO, latestedsCiJobRecordDTOS);
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
             devopsCiStageRecordVOS.add(devopsCiStageRecordVO);

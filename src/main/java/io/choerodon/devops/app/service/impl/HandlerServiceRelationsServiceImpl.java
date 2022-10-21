@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.openapi.models.V1Endpoints;
@@ -7,9 +10,7 @@ import io.kubernetes.client.openapi.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -233,6 +234,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 // 如果超过一个选择器，即使包含实例和应用服务的选择器也判断为选择器类型
                 devopsServiceReqVO.setSelectors(v1Service.getSpec().getSelector());
             }
+        }
+        if (!ObjectUtils.isEmpty(v1Service.getMetadata().getAnnotations())) {
+            devopsServiceReqVO.setAnnotations(v1Service.getMetadata().getAnnotations());
         }
         return devopsServiceReqVO;
     }

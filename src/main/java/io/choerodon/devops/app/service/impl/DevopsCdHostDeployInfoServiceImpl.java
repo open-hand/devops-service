@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
 import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
@@ -9,12 +16,6 @@ import io.choerodon.devops.infra.dto.DevopsCdHostDeployInfoDTO;
 import io.choerodon.devops.infra.mapper.DevopsCdHostDeployInfoMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.List;
 
 /**
  * 〈功能简述〉
@@ -25,7 +26,10 @@ import java.util.List;
  */
 @Service
 public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfoService {
-    private static final String ERROR_SAVE_CD_HOST_DEPLOY_INFO_FAILED = "error.save.cd.host.deploy.info.failed";
+    private static final String DEVOPS_SAVE_CD_HOST_DEPLOY_INFO_FAILED = "devops.save.cd.host.deploy.info.failed";
+    private static final String DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO = "devops.update.pipeline.docker.deploy.info";
+    private static final String DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO = "devops.update.pipeline.jar.deploy.info";
+    private static final String DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO = "devops.update.pipeline.custom.deploy.info";
 
     @Autowired
     private DevopsCdHostDeployInfoMapper devopsCdHostDeployInfoMapper;
@@ -33,7 +37,7 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
     @Override
     @Transactional
     public DevopsCdHostDeployInfoDTO baseCreate(DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, ERROR_SAVE_CD_HOST_DEPLOY_INFO_FAILED);
+        MapperUtil.resultJudgedInsertSelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, DEVOPS_SAVE_CD_HOST_DEPLOY_INFO_FAILED);
         return devopsCdHostDeployInfoMapper.selectByPrimaryKey(devopsCdHostDeployInfoDTO.getId());
     }
 
@@ -64,7 +68,7 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
             devopsCdHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
             devopsCdHostDeployInfoDTO.setAppName(dockerDeployVO.getAppName());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.docker.deploy.info");
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO);
         });
 
     }
@@ -83,7 +87,7 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
             devopsCdHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
             devopsCdHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.jar.deploy.info");
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO);
 
         });
     }
@@ -102,7 +106,7 @@ public class DevopsCdHostDeployInfoServiceImpl implements DevopsCdHostDeployInfo
             devopsCdHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
             devopsCdHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, "error.update.pipeline.custom.deploy.info");
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCdHostDeployInfoMapper, devopsCdHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO);
         });
     }
 }

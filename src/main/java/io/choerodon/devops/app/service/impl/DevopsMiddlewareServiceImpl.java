@@ -578,7 +578,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional
     public void updateHostInstance(Long projectId, MiddlewareHostInstanceVO middlewareHostInstanceVO) {
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(middlewareHostInstanceVO.getInstanceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "error.operating.resource.in.other.project");
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "devops.operating.resource.in.other.project");
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsHostAppInstanceDTO.getAppId());
         devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
         devopsHostAppDTO.setName(middlewareHostInstanceVO.getAppName());

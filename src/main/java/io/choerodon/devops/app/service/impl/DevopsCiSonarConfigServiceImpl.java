@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL;
+
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigService {
+
+    private static final String DEVOPS_SAVE_CI_SONAR_CONFIG_FAILED = "devops.save.ci.sonar.config.failed";
+
     @Autowired
     private DevopsCiSonarConfigMapper devopsCiSonarConfigMapper;
 
@@ -29,7 +34,7 @@ public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigServic
     public void baseCreate(DevopsCiSonarConfigDTO devopsCiSonarConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiSonarConfigMapper,
                 devopsCiSonarConfigDTO,
-                "error.save.ci.sonar.config.failed");
+                DEVOPS_SAVE_CI_SONAR_CONFIG_FAILED);
     }
 
     @Override
@@ -45,7 +50,7 @@ public class DevopsCiSonarConfigServiceImpl implements DevopsCiSonarConfigServic
 
     @Override
     public DevopsCiSonarConfigDTO queryByStepId(Long stepId) {
-        Assert.notNull(stepId, "error.step.id.is.null");
+        Assert.notNull(stepId, DEVOPS_STEP_ID_IS_NULL);
 
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = new DevopsCiSonarConfigDTO();
         devopsCiSonarConfigDTO.setStepId(stepId);

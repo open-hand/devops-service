@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 public class DevopsClusterReqVO {
     @ApiModelProperty("集群名称 / 必需")
-    @NotNull(message = "error.name.null")
+    @NotNull(message = "{devops.name.null}")
     private String name;
 
     @ApiModelProperty("集群编码 / 必需")

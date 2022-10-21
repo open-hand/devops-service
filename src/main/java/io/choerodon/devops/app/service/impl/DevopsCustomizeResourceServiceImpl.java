@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,10 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -110,7 +112,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             try {
                 content = new String(contentFile.getBytes());
             } catch (IOException e) {
-                throw new CommonException("error.read.multipart.file");
+                throw new CommonException("devops.read.multipart.file");
             }
         }
 
@@ -164,7 +166,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceReqVO.getResourceId());
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     devopsCustomizeResourceDTO.getFilePath())) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             //获取更新内容
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

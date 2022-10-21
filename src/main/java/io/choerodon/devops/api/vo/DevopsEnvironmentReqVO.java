@@ -10,7 +10,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsEnvironmentReqVO {
     @ApiModelProperty("环境名称 / 必需")
-    @NotNull(message = "error.name.null")
+    @NotNull(message = "{devops.name.null}")
     private String name;
 
     @Encrypt

@@ -210,8 +210,8 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
 
     @Override
     public DevopsHelmConfigDTO queryDefaultDevopsHelmConfigByLevel(String resourceType, Long resourceId) {
-        Assert.notNull(resourceType, ResourceCheckConstant.ERROR_RESOURCE_TYPE_IS_NULL);
-        Assert.notNull(resourceId, ResourceCheckConstant.ERROR_RESOURCE_ID_IS_NULL);
+        Assert.notNull(resourceType, ResourceCheckConstant.DEVOPS_RESOURCE_TYPE_IS_NULL);
+        Assert.notNull(resourceId, ResourceCheckConstant.DEVOPS_RESOURCE_ID_IS_NULL);
 
         DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
         devopsHelmConfigDTO.setResourceType(resourceType);

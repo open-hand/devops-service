@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.CLUSTER_INFO_REDIS_KEY_TEMPLATE;
 import static io.choerodon.devops.app.service.impl.DevopsClusterNodeServiceImpl.NODE_CHECK_STEP_REDIS_KEY_TEMPLATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,7 +67,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
-    private static final String ERROR_CLUSTER_NOT_EXIST = "error.cluster.not.exist";
     private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
 
@@ -225,7 +225,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
             throw new CommonException("error.cluster.status");
         }
-        CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO = devopsClusterOperationRecordService.selectByClusterIdAndType(clusterId, ClusterOperationTypeEnum.INSTALL_K8S.getType());
         devopsClusterOperationRecordDTO.setErrorMsg("");
@@ -342,7 +342,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsClusterUpdateVO.getId());
         // 内部调用不需要校验
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 可以更新的字段：集群名称、集群描述
         devopsClusterDTO.setName(devopsClusterUpdateVO.getName());
         devopsClusterDTO.setDescription(devopsClusterUpdateVO.getDescription());
@@ -410,7 +410,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long clusterId, Long selectedProjectId, PageRequest pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, String> searchParamMap = new HashMap<>();
@@ -461,9 +461,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void assignPermission(Long projectId, DevopsClusterPermissionUpdateVO update) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(update.getClusterId());
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, update.getClusterId());
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, update.getClusterId());
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         if (devopsClusterDTO.getSkipCheckProjectPermission()) {
             // 原来跳过，现在也跳过，不处理
@@ -527,7 +527,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public void deletePermissionOfProject(Long projectId, Long clusterId, Long relatedProjectId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         if (clusterId == null || relatedProjectId == null) {
             return;
         }
@@ -589,7 +589,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long clusterId, PageRequest pageable, String params) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException(ERROR_CLUSTER_NOT_EXIST, clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         Map<String, Object> map = TypeUtil.castMapParams(params);
@@ -656,7 +656,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         if (devopsClusterDTO == null) {
             return;
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 校验集群是否能够删除
         checkConnectAndExistEnvsOrPV(clusterId);
@@ -776,7 +776,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(inputClusterDTO.getId());
         // 内部调用不需要校验
         if (projectId != null) {
-            CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
         inputClusterDTO.setObjectVersionNumber(devopsClusterDTO.getObjectVersionNumber());
         devopsClusterMapper.updateByPrimaryKeySelective(inputClusterDTO);

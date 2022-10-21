@@ -8,7 +8,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 
 public class WorkloadBaseCreateOrUpdateVO {
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private String envId;
     @ApiModelProperty("资源")
     private String content;

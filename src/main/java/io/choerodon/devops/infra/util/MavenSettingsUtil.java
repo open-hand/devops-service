@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_MAVEN_REPOSITORY_TYPE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +42,7 @@ public class MavenSettingsUtil {
     }
 
     private static final String DEFAULT_PROFILE_ID = "default";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
+
 
     /**
      * 数组字节流的初始大小
@@ -51,9 +53,10 @@ public class MavenSettingsUtil {
     private static final String GROUP_ID = "groupId";
     private static final String VERSION = "version";
     private static final String ARTIFACT_ID = "artifactId";
+    private static final String PACKAGING = "packaging";
 
 
-    public static String buildSettings(List<MavenRepoVO> mavenRepoList) {
+    public static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
         List<Server> servers = new ArrayList<>();
         List<Repository> repositories = new ArrayList<>();
 
@@ -61,7 +64,7 @@ public class MavenSettingsUtil {
             if (m.getType() != null) {
                 String[] types = m.getType().split(GitOpsConstants.COMMA);
                 if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                    throw new CommonException(DEVOPS_CI_MAVEN_REPOSITORY_TYPE, m.getType());
                 }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {
@@ -74,7 +77,7 @@ public class MavenSettingsUtil {
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.RELEASE)),
                     m.getType() == null ? null : new RepositoryPolicy(m.getType().contains(GitOpsConstants.SNAPSHOT))));
         });
-        return MavenSettingsUtil.generateMavenSettings(servers, repositories);
+        return MavenSettingsUtil.generateMavenSettings(servers, repositories, proxies);
     }
 
     /**
@@ -84,7 +87,7 @@ public class MavenSettingsUtil {
      * @param repositories 仓库信息
      * @return 生成的settings文件
      */
-    public static String generateMavenSettings(List<Server> servers, List<Repository> repositories) {
+    public static String generateMavenSettings(List<Server> servers, List<Repository> repositories, List<Proxy> proxies) {
         try {
             // 获取JAXB的上下文环境，需要传入具体的 Java bean -> 这里使用Settings
             JAXBContext context = JAXBContext.newInstance(Settings.class);
@@ -97,7 +100,7 @@ public class MavenSettingsUtil {
 
             // 将所需对象序列化到字节数组流中
             ByteArrayOutputStream out = new ByteArrayOutputStream(BYTE_ARRAY_INIT_SIZE);
-            marshaller.marshal(initSettings(servers, repositories), out);
+            marshaller.marshal(initSettings(servers, repositories, proxies), out);
 
             // 将字节流转为字节数组再转到字符串
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
@@ -117,9 +120,11 @@ public class MavenSettingsUtil {
         String parentGroupId = null;
         String parentArtifactId = null;
         String parentVersion = null;
+        String parentArtifactType = null;
         String groupId = null;
         String artifactId = null;
         String version = null;
+        String artifactType = null;
         // 解析pom
         SAXReader reader = new SAXReader();
         try {
@@ -146,6 +151,9 @@ public class MavenSettingsUtil {
                         if (VERSION.equals(parentElement.getName())) {
                             parentVersion = parentElement.getStringValue();
                         }
+                        if (PACKAGING.equals(parentElement.getName())) {
+                            parentArtifactType = parentElement.getStringValue();
+                        }
                     }
                 }
                 if (GROUP_ID.equals(element.getName())) {
@@ -157,6 +165,9 @@ public class MavenSettingsUtil {
                 if (VERSION.equals(element.getName())) {
                     version = element.getStringValue();
                 }
+                if (PACKAGING.equals(element.getName())) {
+                    parentArtifactType = element.getStringValue();
+                }
             }
         } catch (DocumentException e) {
             throw new CommonException("error.parse.pom", e.getCause());
@@ -165,6 +176,7 @@ public class MavenSettingsUtil {
         ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);
         ciPipelineMavenDTO.setGroupId(groupId != null ? groupId : parentGroupId);
         ciPipelineMavenDTO.setVersion(version != null ? version : parentVersion);
+        ciPipelineMavenDTO.setArtifactType(artifactType != null ? artifactType : parentArtifactType);
         return ciPipelineMavenDTO;
     }
 
@@ -188,8 +200,8 @@ public class MavenSettingsUtil {
         return true;
     }
 
-    private static Settings initSettings(List<Server> servers, List<Repository> repositories) {
-        return new Settings(servers, initProfiles(repositories));
+    private static Settings initSettings(List<Server> servers, List<Repository> repositories, List<Proxy> proxies) {
+        return new Settings(servers, initProfiles(repositories), proxies);
     }
 
     private static List<Profile> initProfiles(List<Repository> repositories) {

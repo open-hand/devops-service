@@ -24,17 +24,18 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class AppServiceImageVersionServiceImpl implements AppServiceImageVersionService {
+    private static final String DEVOPS_SAVE_IMAGE_VERSION = "devops.save.image.version";
     @Autowired
     private AppServiceImageVersionMapper appServiceImageVersionMapper;
 
     @Override
     public void create(AppServiceImageVersionDTO appServiceImageVersionDTO) {
-        MapperUtil.resultJudgedInsertSelective(appServiceImageVersionMapper, appServiceImageVersionDTO, "error.save.image.version");
+        MapperUtil.resultJudgedInsertSelective(appServiceImageVersionMapper, appServiceImageVersionDTO, DEVOPS_SAVE_IMAGE_VERSION);
     }
 
     @Override
     public AppServiceImageVersionDTO queryByAppServiceVersionId(Long appServiceVersionId) {
-        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_ID_IS_NULL);
 
         AppServiceImageVersionDTO appServiceImageVersionDTO = new AppServiceImageVersionDTO();
         appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);
@@ -56,7 +57,7 @@ public class AppServiceImageVersionServiceImpl implements AppServiceImageVersion
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAppServiceVersionId(Long appServiceVersionId) {
-        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_ID_IS_NULL);
 
         AppServiceImageVersionDTO appServiceImageVersionDTO = new AppServiceImageVersionDTO();
         appServiceImageVersionDTO.setAppServiceVersionId(appServiceVersionId);

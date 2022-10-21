@@ -12,7 +12,7 @@ public class DevopsCustomizeResourceReqVO {
 
     @Encrypt
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @Encrypt

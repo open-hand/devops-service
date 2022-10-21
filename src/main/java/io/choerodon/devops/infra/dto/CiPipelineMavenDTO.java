@@ -37,18 +37,29 @@ public class CiPipelineMavenDTO extends AuditDomain {
     private String mavenRepoUrl;
     private String username;
     private String password;
+    private String artifactType;
 
     public String calculateDownloadUrl() {
         String downloadUrl = "";
-        if (getVersion().contains("SNAPSHOT")) {
-            downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
-            downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
-            downloadUrl = appendWithSlash(downloadUrl, getVersion() + ".jar");
-        } else if (getVersion().contains("RELEASE")) {
+        if (io.choerodon.devops.infra.enums.ArtifactTypeEnum.JAR.getType().equals(artifactType)) {
+            // SNAPSHOT类型
+            if (getVersion().contains(BaseConstants.Symbol.SLASH)) {
+                downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+                downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
+                downloadUrl = appendWithSlash(downloadUrl, getVersion() + ".jar");
+            } else {
+                // RELEASE类型
+                downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+                downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
+                downloadUrl = appendWithSlash(downloadUrl, getVersion());
+                downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + ".jar");
+            }
+        }
+        if (io.choerodon.devops.infra.enums.ArtifactTypeEnum.WAR.getType().equals(artifactType)) {
             downloadUrl = appendWithSlash(getMavenRepoUrl(), getGroupId().replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
             downloadUrl = appendWithSlash(downloadUrl, getArtifactId());
             downloadUrl = appendWithSlash(downloadUrl, getVersion());
-            downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + ".jar");
+            downloadUrl = appendWithSlash(downloadUrl, getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + getVersion() + ".war");
         }
         return downloadUrl;
     }
@@ -149,5 +160,13 @@ public class CiPipelineMavenDTO extends AuditDomain {
 
     public void setNexusRepoId(Long nexusRepoId) {
         this.nexusRepoId = nexusRepoId;
+    }
+
+    public String getArtifactType() {
+        return artifactType;
+    }
+
+    public void setArtifactType(String artifactType) {
+        this.artifactType = artifactType;
     }
 }

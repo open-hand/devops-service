@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.models.V1beta1Ingress;
@@ -11,11 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
@@ -38,7 +40,6 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
-    private static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
     private static final String LINE_SEPARATOR = "line.separator";
     private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
@@ -535,7 +536,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public void baseCreate(DevopsEnvResourceDTO devopsEnvResourceDTO) {
         if (devopsEnvResourceMapper.insert(devopsEnvResourceDTO) != 1) {
-            throw new CommonException("error.resource.insert");
+            throw new CommonException(DEVOPS_RESOURCE_INSERT);
         }
     }
 
@@ -563,9 +564,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(kind, ResourceCheckConstant.ERROR_KIND_NAME_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(kind, ResourceCheckConstant.DEVOPS_KIND_NAME_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
 
         DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
         devopsEnvResourceDO.setEnvId(envId);

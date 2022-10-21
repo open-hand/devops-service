@@ -13,13 +13,15 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Settings {
     private List<Server> servers;
     private List<Profile> profiles;
+    private List<Proxy> proxies;
 
     public Settings() {
     }
 
-    public Settings(List<Server> servers, List<Profile> profiles) {
+    public Settings(List<Server> servers, List<Profile> profiles, List<Proxy> proxies) {
         this.servers = servers;
         this.profiles = profiles;
+        this.proxies = proxies;
     }
 
     @XmlElementWrapper(name = "servers")
@@ -40,5 +42,15 @@ public class Settings {
 
     public void setProfiles(List<Profile> profiles) {
         this.profiles = profiles;
+    }
+
+    @XmlElementWrapper(name = "proxies")
+    @XmlElement(name = "proxy")
+    public List<Proxy> getProxies() {
+        return proxies;
+    }
+
+    public void setProxies(List<Proxy> proxies) {
+        this.proxies = proxies;
     }
 }

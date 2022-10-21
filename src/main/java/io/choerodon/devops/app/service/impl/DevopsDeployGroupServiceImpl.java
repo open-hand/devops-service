@@ -1,5 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
+import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+import static io.choerodon.devops.infra.util.K8sUtil.checkPortName;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.JSON;
@@ -13,16 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.*;
-
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
-import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
-import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
-import static io.choerodon.devops.infra.util.K8sUtil.checkPortName;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -153,6 +154,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             if (!devopsDeployAppCenterEnvDTO.getName().equals(devopsDeployGroupVO.getAppName())) {
                 devopsDeployAppCenterEnvDTO.setName(devopsDeployGroupVO.getAppName());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+            } else {
+                devopsDeployAppCenterEnvDTO.setLastUpdatedBy(DetailsHelper.getUserDetails().getUserId());
+                devopsDeployAppCenterEnvDTO.setLastUpdateDate(new Date());
+                devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
             }
         }
         DevopsDeployAppCenterEnvVO devopsDeployAppCenterEnvVO = ConvertUtils.convertObject(devopsDeployAppCenterEnvDTO, DevopsDeployAppCenterEnvVO.class);
@@ -223,12 +228,15 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsDeployGroupVO.getAppCode());
+        Map<String, String> annotations = new HashMap<>();
+        annotations.put("choerodon.io/modify-time", new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getLabels())) {
             metadata.setLabels(devopsDeployGroupAppConfigVO.getLabels());
         }
         if (!CollectionUtils.isEmpty(devopsDeployGroupAppConfigVO.getAnnotations())) {
-            metadata.setAnnotations(devopsDeployGroupAppConfigVO.getAnnotations());
+            annotations.putAll(devopsDeployGroupAppConfigVO.getAnnotations());
         }
+        metadata.setAnnotations(annotations);
         deployment.setMetadata(metadata);
 
         // 设置spec
@@ -399,7 +407,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 53) {
-                throw new CommonException("error.env.app.center.name.length");
+                throw new CommonException("devops.env.app.center.name.length");
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
@@ -407,7 +415,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 53) {
-                throw new CommonException("error.env.app.center.code.length");
+                throw new CommonException("devops.env.app.center.code.length");
             }
 
 

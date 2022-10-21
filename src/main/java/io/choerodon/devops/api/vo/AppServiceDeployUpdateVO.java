@@ -13,7 +13,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class AppServiceDeployUpdateVO {
     @Encrypt
     @ApiModelProperty("服务id/必填")
-    @NotNull(message = "error.app.id.null")
+    @NotNull(message = "{devops.app.id.null}")
     private Long appServiceId;
 
     @Encrypt
@@ -23,16 +23,16 @@ public class AppServiceDeployUpdateVO {
 
     @Encrypt
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long environmentId;
 
     @Encrypt
     @ApiModelProperty("实例id/必填")
-    @NotNull(message = "error.app.instance.id.null")
+    @NotNull(message = "{devops.app.instance.id.null}")
     private Long instanceId;
 
     @ApiModelProperty("部署配置/必填")
-    @NotBlank(message = "error.app.instance.values.null")
+    @NotBlank(message = "{devops.app.instance.values.null}")
     private String values;
 
     @ApiModelProperty("操作类型")

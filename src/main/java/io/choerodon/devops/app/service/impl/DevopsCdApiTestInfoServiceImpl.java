@@ -17,6 +17,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCdApiTestInfoServiceImpl implements DevopsCdApiTestInfoService {
+
+    private static final String ERROR_SAVE_API_TEST_INFO_FAILED = "error.save.api.test.info.failed";
+
     @Autowired
     private DevopsCdApiTestInfoMapper devopsCdApiTestInfoMapper;
 
@@ -24,7 +27,7 @@ public class DevopsCdApiTestInfoServiceImpl implements DevopsCdApiTestInfoServic
     @Override
     @Transactional
     public void baseCreate(DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCdApiTestInfoMapper, devopsCdApiTestInfoDTO, "error.save.api.test.info.failed");
+        MapperUtil.resultJudgedInsertSelective(devopsCdApiTestInfoMapper, devopsCdApiTestInfoDTO, ERROR_SAVE_API_TEST_INFO_FAILED);
     }
 
     @Override

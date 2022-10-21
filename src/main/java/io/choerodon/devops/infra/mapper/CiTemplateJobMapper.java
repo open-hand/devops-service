@@ -21,7 +21,7 @@ public interface CiTemplateJobMapper extends BaseMapper<CiTemplateJobDTO> {
 
     List<CiTemplateJobVO> listByStageIds(@Param("stageIds") Set<Long> stageIds);
 
-    List<CiTemplateJobDTO> listByTenantIdAndGroupId(@Param("organizationId") Long organizationId, @Param("groupId") Long groupId);
+    List<CiTemplateJobDTO> listByTenantIdAndGroupId(@Param("projectId") Long projectId, @Param("organizationId") Long organizationId, @Param("groupId") Long groupId);
 
     void updateImageByIds(@Param("ids") Set<Long> jobIds, @Param("image") String sonarImage);
 

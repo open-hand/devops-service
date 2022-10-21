@@ -25,6 +25,12 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
+    private static final String ERROR_CI_JOB_IS_EMPTY = "error.ci.job.is.empty";
+    private static final String ERROR_CD_JOB_IS_EMPTY = "error.cd.job.is.empty";
+    private static final String ERROR_JOB_REGULAR_FORMAT = "error.job.regular.format";
+    private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "error.pipeline.related.branch.empty";
+    private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "error.job.parallel.size.range";
+    private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "error.pipeline.related.branch.size.invalid";
     private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";
@@ -36,7 +42,6 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "error.maven.repository.username.empty";
     private static final String ERROR_MAVEN_REPO_PSW_EMPTY = "error.maven.repository.password.empty";
     private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
-    private static final String ERROR_CUSTOM_JOB_STAGE_NOT_MATCH = "error.custom.job.stage.not.match";
     private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
     private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "error.stage.name.not.unique";
     private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "error.both.repos.and.settings.exist";
@@ -58,21 +63,18 @@ public class DevopsCiPipelineAdditionalValidator {
         List<String> jobNames = new ArrayList<>();
         List<String> stageNames = new ArrayList<>();
 
-//        validateImage(ciCdPipelineVO.getImage());
-
         ciCdPipelineVO.getDevopsCiStageVOS()
                 .stream()
                 .sorted(Comparator.comparingLong(DevopsCiStageVO::getSequence))
                 .forEach(stage -> {
                     if (CollectionUtils.isEmpty(stage.getJobList())) {
-                        return;
+                        throw new CommonException(ERROR_CI_JOB_IS_EMPTY, stage.getName());
                     }
 
                     // 校验stage名称唯一
                     validateStageNameUniqueInPipeline(stage.getName(), stageNames);
 
                     stage.getJobList().forEach(job -> {
-//                        validateImage(job.getImage());
                         validateParallel(job);
                         validateCustomJobFormat(Objects.requireNonNull(stage.getName()), job);
                         validateJobNameUniqueInPipeline(job.getName(), jobNames);
@@ -85,7 +87,7 @@ public class DevopsCiPipelineAdditionalValidator {
                     .stream()
                     .forEach(stage -> {
                         if (CollectionUtils.isEmpty(stage.getJobList())) {
-                            throw new CommonException("error.cd.job.is.empty", stage.getName());
+                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
                         }
 
                         // 校验stage名称唯一
@@ -125,16 +127,16 @@ public class DevopsCiPipelineAdditionalValidator {
     private static void validateParallel(DevopsCiJobVO job) {
         if (job.getParallel() != null
                 && (job.getParallel() < 2 || job.getParallel() > 50)) {
-            throw new CommonException("error.job.parallel.size.range");
+            throw new CommonException(ERROR_JOB_PARALLEL_SIZE_RANGE);
         }
     }
 
     public static void validateBranch(Set<String> relatedBranches) {
         if (CollectionUtils.isEmpty(relatedBranches)) {
-            throw new CommonException("error.pipeline.related.branch.empty");
+            throw new CommonException(ERROR_PIPELINE_RELATED_BRANCH_EMPTY);
         }
         if (relatedBranches.size() > 5) {
-            throw new CommonException("error.pipeline.related.branch.size.invalid");
+            throw new CommonException(ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID);
         }
     }
 
@@ -143,7 +145,7 @@ public class DevopsCiPipelineAdditionalValidator {
             try {
                 Pattern.compile(job.getTriggerValue());
             } catch (Exception e) {
-                throw new CommonException("error.job.regular.format", job.getName());
+                throw new CommonException(ERROR_JOB_REGULAR_FORMAT, job.getName());
             }
         }
     }

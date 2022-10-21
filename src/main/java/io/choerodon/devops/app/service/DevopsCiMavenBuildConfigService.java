@@ -4,6 +4,7 @@ import java.util.Set;
 
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenSettingsDTO;
 
 /**
  * 〈功能简述〉
@@ -22,5 +23,13 @@ public interface DevopsCiMavenBuildConfigService {
 
     void baseCreate(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO);
 
+    void baseCreate(Long stepId, DevopsCiMavenBuildConfigVO mavenBuildConfig);
+
     void batchDeleteByStepIds(Set<Long> stepIds);
+
+    DevopsCiMavenBuildConfigDTO voToDto(DevopsCiMavenBuildConfigVO mavenBuildConfigVO);
+
+    DevopsCiMavenBuildConfigVO dtoToVo(DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO);
+
+    DevopsCiMavenSettingsDTO buildAndSaveMavenSettings(Long projectId, Long jobId, Long sequence, DevopsCiMavenBuildConfigVO devopsCiMavenBuildConfigVO);
 }

@@ -24,7 +24,7 @@ public class SecretReqVO {
 
     @Encrypt
     @ApiModelProperty(value = "环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @ApiModelProperty(value = "密钥名/必填")

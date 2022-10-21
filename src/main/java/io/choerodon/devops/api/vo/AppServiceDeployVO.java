@@ -9,21 +9,21 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 
-@AtLeastOneNotEmpty(fields = {"valueId", "values"}, message = "error.atleast.one.not.empty")
+@AtLeastOneNotEmpty(fields = {"valueId", "values"}, message = "{devops.atleast.one.not.empty}")
 public class AppServiceDeployVO {
     @Encrypt
     @ApiModelProperty("服务id/必填")
-    @NotNull(message = "error.app.id.null")
+    @NotNull(message = "{devops.app.id.null}")
     private Long appServiceId;
 
     @Encrypt
     @ApiModelProperty("服务应用版本id/必填")
-    @NotNull(message = "appversion.not.exist.in.database")
+    @NotNull(message = "{devops.appversion.not.exist.in.database}")
     private Long appServiceVersionId;
 
     @Encrypt
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long environmentId;
 
     @ApiModelProperty("部署配置")
@@ -58,13 +58,13 @@ public class AppServiceDeployVO {
     @ApiModelProperty("记录id")
     private Long recordId;
     @ApiModelProperty("应用中心应用名称")
-    @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
-    @NotBlank(message = "error.app.name.null")
+    @Size(min = 1, max = 53, message = "{devops.env.app.center.name.length}")
+    @NotBlank(message = "{devops.app.name.null}")
     private String appName;
 
     @ApiModelProperty("应用中心应用code，同时也作为实例名称")
-    @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
-    @NotBlank(message = "error.app.code.null")
+    @Size(min = 1, max = 53, message = "{devops.env.app.center.code.length}")
+    @NotBlank(message = "{devops.app.code.null}")
     private String appCode;
 
     @ApiModelProperty("服务来源")

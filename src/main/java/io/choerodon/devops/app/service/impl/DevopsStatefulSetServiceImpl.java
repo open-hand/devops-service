@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Container;
 import io.kubernetes.client.openapi.models.V1ContainerPort;
@@ -12,14 +20,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -107,6 +107,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
                 statefulSetInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
             }
             statefulSetInfoVO.setSourceType(statefulSetInfoVO.getInstanceId() == null ? WorkloadSourceTypeEnums.WORKLOAD.getType() : WorkloadSourceTypeEnums.CHART.getType());
+            statefulSetInfoVO.setEnvId(envId);
             return statefulSetInfoVO;
         });
     }
@@ -226,8 +227,8 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
         DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO();
         devopsStatefulSetDTO.setEnvId(envId);
         devopsStatefulSetDTO.setName(name);

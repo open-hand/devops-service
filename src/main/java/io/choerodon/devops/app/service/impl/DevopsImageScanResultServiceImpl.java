@@ -276,7 +276,7 @@ public class DevopsImageScanResultServiceImpl implements DevopsImageScanResultSe
     @Override
     @Transactional
     public void deleteByAppServiceId(Long appServiceId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
 
         DevopsImageScanResultDTO devopsImageScanResultDTO = new DevopsImageScanResultDTO();
         devopsImageScanResultDTO.setAppServiceId(appServiceId);

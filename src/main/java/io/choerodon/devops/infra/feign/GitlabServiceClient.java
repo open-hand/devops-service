@@ -864,6 +864,7 @@ public interface GitlabServiceClient {
                                                         @RequestParam(value = "search", required = false) String search,
                                                         @RequestParam(value = "page") Integer page,
                                                         @RequestParam(value = "size") Integer size,
+                                                        @RequestParam(value = "minAccessLevel") Integer minAccessLevel,
                                                         @RequestBody List<Integer> skipGroups);
 
     @ApiOperation(value = "获取项目列表")

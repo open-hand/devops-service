@@ -9,6 +9,17 @@ package io.choerodon.devops.infra.constant;
  */
 public class PipelineConstants {
 
+    public static final String DEVOPS_CI_MAVEN_REPOSITORY_TYPE = "devops.ci.maven.repository.type";
+
+    public static final String DEVOPS_UPDATE_CI_JOB_RECORD = "devops.update.ci.job.record";
+    public static final String DEVOPS_CREATE_OR_UPDATE_GITLAB_CI = "devops.create.or.update.gitlab.ci";
+
+    public static final String DEVOPS_SAVE_PIPELINE_BRANCH_REL = "devops.save.pipeline.branch.rel";
+    public static final String DEVOPS_DOCKER_AUTH_CONFIG_INVALID = "devops.docker.auth.config.invalid";
+    public static final String DEVOPS_PIPELINE_NOT_EXIST = "devops.pipeline.not.exist";
+    public static final String DEVOPS_DELETE_GITLAB_CI_FILE = "devops.delete.gitlab-ci.file";
+
+
     private PipelineConstants() {
 
     }

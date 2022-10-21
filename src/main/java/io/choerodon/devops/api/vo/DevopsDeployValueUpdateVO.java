@@ -23,7 +23,7 @@ public class DevopsDeployValueUpdateVO {
 
     @Encrypt
     @ApiModelProperty("环境id")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @Encrypt

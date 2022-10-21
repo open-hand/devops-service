@@ -83,11 +83,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
-
-
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
-
 
     @Autowired
     @Lazy
@@ -111,13 +108,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private DevopsClusterService devopsClusterService;
-
     @Autowired
     private MessageClient messageClient;
     @Autowired
     @Lazy
     private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired

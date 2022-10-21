@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+import javax.annotation.Nullable;
+
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * 校验权限相关
@@ -65,14 +65,6 @@ public interface PermissionHelper {
      * @param iamUserId 用户id
      */
     void checkProjectOwnerOrGitlabAdmin(Long projectId, Long iamUserId);
-
-    /**
-     * 通过已经查询的用户纪录和IamProjectId校验用户是否是项目所有者或者gitlab admin用户，如果不是，抛出异常
-     *
-     * @param projectId   项目id
-     * @param userAttrDTO 用户纪录
-     */
-    void checkProjectOwnerOrGitlabAdmin(Long projectId, @Nullable UserAttrDTO userAttrDTO);
 
     /**
      * 判断指定用户是否是root用户

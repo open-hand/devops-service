@@ -1,3 +1,4 @@
+#!/bin/bash
 # 获取的组织编码
 export ORG_CODE={{ ORG_CODE }}
 # 获取的项目编码
@@ -356,12 +357,44 @@ function saveJarMetadata() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
+  fi
+}
+
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 maven制品库id
+# $2 mvn_settings_id    mvn_settings_id
+# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
+function saveJarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "nexus_repo_id=$1" \
+    -F "mvn_settings_id=$2" \
+    -F "sequence=$3" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "version=${CI_COMMIT_TAG}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_info" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 
@@ -414,12 +447,47 @@ function saveCustomJarMetadata() {
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
   # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
+  fi
+}
+############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
+# $1 mvn_settings_id   mvn_settings_id
+# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
+# $3 maven_repo_url   目标仓库地址
+# $4 username   目标仓库用户名
+# $5 password   目标仓库用户密码
+function saveCustomJarInfo() {
+  result_upload_to_devops=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "mvn_settings_id=$1" \
+    -F "sequence=$2" \
+    -F "maven_repo_url=$3" \
+    -F "username='$4'" \
+    -F "password='$5'" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    -F "version=${CI_COMMIT_TAG}" \
+    -F "file=@pom.xml" \
+    "${CHOERODON_URL}/devops/ci/save_jar_info" \
+    -o "${CI_COMMIT_SHA}-ci.response" \
+    -w %{http_code})
+  # 判断本次上传到devops是否出错
+  if [ -e "${CI_COMMIT_SHA}-ci.response" ]; then
+    response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
+    rm "${CI_COMMIT_SHA}-ci.response"
+    if [ "$result_upload_to_devops" != "200" ]; then
+      echo $response_upload_to_devops
+      echo "upload to devops error"
+      exit 1
+    fi
   fi
 }
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
@@ -584,6 +652,15 @@ function mvnCompile() {
         ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1"
     fi
 }
+
+# $1 是否跳过单元测试
+function mvnCompileUseSettings() {
+    if [ -z $KUBERNETES_SERVICE_HOST ];then
+        ssh -o StrictHostKeyChecking=no root@kaniko "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1 -s settings.xml"
+    else
+        ssh -o StrictHostKeyChecking=no root@127.0.0.1 "cd $PWD && JAVA_HOME=/opt/java/openjdk PATH=/opt/java/openjdk/bin:$PATH mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify  -Dmaven.test.failure.ignore=true -DskipTests=$1 -s settings.xml"
+    fi
+}
 # 重新镜像上传相关变量，用于控制推送到不同镜像仓库
 # $1 projectId
 # $2 repoType
@@ -608,6 +685,8 @@ function rewrite_image_info() {
       export HARBOR_CONFIG_ID=$(jq -r .harborRepoId rewrite_image_info.json)
       export REPO_TYPE=$(jq -r .repoType rewrite_image_info.json)
       export DOCKER_PASSWORD=$(jq -r .dockerPassword rewrite_image_info.json)
+      # 设成docekr认证配置文件
+      echo "{\"auths\":{\"$DOCKER_REGISTRY\":{\"auth\":\"$(echo -n $DOCKER_USERNAME:$DOCKER_PASSWORD | base64)\"}}}" | tr -d '\n' > $DOCKER_CONFIG/config.json
     fi
   fi
 

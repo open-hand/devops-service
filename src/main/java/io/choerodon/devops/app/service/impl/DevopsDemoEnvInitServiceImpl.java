@@ -55,7 +55,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
-    private static final String ERROR_VERSION_INSERT = "error.version.insert";
+    private static final String ERROR_VERSION_INSERT = "devops.version.insert";
 
     @Value("${demo.data.file.path:demo/demo-data.json}")
     private String demoDataFilePath;
@@ -246,7 +246,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         Long appServiceId = applicationDTO.getId();
         if (appServiceId == null) {
-            throw new CommonException("error.application.create.insert");
+            throw new CommonException("devops.application.create.insert");
         }
 
         devOpsAppServicePayload.setAppServiceId(applicationDTO.getId());
@@ -370,7 +370,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         if (valuesFile == null) {
             FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException("error.find.values.yaml.in.chart");
+            throw new CommonException("devops.find.values.yaml.in.chart");
         }
 
         String values;

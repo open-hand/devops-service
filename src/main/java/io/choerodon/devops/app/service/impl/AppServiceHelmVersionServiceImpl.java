@@ -24,6 +24,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionService {
+
+    public static final String DEVOPS_SAVE_HELM_VERSION = "devops.save.helm.version";
+
     @Autowired
     private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
 
@@ -34,7 +37,7 @@ public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionSe
 
     @Override
     public AppServiceHelmVersionDTO queryByAppServiceVersionId(Long appServiceVersionId) {
-        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_ID_IS_NULL);
 
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
         appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionId);
@@ -45,13 +48,13 @@ public class AppServiceHelmVersionServiceImpl implements AppServiceHelmVersionSe
     @Override
     @Transactional
     public void create(AppServiceHelmVersionDTO appServiceHelmVersionDTO) {
-        MapperUtil.resultJudgedInsertSelective(appServiceHelmVersionMapper, appServiceHelmVersionDTO, "error.save.helm.version");
+        MapperUtil.resultJudgedInsertSelective(appServiceHelmVersionMapper, appServiceHelmVersionDTO, DEVOPS_SAVE_HELM_VERSION);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByAppServiceVersionId(Long appServiceVersionId) {
-        Assert.notNull(appServiceVersionId, ResourceCheckConstant.ERROR_SERVICE_VERSION_ID_IS_NULL);
+        Assert.notNull(appServiceVersionId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_ID_IS_NULL);
 
         AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
         appServiceHelmVersionDTO.setAppServiceVersionId(appServiceVersionId);

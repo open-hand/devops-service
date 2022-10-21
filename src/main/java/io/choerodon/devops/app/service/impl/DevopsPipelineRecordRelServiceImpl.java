@@ -83,7 +83,7 @@ public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordR
 
     @Override
     public DevopsPipelineRecordRelDTO queryByCdPipelineRecordId(Long cdPipelineRecordId) {
-        Assert.notNull(cdPipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(cdPipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
         DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
         devopsPipelineRecordRelDTO.setCdPipelineRecordId(cdPipelineRecordId);
         List<DevopsPipelineRecordRelDTO> recordRelDTOS = devopsPipelineRecordRelMapper.select(devopsPipelineRecordRelDTO);

@@ -39,6 +39,10 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
     private PermissionHelper permissionHelper;
 
     private static final String PROJECT_NAME = "组织下所有项目";
+    private static final String DEVOPS_INSERT_APPLICATION_SHARE_RULE_INSERT = "devops.insert.application.share.rule.insert";
+    private static final String DEVOPS_INSERT_APPLICATION_SHARE_RULE_UPDATE = "devops.insert.application.share.rule.update";
+    private static final String DEVOPS_SHARE_RULE_ID_NOT_EXIST = "devops.share.rule.id.not.exist";
+    private static final String DEVOPS_SHARE_RULE_ALREADY_EXIST = "devops.share.rule.already.exist";
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -63,11 +67,11 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         // 新建
         if (appServiceShareRuleDTO.getId() == null) {
             checkExist(appServiceShareRuleDTO);
-            MapperUtil.resultJudgedInsert(appServiceShareRuleMapper, appServiceShareRuleDTO, "error.insert.application.share.rule.insert");
+            MapperUtil.resultJudgedInsert(appServiceShareRuleMapper, appServiceShareRuleDTO, DEVOPS_INSERT_APPLICATION_SHARE_RULE_INSERT);
         } else {
             // 更新
             AppServiceShareRuleDTO oldAppServiceShareRuleDTO = appServiceShareRuleMapper.selectByPrimaryKey(appServiceShareRuleDTO.getId());
-            CommonExAssertUtil.assertNotNull(oldAppServiceShareRuleDTO, "error.share.rule.id.not.exist");
+            CommonExAssertUtil.assertNotNull(oldAppServiceShareRuleDTO, DEVOPS_SHARE_RULE_ID_NOT_EXIST);
             // 不相等才需要更新
             if (!ruleEquals(appServiceShareRuleDTO, oldAppServiceShareRuleDTO)) {
                 updateRule(appServiceShareRuleDTO, oldAppServiceShareRuleDTO);
@@ -94,7 +98,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         toUpdate.setCreatedBy(oldRule.getCreatedBy());
         toUpdate.setCreationDate(oldRule.getCreationDate());
 
-        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceShareRuleMapper, toUpdate, "error.insert.application.share.rule.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceShareRuleMapper, toUpdate, DEVOPS_INSERT_APPLICATION_SHARE_RULE_UPDATE);
     }
 
     /**
@@ -103,7 +107,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
      * @param appServiceShareRuleDTO 数据
      */
     private void checkExist(AppServiceShareRuleDTO appServiceShareRuleDTO) {
-        CommonExAssertUtil.assertTrue(appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO) == 0, "error.share.rule.already.exist");
+        CommonExAssertUtil.assertTrue(appServiceShareRuleMapper.selectCount(appServiceShareRuleDTO) == 0, DEVOPS_SHARE_RULE_ALREADY_EXIST);
     }
 
     /**

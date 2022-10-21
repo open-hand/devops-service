@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
 import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
 import java.util.*;
@@ -78,7 +81,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected static final String README = "README.md";
     protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
-    private static final String ERROR_CODE_EXIST = "error.code.exist";
+    private static final String ERROR_CODE_EXIST = "devops.code.exist";
     private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
@@ -254,7 +257,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.gitlab.owner");
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -285,6 +288,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.setClusterId(devopsEnvironmentReqVO.getClusterId());
                     gitlabProjectPayload.setIamProjectId(projectId);
                     gitlabProjectPayload.setSkipCheckPermission(devopsEnvironmentDTO.getSkipCheckPermission());
+                    gitlabProjectPayload.setEnvId(envId);
 
                     agentCommandService.initEnv(devopsEnvironmentDTO, devopsEnvironmentReqVO.getClusterId());
 
@@ -825,7 +829,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         // 考虑创建环境时,集群已删除的情况
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
         if (devopsClusterDTO.getNamespaces() != null) {
             return JSONArray.parseArray(devopsClusterDTO.getNamespaces(), String.class).stream().anyMatch(namespace -> namespace.equals(code));
@@ -871,7 +875,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
 
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", gitlabProjectPayload.getPath());
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, gitlabProjectPayload.getPath());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupE.getIamProjectId());
         CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
@@ -1184,7 +1188,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(environmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(environmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
 
@@ -1243,7 +1247,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void updateEnvUserPermission(Long projectId, DevopsEnvPermissionUpdateVO devopsEnvPermissionUpdateVO) {
         DevopsEnvironmentDTO preEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(devopsEnvPermissionUpdateVO.getEnvId());
-        CommonExAssertUtil.assertTrue(projectId.equals(preEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(preEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
 
         DevopsEnvUserPayload userPayload = new DevopsEnvUserPayload();
@@ -1368,8 +1372,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteDeactivatedOrFailedEnvironment(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         //排除掉运行中的环境
@@ -1509,7 +1513,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsClusterDTO cluster = devopsClusterMapper.queryClusterForUpdate(clusterId);
 
         if (cluster == null) {
-            throw new CommonException("error.cluster.not.exists");
+            throw new CommonException("devops.cluster.not.exists");
         }
 
         if (cluster.getSystemEnvId() != null) {
@@ -1991,9 +1995,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
         // 查询环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
         // 校验环境和项目匹配
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
     }
 }

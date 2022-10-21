@@ -1,16 +1,6 @@
 package io.choerodon.devops.infra.gitops;
 
-import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.openapi.JSON;
-import io.kubernetes.client.openapi.models.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +10,17 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.alibaba.fastjson.JSONObject;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -121,7 +122,7 @@ public class ResourceConvertToYamlHandler<T> {
             DevopsEnvFileResourceService devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, objectId, objectType);
             if (devopsEnvFileResourceDTO == null) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
@@ -249,17 +250,7 @@ public class ResourceConvertToYamlHandler<T> {
         V1Service newV1Service;
         if (objectType.equals(ResourceType.SERVICE.getType()) && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
-                Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
-                Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
-                if (!CollectionUtils.isEmpty(oldAnnotations)) {
-                    oldAnnotations.forEach((key, value) -> {
-                        if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
-                            newAnnotations.put(key, value);
-                        }
-                    });
-                }
-                newV1Service.getMetadata().setAnnotations(newAnnotations);
             } else {
                 return;
             }

@@ -11,8 +11,9 @@
         dpv.description,
         dpv.created_by,
         dpv.last_update_date,
-        de.`name` AS envName,
-        da.`name` AS appServiceName,
+        de.`name` AS env_name,
+        da.`name` AS app_service_name,
+        da.code AS app_service_code,
         dpv.env_id,
         dpv.app_service_id
         FROM
@@ -41,6 +42,7 @@
         dpv.last_update_date,
         de.`name` AS env_name,
         da.`name` AS app_service_name,
+        da.code AS app_service_code,
         dpv.env_id,
         dpv.app_service_id
         FROM
@@ -134,14 +136,17 @@
         <if test='searchParam != null'>
             <if test='searchParam.name != null and searchParam.name.length > 0'>
                 AND
-                    dpv.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
+                dpv.name LIKE CONCAT(CONCAT('%', #{searchParam.name, jdbcType=VARCHAR}),'%')
             </if>
             <if test='searchParam.description != null and searchParam.description.length > 0'>
                 AND
-                    dpv.description LIKE CONCAT(CONCAT('%', #{searchParam.description, jdbcType=VARCHAR}),'%')
+                dpv.description LIKE CONCAT(CONCAT('%', #{searchParam.description, jdbcType=VARCHAR}),'%')
             </if>
             <if test="searchParam.appServiceName != null and searchParam.appServiceName != ''">
                 AND da.name LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName}), '%')
+            </if>
+            <if test="searchParam.appServiceCode != null and searchParam.appServiceCode != ''">
+                AND da.code LIKE CONCAT(CONCAT('%',#{searchParam.appServiceCode}),'%')
             </if>
             <if test="searchParam.envName != null and searchParam.envName != ''">
                 AND de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName}), '%')
@@ -153,6 +158,7 @@
                 (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
                 OR da.name LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName}), '%')
+                OR da.code LIKE CONCAT(CONCAT('%', #{searchParam.appServiceCode}), '%')
                 OR de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName}), '%'))
             </foreach>
         </if>

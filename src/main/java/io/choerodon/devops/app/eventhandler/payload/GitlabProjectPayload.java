@@ -19,6 +19,15 @@ public class GitlabProjectPayload {
     private String realName;
     private Long clusterId;
     private Long iamProjectId;
+    private Long envId;
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
 
     public Integer getUserId() {
         return userId;

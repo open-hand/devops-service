@@ -11,12 +11,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.hzero.mybatis.BatchInsertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +33,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -93,9 +90,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private PermissionHelper permissionHelper;
-    @Autowired
-    @Qualifier("devopsAppCenterHelper")
-    private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
     @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
@@ -211,6 +205,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             AppServiceInstanceInfoDTO appServiceInstanceInfoDTO = appServiceInstanceMapper.queryInfoById(centerEnvDTO.getObjectId());
             detailVO.setObjectStatus(appServiceInstanceInfoDTO.getStatus());
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO, "id");
+            detailVO.setLastUpdateDate(appServiceInstanceInfoDTO.getLastUpdateDate());
+            detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(appServiceInstanceInfoDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : appServiceInstanceInfoDTO.getLastUpdatedBy()));
             if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
@@ -293,6 +289,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             detailVO.setAppConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getAppConfig(), DevopsDeployGroupAppConfigVO.class));
             detailVO.setContainerConfig(JsonHelper.unmarshalByJackson(devopsDeploymentDTO.getContainerConfig(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
             }));
+            detailVO.setLastUpdateDate(devopsDeploymentDTO.getLastUpdateDate());
+            detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(devopsDeploymentDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : devopsDeploymentDTO.getLastUpdatedBy()));
         }
         // 环境信息查询
         DevopsEnvironmentDTO environmentDTO = environmentService.baseQueryById(centerEnvDTO.getEnvId());
@@ -304,7 +302,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
 
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
-        detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getLastUpdatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
     }
@@ -412,54 +409,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public void fixData() {
-        int totalCount = appServiceInstanceService.countInstance();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
-        do {
-            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage - 1);
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<AppServiceInstanceDTO> result = PageHelper.doPage(pageRequest, () -> appServiceInstanceService.listInstances());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = result.getContent().stream().map(i -> {
-                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-                    devopsDeployAppCenterEnvDTO.setName(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setCode(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setProjectId(i.getProjectId());
-                    devopsDeployAppCenterEnvDTO.setEnvId(i.getEnvId());
-                    devopsDeployAppCenterEnvDTO.setObjectId(i.getId());
-                    devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-                    devopsDeployAppCenterEnvDTO.setOperationType(AppSourceType.MIDDLEWARE.getValue().equals(i.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value());
-
-                    // 如果是normal，需要具体判断本项目还是共享应用
-                    if (AppSourceType.NORMAL.getValue().equals(i.getSource())) {
-                        AppServiceDTO appServiceDTO = appServiceService.baseQuery(i.getAppServiceId());
-                        if (appServiceDTO == null) {
-                            // 该实例对应的应用服务信息不存在
-                            return null;
-                        }
-                        if (appServiceDTO.getProjectId().equals(i.getProjectId())) {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-                        } else {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.SHARE.getValue());
-                        }
-                    } else {
-                        devopsDeployAppCenterEnvDTO.setChartSource(i.getSource());
-                    }
-                    return devopsDeployAppCenterEnvDTO;
-                }).filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                batchInsertHelper.batchInsert(devopsDeployAppCenterEnvDTOList);
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
-    }
-
-    @Override
     @Transactional
     public void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType) {
         devopsDeployAppCenterEnvMapper.deleteByEnvIdAndObjectIdAndRdupmType(envId, objectId, rdupmType);
@@ -528,7 +477,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             return;
         }
         if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
-            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }
 
@@ -544,7 +493,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     public void enableMetric(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
@@ -567,7 +516,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     public void disableMetric(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);

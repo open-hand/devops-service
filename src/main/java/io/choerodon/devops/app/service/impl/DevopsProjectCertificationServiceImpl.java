@@ -292,7 +292,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         if (certificationDTO == null) {
             return;
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
