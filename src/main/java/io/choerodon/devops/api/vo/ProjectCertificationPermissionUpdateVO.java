@@ -14,7 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class ProjectCertificationPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("证书id / 必需")
-    @NotNull(message = "error.certification.id.null")
+    @NotNull(message = "{devops.certification.id.null}")
     private Long certificationId;
 
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")

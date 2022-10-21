@@ -23,11 +23,11 @@ public class SecretUpdateVO {
     private Long envId;
 
     @ApiModelProperty(value = "密钥名/必填")
-    @NotBlank(message = "error.secret.name.null")
+    @NotBlank(message = "{devops.secret.name.null}")
     private String name;
 
     @ApiModelProperty(value = "密钥对/必填")
-    @NotNull(message = "error.secret.value.is.null")
+    @NotNull(message = "{devops.secret.value.is.null}")
     private Map<String, String> value;
 
     @ApiModelProperty(value = "密钥描述/非必填")

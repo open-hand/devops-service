@@ -18,8 +18,8 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private String pvcName;
 
     @ApiModelProperty("密码")
-    @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
-    @NotBlank(message = "error.middleware.redis.password.empty")
+    @Size(min = 6, max = 32, message = "{devops.middleware.redis.password.length}")
+    @NotBlank(message = "{devops.middleware.redis.password.empty}")
     private String password;
 
     @ApiModelProperty("是否启用内核优化")
@@ -29,7 +29,7 @@ public class MiddlewareRedisEnvDeployVO extends MarketInstanceCreationRequestVO 
     private Map<String, String> pvLabels;
 
     @ApiModelProperty("哨兵模式节点数量")
-    @Min(value = 3, message = "error.middleware.redis.sentinel.slave.count")
+    @Min(value = 3, message = "{devops.middleware.redis.sentinel.slave.count}")
     private Integer slaveCount;
 
     @ApiModelProperty("redis的配置参数")

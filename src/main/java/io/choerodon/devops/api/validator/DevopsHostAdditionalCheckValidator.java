@@ -32,7 +32,7 @@ public class DevopsHostAdditionalCheckValidator {
     }
 
     public void validUsernamePasswordMatch(String username, String password) {
-        CommonExAssertUtil.assertTrue(!(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password)), "error.host.password.empty");
+        CommonExAssertUtil.assertTrue(!(StringUtils.isNotEmpty(username) && StringUtils.isEmpty(password)), "devops.host.password.empty");
     }
 
     public boolean validIpAndSshPortComplete(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
@@ -43,10 +43,10 @@ public class DevopsHostAdditionalCheckValidator {
     }
 
     public void validHostInformationMatch(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        CommonExAssertUtil.assertTrue(Pattern.compile(GitOpsConstants.IP_PATTERN).matcher(devopsHostCreateRequestVO.getHostIp()).matches(), "error.host.ip.invalid");
-        CommonExAssertUtil.assertTrue(devopsHostCreateRequestVO.getSshPort() <= 65535, "error.ssh.port.invalid");
-        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()), "error.host.username.empty");
-        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getPassword()), "error.host.password.empty");
+        CommonExAssertUtil.assertTrue(Pattern.compile(GitOpsConstants.IP_PATTERN).matcher(devopsHostCreateRequestVO.getHostIp()).matches(), "devops.host.ip.invalid");
+        CommonExAssertUtil.assertTrue(devopsHostCreateRequestVO.getSshPort() <= 65535, "devops.ssh.port.invalid");
+        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getUsername()), "devops.host.username.empty");
+        CommonExAssertUtil.assertTrue(StringUtils.isNotEmpty(devopsHostCreateRequestVO.getPassword()), "devops.host.password.empty");
     }
 
     public void validHostIdAndInstanceIdMatch(Long hostId, Long instanceId) {

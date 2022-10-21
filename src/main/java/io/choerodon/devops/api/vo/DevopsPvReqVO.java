@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.vo;
 
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import java.util.List;
 
 
 public class DevopsPvReqVO {
@@ -16,10 +16,10 @@ public class DevopsPvReqVO {
 
     @ApiModelProperty("pv名称")
     @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "error.pv.name.pattern")
-    @Length(max = 40, min = 1, message = "error.pv.name.length")
+    @Length(max = 40, min = 1, message = "{devops.pv.name.length}")
     private String name;
 
-    @NotNull(message = "error.pv.type.is.null")
+    @NotNull(message = "{devops.pv.type.is.null}")
     @ApiModelProperty("pv类型")
     private String type;
 
@@ -27,15 +27,15 @@ public class DevopsPvReqVO {
     private String description;
 
     @Encrypt
-    @NotNull(message = "error.pv.related.cluster.is.null")
+    @NotNull(message = "{devops.pv.related.cluster.is.null}")
     @ApiModelProperty("关联的集群Id")
     private Long clusterId;
 
-    @NotNull(message = "error.pv.accessmodes.is.null")
+    @NotNull(message = "{devops.pv.accessmodes.is.null}")
     @ApiModelProperty("访问模式")
     private String accessModes;
 
-    @NotNull(message = "error.pv.requestResource.is.null")
+    @NotNull(message = "{devops.pv.requestResource.is.null}")
     @ApiModelProperty("资源大小")
     private String requestResource;
 
@@ -46,7 +46,7 @@ public class DevopsPvReqVO {
     @ApiModelProperty(value = "环境id", hidden = true)
     private Long envId;
 
-    @NotNull(message = "error.pv.value.config.is.null")
+    @NotNull(message = "{devops.pv.value.config.is.null}")
     @ApiModelProperty("根据存储类型的不同，生成不同的Json数据")
     private String valueConfig;
 

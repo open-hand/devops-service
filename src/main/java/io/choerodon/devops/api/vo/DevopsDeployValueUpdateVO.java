@@ -16,7 +16,7 @@ public class DevopsDeployValueUpdateVO {
     @NotNull(message = "error.deploy.value.id.null")
     private Long id;
     @ApiModelProperty("部署配置内容")
-    @NotNull(message = "{devops.deploy.value.value.nulll}")
+    @NotNull(message = "{devops.deploy.value.value.null}")
     private String value;
 
     private Long projectId;

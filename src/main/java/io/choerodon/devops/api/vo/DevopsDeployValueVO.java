@@ -19,7 +19,7 @@ public class DevopsDeployValueVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("部署配置内容")
-    @NotNull(message = "{devops.deploy.value.value.nulll}")
+    @NotNull(message = "{devops.deploy.value.value.null}")
     private String value;
     @ApiModelProperty("项目id")
     private Long projectId;

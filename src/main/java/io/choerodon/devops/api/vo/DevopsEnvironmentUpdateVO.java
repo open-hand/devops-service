@@ -15,7 +15,7 @@ public class DevopsEnvironmentUpdateVO {
     @NotNull(message = "{devops.env.id.null}")
     private Long id;
     @ApiModelProperty("环境名称，不能为空")
-    @NotBlank(message = "error.env.name.empty")
+    @NotBlank(message = "{devops.env.name.empty}")
     private String name;
     @ApiModelProperty("环境描述")
     private String description;

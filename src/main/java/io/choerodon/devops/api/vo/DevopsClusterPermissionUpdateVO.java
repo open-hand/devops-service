@@ -14,7 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsClusterPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("集群id / 必需")
-    @NotNull(message = "error.cluster.id.null")
+    @NotNull(message = "{devops.cluster.id.null}")
     private Long clusterId;
 
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")

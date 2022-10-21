@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -30,7 +29,7 @@ public class HarborController {
 
     @GetMapping("/{projectId}/repo/list")
     @ApiOperation(value = "查询项目下所有的仓库配置")
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<List<HarborRepoConfigDTO>> listAllCustomRepoByProject(
             @ApiParam(value = "猪齿鱼项目ID", required = true)
             @PathVariable("projectId") Long projectId) {

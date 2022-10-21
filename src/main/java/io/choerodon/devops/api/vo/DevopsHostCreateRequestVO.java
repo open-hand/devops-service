@@ -1,20 +1,21 @@
 package io.choerodon.devops.api.vo;
 
-import io.choerodon.devops.api.validator.annotation.EnumCheck;
-import io.choerodon.devops.infra.enums.HostAuthType;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hibernate.validator.constraints.Length;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Size;
+import io.choerodon.devops.api.validator.annotation.EnumCheck;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * @author zmf
  * @since 2020/9/15
  */
 public class DevopsHostCreateRequestVO {
-    @NotEmpty(message = "error.host.name.empty")
-    @Size(max = 30, message = "error.host.name.too.long")
+    @NotEmpty(message = "{devops.host.name.empty}")
+    @Size(max = 30, message = "{devops.host.name.too.long}")
     @ApiModelProperty("主机名称")
     private String name;
 
@@ -27,7 +28,7 @@ public class DevopsHostCreateRequestVO {
     /**
      * {@link HostAuthType}
      */
-    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class, skipNull = true)
+    @EnumCheck(message = "{devops.host.auth.type.invalid}", enumClass = HostAuthType.class, skipNull = true)
     @ApiModelProperty("认证类型")
     private String authType;
 
@@ -38,7 +39,7 @@ public class DevopsHostCreateRequestVO {
     private String password;
 
     @ApiModelProperty("主机描述")
-    @Length(max = 100,message = "error.host.description.length")
+    @Length(max = 100, message = "{devops.host.description.length}")
     private String description;
 
     public String getName() {

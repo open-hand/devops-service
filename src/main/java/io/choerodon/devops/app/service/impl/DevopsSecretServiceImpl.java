@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -8,10 +12,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -81,7 +81,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Transactional(rollbackFor = Exception.class)
     public SecretRespVO createOrUpdate(Long projectId, SecretReqVO secretReqVO) {
         if (secretReqVO.getValue() == null || secretReqVO.getValue().size() == 0) {
-            throw new CommonException("error.secret.value.is.null");
+            throw new CommonException("devops.secret.value.is.null");
         }
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, secretReqVO.getEnvId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
