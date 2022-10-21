@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobService;
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
@@ -43,16 +42,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines")
 public class CiCdPipelineController {
 
-    private final DevopsCiPipelineService devopsCiPipelineService;
-    private final CiCdPipelineRecordService ciCdPipelineRecordService;
-    private final DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-
-    public CiCdPipelineController(DevopsCiPipelineService devopsCiPipelineService, CiCdPipelineRecordService ciCdPipelineRecordService, DevopsCdPipelineRecordService devopsCdPipelineRecordService) {
-        this.devopsCiPipelineService = devopsCiPipelineService;
-        this.ciCdPipelineRecordService = ciCdPipelineRecordService;
-        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-    }
-
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private CiCdPipelineRecordService ciCdPipelineRecordService;
     @Autowired
     private DevopsCdJobService devopsCdJobService;
 
@@ -115,9 +108,13 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "searchParam", required = false) String searchParam,
+            @ApiParam(value = "是否启用")
+            @RequestParam(value = "enableFlag", required = false) Boolean enableFlag,
+            @ApiParam(value = "最近执行状态")
+            @RequestParam(value = "status", required = false) String status,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest));
+        return ResponseEntity.ok(devopsCiPipelineService.listByProjectIdAndAppName(projectId, searchParam, pageRequest, enableFlag, status));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -173,15 +170,15 @@ public class CiCdPipelineController {
     }
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "测试主机连接")
-    @PostMapping(value = "/test_connection")
-    public ResponseEntity<Boolean> testConnection(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @RequestBody HostConnectionVO hostConnectionVO) {
-        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "测试主机连接")
+//    @PostMapping(value = "/test_connection")
+//    public ResponseEntity<Boolean> testConnection(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @RequestBody HostConnectionVO hostConnectionVO) {
+//        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
+//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表，查询项目下流水线名称")

@@ -8,10 +8,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta1CronJob;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1beta1CronJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +89,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
 
                 cronJobInfoVO.setActive(v1beta1CronJob.getStatus().getActive() == null ? 0 : v1beta1CronJob.getStatus().getActive().size());
                 cronJobInfoVO.setSchedule(v1beta1CronJob.getSpec().getSchedule());
-                cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().isSuspend());
+                cronJobInfoVO.setSuspend(v1beta1CronJob.getSpec().getSuspend());
                 cronJobInfoVO.setLabels(v1beta1CronJob.getMetadata().getLabels());
                 cronJobInfoVO.setCreationTimestamp(v1beta1CronJob.getMetadata().getCreationTimestamp().toString());
                 List<Integer> portRes = new ArrayList<>();
@@ -103,7 +103,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
                 }
                 cronJobInfoVO.setPorts(portRes);
                 if (v1beta1CronJob.getStatus() != null && v1beta1CronJob.getStatus().getLastScheduleTime() != null) {
-                    cronJobInfoVO.setLastScheduleTime(v1beta1CronJob.getStatus().getLastScheduleTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    cronJobInfoVO.setLastScheduleTime(v1beta1CronJob.getStatus().getLastScheduleTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
                     cronJobInfoVO.setLastScheduleTime(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
@@ -232,8 +232,8 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
 
         DevopsCronJobDTO devopsCronJobDTO = new DevopsCronJobDTO();
         devopsCronJobDTO.setEnvId(envId);

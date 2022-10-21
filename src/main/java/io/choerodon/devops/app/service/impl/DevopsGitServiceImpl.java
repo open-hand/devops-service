@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.BranchCode.DEVOPS_BRANCH_EXIST;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +62,7 @@ import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -146,6 +148,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsProjectService devopsProjectService;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
+    @Autowired
+    private DevopsBranchMapper devopsBranchMapper;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     /**
      * 初始化转换类和处理关系的类
@@ -256,7 +262,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsBranchDTO devopsBranchDTO = ConvertUtils.convertObject(devopsBranchVO, DevopsBranchDTO.class);
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
@@ -297,7 +303,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
 
             if (branchDTO.getCommit() == null) {
-                throw new CommonException("error.branch.exist");
+                throw new CommonException(DEVOPS_BRANCH_EXIST);
             }
             CommitDTO commitDTO = branchDTO.getCommit();
             Date checkoutDate = commitDTO.getCommittedDate();
@@ -478,7 +484,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void deleteBranch(Long projectId, Long appServiceId, String branchName) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_DELETE);
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
@@ -819,13 +825,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void checkBranchName(Long projectId, Long applicationId, String branchName) {
-        if (Boolean.FALSE.equals(isBranchNameUnique(projectId, applicationId, branchName))) {
-            throw new CommonException("error.branch.exist");
-        }
-    }
-
-    @Override
     public Boolean isBranchNameUnique(Long projectId, Long applicationId, String branchName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
         BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(applicationDTO.getGitlabProjectId(), branchName);
@@ -974,6 +973,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
                     // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
+                } else if (ResourceType.INGRESS.getType().equals(type)) {
+                    DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
+                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+                    if (operateForOldTypeIngress) {
+                        currentHandler = converters.get(ResourceType.V1BETA1_INGRESS.getType());
+                    } else {
+                        currentHandler = converters.get(ResourceType.V1_INGRESS.getType());
+                    }
                 } else {
                     currentHandler = converters.get(type);
                     if (currentHandler == null) {
@@ -1216,12 +1223,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-
-    @Override
-    public BranchDTO baseQueryBranch(Integer gitLabProjectId, String branchName) {
-        return gitlabServiceClientOperator.queryBranch(gitLabProjectId, branchName);
-    }
-
     @Override
     public Page<BranchVO> pageBranchFilteredByIssueId(Long projectId, PageRequest pageable, Long appServiceId, String params, Long issueId) {
         Page<DevopsBranchDTO> branchDTOPage = devopsBranchService.basePageBranch(appServiceId, pageable, params, issueId);
@@ -1232,7 +1233,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Transactional(rollbackFor = Exception.class)
     public void removeAssociation(Long projectId, Long appServiceId, Long branchId, Long issueId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsBranchDTO devopsBranchDTO = devopsBranchService.baseQueryByAppAndBranchIdWithIssueId(appServiceId, branchId);
         Set<Long> branchIdToRemove = new HashSet<>();
         branchIdToRemove.add(branchId);
@@ -1436,6 +1437,61 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         return ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
     }
+
+    @Override
+    public Integer syncBranch(Long projectId, Long appServiceId, Boolean sync) {
+        Integer syncCount = 0;
+        // 查询所有分支
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.BRANCH_SYNC);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
+                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        if (CollectionUtils.isEmpty(branchDTOS)) {
+            return syncCount;
+        }
+        List<String> gitlabBranches = branchDTOS.stream().map(BranchDTO::getName).collect(Collectors.toList());
+        // 查询c7n已经存在的分支
+        DevopsBranchDTO queryBranchDTO = new DevopsBranchDTO();
+        queryBranchDTO.setAppServiceId(appServiceId);
+        List<String> devopsBranches = devopsBranchMapper.select(queryBranchDTO).stream().map(DevopsBranchDTO::getBranchName).collect(Collectors.toList());
+        // 创建分支
+        for (BranchDTO branchDTO : branchDTOS) {
+            if (!devopsBranches.contains(branchDTO.getName())) {
+                syncCount = syncCount + 1;
+                if (sync) {
+                    CommitDTO commitDTO = branchDTO.getCommit();
+                    DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
+                    devopsBranchDTO.setBranchName(branchDTO.getName());
+                    devopsBranchDTO.setUserId(userAttrDTO.getGitlabUserId());
+                    devopsBranchDTO.setAppServiceId(appServiceId);
+
+                    devopsBranchDTO.setCheckoutDate(commitDTO.getCommittedDate());
+                    devopsBranchDTO.setCheckoutCommit(commitDTO.getId());
+
+                    devopsBranchDTO.setLastCommitUser(userAttrDTO.getGitlabUserId());
+                    devopsBranchDTO.setLastCommit(commitDTO.getId());
+                    devopsBranchDTO.setLastCommitMsg(LogUtil.cutOutString(commitDTO.getMessage(), MiscConstants.DEVOPS_BRANCH_LAST_COMMIT_MESSAGE_MAX_LENGTH));
+                    devopsBranchDTO.setLastCommitDate(commitDTO.getCommittedDate());
+
+                    devopsBranchService.baseCreate(devopsBranchDTO);
+                }
+            }
+        }
+        // 删除不存在分支
+        for (String t : devopsBranches) {
+            if (!gitlabBranches.contains(t)) {
+                syncCount = syncCount + 1;
+                if (sync) {
+                    devopsBranchService.baseDelete(appServiceId, t);
+                }
+            }
+        }
+        return syncCount;
+    }
+
 
     @NotNull
     private Page<BranchVO> listExternalBranch(PageRequest pageable, String params, AppServiceDTO applicationDTO) {

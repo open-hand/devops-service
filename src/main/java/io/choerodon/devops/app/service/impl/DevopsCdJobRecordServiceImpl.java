@@ -30,8 +30,8 @@ import io.choerodon.devops.infra.mapper.DevopsCdJobRecordMapper;
 public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdJobRecordServiceImpl.class);
 
-    private static final String ERROR_SAVE_JOB_RECORD_FAILED = "error.save.job.record.failed";
-    private static final String ERROR_UPDATE_JOB_RECORD_FAILED = "error.update.job.record.failed";
+    private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
+    private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
     private static final Long DEFAULT_JOB_DURATION_SECONDS = 1L;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
@@ -46,8 +46,6 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Lazy
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
-    @Autowired
-    private DevopsEnvResourceService devopsEnvResourceService;
 
     @Override
     public List<DevopsCdJobRecordDTO> queryByStageRecordId(Long stageRecordId) {
@@ -60,7 +58,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Transactional
     public void save(DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         if (devopsCdJobRecordMapper.insert(devopsCdJobRecordDTO) != 1) {
-            throw new CommonException(ERROR_SAVE_JOB_RECORD_FAILED);
+            throw new CommonException(DEVOPS_SAVE_JOB_RECORD_FAILED);
         }
     }
 
@@ -73,7 +71,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
     @Transactional
     public void update(DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         if (devopsCdJobRecordMapper.updateByPrimaryKeySelective(devopsCdJobRecordDTO) != 1) {
-            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_JOB_RECORD_FAILED);
         }
     }
 
@@ -108,7 +106,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
         cdJobRecordDTO.setStatus(status);
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
-            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_JOB_RECORD_FAILED);
         }
     }
 
@@ -118,7 +116,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(jobRecordId);
         cdJobRecordDTO.setLog(log.toString());
         if (devopsCdJobRecordMapper.updateByPrimaryKey(cdJobRecordDTO) != 1) {
-            throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_JOB_RECORD_FAILED);
         }
     }
 
@@ -129,7 +127,7 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
 
     @Override
     public DevopsCdJobRecordDTO queryById(Long id) {
-        Assert.notNull(id, PipelineCheckConstant.ERROR_JOB_RECORD_ID_IS_NULL);
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_JOB_RECORD_ID_IS_NULL);
         return devopsCdJobRecordMapper.selectByPrimaryKey(id);
     }
 
@@ -201,15 +199,15 @@ public class DevopsCdJobRecordServiceImpl implements DevopsCdJobRecordService {
         devopsCdJobRecordDTOS.forEach(jobrecord -> {
             jobrecord.setStatus(PipelineStatus.STOP.toValue());
             if (devopsCdJobRecordMapper.updateByPrimaryKeySelective(jobrecord) != 1) {
-                throw new CommonException(ERROR_UPDATE_JOB_RECORD_FAILED);
+                throw new CommonException(DEVOPS_UPDATE_JOB_RECORD_FAILED);
             }
         });
     }
 
     @Override
     public List<DevopsCdJobRecordDTO> queryJobWithStageRecordIdAndStatus(Long stageRecordId, String status) {
-        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
-        Assert.notNull(status, PipelineCheckConstant.ERROR_JOB_STATUS_IS_NULL);
+        Assert.notNull(stageRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(status, PipelineCheckConstant.DEVOPS_JOB_STATUS_IS_NULL);
 
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = new DevopsCdJobRecordDTO();
         devopsCdJobRecordDTO.setStageRecordId(stageRecordId);

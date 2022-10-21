@@ -14,7 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("环境id / 必需")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @Encrypt

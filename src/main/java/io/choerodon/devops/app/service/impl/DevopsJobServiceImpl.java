@@ -8,10 +8,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1Job;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +101,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
                 }
                 jobInfoVO.setPorts(portRes);
                 if (v1Job.getStatus() != null && v1Job.getStatus().getCompletionTime() != null) {
-                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toString("yyyy-MM-dd HH:mm:ss"));
+                    jobInfoVO.setAge(v1Job.getStatus().getCompletionTime().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
                 } else {
                     ZoneId zoneId = ZoneId.systemDefault();
                     jobInfoVO.setAge(v.getLastUpdateDate().toInstant().atZone(zoneId).toLocalDateTime().format(DATE_TIME_FORMATTER));
@@ -229,8 +229,8 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
         DevopsJobDTO devopsJobDTO = new DevopsJobDTO();
         devopsJobDTO.setEnvId(envId);
         devopsJobDTO.setName(name);

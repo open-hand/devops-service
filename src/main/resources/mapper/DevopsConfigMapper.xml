@@ -145,4 +145,9 @@
         WHERE id = #{configId}
     </update>
 
+    <select id="listAllChart" resultType="io.choerodon.devops.infra.dto.DevopsConfigDTO">
+        SELECT *
+        FROM devops_config
+        WHERE type = 'chart'
+    </select>
 </mapper>

@@ -53,7 +53,7 @@ public class DevopsIngressValidator {
         checkIngressName(devopsIngressVO.getName());
         checkHost(devopsIngressVO.getDomain());
         if (devopsIngressVO.getEnvId() == null) {
-            throw new CommonException("error.env.id.null");
+            throw new CommonException("devops.env.id.null");
         }
         if (CollectionUtils.isEmpty(devopsIngressVO.getPathList())) {
             throw new CommonException("error.ingress.path.empty");
@@ -71,7 +71,7 @@ public class DevopsIngressValidator {
         }
     }
 
-    private static Boolean checkPort(Long port) {
+    private static Boolean checkPort(Integer port) {
         return port >= 0 && port <= 65535;
     }
 

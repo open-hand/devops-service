@@ -21,7 +21,9 @@
         select * from devops_ci_template_job dctj
         where dctj.group_id = #{groupId}
         and ((dctj.source_type = 'site' and dctj.source_id = 0)
-        or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId}))
+        or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
+        or (dctj.source_type = 'project' and dctj.source_id = #{projectId})
+            )
     </select>
 
     <update id="updateImageByIds">

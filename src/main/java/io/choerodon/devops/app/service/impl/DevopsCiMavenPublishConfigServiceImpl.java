@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL;
+
 import java.util.List;
 import java.util.Set;
 
@@ -28,6 +30,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiMavenPublishConfigServiceImpl implements DevopsCiMavenPublishConfigService {
+
+    private static final String DEVOPS_SAVE_MAVEN_PUBLISH_CONFIG_FAILED = "devops.save.maven.publish.config.failed";
     @Autowired
     private DevopsCiMavenPublishConfigMapper devopsCiMavenPublishConfigMapper;
 
@@ -57,7 +61,7 @@ public class DevopsCiMavenPublishConfigServiceImpl implements DevopsCiMavenPubli
 
     @Override
     public DevopsCiMavenPublishConfigDTO queryByStepId(Long stepId) {
-        Assert.notNull(stepId, "error.step.id.is.null");
+        Assert.notNull(stepId, DEVOPS_STEP_ID_IS_NULL);
         DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO = new DevopsCiMavenPublishConfigDTO();
         devopsCiMavenPublishConfigDTO.setStepId(stepId);
         return devopsCiMavenPublishConfigMapper.selectOne(devopsCiMavenPublishConfigDTO);
@@ -68,7 +72,7 @@ public class DevopsCiMavenPublishConfigServiceImpl implements DevopsCiMavenPubli
     public void baseCreate(DevopsCiMavenPublishConfigDTO devopsCiMavenPublishConfigDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiMavenPublishConfigMapper,
                 devopsCiMavenPublishConfigDTO,
-                "error.save.maven.publish.config.failed");
+                DEVOPS_SAVE_MAVEN_PUBLISH_CONFIG_FAILED);
     }
 
     @Override

@@ -8,7 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +127,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null) {
@@ -189,7 +188,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
 
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
@@ -761,7 +760,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     public List<DevopsPvLabelVO> listLabels(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<String> labelsInString = devopsPvMapper.listLabelsByClusterId(clusterId);
         List<DevopsPvLabelVO> labels = new ArrayList<>();
@@ -769,13 +768,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(s -> !StringUtils.isEmpty(s))
                 .map(s -> JsonHelper.unmarshalByJackson(s, new TypeReference<Map<String, String>>() {
                 }))
-                .forEach(l -> l.forEach((k, v)->{
+                .forEach(l -> l.forEach((k, v) -> {
                     DevopsPvLabelVO devopsPvLabelVO = new DevopsPvLabelVO();
                     devopsPvLabelVO.setKey(k);
                     devopsPvLabelVO.setValue(v);
-                  if (!labels.contains(devopsPvLabelVO)){
-                      labels.add(devopsPvLabelVO);
-                  }
+                    if (!labels.contains(devopsPvLabelVO)) {
+                        labels.add(devopsPvLabelVO);
+                    }
                 }));
         return labels;
     }

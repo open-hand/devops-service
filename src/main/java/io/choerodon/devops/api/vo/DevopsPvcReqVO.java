@@ -24,7 +24,7 @@ public class DevopsPvcReqVO {
     private String name;
 
     @Encrypt
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     @ApiModelProperty("PVC绑定环境ID")
     private Long envId;
 

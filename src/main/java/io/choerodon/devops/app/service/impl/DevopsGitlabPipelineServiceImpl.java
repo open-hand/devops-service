@@ -466,11 +466,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
     @Override
-    public void baseDeleteWithoutCommit() {
-        devopsGitlabPipelineMapper.deleteWithoutCommit();
-    }
-
-    @Override
     public List<DevopsGitlabPipelineDTO> baseListByAppIdAndBranch(Long appServiceId, String branch) {
         return devopsGitlabPipelineMapper.listByBranch(appServiceId, branch);
     }

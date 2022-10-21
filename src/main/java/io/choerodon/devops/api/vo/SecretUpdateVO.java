@@ -14,12 +14,12 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class SecretUpdateVO {
     @Encrypt
     @ApiModelProperty(value = "密钥id/必填")
-    @NotNull(message = "error.id.null")
+    @NotNull(message = "{devops.id.nulll}")
     private Long id;
 
     @Encrypt
     @ApiModelProperty(value = "环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @ApiModelProperty(value = "密钥名/必填")

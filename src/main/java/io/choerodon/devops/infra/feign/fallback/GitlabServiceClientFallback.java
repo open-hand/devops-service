@@ -314,11 +314,6 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ProjectHookDTO> updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
-        throw new CommonException("error.projecthook.update");
-    }
-
-    @Override
     public ResponseEntity updateGroup(Integer groupId, Integer userId, GroupDTO group) {
         throw new CommonException("error.group.update");
     }

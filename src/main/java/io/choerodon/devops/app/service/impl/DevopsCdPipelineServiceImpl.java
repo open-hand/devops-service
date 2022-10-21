@@ -625,8 +625,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsCdEnvDeployInfoDTO.getAppCode(),
                     devopsDeployAppCenterEnvDTO.getObjectId(),
                     CommandType.UPDATE.getType(),
-                    devopsCdEnvDeployInfoDTO.getAppName(),
-                    devopsCdEnvDeployInfoDTO.getAppCode());
+                    null,
+                    null);
             appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
@@ -1094,7 +1094,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             aduitStatusChangeVO.setCountersigned(devopsCdJobRecordDTO.getCountersigned());
             return aduitStatusChangeVO;
         } else {
-            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_PARAM_IS_INVALID);
         }
     }
 

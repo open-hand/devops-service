@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -632,7 +634,7 @@ public class FileUtil {
                 iterator.next();
             }
         } catch (Exception e) {
-            throw new CommonException("error.yaml.format.invalid", e);
+            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
         }
     }
 

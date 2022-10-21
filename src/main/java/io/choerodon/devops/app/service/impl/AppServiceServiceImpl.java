@@ -2,6 +2,10 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.*;
 
@@ -9,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,7 +49,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -82,7 +86,6 @@ import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.PipelineConstants;
-import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.*;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
@@ -128,7 +131,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     private static final String SONAR = "sonar";
     private static final String NORMAL = "normal";
     private static final String APP_SERVICE = "appService";
-    private static final String ERROR_USER_NOT_GITLAB_OWNER = "error.user.not.gitlab.owner";
     private static final String METRICS = "metrics";
     private static final String SONAR_NAME = "sonar_default";
     private static final String APPLICATION = "application";
@@ -255,12 +257,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     private DevopsCiPipelineFunctionService devopsCiPipelineFunctionService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    private DevopsAppServiceHelmRelService devopsAppServiceHelmRelService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
             CI_FILE_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.ci.sh");
+            throw new CommonException(DEVOPS_LOAD_CI_SH);
         }
     }
 
@@ -283,7 +287,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         boolean isTemplateVersionNull = appServiceReqVO.getTemplateAppServiceVersionId() == null;
 
         if ((isTemplateNull && !isTemplateVersionNull) || (!isTemplateNull && isTemplateVersionNull)) {
-            throw new CommonException("error.template.fields");
+            throw new CommonException(DEVOPS_TEMPLATE_FIELDS);
         }
 
         // 查询创建应用服务所在的gitlab应用组
@@ -302,7 +306,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
 
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -351,13 +355,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             shareAppService = true;
         }
         AppServiceRepVO appServiceRepVO = dtoToRepVo(appServiceDTO);
-        List<DevopsConfigVO> devopsConfigVOS = devopsConfigService.queryByResourceId(appServiceId, APP_SERVICE);
-        if (!devopsConfigVOS.isEmpty()) {
-            devopsConfigVOS.forEach(devopsConfigVO -> {
-                if (devopsConfigVO.getType().equals(CHART)) {
-                    appServiceRepVO.setChart(devopsConfigVO);
-                }
-            });
+        DevopsAppServiceHelmRelDTO devopsAppServiceHelmRelDTO = devopsAppServiceHelmRelService.queryByAppServiceId(appServiceId);
+        if (devopsAppServiceHelmRelDTO != null) {
+            appServiceRepVO.setHelmConfigId(devopsAppServiceHelmRelDTO.getHelmConfigId());
         }
         //url地址拼接
         if (appServiceDTO.getGitlabProjectId() != null && !shareAppService) {
@@ -408,28 +408,28 @@ public class AppServiceServiceImpl implements AppServiceService {
             return;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 禁止删除未失败或者启用状态的应用服务
         if (Boolean.TRUE.equals(appServiceDTO.getActive())
                 && Boolean.FALSE.equals(appServiceDTO.getFailed())) {
-            throw new CommonException("error.delete.nonfailed.app.service", appServiceDTO.getName());
+            throw new CommonException(DEVOPS_DELETE_NONFAILED_APP_SERVICE, appServiceDTO.getName());
         }
         // 验证改应用服务在其他项目是否被生成实例
         checkAppserviceIsShareDeploy(projectId, appServiceId);
         AppServiceMsgVO checkResult = checkCanDisable(appServiceId, projectId);
         if (checkResult.getCheckResources()) {
-            throw new CommonException("error.delete.application.service.due.to.share");
+            throw new CommonException(DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_SHARE);
         }
         if (checkResult.getCheckRule()) {
-            throw new CommonException("error.delete.application.service.due.to.resources");
+            throw new CommonException(DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_RESOURCES);
         }
         if (checkResult.getCheckCi()) {
-            throw new CommonException("error.delete.application.service.due.to.ci.pipeline");
+            throw new CommonException(DEVOPS_DELETE_APPLICATION_SERVICE_DUE_TO_CI_PIPELINE);
         }
 
         if (devopsCiPipelineService.selectCountByAppServiceId(appServiceId) != 0) {
-            throw new CommonException("error.delete.app.service.due.to.ci.pipeline", appServiceId);
+            throw new CommonException(DEVOPS_DELETE_APP_SERVICE_DUE_TO_CI_PIPELINE, appServiceId);
         }
 
         appServiceDTO.setSynchro(Boolean.FALSE);
@@ -470,7 +470,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceMapper.listByProjectIdsAndAppServiceId(projectIds, appServiceId);
         if (!CollectionUtils.isEmpty(appServiceInstanceDTOS)) {
-            throw new CommonException("error.not.delete.service.by.other.project.deployment");
+            throw new CommonException(DEVOPS_NOT_DELETE_SERVICE_BY_OTHER_PROJECT_DEPLOYMENT);
         }
     }
 
@@ -545,39 +545,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             return false;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(oldAppServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 更新跟pom相关的两个字段
         appServiceMapper.updatePomFields(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getGroupId(), appServiceUpdateDTO.getArtifactId());
 
         AppServiceDTO appServiceDTO = ConvertUtils.convertObject(appServiceUpdateDTO, AppServiceDTO.class);
-        List<DevopsConfigVO> devopsConfigVOS = new ArrayList<>();
-        DevopsConfigVO chart = new DevopsConfigVO();
-        if (ObjectUtils.isEmpty(appServiceUpdateDTO.getChart())) {
-            chart.setCustom(false);
-        } else {
-            chart = appServiceUpdateDTO.getChart();
-            chart.setCustom(Boolean.TRUE);
-            ConfigVO configVO = chart.getConfig();
-            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
-            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
-            if (!usernameEmpty && !passwordEmpty) {
-                configVO.setUserName(configVO.getUserName());
-                configVO.setPassword(configVO.getPassword());
-                configVO.setIsPrivate(Boolean.TRUE);
-            } else {
-                configVO.setIsPrivate(Boolean.FALSE);
-            }
-
-            // 用户名和密码要么都为空, 要么都有值
-            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
-        }
-        chart.setType(CHART);
-        devopsConfigVOS.add(chart);
 
         //处理helm仓库的配置
-        devopsConfigService.operate(appServiceId, APP_SERVICE, devopsConfigVOS);
+        devopsAppServiceHelmRelService.handleRel(appServiceUpdateDTO.getId(), appServiceUpdateDTO.getHelmConfigId());
+
         //保存应用服务与harbor仓库的关系
         if (!Objects.isNull(appServiceUpdateDTO.getHarborRepoConfigDTO())) {
             if (DEFAULT_REPO.equals(appServiceUpdateDTO.getHarborRepoConfigDTO().getType())) {
@@ -588,10 +565,10 @@ public class AppServiceServiceImpl implements AppServiceService {
                 rdupmClient.saveRelationByService(projectId, appServiceDTO.getId(), appServiceUpdateDTO.getHarborRepoConfigDTO().getRepoId());
             }
         }
-        if (appServiceUpdateDTO.getChart() != null) {
-            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
-            appServiceDTO.setChartConfigId(chartConfig.getId());
-        }
+//        if (appServiceUpdateDTO.getChart() != null) {
+//            DevopsConfigDTO chartConfig = devopsConfigService.queryRealConfig(appServiceId, APP_SERVICE, CHART, AUTHTYPE_PULL);
+//            appServiceDTO.setChartConfigId(chartConfig.getId());
+//        }
 
         if (!oldAppServiceDTO.getName().equals(appServiceUpdateDTO.getName())) {
             checkName(oldAppServiceDTO.getProjectId(), appServiceDTO.getName());
@@ -628,7 +605,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 // 如果能停用，删除其和他所属项目下的环境之间的关联关系
                 devopsEnvAppServiceMapper.deleteRelevanceInProject(appServiceId, projectId);
             } else {
-                throw new CommonException("error.disable.or.enable.application.service");
+                throw new CommonException(DEVOPS_DISABLE_OR_ENABLE_APPLICATION_SERVICE);
             }
         }
 
@@ -766,7 +743,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
@@ -853,14 +830,14 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public void checkName(Long projectId, String name) {
         if (!isNameUnique(projectId, name)) {
-            throw new CommonException("error.name.exist");
+            throw new CommonException(DEVOPS_NAME_EXIST);
         }
     }
 
     @Override
     public void checkCode(Long projectId, String code) {
         if (!isCodeUnique(projectId, code)) {
-            throw new CommonException("error.code.exist");
+            throw new CommonException(DEVOPS_CODE_EXIST);
         }
     }
 
@@ -907,7 +884,7 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param gitlabProjectId gitlab项目id
      */
     private void checkGitlabProjectIdNotUsedBefore(Integer gitlabProjectId) {
-        CommonExAssertUtil.assertTrue(selectCountByGitlabProjectId(gitlabProjectId) == 0, "error.gitlab.project.id.associated.with.other.app.service");
+        CommonExAssertUtil.assertTrue(selectCountByGitlabProjectId(gitlabProjectId) == 0, DEVOPS_GITLAB_PROJECT_ID_ASSOCIATED_WITH_OTHER_APP_SERVICE);
     }
 
     private int selectCountByGitlabProjectId(Integer gitlabProjectId) {
@@ -1042,7 +1019,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 && StringUtils.hasText(devOpsAppServiceImportPayload.getRepositoryUrl())) {
             String[] tempUrl = devOpsAppServiceImportPayload.getRepositoryUrl().split(TEMP_MODAL);
             if (tempUrl.length < 2) {
-                throw new CommonException("error.temp.git.url");
+                throw new CommonException(DEVOPS_TEMP_GIT_URL);
             }
             String templateVersion = tempUrl[1];
             String repositoryUrl = tempUrl[0];
@@ -1100,7 +1077,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             try {
                 gitUtil.commitAndPushForMaster(git, appServiceDTO.getRepoUrl(), "init app from template", accessToken);
             } catch (Exception e) {
-                throw new CommonException("init app from template failed", e);
+                throw new CommonException(DEVOPS_INIT_APP_FROM_TEMPLATE_FAILED, e);
             } finally {
                 releaseResources(applicationWorkDir, git);
             }
@@ -1391,8 +1368,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             // 校验用户的gitlab权限
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -1436,10 +1412,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Boolean checkChart(String url, @Nullable String username, @Nullable String password) {
-        if (!url.endsWith("/")) {
-            throw new CommonException("error.base.url.must.end");
-        }
+    public Boolean checkChartOnOrganization(String url, @Nullable String username, @Nullable String password) {
         url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
         configurationProperties.setBaseUrl(url);
@@ -1458,9 +1431,9 @@ public class AppServiceServiceImpl implements AppServiceService {
             getHealth.execute();
         } catch (Exception e) {
             if (e instanceof IllegalArgumentException) {
-                throw new CommonException("error.chart.url.base", e.getMessage());
+                throw new CommonException(DEVOPS_CHART_URL_BASE, e.getMessage());
             } else {
-                throw new CommonException("error.chart.not.available", e.getMessage());
+                throw new CommonException(DEVOPS_CHART_NOT_AVAILABLE, e.getMessage());
             }
         }
 
@@ -1471,13 +1444,65 @@ public class AppServiceServiceImpl implements AppServiceService {
             Call<Void> getHomePage = chartClient.getHomePage();
             response = getHomePage.execute();
         } catch (Exception ex) {
-            throw new CommonException("error.chart.authentication.failed");
+            throw new CommonException(DEVOPS_CHART_AUTHENTICATION_FAILED);
         }
         if (response != null && !response.isSuccessful()) {
-            throw new CommonException("error.chart.authentication.failed");
+            throw new CommonException(DEVOPS_CHART_AUTHENTICATION_FAILED);
         }
 
         return true;
+    }
+
+    @Override
+    public CheckInfoVO checkChart(Long projectId, String url, @Nullable String username, @Nullable String password) {
+        CheckInfoVO checkInfoVO = new CheckInfoVO();
+        url = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        URL processedUrl;
+        try {
+            processedUrl = new URL(url);
+        } catch (Exception e) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("helm仓库地址不正确");
+            return checkInfoVO;
+        }
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(processedUrl.getProtocol() + "://" + processedUrl.getHost());
+        configurationProperties.setType(CHART);
+        if (username != null && password != null) {
+            configurationProperties.setUsername(username);
+            configurationProperties.setPassword(password);
+        }
+        ChartClient chartClient = null;
+
+        Response<String> result;
+        try {
+            String[] params = processedUrl.getPath().split("/");
+            if (params.length != 3) {
+                checkInfoVO.setSuccess(false);
+                checkInfoVO.setErrMsg("helm仓库地址无效，应该类似：http://localhost:8080/org1/repoa");
+                return checkInfoVO;
+            }
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, new RetrofitHandler.StringConverter());
+            chartClient = retrofit.create(ChartClient.class);
+            Call<String> getIndex = chartClient.getIndex(params[1], params[2]);
+            result = getIndex.execute();
+        } catch (Exception ex) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("无法访问helm仓库:" + ex.getMessage());
+            return checkInfoVO;
+        }
+        if (result != null && result.isSuccessful()) {
+            checkInfoVO.setSuccess(true);
+            return checkInfoVO;
+        }
+        if (result != null && (result.code() > 400 && result.code() < 500)) {
+            checkInfoVO.setSuccess(false);
+            checkInfoVO.setErrMsg("账号或密码不正确");
+            return checkInfoVO;
+        }
+        checkInfoVO.setSuccess(false);
+        checkInfoVO.setErrMsg("测试连接失败");
+        return checkInfoVO;
     }
 
     @Override
@@ -1519,7 +1544,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     return new SonarContentsVO();
                 }
                 if (sonarComponentResponse.raw().code() == 401) {
-                    throw new CommonException("error.sonarqube.user");
+                    throw new CommonException(DEVOPS_SONARQUBE_USER);
                 }
                 throw new CommonException(sonarComponentResponse.errorBody().string());
             }
@@ -1858,7 +1883,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         return new SonarTableVO();
                     }
                     if (sonarTablesResponse.raw().code() == 401) {
-                        throw new CommonException("error.sonarqube.user");
+                        throw new CommonException(DEVOPS_SONARQUBE_USER);
                     }
                     throw new CommonException(sonarTablesResponse.errorBody().string());
                 }
@@ -2126,7 +2151,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
                 if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
 
-                    throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                    throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
                 }
             }
 
@@ -2416,19 +2441,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         return devopsEnvApplicationService.checkCanDelete(appServiceId, envId);
     }
 
-    @Override
-    public List<AppServiceDTO> listByProjectIdAndGAV(Long projectId, String groupId, String artifactId) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
-        Assert.notNull(groupId, ResourceCheckConstant.ERROR_APP_GROUP_ID_IS_NULL);
-        Assert.notNull(artifactId, ResourceCheckConstant.ERROR_APP_ARTIFACT_ID_IS_NULL);
-
-        AppServiceDTO appServiceDTO = new AppServiceDTO();
-        appServiceDTO.setProjectId(projectId);
-        appServiceDTO.setGroupId(groupId);
-        appServiceDTO.setArtifactId(artifactId);
-        return appServiceMapper.select(appServiceDTO);
-    }
-
 
     private void downloadSourceCodeAndPush(AppServiceDTO appServiceDTO, UserAttrDTO userAttrDTO, AppServiceImportPayload appServiceImportPayload, String repositoryUrl, String newGroupName) {
         // TODO: 2021/3/3  方法待抽取
@@ -2436,8 +2448,6 @@ public class AppServiceServiceImpl implements AppServiceService {
         String applicationDir = APPLICATION + System.currentTimeMillis();
         String pushToken = getToken(appServiceDTO.getGitlabProjectId(), applicationDir, userAttrDTO);
 
-        //获取admin的token
-        String pullToken = gitlabServiceClientOperator.getAdminToken();
         //拿到部署对象id 查询文件的地址 project并没有使用
         Long deployObjectId = appServiceImportPayload.getDeployObjectId();
         List<MarketServiceDeployObjectVO> marketServiceDeployObjectVOS = marketServiceClientOperator.listDeployObjectsByIds(0L, Stream.of(deployObjectId).collect(toSet()));
@@ -2447,11 +2457,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceDeployObjectVOS.get(0);
         if (StringUtils.isEmpty(marketServiceDeployObjectVO.getMarketSourceCode())) {
-            throw new CommonException("source code vo is null:{}", JsonHelper.marshalByJackson(marketServiceDeployObjectVO));
+            throw new CommonException(DEVOPS_SOURCE_CODE_VO_IS_NULL, JsonHelper.marshalByJackson(marketServiceDeployObjectVO));
         }
         MarketSourceCodeVO marketSourceCodeVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketSourceCode(), MarketSourceCodeVO.class);
         if (StringUtils.isEmpty(marketSourceCodeVO.getMarketSourceCodeUrl())) {
-            throw new CommonException("source code url is null");
+            throw new CommonException(DEVOPS_SOURCE_CODE_URL_IS_NULL);
         }
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(marketSourceCodeVO.getDevopsAppServiceVersionId());
 
@@ -2491,7 +2501,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 //修改他的名字为new code
                 boolean renameTo = listFile.renameTo(new File(applicationDir + File.separator + newCode));
                 if (!renameTo) {
-                    LOGGER.error("error.rename.fail");
+                    LOGGER.error(DEVOPS_RENAME_FAIL);
                 }
             }
         }
@@ -2560,7 +2570,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO oldAppServiceDTO = appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
         applicationDTO.setObjectVersionNumber(oldAppServiceDTO.getObjectVersionNumber());
         if (appServiceMapper.updateByPrimaryKeySelective(applicationDTO) != 1) {
-            throw new CommonException("error.app.service.update");
+            throw new CommonException(DEVOPS_APP_SERVICE_UPDATE);
         }
         return appServiceMapper.selectByPrimaryKey(applicationDTO.getId());
     }
@@ -2770,7 +2780,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public AppServiceDTO baseCreate(AppServiceDTO appServiceDTO) {
         if (appServiceMapper.insertSelective(appServiceDTO) != 1) {
-            throw new CommonException("error.application.create.insert");
+            throw new CommonException(DEVOPS_APPLICATION_CREATE_INSERT);
         }
         return appServiceDTO;
     }
@@ -2845,7 +2855,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     return listAllAppServicesHavingVersion(projectId, params, serviceType, includeExternal);
                 }
                 default: {
-                    throw new CommonException("error.list.deploy.app.service.type");
+                    throw new CommonException(DEVOPS_LIST_DEPLOY_APP_SERVICE_TYPE);
                 }
             }
         } else {
@@ -2935,18 +2945,18 @@ public class AppServiceServiceImpl implements AppServiceService {
             accessToken) {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
         if (Boolean.FALSE.equals(validationResult)) {
-            throw new CommonException("error.repository.token.invalid");
+            throw new CommonException(DEVOPS_REPOSITORY_TOKEN_INVALID);
         } else if (validationResult == null) {
-            throw new CommonException("error.repository.empty");
+            throw new CommonException(DEVOPS_REPOSITORY_EMPTY);
         }
     }
 
     private void checkRepositoryUrlAndUsernameAndPassword(String repositoryUrl, String userName, String password) {
         Boolean validationResult = validateRepositoryUrlAndUsernameAndPassword(repositoryUrl, userName, password);
         if (Boolean.FALSE.equals(validationResult)) {
-            throw new CommonException("error.repository.account.invalid");
+            throw new CommonException(DEVOPS_REPOSITORY_ACCOUNT_INVALID);
         } else if (validationResult == null) {
-            throw new CommonException("error.repository.empty");
+            throw new CommonException(DEVOPS_REPOSITORY_EMPTY);
         }
     }
 
@@ -3372,7 +3382,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             List<AppServiceDTO> appServiceDTOList = appServiceMapper.select(appServiceDTO);
             if (!CollectionUtils.isEmpty(appServiceDTOList)
                     && appServiceDTOList.stream().anyMatch(app -> "none".equals(app.getExternalGitlabUrl()))) {
-                throw new CommonException("error.app.is.already.bind");
+                throw new CommonException(DEVOPS_APP_IS_ALREADY_BIND);
             }
         });
 
@@ -3390,7 +3400,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
 
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
 
@@ -3496,7 +3506,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.value)) {
-                throw new CommonException(ERROR_USER_NOT_GITLAB_OWNER);
+                throw new CommonException(DEVOPS_USER_NOT_GITLAB_OWNER);
             }
         }
         AppServiceReqVO appServiceReqVO = new AppServiceReqVO();
@@ -3552,7 +3562,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public void baseCheckApp(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         if (appServiceDTO == null || !projectId.equals(appServiceDTO.getProjectId())) {
-            throw new CommonException("error.app.project.notMatch");
+            throw new CommonException(DEVOPS_APP_PROJECT_NOT_MATCH);
         }
     }
 
@@ -3677,7 +3687,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
 
         UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
         // 待查询的appService列表
@@ -3760,11 +3770,11 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String getPrivateToken(Long projectId, String serviceCode, String email) {
         AppServiceDTO appServiceDTO = baseQueryByCode(serviceCode, projectId);
         if (appServiceDTO.getGitlabProjectId() == null) {
-            throw new CommonException("error.app.service.sync");
+            throw new CommonException(DEVOPS_APP_SERVICE_SYNC);
         }
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(email);
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, iamUserDTO.getId())) {
-            throw new CommonException("user.not.gitlab.project.owner");
+            throw new CommonException(DEVOPS_USER_NOT_GITLAB_PROJECT_OWNER);
         }
         String key = String.format(PRIVATE_TOKEN_FORMAT, appServiceDTO.getGitlabProjectId());
         String privateToken = stringRedisTemplate.opsForValue().get(key);
@@ -3777,7 +3787,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
             ImpersonationTokenDTO tokenDTO = gitlabServiceClientOperator.createPrivateToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "c7nToken", DateUtil.subOrAddDay(new Date(), 7));
             if (tokenDTO == null) {
-                throw new CommonException("error.create.private.token");
+                throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
             }
             privateToken = tokenDTO.getToken();
             stringRedisTemplate.opsForValue().set(key, privateToken, 7, TimeUnit.DAYS);
@@ -3889,7 +3899,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false, false, false);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
         Page<AppServiceDTO> appServiceDTOPage;
         if (projectOwner) {
@@ -3918,5 +3928,13 @@ public class AppServiceServiceImpl implements AppServiceService {
         HarborRepoConfigDTO harborRepoConfig = selectedHarborConfig.getHarborRepoConfig();
         harborRepoConfig.setType(selectedHarborConfig.getRepoType());
         return harborRepoConfig;
+    }
+
+    @Override
+    public List<Long> listProjectIdsByAppIds(List<Long> appIds) {
+        if (ObjectUtils.isEmpty(appIds)) {
+            return new ArrayList<>();
+        }
+        return appServiceMapper.listProjectIdsByAppIds(appIds);
     }
 }

@@ -13,18 +13,18 @@ import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
  * Date:  14:27 2019/7/26
  * Description:
  */
-@AtLeastOneNotEmpty(fields = {"versionType", "version","appServiceId"}, message = "error.atleast.one.not.empty")
+@AtLeastOneNotEmpty(fields = {"versionType", "version", "appServiceId"}, message = "{devops.atleast.one.not.empty}")
 public class AppServiceShareRuleVO {
     @Encrypt
     private Long id;
 
     @Encrypt
     @ApiModelProperty("应用服务Id/必填")
-    @NotNull(message = "error.app.id.null")
+    @NotNull(message = "{devops.app.id.null}")
     private Long appServiceId;
 
     @ApiModelProperty("共享层级,organization/project 必填")
-    @NotBlank(message = "error.app.share.level.null")
+    @NotBlank(message = "{devops.app.share.level.null}")
     private String shareLevel;
 
     @ApiModelProperty("共享版本类型")

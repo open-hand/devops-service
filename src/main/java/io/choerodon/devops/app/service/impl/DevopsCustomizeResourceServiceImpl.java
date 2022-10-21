@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,7 +112,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             try {
                 content = new String(contentFile.getBytes());
             } catch (IOException e) {
-                throw new CommonException("error.read.multipart.file");
+                throw new CommonException("devops.read.multipart.file");
             }
         }
 
@@ -164,10 +166,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceReqVO.getResourceId());
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     devopsCustomizeResourceDTO.getFilePath())) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             //获取更新内容
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(devopsCustomizeResourceDTO);
             // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
@@ -232,11 +235,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             return;
         }
 
-        List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS = listByEnvAndFilePath(devopsEnvironmentDTO.getId(), devopsCustomizeResourceDTO.getFilePath());
+        List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService.baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), devopsCustomizeResourceDTO.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
-        if (devopsCustomizeResourceDTOS.size() == 1) {
-            if (devopsCustomizeResourceDTOS.get(0).getId().equals(resourceId)) {
+        if (devopsEnvFileResourceDTOS.size() == 1) {
+            if (devopsEnvFileResourceDTOS.get(0).getId().equals(resourceId)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsCustomizeResourceDTO.getFilePath(),
@@ -250,6 +253,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             //获取更新内容
             DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(devopsCustomizeResourceContentDTO);
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentDTO.getContent()), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }

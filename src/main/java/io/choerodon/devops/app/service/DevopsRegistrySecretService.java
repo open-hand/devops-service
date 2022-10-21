@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.devops.infra.dto.DevopsRegistrySecretDTO;
 
 /**
@@ -44,8 +42,6 @@ public interface DevopsRegistrySecretService {
      * @return 查询结果
      */
     DevopsRegistrySecretDTO baseQueryByClusterIdAndNamespace(Long clusterId, String namespace, Long configId, Long projectId);
-
-    List<DevopsRegistrySecretDTO> baseListByConfig(Long configId);
 
     /**
      * 查询集群下的namespace中是否存在对应name的secret

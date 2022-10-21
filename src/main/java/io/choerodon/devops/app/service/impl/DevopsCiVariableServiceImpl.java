@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.util.GitUserNameUtil;
 public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
     private static final String LEVEL_PROJECT = "project";
     private static final String LEVEL_APP_SERVICE = "app";
+    private static final String DEVOPS_LEVEL_ERROR = "devops.level.error";
 
 
     @Autowired
@@ -71,7 +72,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
                 return gitlabServiceClientOperator.listAppServiceVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue());
             default:
-                throw new CommonException("error.level.error");
+                throw new CommonException(DEVOPS_LEVEL_ERROR);
         }
     }
 
@@ -96,7 +97,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 performUpdate(projectId, level, appServiceId, keysToDelete, ciVariableVOList);
                 break;
             default:
-                throw new CommonException("error.level.error");
+                throw new CommonException(DEVOPS_LEVEL_ERROR);
         }
     }
 
@@ -114,7 +115,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
                 return gitlabServiceClientOperator.batchSaveProjectVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue(), ciVariableVOList);
             default:
-                throw new CommonException("error.level.error");
+                throw new CommonException(DEVOPS_LEVEL_ERROR);
         }
     }
 
@@ -134,7 +135,7 @@ public class DevopsCiVariableServiceImpl implements DevopsCiVariableService {
                 gitlabServiceClientOperator.batchDeleteProjectVariable(appServiceDTO.getGitlabProjectId(), userAttrVO.getGitlabUserId().intValue(), keys);
                 break;
             default:
-                throw new CommonException("error.level.error");
+                throw new CommonException(DEVOPS_LEVEL_ERROR);
         }
     }
 

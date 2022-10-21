@@ -44,18 +44,14 @@ public class LogMessageHandler {
         switch (type) {
             case "viewLog":
                 if (FRONT_LOG.equals(processor)) {
-                    LOGGER.debug("Received message from front. The processor is {} and the byte array length is {}", processor, bytesArray.length);
                     destinationGroup = WebSocketTool.buildAgentGroup(rawKey);
                 } else {
-                    LOGGER.debug("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
                     destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
                 }
                 keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
                 break;
             case "downloadLog":
-                LOGGER.debug("Received message from agent. The processor is {} and the byte array length is {}", processor, bytesArray.length);
                 destinationGroup = WebSocketTool.buildFrontGroup(rawKey);
-                LOGGER.info("======log content:\n{}\n", new String(bytesArray));
                 keySocketSendHelper.sendByGroup(destinationGroup, AGENT_LOG, bytesArray);
                 break;
         }

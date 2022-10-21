@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.CheckGitlabAccessLevelService;
-import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -21,14 +19,10 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class ProjectPipelineServiceImpl implements ProjectPipelineService {
-    @Value("${services.gitlab.url}")
-    private String gitlabUrl;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private UserAttrService userAttrService;
-    @Autowired
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     @Autowired

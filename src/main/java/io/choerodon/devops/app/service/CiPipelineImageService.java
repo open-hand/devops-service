@@ -18,4 +18,8 @@ public interface CiPipelineImageService {
     ImageRepoInfoVO queryRewriteRepoInfoScript(Long projectId, String token, String repoType, Long repoId);
 
     ImageRepoInfoVO queryImageRepoInfo(String token, Long gitlabPipelineId);
+
+    CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId);
+
+    void deleteByAppServiceId(Long appServiceId);
 }

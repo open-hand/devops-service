@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_MAVEN_REPOSITORY_TYPE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +42,7 @@ public class MavenSettingsUtil {
     }
 
     private static final String DEFAULT_PROFILE_ID = "default";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
+
 
     /**
      * 数组字节流的初始大小
@@ -62,7 +64,7 @@ public class MavenSettingsUtil {
             if (m.getType() != null) {
                 String[] types = m.getType().split(GitOpsConstants.COMMA);
                 if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                    throw new CommonException(DEVOPS_CI_MAVEN_REPOSITORY_TYPE, m.getType());
                 }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {

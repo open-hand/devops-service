@@ -4,16 +4,17 @@ import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
+import static io.choerodon.devops.infra.util.K8sUtil.checkPortName;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.hzero.core.util.EncryptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +202,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     public String buildDeploymentYaml(ProjectDTO projectDTO, DevopsEnvironmentDTO
             devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO) {
-        V1beta2Deployment deployment = new V1beta2Deployment();
+        V1Deployment deployment = new V1Deployment();
         deployment.setKind(DEPLOYMENT.getType());
         deployment.setApiVersion("apps/v1");
         try {
@@ -221,8 +222,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         }
     }
 
-    private V1beta2Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
-            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1Deployment addAppConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1Deployment deployment) throws IOException {
         DevopsDeployGroupAppConfigVO devopsDeployGroupAppConfigVO = devopsDeployGroupVO.getAppConfig();
         // 设置名称、labels、annotations
         V1ObjectMeta metadata = new V1ObjectMeta();
@@ -239,14 +240,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         deployment.setMetadata(metadata);
 
         // 设置spec
-        V1beta2DeploymentSpec v1beta2DeploymentSpec = new V1beta2DeploymentSpec();
+        V1DeploymentSpec v1beta2DeploymentSpec = new V1DeploymentSpec();
         v1beta2DeploymentSpec.setReplicas(devopsDeployGroupAppConfigVO.getReplicas());
 
         // 设置升级策略
-        V1beta2DeploymentStrategy v1beta2DeploymentStrategy = new V1beta2DeploymentStrategy();
+        V1DeploymentStrategy v1beta2DeploymentStrategy = new V1DeploymentStrategy();
         v1beta2DeploymentStrategy.setType(devopsDeployGroupAppConfigVO.getStrategyType());
         if (devopsDeployGroupAppConfigVO.getStrategyType().equals("RollingUpdate")) {
-            V1beta2RollingUpdateDeployment rollingUpdate = new V1beta2RollingUpdateDeployment();
+            V1RollingUpdateDeployment rollingUpdate = new V1RollingUpdateDeployment();
             if (devopsDeployGroupAppConfigVO.getMaxSurge() != null) {
                 rollingUpdate.setMaxSurge(new IntOrString(devopsDeployGroupAppConfigVO.getMaxSurge()));
             }
@@ -318,8 +319,8 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         return deployment;
     }
 
-    private V1beta2Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
-            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1beta2Deployment deployment) throws IOException {
+    private V1Deployment addContainerConfig(ProjectDTO projectDTO, DevopsEnvironmentDTO
+            devopsEnvironmentDTO, DevopsDeployGroupVO devopsDeployGroupVO, V1Deployment deployment) throws IOException {
         List<DevopsDeployGroupContainerConfigVO> devopsDeployGroupContainerConfigVOS = devopsDeployGroupVO.getContainerConfig();
         List<V1Container> containers = new ArrayList<>();
         boolean hasJarRdupm = false;
@@ -406,7 +407,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 53) {
-                throw new CommonException("error.env.app.center.name.length");
+                throw new CommonException("devops.env.app.center.name.length");
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
@@ -414,7 +415,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 53) {
-                throw new CommonException("error.env.app.center.code.length");
+                throw new CommonException("devops.env.app.center.code.length");
             }
 
 
@@ -484,18 +485,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                         break;
                     }
 
-                    if (name.matches("[0-9]+") || !K8sUtil.PORT_NAME_PATTERN.matcher(name).matches()) {
-                        throw new CommonException("error.container.port.name.illegal");
-                    }
+                    checkPortName(name);
 
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
                         throw new CommonException("error.container.port.exist");
                     }
                     existPorts.add(namePort);
-                    if (name.length() > 40) {
-                        throw new CommonException("error.container.port.name.length");
-                    }
+
                     if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
                         throw new CommonException("error.container.port.range");
                     }

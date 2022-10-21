@@ -26,7 +26,7 @@ public class DevopsDeployValueVO {
 
     @Encrypt
     @ApiModelProperty("环境id")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @Encrypt
@@ -57,10 +57,20 @@ public class DevopsDeployValueVO {
     private String envName;
     @ApiModelProperty("服务名称")
     private String appServiceName;
+    @ApiModelProperty("服务code")
+    private String appServiceCode;
     @ApiModelProperty(hidden = true)
     private Long objectVersionNumber;
     @ApiModelProperty("创建者")
     private IamUserDTO creator;
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
+    }
 
     public IamUserDTO getCreator() {
         return creator;

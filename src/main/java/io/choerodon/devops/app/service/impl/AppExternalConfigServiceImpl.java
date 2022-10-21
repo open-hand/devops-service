@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppExternalConfigServiceCode.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class AppExternalConfigServiceImpl implements AppExternalConfigService {
-
-    private static final String ERROR_INVALID_APP_AUTH_TYPE = "error.invalid.app.auth.type";
-    private static final String ERROR_SAVE_APP_CONFIG_FAILED = "error.save.app.config.failed";
-    private static final String ERROR_UPDATE_APP_CONFIG_FAILED = "error.update.app.config.failed";
 
     @Autowired
     private AppExternalConfigMapper appExternalConfigMapper;
@@ -53,7 +51,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Transactional
     public void baseSave(AppExternalConfigDTO appExternalConfigDTO) {
         handlerAppExternalConfigDTO(appExternalConfigDTO);
-        MapperUtil.resultJudgedInsertSelective(appExternalConfigMapper, appExternalConfigDTO, ERROR_SAVE_APP_CONFIG_FAILED);
+        MapperUtil.resultJudgedInsertSelective(appExternalConfigMapper, appExternalConfigDTO, DEVOPS_SAVE_APP_CONFIG_FAILED);
 
     }
 
@@ -61,12 +59,12 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
     @Transactional
     public void update(Long projectId, Long id, AppExternalConfigDTO appExternalConfigDTO) {
         AppExternalConfigDTO appExternalConfigDTORecord = appExternalConfigMapper.selectByPrimaryKey(id);
-        CommonExAssertUtil.assertTrue(projectId.equals(appExternalConfigDTORecord.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(appExternalConfigDTORecord.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         appExternalConfigDTO.setId(id);
         appExternalConfigDTO.setProjectId(projectId);
 
         handlerAppExternalConfigDTO(appExternalConfigDTO);
-        MapperUtil.resultJudgedUpdateByPrimaryKey(appExternalConfigMapper, appExternalConfigDTO, ERROR_UPDATE_APP_CONFIG_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appExternalConfigMapper, appExternalConfigDTO, DEVOPS_UPDATE_APP_CONFIG_FAILED);
     }
 
     @Override
@@ -90,7 +88,7 @@ public class AppExternalConfigServiceImpl implements AppExternalConfigService {
             appExternalConfigDTO.setAccessToken(null);
             appExternalConfigDTO.setPassword(DESEncryptUtil.encode(appExternalConfigDTO.getPassword()));
         } else {
-            throw new CommonException(ERROR_INVALID_APP_AUTH_TYPE);
+            throw new CommonException(DEVOPS_INVALID_APP_AUTH_TYPE);
         }
     }
 }

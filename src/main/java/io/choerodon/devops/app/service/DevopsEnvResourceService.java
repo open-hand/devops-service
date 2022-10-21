@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
 import io.choerodon.devops.api.vo.DevopsEnvResourceVO;
 import io.choerodon.devops.api.vo.InstanceEventVO;
-import io.choerodon.devops.api.vo.PodEventVO;
 import io.choerodon.devops.infra.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.infra.enums.ResourceType;
 
@@ -59,7 +58,7 @@ public interface DevopsEnvResourceService {
 
     List<DevopsEnvResourceDTO> baseListByEnvAndType(Long envId, String type);
 
-    DevopsEnvResourceDTO baseQueryByKindAndName(String kind, String name);
+    DevopsEnvResourceDTO baseQueryByKindAndName(Long envId, String kind, String name);
 
     void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId);
 
@@ -74,18 +73,6 @@ public interface DevopsEnvResourceService {
      * @return the detail message
      */
     String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType);
-
-    /**
-     * 批量查询DevopsEnvResourceDTO 根据names
-     *
-     * @param envId
-     * @param type
-     * @param names
-     * @return
-     */
-    List<DevopsEnvResourceDTO> listEnvResourceByOptions(Long envId, String type, List<String> names);
-
-    List<PodEventVO> listPodEventBycommandId(Long commandId);
 
     String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType resourceType);
 

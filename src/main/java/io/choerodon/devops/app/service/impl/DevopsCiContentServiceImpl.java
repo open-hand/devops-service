@@ -20,6 +20,7 @@ import io.choerodon.devops.app.service.DevopsCdStageService;
 import io.choerodon.devops.app.service.DevopsCiContentService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiStageService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiContentDTO;
@@ -39,9 +40,11 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiContentServiceImpl implements DevopsCiContentService {
-    private static final String ERROR_PIPELINE_TOKEN_MISMATCH = "error.pipeline.token.mismatch";
-    private static final String CREATE_CI_CONTENT_FAILED = "create.ci.content.failed";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
+    private static final String DEVOPS_PIPELINE_TOKEN_MISMATCH = "devops.pipeline.token.mismatch";
+    private static final String DEVOPS_CREATE_CI_CONTENT_FAILED = "devops.create.ci.content.failed";
+    private static final String DEVOPS_SAVE_CONTENT_FAILED = "devops.save.content.failed";
+    private static final String DEVOPS_UPDATE_CONTENT_FAILED = "devops.update.content.failed";
+    private static final String DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE = "devops.load.default.empty.gitlab.ci.file";
 
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_PATH = "/component/empty-gitlabci-config.yml";
     private static final String DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH = "/component/empty-gitlabci-config-for-cd.yml";
@@ -61,12 +64,12 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_PATH)) {
             DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.default.empty.gitlab.ci.file");
+            throw new CommonException(DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE);
         }
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream(DEFAULT_EMPTY_GITLAB_CI_FILE_FOR_CD_PATH)) {
             DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT_FOR_CD = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.default.empty.gitlab.ci.file");
+            throw new CommonException(DEVOPS_LOAD_DEFAULT_EMPTY_GITLAB_CI_FILE);
         }
     }
 
@@ -92,7 +95,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     public String queryLatestContent(String pipelineToken) {
         CiCdPipelineDTO devopsCiPipelineDTO = devopsCiCdPipelineMapper.queryByToken(pipelineToken);
         if (devopsCiPipelineDTO == null) {
-            throw new DevopsCiInvalidException(ERROR_PIPELINE_TOKEN_MISMATCH);
+            throw new DevopsCiInvalidException(DEVOPS_PIPELINE_TOKEN_MISMATCH);
         }
         if (Boolean.FALSE.equals(devopsCiPipelineDTO.getEnabled())) {
             return DEFAULT_EMPTY_GITLAB_CI_FILE_CONTENT;
@@ -120,7 +123,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,
                     devopsCiContentDTO,
-                    "error.save.content.failed");
+                    DEVOPS_SAVE_CONTENT_FAILED);
         } else if (devopsCiContentDTO.getPipelineVersionNumber() < devopsCiPipelineDTO.getObjectVersionNumber()
                 || devopsCiContentDTO.getDevopsDefaultRuleNumber() < defaultRuleNumber) {
             ciContent = devopsCiPipelineService.generateGitlabCiYaml(devopsCiPipelineDTO);
@@ -130,7 +133,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiContentMapper,
                     devopsCiContentDTO,
-                    "error.update.content.failed");
+                    DEVOPS_UPDATE_CONTENT_FAILED);
         } else {
             ciContent = devopsCiContentDTO.getCiContentFile();
         }
@@ -144,7 +147,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     @Override
     public void create(DevopsCiContentDTO devopsCiContentDTO) {
         if (devopsCiContentMapper.insertSelective(devopsCiContentDTO) != 1) {
-            throw new CommonException(CREATE_CI_CONTENT_FAILED);
+            throw new CommonException(DEVOPS_CREATE_CI_CONTENT_FAILED);
         }
     }
 
@@ -152,7 +155,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         }
         DevopsCiContentDTO devopsCiContentDTO = new DevopsCiContentDTO();
         devopsCiContentDTO.setCiPipelineId(ciPipelineId);

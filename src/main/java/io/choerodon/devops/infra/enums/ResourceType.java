@@ -6,6 +6,8 @@ public enum ResourceType {
     SERVICE("Service"),
     POD("Pod"),
     INGRESS("Ingress"),
+    V1_INGRESS("V1Ingress"),
+    V1BETA1_INGRESS("V1Beta1Ingress"),
     CERTIFICATE("Certificate"),
     ENDPOINTS("Endpoints"),
     C7NHELMRELEASE("C7NHelmRelease"),

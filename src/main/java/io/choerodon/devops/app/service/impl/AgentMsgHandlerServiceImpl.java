@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_RESOURCE_INSERT;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.DATE_PATTERN;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.THREE_MINUTE_MILLISECONDS;
 import static io.choerodon.devops.infra.constant.MiscConstants.CREATE_TYPE;
@@ -17,8 +18,8 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -311,7 +312,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
      * @return true 当状态不等于Pending时，所有container都ready
      */
     private Boolean getReadyValue(String podStatus, V1Pod v1Pod) {
-        return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::isReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
+        return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::getReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
     }
 
 
@@ -502,7 +503,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
             devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
         } catch (Exception e) {
-            throw new CommonException("error.resource.insert", e);
+            throw new CommonException(DEVOPS_RESOURCE_INSERT, e);
         }
     }
 
@@ -601,11 +602,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
                     DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, KeyParseUtil.getResourceName(key));
                     // 部署组创建的deployment，如果副本变为0则更新应用状态为停止
                     if (deploymentDTO != null && WorkloadSourceTypeEnums.DEPLOY_GROUP.getType().equals(deploymentDTO.getSourceType())) {
-                        V1beta2Deployment v1beta2Deployment = K8sUtil.deserialize(msg, V1beta2Deployment.class);
-                        if (v1beta2Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
+                        V1Deployment v1Deployment = K8sUtil.deserialize(msg, V1Deployment.class);
+                        if (v1Deployment.getSpec().getReplicas() == 0 && !InstanceStatus.STOPPED.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.STOPPED.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
-                        } else if (v1beta2Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
+                        } else if (v1Deployment.getSpec().getReplicas() > 0 && !InstanceStatus.RUNNING.getStatus().equals(deploymentDTO.getStatus())) {
                             deploymentDTO.setStatus(InstanceStatus.RUNNING.getStatus());
                             devopsDeploymentService.baseUpdate(deploymentDTO);
                         }
@@ -822,9 +823,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private List<PortMapVO> getPortMapES(V1Service v1Service) {
         return v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
             PortMapVO portMapVO = new PortMapVO();
-            portMapVO.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+            portMapVO.setPort(v1ServicePort.getPort());
             portMapVO.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
-            portMapVO.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+            portMapVO.setNodePort(v1ServicePort.getNodePort());
             portMapVO.setProtocol(v1ServicePort.getProtocol());
             portMapVO.setName(v1ServicePort.getName());
             return portMapVO;
@@ -946,7 +947,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
 
-        V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
+        V1Ingress ingress = json.deserialize(msg, V1Ingress.class);
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = new DevopsEnvResourceDetailDTO();
         devopsEnvResourceDetailDTO.setMessage(msg);
@@ -1143,15 +1144,16 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void helmJobEvent(String msg) {
+    public void helmJobEvent(String key, String msg, Long clusterId) {
         try {
+            Long envId = getEnvId(key, clusterId);
             Event event = JSONArray.parseObject(msg, Event.class);
             if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
                 event.getInvolvedObject().setKind(ResourceType.JOB.getType());
                 event.getInvolvedObject().setName(
                         event.getInvolvedObject().getName()
                                 .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
-                insertDevopsCommandEvent(event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
+                insertDevopsCommandEvent(envId, event, ResourceType.JOB.getType(), PodSourceEnums.HELM);
             }
         } catch (Exception e) {
             LOGGER.info("job event:{}", msg);
@@ -1161,16 +1163,18 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void helmPodEvent(String msg) {
+    public void helmPodEvent(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.HELM);
+        insertDevopsCommandEvent(envId, event, ResourceType.POD.getType(), PodSourceEnums.HELM);
     }
 
     @Transactional
     @Override
-    public void workloadPodEvent(String msg) {
+    public void workloadPodEvent(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
         Event event = JSONArray.parseObject(msg, Event.class);
-        insertDevopsCommandEvent(event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
+        insertDevopsCommandEvent(envId, event, ResourceType.POD.getType(), PodSourceEnums.WORKLOAD);
     }
 
     @Override
@@ -1736,9 +1740,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvPodService.baseCreate(devopsEnvPodDTO);
     }
 
-    private void insertDevopsCommandEvent(Event event, String type, PodSourceEnums source) {
+    private void insertDevopsCommandEvent(Long envId, Event event, String type, PodSourceEnums source) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
-                .baseQueryByKindAndName(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+                .baseQueryByKindAndName(envId, event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
 
         if (devopsEnvResourceDTO == null) {
             // TODO 0.21版本修复Agent没有过滤非平台的Pod和Job的问题
@@ -2320,7 +2324,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     private Long getEnvId(String key, Long clusterId) {
         String namespace = KeyParseUtil.getNamespace(key);
-        if (StringUtils.isEmpty(namespace)) {
+        if (ObjectUtils.isEmpty(namespace)) {
             return null;
         }
 

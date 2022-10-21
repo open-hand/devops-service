@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,8 +42,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
-    private static final String ERROR_GITLAB_JOB_ID_IS_NULL = "error.gitlab.job.id.is.null";
-    private static final String ERROR_PIPELINE_ID_IS_NULL = "error.pipeline.id.is.null";
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
@@ -61,8 +63,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
-        Assert.notNull(gitlabJobId, ERROR_GITLAB_JOB_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabJobId, DEVOPS_GITLAB_JOB_ID_IS_NULL);
 
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
         devopsCiJobRecordDTO.setGitlabJobId(gitlabJobId);
@@ -88,7 +90,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Transactional
     public void deleteByPipelineId(Long ciPipelineId) {
         if (ciPipelineId == null) {
-            throw new CommonException(ERROR_PIPELINE_ID_IS_NULL);
+            throw new CommonException(DEVOPS_PIPELINE_ID_IS_NULL);
         }
         // 查询流水线记录
         List<DevopsCiPipelineRecordDTO> devopsCiPipelineRecordDTOS = devopsCiPipelineRecordService.queryByPipelineId(ciPipelineId);
@@ -124,18 +126,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         }
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
-        List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
-
-//        List<DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOS = devopsCiMavenSettingsMapper.listByJobIds(jobIds);
-//        Map<Long, DevopsCiMavenSettingsDTO> devopsCiMavenSettingsDTOMap = new HashMap<>();
-//        if (!CollectionUtils.isEmpty(devopsCiMavenSettingsDTOS)) {
-//            devopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOS.stream().collect(Collectors.toMap(DevopsCiMavenSettingsDTO::getCiJobId, Function.identity()));
-//        }
-//        if (logger.isInfoEnabled()) {
-//            logger.info("devopsCiMavenSettingsDTOMap is : {}", JsonHelper.marshalByJackson(devopsCiMavenSettingsDTOMap));
-//        }
-//        Map<Long, DevopsCiMavenSettingsDTO> finalDevopsCiMavenSettingsDTOMap = devopsCiMavenSettingsDTOMap;
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = jobDTOS.stream().map(jobDTO -> {
             DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
             recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
@@ -155,15 +146,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
                 recordDTO.setType(existDevopsCiJobDTO.getType());
                 recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
-//                if (!CollectionUtils.isEmpty(finalDevopsCiMavenSettingsDTOMap)) {
-//                    DevopsCiMavenSettingsDTO ciMavenSettingsDTO = finalDevopsCiMavenSettingsDTOMap.get(existDevopsCiJobDTO.getId());
-//                    if (logger.isInfoEnabled()) {
-//                        logger.info("ciMavenSettingsDTO is : {}", JsonHelper.marshalByJackson(ciMavenSettingsDTO));
-//                    }
-//                    if (!Objects.isNull(ciMavenSettingsDTO)) {
-//                        recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
-//                    }
-//                }
             }
 
             return recordDTO;

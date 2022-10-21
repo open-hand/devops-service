@@ -266,27 +266,6 @@
         </if>
     </select>
 
-    <select id="queryValueByEnvIdAndAppId" resultType="java.lang.String">
-        SELECT dv.
-                       VALUE
-
-        FROM (
-                     SELECT dai.id      instance_id,
-                            de.id       commandId,
-                            de.value_id value_id
-                     FROM devops_env_command de,
-                          devops_app_service_instance dai
-                     WHERE de.object_id = dai.id
-                       AND dai.app_service_id = #{appServiceId}
-                       AND dai.env_id = #{envId}
-                       AND de.object = 'instance'
-                     ORDER BY de.creation_date DESC
-                     LIMIT 1
-                     ) r,
-             devops_env_command_value dv
-        WHERE r.value_id = dv.id
-    </select>
-
     <select id="queryValueByInstanceId" resultType="java.lang.String">
         SELECT dv.
                        VALUE
@@ -317,7 +296,8 @@
               ORDER BY de.id DESC
               LIMIT 1) r
                      INNER JOIN devops_app_service_version dasv ON r.object_version_id = dasv.id
-                     INNER JOIN devops_app_service_version_value dasvv ON dasv.value_id = dasvv.id
+                     INNER JOIN devops_app_service_helm_version dashv on dashv.app_service_version_id = dasv.id
+                     INNER JOIN devops_app_service_version_value dasvv ON dashv.value_id = dasvv.id
     </select>
     <select id="queryLastCommandId" resultType="java.lang.Long">
         SELECT de.id
@@ -568,12 +548,6 @@
         WHERE id = #{instanceId}
     </update>
 
-    <select id="listAllDistinctWithoutDeleted" resultType="io.choerodon.devops.infra.dto.DevopsEnvAppServiceDTO">
-        SELECT DISTINCT ins.env_id, ins.app_service_id
-        FROM devops_app_service_instance ins
-        WHERE ins.status != 'deleted'
-    </select>
-
     <select id="listByProjectIdsAndAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
         select ins.*
         from devops_app_service_instance ins
@@ -627,16 +601,6 @@
                 WHERE dasi.id IN
         <foreach collection="instanceIds" item="instanceId" open="(" close=")" separator=",">
             #{instanceId,jdbcType=BIGINT}
-        </foreach>
-    </select>
-
-    <select id="queryInstanceByAppServiceIds"
-            resultType="io.choerodon.devops.infra.dto.AppServiceInstanceDTO">
-        SELECT dasi.id, dasi.env_id
-        FROM devops_app_service_instance dasi
-                WHERE dasi.app_service_id IN
-        <foreach collection="appServiceIds" item="appServiceId" separator="," open="(" close=")">
-            #{appServiceIds}
         </foreach>
     </select>
 

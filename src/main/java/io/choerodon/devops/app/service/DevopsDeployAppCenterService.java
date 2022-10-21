@@ -106,8 +106,6 @@ public interface DevopsDeployAppCenterService {
      */
     void deleteByEnvIdAndObjectIdAndRdupmType(Long envId, Long objectId, String rdupmType);
 
-    void fixData();
-
 
     DevopsDeployAppCenterEnvDTO selectByPrimaryKey(Long id);
 

@@ -1,6 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvCommandCode.DEVOPS_COMMAND_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_CODE;
 import static io.choerodon.devops.infra.constant.MarketConstant.APP_SHELVES_NAME;
 import static io.choerodon.devops.infra.constant.MiscConstants.APP_INSTANCE_DELETE_REDIS_KEY;
@@ -17,9 +22,10 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Ingress;
+import io.kubernetes.client.openapi.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.Pair;
@@ -94,9 +100,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
-    private static final String CHOERODON = "choerodon-test";
     private static final String AUTHTYPE = "pull";
-    private static final String APP_SERVICE = "appService";
     private static final String HELM_RELEASE = "C7NHelmRelease";
     private static final String MASTER = "master";
     private static final String YAML_SUFFIX = ".yaml";
@@ -112,7 +116,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * gateway(%s)+市场应用名称(market)+下载地址(market/repo)
      */
     private static final String MIDDLEWARE_CHART_REPO_TEMPLATE = "%s/market/market/repo/";
-    private static final String ERROR_APP_INSTANCE_IS_OPERATING = "error.app.instance.is.operating";
+    private static final String DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED = "devops.instance.resource.json.read.failed";
 
     @Value("${services.gateway.url}")
     private String gateway;
@@ -147,9 +151,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private AppServiceService applicationService;
-    @Autowired
-    @Lazy
-    private DevopsConfigService devopsConfigService;
     @Autowired
     @Lazy
     private DevopsRegistrySecretService devopsRegistrySecretService;
@@ -225,6 +226,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
+    @Autowired
+    private AppServiceHelmVersionService appServiceHelmVersionService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -578,29 +583,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return getDeployDetailDTOS(deployDTOS);
     }
 
-
-    @Override
-    public void deployTestApp(Long projectId, AppServiceDeployVO appServiceDeployVO) {
-        // 这里的environmentId就是集群id
-        CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCluster(appServiceDeployVO.getEnvironmentId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
-        String versionValue = appServiceVersionService.baseQueryValue(appServiceDeployVO.getAppServiceVersionId());
-        AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
-
-        DevopsEnvironmentDTO devopsEnvironmentDTO = new DevopsEnvironmentDTO();
-        devopsEnvironmentDTO.setClusterId(appServiceDeployVO.getEnvironmentId());
-        devopsEnvironmentDTO.setCode(CHOERODON);
-        // 测试应用没有环境id
-        String secretCode = getSecret(appServiceDTO, appServiceDeployVO.getAppServiceVersionId(), devopsEnvironmentDTO);
-
-        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
-        FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
-        String deployValue = getReplaceResult(versionValue,
-                appServiceDeployVO.getValues()).getDeltaYaml().trim();
-        agentCommandService.deployTestApp(appServiceDTO, appServiceVersionDTO, appServiceDeployVO.getInstanceName(), secretCode, appServiceDeployVO.getEnvironmentId(), deployValue);
-    }
-
-
     @Override
     public InstanceControllerDetailVO queryInstanceResourceDetailJson(Long instanceId, String resourceName,
                                                                       ResourceType resourceType) {
@@ -609,7 +591,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         try {
             return new InstanceControllerDetailVO(instanceId, new ObjectMapper().readTree(message));
         } catch (IOException e) {
-            throw new CommonException("error.instance.resource.json.read.failed", instanceId, message);
+            throw new CommonException(DEVOPS_INSTANCE_RESOURCE_JSON_READ_FAILED, instanceId, message);
         }
     }
 
@@ -623,11 +605,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         } catch (IOException e) {
             throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
         }
-    }
-
-    @Override
-    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        agentCommandService.getTestAppStatus(testReleases);
     }
 
     @Override
@@ -748,7 +725,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 自动部署传入的项目id是空的, 不用校验
         if (projectId != null) {
-            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -762,16 +739,16 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.service.not.exist");
+            throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
         }
 
         if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
-            throw new CommonException("error.app.service.disabled");
+            throw new CommonException(DEVOPS_CREATE_PRIVATE_TOKEN);
         }
 
         AppServiceVersionDTO appServiceVersionDTO =
                 appServiceVersionService.baseQuery(appServiceDeployVO.getAppServiceVersionId());
-        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, "error.version.id.not.exist", appServiceDeployVO.getAppServiceVersionId());
+        CommonExAssertUtil.assertNotNull(appServiceVersionDTO, DEVOPS_VERSION_ID_NOT_EXIST, appServiceDeployVO.getAppServiceVersionId());
         if (appServiceDeployVO.getType().equals(UPDATE)) {
             checkInstanceConsistent(appServiceDeployVO.getInstanceId(), appServiceVersionDTO.getAppServiceId());
         }
@@ -1106,7 +1083,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, Long marketDeployObjectId) {
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(projectId, marketDeployObjectId);
-        CommonExAssertUtil.assertNotNull(marketServiceDeployObjectVO, "error.version.id.not.exist", marketDeployObjectId);
+        CommonExAssertUtil.assertNotNull(marketServiceDeployObjectVO, DEVOPS_VERSION_ID_NOT_EXIST, marketDeployObjectId);
         return marketServiceDeployObjectVO;
     }
 
@@ -1124,9 +1101,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId) {
         // 查询环境
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, "error.env.id.not.exist", envId);
+        CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, envId);
         // 校验环境和项目匹配
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         return devopsEnvironmentDTO;
     }
 
@@ -1324,7 +1301,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public AppServiceInstanceRepVO queryByCommandId(Long commandId) {
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(commandId);
         if (commandId == null) {
-            throw new CommonException("error.command.not.exist", commandId);
+            throw new CommonException(DEVOPS_COMMAND_NOT_EXIST, commandId);
         }
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsEnvCommandDTO.getObjectId());
         AppServiceInstanceRepVO appServiceInstanceRepVO = new AppServiceInstanceRepVO();
@@ -1663,7 +1640,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 加锁
         if (Boolean.FALSE.equals(stringRedisTemplate.opsForValue().setIfAbsent(String.format(APP_INSTANCE_DELETE_REDIS_KEY, instanceId), "lock", 5, TimeUnit.MINUTES))) {
-            throw new CommonException(ERROR_APP_INSTANCE_IS_OPERATING);
+            throw new CommonException(DEVOPS_APP_INSTANCE_IS_OPERATING);
         }
 
 
@@ -1671,7 +1648,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 内部调用不需要校验
         if (projectId != null) {
-            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1829,7 +1806,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         // 这里校验集群下code唯一而不是环境下code唯一是因为helm的release是需要集群下唯一的
         if (appServiceInstanceMapper.checkCodeExist(code, envId)) {
-            throw new CommonException("error.app.instance.name.already.exist");
+            throw new CommonException(DEVOPS_APP_INSTANCE_NAME_ALREADY_EXIST);
         }
     }
 
@@ -1880,7 +1857,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public AppServiceInstanceDTO baseCreate(AppServiceInstanceDTO appServiceInstanceDTO) {
         if (appServiceInstanceMapper.insert(appServiceInstanceDTO) != 1) {
-            throw new CommonException("error.application.instance.create");
+            throw new CommonException(DEVOPS_APPLICATION_INSTANCE_CREATE);
         }
         return appServiceInstanceDTO;
     }
@@ -1895,7 +1872,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         appServiceInstanceDTO.setObjectVersionNumber(
                 appServiceInstanceMapper.selectByPrimaryKey(appServiceInstanceDTO.getId()).getObjectVersionNumber());
         if (appServiceInstanceMapper.updateByPrimaryKeySelective(appServiceInstanceDTO) != 1) {
-            throw new CommonException("error.instance.update");
+            throw new CommonException(DEVOPS_INSTANCE_UPDATE);
         }
     }
 
@@ -2021,11 +1998,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.service.not.exist");
+            throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
         }
 
         if (!Boolean.TRUE.equals(appServiceDTO.getActive())) {
-            throw new CommonException("error.app.service.disabled");
+            throw new CommonException(DEVOPS_APP_SERVICE_DISABLED);
         }
 
         AppServiceVersionDTO appServiceVersionDTO =
@@ -2177,7 +2154,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     public void batchDeploymentSaga(BatchDeploymentPayload batchDeploymentPayload) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(batchDeploymentPayload.getEnvId());
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException("error.env.id.not.exist", batchDeploymentPayload.getEnvId());
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, batchDeploymentPayload.getEnvId());
         }
 
         Map<String, String> pathContentMap = new HashMap<>();
@@ -2212,11 +2189,20 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         for (IngressSagaPayload ingressSagaPayload : batchDeploymentPayload.getIngressSagaPayloads()) {
-            ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
-            ingressResourceConvertToYamlHandler.setType(ingressSagaPayload.getV1beta1Ingress());
-            String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
-            String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
-            pathContentMap.put(fileName, ingressContent);
+            if (batchDeploymentPayload.getOperateForOldIngress()) {
+                ResourceConvertToYamlHandler<V1beta1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                ingressResourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1beta1Ingress.class));
+                String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+                String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+                pathContentMap.put(fileName, ingressContent);
+            } else {
+                ResourceConvertToYamlHandler<V1Ingress> ingressResourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+                ingressResourceConvertToYamlHandler.setType(JsonHelper.unmarshalByJackson(ingressSagaPayload.getIngressJson(), V1Ingress.class));
+                String ingressContent = ingressResourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
+                String fileName = GitOpsConstants.INGRESS_PREFIX + ingressSagaPayload.getDevopsIngressDTO().getName() + GitOpsConstants.YAML_FILE_SUFFIX;
+                pathContentMap.put(fileName, ingressContent);
+            }
+
         }
 
         gitlabServiceClientOperator.createGitlabFiles(
@@ -2401,12 +2387,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         devopsEnvCommandDTO.setId(null);
         if (CommandType.RESTART.getType().equals(type)) {
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
-                throw new CommonException("error.instance.not.stop");
+                throw new CommonException(DEVOPS_INSTANCE_NOT_STOP);
             }
             sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
         } else {
             if (!appServiceInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
-                throw new CommonException("error.instance.not.running");
+                throw new CommonException(DEVOPS_INSTANCE_NOT_RUNNING);
             }
             sendNotificationService.sendInstanceStatusUpdate(appServiceInstanceDTO, devopsEnvCommandDTO, appServiceInstanceDTO.getStatus());
         }
@@ -2651,14 +2637,14 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         String secretCode = null;
         //如果应用绑定了私有镜像库,则处理secret
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(appServiceVersionId);
-
         // 先处理chart的认证信息
         sendChartMuseumAuthentication(devopsEnvironmentDTO.getClusterId(), appServiceDTO, appServiceVersionDTO);
 
         DevopsConfigDTO devopsConfigDTO;
-        if (appServiceVersionDTO.getHarborConfigId() != null) {
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionId);
+        if (appServiceHelmVersionDTO.getHarborConfigId() != null) {
             devopsConfigDTO = harborService.queryRepoConfigByIdToDevopsConfig(appServiceDTO.getId(), appServiceDTO.getProjectId(),
-                    appServiceVersionDTO.getHarborConfigId(), appServiceVersionDTO.getRepoType(), AUTHTYPE);
+                    appServiceHelmVersionDTO.getHarborConfigId(), appServiceHelmVersionDTO.getHarborRepoType(), AUTHTYPE);
         } else {
             //查询harbor的用户名密码
             devopsConfigDTO = harborService.queryRepoConfigToDevopsConfig(appServiceDTO.getProjectId(),
@@ -2802,10 +2788,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      */
     private void sendChartMuseumAuthentication(Long clusterId, AppServiceDTO appServiceDTO, AppServiceVersionDTO
             appServiceVersionDTO) {
-        if (appServiceVersionDTO.getHelmConfigId() != null) {
+        AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
+        if (appServiceHelmVersionDTO.getHelmConfigId() != null) {
             // 查询chart配置
-            DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), APP_SERVICE, "chart", null);
-            ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryById(appServiceHelmVersionDTO.getHelmConfigId());
+            ConfigVO helmConfig = ConvertUtils.convertObject(devopsHelmConfigDTO, ConfigVO.class);
+            helmConfig.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
             // 如果是私有的, 发送认证信息给agent
             if (Boolean.TRUE.equals(helmConfig.getIsPrivate())) {
                 agentCommandService.sendChartMuseumAuthentication(clusterId, helmConfig);
@@ -2866,7 +2854,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private String getAndCheckResourceDetail(Long instanceId, String resourceName, ResourceType resourceType) {
         String message = baseGetInstanceResourceDetailJson(instanceId, resourceName, resourceType);
         if (StringUtils.isEmpty(message)) {
-            throw new CommonException("error.instance.resource.not.found", instanceId, resourceType.getType());
+            throw new CommonException(DEVOPS_INSTANCE_RESOURCE_NOT_FOUND, instanceId, resourceType.getType());
         }
         return message;
     }

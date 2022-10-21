@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.gitops;
 
+import io.kubernetes.client.openapi.JSON;
+
 import java.util.Map;
 import java.util.Objects;
-
-import io.kubernetes.client.JSON;
 
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.TypeUtil;

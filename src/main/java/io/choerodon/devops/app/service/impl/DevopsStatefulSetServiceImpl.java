@@ -8,10 +8,10 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2StatefulSet;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1StatefulSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +84,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             StatefulSetInfoVO statefulSetInfoVO = ConvertUtils.convertObject(v, StatefulSetInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1beta2StatefulSet.class);
+                V1StatefulSet v1beta2StatefulSet = json.deserialize(detailDTOMap.get(v.getResourceDetailId()).getMessage(), V1StatefulSet.class);
 
 
                 statefulSetInfoVO.setName(v1beta2StatefulSet.getMetadata().getName());
@@ -197,7 +197,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1beta2StatefulSet.class);
+        V1StatefulSet v1beta2StatefulSet = json.deserialize(detailsJson, V1StatefulSet.class);
 
         DevopsStatefulSetDTO oldDevopsStatefulSetDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2StatefulSet.getMetadata().getName());
         if (oldDevopsStatefulSetDTO != null) {
@@ -227,8 +227,8 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
         DevopsStatefulSetDTO devopsStatefulSetDTO = new DevopsStatefulSetDTO();
         devopsStatefulSetDTO.setEnvId(envId);
         devopsStatefulSetDTO.setName(name);

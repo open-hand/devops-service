@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_READ_MULTIPART_FILE;
 import static io.choerodon.devops.infra.constant.MiscConstants.*;
 
 import java.io.IOException;
@@ -37,6 +39,14 @@ public class WorkloadServiceImpl implements WorkloadService {
     private static final String KIND = "kind";
     private static final String MASTER = "master";
     private static final String WORK_LOAD = "WorkLoad";
+    private static final String DEVOPS_WORKLOAD_SIZE = "devops.workload.size";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_NOT_SUPPORTED = "devops.workload.resource.not.supported";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_NAME_MODIFY = "devops.workload.resource.name.modify";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_NAME_NOT_FOUND = "devops.workload.resource.name.not.found";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_METADATA_NOT_FOUND = "devops.workload.resource.metadata.not.found";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_KIND_MISMATCH = "devops.workload.resource.kind.mismatch";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_KIND_NOT_FOUND = "devops.workload.resource.kind.not.found";
+
 
     private static final Map<String, String> RESOURCE_FILE_TEMPLATE_PATH_MAP;
 
@@ -94,9 +104,6 @@ public class WorkloadServiceImpl implements WorkloadService {
     @Lazy
     private Map<String, WorkLoad> workLoadMap;
 
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-
     static {
         Map<String, String> filePathMap = new HashMap<>();
         filePathMap.put(ResourceType.DEPLOYMENT.getType(), "deploy-%s.yaml");
@@ -126,7 +133,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             try {
                 content = new String(multipartFile.getBytes());
             } catch (IOException e) {
-                throw new CommonException("error.read.multipart.file");
+                throw new CommonException(DEVOPS_READ_MULTIPART_FILE);
             }
         }
 
@@ -137,7 +144,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         Iterable<Object> workLoads = yaml.loadAll(content);
         int size = Iterables.size(workLoads);
         if (size != 1) {
-            throw new CommonException("error.workload.size", resourceType.getType());
+            throw new CommonException(DEVOPS_WORKLOAD_SIZE, resourceType.getType());
         }
 
         for (Object workload : yaml.loadAll(content)) {
@@ -177,7 +184,7 @@ public class WorkloadServiceImpl implements WorkloadService {
 
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     resourceFilePath)) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             //获取更新内容
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -242,7 +249,7 @@ public class WorkloadServiceImpl implements WorkloadService {
                 resourceName = devopsCronJobDTO.getName();
                 break;
             default:
-                throw new CommonException("error.workload.resource.not.supported", resourceType.getType());
+                throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_NOT_SUPPORTED, resourceType.getType());
         }
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
@@ -341,19 +348,19 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     private String checkResource(LinkedHashMap metadata, String kind, String resourceType) {
         if (kind == null) {
-            throw new CommonException("error.workload.resource.kind.not.found");
+            throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_KIND_NOT_FOUND);
         }
         // 禁止创建不同资源
         if (!resourceType.equals(kind)) {
-            throw new CommonException("error.workload.resource.kind.mismatch");
+            throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_KIND_MISMATCH);
         }
         if (metadata == null) {
-            throw new CommonException("error.workload.resource.metadata.not.found");
+            throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_METADATA_NOT_FOUND);
         }
 
         Object name = metadata.get("name");
         if (StringUtils.isEmpty(name)) {
-            throw new CommonException("error.workload.resource.name.not.found");
+            throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_NAME_NOT_FOUND);
         }
         return name.toString();
     }
@@ -402,7 +409,7 @@ public class WorkloadServiceImpl implements WorkloadService {
 
     private void checkMetadataInfo(String nowName, String oldName) {
         if (!nowName.equals(oldName)) {
-            throw new CommonException("error.workload.resource.name.modify");
+            throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_NAME_MODIFY);
         }
     }
 

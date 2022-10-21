@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
-import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
-
+import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+
+import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
+import io.choerodon.devops.infra.dto.DevopsEnvGroupDTO;
 
 public interface DevopsEnvGroupService {
     /**
@@ -78,8 +78,6 @@ public interface DevopsEnvGroupService {
     DevopsEnvGroupDTO baseQuery(Long id);
 
     Boolean baseCheckUniqueInProject(Long id, String name, Long projectId);
-
-    Boolean baseCheckUniqueInProject(String name, Long projectId);
 
     void baseDelete(Long id);
 

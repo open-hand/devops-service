@@ -1,18 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.apache.commons.lang.BooleanUtils;
 import org.hzero.websocket.helper.KeySocketSendHelper;
@@ -28,13 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import sun.misc.BASE64Decoder;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
@@ -67,8 +64,6 @@ import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -203,8 +198,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public DevopsCdPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
-        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(devopsPipelineId, PipelineCheckConstant.ERROR_PIPELINE_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(devopsPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         return devopsCdPipelineRecordMapper.queryByPipelineIdAndGitlabPipelineId(devopsPipelineId, gitlabPipelineId);
     }
@@ -319,32 +314,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         return createCDWorkFlowDTO(pipelineRecordId, false);
     }
 
-//    private String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
-//        String regexStr = null;
-//        if (!StringUtils.isEmpty(imageDeploy.getMatchType())
-//                && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
-//            CiTriggerType ciTriggerType = CiTriggerType.forValue(imageDeploy.getMatchType());
-//            if (ciTriggerType != null) {
-//                String triggerValue = imageDeploy.getMatchContent();
-//                switch (ciTriggerType) {
-//                    case REFS:
-//                        regexStr = "^.*" + triggerValue + ".*$";
-//                        break;
-//                    case EXACT_MATCH:
-//                        regexStr = "^" + triggerValue + "$";
-//                        break;
-//                    case REGEX_MATCH:
-//                        regexStr = triggerValue;
-//                        break;
-//                    case EXACT_EXCLUDE:
-//                        regexStr = "^(?!.*" + triggerValue + ").*$";
-//                        break;
-//                }
-//            }
-//        }
-//        return regexStr;
-//    }
-
     protected String getMavenVersion(String version) {
         if (version.contains(SLASH)) {
             return version.split(SLASH)[0];
@@ -362,11 +331,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } catch (IOException e) {
             LOGGER.error("error close ssh", e);
         }
-    }
-
-    private String getJarName(String url) {
-        String[] arr = url.split("/");
-        return arr[arr.length - 1].replace(".jar", "-") + GenerateUUID.generateRandomString() + ".jar";
     }
 
     @Override
@@ -434,8 +398,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         Long projectId = projectDTO.getId();
 
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
-
-//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
@@ -567,9 +529,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
-//        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO1 = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
-//        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(jobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
 
         Long hostId = devopsCdHostDeployInfoDTO.getHostId();
@@ -582,11 +541,8 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             return;
         }
 
-
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-
         CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCdHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
-
 
         // 0.1 从制品库获取仓库信息
         Long nexusRepoId;
@@ -610,7 +566,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     jarDeploy.getPipelineTask());
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("pipeline deploy jar, ciPipelineMavenDTO is {}", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
-
             }
             nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
             groupId = ciPipelineMavenDTO.getGroupId();
@@ -663,7 +618,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     prodJarInfoVO,
                     devopsCdHostDeployInfoDTO.getDeployType());
         } else {
-
             jarDeployVO = new JarDeployVO(AppSourceType.CUSTOM_JAR.getValue(),
                     devopsCdHostDeployInfoDTO.getAppName(),
                     devopsCdHostDeployInfoDTO.getAppCode(),
@@ -675,7 +629,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     jarPullInfoDTO,
                     devopsCdHostDeployInfoDTO.getDeployType());
         }
-
 
         // 2.保存记录
         DevopsCdJobDTO devopsCdJobDTO = devopsCdJobService.queryById(jobRecordDTO.getJobId());
@@ -799,7 +752,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
-
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -1020,7 +972,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         // 3. 更新docker-compose应用
         log.append("[info] Start update app").append(System.lineSeparator());
-        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO);
+        DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, cdJobRecordId, dockerComposeDeployVO, true);
         log.append("[info] Update app success").append(System.lineSeparator());
         devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toValue());
         devopsCdJobRecordDTO.setCommandId(devopsHostCommandDTO.getId());
@@ -1044,11 +996,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             if (!CollectionUtils.isEmpty(service)) {
                 service.replace("image", imageTag);
             }
-
             return yaml.dump(jsonObject);
-
         } catch (Exception e) {
-            throw new CommonException("error.yaml.format.invalid", e);
+            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
         }
     }
 
@@ -1076,32 +1026,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
     }
 
-    protected String getRegexStr(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
-        String regexStr = null;
-        if (!org.springframework.util.StringUtils.isEmpty(imageDeploy.getMatchType())
-                && !StringUtils.isEmpty(imageDeploy.getMatchContent())) {
-            CiTriggerType ciTriggerType = CiTriggerType.forValue(imageDeploy.getMatchType());
-            if (ciTriggerType != null) {
-                String triggerValue = imageDeploy.getMatchContent();
-                switch (ciTriggerType) {
-                    case REFS:
-                        regexStr = "^.*" + triggerValue + ".*$";
-                        break;
-                    case EXACT_MATCH:
-                        regexStr = "^" + triggerValue + "$";
-                        break;
-                    case REGEX_MATCH:
-                        regexStr = triggerValue;
-                        break;
-                    case EXACT_EXCLUDE:
-                        regexStr = "^(?!.*" + triggerValue + ").*$";
-                        break;
-                }
-            }
-        }
-        return regexStr;
-    }
-
     protected void updateStatusToSkip(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsCdJobRecordDTO devopsCdJobRecordDTO) {
         Long cdJobRecordId = devopsCdJobRecordDTO.getId();
         Long projectId = devopsCdPipelineRecordDTO.getProjectId();
@@ -1112,30 +1036,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         devopsCdPipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, cdJobRecordId, true);
     }
 
-
-    @Override
-    @Transactional
-    public void retryHostDeployJob(Long pipelineRecordId, Long cdStageRecordId, Long cdJobRecordId) {
-        DevopsCdJobRecordDTO cdJobRecordDTO = devopsCdJobRecordMapper.selectByPrimaryKey(cdJobRecordId);
-        devopsCdJobRecordService.updateStatusById(cdJobRecordId, PipelineStatus.RUNNING.toValue());
-        CdHostDeployConfigVO cdHostDeployConfigVO = gson.fromJson(cdJobRecordDTO.getMetadata(), CdHostDeployConfigVO.class);
-        if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.IMAGED_DEPLOY.getValue())) {
-//            ApplicationContextHelper
-//                    .getSpringFactory()
-//                    .getBean(DevopsCdPipelineRecordService.class)
-//                    .pipelineDeployImage(pipelineRecordId, cdStageRecordId, cdJobRecordId);
-        } else if (cdHostDeployConfigVO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-//            ApplicationContextHelper
-//                    .getSpringFactory()
-//                    .getBean(DevopsCdPipelineRecordService.class)
-//                    .pipelineDeployJar(pipelineRecordId, cdStageRecordId, cdJobRecordId, log);
-        }
-    }
-
     @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, "error.pipeline.id.is.null");
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = new DevopsCdPipelineRecordDTO();
         devopsCdPipelineRecordDTO.setPipelineId(pipelineId);
         List<DevopsCdPipelineRecordDTO> devopsCdPipelineRecordDTOS = devopsCdPipelineRecordMapper.select(devopsCdPipelineRecordDTO);
@@ -1148,7 +1052,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public DevopsCdPipelineRecordDTO queryById(Long id) {
-        Assert.notNull(id, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
         return devopsCdPipelineRecordMapper.selectByPrimaryKey(id);
     }
 
@@ -1167,36 +1071,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (devopsCdPipelineRecordMapper.updateByPrimaryKeySelective(devopsCdPipelineRecordDTO) != 1) {
             throw new CommonException(ERROR_UPDATE_PIPELINE_RECORD_FAILED);
         }
-    }
-
-    @Override
-    public Page<DevopsCdPipelineRecordVO> pagingCdPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
-        Page<DevopsCdPipelineRecordVO> pipelineRecordInfo = PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
-                () -> devopsCdPipelineRecordMapper.listByCiPipelineId(pipelineId));
-        List<DevopsCdPipelineRecordVO> pipelineRecordVOList = pipelineRecordInfo.getContent();
-        if (CollectionUtils.isEmpty(pipelineRecordVOList)) {
-            return pipelineRecordInfo;
-        }
-        pipelineRecordVOList.forEach(devopsCdPipelineRecordVO -> {
-            List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordService.queryByPipelineRecordId(devopsCdPipelineRecordVO.getId());
-            if (!CollectionUtils.isEmpty(devopsCdStageRecordDTOS)) {
-                //封装审核数据
-                List<DevopsCdStageRecordVO> devopsCdStageRecordVOS = ConvertUtils.convertList(devopsCdStageRecordDTOS, DevopsCdStageRecordVO.class);
-                for (DevopsCdStageRecordVO devopsCdStageRecordVO : devopsCdStageRecordVOS) {
-                    //计算satge耗时
-                    if (!CollectionUtils.isEmpty(devopsCdStageRecordVO.getJobRecordVOList())) {
-                        Long seconds = devopsCdStageRecordVO.getJobRecordVOList().stream().filter(devopsCdJobRecordVO -> !Objects.isNull(devopsCdJobRecordVO.getDurationSeconds())).map(DevopsCdJobRecordVO::getDurationSeconds).reduce((aLong, aLong2) -> aLong + aLong2).get();
-                        devopsCdStageRecordVO.setDurationSeconds(seconds);
-                    }
-                }
-                // 计算流水线当前停留的审核节点
-                addAuditStateInfo(devopsCdPipelineRecordVO);
-                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(devopsCdStageRecordVOS);
-            } else {
-                devopsCdPipelineRecordVO.setDevopsCdStageRecordVOS(Collections.emptyList());
-            }
-        });
-        return pipelineRecordInfo;
     }
 
     private void addAuditStateInfo(DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
@@ -1449,33 +1323,33 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     }
 
-    @Override
-    public Boolean testConnection(HostConnectionVO hostConnectionVO) {
-        SSHClient ssh = new SSHClient();
-        Session session = null;
-        Boolean index = true;
-        try {
-            sshUtil.sshConnect(hostConnectionVO, ssh);
-            session = ssh.startSession();
-            Session.Command cmd = session.exec("echo Hello World!!!");
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
-            }
-            cmd.join(5, TimeUnit.SECONDS);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("** exit status: {}", cmd.getExitStatus());
-            }
-            if (cmd.getExitStatus() != 0) {
-                throw new CommonException("error.test.connection");
-            }
-        } catch (IOException e) {
-            index = false;
-            LOGGER.error("error ssh connect", e);
-        } finally {
-            closeSsh(ssh, session);
-        }
-        return index;
-    }
+//    @Override
+//    public Boolean testConnection(HostConnectionVO hostConnectionVO) {
+//        SSHClient ssh = new SSHClient();
+//        Session session = null;
+//        Boolean index = true;
+//        try {
+//            sshUtil.sshConnect(hostConnectionVO, ssh);
+//            session = ssh.startSession();
+//            Session.Command cmd = session.exec("echo Hello World!!!");
+//            if (LOGGER.isInfoEnabled()) {
+//                LOGGER.info(IOUtils.readFully(cmd.getInputStream()).toString());
+//            }
+//            cmd.join(5, TimeUnit.SECONDS);
+//            if (LOGGER.isInfoEnabled()) {
+//                LOGGER.info("** exit status: {}", cmd.getExitStatus());
+//            }
+//            if (cmd.getExitStatus() != 0) {
+//                throw new CommonException("error.test.connection");
+//            }
+//        } catch (IOException e) {
+//            index = false;
+//            LOGGER.error("error ssh connect", e);
+//        } finally {
+//            closeSsh(ssh, session);
+//        }
+//        return index;
+//    }
 
     private DevopsCdStageRecordVO dtoToVo(DevopsCdStageRecordDTO devopsCdStageRecordDTO) {
         DevopsCdStageRecordVO devopsCdStageRecordVO = new DevopsCdStageRecordVO();

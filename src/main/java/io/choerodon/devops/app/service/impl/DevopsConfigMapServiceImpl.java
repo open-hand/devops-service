@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
 import static io.choerodon.devops.infra.constant.MiscConstants.*;
 
 import java.util.ArrayList;
@@ -8,8 +9,8 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.openapi.models.V1ConfigMap;
+import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -271,7 +272,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public void checkName(Long envId, String name) {
         if (!isNameUnique(envId, name)) {
-            throw new CommonException("error.name.exist");
+            throw new CommonException(DEVOPS_NAME_EXIST);
         }
     }
 

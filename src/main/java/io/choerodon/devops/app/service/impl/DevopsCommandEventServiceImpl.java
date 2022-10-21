@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_COMMAND_ID_IS_NULL;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +24,6 @@ import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
 public class DevopsCommandEventServiceImpl implements DevopsCommandEventService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCommandEventServiceImpl.class);
 
-    private static final String ERROR_COMMAND_ID_IS_NULL = "error.command.id.is.null";
     @Autowired
     private DevopsCommandEventMapper devopsCommandEventMapper;
 
@@ -59,7 +60,7 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
 
     @Override
     public List<DevopsCommandEventDTO> listByCommandId(Long commandId) {
-        Assert.notNull(commandId, ERROR_COMMAND_ID_IS_NULL);
+        Assert.notNull(commandId, DEVOPS_COMMAND_ID_IS_NULL);
         DevopsCommandEventDTO devopsCommandEventDTO = new DevopsCommandEventDTO();
         devopsCommandEventDTO.setCommandId(commandId);
         return devopsCommandEventMapper.select(devopsCommandEventDTO);

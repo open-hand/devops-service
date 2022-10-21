@@ -11,5 +11,7 @@ import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 public interface CiTemplateMavenBuildService {
 
     CiTemplateMavenBuildDTO baseQueryById(Long stepId);
+
+
 }
 

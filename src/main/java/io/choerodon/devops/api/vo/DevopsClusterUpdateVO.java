@@ -23,7 +23,7 @@ public class DevopsClusterUpdateVO {
     private String description;
 
     @ApiModelProperty("纪录版本字段/更新时必需")
-    @NotNull(message = "error.object.version.number.null")
+    @NotNull(message = "{devops.object.version.number.null}")
     private Long objectVersionNumber;
 
     public Long getId() {

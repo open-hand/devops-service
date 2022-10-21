@@ -18,10 +18,10 @@ public class DevopsConfigMapVO {
 
     @Encrypt
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
     @ApiModelProperty("配置名称/必填")
-    @NotBlank(message = "error.name.null")
+    @NotBlank(message = "{devops.name.null}")
     private String name;
     @ApiModelProperty("配置描述/非必填")
     private String description;

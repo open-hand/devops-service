@@ -125,14 +125,6 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         devopsEnvFileMapper.delete(devopsEnvFileDTO);
     }
 
-    @Override
-    public List<DevopsEnvFileDTO> baseListByEnvIdAndPath(Long envId, String path) {
-        DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO();
-        devopsEnvFileDTO.setEnvId(envId);
-        devopsEnvFileDTO.setFilePath(path);
-        return devopsEnvFileMapper.select(devopsEnvFileDTO);
-    }
-
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteByEnvId(Long envId) {

@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
-import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -304,7 +304,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      */
     private void validateVersion(AppServiceVersionDTO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
         if (appServiceVersionDTO == null) {
-            throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
+            throw new GitOpsExplainException("devops.appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
     }
 
@@ -317,7 +317,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
      */
     private void validateVersion(MarketServiceDeployObjectVO appServiceVersionDTO, String filePath, C7nHelmRelease c7nHelmRelease) {
         if (appServiceVersionDTO == null || appServiceVersionDTO.getMarketServiceId() == null) {
-            throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
+            throw new GitOpsExplainException("devops.appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion());
         }
     }
 

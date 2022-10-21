@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiTemplateStageService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiTemplateStageDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateStageMapper;
 
@@ -30,7 +31,7 @@ public class CiTemplateStageServiceImpl implements CiTemplateStageService {
 
     @Override
     public List<CiTemplateStageDTO> listByPipelineTemplateId(Long pipelineTemplateId) {
-        Assert.notNull(pipelineTemplateId, "error.pipelineTemplateId.is.null");
+        Assert.notNull(pipelineTemplateId, PipelineCheckConstant.DEVOPS_PIPELINE_TEMPLATE_ID_IS_NULL);
 
         CiTemplateStageDTO ciTemplateStageDTO = new CiTemplateStageDTO();
         ciTemplateStageDTO.setPipelineTemplateId(pipelineTemplateId);
