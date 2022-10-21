@@ -53,6 +53,7 @@ public class MavenSettingsUtil {
     private static final String GROUP_ID = "groupId";
     private static final String VERSION = "version";
     private static final String ARTIFACT_ID = "artifactId";
+    private static final String PACKAGING = "packaging";
 
 
     public static String buildSettings(List<MavenRepoVO> mavenRepoList, List<Proxy> proxies) {
@@ -119,9 +120,11 @@ public class MavenSettingsUtil {
         String parentGroupId = null;
         String parentArtifactId = null;
         String parentVersion = null;
+        String parentArtifactType = null;
         String groupId = null;
         String artifactId = null;
         String version = null;
+        String artifactType = null;
         // 解析pom
         SAXReader reader = new SAXReader();
         try {
@@ -148,6 +151,9 @@ public class MavenSettingsUtil {
                         if (VERSION.equals(parentElement.getName())) {
                             parentVersion = parentElement.getStringValue();
                         }
+                        if (PACKAGING.equals(parentElement.getName())) {
+                            parentArtifactType = parentElement.getStringValue();
+                        }
                     }
                 }
                 if (GROUP_ID.equals(element.getName())) {
@@ -159,6 +165,9 @@ public class MavenSettingsUtil {
                 if (VERSION.equals(element.getName())) {
                     version = element.getStringValue();
                 }
+                if (PACKAGING.equals(element.getName())) {
+                    parentArtifactType = element.getStringValue();
+                }
             }
         } catch (DocumentException e) {
             throw new CommonException("error.parse.pom", e.getCause());
@@ -167,6 +176,7 @@ public class MavenSettingsUtil {
         ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);
         ciPipelineMavenDTO.setGroupId(groupId != null ? groupId : parentGroupId);
         ciPipelineMavenDTO.setVersion(version != null ? version : parentVersion);
+        ciPipelineMavenDTO.setArtifactType(artifactType != null ? artifactType : parentArtifactType);
         return ciPipelineMavenDTO;
     }
 

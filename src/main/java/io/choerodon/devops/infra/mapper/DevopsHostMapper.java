@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsHostVO;
@@ -38,4 +39,7 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
     List<DevopsHostDTO> listByProject(@Param("projectIds") List<Long> projectIds);
 
     List<DevopsHostVO> listMemberHostByOptions(@Param("projectId") Long projectId, @Param("searchParam") String searchParam, @Param("hostStatus") String hostStatus, @Param("userId") Long userId);
+
+    List<CiCdPipelineDTO> selectPipelineByHostId(@Param("hostId") Long hostId);
+
 }

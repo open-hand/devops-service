@@ -41,7 +41,16 @@ public class AppServiceInstanceInfoDTO {
     private String source;
     @ApiModelProperty("应用名称")
     private String name;
+    @ApiModelProperty("更新者")
+    private Long lastUpdatedBy;
 
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
 
     public Long getId() {
         return id;

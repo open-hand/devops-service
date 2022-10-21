@@ -45,9 +45,17 @@ public class CommitFormRecordVO {
     private String email;
     @ApiParam("真实姓名")
     private String realName;
+    @ApiModelProperty("提交分支")
+    private String ref;
 
-    public CommitFormRecordVO() {
+    public String getRef() {
+        return ref;
     }
+
+    public void setRef(String ref) {
+        this.ref = ref;
+    }
+
 
     public CommitFormRecordVO(Long userId, String imgUrl,
                               String userName,
@@ -61,6 +69,7 @@ public class CommitFormRecordVO {
         this.commitSHA = devopsGitlabCommitDO.getCommitSha();
         this.appServiceName = devopsGitlabCommitDO.getAppServiceName();
         this.url = devopsGitlabCommitDO.getUrl();
+        this.ref=devopsGitlabCommitDO.getRef();
     }
 
     public CommitFormRecordVO(Long userId, DevopsGitlabCommitDTO devopsGitlabCommitDO, Boolean ldap, String loginName, String realName, String email, String imgUrl) {

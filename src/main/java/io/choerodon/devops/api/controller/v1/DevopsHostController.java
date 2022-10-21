@@ -165,7 +165,7 @@ public class DevopsHostController {
         return Results.success(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort));
     }
 
-    @ApiOperation("校验主机能否被删除")
+    @ApiOperation("校验主机能否被删除（是否关联流水线）")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/check/delete")
     public ResponseEntity<Boolean> checkHostDelete(@ApiParam(value = "项目id", required = true)

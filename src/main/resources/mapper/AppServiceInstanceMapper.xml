@@ -7,8 +7,9 @@
                ins.code,
                ins.status,
                ins.source,
-               ddace.name AS name,
-               env.id     AS environmentId,
+               ins.last_updated_by,
+               ddace.name               AS     name,
+               env.id                   AS     environmentId,
                env.project_id,
                (SELECT count(1)
                 FROM devops_env_pod dp
@@ -17,19 +18,19 @@
                 FROM devops_env_pod dp
                 WHERE dp.instance_id = ins.id
                   AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE) pod_running_count,
+                  AND dp.is_ready = TRUE)      pod_running_count,
                ins.app_service_id,
                ins.app_service_version_id,
                ins.effect_command_id,
                effect.object_version_id AS     effect_command_version_id,
-               effect.status   AS              effect_command_status,
+               effect.status            AS     effect_command_status,
                (
                        SELECT effect_version.version
                        FROM devops_app_service_version effect_version
                        WHERE effect_version.id = effect.object_version_id
-                       )       AS              effect_command_version,
-               version.version as              version_name,
-               das.name        as              app_service_name,
+                       )                AS     effect_command_version,
+               version.version          as     version_name,
+               das.name                 as     app_service_name,
                ins.env_id,
                ins.last_update_date,
                ins.object_version_number,
@@ -42,7 +43,7 @@
                        where ndav.id = cmd.object_version_id
                        )                       commandVersion,
                cmd.command_type                commandType,
-               cmd.error error
+               cmd.error                       error
         FROM devops_app_service_instance ins
                      JOIN devops_deploy_app_center_env ddace ON ddace.object_id = ins.id
                      LEFT JOIN devops_app_service_version version ON ins.app_service_version_id = version.id
