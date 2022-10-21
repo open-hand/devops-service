@@ -11,7 +11,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsBranchUpdateVO {
     @ApiModelProperty("应用服务id / 必填")
-    @NotNull(message = "error.app.service.id.null")
+    @NotNull(message = "{devops.app.service.id.null}")
     @Encrypt
     private Long appServiceId;
 

@@ -33,9 +33,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/envs")
 public class DevopsEnvironmentController {
 
-    private static final String ERROR_ENVIRONMENT_GET = "error.environment.get";
-    private static final String ERROR_ENVIRONMENT_QUERY = "error.environment.query";
-
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
@@ -103,9 +100,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam(value = "active") Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.listByProjectIdAndActive(projectId, active));
     }
 
     /**
@@ -127,9 +122,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "environment_id") Long environmentId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam(value = "active") Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.updateActive(projectId, environmentId, active))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.active"));
+        return ResponseEntity.ok(devopsEnvironmentService.updateActive(projectId, environmentId, active));
     }
 
     /**
@@ -188,9 +181,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.queryEnvResourceCount(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
+        return ResponseEntity.ok(devopsEnvironmentService.queryEnvResourceCount(envId));
     }
 
 
@@ -210,9 +201,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境信息", required = true)
             @RequestBody DevopsEnvironmentUpdateVO devopsEnvironmentUpdateDTO) {
-        return Optional.ofNullable(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.update"));
+        return ResponseEntity.ok(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId));
     }
 
 
@@ -251,9 +240,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "服务id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.running.get"));
+        return ResponseEntity.ok(devopsEnvironmentService.listByProjectId(projectId, appServiceId));
     }
 
 
@@ -273,9 +260,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(new EnvSyncStatusVO(), HttpStatus.OK));
+        return ResponseEntity.ok(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId));
     }
 
 
@@ -302,10 +287,8 @@ public class DevopsEnvironmentController {
             @ApiIgnore @SortDefault(value = "creationDate", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsEnvironmentService
-                .pageUserPermissionByEnvId(projectId, pageable, params, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+        return ResponseEntity.ok(devopsEnvironmentService
+                .pageUserPermissionByEnvId(projectId, pageable, params, envId));
     }
 
 
@@ -333,9 +316,7 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, selectedIamUserId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.env.non.related.users"));
+        return ResponseEntity.ok(devopsEnvironmentService.listNonRelatedMembers(projectId, envId, selectedIamUserId, pageable, params));
     }
 
     /**
@@ -379,9 +360,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+        return ResponseEntity.ok(devopsEnvironmentService.listAllUserPermission(envId));
     }
 
     /**
@@ -441,9 +420,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsClusterRepVO>> listDevopsClusters(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listDevopsCluster(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.cluster.query"));
+        return ResponseEntity.ok(devopsEnvironmentService.listDevopsCluster(projectId));
     }
 
 
@@ -461,9 +438,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam(value = "code") String code) {
-        return Optional.ofNullable(devopsEnvironmentService.queryByCode(projectId, code))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_QUERY));
+        return ResponseEntity.ok(devopsEnvironmentService.queryByCode(projectId, code));
     }
 
 
@@ -498,9 +473,7 @@ public class DevopsEnvironmentController {
     public ResponseEntity<List<DevopsEnvGroupEnvsVO>> listEnvTreeMenu(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listEnvTreeMenu(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.listEnvTreeMenu(projectId));
     }
 
     /**
@@ -520,9 +493,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "分组id")
             @RequestParam(value = "group_id", required = false) Long groupId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByGroup(projectId, groupId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.listByGroup(projectId, groupId));
     }
 
     /**
@@ -542,9 +513,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.deleteCheck(projectId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.deleteCheck(projectId, envId));
     }
 
     /**
@@ -564,9 +533,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.disableCheck(projectId, envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.disableCheck(projectId, envId));
     }
 
     /**
@@ -593,9 +560,7 @@ public class DevopsEnvironmentController {
             @Encrypt
             @ApiParam(value = "环境id")
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.checkExist(projectId, envId, objectId, type))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_ENVIRONMENT_GET));
+        return ResponseEntity.ok(devopsEnvironmentService.checkExist(projectId, envId, objectId, type));
     }
 
     /**

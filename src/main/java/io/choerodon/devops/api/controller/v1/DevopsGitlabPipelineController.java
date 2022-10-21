@@ -59,9 +59,7 @@ public class DevopsGitlabPipelineController {
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineTime(appServiceId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.time.get"));
+        return ResponseEntity.ok(devopsGitlabPipelineService.getPipelineTime(appServiceId, startTime, endTime));
     }
 
 
@@ -89,9 +87,7 @@ public class DevopsGitlabPipelineController {
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.getPipelineFrequency(appServiceId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
+        return ResponseEntity.ok(devopsGitlabPipelineService.getPipelineFrequency(appServiceId, startTime, endTime));
     }
 
 

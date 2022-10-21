@@ -58,10 +58,7 @@ public class DevopsOrganizationConfigController {
     public ResponseEntity<DevopsConfigRepVO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryConfig(organizationId, ResourceLevel.ORGANIZATION.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.organization.config.get.type"));
+        return ResponseEntity.ok(devopsConfigService.queryConfig(organizationId, ResourceLevel.ORGANIZATION.value()));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
@@ -70,10 +67,7 @@ public class DevopsOrganizationConfigController {
     public ResponseEntity<DefaultConfigVO> queryOrganizationDefaultConfig(
             @ApiParam(value = "组织Id")
             @PathVariable(value = "organization_id") Long organizationId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryDefaultConfig(organizationId, ResourceLevel.ORGANIZATION.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.organization.config.get"));
+        return ResponseEntity.ok(devopsConfigService.queryDefaultConfig(organizationId, ResourceLevel.ORGANIZATION.value()));
     }
 
     /**
@@ -89,9 +83,6 @@ public class DevopsOrganizationConfigController {
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {
-        return Optional.ofNullable(
-                appServiceService.checkChartOnOrganization(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.connection.failed"));
+        return ResponseEntity.ok(appServiceService.checkChartOnOrganization(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()));
     }
 }

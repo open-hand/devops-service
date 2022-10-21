@@ -15,7 +15,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsConfigMapUpdateVO {
     @Encrypt
     @ApiModelProperty("配置映射id/必填")
-    @NotNull(message = "{devops.id.nulll}")
+    @NotNull(message = "{devops.id.null}")
     private Long id;
 
     @Encrypt
@@ -33,7 +33,7 @@ public class DevopsConfigMapUpdateVO {
     private String description;
     private String type;
     @ApiModelProperty("配置值/不能为null")
-    @NotNull(message = "error.configMap.value.null")
+    @NotNull(message = "{devops.configMap.value.null}")
     private Map<String, String> value;
 
     public Long getId() {

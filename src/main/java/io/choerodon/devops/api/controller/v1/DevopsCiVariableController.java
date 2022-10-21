@@ -1,21 +1,19 @@
 package io.choerodon.devops.api.controller.v1;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiVariableVO;
-import io.choerodon.devops.app.service.DevopsCiVariableService;
-import io.choerodon.swagger.annotation.Permission;
+import java.util.List;
+import java.util.Map;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CiVariableVO;
+import io.choerodon.devops.app.service.DevopsCiVariableService;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * ci 变量
@@ -44,9 +42,7 @@ public class DevopsCiVariableController {
             @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-        return Optional.ofNullable(devopsCiVariableService.listKeys(projectId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.ci.variable.key.list"));
+        return ResponseEntity.ok(devopsCiVariableService.listKeys(projectId, appServiceId));
     }
 
     /**
@@ -65,9 +61,7 @@ public class DevopsCiVariableController {
             @Encrypt
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
-        return Optional.ofNullable(devopsCiVariableService.listValues(projectId, level, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.ci.variable.value.list"));
+        return ResponseEntity.ok(devopsCiVariableService.listValues(projectId, level, appServiceId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

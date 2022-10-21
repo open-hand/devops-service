@@ -45,9 +45,7 @@ public class DevopsPvController {
             @ApiIgnore @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageByOptions(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+        return ResponseEntity.ok(devopsPvService.pageByOptions(projectId, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -100,9 +98,7 @@ public class DevopsPvController {
             @Encrypt
             @ApiParam(value = "pvId", required = true)
             @PathVariable(value = "pv_id") Long pvId) {
-        return Optional.ofNullable(devopsPvService.queryById(pvId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+        return ResponseEntity.ok(devopsPvService.queryById(pvId));
     }
 
     /**
@@ -129,9 +125,7 @@ public class DevopsPvController {
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.listNonRelatedProjects(projectId, pvId, selectedProjectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.pv.non.related.project"));
+        return ResponseEntity.ok(devopsPvService.listNonRelatedProjects(projectId, pvId, selectedProjectId, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -177,9 +171,7 @@ public class DevopsPvController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageProjects(projectId, pvId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
+        return ResponseEntity.ok(devopsPvService.pageProjects(projectId, pvId, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -195,9 +187,7 @@ public class DevopsPvController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.pageRelatedProjects(projectId, pvId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_PROJECT_QUERY));
+        return ResponseEntity.ok(devopsPvService.pageRelatedProjects(projectId, pvId, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -216,9 +206,7 @@ public class DevopsPvController {
             @RequestParam(value = "mode", required = false, defaultValue = "1") Integer mode,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params, mode))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_PV_QUERY));
+        return ResponseEntity.ok(devopsPvService.queryPvcRelatedPv(projectId, envId, clusterId, params, mode));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

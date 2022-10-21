@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.dto.harbor.HarborRepoConfigDTO;
 public class AppServiceUpdateDTO {
 
     @ApiModelProperty("id")
-    @NotNull(message = "{devops.id.nulll}")
+    @NotNull(message = "{devops.id.null}")
     @Encrypt
     private Long id;
     @ApiModelProperty("名称")

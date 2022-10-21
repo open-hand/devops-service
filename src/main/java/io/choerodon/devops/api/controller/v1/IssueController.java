@@ -46,9 +46,7 @@ public class IssueController {
             @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
-        return Optional.ofNullable(issueService.getBranchesByIssueId(issueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.issue.commit.get"));
+        return ResponseEntity.ok(issueService.getBranchesByIssueId(issueId));
     }
 
     /**
@@ -66,9 +64,7 @@ public class IssueController {
             @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
-        return Optional.ofNullable(issueService.getMergeRequestsByIssueId(issueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.issue.mergerequest.get"));
+        return ResponseEntity.ok(issueService.getMergeRequestsByIssueId(issueId));
     }
 
     /**
@@ -86,8 +82,6 @@ public class IssueController {
             @Encrypt
             @ApiParam(value = "issueID")
             @PathVariable(value = "issue_id") Long issueId) {
-        return Optional.ofNullable(issueService.countCommitAndMergeRequest(issueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.issue.commit.mergerequest.count"));
+        return ResponseEntity.ok(issueService.countCommitAndMergeRequest(issueId));
     }
 }

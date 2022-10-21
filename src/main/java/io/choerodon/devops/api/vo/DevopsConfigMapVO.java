@@ -27,7 +27,7 @@ public class DevopsConfigMapVO {
     private String description;
     private String type;
     @ApiModelProperty("配置值/不能为null")
-    @NotNull(message = "error.configMap.value.null")
+    @NotNull(message = "{devops.configMap.value.null}")
     private Map<String, String> value;
 
 

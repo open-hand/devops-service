@@ -16,7 +16,7 @@ public class DevopsDeployValueUpdateVO {
     @NotNull(message = "error.deploy.value.id.null")
     private Long id;
     @ApiModelProperty("部署配置内容")
-    @NotNull(message = "error.deploy.value.value.null")
+    @NotNull(message = "{devops.deploy.value.value.nulll}")
     private String value;
 
     private Long projectId;
@@ -28,13 +28,13 @@ public class DevopsDeployValueUpdateVO {
 
     @Encrypt
     @ApiModelProperty("应用服务id")
-    @NotNull(message = "error.app.service.id.null")
+    @NotNull(message = "{devops.app.service.id.null}")
     private Long appServiceId;
     @ApiModelProperty("配置名称")
-    @NotBlank(message = "error.deploy.value.name.null")
+    @NotBlank(message = "{devops.deploy.value.name.null}")
     private String name;
     @ApiModelProperty("部署配置描述")
-    @NotBlank(message = "error.deploy.value.description.null")
+    @NotBlank(message = "{devops.deploy.value.description.null}")
     private String description;
     @ApiModelProperty(hidden = true)
     private String createUserUrl;

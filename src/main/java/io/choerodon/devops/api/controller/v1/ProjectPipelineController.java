@@ -45,9 +45,7 @@ public class ProjectPipelineController {
             @PathVariable("gitlab_project_id") Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
             @PathVariable("pipeline_id") Long pipelineId) {
-        return Optional.ofNullable(projectPipelineService.retry(gitlabProjectId, pipelineId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.retry"));
+        return ResponseEntity.ok(projectPipelineService.retry(gitlabProjectId, pipelineId));
     }
 
     /**
@@ -68,9 +66,7 @@ public class ProjectPipelineController {
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
-        return Optional.ofNullable(projectPipelineService.cancel(gitlabProjectId, pipelineId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.cancel"));
+        return ResponseEntity.ok(projectPipelineService.cancel(gitlabProjectId, pipelineId));
     }
 
 

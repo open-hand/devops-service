@@ -77,7 +77,7 @@ public class DeployConfigVO {
         private String tag;
 
         @ApiModelProperty("部署values")
-        @NotNull(message = "error.value.is.null")
+        @NotNull(message = "{devops.value.is.null}")
         private String value;
 
         @ApiModelProperty("容器名称")
@@ -210,7 +210,7 @@ public class DeployConfigVO {
         private String version;
 
         @ApiModelProperty("部署values")
-        @NotNull(message = "error.value.is.null")
+        @NotNull(message = "{devops.value.is.null}")
         private String value;
 
         @ApiModelProperty("工作目录,默认值/temp")

@@ -63,9 +63,7 @@ public class DevopsDeployValueController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsDeployValueService.pageByOptions(projectId, appServiceId, envId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.list"));
+        return ResponseEntity.ok(devopsDeployValueService.pageByOptions(projectId, appServiceId, envId, pageable, params));
     }
 
     /**
@@ -83,9 +81,7 @@ public class DevopsDeployValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
             @RequestBody @Valid DevopsDeployValueVO devopsDeployValueVO) {
-        return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, devopsDeployValueVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.create"));
+        return ResponseEntity.ok(devopsDeployValueService.createOrUpdate(projectId, devopsDeployValueVO));
     }
 
     /**
@@ -103,9 +99,7 @@ public class DevopsDeployValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署配置相关信息")
             @RequestBody @Valid DevopsDeployValueUpdateVO devopsDeployValueUpdateVO) {
-        return Optional.ofNullable(devopsDeployValueService.createOrUpdate(projectId, ConvertUtils.convertObject(devopsDeployValueUpdateVO, DevopsDeployValueVO.class)))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.update"));
+        return ResponseEntity.ok((devopsDeployValueService.createOrUpdate(projectId, ConvertUtils.convertObject(devopsDeployValueUpdateVO, DevopsDeployValueVO.class))));
     }
 
     /**
@@ -124,9 +118,7 @@ public class DevopsDeployValueController {
             @Encrypt
             @ApiParam(value = "配置Id", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(devopsDeployValueService.query(projectId, valueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.queryById"));
+        return ResponseEntity.ok(devopsDeployValueService.query(projectId, valueId));
     }
 
     /**
@@ -187,9 +179,7 @@ public class DevopsDeployValueController {
             @Encrypt
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(devopsDeployValueService.checkDelete(projectId, valueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.check.delete"));
+        return ResponseEntity.ok(devopsDeployValueService.checkDelete(projectId, valueId));
     }
 
     /**
@@ -215,8 +205,6 @@ public class DevopsDeployValueController {
             @ApiParam(value = "部署配置名", required = false)
             @RequestParam(value = "name", required = false) String name
             ) {
-        return Optional.ofNullable(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId, name))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.queryByIds"));
+        return ResponseEntity.ok(devopsDeployValueService.listByEnvAndApp(projectId, appServiceId, envId, name));
     }
 }

@@ -318,7 +318,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Override
     public DevopsPvcDTO queryByPvId(Long pvId) {
         if (pvId == null) {
-            throw new CommonException("error.pv.id.null");
+            throw new CommonException("devops.pv.id.null");
         }
         DevopsPvcDTO devopsPvcDTO = new DevopsPvcDTO();
         devopsPvcDTO.setPvId(pvId);

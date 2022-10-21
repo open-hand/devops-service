@@ -52,10 +52,7 @@ public class DevopsOrganizationController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(
-                applicationServiceService.listAppServiceByIds(null, ids, doPage, true, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.app.service.ids"));
+        return ResponseEntity.ok(applicationServiceService.listAppServiceByIds(null, ids, doPage, true, pageable, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = InitRoleCode.ORGANIZATION_ADMINISTRATOR)
@@ -63,9 +60,7 @@ public class DevopsOrganizationController {
     @ApiOperation("组织层概览，返回集群的概览")
     public ResponseEntity<ClusterOverViewVO> clusterOverview(
             @PathVariable(name = "organization_id") Long organizationId) {
-        return Optional.ofNullable(devopsClusterService.getOrganizationClusterOverview(organizationId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.cluster.org.id"));
+        return ResponseEntity.ok(devopsClusterService.getOrganizationClusterOverview(organizationId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
