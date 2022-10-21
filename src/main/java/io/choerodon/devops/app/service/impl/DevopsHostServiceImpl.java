@@ -231,7 +231,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         //校验流水线是否引用了该主机
         List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
         AssertUtils.isTrue(CollectionUtils.isEmpty(ciCdPipelineDTOS), handHostCheckMsg(ciCdPipelineDTOS));
-        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         try {
             devopsHostMapper.deleteByPrimaryKey(hostId);
 //            devopsDockerInstanceMapper.deleteByHostId(hostId);
