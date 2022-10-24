@@ -124,7 +124,7 @@ public class CertificationServiceImpl implements CertificationService {
         CommonExAssertUtil.assertNotNull(certManagerVersion, DEVOPS_CERT_MANAGER_NOT_INSTALLED);
 
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getDevopsComponentCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
@@ -382,7 +382,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<ProjectCertificationVO> listProjectCertInProject(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
             List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {

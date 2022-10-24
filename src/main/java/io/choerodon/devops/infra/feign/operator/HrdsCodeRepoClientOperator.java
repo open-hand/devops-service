@@ -41,7 +41,7 @@ public class HrdsCodeRepoClientOperator {
      */
     public List<RdmMemberViewDTO> listMembers(@Nullable Long organizationId, Long projectId, RdmMemberQueryDTO queryDTO) {
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<List<RdmMemberViewDTO>> response = rdupmClient.listMembers(
@@ -55,7 +55,7 @@ public class HrdsCodeRepoClientOperator {
 
     public List<MemberPrivilegeViewDTO> selfPrivilege(Long organizationId, Long projectId, Set<Long> repositoryIds) {
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<String> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);

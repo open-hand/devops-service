@@ -226,7 +226,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
                 gitlabUserIds.add(mergeRequestVO.getAssigneeId());
             }
         });
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<UserAttrDTO> userAttrDTOS = userAttrService.baseListByGitlabUserIds(new ArrayList<>(gitlabUserIds));
         List<Long> iamUserIds = userAttrDTOS.stream().map(UserAttrDTO::getIamUserId).collect(Collectors.toList());

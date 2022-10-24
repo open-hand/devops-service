@@ -311,7 +311,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
 
         // 保存部署记录

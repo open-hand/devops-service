@@ -358,7 +358,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
             }
         });
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录

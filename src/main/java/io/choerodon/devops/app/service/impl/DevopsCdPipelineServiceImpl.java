@@ -713,7 +713,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         prodJarInfoVO.setUsername(DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername()));
                         prodJarInfoVO.setPassword(DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword()));
                     }
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdJobRecordDTO.getProjectId());
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId());
 
                     prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
@@ -1475,7 +1475,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                         Map<String, String> param = new HashMap<>();
-                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
                         String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                         param.put("projectName", projectDTO.getName());
                         param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
@@ -1564,7 +1564,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                         Map<String, String> param = new HashMap<>();
-                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
                         Tenant tenant = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
                         String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                         param.put("projectName", projectDTO.getName());

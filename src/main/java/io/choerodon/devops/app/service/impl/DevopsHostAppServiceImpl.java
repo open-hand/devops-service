@@ -617,7 +617,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Long hostId = customDeployVO.getHostId();
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(hostId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(customDeployVO.getSourceType());
@@ -736,7 +736,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());

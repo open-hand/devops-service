@@ -156,7 +156,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
 
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             // 查询helm仓库配置id
@@ -504,7 +504,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     public List<AppServiceVersionAndCommitVO> listByAppIdAndBranch(Long appServiceId, String branch) {
         List<AppServiceVersionDTO> appServiceVersionDTOS = baseListByAppServiceIdAndBranch(appServiceId, branch);
         AppServiceDTO applicationDTO = applicationService.baseQuery(appServiceId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(applicationDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(applicationDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<AppServiceVersionAndCommitVO> appServiceVersionAndCommitVOS = new ArrayList<>();
 
@@ -803,7 +803,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         checkVersion(appServiceId, versionIds);
 
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         List<HarborImageTagDTO> deleteImagetags = new ArrayList<>();
         List<ChartTagVO> deleteChartTags = new ArrayList<>();

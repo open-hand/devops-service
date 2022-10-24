@@ -130,7 +130,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                 // 将maven的setting文件转换为java对象
                 Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
                 //通过仓库的id 筛选出匹配的server节点和Profiles 节点
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                 C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
                 logger.debug(">>>>>>>>>>>>>>>>>3. >>>>>>>>>>>>>>>>>>>>c7nNexusRepoDTO {}", JsonHelper.marshalByJackson(c7nNexusRepoDTO));
                 // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/
@@ -244,7 +244,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
                     // 将maven的setting文件转换为java对象
                     Settings settings = (Settings) XMLUtil.convertXmlFileToObject(Settings.class, queryMavenSettings);
                     //通过仓库的id 筛选出匹配的server节点和Profiles 节点
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId).getBody();
                     logger.debug(">>>>>>>>>>>>>>>>>3. >>>>>>>>>>>>>>>>>>>>c7nNexusRepoDTO {}", JsonHelper.marshalByJackson(c7nNexusRepoDTO));
                     // baseUrl=http://xxx/repository/zmf-test-mixed/ =>http://xx:17145/

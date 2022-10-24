@@ -323,7 +323,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     private AppServiceDeployVO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
                                                        Long projectId, Long envId, String filePath, String type) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         boolean isClusterComponent = GitOpsUtil.isClusterComponent(devopsEnvironmentDTO.getType(), c7nHelmRelease);
@@ -517,7 +517,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APP_SERVICE_ID_NOT_EXIST.getError(), filePath);
         }
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         // if 找到的应用服务所属的组织id equals 要使用版本的项目的组织id，才进一步寻找，否则返回null
         if (tenantId.equals(projectDTO.getOrganizationId())) {
             return tryFindVersionByAppService(appServiceDTO, version, projectId);

@@ -1793,7 +1793,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             applications.add(applicationDTO);
         }
 
-        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        Long organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
         baseServiceClientOperator.listIamProjectByOrgId(organizationId).forEach(pro -> {
             AppServiceDTO appServiceDTO = new AppServiceDTO();

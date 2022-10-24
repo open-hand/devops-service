@@ -142,7 +142,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         Page<AppServiceShareRuleVO> shareRuleVOPageInfo = ConvertUtils.convertPage(devopsProjectConfigDTOPageInfo, AppServiceShareRuleVO.class);
         List<AppServiceShareRuleVO> appServiceShareRuleVOS = shareRuleVOPageInfo.getContent().stream().peek(t -> {
             if (t.getProjectId() != null) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(t.getProjectId());
                 t.setProjectName(projectDTO.getName());
             }
         }).collect(Collectors.toList());
@@ -162,7 +162,7 @@ public class AppServiceShareRuleServiceImpl implements AppServiceShareRuleServic
         if (appServiceShareRuleVO.getProjectId() == null) {
             appServiceShareRuleVO.setProjectName(PROJECT_NAME);
         } else {
-            appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectById(appServiceShareRuleVO.getProjectId()).getName());
+            appServiceShareRuleVO.setProjectName(baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceShareRuleVO.getProjectId()).getName());
         }
         return appServiceShareRuleVO;
     }

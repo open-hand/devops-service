@@ -117,7 +117,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         // 3.校验配置
         validateConfig(devopsDeployGroupVO, operateType, onlyForContainer);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsDeployGroupVO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsDeployGroupVO.getProjectId());
 
         // 4.生成deployment
         String deployment = buildDeploymentYaml(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO);

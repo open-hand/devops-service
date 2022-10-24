@@ -74,7 +74,7 @@ public class DevopsDeployServiceImpl implements DevopsDeployService {
     @Override
     @Transactional
     public Long deployHzeroApplication(Long projectId, HzeroDeployVO hzeroDeployVO) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>deployHzeroApplication project info is {}<<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(projectDTO));
         }

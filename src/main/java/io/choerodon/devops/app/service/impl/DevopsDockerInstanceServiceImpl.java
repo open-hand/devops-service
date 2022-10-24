@@ -105,7 +105,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Transactional(rollbackFor = Exception.class)
     public void deployDockerInstance(Long projectId, DockerDeployVO dockerDeployVO) {
         //1.获取项目信息
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         //2.获取主机信息
         DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
         notNull(hostDTO, "error.host.not.exist");

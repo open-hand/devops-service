@@ -667,7 +667,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         String downloadUrl = null;
         Server server = null;
         if (pipelineMavenDTO.getNexusRepoId() != null) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             List<NexusMavenRepoDTO> nexusMavenRepoDTOs = rdupmClientOperator.getRepoUserByProject(null, projectId, ArrayUtil.singleAsSet(pipelineMavenDTO.getNexusRepoId()));
 
             C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClient.getMavenRepo(projectDTO.getOrganizationId(), projectDTO.getId(), pipelineMavenDTO.getNexusRepoId()).getBody();

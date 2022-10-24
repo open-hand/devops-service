@@ -120,7 +120,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         if (projectId == null) {
             projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
             projectDTOList = Collections.singletonList(projectDTO);
         }

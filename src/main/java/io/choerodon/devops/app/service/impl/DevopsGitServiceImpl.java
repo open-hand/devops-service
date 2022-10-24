@@ -463,7 +463,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsBranchDTO branchDTO = devopsBranchService.baseQueryByAppAndBranchName(applicationId, branchName);
         DevopsBranchVO devopsBranchVO = ConvertUtils.convertObject(branchDTO, DevopsBranchVO.class);
         if (devopsBranchVO.getIssueId() != null) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             IssueDTO issueDTO = agileServiceClientOperator.queryIssue(projectId, devopsBranchVO.getIssueId(), projectDTO.getOrganizationId());
             if (issueDTO == null || issueDTO.getIssueId() == null) {
                 devopsBranchVO.setIssueId(null);
@@ -591,7 +591,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 return new Page<>();
             }
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -708,7 +708,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         boolean tagNotExist;
         Map<String, String> objectPath;
         //从iam服务中查出项目和组织code
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径

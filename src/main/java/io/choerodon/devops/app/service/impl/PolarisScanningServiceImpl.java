@@ -92,7 +92,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Override
     public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
         PolarisScopeType scopeType = PolarisScopeType.forValue(scope);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         if (projectDTO == null) {
             throw new CommonException(ERROR_PROJECT_NOT_FOUND);
         }

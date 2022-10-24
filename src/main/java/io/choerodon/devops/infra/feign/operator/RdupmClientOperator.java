@@ -45,7 +45,7 @@ public class RdupmClientOperator {
             return Collections.emptyList();
         }
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<List<NexusMavenRepoDTO>> response = rdupmClient.getRepoUserByProject(

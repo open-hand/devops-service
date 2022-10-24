@@ -138,7 +138,7 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Override
     public CountVO getDeployCount(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 该项目下所有环境
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentMapper.listByProjectId(projectId);

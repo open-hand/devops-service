@@ -196,7 +196,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppServiceRepVO createDemoApp(Long projectId, AppServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(applicationReqDTO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
 
@@ -331,7 +331,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());

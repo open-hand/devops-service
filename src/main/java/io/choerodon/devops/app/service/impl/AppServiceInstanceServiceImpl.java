@@ -785,7 +785,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
         //插入部署记录
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
         if (!appServiceDeployVO.getIsNotChange()) {
@@ -1362,7 +1362,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //插入部署记录
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
@@ -1507,7 +1507,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //插入部署记录
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
                 isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
@@ -1993,7 +1993,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                                                              appServiceDeployVO, Map<Long, List<Pair<Long, String>>> envSecrets) {
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 

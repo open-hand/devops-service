@@ -139,7 +139,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         if (devopsEnvironmentDTO == null) {
             return "";
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",

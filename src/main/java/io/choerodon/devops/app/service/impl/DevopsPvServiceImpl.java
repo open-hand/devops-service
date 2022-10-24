@@ -94,7 +94,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public Page<DevopsPvDTO> basePagePvByOptions(Long projectId, PageRequest pageable, String params) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
@@ -374,7 +374,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
             if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
@@ -505,12 +505,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             // 如果不搜索
             Page<DevopsPvProPermissionDTO> relationPage = PageHelper.doPage(pageable, () -> devopsPvProPermissionService.baseListByPvId(pvId));
             return ConvertUtils.convertPage(relationPage, permission -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
             });
         } else {
             // 如果要搜索，需要手动在程序内分页
-            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -789,7 +789,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 throw new CommonException("error.envId.and.clusterId.null");
             }
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
 

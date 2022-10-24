@@ -321,7 +321,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Boolean checkEnableCreateCluster(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Long organizationId = projectDTO.getOrganizationId();
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null) {
@@ -379,7 +379,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public boolean isCodeUnique(Long projectId, String code) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setOrganizationId(projectDTO.getOrganizationId());
         devopsClusterDTO.setCode(code);
@@ -421,7 +421,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             paramList = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.PARAMS)), Collections.emptyList());
         }
 
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 查出组织下所有符合条件的项目
         List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -444,7 +444,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
-            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
             if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
@@ -618,13 +618,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     if (permission.getProjectId() == null) {
                         return null;
                     }
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(permission.getProjectId());
                     return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
                 });
             }
         } else {
             // 如果要搜索，需要手动在程序内分页
-            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -933,7 +933,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject;
         DevopsClusterDTO devopsClusterDTO;
-        iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        iamProject = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         // 插入记录
         devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
         devopsClusterDTO.setToken(GenerateUUID.generateUUID());

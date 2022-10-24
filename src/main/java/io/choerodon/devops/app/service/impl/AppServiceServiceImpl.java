@@ -349,7 +349,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public AppServiceRepVO query(Long projectId, Long appServiceId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(appServiceId);
         Boolean shareAppService = false;
@@ -366,7 +366,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             appServiceRepVO.setRepoUrl(concatRepoUrl(organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode()));
         }
         if (shareAppService) {
-            ProjectDTO shareProjectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO shareProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             appServiceRepVO.setShareProjectName(shareProjectDTO.getName());
         }
         //添加harbor的配置信息
@@ -464,7 +464,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void checkAppserviceIsShareDeploy(Long projectId, Long appServiceId) {
-        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        Long organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId).getOrganizationId();
         List<ProjectDTO> projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
         Set<Long> projectIds = projectDTOS.stream().filter(projectDTO -> !projectDTO.getId().equals(projectId)).map(ProjectDTO::getId).collect(toSet());
         if (CollectionUtils.isEmpty(projectIds)) {
@@ -509,7 +509,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             } else {
                 // 可能应用服务创建完成后被回滚了数据库没有存下仓库id
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
                 Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                 UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
                 Integer gitlabUserId = TypeUtil.objToInt(userAttrDTO.getGitlabUserId());
@@ -625,7 +625,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         // 查询创建应用服务所在的gitlab应用组
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DevOpsAppServicePayload devOpsAppServicePayload = new DevOpsAppServicePayload();
         devOpsAppServicePayload.setOrganizationId(projectDTO.getOrganizationId());
         devOpsAppServicePayload.setUserId(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -745,13 +745,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public List<AppServiceRepVO> listByActive(Long projectId) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
+        ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         List<AppServiceDTO> applicationDTOServiceList;
         if (projectOwner) {
             applicationDTOServiceList = appServiceMapper.listByActive(projectId, null);
         } else {
-            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(immutableProjectInfoVO.getTenantId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new ArrayList<>();
             }
@@ -786,7 +786,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (projectOwnerOrRoot) {
             count = appServiceMapper.countByActive(projectId);
         } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return 0;
@@ -1206,7 +1206,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return null;
         }
         try {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO harborConfigDTO = harborService.queryRepoConfigToDevopsConfig(projectDTO.getId(), appServiceDTO.getId(), AUTHTYPE_PUSH);
             ConfigVO harborProjectConfig = gson.fromJson(harborConfigDTO.getConfig(), ConfigVO.class);
@@ -1516,7 +1516,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         SonarContentsVO sonarContentsVO = new SonarContentsVO();
         List<SonarContentVO> sonarContentVOS = new ArrayList<>();
         AppServiceDTO appServiceDTO = baseQuery(appServiceId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
 
@@ -1868,7 +1868,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         SonarTableVO sonarTableVO = new SonarTableVO();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss+0000");
         AppServiceDTO applicationDTO = baseQuery(appServiceId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
         String key = getSonarKey(applicationDTO, projectDTO, organizationDTO);
@@ -2020,7 +2020,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceRepVO> pageShareAppService(Long projectId, boolean doPage, PageRequest pageable, String searchParam) {
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(searchParam);
-        Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+        Long organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId).getOrganizationId();
         List<Long> appServiceIds = new ArrayList<>();
         baseServiceClientOperator.listIamProjectByOrgId(organizationId).stream()
                 .filter(projectDTO -> !projectId.equals(projectDTO.getId()))
@@ -2102,7 +2102,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Transactional(rollbackFor = Exception.class)
     public List<AppServiceImportPayload> createAppService(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, importInternalVOS.size());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -2220,7 +2220,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             }
 
             projectIds.forEach(t -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(t);
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(t);
                 if (projectDTO == null) {
                     return;
                 }
@@ -2361,7 +2361,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(appServiceRepVO.getEnvId());
             if (!Objects.isNull(devopsEnvironmentDTO)
                     && !devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId())) {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                 appServiceRepVO.setShareProjectName(projectDTO.getName());
             }
             if (StringUtils.isEmpty(appServiceRepVO.getServiceName())) {
@@ -2548,7 +2548,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceVersionDTO oldAppServiceVersionDTO = appServiceVersionService.baseQuery(oldAppServiceVersionId);
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         String oldGroup;
-        ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectById(oldAppServiceDTO.getProjectId());
+        ProjectDTO oldProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(oldAppServiceDTO.getProjectId());
         Tenant oldOrganizationDTO = baseServiceClientOperator.queryOrganizationById(oldProjectDTO.getOrganizationId());
         oldGroup = oldOrganizationDTO.getTenantNum() + "-" + oldProjectDTO.getDevopsComponentCode();
         //拉取代码
@@ -2695,7 +2695,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public String getGitlabUrl(Long projectId, Long appServiceId) {
         AppServiceDTO appServiceDTO = baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() != null) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
             return gitlabUrl + urlSlash
@@ -2794,7 +2794,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         List<AppServiceDTO> appServiceDTOList = new ArrayList<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
         if (Boolean.TRUE.equals(share)) {
-            Long organizationId = baseServiceClientOperator.queryIamProjectById(projectId).getOrganizationId();
+            Long organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId).getOrganizationId();
             List<Long> projectIds = new ArrayList<>();
             if (ObjectUtils.isEmpty(searchProjectId)) {
                 projectDTOS = baseServiceClientOperator.listIamProjectByOrgId(organizationId);
@@ -2802,7 +2802,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                         .filter(v -> !projectId.equals(v.getId()))
                         .map(ProjectDTO::getId).collect(Collectors.toList());
             } else {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(searchProjectId);
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(searchProjectId);
                 projectIds.add(searchProjectId);
                 projectDTOS.add(projectDTO);
             }
@@ -3258,7 +3258,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
             return ConvertUtils.convertPage(PageHelper.doPageAndSort(pageRequest, () -> appServiceMapper.listAppServiceToCreatePipelineForOwner(projectId, searchParamMap, paramList)), AppServiceServiceImpl::dto2SimpleVo);
         } else {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), projectId, userId);
             appServiceIds.addAll(listExternalAppIdByProjectId(projectId));
             if (CollectionUtils.isEmpty(appServiceIds)) {
@@ -3282,7 +3282,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
             return appExternalConfigDTO.getRepositoryUrl();
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
         return String.format(GitOpsConstants.REPO_URL_TEMPLATE_WITHOUT_SUFFIX, repoUrl, tenant.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
@@ -3489,7 +3489,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         userAttrService.checkUserSync(userAttrDTO, iamUserDTO.getId());
 
         ApplicationValidator.checkApplicationService(openAppServiceReqVO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 判断项目下是否还能创建应用服务
         appServiceUtils.checkEnableCreateAppSvcOrThrowE(projectId, 1);
@@ -3689,7 +3689,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceUnderOrgVO> listAppServiceUnderOrg(Long projectId, Long appServiceId, String searchParam, PageRequest pageRequest) {
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         UserAppServiceIdsVO userAppServiceIdsVO = rducmClientOperator.getAppServiceIds(projectDTO.getOrganizationId(), userDetails.getUserId());
         // 待查询的appService列表
@@ -3901,13 +3901,13 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceVO> pageByActive(Long projectId, Long targetProjectId, Long targetAppServiceId, PageRequest pageRequest, String param) {
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(targetProjectId, false, false, false, false, false);
+        ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(targetProjectId);
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(targetProjectId, userId);
         Page<AppServiceDTO> appServiceDTOPage;
         if (projectOwner) {
             appServiceDTOPage = PageHelper.doPage(pageRequest, () -> appServiceMapper.listByActiveOrderByTargetAppServiceId(targetProjectId, targetAppServiceId, param));
         } else {
-            Set<Long> appServiceIds = getMemberAppServiceIds(projectDTO.getOrganizationId(), targetProjectId, userId);
+            Set<Long> appServiceIds = getMemberAppServiceIds(immutableProjectInfoVO.getTenantId(), targetProjectId, userId);
             if (CollectionUtils.isEmpty(appServiceIds)) {
                 return new Page<>();
             }

@@ -99,7 +99,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         if (devopsProjectDTO == null) {
             return false;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsProjectDTO.getIamProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsProjectDTO.getIamProjectId());
         ExternalTenantVO externalTenantVO = baseServiceClientOperator.queryTenantByIdWithExternalInfo(projectDTO.getOrganizationId());
         // 平台组织直接跳过
         if (LOGGER.isDebugEnabled()) {

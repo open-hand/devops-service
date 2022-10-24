@@ -106,7 +106,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         } else {
             if (sourceType.equals(ResourceLevel.PROJECT.value())) {
                 sourceType = ResourceLevel.ORGANIZATION.value();
-                sourceId = baseServiceClientOperator.queryIamProjectById(sourceId).getOrganizationId();
+                sourceId = baseServiceClientOperator.queryIamProjectBasicInfoById(sourceId).getOrganizationId();
             }
             return devopsAppTemplateMapper.listAppTemplate(sourceId, sourceType, param);
         }

@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.math.BigDecimal;
+import java.util.*;
+
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -14,9 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -517,7 +517,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
-        if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+        if (StringUtils.hasText(devopsEnvCommandDTO.getSha())) {
             LOGGER.info("Retry pushing pvc: it seems that this pvc had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
             return;
         }

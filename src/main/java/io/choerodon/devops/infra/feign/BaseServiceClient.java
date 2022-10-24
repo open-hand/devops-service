@@ -37,6 +37,9 @@ public interface BaseServiceClient {
                                                @RequestParam(value = "with_work_group") Boolean withWorkGroup,
                                                @RequestParam(value = "with_project_classfication") Boolean withProjectClassfication);
 
+    @GetMapping(value = "/choerodon/v1/projects/{projectId}/basic_info_with_cache")
+    ResponseEntity<ProjectDTO> queryIamProjectBasicInfo(@PathVariable("projectId") Long projectId);
+
     /**
      * @param organizationId 组织id
      * @param withMoreInfo   获取更详细的组织配置信息以及用户信息

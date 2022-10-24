@@ -180,7 +180,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
@@ -192,7 +192,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(resourceId);
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
@@ -360,8 +360,8 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             chart.setCustom(Boolean.TRUE);
             ConfigVO configVO = chart.getConfig();
             CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
-            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
+            boolean usernameEmpty = !StringUtils.hasText(configVO.getUserName());
+            boolean passwordEmpty = !StringUtils.hasText(configVO.getPassword());
             if (!usernameEmpty && !passwordEmpty) {
                 configVO.setUserName(configVO.getUserName());
                 configVO.setPassword(configVO.getPassword());

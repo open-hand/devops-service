@@ -84,13 +84,14 @@ public class BaseServiceClientOperator {
         }
     }
 
-
-    public ProjectDTO queryIamProjectById(Long projectId) {
-        return queryIamProjectById(projectId, true, true, true, true, true);
-    }
-
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
-        return queryIamProjectById(projectId, false, false, false, false, false);
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProjectBasicInfo(projectId);
+        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
+        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+        if (projectDTO == null || projectDTO.getId() == null) {
+            throw new CommonException("error.project.query.by.id", projectId);
+        }
+        return projectDTO;
     }
 
     public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo, Boolean withWorkGroup, Boolean withProjectClassfication) {

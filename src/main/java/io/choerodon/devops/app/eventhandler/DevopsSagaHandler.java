@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.eventhandler;
 
+import static io.choerodon.asgard.saga.SagaDefinition.TimeoutPolicy.ALERT_ONLY;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Objects;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -10,14 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Objects;
-
-import static io.choerodon.asgard.saga.SagaDefinition.TimeoutPolicy.ALERT_ONLY;
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.*;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
@@ -268,7 +268,7 @@ public class DevopsSagaHandler {
             LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
             throw e;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvUserPayload.getIamProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvUserPayload.getIamProjectId());
         if (Objects.isNull(projectDTO)) {
             return payload;
         }
@@ -549,7 +549,7 @@ public class DevopsSagaHandler {
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
         //删除环境成功，发送webhook
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         if (Objects.isNull(projectDTO)) {
             return;
         }

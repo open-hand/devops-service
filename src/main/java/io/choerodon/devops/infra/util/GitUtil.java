@@ -826,7 +826,7 @@ public class GitUtil {
         LOGGER.info("Get git config to init cluster: agent name: {}", gitConfigVO.getAgentName());
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.forEach(devopsEnvironmentDTO -> {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
 

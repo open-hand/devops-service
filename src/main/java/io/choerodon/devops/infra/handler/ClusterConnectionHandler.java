@@ -104,7 +104,7 @@ public class ClusterConnectionHandler {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), clusterCode, envCode, envId);

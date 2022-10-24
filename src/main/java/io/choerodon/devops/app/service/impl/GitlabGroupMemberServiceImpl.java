@@ -206,7 +206,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
                     //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(gitlabGroupMemberVO.getResourceId());
                     if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
                         deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
                     }
@@ -454,7 +454,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             LogUtil.loggerInfoObjectNullWithId("user", userAttrDTO.getIamUserId(), LOGGER);
             return;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(resourceId);
         // 如果当前iam用户只有项目成员的权限,并且他不是这个组织的组织管理员
         if (AccessLevel.DEVELOPER.equals(accessLevel)
                 && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), projectDTO.getOrganizationId())) {

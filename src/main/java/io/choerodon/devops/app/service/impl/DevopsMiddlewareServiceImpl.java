@@ -240,7 +240,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
@@ -384,7 +384,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
