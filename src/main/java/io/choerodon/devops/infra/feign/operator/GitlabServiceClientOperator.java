@@ -5,7 +5,6 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.D
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1630,10 +1629,6 @@ public class GitlabServiceClientOperator {
         CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
         CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
         gitlabServiceClient.updateNameAndPath(projectId, userId, newName);
-    }
-
-    public InputStream downloadArchiveByFormat(Integer gitlabProjectId, Integer userId, String commitSha, String format) {
-        return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format).getBody();
     }
 
     public GitlabProjectDTO queryExternalProjectByCode(AppExternalConfigDTO appExternalConfigDTO) {
