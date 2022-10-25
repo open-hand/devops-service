@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_GET;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_ROLE_ID_GET;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +46,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<List<RoleDTO>> getRoleByCode(Long organizationId, String code, String labelName) {
-        throw new CommonException("error.organization.role.id.get", code);
+        throw new CommonException(DEVOPS_ORGANIZATION_ROLE_ID_GET, code);
     }
 
     @Override
@@ -53,37 +56,37 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<Tenant> queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
-        throw new CommonException("error.organization.get", organizationId);
+        throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
     }
 
     @Override
     public ResponseEntity<List<Tenant>> queryOrgByIds(Set<Long> ids) {
-        throw new CommonException("error.organization.get", ids == null ? "null" : ids.toString());
+        throw new CommonException(DEVOPS_ORGANIZATION_GET, ids == null ? "null" : ids.toString());
     }
 
     @Override
     public ResponseEntity<IamUserDTO> queryByLoginName(String loginName) {
-        throw new CommonException("error.user.get.byLoginName");
+        throw new CommonException("devops.user.get.byLoginName");
     }
 
     @Override
     public ResponseEntity<IamUserDTO> queryById(Long id) {
-        throw new CommonException("error.user.get.byId");
+        throw new CommonException("devops.user.get.byId");
     }
 
     @Override
     public ResponseEntity<String> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
-        throw new CommonException("error.user.get.byIds");
+        throw new CommonException("devops.user.get.byIds");
     }
 
     @Override
     public ResponseEntity<Page<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
-        throw new CommonException("error.user.get.byEmail");
+        throw new CommonException("devops.user.get.byEmail");
     }
 
     @Override
     public ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(Long projectId, RoleAssignmentSearchVO roleAssignmentSearchVO, String labelName) {
-        throw new CommonException("error.user.get.byGitlabLabel");
+        throw new CommonException("devops.user.get.byGitlabLabel");
     }
 
     @Override

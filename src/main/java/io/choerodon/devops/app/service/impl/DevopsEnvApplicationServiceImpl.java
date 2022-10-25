@@ -162,7 +162,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public DevopsEnvAppServiceDTO baseCreate(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO) {
         if (devopsEnvAppServiceMapper.insert(devopsEnvAppServiceDTO) != 1) {
-            throw new CommonException("error.insert.env.app");
+            throw new CommonException("devops.insert.env.app");
         }
         return devopsEnvAppServiceDTO;
     }

@@ -374,7 +374,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService
                 .baseQueryByProjectId(devopsEnvironmentDTO.getProjectId());
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() == null) {
-            throw new CommonException("error.env.project.not.exist");
+            throw new CommonException("devops.env.project.not.exist");
         }
         // 跳过Root用户
         if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
@@ -393,7 +393,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (newGroupMemberDTO == null || !(newGroupMemberDTO.getAccessLevel().equals(AccessLevel.MASTER.toValue()))) {
-            throw new CommonException("error.user.not.env.pro.owner");
+            throw new CommonException("devops.user.not.env.pro.owner");
         }
     }
 

@@ -19,7 +19,7 @@ public class DevopsPvcReqVO {
     private Long id;
 
     @ApiModelProperty("PVC名称")
-    @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "error.pvc.name.pattern")
+    @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "devops.pvc.name.pattern")
     @Length(max = 40, min = 1, message = "{devops.pvc.name.length}")
     private String name;
 

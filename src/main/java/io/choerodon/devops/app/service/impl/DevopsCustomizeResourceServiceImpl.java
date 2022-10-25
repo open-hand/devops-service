@@ -334,13 +334,13 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(resourceId);
             devopsCustomizeResourceDTO.setLastUpdatedBy(userId);
             if (kind == null) {
-                throw new CommonException("error.custom.resource.kind.null");
+                throw new CommonException("devops.custom.resource.kind.null");
             }
             if (!kind.equals(devopsCustomizeResourceDTO.getK8sKind())) {
-                throw new CommonException("error.custom.resource.kind.modify");
+                throw new CommonException("devops.custom.resource.kind.modify");
             }
             if (!name.equals(devopsCustomizeResourceDTO.getName())) {
-                throw new CommonException("error.custom.resource.name.modify");
+                throw new CommonException("devops.custom.resource.name.modify");
             }
 
             //更新自定义资源的yaml文件内容
@@ -399,7 +399,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         }
         //禁止创建平台已有的资源
         if (RESOURCE_TYPE.contains(kind.toString())) {
-            throw new CommonException("error.kind.is.forbidden");
+            throw new CommonException("devops.kind.is.forbidden");
         }
         if (metadata == null) {
             throw new CommonException("custom.resource.metadata.not.found");
@@ -416,7 +416,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public DevopsCustomizeResourceDTO baseCreate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO) {
         if (devopsCustomizeResourceMapper.insert(devopsCustomizeResourceDTO) != 1) {
-            throw new CommonException("error.customize.resource.create.error");
+            throw new CommonException("devops.customize.resource.create.error");
         }
         return devopsCustomizeResourceDTO;
     }
@@ -430,7 +430,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public void baseUpdate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO) {
         devopsCustomizeResourceDTO.setObjectVersionNumber(devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceDTO.getId()).getObjectVersionNumber());
         if (devopsCustomizeResourceMapper.updateByPrimaryKey(devopsCustomizeResourceDTO) != 1) {
-            throw new CommonException("error.customize.resource.update.error");
+            throw new CommonException("devops.customize.resource.update.error");
         }
     }
 
@@ -459,7 +459,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public void checkExist(Long envId, String kind, String name) {
         if (selectCount(envId, kind, name) > 0) {
-            throw new CommonException("error.kind.name.exist");
+            throw new CommonException("devops.kind.name.exist");
         }
     }
 

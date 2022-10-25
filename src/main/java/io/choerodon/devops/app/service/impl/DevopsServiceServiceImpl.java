@@ -540,7 +540,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     @Override
     public DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO) {
         if (devopsServiceMapper.insert(devopsServiceDTO) != 1) {
-            throw new CommonException("error.k8s.service.create");
+            throw new CommonException("devops.k8s.service.create");
         }
         return devopsServiceDTO;
     }
@@ -566,7 +566,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
         devopsServiceDTO.setObjectVersionNumber(oldDevopsServiceDTO.getObjectVersionNumber());
         if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDTO) != 1) {
-            throw new CommonException("error.k8s.service.update");
+            throw new CommonException("devops.k8s.service.update");
         }
     }
 

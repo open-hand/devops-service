@@ -84,7 +84,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 createSonarToken();
             }
         } catch (Exception e) {
-            throw new CommonException("error.init.project.config", e);
+            throw new CommonException("devops.init.project.config", e);
         }
     }
 

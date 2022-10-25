@@ -454,7 +454,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public void baseCheckName(String name, Long envId) {
         if (!isNameUnique(envId, name)) {
-            throw new CommonException("error.secret.name.already.exists");
+            throw new CommonException("devops.secret.name.already.exists");
         }
     }
 

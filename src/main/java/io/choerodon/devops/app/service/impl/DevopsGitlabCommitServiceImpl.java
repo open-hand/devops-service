@@ -295,7 +295,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     public DevopsGitlabCommitDTO baseCreate(DevopsGitlabCommitDTO devopsGitlabCommitDTO) {
         if (!checkExist(devopsGitlabCommitDTO)) {
             if (devopsGitlabCommitMapper.insert(devopsGitlabCommitDTO) != 1) {
-                throw new CommonException("error.gitlab.commit.create");
+                throw new CommonException("devops.gitlab.commit.create");
             }
         }
         return devopsGitlabCommitDTO;

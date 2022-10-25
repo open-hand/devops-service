@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_GET;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -184,7 +186,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
         List<ApprovalVO> approvalVOList = new ArrayList<>();
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
-        CommonExAssertUtil.assertNotNull(userId, "error.user.get");
+        CommonExAssertUtil.assertNotNull(userId, DEVOPS_USER_GET);
 
         // 查处该用户待审批的流水线阶段(新流水线)
         List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);

@@ -68,7 +68,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
     private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
-    private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
+    private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "devops.organization.cluster.num.max";
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -678,10 +678,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
 
         if (connectedEnvList.contains(clusterId)) {
-            throw new CommonException("error.cluster.connected");
+            throw new CommonException("devops.cluster.connected");
         }
         if (!devopsEnvironmentDTOS.isEmpty()) {
-            throw new CommonException("error.cluster.delete");
+            throw new CommonException("devops.cluster.delete");
         }
         //集群是否存在PV
         List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
@@ -756,7 +756,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterDTO.setChoerodonId(choerodonId);
         }
         if (devopsClusterMapper.insert(devopsClusterDTO) != 1) {
-            throw new CommonException("error.devops.cluster.insert");
+            throw new CommonException("devops.cluster.insert");
         }
         return devopsClusterDTO;
     }

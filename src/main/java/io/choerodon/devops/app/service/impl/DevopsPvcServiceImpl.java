@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PVCode.DEVOPS_PV_NOT_EXISTS;
+
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -204,7 +206,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Override
     public void baseCheckName(String pvcName, Long envId) {
         if (!isNameUnique(pvcName, envId)) {
-            throw new CommonException("error.pvc.name.already.exists");
+            throw new CommonException("devops.pvc.name.already.exists");
         }
     }
 
@@ -269,7 +271,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
     private DevopsPvcDTO createPvcRecord(DevopsPvcDTO devopsPvcDTO) {
         if (devopsPvcMapper.insert(devopsPvcDTO) != 1) {
-            throw new CommonException("error.insert.pvc", devopsPvcDTO.getName());
+            throw new CommonException("devops.insert.pvc", devopsPvcDTO.getName());
         }
         return devopsPvcDTO;
     }
@@ -335,10 +337,10 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 根据PV的id查询PV，若果PV不存在，就根据PV的name和集群id查询，如果PV对象为空，抛出异常
         if (devopsPvcReqVO.getPvId() != null) {
             devopsPvDTO = Optional.ofNullable(devopsPvMapper.selectByPrimaryKey(devopsPvcReqVO.getPvId())).
-                    orElseThrow(() -> new CommonException("error.pv.not.exists"));
+                    orElseThrow(() -> new CommonException(DEVOPS_PV_NOT_EXISTS));
         } else {
             devopsPvDTO = Optional.ofNullable(devopsPvMapper.queryByNameAndClusterId(devopsPvcReqVO.getPvName(), devopsPvcReqVO.getClusterId()))
-                    .orElseThrow(() -> new CommonException("error.pv.not.exists"));
+                    .orElseThrow(() -> new CommonException(DEVOPS_PV_NOT_EXISTS));
         }
 
         if (devopsPvDTO.getPvcName() != null) {
