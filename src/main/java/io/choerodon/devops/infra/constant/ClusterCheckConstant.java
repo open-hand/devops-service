@@ -8,13 +8,14 @@ package io.choerodon.devops.infra.constant;
  * @since 2020/10/21 10:07
  */
 public class ClusterCheckConstant {
-    private ClusterCheckConstant(){
+    private ClusterCheckConstant() {
 
     }
+
     // cluster
     public static final String ERROR_CLUSTER_ID_IS_NULL = "error.cluster.id.is.null";
-    public static final String ERROR_CLUSTER_STATUS_IS_OPERATING = "error.cluster.status.is.operating";
-    public static final String ERROR_CLUSTER_STATUS_IS_NULL = "error.cluster.status.is.null";
+    public static final String ERROR_CLUSTER_STATUS_IS_OPERATING = "devops.cluster.status.is.operating";
+    public static final String ERROR_CLUSTER_STATUS_IS_NULL = "devops.cluster.status.is.null";
     public static final String ERROR_CLUSTER_TYPE_IS_OPERATING = "error.cluster.type.is.operating";
 
     public static final String ERROR_NODE_ID_IS_NULL = "error.node.id.is.null";

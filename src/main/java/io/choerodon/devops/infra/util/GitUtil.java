@@ -57,7 +57,7 @@ public class GitUtil {
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String GIT_SUFFIX = "/.git";
-    private static final String ERROR_GIT_CLONE = "error.git.clone";
+    private static final String ERROR_GIT_CLONE = "devops.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private static final Pattern PATTERN = Pattern.compile("^[-\\+]?[\\d]*$");
@@ -333,7 +333,7 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             return pullBySsh(repository, envRas);
         } catch (IOException e) {
-            throw new CommonException("error.git.pull", e);
+            throw new CommonException("devops.git.pull", e);
         }
     }
 

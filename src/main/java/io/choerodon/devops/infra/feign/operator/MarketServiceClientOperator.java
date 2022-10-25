@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +47,7 @@ public class MarketServiceClientOperator {
     }
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
-        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
         CommonExAssertUtil.assertNotNull(deployObjectId, "error.deploy.object.id.null");
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryValuesForDeployObject(projectId, deployObjectId), MarketChartValueDTO.class);
     }
@@ -85,7 +87,7 @@ public class MarketServiceClientOperator {
     }
 
     public List<MarketServiceDeployObjectVO> queryUpgradeDeployObjects(Long projectId, Long marketServiceId, Long currentDeployObjectId) {
-        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
         CommonExAssertUtil.assertNotNull(marketServiceId, "error.market.service.id.null");
         CommonExAssertUtil.assertNotNull(currentDeployObjectId, "error.deploy.object.id.null");
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryUpgradeMarketService(projectId, marketServiceId, currentDeployObjectId), new TypeReference<List<MarketServiceDeployObjectVO>>() {

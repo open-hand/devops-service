@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
  */
 @Component
 public class AppServiceUtils {
-    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
+    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "devops.project.app.svc.num.max";
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;

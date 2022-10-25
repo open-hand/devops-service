@@ -9,6 +9,9 @@ public class ExceptionConstants {
         public static final String DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT = "devops.field.not.supported.for.sort";
         public static final String DEVOPS_YAML_FORMAT_INVALID = "devops.yaml.format.invalid";
         public static final String DEVOPS_READ_MULTIPART_FILE = "devops.read.multipart.file";
+
+        public static final String DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER = "devops.delete.permission.of.project.owner";
+
     }
 
     /**
@@ -48,6 +51,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_USER_NOT_GITLAB_PROJECT_OWNER = "devops.user.not.gitlab.project.owner";
         public static final String DEVOPS_CREATE_PRIVATE_TOKEN = "devops.create.private.token";
         public static final String DEVOPS_TOKEN_INVALID = "devops.token.invalid";
+        public static final String DEVOPS_APP_ID_NOT_EXIST = "devops.app.id.not.exist";
+        public static final String DEVOPS_APP_NOT_IN_THIS_PROJECT = "devops.app.not.in.this.project";
 
     }
 
@@ -73,6 +78,10 @@ public class ExceptionConstants {
     public static class CiPipelineImageCode {
         public static final String DEVOPS_CREATE_IMAGE_RECORD = "devops.create.image.record";
         public static final String DEVOPS_UPDATE_IMAGE_RECORD = "devops.update.image.record";
+    }
+
+    public static class CdEnvDeployInfoDTOCode {
+        public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
     }
 
     public static class EnvCommandCode {
@@ -103,11 +112,18 @@ public class ExceptionConstants {
         public static final String DEVOPS_GROUP_NOT_SYNC = "devops.group.not.sync";
         public static final String DEVOPS_GITLAB_GROUP_ID_SELECT = "devops.gitlab.groupId.select";
         public static final String DEVOPS_USER_NOT_GITLAB_OWNER = "devops.user.not.gitlab.owner";
+        public static final String DEVOPS_BRANCH_GET = "devops.branch.get";
+        public static final String DEVOPS_USER_NOT_IN_GITLAB_PROJECT = "devops.user.not.in.gitlab.project";
     }
 
     public static class BranchCode {
         public static final String DEVOPS_BRANCH_EXIST = "devops.branch.exist";
     }
+
+    public static class CustomResourceCode {
+        public static final String DEVOPS_LOAD_YAML_CONTENT = "devops.load.yaml.content";
+    }
+
 
     /**
      * 外置仓库配置相关

@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_BRANCH_GET;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_IN_GITLAB_PROJECT;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
 import java.io.InputStream;
@@ -790,7 +793,7 @@ public class GitlabServiceClientOperator {
                     memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(gitlabProjectId), Long.valueOf(userId));
                 }
                 if (memberDTO == null) {
-                    throw new CommonException("error.user.not.in.gitlab.project");
+                    throw new CommonException(DEVOPS_USER_NOT_IN_GITLAB_PROJECT);
                 }
             }
         }
@@ -920,7 +923,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.queryBranch(gitlabProjectId, branch).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.branch.get", e);
+            throw new CommonException(DEVOPS_BRANCH_GET, e);
 
         }
     }
@@ -1575,7 +1578,7 @@ public class GitlabServiceClientOperator {
      * @param ciConfigPath    ci文件地址
      */
     public void updateProjectCiConfigPath(Integer gitlabProjectId, Integer userId, String ciConfigPath) {
-        CommonExAssertUtil.assertNotNull(gitlabProjectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(gitlabProjectId, DEVOPS_PROJECT_ID_IS_NULL);
         CommonExAssertUtil.assertNotNull(ciConfigPath, "error.ci.config.path.null");
         CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
         Project project = new Project();
@@ -1623,7 +1626,7 @@ public class GitlabServiceClientOperator {
     }
 
     public void updateNameAndPath(Integer userId, Integer projectId, String newName) {
-        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
+        CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
         CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
         CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
         gitlabServiceClient.updateNameAndPath(projectId, userId, newName);

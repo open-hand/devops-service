@@ -44,7 +44,7 @@ public class AppServiceInstanceValidator {
 
     public static void checkCode(String code) {
         if (!isCodeValid(code)) {
-            throw new CommonException("error.app.instance.code.invalid");
+            throw new CommonException("devops.app.instance.code.invalid");
         }
     }
 

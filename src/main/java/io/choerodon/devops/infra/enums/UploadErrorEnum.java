@@ -34,7 +34,7 @@ public enum UploadErrorEnum {
     /**
      * 仓库clone失败
      */
-    GIT_CLONE("error.git.clone");
+    GIT_CLONE("devops.git.clone");
 
     private final String value;
 

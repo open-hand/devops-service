@@ -159,7 +159,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 如果这个key存在，表明已经有相同的集群处于创建中，禁止重复创建
         Boolean exists = stringRedisTemplate.hasKey(redisKey);
         if (exists) {
-            throw new CommonException("error.cluster.installing");
+            throw new CommonException("devops.cluster.installing");
         }
 
         // 判断组织下是否还能创建集群
@@ -223,7 +223,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
-            throw new CommonException("error.cluster.status");
+            throw new CommonException("devops.cluster.status");
         }
         CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 

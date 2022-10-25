@@ -85,7 +85,7 @@ public class GitOpsUtil {
         } else if (EnvironmentType.USER == type) {
             return ENV_GROUP_SUFFIX;
         } else {
-            throw new CommonException("error.environment.type.not.supported", type);
+            throw new CommonException("devops.environment.type.not.supported", type);
         }
     }
 

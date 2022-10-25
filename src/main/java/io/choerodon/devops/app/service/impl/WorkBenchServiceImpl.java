@@ -121,7 +121,7 @@ public class WorkBenchServiceImpl implements WorkBenchService {
             projectDTOList = baseServiceClientOperator.listOwnedProjects(tenant.getTenantId(), userId);
         } else {
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-            CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
+            CommonExAssertUtil.assertNotNull(projectDTO, "devops.project.query");
             projectDTOList = Collections.singletonList(projectDTO);
         }
         return new Object[]{tenant, projectDTOList};

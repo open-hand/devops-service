@@ -19,7 +19,7 @@ public class ApplicationValidator {
      */
     public static void checkApplicationService(String appServiceCode) {
         if (!Pattern.matches(SERVICE_PATTERN, appServiceCode)) {
-            throw new CommonException("error.app.code.notMatch");
+            throw new CommonException("devops.app.code.notMatch");
         }
     }
 }

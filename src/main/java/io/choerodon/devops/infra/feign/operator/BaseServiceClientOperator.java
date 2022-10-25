@@ -89,7 +89,7 @@ public class BaseServiceClientOperator {
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {
-            throw new CommonException("error.project.query.by.id", projectId);
+            throw new CommonException("devops.project.query.by.id", projectId);
         }
         return projectDTO;
     }
@@ -99,7 +99,7 @@ public class BaseServiceClientOperator {
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {
-            throw new CommonException("error.project.query.by.id", projectId);
+            throw new CommonException("devops.project.query.by.id", projectId);
         }
         return projectDTO;
     }

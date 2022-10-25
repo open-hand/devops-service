@@ -154,7 +154,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         envPodDTO.setName(devopsEnvPodDTO.getName());
         envPodDTO.setNamespace(devopsEnvPodDTO.getNamespace());
         if (devopsEnvPodMapper.selectOne(envPodDTO) == null) {
-            MapperUtil.resultJudgedInsert(devopsEnvPodMapper, devopsEnvPodDTO, "error.insert.env.pod");
+            MapperUtil.resultJudgedInsert(devopsEnvPodMapper, devopsEnvPodDTO, "devops.insert.env.pod");
         }
     }
 

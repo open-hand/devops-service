@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CustomResourceCode.DEVOPS_LOAD_YAML_CONTENT;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
 
 import java.io.IOException;
@@ -147,7 +148,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.load.yaml.content");
+            throw new CommonException(DEVOPS_LOAD_YAML_CONTENT);
         }
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {

@@ -215,7 +215,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         if (devopsServiceReqVO.getEndPoints() != null) {
             // 应用服务下不能创建endpoints类型网络
             if (devopsServiceReqVO.getAppServiceId() != null) {
-                throw new CommonException("error.app.create.endpoints.service");
+                throw new CommonException("devops.app.create.endpoints.service");
             }
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
         }

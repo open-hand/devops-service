@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_BRANCH_GET;
+
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
@@ -113,7 +115,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GitlabProjectDTO> queryProjectById(Integer projectId) {
-        throw new CommonException("error.project.query.by.id", projectId);
+        throw new CommonException("devops.project.query.by.id", projectId);
     }
 
     @Override
@@ -220,7 +222,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<RepositoryFileDTO> getFile(Integer projectId, String commit, String filePath) {
-        throw new CommonException("error.file.get");
+        throw new CommonException("devops.file.get");
     }
 
     @Override
@@ -289,7 +291,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<BranchDTO> queryBranch(Integer projectId, String branchName) {
-        throw new CommonException("error.branch.get");
+        throw new CommonException(DEVOPS_BRANCH_GET);
     }
 
     @Override
@@ -375,12 +377,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<Pipeline> retryPipeline(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.pipeline.retry");
+        throw new CommonException("devops.pipeline.retry");
     }
 
     @Override
     public ResponseEntity<Pipeline> cancelPipeline(Integer projectId, Integer pipelineId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.pipeline.cancel");
+        throw new CommonException("devops.pipeline.cancel");
     }
 
     @Override

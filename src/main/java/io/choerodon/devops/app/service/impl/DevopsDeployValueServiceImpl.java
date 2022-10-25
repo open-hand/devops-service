@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_NOT_IN_THIS_PROJECT;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 
 import java.util.*;
@@ -224,15 +226,15 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
         if (!projectId.equals(devopsEnvironmentDTO.getProjectId())) {
-            throw new CommonException("error.env.not.in.this.project", envId, projectId);
+            throw new CommonException("devops.env.not.in.this.project", envId, projectId);
         }
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.id.not.exist", appServiceId);
+            throw new CommonException(DEVOPS_APP_ID_NOT_EXIST, appServiceId);
         }
         if (!projectId.equals(appServiceDTO.getProjectId())) {
-            throw new CommonException("error.app.not.in.this.project", appServiceId, projectId);
+            throw new CommonException(DEVOPS_APP_NOT_IN_THIS_PROJECT, appServiceId, projectId);
         }
     }
 

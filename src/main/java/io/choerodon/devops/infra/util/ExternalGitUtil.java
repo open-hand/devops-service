@@ -42,7 +42,7 @@ public class ExternalGitUtil {
     public static final String TEMPLATE = "template";
     private static final String PATH = "/";
     private static final String GIT_SUFFIX = "/.git";
-    private static final String ERROR_GIT_CLONE = "error.git.clone";
+    private static final String ERROR_GIT_CLONE = "devops.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalGitUtil.class);
     private static final String ERROR_GIT_PUSH = "error.git.push";

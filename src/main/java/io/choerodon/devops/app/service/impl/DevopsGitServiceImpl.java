@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.ExceptionConstants.BranchCode.DEVOPS_BRANCH_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_IN_GITLAB_PROJECT;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
 
@@ -368,7 +369,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(applicationDTO.getGitlabProjectId()), userAttrDTO.getGitlabUserId());
             }
             if (memberDTO == null) {
-                throw new CommonException("error.user.not.in.gitlab.project");
+                throw new CommonException(DEVOPS_USER_NOT_IN_GITLAB_PROJECT);
             }
         }
 
@@ -491,14 +492,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         // 不能删除仓库下最后一个分支
         if (branchDTOS.size() <= 1) {
-            throw new CommonException("error.delete.the.only.branch");
+            throw new CommonException("devops.delete.the.only.branch");
         }
         Optional<BranchDTO> branchDTO = branchDTOS
                 .stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchDTO.ifPresent(e -> {
             if (Boolean.TRUE.equals(e.getProtected())) {
                 // 不能删除保护分支
-                throw new CommonException("error.delete.protected.branch");
+                throw new CommonException("devops.delete.protected.branch");
             } else {
                 gitlabServiceClientOperator.deleteBranch(appServiceDTO.getGitlabProjectId(), branchName,
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -1214,7 +1215,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         FileUtil.deleteDirectory(file);
                         return gitUtil.cloneBySsh(path, url, envIdRsa);
                     } else {
-                        throw new CommonException("error.git.pull", e);
+                        throw new CommonException("devops.git.pull", e);
                     }
                 }
             } else {
@@ -1429,7 +1430,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(applicationDTO.getGitlabProjectId()), userAttrDTO.getGitlabUserId());
             }
             if (memberDTO == null) {
-                throw new CommonException("error.user.not.in.gitlab.project");
+                throw new CommonException(DEVOPS_USER_NOT_IN_GITLAB_PROJECT);
             }
         }
         Page<DevopsBranchDTO> devopsBranchDTOPageInfo =

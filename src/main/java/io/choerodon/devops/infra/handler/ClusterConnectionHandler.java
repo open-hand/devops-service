@@ -129,7 +129,7 @@ public class ClusterConnectionHandler {
                         FileUtil.deleteDirectory(file);
                         gitUtil.cloneBySsh(path, url, envRsa);
                     } else {
-                        throw new CommonException("error.git.pull", e);
+                        throw new CommonException("devops.git.pull", e);
                     }
                 }
             } else {

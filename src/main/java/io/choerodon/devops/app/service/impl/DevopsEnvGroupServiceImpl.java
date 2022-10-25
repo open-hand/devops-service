@@ -77,7 +77,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             devopsEnvGroupDTO.setId(groupId);
             devopsEnvGroupDTO.setProjectId(projectId);
             if (devopsEnvGroupMapper.selectOne(devopsEnvGroupDTO) == null) {
-                throw new CommonException("error.group.id.project.id.not.match", projectId, groupId);
+                throw new CommonException("devops.group.id.project.id.not.match", projectId, groupId);
             }
         }
     }
@@ -100,7 +100,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO) {
-        return MapperUtil.resultJudgedInsert(devopsEnvGroupMapper, devopsEnvGroupDTO, "error.insert.env.group");
+        return MapperUtil.resultJudgedInsert(devopsEnvGroupMapper, devopsEnvGroupDTO, "devops.insert.env.group");
     }
 
     @Override

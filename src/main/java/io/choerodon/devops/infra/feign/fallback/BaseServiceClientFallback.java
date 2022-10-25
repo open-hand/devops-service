@@ -24,7 +24,7 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
 @Component
 public class BaseServiceClientFallback implements BaseServiceClient {
     private static final String ERROR_PROJECT_GET = "error.project.get";
-    private static final String ERROR_PROJECT_QUERY_BY_ID = "error.project.query.by.id";
+    private static final String ERROR_PROJECT_QUERY_BY_ID = "devops.project.query.by.id";
 
     @Override
     public ResponseEntity<String> immutableProjectInfoById(Long id) {
@@ -212,12 +212,12 @@ public class BaseServiceClientFallback implements BaseServiceClient {
 
     @Override
     public ResponseEntity<String> listProjectIdsInOrg(Long tenantId) {
-        throw new CommonException("error.list.projectIds.in.org", tenantId);
+        throw new CommonException("devops.list.projectIds.in.org", tenantId);
     }
 
     @Override
     public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(Long organizationId, Long userId) {
-        throw new CommonException("error.list.projectIds.in.org", organizationId);
+        throw new CommonException("devops.list.projectIds.in.org", organizationId);
     }
 
     @Override

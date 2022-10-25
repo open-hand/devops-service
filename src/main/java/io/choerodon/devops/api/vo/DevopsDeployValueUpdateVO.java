@@ -13,7 +13,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsDeployValueUpdateVO {
     @Encrypt
     @ApiModelProperty("部署配置id")
-    @NotNull(message = "error.deploy.value.id.null")
+    @NotNull(message = "{devops.deploy.value.id.null}")
     private Long id;
     @ApiModelProperty("部署配置内容")
     @NotNull(message = "{devops.deploy.value.value.null}")

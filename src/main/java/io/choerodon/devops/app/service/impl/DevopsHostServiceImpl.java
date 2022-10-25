@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -743,7 +745,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
-            throw new CommonException("error.delete.permission.of.project.owner");
+            throw new CommonException(DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER);
         }
 
         // 删除数据库中的纪录
