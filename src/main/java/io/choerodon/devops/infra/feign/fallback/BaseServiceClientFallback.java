@@ -23,7 +23,7 @@ import io.choerodon.devops.infra.feign.BaseServiceClient;
  */
 @Component
 public class BaseServiceClientFallback implements BaseServiceClient {
-    private static final String ERROR_PROJECT_GET = "error.project.get";
+    private static final String ERROR_PROJECT_GET = "devops.project.get";
     private static final String ERROR_PROJECT_QUERY_BY_ID = "devops.project.query.by.id";
 
     @Override

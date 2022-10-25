@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,7 +63,6 @@ public class GitUtil {
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private static final Pattern PATTERN = Pattern.compile("^[-\\+]?[\\d]*$");
-    private static final String ERROR_GIT_PUSH = "error.git.push";
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
@@ -300,7 +301,7 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
         } catch (IOException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -309,7 +310,7 @@ public class GitUtil {
         try (Git git = new Git(repository)) {
             git.checkout().setName(commit).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -481,7 +482,7 @@ public class GitUtil {
                     "", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -518,7 +519,7 @@ public class GitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -538,7 +539,7 @@ public class GitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -553,7 +554,7 @@ public class GitUtil {
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("admin", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -598,7 +599,7 @@ public class GitUtil {
                     userName, accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         } finally {
             //删除模板
             if (deleteFile != null && deleteFile) {
@@ -635,7 +636,7 @@ public class GitUtil {
             try {
                 FileUtils.deleteDirectory(file);
             } catch (IOException e) {
-                throw new CommonException("error.directory.delete", e);
+                throw new CommonException(DEVOPS_DIRECTORY_DELETE, e);
             }
         }
     }

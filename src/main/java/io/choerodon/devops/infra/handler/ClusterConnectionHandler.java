@@ -71,7 +71,7 @@ public class ClusterConnectionHandler {
             return;
         }
         if (!getEnvConnectionStatus(clusterId)) {
-            throw new CommonException("error.env.disconnect");
+            throw new CommonException("devops.env.disconnect");
         }
     }
 

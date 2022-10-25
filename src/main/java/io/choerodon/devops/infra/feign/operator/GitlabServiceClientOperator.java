@@ -667,15 +667,6 @@ public class GitlabServiceClientOperator {
     }
 
 
-    public List<GitlabProjectDTO> listProjectByUser(Integer userId) {
-        try {
-            return gitlabServiceClient.listProjectByUser(userId).getBody();
-        } catch (Exception e) {
-            throw new CommonException("error.project.get.by.userId", e);
-        }
-    }
-
-
     public MergeRequestDTO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
         try {
             GitlabTransferDTO gitlabTransferDTO = new GitlabTransferDTO();

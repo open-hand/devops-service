@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -45,7 +47,6 @@ public class ExternalGitUtil {
     private static final String ERROR_GIT_CLONE = "devops.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExternalGitUtil.class);
-    private static final String ERROR_GIT_PUSH = "error.git.push";
     private String classPath;
 
     /**
@@ -134,7 +135,7 @@ public class ExternalGitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
         } catch (IOException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -143,7 +144,7 @@ public class ExternalGitUtil {
         try (Git git = new Git(repository)) {
             git.checkout().setName(commit).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -241,7 +242,7 @@ public class ExternalGitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
     public void push(Git git, String name, String commit, String repoUrl, String userName, String accessToken) {
@@ -268,7 +269,7 @@ public class ExternalGitUtil {
                     userName, accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         } finally {
             //删除模板
             if (deleteFile != null && deleteFile) {
@@ -305,7 +306,7 @@ public class ExternalGitUtil {
             try {
                 FileUtils.deleteDirectory(file);
             } catch (IOException e) {
-                throw new CommonException("error.directory.delete", e);
+                throw new CommonException(DEVOPS_DIRECTORY_DELETE, e);
             }
         }
     }

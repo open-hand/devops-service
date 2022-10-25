@@ -360,7 +360,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, params))
                 .map(Page::getContent)
-                .orElseThrow(() -> new CommonException("error.project.get"));
+                .orElseThrow(() -> new CommonException("devops.project.get"));
 
         //根据PvId查权限表中关联的projectId
         List<Long> permitted = devopsPvProPermissionService.baseListByPvId(pvId)

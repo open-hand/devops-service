@@ -114,6 +114,11 @@ public class ExceptionConstants {
         public static final String DEVOPS_USER_NOT_GITLAB_OWNER = "devops.user.not.gitlab.owner";
         public static final String DEVOPS_BRANCH_GET = "devops.branch.get";
         public static final String DEVOPS_USER_NOT_IN_GITLAB_PROJECT = "devops.user.not.in.gitlab.project";
+        public static final String DEVOPS_GIT_CHECKOUT = "devops.git.checkout";
+        public static final String DEVOPS_GIT_PUSH = "devops.git.push";
+        public static final String DEVOPS_DIRECTORY_DELETE = "devops.directory.delete";
+
+
     }
 
     public static class BranchCode {
