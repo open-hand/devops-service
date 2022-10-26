@@ -426,7 +426,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "devops.instance.not.exist.in.database");
         // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
@@ -2743,7 +2743,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "devops.instance.not.exist.in.database");
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         instanceValueVO.setYaml(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue());
         return instanceValueVO;

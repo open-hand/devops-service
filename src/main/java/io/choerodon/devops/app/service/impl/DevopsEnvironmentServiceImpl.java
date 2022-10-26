@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.CdEnvDeployInfoDTOCode.DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
 import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
@@ -85,7 +85,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
     private static final String ERROR_CODE_EXIST = "devops.code.exist";
-    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
@@ -219,7 +218,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
         }
         if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
-            throw new CommonException("error.project.miss.cluster.permission");
+            throw new CommonException("devops.project.miss.cluster.permission");
         }
 
         // 创建环境时默认跳过权限校验
@@ -242,7 +241,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
         boolean isGitlabRoot = false;
@@ -353,7 +352,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
             if (key != 0) {
                 devopsEnvGroupDTO = Optional.ofNullable(devopsEnvGroupDTOMap.get(key)).
-                        orElseThrow(() -> new CommonException("error.env.group.not.exist"));
+                        orElseThrow(() -> new CommonException("devops.env.group.not.exist"));
             }
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
@@ -736,7 +735,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
         PushWebHookVO pushWebHookVO = new PushWebHookVO();
@@ -771,7 +770,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
         // 查询GitLab上环境最新的commit
@@ -819,7 +818,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!isCodePatternValid(code)) {
-            throw new CommonException("error.env.code.notMatch");
+            throw new CommonException("devops.env.code.notMatch");
         }
         // 兼容甄零的收紧权限逻辑，不需要校验集群中已存在code
 //        if (doesNamespaceExistInCluster(clusterId, code)) {
@@ -1200,7 +1199,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         if (userAttrDTO.getGitlabUserId() == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
 
@@ -1527,7 +1526,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
@@ -1568,7 +1567,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException(DEVOPS_USER_NOT_OWNER);
             }
         }
 

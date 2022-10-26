@@ -59,13 +59,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
 
-    public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
+    public static final String ERROR_DOMAIN_PATH_EXIST = "devops.domain.path.exist";
     public static final String INGRESS = "Ingress";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
     public static final String V1_INGRESS_PATH_TYPE_PREFIX = "Prefix";
-    private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
+    private static final String DOMAIN_NAME_EXIST_ERROR = "devops.domain.name.exist";
     private static final String PATH_ERROR = "devops.path.empty";
     private static final String PATH_DUPLICATED = "devops.path.duplicated";
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "devops.service.notContain.port";
@@ -929,7 +929,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         Long id = devopsIngressDTO.getId();
         DevopsIngressDTO ingressDTO = devopsIngressMapper.selectByPrimaryKey(id);
         if (ingressDTO == null) {
-            throw new CommonException("domain.not.exist");
+            throw new CommonException("devops.domain.not.exist");
         }
         if (!devopsIngressDTO.getName().equals(ingressDTO.getName())
                 && !baseCheckName(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName())) {
@@ -1051,7 +1051,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Override
     public DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO) {
         if (devopsIngressMapper.insert(devopsIngressDTO) != 1) {
-            throw new CommonException("error.domain.insert");
+            throw new CommonException("devops.domain.insert");
         }
         return devopsIngressDTO;
     }

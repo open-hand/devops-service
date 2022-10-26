@@ -19,7 +19,7 @@ public class ComponentValuesTemplateUtil {
 
     public static String convert(ClusterResourceType type, Object object, Map<String, Object> extraData) {
         InputStream in = Optional.ofNullable(ComponentValuesTemplateUtil.class.getResourceAsStream(String.format(TEMPLATE, type.getType())))
-                .orElseThrow(() -> new CommonException("error.template.config.file.not.exist"));
+                .orElseThrow(() -> new CommonException("devops.template.config.file.not.exist"));
         switch (type) {
             case PROMETHEUS:
                 return convertPrometheus((DevopsPrometheusDTO) object, in, extraData);

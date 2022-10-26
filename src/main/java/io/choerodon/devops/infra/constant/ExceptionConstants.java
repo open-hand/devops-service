@@ -11,6 +11,9 @@ public class ExceptionConstants {
         public static final String DEVOPS_READ_MULTIPART_FILE = "devops.read.multipart.file";
 
         public static final String DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER = "devops.delete.permission.of.project.owner";
+        public static final String DEVOPS_ORGANIZATION_GET = "devops.organization.get";
+        public static final String DEVOPS_ORGANIZATION_ROLE_ID_GET = "devops.organization.role.id.get";
+        public static final String DEVOPS_CONTEXT_SET_ERROR = "devops.context.set.error";
 
     }
 
@@ -98,6 +101,8 @@ public class ExceptionConstants {
 
     public static class GitopsCode {
         public static final String DEVOPS_FILE_RESOURCE_NOT_EXIST = "devops.fileResource.not.exist";
+        public static final String DEVOPS_FILE_CREATE = "devops.file.create";
+        public static final String DEVOPS_FILE_UPDATE = "devops.file.update";
     }
 
 
@@ -112,17 +117,34 @@ public class ExceptionConstants {
         public static final String DEVOPS_GROUP_NOT_SYNC = "devops.group.not.sync";
         public static final String DEVOPS_GITLAB_GROUP_ID_SELECT = "devops.gitlab.groupId.select";
         public static final String DEVOPS_USER_NOT_GITLAB_OWNER = "devops.user.not.gitlab.owner";
+        public static final String DEVOPS_USER_NOT_OWNER = "devops.user.not.owner";
         public static final String DEVOPS_BRANCH_GET = "devops.branch.get";
         public static final String DEVOPS_USER_NOT_IN_GITLAB_PROJECT = "devops.user.not.in.gitlab.project";
         public static final String DEVOPS_GIT_CHECKOUT = "devops.git.checkout";
         public static final String DEVOPS_GIT_PUSH = "devops.git.push";
         public static final String DEVOPS_DIRECTORY_DELETE = "devops.directory.delete";
+        public static final String DEVOPS_TAGS_GET = "devops.tags.get";
+        public static final String DEVOPS_BRANCH_CREATE = "devops.branch.create";
+        public static final String DEVOPS_PROJECTHOOK_CREATE = "devops.projecthook.create";
+        public static final String DEVOPS_QUERY_USER_BY_LOGIN_NAME = "devops.query.user.by.login.name";
+        public static final String DEVOPS_GITLAB_USER_SYNC_FAILED = "devops.gitlab.user.sync.failed";
+        public static final String DEVOPS_USER_GET = "devops.user.get";
 
 
     }
 
     public static class BranchCode {
         public static final String DEVOPS_BRANCH_EXIST = "devops.branch.exist";
+    }
+
+    public static class PVCode {
+        public static final String DEVOPS_PV_NOT_EXISTS = "devops.pv.not.exists";
+    }
+
+    public static class WorkflowCode {
+        public static final String DEVOPS_WORKFLOW_CREATE = "devops.workflow.create";
+        public static final String DEVOPS_WORKFLOW_APPROVE = "devops.workflow.approve";
+        public static final String DEVOPS_WORKFLOW_STOP = "devops.workflow.stop";
     }
 
     public static class CustomResourceCode {

@@ -54,7 +54,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     public DevopsEnvCommandDTO baseCreate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDTO) != 1) {
-            throw new CommonException("error.env.command.insert");
+            throw new CommonException("devops.env.command.insert");
         }
         return devopsEnvCommandMapper.selectByPrimaryKey(devopsEnvCommandDTO);
     }
@@ -70,7 +70,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
                 .selectByPrimaryKey(devopsEnvCommandDTO.getId());
         devopsEnvCommandDTO.setObjectVersionNumber(oldDevopsEnvCommandDO.getObjectVersionNumber());
         if (devopsEnvCommandMapper.updateByPrimaryKeySelective(devopsEnvCommandDTO) != 1) {
-            throw new CommonException("error.env.command.update");
+            throw new CommonException("devops.env.command.update");
         }
 
         return devopsEnvCommandDTO;

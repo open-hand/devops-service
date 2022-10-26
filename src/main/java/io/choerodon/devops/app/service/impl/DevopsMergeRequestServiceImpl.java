@@ -138,13 +138,13 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
             try {
                 devopsMergeRequestMapper.insert(devopsMergeRequestDTO);
             } catch (Exception e) {
-                LOGGER.info("error.save.merge.request");
+                LOGGER.info("devops.save.merge.request");
             }
         } else {
             devopsMergeRequestDTO.setId(mergeRequestId);
             devopsMergeRequestDTO.setObjectVersionNumber(mergeRequestETemp.getObjectVersionNumber());
             if (baseUpdate(devopsMergeRequestDTO) == 0) {
-                throw new CommonException("error.update.merge.request");
+                throw new CommonException("devops.update.merge.request");
             }
         }
 

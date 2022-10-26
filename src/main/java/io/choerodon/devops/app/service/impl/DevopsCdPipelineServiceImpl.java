@@ -492,7 +492,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
 
         } catch (Exception e) {
-            LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
+            LOGGER.error("devops.create.pipeline.auto.deploy.instance", e);
             log.append("Deploy app instance failed").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);

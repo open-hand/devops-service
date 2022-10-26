@@ -1,6 +1,8 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_BRANCH_GET;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
 
 import java.io.InputStream;
 import java.util.Date;
@@ -30,12 +32,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<RepositoryFileDTO> createFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.file.create");
+        throw new CommonException(DEVOPS_FILE_CREATE);
     }
 
     @Override
     public ResponseEntity<RepositoryFileDTO> updateFile(Integer projectId, FileCreationVO fileCreationVO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.file.update");
+        throw new CommonException(DEVOPS_FILE_UPDATE);
     }
 
     @Override
@@ -45,12 +47,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GitLabUserDTO> queryUserById(Integer userId) {
-        throw new CommonException("error.user.get");
+        throw new CommonException(DEVOPS_USER_GET);
     }
 
     @Override
     public ResponseEntity<GitLabUserDTO> queryUserByUserName(String username) {
-        throw new CommonException("error.user.get");
+        throw new CommonException(DEVOPS_USER_GET);
     }
 
     @Override
@@ -202,7 +204,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GroupDTO> createGroup(GroupDTO groupDO, Integer userId) {
-        throw new CommonException("error.group.create");
+        throw new CommonException("devops.group.create");
     }
 
     @Override
@@ -250,7 +252,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<TagDTO>> getTags(Integer projectId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.tags.get");
+        throw new CommonException(DEVOPS_TAGS_GET);
     }
 
 
@@ -276,7 +278,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity deleteTag(Integer projectId, String name, Integer userId) {
-        throw new CommonException("error.tag.delete");
+        throw new CommonException("devops.tag.delete");
     }
 
     @Override
@@ -296,7 +298,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<BranchDTO> createBranch(Integer projectId, GitlabTransferDTO gitlabTransferDTO, Integer userId) {
-        throw new CommonException("error.branch.create");
+        throw new CommonException(DEVOPS_BRANCH_CREATE);
     }
 
     @Override
@@ -307,12 +309,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<ProjectHookDTO> createProjectHook(Integer projectId, Integer userId, ProjectHookDTO
             projectHook) {
-        throw new CommonException("error.projecthook.create");
+        throw new CommonException(DEVOPS_PROJECTHOOK_CREATE);
     }
 
     @Override
     public ResponseEntity<String> createExternalProjectHook(Integer projectId, ProjectHookDTO projectHookDTO, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        throw new CommonException("error.projecthook.create");
+        throw new CommonException(DEVOPS_PROJECTHOOK_CREATE);
     }
 
     @Override
@@ -322,7 +324,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<GitLabUserDTO> createUser(Integer projectsLimit, GitlabTransferDTO gitlabTransferDTO) {
-        throw new CommonException("error.gitlab.user.create");
+        throw new CommonException("devops.gitlab.user.create");
     }
 
     @Override
@@ -477,7 +479,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<AccessRequestDTO>> listAccessRequestsOfGroup(Integer groupId) {
-        throw new CommonException("failed.to.query.group.access.request", groupId);
+        throw new CommonException("devops.failed.to.query.group.access.request", groupId);
     }
 
     @Override

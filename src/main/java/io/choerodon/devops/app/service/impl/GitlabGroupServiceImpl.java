@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_USER_SYNC_FAILED;
 import static io.choerodon.devops.infra.constant.GitOpsConstants.*;
 
 import java.util.List;
@@ -180,7 +181,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(gitlabGroupPayload.getUserId());
         if (userAttrDTO == null) {
-            throw new CommonException("error.gitlab.user.sync.failed");
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         LOGGER.info("groupPath:{},adminId:{}", group.getPath(), GitUserNameUtil.getAdminId());
         GroupDTO groupDTO = gitlabServiceClientOperator.queryGroupByName(group.getPath(), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()));

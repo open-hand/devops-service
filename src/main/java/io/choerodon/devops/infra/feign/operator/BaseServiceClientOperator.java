@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_QUERY_USER_BY_LOGIN_NAME;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_GET;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_ROLE_ID_GET;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -62,7 +66,7 @@ public class BaseServiceClientOperator {
         if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && !CollectionUtils.isEmpty(roleDTOList)) {
             return roleDTOList.get(0).getId();
         } else {
-            throw new CommonException("error.organization.role.id.get", code);
+            throw new CommonException(DEVOPS_ORGANIZATION_ROLE_ID_GET, code);
         }
     }
 
@@ -123,7 +127,7 @@ public class BaseServiceClientOperator {
                 LOGGER.info("queryOrganizationById: unexpected result: {}", JSONObject.toJSONString(tenant));
             }
         }
-        throw new CommonException("error.organization.get", organizationId);
+        throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
     }
 
     public List<Tenant> listOrganizationByIds(Set<Long> organizationIds) {
@@ -134,7 +138,7 @@ public class BaseServiceClientOperator {
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
-            throw new CommonException("error.organization.get", organizationIds.toString());
+            throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationIds.toString());
         }
     }
 
@@ -351,7 +355,7 @@ public class BaseServiceClientOperator {
             return baseServiceClient
                     .listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, labelName).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.user.get.byGitlabLabel");
+            throw new CommonException("devops.user.get.byGitlabLabel");
         }
     }
 
@@ -542,11 +546,11 @@ public class BaseServiceClientOperator {
             ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(loginName);
             IamUserDTO iamUserDTO = responseEntity.getBody();
             if (iamUserDTO == null || iamUserDTO.getId() == null) {
-                throw new CommonException("error.query.user.by.login.name", loginName);
+                throw new CommonException(DEVOPS_QUERY_USER_BY_LOGIN_NAME, loginName);
             }
             return iamUserDTO;
         } catch (Exception ex) {
-            throw new CommonException("error.query.user.by.login.name", loginName);
+            throw new CommonException(DEVOPS_QUERY_USER_BY_LOGIN_NAME, loginName);
         }
     }
 

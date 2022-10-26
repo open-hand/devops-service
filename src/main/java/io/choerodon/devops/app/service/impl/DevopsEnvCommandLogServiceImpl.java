@@ -25,7 +25,7 @@ public class DevopsEnvCommandLogServiceImpl implements DevopsEnvCommandLogServic
     @Override
     public DevopsEnvCommandLogDTO baseCreate(DevopsEnvCommandLogDTO devopsEnvCommandLogDTO) {
         if (devopsEnvCommandLogMapper.insert(devopsEnvCommandLogDTO) != 1) {
-            throw new CommonException("error.log.insert");
+            throw new CommonException("devops.log.insert");
         }
         return devopsEnvCommandLogDTO;
     }

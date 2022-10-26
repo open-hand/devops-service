@@ -35,7 +35,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     @Override
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
-            throw new CommonException("error.registry.secret.create.error");
+            throw new CommonException("devops.registry.secret.create.error");
         }
         return devopsRegistrySecretDTO;
     }
@@ -75,7 +75,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         DevopsRegistrySecretDTO beforeDevopsRegistrySecretDTO = devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getId());
         devopsRegistrySecretDTO.setObjectVersionNumber(beforeDevopsRegistrySecretDTO.getObjectVersionNumber());
         if (devopsRegistrySecretMapper.updateByPrimaryKeySelective(devopsRegistrySecretDTO) != 1) {
-            throw new CommonException("error.registry.secret.update.error");
+            throw new CommonException("devops.registry.secret.update.error");
         }
         return beforeDevopsRegistrySecretDTO;
     }

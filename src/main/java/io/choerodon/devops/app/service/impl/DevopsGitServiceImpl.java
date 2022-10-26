@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.infra.constant.ExceptionConstants.BranchCode.DEVOPS_BRANCH_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_USER_SYNC_FAILED;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_IN_GITLAB_PROJECT;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.METADATA;
 import static io.choerodon.devops.infra.constant.KubernetesConstants.NAME;
@@ -78,7 +79,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
-    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String PROJECT = "project";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private final Pattern pattern = Pattern.compile("^[-+]?[\\d]*$");
@@ -208,7 +208,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private Integer getGitlabUserId() {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         return TypeUtil.objToInteger(userAttrDTO.getGitlabUserId());
     }
@@ -359,7 +359,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 
@@ -519,7 +519,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         appServiceService.baseCheckApp(projectId, appServiceId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO.getGitlabProjectId() == null) {
-            throw new CommonException("error.gitlabProjectId.not.exists");
+            throw new CommonException("devops.gitlabProjectId.not.exists");
         }
 
         // 由于gitlab不会同步被删掉的合并请求，所以每一次查询前先删除已经不存在的合并请求
@@ -1420,7 +1420,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
 

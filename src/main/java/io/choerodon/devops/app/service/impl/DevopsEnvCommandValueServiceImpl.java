@@ -1,15 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvCommandValueService;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandValueMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Set;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,7 +24,7 @@ public class DevopsEnvCommandValueServiceImpl implements DevopsEnvCommandValueSe
     @Override
     public DevopsEnvCommandValueDTO baseCreate(DevopsEnvCommandValueDTO devopsEnvCommandValueDTO) {
         if (devopsEnvCommandValueMapper.insert(devopsEnvCommandValueDTO) != 1) {
-            throw new CommonException("error.env.command.value.insert");
+            throw new CommonException("devops.env.command.value.insert");
         }
         return devopsEnvCommandValueDTO;
     }

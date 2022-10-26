@@ -17,11 +17,11 @@ public class JsonYamlConversionUtil {
     /**
      * the error message code for failure of conversion from json to yaml
      */
-    public static final String ERROR_JSON_TO_YAML_FAILED = "error.json.to.yaml.failed";
+    public static final String ERROR_JSON_TO_YAML_FAILED = "devops.json.to.yaml.failed";
     /**
      * the error message code for failure of conversion from yaml to json
      */
-    public static final String ERROR_YAML_TO_JSON_FAILED = "error.yaml.to.json.failed";
+    public static final String ERROR_YAML_TO_JSON_FAILED = "devops.yaml.to.json.failed";
 
     private JsonYamlConversionUtil() {
     }

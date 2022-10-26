@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 
 import java.io.*;
@@ -526,7 +527,7 @@ public class FileUtil {
     private static InstanceValueVO loadResult(String yml) {
         String[] strings = yml.split("------love------you------choerodon------");
         if (strings.length < 2) {
-            throw new CommonException("error.value.illegal");
+            throw new CommonException("devops.value.illegal");
         }
         Yaml yaml = new Yaml();
         Object map = yaml.load(strings[2]);
@@ -709,7 +710,7 @@ public class FileUtil {
             new File(file.getParent()).mkdirs();
             try {
                 if (!file.createNewFile()) {
-                    throw new CommonException("error.file.create");
+                    throw new CommonException(DEVOPS_FILE_CREATE);
                 }
             } catch (IOException e) {
                 logger.info(e.getMessage());

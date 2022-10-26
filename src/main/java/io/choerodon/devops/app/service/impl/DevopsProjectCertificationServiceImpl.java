@@ -43,7 +43,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    private static final String ERROR_CERTIFICATION_NOT_EXIST = "error.certification.not.exist";
+    private static final String ERROR_CERTIFICATION_NOT_EXIST = "devops.certification.not.exist";
 
     private final Gson gson = new Gson();
     @Autowired
@@ -68,7 +68,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
 
         if (certificationDTO.getProjectId() == null) {
-            throw new CommonException("error.not.project.certification", update.getCertificationId());
+            throw new CommonException("devops.not.project.certification", update.getCertificationId());
         }
 
         if (certificationDTO.getSkipCheckProjectPermission()) {
@@ -299,7 +299,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
             certificationService.baseDeleteById(certId);
         } else {
-            throw new CommonException("error.cert.related");
+            throw new CommonException("devops.cert.related");
         }
     }
 

@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.C7nCertificationCreateVO;
@@ -116,9 +114,7 @@ public class CertificationController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.pageByOptions(projectId, envId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.page"));
+        return ResponseEntity.ok(certificationService.pageByOptions(projectId, envId, pageable, params));
     }
 
     /**
@@ -140,9 +136,7 @@ public class CertificationController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
             @RequestParam(value = "domain") String domain) {
-        return Optional.ofNullable(certificationService.queryActiveCertificationByDomain(projectId, envId, domain))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
+        return ResponseEntity.ok(certificationService.queryActiveCertificationByDomain(projectId, envId, domain));
     }
 
     /**
@@ -165,9 +159,7 @@ public class CertificationController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
             @RequestParam(value = "cert_name") String certName) {
-        return Optional.ofNullable(certificationService.checkCertNameUniqueInEnv(envId, certName))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.checkUnique"));
+        return ResponseEntity.ok(certificationService.checkCertNameUniqueInEnv(envId, certName));
     }
 
 
@@ -191,9 +183,7 @@ public class CertificationController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
             @RequestParam(value = "cert_name") String certName) {
-        return Optional.ofNullable(certificationService.queryByName(envId, certName))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
+        return ResponseEntity.ok(certificationService.queryByName(envId, certName));
     }
 
 
@@ -214,9 +204,7 @@ public class CertificationController {
             @Encrypt
             @ApiParam(value = "证书ID", required = true)
             @PathVariable(value = "cert_id") Long certId) {
-        return Optional.ofNullable(certificationService.queryByCertId(certId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.query.by.id"));
+        return ResponseEntity.ok(certificationService.queryByCertId(certId));
     }
 
     /**
@@ -232,9 +220,7 @@ public class CertificationController {
     public ResponseEntity<List<ProjectCertificationVO>> listOrgCert(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(certificationService.listProjectCertInProject(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.page"));
+        return ResponseEntity.ok(certificationService.listProjectCertInProject(projectId));
     }
 
 }

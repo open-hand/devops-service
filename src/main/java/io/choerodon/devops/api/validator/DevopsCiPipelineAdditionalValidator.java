@@ -25,12 +25,12 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");
 
     private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
-    private static final String ERROR_CI_JOB_IS_EMPTY = "error.ci.job.is.empty";
-    private static final String ERROR_CD_JOB_IS_EMPTY = "error.cd.job.is.empty";
+    private static final String ERROR_CI_JOB_IS_EMPTY = "devops.ci.job.is.empty";
+    private static final String ERROR_CD_JOB_IS_EMPTY = "devops.cd.job.is.empty";
     private static final String ERROR_JOB_REGULAR_FORMAT = "error.job.regular.format";
-    private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "error.pipeline.related.branch.empty";
+    private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "devops.pipeline.related.branch.empty";
     private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "error.job.parallel.size.range";
-    private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "error.pipeline.related.branch.size.invalid";
+    private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "devops.pipeline.related.branch.size.invalid";
     private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
     private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
     private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";

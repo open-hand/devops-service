@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PVCode.DEVOPS_PV_NOT_EXISTS;
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -329,7 +331,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public void baseupdatePv(DevopsPvDTO devopsPvDTO) {
         DevopsPvDTO oldDevopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
         if (oldDevopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         devopsPvDTO.setObjectVersionNumber(oldDevopsPvDTO.getObjectVersionNumber());
@@ -353,7 +355,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         PageRequest customPageRequest = new PageRequest(1, 0);
@@ -469,7 +471,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> pageProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
@@ -486,7 +488,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
 
