@@ -173,6 +173,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private CiPipelineImageService ciPipelineImageService;
     @Autowired
     private CiPipelineAppVersionService ciPipelineAppVersionService;
+    @Autowired
+    private DevopsHostService devopsHostService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -712,6 +714,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             cdHostDeployConfigVO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
         }
         devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
+        cdHostDeployConfigVO.setDevopsHostDTO(devopsHostService.baseQuery(devopsCdHostDeployInfoDTO.getHostId()));
 
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }

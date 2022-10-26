@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
+
 /**
  * @author scp
  * @date 2020/6/30
@@ -56,6 +58,16 @@ public class CdHostDeployConfigVO {
     private String operation;
 
     private String imageJobName;
+    @ApiModelProperty("主机信息")
+    private DevopsHostDTO devopsHostDTO;
+
+    public DevopsHostDTO getDevopsHostDTO() {
+        return devopsHostDTO;
+    }
+
+    public void setDevopsHostDTO(DevopsHostDTO devopsHostDTO) {
+        this.devopsHostDTO = devopsHostDTO;
+    }
 
     public String getImageJobName() {
         return imageJobName;
