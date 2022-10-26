@@ -10,6 +10,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -61,7 +62,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         DevopsCiSonarConfigVO sonarConfig = devopsCiStepVO.getSonarConfig();
         // 报错mvn配置
         DevopsCiMavenBuildConfigVO mavenBuildConfig = sonarConfig.getMavenBuildConfig();
-        if (mavenBuildConfig != null) {
+        if (mavenBuildConfig != null
+                && (!CollectionUtils.isEmpty(mavenBuildConfig.getNexusMavenRepoIds()) || !CollectionUtils.isEmpty(mavenBuildConfig.getRepos()))) {
             devopsCiMavenBuildConfigService.baseCreate(stepId, mavenBuildConfig);
         }
 
