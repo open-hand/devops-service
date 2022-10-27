@@ -261,13 +261,6 @@ DesEncrypt:
   # 长度：8位
   desIV: ${DES_ENCRYPT_DES_IV:7HHT5EVO}
 
-nexus:
-  default:
-    url: ${NEXUS_DEFAULT_URL:http://example.com}
-  proxy:
-    url: ${NEXUS_PROXY_URL:http://example.com}
-
-
 sonar:
   fix:
     image: ${SONAR_FIX_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/sonar-scanner:4.6-jdk-11.0.11_9}
