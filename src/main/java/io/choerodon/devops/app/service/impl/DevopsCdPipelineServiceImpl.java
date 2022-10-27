@@ -1565,7 +1565,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                         Map<String, String> param = new HashMap<>();
                         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
-                        Tenant tenant = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+                        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                         param.put("projectName", projectDTO.getName());
                         param.put("tenantName", tenant.getTenantName());

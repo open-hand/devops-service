@@ -905,7 +905,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(devOpsAppServicePayload.getUserId()));
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsProjectDTO.getIamProjectId());
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator
                 .queryProjectByName(organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(), appServiceDTO.getCode(),
                         devOpsAppServicePayload.getUserId(), false);
@@ -992,7 +992,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         AppServiceDTO appServiceDTO = baseQueryByCode(devOpsAppServiceImportPayload.getPath(),
                 devopsProjectDTO.getIamProjectId());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsProjectDTO.getIamProjectId());
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         GitlabProjectDTO gitlabProjectDO = gitlabServiceClientOperator.queryProjectByName(
                 organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode(),

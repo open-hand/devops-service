@@ -354,7 +354,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             return new Page<>();
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         // 查询用户是否在该gitlab project下
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
