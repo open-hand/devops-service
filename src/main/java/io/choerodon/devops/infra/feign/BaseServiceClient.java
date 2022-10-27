@@ -50,6 +50,13 @@ public interface BaseServiceClient {
                                                  @RequestParam(value = "with_more_info") Boolean withMoreInfo);
 
     /**
+     * @param organizationId 组织id
+     * @return
+     */
+    @GetMapping(value = "/choerodon/v1/organizations/{organizationId}/basic_info")
+    ResponseEntity<Tenant> queryOrganizationBasicInfoWithCache(@PathVariable("organizationId") Long organizationId);
+
+    /**
      * 根据id集合查询组织
      *
      * @param ids id集合，去重

@@ -2214,7 +2214,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             return new ArrayList<>();
         } else {
             resourceVOList = new ArrayList<>();
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId, false);
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
             if (tenant == null) {
                 return new ArrayList<>();
             }

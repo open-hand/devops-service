@@ -109,15 +109,7 @@ public class BaseServiceClientOperator {
     }
 
     public Tenant queryOrganizationById(Long organizationId) {
-        return queryOrganizationById(organizationId, true);
-    }
-
-    public Tenant queryOrganizationBasicInfoById(Long organizationId) {
-        return queryOrganizationById(organizationId, false);
-    }
-
-    public Tenant queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
-        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId, withMoreInfo);
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationBasicInfoWithCache(organizationId);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             Tenant tenant = organizationDTOResponseEntity.getBody();
             if (tenant != null && tenant.getTenantId() != null) {

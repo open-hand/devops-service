@@ -60,6 +60,11 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
+    public ResponseEntity<Tenant> queryOrganizationBasicInfoWithCache(Long organizationId) {
+        throw new CommonException(DEVOPS_ORGANIZATION_GET);
+    }
+
+    @Override
     public ResponseEntity<List<Tenant>> queryOrgByIds(Set<Long> ids) {
         throw new CommonException(DEVOPS_ORGANIZATION_GET, ids == null ? "null" : ids.toString());
     }
