@@ -83,7 +83,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     @Override
     public DevopsEnvFileDTO baseCreate(DevopsEnvFileDTO devopsEnvFileDTO) {
         if (devopsEnvFileMapper.insert(devopsEnvFileDTO) != 1) {
-            throw new CommonException("error.env.file.create");
+            throw new CommonException("devops.env.file.create");
         }
         return devopsEnvFileDTO;
     }

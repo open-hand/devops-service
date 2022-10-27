@@ -24,28 +24,28 @@ public class DevopsCiPipelineAdditionalValidator {
     private static final Pattern MAVEN_REPO_NAME_REGEX = Pattern.compile("[0-9a-zA-Z-]{6,30}");
     private static final Pattern PIPELINE_VARIABLE_KEY_FORMAT = Pattern.compile("^\\w+$");
 
-    private static final String ERROR_STAGES_EMPTY = "error.stages.empty";
+    private static final String ERROR_STAGES_EMPTY = "devops.stages.empty";
     private static final String ERROR_CI_JOB_IS_EMPTY = "devops.ci.job.is.empty";
     private static final String ERROR_CD_JOB_IS_EMPTY = "devops.cd.job.is.empty";
-    private static final String ERROR_JOB_REGULAR_FORMAT = "error.job.regular.format";
+    private static final String ERROR_JOB_REGULAR_FORMAT = "devops.job.regular.format";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_EMPTY = "devops.pipeline.related.branch.empty";
-    private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "error.job.parallel.size.range";
+    private static final String ERROR_JOB_PARALLEL_SIZE_RANGE = "devops.job.parallel.size.range";
     private static final String ERROR_PIPELINE_RELATED_BRANCH_SIZE_INVALID = "devops.pipeline.related.branch.size.invalid";
-    private static final String ERROR_STEP_SEQUENCE_IS_NULL = "error.step.sequence.null";
-    private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "error.step.sequence.duplicated";
-    private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "error.maven.repository.type.null";
-    private static final String ERROR_MAVEN_REPO_TYPE_INVALID = "error.maven.repository.type.invalid";
-    private static final String ERROR_MAVEN_REPO_NAME_EMPTY = "error.maven.repository.name.empty";
-    private static final String ERROR_MAVEN_REPO_NAME_INVALID = "error.maven.repository.name.invalid";
-    private static final String ERROR_MAVEN_REPO_URL_EMPTY = "error.maven.repository.url.empty";
-    private static final String ERROR_MAVEN_REPO_URL_INVALID = "error.maven.repository.url.invalid";
-    private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "error.maven.repository.username.empty";
-    private static final String ERROR_MAVEN_REPO_PSW_EMPTY = "error.maven.repository.password.empty";
-    private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "error.custom.job.format.invalid";
-    private static final String ERROR_JOB_NAME_NOT_UNIQUE = "error.job.name.not.unique";
-    private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "error.stage.name.not.unique";
-    private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "error.both.repos.and.settings.exist";
-    private static final String ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT = "error.maven.settings.not.xml.format";
+    private static final String ERROR_STEP_SEQUENCE_IS_NULL = "devops.step.sequence.null";
+    private static final String ERROR_STEP_SEQUENCE_DUPLICATED = "devops.step.sequence.duplicated";
+    private static final String ERROR_MAVEN_REPO_TYPE_EMPTY = "devops.maven.repository.type.null";
+    private static final String ERROR_MAVEN_REPO_TYPE_INVALID = "devops.maven.repository.type.invalid";
+    private static final String ERROR_MAVEN_REPO_NAME_EMPTY = "devops.maven.repository.name.empty";
+    private static final String ERROR_MAVEN_REPO_NAME_INVALID = "devops.maven.repository.name.invalid";
+    private static final String ERROR_MAVEN_REPO_URL_EMPTY = "devops.maven.repository.url.empty";
+    private static final String ERROR_MAVEN_REPO_URL_INVALID = "devops.maven.repository.url.invalid";
+    private static final String ERROR_MAVEN_REPO_USERNAME_EMPTY = "devops.maven.repository.username.empty";
+    private static final String ERROR_MAVEN_REPO_PSW_EMPTY = "devops.maven.repository.password.empty";
+    private static final String ERROR_CUSTOM_JOB_FORMAT_INVALID = "devops.custom.job.format.invalid";
+    private static final String ERROR_JOB_NAME_NOT_UNIQUE = "devops.job.name.not.unique";
+    private static final String ERROR_STAGE_NAME_NOT_UNIQUE = "devops.stage.name.not.unique";
+    private static final String ERROR_BOTH_REPOS_AND_SETTINGS_EXIST = "devops.both.repos.and.settings.exist";
+    private static final String ERROR_MAVEN_SETTINGS_NOT_XML_FORMAT = "devops.maven.settings.not.xml.format";
 
     private DevopsCiPipelineAdditionalValidator() {
     }
@@ -106,7 +106,7 @@ public class DevopsCiPipelineAdditionalValidator {
         if (CiJobTypeEnum.NORMAL.value().equals(job.getType())) {
             List<DevopsCiStepVO> devopsCiStepVOList = job.getDevopsCiStepVOList();
             if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
-                throw new CommonException("error.job.step.is.empty");
+                throw new CommonException("devops.job.step.is.empty");
             }
         }
     }
@@ -119,7 +119,7 @@ public class DevopsCiPipelineAdditionalValidator {
     public static void additionalCheckVariablesKey(Map<String, String> variables) {
         variables.forEach((k, v) -> {
             if (!PIPELINE_VARIABLE_KEY_FORMAT.matcher(k).matches()) {
-                throw new CommonException("error.variable.key.format.invalid");
+                throw new CommonException("devops.variable.key.format.invalid");
             }
         });
     }
@@ -291,7 +291,7 @@ public class DevopsCiPipelineAdditionalValidator {
             return;
         }
         if (!GitOpsConstants.IMAGE_REGISTRY.matcher(image).matches()) {
-            throw new CommonException("error.ci.image.invalid", image);
+            throw new CommonException("devops.ci.image.invalid", image);
         }
     }
 

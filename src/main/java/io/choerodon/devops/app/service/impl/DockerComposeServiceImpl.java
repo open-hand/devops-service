@@ -98,7 +98,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 RdupmTypeEnum.DOCKER_COMPOSE.value(),
                 OperationTypeEnum.CREATE_APP.value());
 
-        devopsHostAppService.baseCreate(devopsHostAppDTO, "error.create.app");
+        devopsHostAppService.baseCreate(devopsHostAppDTO, "devops.create.app");
 
         Long appId = devopsHostAppDTO.getId();
         String remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();

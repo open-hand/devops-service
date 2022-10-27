@@ -118,7 +118,7 @@ public class CustomContextUtil {
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.execute.in.certain.context", ex);
+            throw new CommonException("devops.execute.in.certain.context", ex);
         } finally {
             setUserContext(preContext);
         }
@@ -139,7 +139,7 @@ public class CustomContextUtil {
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.execute.in.certain.context", ex);
+            throw new CommonException("devops.execute.in.certain.context", ex);
         } finally {
             setUserContext(preContext);
         }

@@ -295,7 +295,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Override
     public DevopsConfigMapDTO baseCreate(DevopsConfigMapDTO devopsConfigMapDTO) {
         if (devopsConfigMapMapper.insert(devopsConfigMapDTO) != 1) {
-            throw new CommonException("error.configMap.create");
+            throw new CommonException("devops.configMap.create");
         }
         return devopsConfigMapDTO;
     }
@@ -305,7 +305,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsConfigMapDTO oldDevopsConfigMapDTO = devopsConfigMapMapper.selectByPrimaryKey(devopsConfigMapDTO.getId());
         devopsConfigMapDTO.setObjectVersionNumber(oldDevopsConfigMapDTO.getObjectVersionNumber());
         if (devopsConfigMapMapper.updateByPrimaryKeySelective(devopsConfigMapDTO) != 1) {
-            throw new CommonException("error.configMap.update");
+            throw new CommonException("devops.configMap.update");
         }
         return devopsConfigMapDTO;
     }

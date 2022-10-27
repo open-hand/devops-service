@@ -106,7 +106,7 @@ public class MavenSettingsUtil {
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
         } catch (JAXBException e) {
             LOGGER.warn("Maven util: internal errors: failed to generate settings: servers: {}, repositories: {}", servers, repositories);
-            throw new CommonException("error.generate.maven.settings");
+            throw new CommonException("devops.generate.maven.settings");
         }
     }
 
@@ -170,7 +170,7 @@ public class MavenSettingsUtil {
                 }
             }
         } catch (DocumentException e) {
-            throw new CommonException("error.parse.pom", e.getCause());
+            throw new CommonException("devops.parse.pom", e.getCause());
         }
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);

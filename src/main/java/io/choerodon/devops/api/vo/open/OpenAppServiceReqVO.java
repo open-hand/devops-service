@@ -29,7 +29,7 @@ public class OpenAppServiceReqVO {
     private String type;
 
     @ApiModelProperty("项目所有者邮箱")
-    @NotNull(message = "error.email.null")
+    @NotNull(message = "devops.email.null")
     private String email;
 
     private String imgUrl;

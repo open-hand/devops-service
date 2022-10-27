@@ -120,7 +120,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsStatefulSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "StatefulSet", name);
+            throw new CommonException("devops.workload.exist", "StatefulSet", name);
         }
     }
 
@@ -138,7 +138,7 @@ public class DevopsStatefulSetServiceImpl implements DevopsStatefulSetService, C
             DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetMapper.selectByPrimaryKey(devopsStatefulSetDTOToUpdate.getId());
             devopsStatefulSetDTOToUpdate.setObjectVersionNumber(devopsStatefulSetDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsStatefulSetMapper, devopsStatefulSetDTOToUpdate, "error.statefulset.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsStatefulSetMapper, devopsStatefulSetDTOToUpdate, "devops.statefulset.update");
     }
 
     @Override

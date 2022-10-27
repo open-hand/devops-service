@@ -66,7 +66,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
     private static final String WGET_COMMAND_TEMPLATE = "wget %s -O /choerodon/%s";
     private static final String WGET_COMMAND_WITH_AUTHENTICATION_TEMPLATE = "wget --user=%s --password=%s %s -O /choerodon/%s";
-    private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
+    private static final String ERROR_IMAGE_TAG_NOT_FOUND = "devops.image.tag.not.found";
     private static final String SEPARATOR = ";";
 
     private static final String IF_NOT_PRESENT = "IfNotPresent";
@@ -211,14 +211,14 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             // 构建podTemplate相关配置
             addContainerConfig(projectDTO, devopsEnvironmentDTO, devopsDeployGroupVO, deployment);
         } catch (IOException e) {
-            throw new CommonException("error.parse.config", e.getMessage());
+            throw new CommonException("devops.parse.config", e.getMessage());
         }
         JSON json = new JSON();
         String jsonStr = json.serialize(deployment);
         try {
             return JsonYamlConversionUtil.json2yaml(jsonStr);
         } catch (IOException e) {
-            throw new CommonException("error.dump.deployment.to.yaml", e);
+            throw new CommonException("devops.dump.deployment.to.yaml", e);
         }
     }
 
@@ -344,7 +344,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
                     containers.add(processJarConfig(projectDTO, devopsDeployGroupContainerConfigVO, v1Container, wgetCommandSB));
                     break;
                 default:
-                    throw new CommonException("error.unsupported.rdupm.type");
+                    throw new CommonException("devops.unsupported.rdupm.type");
             }
         }
         initContainerCommands.add(wgetCommandSB.toString());
@@ -403,7 +403,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppName())) {
-                throw new CommonException("error.env.app.center.name.null");
+                throw new CommonException("devops.env.app.center.name.null");
             }
 
             if (devopsDeployGroupVO.getAppName().length() < 1 || devopsDeployGroupVO.getAppName().length() > 53) {
@@ -411,7 +411,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             }
 
             if (StringUtils.isEmpty(devopsDeployGroupVO.getAppCode())) {
-                throw new CommonException("error.env.app.center.code.null");
+                throw new CommonException("devops.env.app.center.code.null");
             }
 
             if (devopsDeployGroupVO.getAppCode().length() < 1 || devopsDeployGroupVO.getAppCode().length() > 53) {
@@ -423,22 +423,22 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
             appConfig.getLabels().forEach((key, value) -> {
                 if (!K8sUtil.LABEL_NAME_PATTERN.matcher(key).matches()) {
-                    throw new CommonException("error.app.config.label.name.illegal");
+                    throw new CommonException("devops.app.config.label.name.illegal");
                 }
             });
 
             appConfig.getAnnotations().forEach((key, value) -> {
                 if (!K8sUtil.ANNOTATION_NAME_PATTERN.matcher(key).matches()) {
-                    throw new CommonException("error.app.config.annotation.name.illegal");
+                    throw new CommonException("devops.app.config.annotation.name.illegal");
                 }
             });
 
             if (!StringUtils.isEmpty(appConfig.getNameServers()) && appConfig.getNameServers().split(SEPARATOR).length > 3) {
-                throw new CommonException("error.app.config.nameservers.length");
+                throw new CommonException("devops.app.config.nameservers.length");
             }
 
             if (!StringUtils.isEmpty(appConfig.getSearches()) && appConfig.getSearches().split(SEPARATOR).length > 6) {
-                throw new CommonException("error.app.config.searches.length");
+                throw new CommonException("devops.app.config.searches.length");
             }
         }
 
@@ -449,28 +449,28 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
         devopsDeployGroupContainerConfigVOList.forEach(containerConfig -> {
 
             if (containerConfig.getName().length() > 64) {
-                throw new CommonException("error.container.config.name.length");
+                throw new CommonException("devops.container.config.name.length");
             }
 
             if (!K8sUtil.NAME_PATTERN.matcher(containerConfig.getName()).matches()) {
-                throw new CommonException("error.container.config.name.illegal");
+                throw new CommonException("devops.container.config.name.illegal");
             }
 
             if (existContainerNames.contains(containerConfig.getName())) {
-                throw new CommonException("error.container.name.exists");
+                throw new CommonException("devops.container.name.exists");
             }
 
             existContainerNames.add(containerConfig.getName());
 
             if (!StringUtils.isEmpty(containerConfig.getRequestCpu()) && !StringUtils.isEmpty(containerConfig.getLimitCpu())) {
                 if (Integer.parseInt(containerConfig.getRequestCpu()) > Integer.parseInt(containerConfig.getLimitCpu())) {
-                    throw new CommonException("error.container.config.cpu.request.more.than.limit");
+                    throw new CommonException("devops.container.config.cpu.request.more.than.limit");
                 }
             }
 
             if (!StringUtils.isEmpty(containerConfig.getRequestMemory()) && !StringUtils.isEmpty(containerConfig.getLimitMemory())) {
                 if (Integer.parseInt(containerConfig.getRequestMemory()) > Integer.parseInt(containerConfig.getLimitMemory())) {
-                    throw new CommonException("error.container.config.memory.request.more.than.limit");
+                    throw new CommonException("devops.container.config.memory.request.more.than.limit");
                 }
             }
 
@@ -489,12 +489,12 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
                     String namePort = name + port;
                     if (existPorts.contains(namePort)) {
-                        throw new CommonException("error.container.port.exist");
+                        throw new CommonException("devops.container.port.exist");
                     }
                     existPorts.add(namePort);
 
                     if (Integer.parseInt(port) < 1 || Integer.parseInt(port) > 65535) {
-                        throw new CommonException("error.container.port.range");
+                        throw new CommonException("devops.container.port.range");
                     }
                     filteredPorts.add(portInfo);
                 }
@@ -640,7 +640,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectDTO.getId()), Objects.requireNonNull(jarDeployVO.getDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
-                throw new CommonException("error.maven.deploy.object.not.exist");
+                throw new CommonException("devops.maven.deploy.object.not.exist");
             }
 
             MarketMavenConfigVO marketMavenConfigVO = marketServiceDeployObjectVO.getMarketMavenConfigVO();
@@ -681,10 +681,10 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
 
         }
         if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-            throw new CommonException("error.jar.version.not.found");
+            throw new CommonException("devops.jar.version.not.found");
         }
         if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-            throw new CommonException("error.get.maven.config");
+            throw new CommonException("devops.get.maven.config");
         }
 
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO();
@@ -792,7 +792,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
     private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, DevopsDeployGroupDockerDeployVO devopsDeployGroupDockerDeployVO) {
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(devopsDeployGroupDockerDeployVO.getDeployObjectId()));
         if (Objects.isNull(marketServiceDeployObjectVO.getMarketHarborConfigVO())) {
-            throw new CommonException("error.harbor.deploy.object.not.exist");
+            throw new CommonException("devops.harbor.deploy.object.not.exist");
         }
         return marketServiceDeployObjectVO;
     }

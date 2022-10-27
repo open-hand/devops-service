@@ -79,7 +79,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     public Boolean checkRepositoryAvailable(String groupName, String projectName, String token) {
         // 校验token
         if (!proxyToken.equals(token)) {
-            throw new CommonException("error.token.is.invalid");
+            throw new CommonException("devops.token.is.invalid");
         }
 
         LOGGER.info(">>>>>>>>>>>>>>>>>checkRepositoryAvailable,groupName: {}, projectName：{}， token： {}<<<<<<<<<<<<<<<<", groupName, projectName, token);
@@ -154,7 +154,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         }
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectDTO.getId());
         if (devopsProjectDTO.getDevopsClusterEnvGroupId() == null) {
-            throw new CommonException("error.cluster.env.group.create");
+            throw new CommonException("devops.cluster.env.group.create");
         }
         ownerIds.forEach(id -> {
                     UserAttrDTO ownerAttrDTO = userAttrService.baseQueryById(id);
@@ -223,7 +223,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             if (suffix.equals(CLUSTER_ENV_GROUP_SUFFIX)) {
                 return;
             }
-            throw new CommonException("error.group.id.get");
+            throw new CommonException("devops.group.id.get");
         }
 
         try {

@@ -39,6 +39,6 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
 
     @Override
     public ResponseEntity<String> createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
-        throw new CommonException("error.hzero.deploy.create");
+        throw new CommonException("devops.hzero.deploy.create");
     }
 }

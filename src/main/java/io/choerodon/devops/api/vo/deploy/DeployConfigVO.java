@@ -17,11 +17,11 @@ import io.choerodon.devops.api.vo.HostConnectionVO;
 public class DeployConfigVO {
     @ApiModelProperty("主机详情")
     @Valid
-    @NotNull(message = "error.hostConnectionVO.is.null")
+    @NotNull(message = "devops.hostConnectionVO.is.null")
     private HostConnectionVO hostConnectionVO;
 
     @ApiModelProperty("部署类型 env/host")
-    @NotNull(message = "error.deployType.is.null")
+    @NotNull(message = "devops.deployType.is.null")
     private String deployType;
 
     @ApiModelProperty("镜像部署详情")
@@ -81,7 +81,7 @@ public class DeployConfigVO {
         private String value;
 
         @ApiModelProperty("容器名称")
-        @NotNull(message = "error.containerName.is.null")
+        @NotNull(message = "devops.containerName.is.null")
         private String containerName;
 
         /**
@@ -214,7 +214,7 @@ public class DeployConfigVO {
         private String value;
 
         @ApiModelProperty("工作目录,默认值/temp")
-        @NotNull(message = "error.workingPath.is.null")
+        @NotNull(message = "devops.workingPath.is.null")
         private String workingPath;
 
 

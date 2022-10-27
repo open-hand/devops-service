@@ -24,11 +24,11 @@ import io.choerodon.devops.infra.mapper.DevopsCdEnvDeployInfoMapper;
 @Service
 public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoService {
 
-    private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
+    private static final String ERROR_VALUE_ID_IS_NULL = "devops.value.id.is.null";
 
-    private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
-    private static final String ERROR_SAVE_DEPLOY_INFO = "error.save.deploy.info";
-    private static final String ERROR_UPDATE_DEPLOY_INFO = "error.update.deploy.info";
+    private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "devops.deploy.info.id.is.null";
+    private static final String ERROR_SAVE_DEPLOY_INFO = "devops.save.deploy.info";
+    private static final String ERROR_UPDATE_DEPLOY_INFO = "devops.update.deploy.info";
 
     @Autowired
     private DevopsCdEnvDeployInfoMapper devopsCdEnvDeployInfoMapper;

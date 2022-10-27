@@ -63,9 +63,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
      * 集群安装信息保存在redis的key, cluster-info-${projectId}-${集群code}
      */
     public static final String CLUSTER_INFO_REDIS_KEY_TEMPLATE = "cluster-info-%d-%s";
-    private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
-    private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
-    private static final String ERROR_ADD_NODE_ROLE_FAILED = "error.add.node.role.failed";
+    private static final String ERROR_DELETE_NODE_FAILED = "devops.delete.node.failed";
+    private static final String ERROR_ADD_NODE_FAILED = "devops.add.node.failed";
+    private static final String ERROR_ADD_NODE_ROLE_FAILED = "devops.add.node.role.failed";
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     private static final Integer MAX_LOG_MSG_LENGTH = 65535;
 
@@ -128,7 +128,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public void batchInsert(List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) {
         int size = devopsClusterNodeDTOList.size();
         if (devopsClusterNodeMapper.batchInsert(devopsClusterNodeDTOList) != size) {
-            throw new CommonException("error.batch.insert.node");
+            throw new CommonException("devops.batch.insert.node");
         }
     }
 

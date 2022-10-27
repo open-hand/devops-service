@@ -1,12 +1,14 @@
 package io.choerodon.devops.infra.handler;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.host.HostSessionVO;
-import io.choerodon.devops.app.service.DevopsHostService;
-import io.choerodon.devops.infra.constant.DevopsHostConstants;
-import io.choerodon.devops.infra.dto.DevopsHostDTO;
-import io.choerodon.devops.infra.util.LogUtil;
-import io.choerodon.devops.infra.util.TypeUtil;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.HOST_ID;
+import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.TOKEN;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.HOST_ID;
-import static io.choerodon.devops.infra.constant.DevOpsWebSocketConstants.TOKEN;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.host.HostSessionVO;
+import io.choerodon.devops.app.service.DevopsHostService;
+import io.choerodon.devops.infra.constant.DevopsHostConstants;
+import io.choerodon.devops.infra.dto.DevopsHostDTO;
+import io.choerodon.devops.infra.util.LogUtil;
+import io.choerodon.devops.infra.util.TypeUtil;
 
 @Component
 public class HostConnectionHandler {
@@ -72,7 +73,7 @@ public class HostConnectionHandler {
      */
     public void checkHostConnection(Long hostId) {
         if (!getHostConnectionStatus(hostId)) {
-            throw new CommonException("error.host.disconnect");
+            throw new CommonException("devops.host.disconnect");
         }
     }
 

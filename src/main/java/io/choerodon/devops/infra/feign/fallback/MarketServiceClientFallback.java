@@ -17,76 +17,76 @@ public class MarketServiceClientFallback implements MarketServiceClient {
 
     @Override
     public ResponseEntity<String> queryDeployObject(Long projectId, Boolean withValues, Long deployObjectId) {
-        throw new CommonException("error.query.deploy.object.config");
+        throw new CommonException("devops.query.deploy.object.config");
     }
 
     @Override
     public ResponseEntity<Void> createUseRecord(MarketAppUseRecordDTO marketAppUseRecordDTO) {
-        throw new CommonException("error.create.use.record");
+        throw new CommonException("devops.create.use.record");
     }
 
     @Override
     public ResponseEntity<String> queryValuesForDeployObject(Long projectId, Long deployObjectId) {
-        throw new CommonException("error.query.values.from.market");
+        throw new CommonException("devops.query.values.from.market");
     }
 
     @Override
     public ResponseEntity<String> queryMarketService(Long projectId, Long marketServiceId) {
-        throw new CommonException("error.query.market.service");
+        throw new CommonException("devops.query.market.service");
     }
 
     @Override
     public ResponseEntity<String> queryDeployObjectByCodeAndService(Long projectId, String devopsAppServiceCode, String devopsAppServiceVersion, Boolean withHelmConfig) {
-        throw new CommonException("error.query.deploy.object.by.code.and.service");
+        throw new CommonException("devops.query.deploy.object.by.code.and.service");
     }
 
     @Override
     public ResponseEntity<String> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
-        throw new CommonException("error.list.market.service.by.ids");
+        throw new CommonException("devops.list.market.service.by.ids");
     }
 
     @Override
     public ResponseEntity<String> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
-        throw new CommonException("error.list.deploy.objects.by.ids");
+        throw new CommonException("devops.list.deploy.objects.by.ids");
     }
 
     @Override
     public ResponseEntity<MarketAppSubscribeRelVO> subscribeApplication(Long marketAppId, Long userId) {
-        throw new CommonException("error.subscribe.application");
+        throw new CommonException("devops.subscribe.application");
     }
 
     @Override
     public ResponseEntity<String> queryUpgradeMarketService(Long projectId, Long marketServiceId, Long deployObjectId) {
-        throw new CommonException("error.query.market.upgrade.version");
+        throw new CommonException("devops.query.market.upgrade.version");
     }
 
     @Override
     public ResponseEntity<String> getMiddlewareServiceReleaseInfo(String appName, String mode, String version) {
-        throw new CommonException("error.query.middleware.info");
+        throw new CommonException("devops.query.middleware.info");
     }
 
     @Override
     public ResponseEntity<String> queryDeployObjectByMarketServiceId(Long projectId, Long marketServiceId) {
-        throw new CommonException("error.query.deploy.objects.info");
+        throw new CommonException("devops.query.deploy.objects.info");
     }
 
     @Override
     public ResponseEntity<String> queryMarketServiceAndDeployObjAndCategoryByMarketServiceId(Long projectId, Set<Long> marketServiceIds) {
-        throw new CommonException("error.query.market.service.info");
+        throw new CommonException("devops.query.market.service.info");
     }
 
     @Override
     public ResponseEntity<String> queryApplication(Long applicationId, Long organizationId) {
-        throw new CommonException("error.query.market.app");
+        throw new CommonException("devops.query.market.app");
     }
 
     @Override
     public ResponseEntity<String> queryAppVersionById(Long applicationId, Long appVersionId) {
-        throw new CommonException("error.query.market.app.version");
+        throw new CommonException("devops.query.market.app.version");
     }
 
     @Override
     public ResponseEntity<String> queryHzeroAppType(Long applicationId) {
-        throw new CommonException("error.query.hzero.app.type");
+        throw new CommonException("devops.query.hzero.app.type");
     }
 }

@@ -24,11 +24,11 @@ public class DevopsHostAdditionalCheckValidator {
     private DevopsHostService devopsHostService;
 
     public void validNameProjectUnique(Long projectId, String name) {
-        CommonExAssertUtil.assertTrue(devopsHostService.isNameUnique(projectId, name), "error.host.name.not.unique");
+        CommonExAssertUtil.assertTrue(devopsHostService.isNameUnique(projectId, name), "devops.host.name.not.unique");
     }
 
     public void validIpAndSshPortProjectUnique(Long projectId, String ip, Integer sshPort) {
-        CommonExAssertUtil.assertTrue(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort), "error.host.ip.ssh.port.not.unique");
+        CommonExAssertUtil.assertTrue(devopsHostService.isSshIpPortUnique(projectId, ip, sshPort), "devops.host.ip.ssh.port.not.unique");
     }
 
     public void validUsernamePasswordMatch(String username, String password) {
@@ -38,7 +38,7 @@ public class DevopsHostAdditionalCheckValidator {
     public boolean validIpAndSshPortComplete(DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         boolean ipEmptyFlag = StringUtils.isNotEmpty(devopsHostCreateRequestVO.getHostIp());
         boolean portEmptyFlag = devopsHostCreateRequestVO.getSshPort() != null;
-        CommonExAssertUtil.assertTrue((ipEmptyFlag && portEmptyFlag) || (!ipEmptyFlag && !portEmptyFlag), "error.host.ip.or.port.empty");
+        CommonExAssertUtil.assertTrue((ipEmptyFlag && portEmptyFlag) || (!ipEmptyFlag && !portEmptyFlag), "devops.host.ip.or.port.empty");
         return ipEmptyFlag;
     }
 
@@ -50,10 +50,10 @@ public class DevopsHostAdditionalCheckValidator {
     }
 
     public void validHostIdAndInstanceIdMatch(Long hostId, Long instanceId) {
-        CommonExAssertUtil.assertTrue(devopsHostService.hostIdInstanceIdMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+        CommonExAssertUtil.assertTrue(devopsHostService.hostIdInstanceIdMatch(hostId, instanceId), "devops.host.id.instance.id.not.match");
     }
 
     public void validHostIdAndDockerInstanceIdMatch(Long hostId, Long instanceId) {
-        CommonExAssertUtil.assertTrue(devopsHostService.hostIdDockerInstanceMatch(hostId, instanceId), "error.host.id.instance.id.not.match");
+        CommonExAssertUtil.assertTrue(devopsHostService.hostIdDockerInstanceMatch(hostId, instanceId), "devops.host.id.instance.id.not.match");
     }
 }

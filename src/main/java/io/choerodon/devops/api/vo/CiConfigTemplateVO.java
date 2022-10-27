@@ -19,18 +19,18 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CiConfigTemplateVO {
     @ApiModelProperty("步骤名称")
-    @NotEmpty(message = "error.step.name.cannot.be.null")
+    @NotEmpty(message = "devops.step.name.cannot.be.null")
     private String name;
 
     /**
      * {@link io.choerodon.devops.infra.enums.CiJobScriptTypeEnum}
      */
-    @NotEmpty(message = "error.step.type.cannot.be.empty")
+    @NotEmpty(message = "devops.step.type.cannot.be.empty")
     @ApiModelProperty("步骤类型")
     private String type;
 
     @ApiModelProperty("步骤顺序")
-    @NotNull(message = "error.step.sequence.cannot.be.null")
+    @NotNull(message = "devops.step.sequence.cannot.be.null")
     private Long sequence;
 
     @ApiModelProperty("执行脚本/Base64加密过, 解决特殊符号问题")

@@ -470,7 +470,7 @@ public class DevopsSagaHandler {
                 try {
                     sw.close();
                 } catch (IOException e1) {
-                    LOGGER.error("error.sw.close", e1);
+                    LOGGER.error("devops.sw.close", e1);
                 }
             }
             if (pw != null) {

@@ -1170,7 +1170,7 @@ public class FileUtil {
             compressArchive(tarFilePath, outputFilePath);
             deleteFile(tarFilePath);
         } catch (IOException e) {
-            throw new CommonException("error.package.tgz", e.getMessage());
+            throw new CommonException("devops.package.tgz", e.getMessage());
         }
     }
 

@@ -25,7 +25,7 @@ public class AsgardServiceClientOperator {
             throw new CommonException(e);
         }
         if (listResponseEntity == null) {
-            throw new CommonException("error.query.saga");
+            throw new CommonException("devops.query.saga");
         }
         return listResponseEntity.getBody();
     }
@@ -35,7 +35,7 @@ public class AsgardServiceClientOperator {
         try {
             voidResponseEntity = asgardFeignClient.retry(projectId, instanceId);
             if (!voidResponseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new CommonException("error.retry.saga.instance");
+                throw new CommonException("devops.retry.saga.instance");
             }
         } catch (FeignException e) {
             throw new CommonException(e);

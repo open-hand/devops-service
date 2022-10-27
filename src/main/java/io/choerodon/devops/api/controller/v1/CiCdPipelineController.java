@@ -1,6 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -8,13 +11,11 @@ import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
@@ -202,9 +203,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "start_time") Date startTime,
             @ApiParam(value = "end_time")
             @RequestParam(value = "end_time") Date endTime) {
-        return Optional.ofNullable(devopsCiPipelineService.listPipelineTrigger(pipelineId, startTime, endTime))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.trigger.get"));
+        return ResponseEntity.ok(devopsCiPipelineService.listPipelineTrigger(pipelineId, startTime, endTime));
     }
 
 
@@ -226,9 +225,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "end_time") Date endTime,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Optional.ofNullable(devopsCiPipelineService.pagePipelineTrigger(pipelineId, startTime, endTime, pageRequest))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.trigger.page.get"));
+        return ResponseEntity.ok(devopsCiPipelineService.pagePipelineTrigger(pipelineId, startTime, endTime, pageRequest));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -264,9 +261,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "end_time") Date endTime,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Optional.ofNullable(devopsCiPipelineService.pagePipelineExecuteTime(pipelineIds, startTime, endTime, pageRequest))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+        return ResponseEntity.ok(devopsCiPipelineService.pagePipelineExecuteTime(pipelineIds, startTime, endTime, pageRequest));
     }
 
 
@@ -276,9 +271,7 @@ public class CiCdPipelineController {
     public ResponseEntity<Map<String, String>> runnerGuide(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsCiPipelineService.runnerGuide(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.execute.time.get"));
+        return ResponseEntity.ok(devopsCiPipelineService.runnerGuide(projectId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

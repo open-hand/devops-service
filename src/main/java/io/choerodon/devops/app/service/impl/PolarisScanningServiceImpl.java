@@ -42,7 +42,7 @@ import io.choerodon.devops.infra.util.*;
 public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
 
-    private static final String ERROR_PROJECT_NOT_FOUND = "error.project.not.found";
+    private static final String ERROR_PROJECT_NOT_FOUND = "devops.project.not.found";
 
     /**
      * polaris扫描的超时时间
@@ -431,7 +431,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
             // 上一条纪录处理中时不允许再次扫描
             if (PolarisScanningStatus.OPERATING.getStatus().equals(existedRecord.getStatus())) {
-                throw new CommonException("error.polaris.scanning.operating");
+                throw new CommonException("devops.polaris.scanning.operating");
             }
 
             // 更新扫描纪录前先清除上一次扫描相关的数据
@@ -899,7 +899,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         polarisNamespaceResultDTOS.forEach(i -> {
             detailDTO.setId(null);
             detailDTO.setDetail(i.getDetail());
-            MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "error.insert.polaris.namespace.detail");
+            MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "devops.insert.polaris.namespace.detail");
             i.setDetailId(detailDTO.getId());
         });
         devopsPolarisNamespaceResultMapper.batchInsert(polarisNamespaceResultDTOS);
@@ -920,7 +920,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         categoryResultDTOList.forEach(i -> {
             detailDTO.setId(null);
             detailDTO.setDetail(i.getDetail());
-            MapperUtil.resultJudgedInsertSelective(devopsPolarisCategoryDetailMapper, detailDTO, "error.insert.polaris.category.detail");
+            MapperUtil.resultJudgedInsertSelective(devopsPolarisCategoryDetailMapper, detailDTO, "devops.insert.polaris.category.detail");
             i.setDetailId(detailDTO.getId());
         });
         devopsPolarisCategoryResultMapper.batchInsert(categoryResultDTOList);
@@ -1043,7 +1043,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * @return 插入的纪录
      */
     private DevopsPolarisRecordDTO checkedInsert(DevopsPolarisRecordDTO devopsPolarisRecordDTO) {
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "error.insert.polaris.record");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "devops.insert.polaris.record");
     }
 
     /**
@@ -1053,15 +1053,15 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      */
     private void checkedUpdate(DevopsPolarisRecordDTO devopsPolarisRecordDTO) {
         Objects.requireNonNull(devopsPolarisRecordDTO.getId());
-        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "error.update.polaris.record");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "devops.update.polaris.record");
     }
 
     private DevopsPolarisNamespaceDetailDTO checkedInsertNamespaceDetail(DevopsPolarisNamespaceDetailDTO detailDTO) {
         Objects.requireNonNull(detailDTO.getDetail());
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "error.insert.polaris.namespace.detail");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "devops.insert.polaris.namespace.detail");
     }
 
     private DevopsPolarisNamespaceResultDTO checkedInsertNamespaceResult(DevopsPolarisNamespaceResultDTO resultDTO) {
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceResultMapper, resultDTO, "error.insert.polaris.namespace.record");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceResultMapper, resultDTO, "devops.insert.polaris.namespace.record");
     }
 }

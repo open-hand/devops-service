@@ -868,7 +868,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
         DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
         condition.setGitlabEnvProjectId(gitlabProjectId);
-        CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "error.gitlab.project.associated.with.other.env");
+        CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "devops.gitlab.project.associated.with.other.env");
     }
 
     @Override
@@ -1976,7 +1976,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         devopsEnvironmentDTO.setAutoDeploy(isAutoDeploy);
         if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
-            throw new CommonException("error.update.env");
+            throw new CommonException("devops.update.env");
         }
     }
 

@@ -429,7 +429,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Override
     public DevopsSecretDTO baseCreate(DevopsSecretDTO devopsSecretDTO) {
         if (devopsSecretMapper.insert(devopsSecretDTO) != 1) {
-            throw new CommonException("error.secret.insert");
+            throw new CommonException("devops.secret.insert");
         }
         return devopsSecretDTO;
     }

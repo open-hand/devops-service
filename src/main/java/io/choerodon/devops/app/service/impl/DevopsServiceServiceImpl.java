@@ -633,7 +633,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvironmentDTO devopsEnvironmentDTO =
                 devopsEnvironmentService.baseQueryById(devopsServiceReqVO.getEnvId());
         if (!baseCheckName(devopsEnvironmentDTO.getId(), devopsServiceReqVO.getName())) {
-            throw new CommonException("error.service.name.exist");
+            throw new CommonException("devops.service.name.exist");
         }
 
         //初始化DevopsService对象
@@ -933,11 +933,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         initDevopsServicePorts(devopsServiceReqVO);
 
         if (!devopsServiceDTO.getEnvId().equals(devopsServiceReqVO.getEnvId())) {
-            throw new CommonException("error.env.notEqual");
+            throw new CommonException("devops.env.notEqual");
         }
         String serviceName = devopsServiceReqVO.getName();
         if (!serviceName.equals(devopsServiceDTO.getName())) {
-            throw new CommonException("error.name.notEqual");
+            throw new CommonException("devops.name.notEqual");
         }
         //验证网络是否需要更新
         List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
@@ -1347,7 +1347,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             // do nothing
         } else {
             // 其他类型不保存
-            throw new CommonException("error.unknown.service.type");
+            throw new CommonException("devops.unknown.service.type");
         }
 
         // 添加选择器

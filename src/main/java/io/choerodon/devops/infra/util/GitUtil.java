@@ -133,7 +133,7 @@ public class GitUtil {
         LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
         lsRemoteCommand.setRemote(repositoryUrl);
         if (ObjectUtils.isEmpty(username) || ObjectUtils.isEmpty(password)) {
-            throw new CommonException("error.general.git.username.or.password.empty");
+            throw new CommonException("devops.general.git.username.or.password.empty");
         }
         lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
         try {
@@ -570,7 +570,7 @@ public class GitUtil {
             Iterable<RevCommit> log = git.log().call();
             commit = log.iterator().next().getName();
         } catch (GitAPIException e) {
-            throw new CommonException("error.get.commit");
+            throw new CommonException("devops.get.commit");
         }
         return commit;
     }
@@ -646,7 +646,7 @@ public class GitUtil {
         try {
             git = Git.init().setDirectory(file).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.init", e);
+            throw new CommonException("devops.git.init", e);
         }
         return git;
     }

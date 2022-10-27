@@ -98,7 +98,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             helmConfigSearchDTOOnSite.setRepoDefault(true);
             DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
             if (devopsHelmConfigDTOOnSite == null) {
-                throw new CommonException("error.helm.config.site.exist");
+                throw new CommonException("devops.helm.config.site.exist");
             }
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
             devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + code);
@@ -139,7 +139,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setResourceId(projectId);
         devopsHelmConfigDTO.setRepoPrivate(!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword()));
 
-        DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+        DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.insert");
         return ConvertUtils.convertObject(result, DevopsHelmConfigVO.class);
     }
 
@@ -155,7 +155,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setRepoDefault(null);
         devopsHelmConfigDTO.setDeleted(null);
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.update");
 
         return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
     }
@@ -176,7 +176,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setObjectVersionNumber(oldDevopsHelmConfigDTO.getObjectVersionNumber());
         devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.delete");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.delete");
     }
 
     @Override
@@ -228,13 +228,13 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.insert");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.update");
     }
 
     @Override
@@ -271,7 +271,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     public void checkNameExistsThrowEx(Long projectId, Long helmConfigId, String name) {
         if (devopsHelmConfigMapper.checkNameExists(projectId, helmConfigId, name)) {
-            throw new CommonException("error.helm.config.name.exists");
+            throw new CommonException("devops.helm.config.name.exists");
         }
     }
 
@@ -293,7 +293,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         ResponseEntity<String> exchange = restTemplate.exchange(helmRepoUrl + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
-            throw new CommonException("error.get.helm.chart");
+            throw new CommonException("devops.get.helm.chart");
         }
         return exchange.getBody();
     }
@@ -347,7 +347,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             helmConfigSearchDTOOnSite.setRepoDefault(true);
             DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOneWithIdAndName(0L, ResourceLevel.SITE.value(), true);
             if (devopsHelmConfigDTOOnSite == null) {
-                throw new CommonException("error.helm.config.site.exist");
+                throw new CommonException("devops.helm.config.site.exist");
             }
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(tenantId);
             devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projCode);
@@ -395,7 +395,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         try {
             exchange = restTemplate.exchange(helmRepoUrl + "/" + chartUrl, HttpMethod.GET, requestEntity, byte[].class);
         } catch (Exception e) {
-            throw new CommonException("error.helm.chart.download", e.getMessage());
+            throw new CommonException("devops.helm.chart.download", e.getMessage());
         }
 
         return exchange.getBody();

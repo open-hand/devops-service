@@ -28,6 +28,6 @@ public class DevopsClusterOperationRecordServiceImpl implements DevopsClusterOpe
 
     @Override
     public void updateByPrimaryKeySelective(DevopsClusterOperationRecordDTO devopsClusterOperationRecordDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsClusterOperationRecordMapper, devopsClusterOperationRecordDTO, "error.update.clusterOperation");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsClusterOperationRecordMapper, devopsClusterOperationRecordDTO, "devops.update.clusterOperation");
     }
 }

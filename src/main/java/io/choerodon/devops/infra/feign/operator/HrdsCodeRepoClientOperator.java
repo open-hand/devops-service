@@ -48,7 +48,7 @@ public class HrdsCodeRepoClientOperator {
                 Objects.requireNonNull(organizationId), projectId, queryDTO.getRepositoryIds(), queryDTO.getRepositoryName(),
                 queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, false);
         if (response == null) {
-            throw new CommonException("error.list.code.app.user.list", projectId, queryDTO);
+            throw new CommonException("devops.list.code.app.user.list", projectId, queryDTO);
         }
         return response.getBody();
     }
@@ -60,7 +60,7 @@ public class HrdsCodeRepoClientOperator {
         }
         ResponseEntity<String> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);
         if (response == null) {
-            throw new CommonException("error.member.privilege.list");
+            throw new CommonException("devops.member.privilege.list");
         }
         return JsonHelper.unmarshalByJackson(response.getBody(), new TypeReference<List<MemberPrivilegeViewDTO>>() {
         });

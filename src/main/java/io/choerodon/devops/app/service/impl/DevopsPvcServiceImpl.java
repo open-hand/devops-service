@@ -287,11 +287,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     public void baseUpdate(DevopsPvcDTO devopsPvcDTO) {
         DevopsPvcDTO oldDevopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsPvcDTO.getId());
         if (oldDevopsPvcDTO == null) {
-            throw new CommonException("error.pvc.not.exists");
+            throw new CommonException("devops.pvc.not.exists");
         }
         devopsPvcDTO.setObjectVersionNumber(oldDevopsPvcDTO.getObjectVersionNumber());
         if (devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO) != 1) {
-            throw new CommonException("error.pvc.update.error");
+            throw new CommonException("devops.pvc.update.error");
         }
     }
 
@@ -302,7 +302,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         searchDTO.setName(pvcName);
         DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectOne(searchDTO);
         devopsPvcDTO.setUsed(1);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "error.update.pvc.used");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "devops.update.pvc.used");
     }
 
     @Override
@@ -344,7 +344,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         if (devopsPvDTO.getPvcName() != null) {
-            throw new CommonException("error.pv.bound");
+            throw new CommonException("devops.pv.bound");
         }
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());

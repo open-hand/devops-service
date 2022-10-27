@@ -27,13 +27,13 @@ public class DevopsWorkloadResourceContentServiceImpl implements DevopsWorkloadR
     @Transactional
     public void create(String type, Long workLoadId, String content) {
         DevopsWorkloadResourceContentDTO devopsWorkloadResourceContentDTO = new DevopsWorkloadResourceContentDTO(workLoadId, type, content);
-        MapperUtil.resultJudgedInsert(devopsWorkloadResourceContentMapper, devopsWorkloadResourceContentDTO, "error.workload.resource.create");
+        MapperUtil.resultJudgedInsert(devopsWorkloadResourceContentMapper, devopsWorkloadResourceContentDTO, "devops.workload.resource.create");
     }
 
     @Override
     public void update(String type, Long resourceId, String content) {
         if (devopsWorkloadResourceContentMapper.updateContentByResourceIdAndResourceKind(type, resourceId, content) != 1) {
-            throw new CommonException("error.workload.resource.update");
+            throw new CommonException("devops.workload.resource.update");
         }
     }
 

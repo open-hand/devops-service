@@ -23,13 +23,13 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
         HarborUserDTO oldHarborUserDTO = harborUserMapper.selectOne(harborUser);
         if (oldHarborUserDTO == null) {
             if (harborUserMapper.insertSelective(harborUser) != 1) {
-                throw new CommonException("error.insert.harbor.user");
+                throw new CommonException("devops.insert.harbor.user");
             }
         } else {
             harborUser.setId(oldHarborUserDTO.getId());
             harborUser.setObjectVersionNumber(oldHarborUserDTO.getObjectVersionNumber());
             if (harborUserMapper.updateByPrimaryKeySelective(harborUser) != 1) {
-                throw new CommonException("error.update.harbor.user");
+                throw new CommonException("devops.update.harbor.user");
             }
         }
     }
@@ -37,7 +37,7 @@ public class DevopsHarborUserServiceImpl implements DevopsHarborUserService {
     @Override
     public void baseCreate(HarborUserDTO harborUser) {
         if (harborUserMapper.insertSelective(harborUser) != 1) {
-            throw new CommonException("error.insert.harbor.user");
+            throw new CommonException("devops.insert.harbor.user");
         }
     }
 

@@ -44,7 +44,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private static JSON json = new JSON();
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
-    private static final String ERROR_DELETE_POD_FAILED = "error.delete.pod.failed";
+    private static final String ERROR_DELETE_POD_FAILED = "devops.delete.pod.failed";
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;

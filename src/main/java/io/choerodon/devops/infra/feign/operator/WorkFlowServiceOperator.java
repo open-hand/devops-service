@@ -82,7 +82,7 @@ public class WorkFlowServiceOperator {
     public String createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
         ResponseEntity<String> responseEntity = workFlowServiceClient.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.hzero.workflow.create");
+            throw new CommonException("devops.hzero.workflow.create");
         }
         return responseEntity.getBody();
     }

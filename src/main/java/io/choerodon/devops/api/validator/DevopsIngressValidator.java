@@ -45,14 +45,14 @@ public class DevopsIngressValidator {
      */
     public static void checkPath(String path) {
         if (!Pattern.matches(SUB_PATH_PATTERN, path)) {
-            throw new CommonException("error.ingress.subPath.notMatch");
+            throw new CommonException("devops.ingress.subPath.notMatch");
         }
     }
 
     public static void checkHost(String host) {
         if (StringUtils.isEmpty(host)
                 || !K8sUtil.HOST_PATTERN.matcher(host).matches()) {
-            throw new CommonException("error.ingress.host.format");
+            throw new CommonException("devops.ingress.host.format");
         }
     }
 
@@ -63,7 +63,7 @@ public class DevopsIngressValidator {
             throw new CommonException("devops.env.id.null");
         }
         if (CollectionUtils.isEmpty(devopsIngressVO.getPathList())) {
-            throw new CommonException("error.ingress.path.empty");
+            throw new CommonException("devops.ingress.path.empty");
         }
         checkAnnotations(devopsIngressVO.getAnnotations());
     }

@@ -124,11 +124,11 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
                 scripts.add(GitlabCiUtil.getDefaultSonarScannerCommand(devopsCiSonarConfigDTO.getSources()));
             } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
+                    throw new CommonException("devops.sonar.url.is.null");
                 }
                 if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
                     scripts.add(GitlabCiUtil.renderSonarScannerCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSources()));
@@ -136,7 +136,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                     scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSources()));
                 }
             } else {
-                throw new CommonException("error.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
+                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
             }
         } else if (SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
@@ -147,7 +147,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
-                CommonExAssertUtil.assertTrue(sonarConfig != null, "error.default.sonar.not.exist");
+                CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
                 if (hasSettingConfig) {
                     scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
                     scripts.add("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml");
@@ -158,7 +158,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
             } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 if (Objects.isNull(devopsCiSonarConfigDTO.getSonarUrl())) {
-                    throw new CommonException("error.sonar.url.is.null");
+                    throw new CommonException("devops.sonar.url.is.null");
                 }
                 if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
                     scripts.add(GitlabCiUtil.renderSonarCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSkipTests()));
@@ -166,7 +166,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                     scripts.add(GitlabCiUtil.renderSonarCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSkipTests()));
                 }
             } else {
-                throw new CommonException("error.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
+                throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
             }
         } else {
             throw new CommonException(ResourceCheckConstant.DEVOPS_SONAR_SCANNER_TYPE_INVALID);

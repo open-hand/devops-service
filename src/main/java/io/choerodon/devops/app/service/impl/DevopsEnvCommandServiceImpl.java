@@ -78,7 +78,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void baseUpdateSha(Long commandId, String sha) {
-        CommonExAssertUtil.assertNotNull(sha, "error.commit.sha.null");
+        CommonExAssertUtil.assertNotNull(sha, "devops.commit.sha.null");
         devopsEnvCommandMapper.updateSha(commandId, sha);
     }
 
@@ -172,9 +172,9 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate) {
-        CommonExAssertUtil.assertNotNull(objectType, "error.object.type.null");
-        CommonExAssertUtil.assertNotNull(objectId, "error.object.id.null");
-        CommonExAssertUtil.assertNotNull(beforeDate, "error.before.date.null");
+        CommonExAssertUtil.assertNotNull(objectType, "devops.object.type.null");
+        CommonExAssertUtil.assertNotNull(objectId, "devops.object.id.null");
+        CommonExAssertUtil.assertNotNull(beforeDate, "devops.before.date.null");
         devopsEnvCommandMapper.updateOperatingToSuccessBeforeDate(objectType.getType(), objectId, beforeDate);
     }
 

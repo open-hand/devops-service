@@ -700,7 +700,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
 
             } else {
-                LOGGER.error("error.query.repo.nexus.is.null");
+                LOGGER.error("devops.query.repo.nexus.is.null");
             }
         } else {
             downloadUrl = pipelineMavenDTO.calculateDownloadUrl();

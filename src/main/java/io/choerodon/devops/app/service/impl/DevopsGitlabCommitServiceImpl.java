@@ -357,7 +357,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         DevopsGitlabCommitDTO oldDevopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabCommitDTO.getId());
         devopsGitlabCommitDTO.setObjectVersionNumber(oldDevopsGitlabCommitDO.getObjectVersionNumber());
         if (devopsGitlabCommitMapper.updateByPrimaryKeySelective(devopsGitlabCommitDTO) != 1) {
-            throw new CommonException("error.gitlab.commit.update");
+            throw new CommonException("devops.gitlab.commit.update");
         }
     }
 

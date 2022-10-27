@@ -623,7 +623,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         try {
             return new ObjectMapper().readTree(message);
         } catch (IOException e) {
-            throw new CommonException("error.resource.json.read.failed", message);
+            throw new CommonException("devops.resource.json.read.failed", message);
         }
     }
 

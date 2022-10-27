@@ -105,7 +105,7 @@ public class ResourceConvertToYamlHandler<T> {
             try {
                 content = JsonYamlConversionUtil.json2yaml(jsonStr);
             } catch (IOException e) {
-                throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+                throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
             }
         } else {
             content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -414,7 +414,7 @@ public class ResourceConvertToYamlHandler<T> {
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
         } catch (IOException e) {
-            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+            throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
         }
     }
 
@@ -440,7 +440,7 @@ public class ResourceConvertToYamlHandler<T> {
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
         } catch (IOException e) {
-            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+            throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
         }
     }
 

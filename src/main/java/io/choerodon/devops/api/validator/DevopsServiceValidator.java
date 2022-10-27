@@ -74,7 +74,7 @@ public class DevopsServiceValidator {
             throw new CommonException("devops.targetPort.illegal");
         }
         if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
-            throw new CommonException("error.nodePort.illegal");
+            throw new CommonException("devops.nodePort.illegal");
         }
 
     }
@@ -103,7 +103,7 @@ public class DevopsServiceValidator {
                             devopsServiceReqVO.getPorts().forEach(p -> {
                                 if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
                                     if (Objects.equals(port, p.getPort()) && Objects.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
-                                        throw new CommonException("error.same.externalIp.port.exist");
+                                        throw new CommonException("devops.same.externalIp.port.exist");
                                     }
                                 }
                             });
@@ -123,7 +123,7 @@ public class DevopsServiceValidator {
                             if (nodePort != null) {
                                 devopsServiceReqVO.getPorts().forEach(p -> {
                                     if (Objects.equals(nodePort, p.getNodePort())) {
-                                        throw new CommonException("error.same.nodePort.exist");
+                                        throw new CommonException("devops.same.nodePort.exist");
                                     }
                                 });
                             }

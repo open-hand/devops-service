@@ -59,7 +59,7 @@ public class EnvironmentApplicationValidator {
      */
     public void checkAppIdsExist(List<Long> appServiceIds) {
         if (appServiceIds == null || appServiceIds.size() == 0) {
-            throw new CommonException("error.app.ids.null");
+            throw new CommonException("devops.app.ids.null");
         }
 
         appServiceIds.forEach(id -> {

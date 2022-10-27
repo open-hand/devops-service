@@ -1075,10 +1075,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private void checkInstanceConsistent(Long instanceId, Long marketServiceId) {
         AppServiceInstanceDTO oldInstance = appServiceInstanceMapper.selectByPrimaryKey(Objects.requireNonNull(instanceId));
-        CommonExAssertUtil.assertNotNull(oldInstance, "error.instance.id.not.exist");
+        CommonExAssertUtil.assertNotNull(oldInstance, "devops.instance.id.not.exist");
         // 校验前后的版本属于同一个服务在同一个应用版本下, 只支持变更同个应用版本下的市场服务的修复版本
         // 而在同一个市场应用版本下的市场应用服务是同一个id，不同市场应用版本下即使是同一个市场服务名称，id也不一致
-        CommonExAssertUtil.assertTrue(oldInstance.getAppServiceId().equals(marketServiceId), "error.app.version.invalid");
+        CommonExAssertUtil.assertTrue(oldInstance.getAppServiceId().equals(marketServiceId), "devops.app.version.invalid");
     }
 
     private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, Long marketDeployObjectId) {
@@ -1845,8 +1845,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
-        Assert.notNull(code, "error.code.is.null");
-        Assert.notNull(envId, "error.envId.is.null");
+        Assert.notNull(code, "devops.code.is.null");
+        Assert.notNull(envId, "devops.envId.is.null");
 
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setCode(code);
@@ -2754,10 +2754,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
         }
         int lastSlashIndex = harborRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
-        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.harbor.repo.invalid.slash");
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "devops.harbor.repo.invalid.slash");
         String harborUrl = harborRepo.substring(0, lastSlashIndex);
         String repoName = harborRepo.substring(lastSlashIndex);
-        CommonExAssertUtil.assertTrue(harborUrl.contains("//"), "error.harbor.repo.invalid.double.slash");
+        CommonExAssertUtil.assertTrue(harborUrl.contains("//"), "devops.harbor.repo.invalid.double.slash");
         String[] result = new String[2];
         result[0] = harborUrl;
         result[1] = repoName;
@@ -2770,12 +2770,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         int lastSlashIndex = chartRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
-        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.chart.repo.invalid.slash");
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "devops.chart.repo.invalid.slash");
         String tempUrl = chartRepo.substring(0, lastSlashIndex);
         lastSlashIndex = tempUrl.lastIndexOf(BaseConstants.Symbol.SLASH);
 
         String repoName = chartRepo.substring(0, lastSlashIndex);
-        CommonExAssertUtil.assertTrue(chartRepo.contains("//"), "error.chart.repo.invalid.double.slash");
+        CommonExAssertUtil.assertTrue(chartRepo.contains("//"), "devops.chart.repo.invalid.double.slash");
         return repoName;
     }
 

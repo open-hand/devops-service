@@ -22,8 +22,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsHzeroDeployConfigServiceImpl implements DevopsHzeroDeployConfigService {
 
-    private static final String ERROR_SAVE_DEPLOY_VALUE_FAILED = "error.save.deploy.value.failed";
-    private static final String ERROR_UPDATE_DEPLOY_VALUE_FAILED = "error.update.deploy.value.failed";
+    private static final String ERROR_SAVE_DEPLOY_VALUE_FAILED = "devops.save.deploy.value.failed";
+    private static final String ERROR_UPDATE_DEPLOY_VALUE_FAILED = "devops.update.deploy.value.failed";
 
     @Autowired
     private DevopsHzeroDeployConfigMapper devopsHzeroDeployConfigMapper;

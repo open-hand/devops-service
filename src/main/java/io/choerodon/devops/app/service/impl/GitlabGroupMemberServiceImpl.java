@@ -250,7 +250,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
                 TypeUtil.objToInteger(gitlabUserId));
         if (gitlabUserDTO == null) {
-            LOGGER.error("error.gitlab.username.select");
+            LOGGER.error("devops.gitlab.username.select");
             return;
         }
         DevopsProjectDTO devopsProjectDTO;
@@ -616,7 +616,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
                 break;
             default:
-                LOGGER.error("error.gitlab.member.level");
+                LOGGER.error("devops.gitlab.member.level");
                 break;
         }
     }
@@ -636,7 +636,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabGroupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId());
                     break;
                 default:
-                    throw new CommonException("error.gitlab.group.type");
+                    throw new CommonException("devops.gitlab.group.type");
             }
             gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, userId);
         }

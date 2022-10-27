@@ -39,8 +39,8 @@ public class DevopsCdAuditRecordServiceImpl implements DevopsCdAuditRecordServic
     private static final String STAGE_NAME = "stageName";
     private static final String REL_ID = "pipelineIdRecordId";
     private static final String PIPELINE_ID = "pipelineId";
-    private static final String ERROR_SAVE_AUDIT_RECORD = "error.save.audit.record";
-    private static final String ERROR_UPDATE_AUDIT_RECORD = "error.update.audit.record";
+    private static final String ERROR_SAVE_AUDIT_RECORD = "devops.save.audit.record";
+    private static final String ERROR_UPDATE_AUDIT_RECORD = "devops.update.audit.record";
 
     @Autowired
     private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;

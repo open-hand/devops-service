@@ -34,7 +34,7 @@ public class ComponentValuesTemplateUtil {
      * @return 替换完毕的values文件
      */
     public static String convertPrometheus(DevopsPrometheusDTO devopsPrometheusDTO, InputStream in, Map<String, Object> extraData) {
-        String apiHost = (String) Optional.ofNullable(extraData.get("apiHost")).orElseThrow(() -> new CommonException("error.api.host"));
+        String apiHost = (String) Optional.ofNullable(extraData.get("apiHost")).orElseThrow(() -> new CommonException("devops.api.host"));
         Map<String, String> map = new HashMap<>();
         map.put("{{adminPassword}}", devopsPrometheusDTO.getAdminPassword());
         map.put("{{host}}", devopsPrometheusDTO.getGrafanaDomain());

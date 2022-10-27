@@ -12,7 +12,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
 
-@AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "error.pv.id.or.name.null")
+@AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "devops.pv.id.or.name.null")
 public class DevopsPvcReqVO {
     @Encrypt
     @ApiModelProperty("PVC id")

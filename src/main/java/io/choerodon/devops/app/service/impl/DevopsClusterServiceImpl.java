@@ -67,7 +67,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
-    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
+    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "devops.update.cluster.status.failed";
     private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "devops.organization.cluster.num.max";
 
     @Value("${agent.version}")
@@ -116,7 +116,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh")) {
             CLUSTER_ACTIVATE_COMMAND_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.cluster.sh");
+            throw new CommonException("devops.load.cluster.sh");
         }
     }
 
@@ -234,7 +234,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
 
         devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "error.update.cluster");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "devops.update.cluster");
 
         LOGGER.info("update cluster and cluster operation status");
 
@@ -686,7 +686,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         //集群是否存在PV
         List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
         if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
-            throw new CommonException("error.cluster.pv.exist");
+            throw new CommonException("devops.cluster.pv.exist");
         }
     }
 
@@ -837,7 +837,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (ObjectUtils.isEmpty(devopsClusterDTO)) {
-            throw new CommonException("error.devops.cluster.is.not.exist");
+            throw new CommonException("devops.devops.cluster.is.not.exist");
         }
         if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganizationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
             return true;

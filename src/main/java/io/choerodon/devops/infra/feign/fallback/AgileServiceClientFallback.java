@@ -14,26 +14,26 @@ import io.choerodon.devops.infra.feign.AgileServiceClient;
 public class AgileServiceClientFallback implements AgileServiceClient {
     @Override
     public ResponseEntity<String> queryIssue(Long projectId, Long issueId, Long organizationId) {
-        throw new CommonException("error.issue.get");
+        throw new CommonException("devops.issue.get");
     }
 
     @Override
     public ResponseEntity<String> queryIssues(Long projectId, List<Long> issueIds) {
-        throw new CommonException("error.issue.get");
+        throw new CommonException("devops.issue.get");
     }
 
     @Override
     public ResponseEntity<String> getActiveSprint(Long projectId, Long organizationId) {
-        throw new CommonException("error.active.sprint.get");
+        throw new CommonException("devops.active.sprint.get");
     }
 
     @Override
     public ResponseEntity<String> queryIssuesByIds(List<Long> issueIds) {
-        throw new CommonException("error.issue.get.by.ids");
+        throw new CommonException("devops.issue.get.by.ids");
     }
 
     @Override
     public ResponseEntity<String> deleteTagByBranch(Long projectId, IssueIdAndBranchIdsVO issueIdAndBranchIdsVO) {
-        throw new CommonException("error.issue.delete.tag.by.branch");
+        throw new CommonException("devops.issue.delete.tag.by.branch");
     }
 }

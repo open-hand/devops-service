@@ -41,7 +41,7 @@ public class CiCdPipelineUtils {
                     return 0;
                 }
             } catch (Exception e) {
-                LOGGER.error("error.record.sort", e);
+                LOGGER.error("devops.record.sort", e);
             }
             return 0;
         });

@@ -184,7 +184,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, 1);
 
         if ("Available".equals(devopsPvDTO.getStatus()) && boundPvIds.contains(pvId)) {
-            throw new CommonException("error.pv.bound.with.prometheus");
+            throw new CommonException("devops.pv.bound.with.prometheus");
         }
 
         // 创建pv的环境是所选集群关联的系统环境
@@ -337,7 +337,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvDTO.setObjectVersionNumber(oldDevopsPvDTO.getObjectVersionNumber());
 
         if (devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO) != 1) {
-            throw new CommonException("error.pv.update.error");
+            throw new CommonException("devops.pv.update.error");
         }
     }
 
@@ -445,7 +445,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     private DevopsPvDTO createPvRecord(DevopsPvDTO devopsPvDTO) {
         if (1 != devopsPvMapper.insertSelective(Objects.requireNonNull(devopsPvDTO))) {
-            throw new CommonException("error.pv.insert", devopsPvDTO.getName());
+            throw new CommonException("devops.pv.insert", devopsPvDTO.getName());
         }
         return devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
     }
@@ -547,7 +547,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     public void baseUpdate(DevopsPvDTO devopsPvDTO) {
         if (devopsPvMapper.updateByPrimaryKeySelective(Objects.requireNonNull(devopsPvDTO)) != 1) {
-            throw new CommonException("error.update.pv", devopsPvDTO.getName());
+            throw new CommonException("devops.update.pv", devopsPvDTO.getName());
         }
     }
 
@@ -592,7 +592,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         //pv类型不存在抛异常
         if (volumeTypeEnum == null) {
-            throw new CommonException("error.py.type.not.exist");
+            throw new CommonException("devops.py.type.not.exist");
         }
 
         switch (volumeTypeEnum) {
@@ -692,7 +692,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         //数据库创建pv
         if (devopsPvMapper.insert(devopsPvDTO) != 1) {
-            throw new CommonException("error.pv.create.error");
+            throw new CommonException("devops.pv.create.error");
         }
 
         Long pvId = devopsPvDTO.getId();
@@ -788,7 +788,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
                 clusterId = devopsEnvironmentDTO.getClusterId();
             } else {
-                throw new CommonException("error.envId.and.clusterId.null");
+                throw new CommonException("devops.envId.and.clusterId.null");
             }
         }
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);

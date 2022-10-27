@@ -71,7 +71,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "devops.service.notContain.port";
     private static final String DEVOPS_INGRESS_SERVICE_APPLICATION = "devops.ingress.service.application";
     private static final String DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE = "devops.ingress.annotations.too.large";
-    private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
+    private static final String CERT_NOT_ACTIVE = "devops.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
     private static final JSON k8sJson = new JSON();

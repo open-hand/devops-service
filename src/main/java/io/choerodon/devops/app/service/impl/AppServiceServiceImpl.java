@@ -3879,7 +3879,7 @@ public class AppServiceServiceImpl implements AppServiceService {
                 flag = false;
             }
         } catch (Exception e) {
-            LOGGER.error("error.query.gitlab.group", e);
+            LOGGER.error("devops.query.gitlab.group", e);
             flag = false;
         }
         return flag;

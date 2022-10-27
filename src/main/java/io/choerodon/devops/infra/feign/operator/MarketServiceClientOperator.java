@@ -48,7 +48,7 @@ public class MarketServiceClientOperator {
 
     public MarketChartValueDTO queryValues(Long projectId, Long deployObjectId) {
         CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
-        CommonExAssertUtil.assertNotNull(deployObjectId, "error.deploy.object.id.null");
+        CommonExAssertUtil.assertNotNull(deployObjectId, "devops.deploy.object.id.null");
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryValuesForDeployObject(projectId, deployObjectId), MarketChartValueDTO.class);
     }
 
@@ -61,7 +61,7 @@ public class MarketServiceClientOperator {
     }
 
     public List<MarketServiceVO> queryMarketServiceByIds(Long projectId, Set<Long> ids) {
-        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(ids), "error.ids.params.empty");
+        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(ids), "devops.ids.params.empty");
         try {
             return FeignClientUtils.doRequest(() -> marketServiceClient.queryMarketServiceByIds(projectId, ids), new TypeReference<List<MarketServiceVO>>() {
             });
@@ -72,7 +72,7 @@ public class MarketServiceClientOperator {
     }
 
     public List<MarketServiceDeployObjectVO> listDeployObjectsByIds(Long projectId, Set<Long> deployObjectIds) {
-        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(deployObjectIds), "error.ids.params.empty");
+        CommonExAssertUtil.assertTrue(!CollectionUtils.isEmpty(deployObjectIds), "devops.ids.params.empty");
         try {
             return FeignClientUtils.doRequest(() -> marketServiceClient.listDeployObjectsByIds(projectId, deployObjectIds), new TypeReference<List<MarketServiceDeployObjectVO>>() {
             });
@@ -88,8 +88,8 @@ public class MarketServiceClientOperator {
 
     public List<MarketServiceDeployObjectVO> queryUpgradeDeployObjects(Long projectId, Long marketServiceId, Long currentDeployObjectId) {
         CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
-        CommonExAssertUtil.assertNotNull(marketServiceId, "error.market.service.id.null");
-        CommonExAssertUtil.assertNotNull(currentDeployObjectId, "error.deploy.object.id.null");
+        CommonExAssertUtil.assertNotNull(marketServiceId, "devops.market.service.id.null");
+        CommonExAssertUtil.assertNotNull(currentDeployObjectId, "devops.deploy.object.id.null");
         return FeignClientUtils.doRequest(() -> marketServiceClient.queryUpgradeMarketService(projectId, marketServiceId, currentDeployObjectId), new TypeReference<List<MarketServiceDeployObjectVO>>() {
         });
     }

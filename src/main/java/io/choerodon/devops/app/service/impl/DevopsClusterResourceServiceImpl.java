@@ -338,7 +338,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         devopsPrometheusDTO.setAlertmanagerPvId(devopsPrometheusVO.getAlertmanagerPvId());
         devopsPrometheusDTO.setEnableTls(devopsPrometheusVO.getEnableTls());
         if (devopsPrometheusMapper.updateByPrimaryKey(devopsPrometheusDTO) != 1) {
-            throw new CommonException("error.prometheus.update");
+            throw new CommonException("devops.prometheus.update");
         }
         // 添加prometheus挂载的pvc
         DevopsClusterResourceDTO clusterResourceDTO = queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
@@ -549,7 +549,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         DevopsClusterResourceDTO clusterResourceDTO = devopsClusterResourceMapper.queryByClusterIdAndType(clusterId, ClusterResourceType.PROMETHEUS.getType());
         if (clusterResourceDTO == null || clusterResourceDTO.getObjectId() == null) {
-            throw new CommonException("error.prometheus.retry");
+            throw new CommonException("devops.prometheus.retry");
         } else {
             AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(clusterResourceDTO.getObjectId());
             retryPrometheusInstance(clusterResourceDTO.getObjectId(), instanceDTO.getEnvId());

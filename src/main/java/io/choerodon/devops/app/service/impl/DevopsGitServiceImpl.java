@@ -689,7 +689,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void fileResourceSync(PushWebHookVO pushWebHookVO) {
         if (Boolean.TRUE.equals(pushWebHookVO.getHasErrors())) {
-            LOGGER.debug("Skip GitOps due to previous error. push webhook is {}", pushWebHookVO);
+            LOGGER.debug("Skip GitOps due to previous devops. push webhook is {}", pushWebHookVO);
             return;
         }
 
@@ -1051,7 +1051,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsBranchDTO.setLastCommitUser(pushWebHookVO.getUserId().longValue());
             devopsBranchService.baseUpdateBranchLastCommit(devopsBranchDTO);
         } catch (Exception e) {
-            LOGGER.info("error.update.branch");
+            LOGGER.info("devops.update.branch");
         }
 
     }
@@ -1139,7 +1139,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
             devopsBranchService.baseDelete(appServiceId, branchName);
         } catch (Exception e) {
-            LOGGER.info("error.devops.branch.delete", e);
+            LOGGER.info("devops.devops.branch.delete", e);
         }
     }
 
@@ -1174,7 +1174,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             }
         } catch (Exception e) {
-            LOGGER.info("error.create.branch");
+            LOGGER.info("devops.create.branch");
         }
     }
 
@@ -1240,7 +1240,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         branchIdToRemove.add(branchId);
         // 不等于null，代表分支为删除
         if (devopsBranchDTO != null) {
-            CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "error.branch.issue.mismatch");
+            CommonExAssertUtil.assertTrue(devopsBranchDTO.getIssueIds().contains(issueId), "devops.branch.issue.mismatch");
             String branchName = devopsBranchDTO.getBranchName();
             // 这里的操作是查出之前被删除的同名分支id
             List<DevopsGitlabCommitDTO> devopsGitlabCommitDTOS = devopsGitlabCommitService.baseListByAppIdAndBranch(appServiceId, branchName, null);

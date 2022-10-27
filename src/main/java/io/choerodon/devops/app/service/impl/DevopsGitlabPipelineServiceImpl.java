@@ -427,7 +427,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Override
     public void baseCreate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO) {
         if (devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDTO) != 1) {
-            throw new CommonException("error.gitlab.pipeline.create");
+            throw new CommonException("devops.gitlab.pipeline.create");
         }
     }
 
@@ -442,7 +442,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void baseUpdate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO) {
         devopsGitlabPipelineDTO.setObjectVersionNumber(devopsGitlabPipelineMapper.selectByPrimaryKey(devopsGitlabPipelineDTO.getId()).getObjectVersionNumber());
         if (devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDTO) != 1) {
-            throw new CommonException("error.gitlab.pipeline.update");
+            throw new CommonException("devops.gitlab.pipeline.update");
         }
     }
 

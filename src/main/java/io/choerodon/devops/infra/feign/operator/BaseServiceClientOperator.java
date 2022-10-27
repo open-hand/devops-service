@@ -173,7 +173,7 @@ public class BaseServiceClientOperator {
                     userDTOS = Collections.emptyList();
                 }
             } catch (Exception e) {
-                throw new CommonException("error.users.get", e);
+                throw new CommonException("devops.users.get", e);
             }
         }
         return userDTOS;
@@ -183,7 +183,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.check.user.site.access", e);
+            throw new CommonException("devops.check.user.site.access", e);
         }
     }
 
@@ -228,7 +228,7 @@ public class BaseServiceClientOperator {
 //                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
 //                }
 //            } catch (Exception e) {
-//                throw new CommonException("error.users.get", e);
+//                throw new CommonException("devops.users.get", e);
 //            }
 //        } else {
 //            resultMap = Collections.emptyMap();
@@ -288,7 +288,7 @@ public class BaseServiceClientOperator {
 //                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
 //                }
 //            } catch (Exception e) {
-//                throw new CommonException("error.users.get", e);
+//                throw new CommonException("devops.users.get", e);
 //            }
 //        } else {
 //            resultMap = Collections.emptyMap();
@@ -319,7 +319,7 @@ public class BaseServiceClientOperator {
             }
             return userDTOS;
         } catch (Exception e) {
-            throw new CommonException("error.users.get", e);
+            throw new CommonException("devops.users.get", e);
         }
     }
 
@@ -494,11 +494,11 @@ public class BaseServiceClientOperator {
         try {
             ClientVO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
             if (client == null || client.getId() == null) {
-                throw new CommonException("error.create.client");
+                throw new CommonException("devops.create.client");
             }
             return client;
         } catch (Exception ex) {
-            throw new CommonException("error.create.client");
+            throw new CommonException("devops.create.client");
         }
     }
 
@@ -506,7 +506,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.queryClientByName(organization, name).getBody();
         } catch (Exception ex) {
-            throw new CommonException("error.get.client");
+            throw new CommonException("devops.get.client");
         }
     }
 
@@ -514,7 +514,7 @@ public class BaseServiceClientOperator {
         try {
             baseServiceClient.deleteClient(organizationId, clientId);
         } catch (Exception ex) {
-            throw new CommonException("error.delete.client");
+            throw new CommonException("devops.delete.client");
         }
     }
 
@@ -523,7 +523,7 @@ public class BaseServiceClientOperator {
             ResponseEntity<ClientVO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, clientId);
             return responseEntity.getBody();
         } catch (Exception ex) {
-            throw new CommonException("error.query.client");
+            throw new CommonException("devops.query.client");
         }
     }
 

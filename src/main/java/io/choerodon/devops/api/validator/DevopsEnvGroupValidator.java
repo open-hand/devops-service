@@ -26,7 +26,7 @@ public class DevopsEnvGroupValidator {
      */
     public void checkNameUnique(Long id, String name, Long projectId) {
         if (!devopsEnvGroupService.baseCheckUniqueInProject(id, name, projectId)) {
-            throw new CommonException("error.envGroupName.exist");
+            throw new CommonException("devops.envGroupName.exist");
         }
     }
 }

@@ -80,7 +80,7 @@ public class SshUtil {
             cmd.join(5, TimeUnit.SECONDS);
             LOGGER.info("** exit status: {}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
-                throw new CommonException("error.test.connection");
+                throw new CommonException("devops.test.connection");
             }
         } catch (Exception ex) {
             LOGGER.warn("Failed to connect to host by ssh, the host is {}, port is {}, username: {}", hostIp, sshPort, username);

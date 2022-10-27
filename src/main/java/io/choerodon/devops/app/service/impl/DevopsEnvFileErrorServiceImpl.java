@@ -38,11 +38,11 @@ public class DevopsEnvFileErrorServiceImpl implements DevopsEnvFileErrorService 
             newDevopsEnvFileErrorDTO.setCommit(devopsEnvFileErrorDTO.getCommit());
             newDevopsEnvFileErrorDTO.setError(devopsEnvFileErrorDTO.getError());
             if (devopsEnvFileErrorMapper.updateByPrimaryKeySelective(newDevopsEnvFileErrorDTO) != 1) {
-                throw new CommonException("error.env.devops.file.update");
+                throw new CommonException("devops.env.devops.file.update");
             }
         } else {
             if (devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDTO) != 1) {
-                throw new CommonException("error.env.error.file.create");
+                throw new CommonException("devops.env.file.create");
             }
         }
         return devopsEnvFileErrorMapper.selectByPrimaryKey(devopsEnvFileErrorDTO.getId());
