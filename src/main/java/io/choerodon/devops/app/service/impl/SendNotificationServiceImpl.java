@@ -136,7 +136,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
             return;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         if (projectDTO == null) {
             LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
             return;
@@ -166,7 +166,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, null, LOGGER);
             return;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         if (projectDTO == null) {
             LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
             return;
@@ -295,7 +295,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
@@ -335,7 +335,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 return;
             }
 
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             if (projectDTO == null) {
                 LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                 return;
@@ -462,7 +462,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
@@ -529,7 +529,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         return;
                     }
 
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
                     if (projectDTO == null) {
                         LogUtil.loggerInfoObjectNullWithId(PROJECT, appServiceDTO.getProjectId(), LOGGER);
                         return;
@@ -595,7 +595,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 return;
             }
 
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
             if (projectDTO == null) {
                 LogUtil.loggerInfoObjectNullWithId(PROJECT, devopsEnvironmentDTO.getProjectId(), LOGGER);
                 return;
@@ -630,7 +630,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> webHookParams = buildResourceParams(
                             appServiceInstanceDTO.getId(),
                             appServiceInstanceDTO.getCode(),
@@ -650,7 +650,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenServiceCreationFailure(DevopsServiceDTO devopsServiceDTO, Long creatorId, DevopsEnvironmentDTO devopsEnvironmentDTO, Long resourceCommandId) {
         doWithTryCatchAndLog(
                 () -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> webHookParams = buildResourceParams(devopsServiceDTO.getId(),
                             devopsServiceDTO.getName(),
                             ObjectType.SERVICE.getType(),
@@ -668,7 +668,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenServiceCreationSuccessOrDelete(DevopsServiceDTO devopsServiceDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code) {
         doWithTryCatchAndLog(() -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(devopsServiceDTO.getId(),
                             devopsServiceDTO.getName(),
                             ObjectType.SERVICE.getType(),
@@ -687,7 +687,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenInstanceSuccessOrDelete(AppServiceInstanceDTO appServiceInstanceDTO, String code) {
         doWithTryCatchAndLog(() -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(appServiceInstanceDTO.getId(),
                             appServiceInstanceDTO.getCode(),
                             ObjectType.INSTANCE.getType(),
@@ -704,7 +704,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenIngressSuccessOrDelete(DevopsIngressDTO devopsIngressDTO, String code) {
         doWithTryCatchAndLog(() -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsIngressDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsIngressDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
                     Map<String, String> params = buildResourceParams(devopsIngressDTO.getId(),
                             devopsIngressDTO.getName(),
@@ -724,7 +724,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenCertSuccessOrDelete(CertificationDTO certificationDTO, String code) {
         doWithTryCatchAndLog(() -> {
                     DevopsEnvironmentDTO environmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(environmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(environmentDTO.getProjectId());
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
                     Map<String, String> params = buildResourceParams(certificationDTO.getId(),
                             certificationDTO.getName(),
@@ -744,7 +744,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenConfigMap(DevopsConfigMapDTO devopsConfigMapDTO, String code) {
         doWithTryCatchAndLog(() -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsConfigMapDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(devopsConfigMapDTO.getId(),
                             devopsConfigMapDTO.getName(),
                             ObjectType.CONFIGMAP.getType(),
@@ -763,7 +763,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenSecret(DevopsSecretDTO devopsSecretDTO, String code) {
         doWithTryCatchAndLog(() -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsSecretDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(devopsSecretDTO.getId(),
                             devopsSecretDTO.getName(),
                             ObjectType.SECRET.getType(),
@@ -790,7 +790,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCdPipelineRecordDTO recordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(recordDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(recordDTO.getProjectId());
         LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", recordDTO);
         params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()));
         //pipelineRecordId是relID
@@ -808,7 +808,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private void sendCiPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCiPipelineRecordDTO recordDTO = ciPipelineRecordService.queryById(pipelineRecordId);
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(recordDTO.getCiPipelineId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(ciCdPipelineDTO.getProjectId());
         LOGGER.info(">>>>>>>>>>>>>>>> sendCiPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCiPipelineRecordDTO is {}", recordDTO);
         params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getCiPipelineId()));
         //pipelineRecordId是relID
@@ -873,7 +873,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsIngressDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsIngressDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsIngressDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(
                             devopsIngressDTO.getId(),
                             devopsIngressDTO.getName(),
@@ -894,7 +894,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(
                 () -> {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(certificationDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(certificationDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(certificationDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(
                             certificationDTO.getId(),
                             certificationDTO.getName(),
@@ -1031,7 +1031,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Override
     public void sendWhenPVCResource(DevopsPvcDTO devopsPvcDTO, DevopsEnvironmentDTO devopsEnvironmentDTO, String code) {
         doWithTryCatchAndLog(() -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsPvcDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsPvcDTO.getProjectId());
                     Map<String, String> params = buildResourceParams(devopsPvcDTO.getId(),
                             devopsPvcDTO.getName(),
                             ObjectType.PERSISTENTVOLUMECLAIM.getType(),
@@ -1061,7 +1061,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenActivateCluster(DevopsClusterDTO devopsClusterDTO) {
         doWithTryCatchAndLog(
                 () -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsClusterDTO.getProjectId());
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
@@ -1074,7 +1074,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenDeleteCluster(DevopsClusterDTO devopsClusterDTO) {
         doWithTryCatchAndLog(
                 () -> {
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsClusterDTO.getProjectId());
                     if (Objects.isNull(projectDTO)) {
                         return;
                     }
@@ -1203,7 +1203,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 () -> {
                     String code = "";
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(appServiceInstanceDTO.getEnvId());
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
                     List<Receiver> receivers = new ArrayList<>();
                     Map<String, String> webHookParams = StringMapBuilder.newBuilder()
                             .put("createdAt", LocalDateTime.now())

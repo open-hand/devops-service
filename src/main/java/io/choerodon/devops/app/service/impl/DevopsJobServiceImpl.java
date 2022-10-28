@@ -121,7 +121,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsJobMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Job", name);
+            throw new CommonException("devops.workload.exist", "Job", name);
         }
     }
 
@@ -139,7 +139,7 @@ public class DevopsJobServiceImpl implements DevopsJobService, ChartResourceOper
             DevopsJobDTO devopsJobDTO = devopsJobMapper.selectByPrimaryKey(devopsJobDTOToUpdate.getId());
             devopsJobDTOToUpdate.setObjectVersionNumber(devopsJobDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJobMapper, devopsJobDTOToUpdate, "error.job.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJobMapper, devopsJobDTOToUpdate, "devops.job.update");
     }
 
     @Override

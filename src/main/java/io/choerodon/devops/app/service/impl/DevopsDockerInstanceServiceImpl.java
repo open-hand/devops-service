@@ -68,9 +68,9 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsDockerInstanceServiceImpl.class);
 
-    private static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
-    private static final String ERROR_UPDATE_DOCKER_INSTANCE_FAILED = "error.update.docker.instance.failed";
-    private static final String ERROR_IMAGE_TAG_NOT_FOUND = "error.image.tag.not.found";
+    private static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "devops.save.docker.instance.failed";
+    private static final String ERROR_UPDATE_DOCKER_INSTANCE_FAILED = "devops.update.docker.instance.failed";
+    private static final String ERROR_IMAGE_TAG_NOT_FOUND = "devops.image.tag.not.found";
 
     private static final String CREATE = "create";
 
@@ -105,10 +105,10 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Transactional(rollbackFor = Exception.class)
     public void deployDockerInstance(Long projectId, DockerDeployVO dockerDeployVO) {
         //1.获取项目信息
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         //2.获取主机信息
         DevopsHostDTO hostDTO = getHost(dockerDeployVO.getHostId());
-        notNull(hostDTO, "error.host.not.exist");
+        notNull(hostDTO, "devops.host.not.exist");
         //校验主机权限
         devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(projectId, hostDTO, DetailsHelper.getUserDetails().getUserId());
         // 校验主机已连接
@@ -216,7 +216,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         } else if (DevopsHostDeployType.CUSTOM.value().equals(dockerDeployVO.getRepoType())) {
             dockerDeployDTO = initCustomDockerDeployDTO(dockerDeployDTO, dockerDeployVO);
         } else {
-            throw new CommonException("error.unsupported.image.source");
+            throw new CommonException("devops.unsupported.image.source");
         }
         return dockerDeployDTO;
     }
@@ -231,7 +231,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
             devopsHostAppDTO.setName(dockerDeployVO.getAppName());
             devopsHostAppDTO.setCode(dockerDeployVO.getAppCode());
             devopsHostAppDTO.setOperationType(OperationTypeEnum.CREATE_APP.value());
-            MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, "error.save.host.app");
+            MapperUtil.resultJudgedInsertSelective(devopsHostAppMapper, devopsHostAppDTO, "devops.save.host.app");
             return devopsHostAppMapper.selectByPrimaryKey(devopsHostAppDTO.getId());
         } else {
             //查询主机应用实例

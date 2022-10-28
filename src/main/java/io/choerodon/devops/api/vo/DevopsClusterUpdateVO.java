@@ -13,7 +13,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsClusterUpdateVO {
     @Encrypt
     @ApiModelProperty("集群id/必需")
-    @NotNull(message = "error.cluster.id.null")
+    @NotNull(message = "{devops.cluster.id.null}")
     private Long id;
 
     @ApiModelProperty("集群名称")

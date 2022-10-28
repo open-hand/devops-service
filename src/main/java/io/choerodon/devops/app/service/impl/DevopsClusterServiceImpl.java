@@ -67,8 +67,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
      */
     private static final String CLUSTER_INFO_KEY_TEMPLATE = "cluster-%s-info";
 
-    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "error.update.cluster.status.failed";
-    private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "error.organization.cluster.num.max";
+    private static final String ERROR_UPDATE_CLUSTER_STATUS_FAILED = "devops.update.cluster.status.failed";
+    private static final String ERROR_ORGANIZATION_CLUSTER_NUM_MAX = "devops.organization.cluster.num.max";
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -116,7 +116,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/cluster.sh")) {
             CLUSTER_ACTIVATE_COMMAND_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.cluster.sh");
+            throw new CommonException("devops.load.cluster.sh");
         }
     }
 
@@ -159,7 +159,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         // 如果这个key存在，表明已经有相同的集群处于创建中，禁止重复创建
         Boolean exists = stringRedisTemplate.hasKey(redisKey);
         if (exists) {
-            throw new CommonException("error.cluster.installing");
+            throw new CommonException("devops.cluster.installing");
         }
 
         // 判断组织下是否还能创建集群
@@ -223,7 +223,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {
-            throw new CommonException("error.cluster.status");
+            throw new CommonException("devops.cluster.status");
         }
         CommonExAssertUtil.assertTrue(devopsClusterDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
@@ -234,7 +234,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterOperationRecordService.updateByPrimaryKeySelective(devopsClusterOperationRecordDTO);
 
         devopsClusterDTO.setStatus(ClusterStatusEnum.OPERATING.value());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "error.update.cluster");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsClusterMapper, devopsClusterDTO, "devops.update.cluster");
 
         LOGGER.info("update cluster and cluster operation status");
 
@@ -321,7 +321,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Boolean checkEnableCreateCluster(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Long organizationId = projectDTO.getOrganizationId();
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(organizationId);
         if (resourceLimitVO != null) {
@@ -379,7 +379,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public boolean isCodeUnique(Long projectId, String code) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DevopsClusterDTO devopsClusterDTO = new DevopsClusterDTO();
         devopsClusterDTO.setOrganizationId(projectDTO.getOrganizationId());
         devopsClusterDTO.setCode(code);
@@ -421,7 +421,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             paramList = org.apache.commons.lang3.ObjectUtils.defaultIfNull(TypeUtil.cast(maps.get(TypeUtil.PARAMS)), Collections.emptyList());
         }
 
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         // 查出组织下所有符合条件的项目
         List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -444,7 +444,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
-            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
             if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
@@ -618,13 +618,13 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                     if (permission.getProjectId() == null) {
                         return null;
                     }
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(permission.getProjectId());
                     return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
                 });
             }
         } else {
             // 如果要搜索，需要手动在程序内分页
-            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -678,15 +678,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         List<DevopsEnvironmentDTO> devopsEnvironmentDTOS = devopsEnvironmentService.baseListUserEnvByClusterId(clusterId);
 
         if (connectedEnvList.contains(clusterId)) {
-            throw new CommonException("error.cluster.connected");
+            throw new CommonException("devops.cluster.connected");
         }
         if (!devopsEnvironmentDTOS.isEmpty()) {
-            throw new CommonException("error.cluster.delete");
+            throw new CommonException("devops.cluster.delete");
         }
         //集群是否存在PV
         List<DevopsPvDTO> clusterDTOList = devopsPvService.queryByClusterId(clusterId);
         if (!Objects.isNull(clusterDTOList) && !clusterDTOList.isEmpty()) {
-            throw new CommonException("error.cluster.pv.exist");
+            throw new CommonException("devops.cluster.pv.exist");
         }
     }
 
@@ -756,7 +756,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterDTO.setChoerodonId(choerodonId);
         }
         if (devopsClusterMapper.insert(devopsClusterDTO) != 1) {
-            throw new CommonException("error.devops.cluster.insert");
+            throw new CommonException("devops.cluster.insert");
         }
         return devopsClusterDTO;
     }
@@ -837,7 +837,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public Boolean checkUserClusterPermission(Long clusterId, Long userId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (ObjectUtils.isEmpty(devopsClusterDTO)) {
-            throw new CommonException("error.devops.cluster.is.not.exist");
+            throw new CommonException("devops.devops.cluster.is.not.exist");
         }
         if (Boolean.TRUE.equals(permissionHelper.isRoot(userId)) || Boolean.TRUE.equals(permissionHelper.isOrganizationRoot(userId, devopsClusterDTO.getOrganizationId()))) {
             return true;
@@ -933,7 +933,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         checkEnableCreateClusterOrThrowE(projectId);
         ProjectDTO iamProject;
         DevopsClusterDTO devopsClusterDTO;
-        iamProject = baseServiceClientOperator.queryIamProjectById(projectId);
+        iamProject = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         // 插入记录
         devopsClusterDTO = ConvertUtils.convertObject(devopsClusterReqVO, DevopsClusterDTO.class);
         devopsClusterDTO.setToken(GenerateUUID.generateUUID());

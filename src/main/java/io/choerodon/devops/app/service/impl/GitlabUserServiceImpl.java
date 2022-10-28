@@ -409,7 +409,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         // 校验这个用户是否是自己，目前只允许自己重置自己的gitlab密码
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         if (userDetails == null || !Objects.equals(Objects.requireNonNull(userId), userDetails.getUserId())) {
-            throw new CommonException("error.reset.password.user.not.self");
+            throw new CommonException("devops.reset.password.user.not.self");
         }
 
         // 校验用户是否同步

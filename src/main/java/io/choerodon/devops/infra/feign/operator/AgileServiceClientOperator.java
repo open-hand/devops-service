@@ -30,7 +30,7 @@ public class AgileServiceClientOperator {
 
     public IssueDTO queryIssue(Long projectId, Long issueId, Long organizationId) {
         try {
-            return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssue(projectId, issueId, organizationId), IssueDTO.class, "error.issue.get");
+            return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssue(projectId, issueId, organizationId), IssueDTO.class, "devops.issue.get");
         } catch (ServiceUnavailableException e) {
             return null;
         }
@@ -38,18 +38,18 @@ public class AgileServiceClientOperator {
 
     public List<IssueDTO> listIssueByIds(Long projectId, List<Long> ids) {
         return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssues(projectId, ids), new TypeReference<List<IssueDTO>>() {
-        }, "error.issues.list.by.id");
+        }, "devops.issues.list.by.id");
     }
 
     public List<IssueDTO> listIssueByIdsWithProjectId(List<Long> ids) {
         return FeignClientUtils.doRequest(() -> agileServiceClient.queryIssuesByIds(ids), new TypeReference<List<IssueDTO>>() {
-        }, "error.issues.list.by.ids");
+        }, "devops.issues.list.by.ids");
     }
 
 
     public SprintDTO getActiveSprint(Long projectId, Long organizationId) {
         try {
-            return FeignClientUtils.doRequest(() -> agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class, "error.active.sprint.get");
+            return FeignClientUtils.doRequest(() -> agileServiceClient.getActiveSprint(projectId, organizationId), SprintDTO.class, "devops.active.sprint.get");
         } catch (ServiceUnavailableException e) {
             LOGGER.warn(e.getMessage());
             return null;
@@ -60,7 +60,7 @@ public class AgileServiceClientOperator {
         try {
             agileServiceClient.deleteTagByBranch(projectId, issueIdAndBranchIdsVO);
         } catch (Exception e) {
-            throw new CommonException("error.issue.delete.tag.by.branch");
+            throw new CommonException("devops.issue.delete.tag.by.branch");
         }
     }
 }

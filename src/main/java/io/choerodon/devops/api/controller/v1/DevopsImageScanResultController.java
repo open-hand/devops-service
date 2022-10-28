@@ -37,8 +37,7 @@ public class DevopsImageScanResultController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "gitlab_pipeline_id", required = true)
-            @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId,
-            @ApiIgnore PageRequest pageRequest) {
+            @PathVariable("gitlab_pipeline_id") Long gitlabPipelineId) {
         return Results.success(devopsImageScanResultService.queryImageInfo(projectId, gitlabPipelineId));
     }
 

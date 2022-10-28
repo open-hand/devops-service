@@ -35,7 +35,7 @@ public class TestServiceClientOperator {
         ApiTestExecuteVO apiTestExecuteVO = new ApiTestExecuteVO();
         apiTestExecuteVO.setTaskId(taskId);
         apiTestExecuteVO.setConfigId(getApITestConfigId);
-        return FeignClientUtils.doRequest(() -> testServiceClient.executeTask(projectId, apiTestExecuteVO, createdBy, triggerType, triggerId), ApiTestTaskRecordDTO.class, "error.execute.api.test.task");
+        return FeignClientUtils.doRequest(() -> testServiceClient.executeTask(projectId, apiTestExecuteVO, createdBy, triggerType, triggerId), ApiTestTaskRecordDTO.class, "devops.execute.api.test.task");
     }
 
     /**
@@ -51,7 +51,7 @@ public class TestServiceClientOperator {
                 suiteId,
                 createdBy,
                 triggerType,
-                triggerId), ApiTestTaskRecordDTO.class, "error.execute.api.test.suite");
+                triggerId), ApiTestTaskRecordDTO.class, "devops.execute.api.test.suite");
     }
 
     /**
@@ -62,7 +62,7 @@ public class TestServiceClientOperator {
      * @return
      */
     public ApiTestTaskRecordVO queryById(Long projectId, Long taskRecordId) {
-        return FeignClientUtils.doRequest(() -> testServiceClient.queryById(projectId, taskRecordId), ApiTestTaskRecordVO.class, "error.query.api.test.task.record");
+        return FeignClientUtils.doRequest(() -> testServiceClient.queryById(projectId, taskRecordId), ApiTestTaskRecordVO.class, "devops.query.api.test.task.record");
     }
 
     /**
@@ -75,6 +75,6 @@ public class TestServiceClientOperator {
     public ApiTestSuiteRecordSimpleVO querySuitePreviewById(Long projectId, Long taskRecordId) {
         return FeignClientUtils.doRequest(() -> testServiceClient.querySuitePreviewById(projectId, taskRecordId),
                 ApiTestSuiteRecordSimpleVO.class,
-                "error.query.api.test.task.record");
+                "devops.query.api.test.task.record");
     }
 }

@@ -161,7 +161,7 @@ public final class KeyDecryptHelper {
             try {
                 return SPRINT_OBJECT_MAPPER.readValue(json, type);
             } catch (IOException e) {
-                throw new CommonException("error.decrypt.json", e);
+                throw new CommonException("devops.decrypt.json", e);
             }
         } else {
             return JsonHelper.unmarshalByJackson(json, type);
@@ -181,7 +181,7 @@ public final class KeyDecryptHelper {
             try {
                 return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
             } catch (Exception ex) {
-                throw new CommonException("error.encrypt.json", ex);
+                throw new CommonException("devops.encrypt.json", ex);
             }
         } else {
             EncryptContext.setEncryptType(EncryptType.TO_STRING.name());
@@ -189,7 +189,7 @@ public final class KeyDecryptHelper {
                 ensureInitObjectMapper();
                 return SPRINT_OBJECT_MAPPER.writeValueAsString(object);
             } catch (JsonProcessingException e) {
-                throw new CommonException("error.encrypt.json", e);
+                throw new CommonException("devops.encrypt.json", e);
             }
         }
     }

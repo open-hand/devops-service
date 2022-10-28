@@ -44,7 +44,7 @@ public class DaemonSetWorkLoad extends WorkLoad {
     public Long getWorkloadId(Long envId, String workloadName) {
         DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetService.baseQueryByEnvIdAndName(envId, workloadName);
         if (devopsDaemonSetDTO == null) {
-            throw new CommonException("error.workload.resource.not.exist", workloadName, "DaemonSet");
+            throw new CommonException("devops.workload.resource.not.exist", workloadName, "DaemonSet");
         }
         return devopsDaemonSetDTO.getId();
     }

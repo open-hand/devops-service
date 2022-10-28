@@ -45,7 +45,7 @@ import io.choerodon.devops.infra.util.SshUtil;
 @Service
 public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOperatorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeOperatorServiceImpl.class);
-    private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
+    private static final String ERROR_ADD_NODE_FAILED = "devops.add.node.failed";
 
     private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
     @Autowired

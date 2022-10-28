@@ -84,7 +84,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
                 createSonarToken();
             }
         } catch (Exception e) {
-            throw new CommonException("error.init.project.config", e);
+            throw new CommonException("devops.init.project.config", e);
         }
     }
 
@@ -116,7 +116,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
         map.put("name", "ci-token");
         map.put("login", userName);
         Call<ResponseBody> responseCall = sonarClient.listToken();
-        UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
+        UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "devops.sonar.token.get", UserTokens.class);
         Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
         UserToken userToken;
         if (userTokenOptional.isPresent()) {
@@ -128,7 +128,7 @@ public class DevopsCommandRunner implements CommandLineRunner {
             }
         }
         Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-        userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
+        userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "devops.create.sonar.token", UserToken.class);
         if (oldConfigDTO == null) {
             DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
             newConfigDTO.setConfig(userToken.getToken());

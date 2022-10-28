@@ -18,7 +18,7 @@ public class AppServiceDeployUpdateVO {
 
     @Encrypt
     @ApiModelProperty("服务应用版本id/必填")
-    @NotNull(message = "error.app.version.id.null")
+    @NotNull(message = "{devops.app.version.id.null}")
     private Long appServiceVersionId;
 
     @Encrypt

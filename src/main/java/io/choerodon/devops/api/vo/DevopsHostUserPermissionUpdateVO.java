@@ -16,7 +16,7 @@ public class DevopsHostUserPermissionUpdateVO {
 
     @Encrypt
     @ApiModelProperty("要添加权限的用户id / 必需")
-    @NotNull(message = "error.user.ids.null")
+    @NotNull(message = "{devops.user.ids.null}")
     private List<Long> userIds;
 
     /**

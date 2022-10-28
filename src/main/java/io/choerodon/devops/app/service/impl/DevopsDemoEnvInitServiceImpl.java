@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_OWNER;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -196,7 +197,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppServiceRepVO createDemoApp(Long projectId, AppServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(applicationReqDTO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
 
@@ -223,7 +224,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (gitlabMember == null || !Objects.equals(gitlabMember.getAccessLevel(), AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException(DEVOPS_USER_NOT_OWNER);
             }
         }
 
@@ -331,7 +332,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());

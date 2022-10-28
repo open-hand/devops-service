@@ -40,7 +40,7 @@ public class HostConnectionVO {
      * {@link HostSourceEnum}
      */
     @ApiModelProperty("主机来源")
-    @NotNull(message = "error.hostSource.is.null")
+    @NotNull(message = "devops.hostSource.is.null")
     private String hostSource;
 
     public Long getHostId() {

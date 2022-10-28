@@ -15,7 +15,7 @@ import io.choerodon.devops.infra.mapper.AppServiceVersionReadmeMapper;
 @Service
 public class AppServiceVersionReadmeServiceImpl implements AppServiceVersionReadmeService {
 
-    private static final String ERROR_INSERT_VERSION_README = "error.insert.version.readme";
+    private static final String ERROR_INSERT_VERSION_README = "devops.insert.version.readme";
 
     @Autowired
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;

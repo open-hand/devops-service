@@ -34,7 +34,7 @@ public class DevopsFixDataTask {
         try {
             devopsCheckLogService.checkLog(FIX_APP_CENTER_DATA);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 
@@ -49,7 +49,7 @@ public class DevopsFixDataTask {
         try {
             devopsCheckLogService.checkLog(FIX_PIPELINE_DATA);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 
@@ -64,7 +64,7 @@ public class DevopsFixDataTask {
         try {
             devopsCheckLogService.checkLog(FIX_HELM_REPO_DATA);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 
@@ -74,7 +74,7 @@ public class DevopsFixDataTask {
         try {
             devopsCheckLogService.checkLog(FIX_HELM_VERSION_DATA);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 
@@ -89,7 +89,7 @@ public class DevopsFixDataTask {
         try {
             devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 

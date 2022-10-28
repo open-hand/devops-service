@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCdApiTestInfoServiceImpl implements DevopsCdApiTestInfoService {
 
-    private static final String ERROR_SAVE_API_TEST_INFO_FAILED = "error.save.api.test.info.failed";
+    private static final String ERROR_SAVE_API_TEST_INFO_FAILED = "devops.save.api.test.info.failed";
 
     @Autowired
     private DevopsCdApiTestInfoMapper devopsCdApiTestInfoMapper;

@@ -75,8 +75,8 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecordService {
 
-    protected static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "error.save.pipeline.record.failed";
-    protected static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "error.update.pipeline.record.failed";
+    protected static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
+    protected static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "devops.update.pipeline.record.failed";
     protected static final String ENV = "env";
     protected static final String HOST = "host";
 
@@ -281,7 +281,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                     if (jobRecordDTO.getType().equals(JobTypeEnum.CD_AUDIT.value())) {
                         List<DevopsCdAuditRecordDTO> jobAuditRecordDTOS = devopsCdAuditRecordService.queryByJobRecordId(jobRecordDTO.getId());
                         if (CollectionUtils.isEmpty(jobAuditRecordDTOS)) {
-                            throw new CommonException("error.audit.job.noUser");
+                            throw new CommonException("devops.audit.job.noUser");
                         }
                         List<String> taskUsers = jobAuditRecordDTOS.stream().map(t -> TypeUtil.objToString(t.getUserId())).collect(Collectors.toList());
                         taskDTO.setUsernames(taskUsers);
@@ -394,7 +394,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
@@ -526,7 +526,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         DevopsCdPipelineRecordDTO cdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         DevopsCdJobRecordDTO jobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(cdPipelineRecordDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(cdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(jobRecordDTO.getDeployInfoId());
@@ -591,7 +591,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), cdPipelineRecordDTO.getProjectId(), Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-                throw new CommonException("error.get.maven.config");
+                throw new CommonException("devops.get.maven.config");
             }
 
             C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
@@ -777,7 +777,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
         DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
 
         DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
@@ -788,11 +788,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         log.append("Start deploy image to host: ").append(devopsHostDTO.getName()).append(System.lineSeparator());
 
         if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
-            throw new CommonException("error.no.gitlab.pipeline.id");
+            throw new CommonException("devops.no.gitlab.pipeline.id");
         }
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, devopsCdPipelineRecordDTO.getGitlabPipelineId(), imageDeploy.getPipelineTask());
         if (ciPipelineImageDTO == null) {
-            throw new CommonException("error.deploy.images.not.exist");
+            throw new CommonException("devops.deploy.images.not.exist");
         }
         HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
@@ -927,7 +927,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsCdJobRecordDTO devopsCdJobRecordDTO = devopsCdJobRecordService.queryById(cdJobRecordId);
         DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsCdPipelineRecordDTO.getPipelineId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
         Long projectId = projectDTO.getId();
         Long appServiceId = ciCdPipelineVO.getAppServiceId();
 
@@ -935,7 +935,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
 
         if (ObjectUtils.isEmpty(devopsCdPipelineRecordDTO.getGitlabPipelineId())) {
-            throw new CommonException("error.no.gitlab.pipeline.id");
+            throw new CommonException("devops.no.gitlab.pipeline.id");
         }
         Long appId = devopsCdHostDeployInfoDTO.getAppId();
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
@@ -947,7 +947,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 devopsCdPipelineRecordDTO.getGitlabPipelineId(),
                 devopsCdHostDeployInfoDTO.getImageJobName());
         if (ciPipelineImageDTO == null) {
-            throw new CommonException("error.deploy.images.not.exist");
+            throw new CommonException("devops.deploy.images.not.exist");
         }
         log.append("[info] Deploy image is ").append(ciPipelineImageDTO.getImageTag()).append(System.lineSeparator());
 
@@ -1340,7 +1340,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 //                LOGGER.info("** exit status: {}", cmd.getExitStatus());
 //            }
 //            if (cmd.getExitStatus() != 0) {
-//                throw new CommonException("error.test.connection");
+//                throw new CommonException("devops.test.connection");
 //            }
 //        } catch (IOException e) {
 //            index = false;

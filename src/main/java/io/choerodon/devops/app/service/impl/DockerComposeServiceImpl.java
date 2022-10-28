@@ -98,7 +98,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 RdupmTypeEnum.DOCKER_COMPOSE.value(),
                 OperationTypeEnum.CREATE_APP.value());
 
-        devopsHostAppService.baseCreate(devopsHostAppDTO, "error.create.app");
+        devopsHostAppService.baseCreate(devopsHostAppDTO, "devops.create.app");
 
         Long appId = devopsHostAppDTO.getId();
         String remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
@@ -311,7 +311,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
 
         // 保存部署记录

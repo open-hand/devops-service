@@ -64,7 +64,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
 
     private static final String UPDATE_DEPLOY_RECORD_STATUS_FAILED = "update.deploy.record.status.failed";
-    private static final String ERROR_UPDATE_DEPLOY_RECORD_FAILED = "error.update.deploy.record.failed";
+    private static final String ERROR_UPDATE_DEPLOY_RECORD_FAILED = "devops.update.deploy.record.failed";
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -209,7 +209,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         Objects.requireNonNull(devopsDeployRecordDTO.getDeployTime(), "Deploy time can't be null");
         if (devopsDeployRecordMapper.insert(devopsDeployRecordDTO) != 1) {
-            throw new CommonException("error.deploy.record.insert");
+            throw new CommonException("devops.deploy.record.insert");
         }
     }
 

@@ -27,8 +27,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsHostCommandServiceImpl implements DevopsHostCommandService {
 
-    private static final String ERROR_SAVE_HOST_COMMAND_FAILED = "error.save.host.command.failed";
-    private static final String ERROR_UPDATE_HOST_COMMAND_FAILED = "error.update.host.command.failed";
+    private static final String ERROR_SAVE_HOST_COMMAND_FAILED = "devops.save.host.command.failed";
+    private static final String ERROR_UPDATE_HOST_COMMAND_FAILED = "devops.update.host.command.failed";
 
     @Autowired
     private DevopsHostCommandMapper devopsHostCommandMapper;

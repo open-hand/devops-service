@@ -64,7 +64,7 @@ public class DevopsHzeroDeployDetailsVO {
     private String appName;
     @ApiModelProperty("应用中心应用code，同时也作为实例名称")
     @Size(min = 1, max = 53, message = "{devops.env.app.center.code.length}")
-    @NotBlank(message = "error.app.instance.code.null")
+    @NotBlank(message = "{devops.app.instance.code.null}")
     private String appCode;
 
     private String mktServiceName;

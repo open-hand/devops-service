@@ -173,6 +173,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private CiPipelineImageService ciPipelineImageService;
     @Autowired
     private CiPipelineAppVersionService ciPipelineAppVersionService;
+    @Autowired
+    private DevopsHostService devopsHostService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -712,6 +714,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             cdHostDeployConfigVO.setDockerCommand(cdHostDeployConfigVO.getDockerCommand());
         }
         devopsCdJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(devopsCdJobVO.getProjectId(), devopsCdHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
+        cdHostDeployConfigVO.setDevopsHostDTO(devopsHostService.baseQuery(devopsCdHostDeployInfoDTO.getHostId()));
 
         devopsCdJobVO.setMetadata(JsonHelper.singleQuoteWrapped(KeyDecryptHelper.encryptJson(cdHostDeployConfigVO)));
     }
@@ -748,7 +751,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         if (baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), devopsCdJobVO.getProjectId())) {
             return Boolean.TRUE;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobVO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdJobVO.getProjectId());
         if (baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) || userDetails.getAdmin()) {
             return Boolean.TRUE;
         }
@@ -1295,12 +1298,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public Map<String, String> runnerGuide(Long projectId) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
-        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+        ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
+        Tenant tenant = baseServiceClientOperator.queryOrganizationById(immutableProjectInfoVO.getTenantId());
 
         // name: orgName-projectName + suffix
         String groupName = GitOpsUtil.renderGroupName(tenant.getTenantNum(),
-                projectDTO.getDevopsComponentCode(), "");
+                immutableProjectInfoVO.getDevopsComponentCode(), "");
         String processedGitlabUrl = "";
         if (gitlabUrl.endsWith("/")) {
             processedGitlabUrl = gitlabUrl.substring(0, gitlabUrl.length() - 1);
@@ -1698,7 +1701,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      */
     private GitlabCi buildGitLabCiObject(CiCdPipelineDTO ciCdPipelineDTO) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(ciCdPipelineDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(ciCdPipelineDTO.getProjectId());
         Long projectId = projectDTO.getId();
         Long organizationId = projectDTO.getOrganizationId();
         Long pipelineId = ciCdPipelineDTO.getId();

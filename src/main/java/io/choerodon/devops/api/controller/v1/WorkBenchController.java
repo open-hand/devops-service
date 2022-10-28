@@ -41,9 +41,7 @@ public class WorkBenchController {
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId) {
-        return Optional.ofNullable(workBenchService.listApproval(organizationId, projectId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.approval"));
+        return ResponseEntity.ok(workBenchService.listApproval(organizationId, projectId));
     }
 
     @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
@@ -54,9 +52,7 @@ public class WorkBenchController {
             @PathVariable("organization_id") Long organizationId,
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId) {
-        return Optional.ofNullable(workBenchService.listLatestAppService(organizationId, projectId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.latest.app.service"));
+        return ResponseEntity.ok(workBenchService.listLatestAppService(organizationId, projectId));
     }
 
     @Permission(permissionLogin = true, level = ResourceLevel.ORGANIZATION)
@@ -68,8 +64,6 @@ public class WorkBenchController {
             @ApiParam(value = "项目id")
             @RequestParam(value = "project_id", required = false) Long projectId,
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(workBenchService.listLatestCommits(organizationId, projectId, pageRequest))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.list.latest.app.service"));
+        return ResponseEntity.ok(workBenchService.listLatestCommits(organizationId, projectId, pageRequest));
     }
 }

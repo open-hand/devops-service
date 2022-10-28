@@ -206,7 +206,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(gitlabGroupMemberVO -> gitlabGroupMemberVO.getResourceType().equals(PROJECT))
                 .forEach(gitlabGroupMemberVO -> {
                     //删除用户的项目所有者权限，如果是组织root,则不删除该项目下gitlab相应的权限
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupMemberVO.getResourceId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(gitlabGroupMemberVO.getResourceId());
                     if (!baseServiceClientOperator.isOrganzationRoot(gitlabGroupMemberVO.getUserId(), projectDTO.getOrganizationId())) {
                         deleteAllPermissionInProjectOfUser(gitlabGroupMemberVO, projectDTO.getId());
                     }
@@ -250,7 +250,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitLabUserDTO gitlabUserDTO = gitlabServiceClientOperator.queryUserById(
                 TypeUtil.objToInteger(gitlabUserId));
         if (gitlabUserDTO == null) {
-            LOGGER.error("error.gitlab.username.select");
+            LOGGER.error("devops.gitlab.username.select");
             return;
         }
         DevopsProjectDTO devopsProjectDTO;
@@ -374,7 +374,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         DevopsProjectDTO devopsProjectDTO = devopsProjectService
                 .baseQueryByProjectId(devopsEnvironmentDTO.getProjectId());
         if (devopsEnvironmentDTO.getGitlabEnvProjectId() == null) {
-            throw new CommonException("error.env.project.not.exist");
+            throw new CommonException("devops.env.project.not.exist");
         }
         // 跳过Root用户
         if (Boolean.TRUE.equals(userAttrDTO.getGitlabAdmin())) {
@@ -393,7 +393,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (newGroupMemberDTO == null || !(newGroupMemberDTO.getAccessLevel().equals(AccessLevel.MASTER.toValue()))) {
-            throw new CommonException("error.user.not.env.pro.owner");
+            throw new CommonException("devops.user.not.env.pro.owner");
         }
     }
 
@@ -454,7 +454,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             LogUtil.loggerInfoObjectNullWithId("user", userAttrDTO.getIamUserId(), LOGGER);
             return;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(resourceId);
         // 如果当前iam用户只有项目成员的权限,并且他不是这个组织的组织管理员
         if (AccessLevel.DEVELOPER.equals(accessLevel)
                 && !baseServiceClientOperator.isOrganzationRoot(iamUserDTO.getId(), projectDTO.getOrganizationId())) {
@@ -616,7 +616,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
                 break;
             default:
-                LOGGER.error("error.gitlab.member.level");
+                LOGGER.error("devops.gitlab.member.level");
                 break;
         }
     }
@@ -636,7 +636,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabGroupId = TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId());
                     break;
                 default:
-                    throw new CommonException("error.gitlab.group.type");
+                    throw new CommonException("devops.gitlab.group.type");
             }
             gitlabServiceClientOperator.deleteGroupMember(gitlabGroupId, userId);
         }

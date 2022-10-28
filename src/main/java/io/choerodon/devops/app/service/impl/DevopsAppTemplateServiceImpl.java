@@ -64,11 +64,11 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
     private static final String GITLAB_GROUP_NAME = "choerodon_%s应用模板库";
     private static final String DEVOPS_APP_TEMPLATE_NAME_ALREADY_EXISTS = "devops.app.template.name.already.exists";
     private static final String DEVOPS_APP_TEMPLATE_CODE_ALREADY_EXISTS = "devops.app.template.code.already.exists";
-    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE = "devops.error.insert.app.template";
-    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE_PERMISSION = "devops.error.insert.app.template.permission";
-    private static final String DEVOPS_ERROR_GET_APP_TEMPLATE = "devops.error.get.app.template";
-    private static final String DEVOPS_ERROR_GET_RESOURCE_LEVEL = "devops.error.get.resource.level";
-    private static final String DEVOPS_ERROR_UPDATE_APP_TEMPLATE = "devops.error.update.app.template";
+    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE = "devops.devops.insert.app.template";
+    private static final String DEVOPS_ERROR_INSERT_APP_TEMPLATE_PERMISSION = "devops.devops.insert.app.template.permission";
+    private static final String DEVOPS_ERROR_GET_APP_TEMPLATE = "devops.get.app.template";
+    private static final String DEVOPS_ERROR_GET_RESOURCE_LEVEL = "devops.get.resource.level";
+    private static final String DEVOPS_ERROR_UPDATE_APP_TEMPLATE = "devops.update.app.template";
     private static final String DEVOPS_APP_TEMPLATE_IS_STATUS = "devops.app.template.is.status";
 
     private static final String GIT = ".git";
@@ -106,7 +106,7 @@ public class DevopsAppTemplateServiceImpl implements DevopsAppTemplateService {
         } else {
             if (sourceType.equals(ResourceLevel.PROJECT.value())) {
                 sourceType = ResourceLevel.ORGANIZATION.value();
-                sourceId = baseServiceClientOperator.queryIamProjectById(sourceId).getOrganizationId();
+                sourceId = baseServiceClientOperator.queryIamProjectBasicInfoById(sourceId).getOrganizationId();
             }
             return devopsAppTemplateMapper.listAppTemplate(sourceId, sourceType, param);
         }

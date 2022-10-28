@@ -11,6 +11,6 @@ import io.choerodon.devops.infra.feign.RducmClient;
 public class RducmClientFallBack implements RducmClient {
     @Override
     public ResponseEntity<UserAppServiceIdsVO> getAppServiceIds(Long organizationId, Long userId) {
-        throw new CommonException("error.list.app.id");
+        throw new CommonException("devops.list.app.id");
     }
 }

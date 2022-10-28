@@ -70,7 +70,7 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
 
     @Override
     public List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobmapper.listByTenantIdAndGroupId(projectId, projectDTO.getOrganizationId(), groupId);
 
         if (CollectionUtils.isEmpty(templateJobDTOS)) {

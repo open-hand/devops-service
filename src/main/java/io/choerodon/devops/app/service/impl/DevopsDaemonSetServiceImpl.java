@@ -120,7 +120,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsDaemonSetMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "DaemonSet", name);
+            throw new CommonException("devops.workload.exist", "DaemonSet", name);
         }
     }
 
@@ -138,7 +138,7 @@ public class DevopsDaemonSetServiceImpl implements DevopsDaemonSetService, Chart
             DevopsDaemonSetDTO devopsDaemonSetDTO = devopsDaemonSetMapper.selectByPrimaryKey(devopsDaemonSetDTOToUpdate.getId());
             devopsDaemonSetDTOToUpdate.setObjectVersionNumber(devopsDaemonSetDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDaemonSetMapper, devopsDaemonSetDTOToUpdate, "error.daemonset.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDaemonSetMapper, devopsDaemonSetDTOToUpdate, "devops.daemonset.update");
     }
 
     @Override

@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CdEnvDeployInfoDTOCode.DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
 import static io.choerodon.devops.infra.constant.MiddlewareAppServiceName.MIDDLE_APP_SERVICE_NAME_MAP;
 
 import java.util.*;
@@ -37,6 +39,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.iam.UserVO;
 import io.choerodon.devops.api.vo.market.MarketServiceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -82,11 +85,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected static final String README_CONTENT = "# This is gitops env repository!";
     private static final String ENV = "ENV";
     private static final String ERROR_CODE_EXIST = "devops.code.exist";
-    private static final String ERROR_GITLAB_USER_SYNC_FAILED = "error.gitlab.user.sync.failed";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final Pattern CODE = Pattern.compile("[a-z]([-a-z0-9]*[a-z0-9])?");
-    private static final String ERROR_CLUSTER_ENV_NUM_MAX = "error.cluster.env.num.max";
+    private static final String ERROR_CLUSTER_ENV_NUM_MAX = "devops.cluster.env.num.max";
 
     /**
      * gitlab用于环境库的webhook地址
@@ -216,7 +218,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException(ERROR_CLUSTER_ENV_NUM_MAX);
         }
         if (!devopsClusterProPermissionService.projectHasClusterPermission(projectId, devopsEnvironmentReqVO.getClusterId())) {
-            throw new CommonException("error.project.miss.cluster.permission");
+            throw new CommonException("devops.project.miss.cluster.permission");
         }
 
         // 创建环境时默认跳过权限校验
@@ -234,12 +236,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setAutoDeploy(true);
         devopsEnvironmentDTO.setClusterId(devopsEnvironmentReqVO.getClusterId());
         devopsEnvironmentDTO.setToken(GenerateUUID.generateUUID());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
         boolean isGitlabRoot = false;
@@ -350,7 +352,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
             if (key != 0) {
                 devopsEnvGroupDTO = Optional.ofNullable(devopsEnvGroupDTOMap.get(key)).
-                        orElseThrow(() -> new CommonException("error.env.group.not.exist"));
+                        orElseThrow(() -> new CommonException("devops.env.group.not.exist"));
             }
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupId(devopsEnvGroupDTO.getId());
             devopsEnvGroupEnvsDTO1.setDevopsEnvGroupName(devopsEnvGroupDTO.getName());
@@ -607,7 +609,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
             } else {
                 if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
-                    throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
+                    throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
                 }
             }
         }
@@ -615,7 +617,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentDTO.setActive(active);
         baseUpdate(devopsEnvironmentDTO);
         //发送web hook
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         if (Boolean.TRUE.equals(active)) {
             sendNotificationService.sendWhenEnvEnable(devopsEnvironmentDTO, projectDTO.getOrganizationId());
         }
@@ -632,7 +634,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnvironmentInfoVO queryInfoById(Long projectId, Long environmentId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentInfoDTO envInfo = devopsEnvironmentMapper.queryInfoById(environmentId);
         if (envInfo == null) {
@@ -673,8 +675,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 设置环境所属集群所在项目
         Long clusterId = vo.getClusterId();
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        ProjectDTO clusterBelongedProject = baseServiceClientOperator.queryIamProjectById(devopsClusterDTO.getProjectId(), false, false, false, false, false);
-        vo.setClusterBelongedProjectName(clusterBelongedProject.getName());
+        ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(devopsClusterDTO.getProjectId());
+        vo.setClusterBelongedProjectName(immutableProjectInfoVO.getProjName());
 
         return vo;
     }
@@ -733,7 +735,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
         CommitDTO commitDO = gitlabServiceClientOperator.listCommits(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), userAttrDTO.getGitlabUserId().intValue(), 1, 1).get(0);
         PushWebHookVO pushWebHookVO = new PushWebHookVO();
@@ -768,7 +770,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
         // 查询GitLab上环境最新的commit
@@ -802,7 +804,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      */
     @Override
     public Boolean checkEnableCreateEnv(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         ResourceLimitVO resourceLimitVO = baseServiceClientOperator.queryResourceLimit(projectDTO.getOrganizationId());
         if (resourceLimitVO != null) {
             DevopsEnvironmentDTO example = new DevopsEnvironmentDTO();
@@ -816,7 +818,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!isCodePatternValid(code)) {
-            throw new CommonException("error.env.code.notMatch");
+            throw new CommonException("devops.env.code.notMatch");
         }
         // 兼容甄零的收紧权限逻辑，不需要校验集群中已存在code
 //        if (doesNamespaceExistInCluster(clusterId, code)) {
@@ -866,7 +868,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     protected void checkGitlabProjectIdNotUsedBefore(Long gitlabProjectId) {
         DevopsEnvironmentDTO condition = new DevopsEnvironmentDTO();
         condition.setGitlabEnvProjectId(gitlabProjectId);
-        CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "error.gitlab.project.associated.with.other.env");
+        CommonExAssertUtil.assertTrue(devopsEnvironmentMapper.selectCount(condition) == 0, "devops.gitlab.project.associated.with.other.env");
     }
 
     @Override
@@ -877,8 +879,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         CommonExAssertUtil.assertNotNull(devopsEnvironmentDTO, DEVOPS_ENV_ID_NOT_EXIST, gitlabProjectPayload.getPath());
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(gitlabGroupE.getIamProjectId());
-        CommonExAssertUtil.assertNotNull(projectDTO, "error.project.query");
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(gitlabGroupE.getIamProjectId());
+        CommonExAssertUtil.assertNotNull(projectDTO, "devops.project.query");
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
@@ -1031,7 +1033,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public EnvSyncStatusVO queryEnvSyncStatus(Long projectId, Long envId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
@@ -1197,12 +1199,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
 
         if (userAttrDTO.getGitlabUserId() == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
 
         if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
-            throw new CommonException("error.delete.permission.of.project.owner");
+            throw new CommonException(DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER);
         }
 
         // 删除数据库中的纪录
@@ -1378,11 +1380,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         //排除掉运行中的环境
         if (Boolean.TRUE.equals(devopsEnvironmentDTO.getActive()) && Boolean.FALSE.equals(devopsEnvironmentDTO.getFailed()) && upgradeClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
-            throw new CommonException("error.env.delete");
+            throw new CommonException("devops.env.delete");
         }
 
         if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
-            throw new CommonException("error.delete.env.with.pipeline");
+            throw new CommonException("devops.delete.env.with.pipeline");
         }
 
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
@@ -1524,10 +1526,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (userAttrDTO == null) {
-            throw new CommonException(ERROR_GITLAB_USER_SYNC_FAILED);
+            throw new CommonException(DEVOPS_GITLAB_USER_SYNC_FAILED);
         }
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
         // 查询所在的gitlab环境组
@@ -1565,7 +1567,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsClusterEnvGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (memberDTO == null || !memberDTO.getAccessLevel().equals(AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException(DEVOPS_USER_NOT_OWNER);
             }
         }
 
@@ -1644,7 +1646,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             deleteEnvSaga(envId);
         } else {
             // 可能是gitlab项目创建成功，但是数据库纪录被回滚了，这时候判断gitlab是否有对应项目
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -1689,7 +1691,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsClusterRepVO> listDevopsCluster(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<DevopsClusterRepVO> devopsClusterRepVOS = ConvertUtils.convertList(devopsClusterService.baseListByProjectId(projectId, projectDTO.getOrganizationId()), DevopsClusterRepVO.class);
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         devopsClusterRepVOS.forEach(t -> {
@@ -1730,7 +1732,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvironmentDTO baseCreate(DevopsEnvironmentDTO devopsEnvironmentDTO) {
         if (devopsEnvironmentMapper.insert(devopsEnvironmentDTO) != 1) {
-            throw new CommonException("error.environment.create");
+            throw new CommonException("devops.environment.create");
         }
         return devopsEnvironmentDTO;
     }
@@ -1755,7 +1757,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     devopsEnvironmentDTO1.getSagaSyncCommit(),
                     devopsEnvironmentDTO1.getDevopsSyncCommit(),
                     devopsEnvironmentDTO1.getAgentSyncCommit());
-            throw new CommonException("error.environment.update");
+            throw new CommonException("devops.environment.update");
         }
         return devopsEnvironmentDTO;
     }
@@ -1974,7 +1976,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         devopsEnvironmentDTO.setAutoDeploy(isAutoDeploy);
         if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
-            throw new CommonException("error.update.env");
+            throw new CommonException("devops.update.env");
         }
     }
 

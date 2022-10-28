@@ -43,9 +43,7 @@ public class DevopsUserController {
             @Encrypt
             @ApiParam(value = "用户id", required = true)
             @PathVariable(value = "user_id") Long userId) {
-        return Optional.ofNullable(userAttrService.queryByUserId(userId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.user.get"));
+        return ResponseEntity.ok(userAttrService.queryByUserId(userId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

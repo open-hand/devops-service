@@ -51,7 +51,7 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
             return;
         }
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             List<MemberPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClientOperator.selfPrivilege(projectDTO.getOrganizationId(), projectId, Collections.singleton(appServiceId));
             if (CollectionUtils.isEmpty(viewDTOList) || viewDTOList.get(0).getAccessLevel() == null) {

@@ -24,8 +24,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsHostAppInstanceServiceImpl implements DevopsHostAppInstanceService {
 
-    private static final String ERROR_SAVE_HOST_APP_INSTANCE_FAILED = "error.save.host.app.instance.failed";
-    private static final String ERROR_UPDATE_HOST_APP_INSTANCE_FAILED = "error.update.host.app.instance.failed";
+    private static final String ERROR_SAVE_HOST_APP_INSTANCE_FAILED = "devops.save.host.app.instance.failed";
+    private static final String ERROR_UPDATE_HOST_APP_INSTANCE_FAILED = "devops.update.host.app.instance.failed";
 
     @Autowired
     private DevopsHostAppInstanceMapper devopsHostAppInstanceMapper;

@@ -28,7 +28,7 @@ public class DevopsServiceInstanceServiceImpl implements DevopsServiceInstanceSe
     public void baseCreate(DevopsServiceInstanceDTO devopsServiceInstanceDTO) {
         if (devopsServiceInstanceMapper.insert(
                 devopsServiceInstanceDTO) != 1) {
-            throw new CommonException("error.service.app.instance.insert");
+            throw new CommonException("devops.service.app.instance.insert");
         }
     }
 

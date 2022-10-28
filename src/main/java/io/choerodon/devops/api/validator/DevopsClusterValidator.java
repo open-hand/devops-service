@@ -20,15 +20,15 @@ public class DevopsClusterValidator {
         List<DevopsClusterNodeVO> devopsClusterNodeVOList = devopsClusterReqVO.getDevopsClusterInnerNodeVOList();
         // 检查节点不为空
         if (CollectionUtils.isEmpty(devopsClusterNodeVOList)) {
-            throw new CommonException("error.node.size.is.zero");
+            throw new CommonException("devops.node.size.is.zero");
         }
         // 检查节点名称唯一
         if (!checkMemberUnique(devopsClusterNodeVOList.stream().map(DevopsClusterNodeVO::getName).collect(Collectors.toList()))) {
-            throw new CommonException("error.node.name.not.unique");
+            throw new CommonException("devops.node.name.not.unique");
         }
         // 检查节点ip唯一
         if (!checkMemberUnique(devopsClusterNodeVOList.stream().map(DevopsClusterNodeVO::getHostIp).collect(Collectors.toList()))) {
-            throw new CommonException("error.node.ip.not.unique");
+            throw new CommonException("devops.node.ip.not.unique");
         }
 
         // 检查每个节点角色数量必须大于0
@@ -39,7 +39,7 @@ public class DevopsClusterValidator {
         workerCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRoleEnum.isWorker(n.getRole())).count();
         etcdCount = devopsClusterNodeVOList.stream().filter(n -> ClusterNodeRoleEnum.isEtcd(n.getRole())).count();
         if (masterCount == 0 || workerCount == 0 || etcdCount == 0) {
-            throw new CommonException("error.node.role.number.equal.zero");
+            throw new CommonException("devops.node.role.number.equal.zero");
         }
     }
 

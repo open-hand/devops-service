@@ -1,15 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsPvProPermissionService;
-import io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO;
-import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.DevopsPvProPermissionService;
+import io.choerodon.devops.infra.dto.DevopsPvProPermissionDTO;
+import io.choerodon.devops.infra.mapper.DevopsPvProPermissionMapper;
 
 @Service
 public class DevopsPvProPermissionServiceImpl implements DevopsPvProPermissionService {
@@ -20,7 +21,7 @@ public class DevopsPvProPermissionServiceImpl implements DevopsPvProPermissionSe
     @Override
     public void baseInsertPermission(DevopsPvProPermissionDTO devopsPvProPermissionDTO) {
         if (devopsPvProPermissionMapper.insert(devopsPvProPermissionDTO) != 1) {
-            throw new CommonException("error.pv.project.permission.add");
+            throw new CommonException("devops.pv.project.permission.add");
         }
     }
 

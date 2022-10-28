@@ -11,7 +11,7 @@ public class DevopsClusterReqVO {
     private String name;
 
     @ApiModelProperty("集群编码 / 必需")
-    @NotNull(message = "error.code.null")
+    @NotNull(message = "{devops.code.null}")
     private String code;
 
     @ApiModelProperty("集群描述 / 非必需")

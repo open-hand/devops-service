@@ -16,6 +16,7 @@ import org.springframework.web.client.RestTemplate;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
+import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.app.service.AppServiceHelmRelService;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -75,15 +76,17 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }).reversed()).collect(Collectors.toList());
 
         // 查询组织层helm仓库
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        Long organizationId = projectDTO.getOrganizationId();
+        String code = projectDTO.getCode();
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
-        helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
+        helmConfigSearchDTOOnOrganization.setResourceId(organizationId);
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
         helmConfigSearchDTOOnOrganization.setRepoDefault(true);
         DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnOrganization);
         if (devopsHelmConfigDTOtOnOrganization != null) {
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
+            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + code);
             if (defaultDevopsHelmConfigDTOOnProject != null) {
                 devopsHelmConfigDTOtOnOrganization.setRepoDefault(false);
             }
@@ -95,10 +98,10 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             helmConfigSearchDTOOnSite.setRepoDefault(true);
             DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOne(helmConfigSearchDTOOnSite);
             if (devopsHelmConfigDTOOnSite == null) {
-                throw new CommonException("error.helm.config.site.exist");
+                throw new CommonException("devops.helm.config.site.exist");
             }
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(organizationId);
+            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + code);
             if (defaultDevopsHelmConfigDTOOnProject != null) {
                 devopsHelmConfigDTOOnSite.setRepoDefault(false);
             }
@@ -136,7 +139,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setResourceId(projectId);
         devopsHelmConfigDTO.setRepoPrivate(!ObjectUtils.isEmpty(devopsHelmConfigDTO.getUsername()) && !ObjectUtils.isEmpty(devopsHelmConfigDTO.getPassword()));
 
-        DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+        DevopsHelmConfigDTO result = MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.insert");
         return ConvertUtils.convertObject(result, DevopsHelmConfigVO.class);
     }
 
@@ -152,7 +155,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setRepoDefault(null);
         devopsHelmConfigDTO.setDeleted(null);
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.update");
 
         return ConvertUtils.convertObject(devopsHelmConfigDTO, DevopsHelmConfigVO.class);
     }
@@ -173,7 +176,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         devopsHelmConfigDTO.setObjectVersionNumber(oldDevopsHelmConfigDTO.getObjectVersionNumber());
         devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.delete");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.delete");
     }
 
     @Override
@@ -225,13 +228,13 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.insert");
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateDevopsHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "error.helm.config.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsHelmConfigMapper, devopsHelmConfigDTO, "devops.helm.config.update");
     }
 
     @Override
@@ -268,7 +271,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     @Override
     public void checkNameExistsThrowEx(Long projectId, Long helmConfigId, String name) {
         if (devopsHelmConfigMapper.checkNameExists(projectId, helmConfigId, name)) {
-            throw new CommonException("error.helm.config.name.exists");
+            throw new CommonException("devops.helm.config.name.exists");
         }
     }
 
@@ -290,7 +293,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         ResponseEntity<String> exchange = restTemplate.exchange(helmRepoUrl + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
-            throw new CommonException("error.get.helm.chart");
+            throw new CommonException("devops.get.helm.chart");
         }
         return exchange.getBody();
     }
@@ -325,15 +328,17 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }).reversed()).collect(Collectors.toList());
 
         // 查询组织层helm仓库
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, false, false, false, false, false);
+        ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
+        Long tenantId = immutableProjectInfoVO.getTenantId();
+        String projCode = immutableProjectInfoVO.getProjCode();
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
-        helmConfigSearchDTOOnOrganization.setResourceId(projectDTO.getOrganizationId());
+        helmConfigSearchDTOOnOrganization.setResourceId(tenantId);
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
         helmConfigSearchDTOOnOrganization.setRepoDefault(true);
-        DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOneWithIdAndName(projectDTO.getOrganizationId(), ResourceLevel.ORGANIZATION.value(), true);
+        DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOneWithIdAndName(tenantId, ResourceLevel.ORGANIZATION.value(), true);
         if (devopsHelmConfigDTOtOnOrganization != null) {
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(tenantId);
+            devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projCode);
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
         } else {
             // 如果组织层的仓库为空，查询平台默认
@@ -342,10 +347,10 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             helmConfigSearchDTOOnSite.setRepoDefault(true);
             DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOneWithIdAndName(0L, ResourceLevel.SITE.value(), true);
             if (devopsHelmConfigDTOOnSite == null) {
-                throw new CommonException("error.helm.config.site.exist");
+                throw new CommonException("devops.helm.config.site.exist");
             }
-            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projectDTO.getCode());
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(tenantId);
+            devopsHelmConfigDTOOnSite.setName(tenant.getTenantNum() + "-" + projCode);
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOOnSite);
         }
 
@@ -390,7 +395,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         try {
             exchange = restTemplate.exchange(helmRepoUrl + "/" + chartUrl, HttpMethod.GET, requestEntity, byte[].class);
         } catch (Exception e) {
-            throw new CommonException("error.helm.chart.download", e.getMessage());
+            throw new CommonException("devops.helm.chart.download", e.getMessage());
         }
 
         return exchange.getBody();

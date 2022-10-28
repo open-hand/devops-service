@@ -32,7 +32,7 @@ public class DevopsCiStepVO {
     private String script;
 
     @ApiModelProperty("步骤顺序")
-    @NotNull(message = "{error.step.sequence.cannot.be.null}")
+    @NotNull(message = "{devops.step.sequence.cannot.be.null}")
     private Long sequence;
 
     @Encrypt

@@ -66,10 +66,7 @@ public class DevopsProjectConfigController {
     public ResponseEntity<DevopsConfigRepVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryConfig(projectId, ResourceLevel.PROJECT.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
+        return ResponseEntity.ok(devopsConfigService.queryConfig(projectId, ResourceLevel.PROJECT.value()));
     }
 
 
@@ -85,10 +82,7 @@ public class DevopsProjectConfigController {
     public ResponseEntity<DefaultConfigVO> queryProjectDefaultConfig(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryDefaultConfig(projectId, ResourceLevel.PROJECT.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
+        return ResponseEntity.ok(devopsConfigService.queryDefaultConfig(projectId, ResourceLevel.PROJECT.value()));
     }
 
     /**
@@ -104,9 +98,6 @@ public class DevopsProjectConfigController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {
-        return Optional.ofNullable(
-                appServiceService.checkChart(projectId, configVO.getUrl(), configVO.getUsername(), configVO.getPassword()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.connection.failed"));
+        return ResponseEntity.ok(appServiceService.checkChart(projectId, configVO.getUrl(), configVO.getUsername(), configVO.getPassword()));
     }
 }

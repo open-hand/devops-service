@@ -31,7 +31,7 @@ public class DevopsClusterProPermissionServiceImpl implements DevopsClusterProPe
     @Override
     public void baseInsertPermission(DevopsClusterProPermissionDTO devopsClusterProPermissionDTO) {
         if (devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDTO) != 1) {
-            throw new CommonException("error.devops.cluster.project.permission.add.error");
+            throw new CommonException("devops.devops.cluster.project.permission.add.error");
         }
     }
 

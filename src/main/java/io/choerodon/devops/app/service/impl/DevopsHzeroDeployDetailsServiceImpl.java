@@ -36,8 +36,8 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHzeroDeployDetailsServiceImpl.class);
 
-    private static final String ERROR_SAVE_DEPLOY_DETAILS_FAILED = "error.save.deploy.details.failed";
-    private static final String ERROR_UPDATE_DEPLOY_DETAILS_FAILED = "error.update.deploy.details.failed";
+    private static final String ERROR_SAVE_DEPLOY_DETAILS_FAILED = "devops.save.deploy.details.failed";
+    private static final String ERROR_UPDATE_DEPLOY_DETAILS_FAILED = "devops.update.deploy.details.failed";
 
     @Autowired
     private DevopsHzeroDeployDetailsMapper devopsHzeroDeployDetailsMapper;

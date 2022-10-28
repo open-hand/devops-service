@@ -12,15 +12,15 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
 import io.choerodon.devops.api.validator.annotation.QuantityCheck;
 
-@AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "error.pv.id.or.name.null")
+@AtLeastOneNotEmpty(fields = {"pvId", "pvName"}, message = "devops.pv.id.or.name.null")
 public class DevopsPvcReqVO {
     @Encrypt
     @ApiModelProperty("PVC id")
     private Long id;
 
     @ApiModelProperty("PVC名称")
-    @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "error.pvc.name.pattern")
-    @Length(max = 40, min = 1, message = "error.pvc.name.length")
+    @Pattern(regexp = "[a-z]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*", message = "devops.pvc.name.pattern")
+    @Length(max = 40, min = 1, message = "{devops.pvc.name.length}")
     private String name;
 
     @Encrypt
@@ -39,11 +39,11 @@ public class DevopsPvcReqVO {
     @ApiModelProperty("PVC绑定PV所在的集群id")
     private Long clusterId;
 
-    @NotEmpty(message = "error.pvc.accessModes.empty")
+    @NotEmpty(message = "devops.pvc.accessModes.empty")
     @ApiModelProperty("访问模式")
     private String accessModes;
 
-    @QuantityCheck(message = "error.pvc.request.source.error")
+    @QuantityCheck(message = "{devops.pvc.request.source.error}")
     @ApiModelProperty("资源申请数量")
     private String requestResource;
 

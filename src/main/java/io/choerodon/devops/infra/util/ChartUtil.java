@@ -49,7 +49,7 @@ public class ChartUtil {
     public static final Logger LOGGER = LoggerFactory.getLogger(ChartUtil.class);
     private static final String FILE_SEPARATOR = "/";
     private static final String CHART = "chart";
-    private static final String DEFAULT_ERROR_MESSAGE_FOR_UPLOADING = "error.upload.with.null.response";
+    private static final String DEFAULT_ERROR_MESSAGE_FOR_UPLOADING = "devops.upload.with.null.response";
 
     @Autowired
     DevopsConfigService devopsConfigService;
@@ -136,7 +136,7 @@ public class ChartUtil {
                 chartTagVO.getChartVersion());
 
         if (!exchange.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.delete.chart");
+            throw new CommonException("devops.delete.chart");
         }
 
 //        ConfigurationProperties configurationProperties = new ConfigurationProperties();
@@ -150,7 +150,7 @@ public class ChartUtil {
 //        try {
 //            call.execute();
 //        } catch (Exception e) {
-//            LOGGER.error("error.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
+//            LOGGER.error("devops.delete.chart。repository: {}, chartName：{}，chartVersion：{} ", chartTagVO.getRepository(), chartTagVO.getChartName(), chartTagVO.getChartVersion());
 //        }
     }
 
@@ -182,7 +182,7 @@ public class ChartUtil {
         } catch (IOException e) {
             IOUtils.closeQuietly(fos);
             FileUtil.deleteDirectory(new File(destpath).getParentFile());
-            throw new CommonException("error.download.chart", e.getMessage());
+            throw new CommonException("devops.download.chart", e.getMessage());
         }
     }
 }

@@ -79,8 +79,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostAppServiceImpl.class);
 
-    private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
-    private static final String ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST = "error.host.instance.kill.command.exist";
+    private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "devops.update.java.instance.failed";
+    private static final String ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST = "devops.host.instance.kill.command.exist";
 
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
@@ -396,13 +396,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
         if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
-            throw new CommonException("error.host.app.code.exist");
+            throw new CommonException("devops.host.app.code.exist");
         }
     }
 
     public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
         if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
-            throw new CommonException("error.host.app.name.exist");
+            throw new CommonException("devops.host.app.name.exist");
         }
     }
 
@@ -617,7 +617,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Long hostId = customDeployVO.getHostId();
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(hostId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(customDeployVO.getSourceType());
@@ -736,7 +736,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
@@ -755,7 +755,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
-                throw new CommonException("error.maven.deploy.object.not.exist");
+                throw new CommonException("devops.maven.deploy.object.not.exist");
             }
 
             deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();

@@ -32,7 +32,7 @@ public class HostDeployUtil {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_command_template.sh")) {
             HOST_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.install.deploy.sh");
+            throw new CommonException("devops.load.install.deploy.sh");
         }
     }
 
@@ -46,7 +46,7 @@ public class HostDeployUtil {
             }
         }
         if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
-            throw new CommonException("error.instruction");
+            throw new CommonException("devops.instruction");
         }
 
         // 判断镜像是否存在 存在删除 部署

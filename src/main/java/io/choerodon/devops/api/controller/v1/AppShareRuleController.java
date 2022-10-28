@@ -1,18 +1,15 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.AppServiceShareRuleUpdateVO;
@@ -50,10 +47,7 @@ public class AppShareRuleController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
             @RequestBody @Valid AppServiceShareRuleVO appServiceShareRuleVO) {
-        return Optional.ofNullable(
-                applicationShareService.createOrUpdate(projectId, appServiceShareRuleVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.rule.create"));
+        return ResponseEntity.ok(applicationShareService.createOrUpdate(projectId, appServiceShareRuleVO));
     }
 
     /**
@@ -71,10 +65,7 @@ public class AppShareRuleController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "服务共享规则", required = true)
             @RequestBody @Valid AppServiceShareRuleUpdateVO appServiceShareRuleUpdateVO) {
-        return Optional.ofNullable(
-                applicationShareService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceShareRuleUpdateVO, AppServiceShareRuleVO.class)))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.rule.update"));
+        return ResponseEntity.ok(applicationShareService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceShareRuleUpdateVO, AppServiceShareRuleVO.class)));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
@@ -91,10 +82,7 @@ public class AppShareRuleController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "过滤参数")
             @RequestBody(required = false) String param) {
-        return Optional.ofNullable(
-                applicationShareService.pageByOptions(projectId, appServiceId, pageable, param))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.rule.page"));
+        return ResponseEntity.ok(applicationShareService.pageByOptions(projectId, appServiceId, pageable, param));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -106,10 +94,7 @@ public class AppShareRuleController {
             @Encrypt
             @ApiParam(value = "规则Id", required = true)
             @PathVariable(value = "rule_id") Long ruleId) {
-        return Optional.ofNullable(
-                applicationShareService.query(projectId, ruleId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.share.rule.query"));
+        return ResponseEntity.ok(applicationShareService.query(projectId, ruleId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})

@@ -111,14 +111,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public void checkNameUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
         if (Boolean.FALSE.equals(checkNameUnique(envId, rdupmType, objectId, name))) {
-            throw new CommonException("error.env.app.center.name.exist");
+            throw new CommonException("devops.env.app.center.name.exist");
         }
     }
 
     @Override
     public void checkCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
         if (Boolean.FALSE.equals(checkCodeUnique(envId, rdupmType, objectId, name))) {
-            throw new CommonException("error.env.app.center.code.exist");
+            throw new CommonException("devops.env.app.center.code.exist");
         }
     }
 
@@ -370,13 +370,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     @Override
     public void baseCreate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "devops.env.app.center.insert");
     }
 
     @Transactional
     @Override
     public void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "devops.env.app.center.update");
     }
 
     @Override

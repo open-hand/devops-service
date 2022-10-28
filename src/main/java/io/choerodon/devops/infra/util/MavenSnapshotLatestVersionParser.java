@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import javax.annotation.Nullable;
+
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
@@ -70,7 +71,7 @@ public final class MavenSnapshotLatestVersionParser {
                 }
             }
         } catch (Exception e) {
-            throw new CommonException("error.parse.metadata", e);
+            throw new CommonException("devops.parse.metadata", e);
         }
         return null;
     }

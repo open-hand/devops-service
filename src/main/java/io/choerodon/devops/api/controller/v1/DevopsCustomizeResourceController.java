@@ -1,14 +1,12 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.Objects;
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -99,9 +97,7 @@ public class DevopsCustomizeResourceController {
             @Encrypt
             @ApiParam(value = "资源id", required = true)
             @PathVariable(value = "resource_id") Long resourceId) {
-        return Optional.ofNullable(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId))
-                .map(t -> new ResponseEntity<>(t, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.resource.get"));
+        return ResponseEntity.ok(devopsCustomizeResourceService.queryDevopsCustomizeResourceDetail(resourceId));
     }
 
 
@@ -131,8 +127,6 @@ public class DevopsCustomizeResourceController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsCustomizeResourceService.pageResources(envId, pageable, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.resource.query"));
+        return ResponseEntity.ok(devopsCustomizeResourceService.pageResources(envId, pageable, searchParam));
     }
 }

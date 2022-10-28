@@ -426,7 +426,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryUpgradeValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "devops.instance.not.exist.in.database");
         // 上次实例部署时的完整values
         String yaml = FileUtil.checkValueFormat(baseQueryValueByInstanceId(instanceId));
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Objects.requireNonNull(appServiceInstanceMapper.queryLastCommandId(instanceId)));
@@ -785,7 +785,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
         //插入部署记录
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         //更新时候，如果isNotChange的值为true，则直接return,否则走操作gitops库文件逻辑
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
         if (!appServiceDeployVO.getIsNotChange()) {
@@ -1075,10 +1075,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private void checkInstanceConsistent(Long instanceId, Long marketServiceId) {
         AppServiceInstanceDTO oldInstance = appServiceInstanceMapper.selectByPrimaryKey(Objects.requireNonNull(instanceId));
-        CommonExAssertUtil.assertNotNull(oldInstance, "error.instance.id.not.exist");
+        CommonExAssertUtil.assertNotNull(oldInstance, "devops.instance.id.not.exist");
         // 校验前后的版本属于同一个服务在同一个应用版本下, 只支持变更同个应用版本下的市场服务的修复版本
         // 而在同一个市场应用版本下的市场应用服务是同一个id，不同市场应用版本下即使是同一个市场服务名称，id也不一致
-        CommonExAssertUtil.assertTrue(oldInstance.getAppServiceId().equals(marketServiceId), "error.app.version.invalid");
+        CommonExAssertUtil.assertTrue(oldInstance.getAppServiceId().equals(marketServiceId), "devops.app.version.invalid");
     }
 
     private MarketServiceDeployObjectVO getMarketServiceDeployObjectVO(Long projectId, Long marketDeployObjectId) {
@@ -1362,7 +1362,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
         //插入部署记录
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(devopsEnvironmentDTO.getProjectId(),
                 DeployType.MANUAL,
                 devopsEnvCommandDTO.getId(),
@@ -1507,7 +1507,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         //插入部署记录
         boolean isProjectAppService = devopsEnvironmentDTO.getProjectId().equals(appServiceDTO.getProjectId());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
                 isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
@@ -1845,8 +1845,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     @Override
     public AppServiceInstanceDTO baseQueryByCodeAndEnv(String code, Long envId) {
-        Assert.notNull(code, "error.code.is.null");
-        Assert.notNull(envId, "error.envId.is.null");
+        Assert.notNull(code, "devops.code.is.null");
+        Assert.notNull(envId, "devops.envId.is.null");
 
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();
         appServiceInstanceDTO.setCode(code);
@@ -1993,7 +1993,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                                                              appServiceDeployVO, Map<Long, List<Pair<Long, String>>> envSecrets) {
         //校验values
         FileUtil.checkYamlFormat(appServiceDeployVO.getValues());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         AppServiceDTO appServiceDTO = applicationService.baseQuery(appServiceDeployVO.getAppServiceId());
 
@@ -2743,7 +2743,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
-        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "instance.not.exist.in.database");
+        CommonExAssertUtil.assertNotNull(appServiceInstanceDTO, "devops.instance.not.exist.in.database");
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         instanceValueVO.setYaml(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue());
         return instanceValueVO;
@@ -2754,10 +2754,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
         }
         int lastSlashIndex = harborRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
-        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.harbor.repo.invalid.slash");
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "devops.harbor.repo.invalid.slash");
         String harborUrl = harborRepo.substring(0, lastSlashIndex);
         String repoName = harborRepo.substring(lastSlashIndex);
-        CommonExAssertUtil.assertTrue(harborUrl.contains("//"), "error.harbor.repo.invalid.double.slash");
+        CommonExAssertUtil.assertTrue(harborUrl.contains("//"), "devops.harbor.repo.invalid.double.slash");
         String[] result = new String[2];
         result[0] = harborUrl;
         result[1] = repoName;
@@ -2770,12 +2770,12 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         int lastSlashIndex = chartRepo.lastIndexOf(BaseConstants.Symbol.SLASH);
-        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "error.chart.repo.invalid.slash");
+        CommonExAssertUtil.assertTrue(lastSlashIndex != -1, "devops.chart.repo.invalid.slash");
         String tempUrl = chartRepo.substring(0, lastSlashIndex);
         lastSlashIndex = tempUrl.lastIndexOf(BaseConstants.Symbol.SLASH);
 
         String repoName = chartRepo.substring(0, lastSlashIndex);
-        CommonExAssertUtil.assertTrue(chartRepo.contains("//"), "error.chart.repo.invalid.double.slash");
+        CommonExAssertUtil.assertTrue(chartRepo.contains("//"), "devops.chart.repo.invalid.double.slash");
         return repoName;
     }
 

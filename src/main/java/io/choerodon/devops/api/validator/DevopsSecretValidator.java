@@ -22,7 +22,7 @@ public class DevopsSecretValidator {
 
     public static void checkName(String name) {
         if (!isNameValid(name)) {
-            throw new CommonException("error.secret.name.notMatch");
+            throw new CommonException("devops.secret.name.notMatch");
         }
     }
 
@@ -34,7 +34,7 @@ public class DevopsSecretValidator {
     public static void checkKeyName(Set<String> keySet) {
         keySet.forEach(e -> {
             if (Pattern.matches(KEY_NAME_PATTERN, e)) {
-                throw new CommonException("error.secret.key.name.notMatch");
+                throw new CommonException("devops.secret.key.name.notMatch");
             }
         });
     }

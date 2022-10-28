@@ -127,8 +127,7 @@ public class DevopsConfigMapController {
      * @param configMapId 配置映射Id
      * @return DevopsConfigMapRespVO
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询单个配置映射")
     @GetMapping("/{config_map_id}")
     public ResponseEntity<DevopsConfigMapRespVO> query(
@@ -137,9 +136,7 @@ public class DevopsConfigMapController {
             @Encrypt
             @ApiParam(value = "configMap的ID", required = true)
             @PathVariable(value = "config_map_id") Long configMapId) {
-        return Optional.ofNullable(devopsConfigMapService.query(configMapId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.configMap.query"));
+        return ResponseEntity.ok(devopsConfigMapService.query(configMapId));
     }
 
 
@@ -173,9 +170,7 @@ public class DevopsConfigMapController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsConfigMapService.pageByOptions(projectId, envId, pageable, searchParam, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.configMap.query"));
+        return ResponseEntity.ok(devopsConfigMapService.pageByOptions(projectId, envId, pageable, searchParam, appServiceId));
     }
 
 }

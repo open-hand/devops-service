@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsAppServiceHelmRelServiceImpl implements DevopsAppServiceHelmRelService {
 
-    private static final String ERROR_APP_SERVICE_HELM_CONFIG_REL_INSERT = "error.app.service.helm.config.rel.insert";
+    private static final String ERROR_APP_SERVICE_HELM_CONFIG_REL_INSERT = "devops.app.service.helm.config.rel.insert";
     @Autowired
     private DevopsAppServiceHelmRelMapper devopsAppServiceHelmRelMapper;
 

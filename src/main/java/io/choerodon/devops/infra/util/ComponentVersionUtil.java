@@ -1,13 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
-import io.choerodon.devops.infra.enums.ClusterResourceType;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -15,12 +7,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
+import io.choerodon.devops.infra.enums.ClusterResourceType;
+
 /**
  * lihao
  * 获取组件版本配置工具类
  */
 public class ComponentVersionUtil {
-    private static final String ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST = "error.component.config.property.not.exist";
+    private static final String ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST = "devops.component.config.property.not.exist";
     private static final Logger LOGGER = LoggerFactory.getLogger(ComponentVersionUtil.class);
     //是否已经初始化
     private static boolean inited = false;
@@ -61,7 +62,7 @@ public class ComponentVersionUtil {
     private static void init() {
         try {
             InputStream inputStream = Optional.ofNullable(ComponentVersionUtil.class.getResourceAsStream(COMPONENT_CONFIG_FILE_NAME))
-                    .orElseThrow(() -> new CommonException("error.component.config.file.not.exist"));
+                    .orElseThrow(() -> new CommonException("devops.component.config.file.not.exist"));
 
             Yaml yaml = new Yaml();
 
@@ -71,7 +72,7 @@ public class ComponentVersionUtil {
                 String valuesFileName = Optional.ofNullable(componentConfig.get("valuesFile"))
                         .orElseThrow(() -> new CommonException(ERROR_COMPONENT_CONFIG_PROPERTY_NOT_EXIST, "valuesFile"));
                 InputStream valuesInputStream = Optional.ofNullable(ComponentVersionUtil.class.getResourceAsStream(String.format(COMPONENT_CONFIG_VALUE_FILE_FORMAT, valuesFileName)))
-                        .orElseThrow(() -> new CommonException("error.component.config.values.not.exist", valuesFileName));
+                        .orElseThrow(() -> new CommonException("devops.component.config.values.not.exist", valuesFileName));
                 String values = IOUtils.toString(valuesInputStream, StandardCharsets.UTF_8);
 
                 //设置DTO属性

@@ -14,15 +14,15 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class ProjectCertificationPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("证书id / 必需")
-    @NotNull(message = "error.certification.id.null")
+    @NotNull(message = "{devops.certification.id.null}")
     private Long certificationId;
 
     @ApiModelProperty("要添加权限的项目id / 必需,可为空数组")
-    @NotNull(message = "error.project.ids.null")
+    @NotNull(message = "{devops.project.ids.null}")
     private List<Long> projectIds;
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
-    @NotNull(message = "error.skip.check.project.permission.null")
+    @NotNull(message = "{devops.skip.check.project.permission.null}")
     private Boolean skipCheckProjectPermission;
 
     @ApiModelProperty("集群的版本号, 如果更新了'skipCheckProjectPermission'字段则必填")

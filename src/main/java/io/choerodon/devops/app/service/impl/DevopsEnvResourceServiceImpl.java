@@ -558,7 +558,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 devopsEnvResourceMapper.selectByPrimaryKey(
                         devopsEnvResourceDTO.getId()).getObjectVersionNumber());
         if (devopsEnvResourceMapper.updateByPrimaryKeySelective(devopsEnvResourceDTO) != 1) {
-            throw new CommonException("error.resource.update");
+            throw new CommonException("devops.resource.update");
         }
     }
 
@@ -623,7 +623,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         try {
             return new ObjectMapper().readTree(message);
         } catch (IOException e) {
-            throw new CommonException("error.resource.json.read.failed", message);
+            throw new CommonException("devops.resource.json.read.failed", message);
         }
     }
 

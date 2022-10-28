@@ -93,7 +93,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsDeploymentMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("devops.workload.exist", "Deployment", name);
         }
     }
 
@@ -111,7 +111,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(devopsDeploymentDTOToUpdate.getId());
             devopsDeploymentDTOToUpdate.setObjectVersionNumber(devopsDeploymentDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, devopsDeploymentDTOToUpdate, "error.deployment.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, devopsDeploymentDTOToUpdate, "devops.deployment.update");
     }
 
     @Override

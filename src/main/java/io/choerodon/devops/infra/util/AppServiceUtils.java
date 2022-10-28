@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
  */
 @Component
 public class AppServiceUtils {
-    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
+    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "devops.project.app.svc.num.max";
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -109,7 +109,7 @@ public class AppServiceUtils {
 
     public void checkCodeExist(String appCode) {
         if (!StringUtils.hasText(appCode)) {
-            throw new CommonException("error.app.code.notExist");
+            throw new CommonException("devops.app.code.notExist");
         }
     }
 }

@@ -53,7 +53,7 @@ public class DevopsServiceValidator {
             String[] ips = devopsServiceReqVO.getExternalIp().split(",");
             Arrays.asList(ips).forEach(ip -> {
                 if (!ObjectUtils.isEmpty(ip) && !Pattern.matches(IP_PATTERN, ip)) {
-                    throw new CommonException("error.externalIp.notMatch");
+                    throw new CommonException("devops.externalIp.notMatch");
                 }
             });
         }
@@ -62,19 +62,19 @@ public class DevopsServiceValidator {
 
     public static void checkName(String name) {
         if (!Pattern.matches(NAME_PATTERN, name)) {
-            throw new CommonException("error.network.name.notMatch");
+            throw new CommonException("devops.network.name.notMatch");
         }
     }
 
     private static void checkPorts(PortMapVO port) {
         if (!checkPort(port.getPort())) {
-            throw new CommonException("error.port.illegal");
+            throw new CommonException("devops.port.illegal");
         }
         if (!checkPort(Integer.valueOf(port.getTargetPort()))) {
-            throw new CommonException("error.targetPort.illegal");
+            throw new CommonException("devops.targetPort.illegal");
         }
         if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
-            throw new CommonException("error.nodePort.illegal");
+            throw new CommonException("devops.nodePort.illegal");
         }
 
     }
@@ -103,7 +103,7 @@ public class DevopsServiceValidator {
                             devopsServiceReqVO.getPorts().forEach(p -> {
                                 if (!ObjectUtils.isEmpty(devopsServiceReqVO.getExternalIp())) {
                                     if (Objects.equals(port, p.getPort()) && Objects.equals(externalIp, devopsServiceReqVO.getExternalIp())) {
-                                        throw new CommonException("error.same.externalIp.port.exist");
+                                        throw new CommonException("devops.same.externalIp.port.exist");
                                     }
                                 }
                             });
@@ -123,7 +123,7 @@ public class DevopsServiceValidator {
                             if (nodePort != null) {
                                 devopsServiceReqVO.getPorts().forEach(p -> {
                                     if (Objects.equals(nodePort, p.getNodePort())) {
-                                        throw new CommonException("error.same.nodePort.exist");
+                                        throw new CommonException("devops.same.nodePort.exist");
                                     }
                                 });
                             }

@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PVCode.DEVOPS_PV_NOT_EXISTS;
+
+import java.math.BigDecimal;
+import java.util.*;
+
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
@@ -14,9 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -204,7 +206,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Override
     public void baseCheckName(String pvcName, Long envId) {
         if (!isNameUnique(pvcName, envId)) {
-            throw new CommonException("error.pvc.name.already.exists");
+            throw new CommonException("devops.pvc.name.already.exists");
         }
     }
 
@@ -269,7 +271,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
 
     private DevopsPvcDTO createPvcRecord(DevopsPvcDTO devopsPvcDTO) {
         if (devopsPvcMapper.insert(devopsPvcDTO) != 1) {
-            throw new CommonException("error.insert.pvc", devopsPvcDTO.getName());
+            throw new CommonException("devops.insert.pvc", devopsPvcDTO.getName());
         }
         return devopsPvcDTO;
     }
@@ -285,11 +287,11 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     public void baseUpdate(DevopsPvcDTO devopsPvcDTO) {
         DevopsPvcDTO oldDevopsPvcDTO = devopsPvcMapper.selectByPrimaryKey(devopsPvcDTO.getId());
         if (oldDevopsPvcDTO == null) {
-            throw new CommonException("error.pvc.not.exists");
+            throw new CommonException("devops.pvc.not.exists");
         }
         devopsPvcDTO.setObjectVersionNumber(oldDevopsPvcDTO.getObjectVersionNumber());
         if (devopsPvcMapper.updateByPrimaryKeySelective(devopsPvcDTO) != 1) {
-            throw new CommonException("error.pvc.update.error");
+            throw new CommonException("devops.pvc.update.error");
         }
     }
 
@@ -300,7 +302,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         searchDTO.setName(pvcName);
         DevopsPvcDTO devopsPvcDTO = devopsPvcMapper.selectOne(searchDTO);
         devopsPvcDTO.setUsed(1);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "error.update.pvc.used");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsPvcMapper, devopsPvcDTO, "devops.update.pvc.used");
     }
 
     @Override
@@ -318,7 +320,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
     @Override
     public DevopsPvcDTO queryByPvId(Long pvId) {
         if (pvId == null) {
-            throw new CommonException("error.pv.id.null");
+            throw new CommonException("devops.pv.id.null");
         }
         DevopsPvcDTO devopsPvcDTO = new DevopsPvcDTO();
         devopsPvcDTO.setPvId(pvId);
@@ -335,14 +337,14 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         // 根据PV的id查询PV，若果PV不存在，就根据PV的name和集群id查询，如果PV对象为空，抛出异常
         if (devopsPvcReqVO.getPvId() != null) {
             devopsPvDTO = Optional.ofNullable(devopsPvMapper.selectByPrimaryKey(devopsPvcReqVO.getPvId())).
-                    orElseThrow(() -> new CommonException("error.pv.not.exists"));
+                    orElseThrow(() -> new CommonException(DEVOPS_PV_NOT_EXISTS));
         } else {
             devopsPvDTO = Optional.ofNullable(devopsPvMapper.queryByNameAndClusterId(devopsPvcReqVO.getPvName(), devopsPvcReqVO.getClusterId()))
-                    .orElseThrow(() -> new CommonException("error.pv.not.exists"));
+                    .orElseThrow(() -> new CommonException(DEVOPS_PV_NOT_EXISTS));
         }
 
         if (devopsPvDTO.getPvcName() != null) {
-            throw new CommonException("error.pv.bound");
+            throw new CommonException("devops.pv.bound");
         }
 
         devopsPvcDTO.setPvName(devopsPvDTO.getName());
@@ -517,7 +519,7 @@ public class DevopsPvcServiceImpl implements DevopsPvcService {
         }
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(devopsPvcDTO.getCommandId());
-        if (!StringUtils.isEmpty(devopsEnvCommandDTO.getSha())) {
+        if (StringUtils.hasText(devopsEnvCommandDTO.getSha())) {
             LOGGER.info("Retry pushing pvc: it seems that this pvc had passed the GitOps flow due to the command sha {}", devopsEnvCommandDTO.getSha());
             return;
         }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.validator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 
 import java.util.List;
@@ -58,12 +59,12 @@ public class EnvironmentApplicationValidator {
      */
     public void checkAppIdsExist(List<Long> appServiceIds) {
         if (appServiceIds == null || appServiceIds.size() == 0) {
-            throw new CommonException("error.app.ids.null");
+            throw new CommonException("devops.app.ids.null");
         }
 
         appServiceIds.forEach(id -> {
             if (appServiceMapper.selectByPrimaryKey(id) == null) {
-                throw new CommonException("error.app.id.not.exist", id);
+                throw new CommonException(DEVOPS_APP_ID_NOT_EXIST, id);
             }
         });
     }
@@ -81,7 +82,7 @@ public class EnvironmentApplicationValidator {
         permissionHelper.checkEnvBelongToProject(projectId, envId);
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
         if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) == null) {
-            throw new CommonException("error.envAndApp.not.exist", envId, appServiceId);
+            throw new CommonException("devops.envAndApp.not.exist", envId, appServiceId);
         }
     }
 }

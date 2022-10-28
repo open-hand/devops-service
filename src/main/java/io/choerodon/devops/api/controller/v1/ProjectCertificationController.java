@@ -79,9 +79,7 @@ public class ProjectCertificationController {
             @Encrypt
             @ApiParam(value = "证书Id")
             @PathVariable(value = "cert_id") Long certId) {
-        return Optional.ofNullable(devopsProjectCertificationService.queryCert(certId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cert.query"));
+        return ResponseEntity.ok(devopsProjectCertificationService.queryCert(certId));
     }
 
     /**
@@ -124,9 +122,7 @@ public class ProjectCertificationController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
+        return ResponseEntity.ok(devopsProjectCertificationService.pageRelatedProjects(projectId, certId, pageable, params));
     }
 
 
@@ -153,9 +149,7 @@ public class ProjectCertificationController {
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, selectedProjectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.cert.non.related.project"));
+        return ResponseEntity.ok(devopsProjectCertificationService.listNonRelatedMembers(projectId, certId, selectedProjectId, pageable, params));
     }
 
 
@@ -198,9 +192,7 @@ public class ProjectCertificationController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectCertificationService.pageCerts(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cert.query"));
+        return ResponseEntity.ok(devopsProjectCertificationService.pageCerts(projectId, pageable, params));
     }
 
     /**

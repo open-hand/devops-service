@@ -45,9 +45,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<Map<String, Long>> getEnvStatusCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectOverview.getEnvStatusCount(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.env.count"));
+        return ResponseEntity.ok(devopsProjectOverview.getEnvStatusCount(projectId));
     }
 
     // 启用与停用应用服务数量
@@ -57,9 +55,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<Map<String, Long>> getAppServiceStatusCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectOverview.getAppServiceStatusCount(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.appService.count"));
+        return ResponseEntity.ok(devopsProjectOverview.getAppServiceStatusCount(projectId));
     }
 
     // 项目下代码提交次数统计
@@ -69,9 +65,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<CountVO> getCommitCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectOverview.getCommitCount(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.commit.count"));
+        return ResponseEntity.ok(devopsProjectOverview.getCommitCount(projectId));
     }
 
     // 项目下应用服务迭代部署次数
@@ -81,9 +75,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<CountVO> getDeployCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectOverview.getDeployCount(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.deploy.count"));
+        return ResponseEntity.ok(devopsProjectOverview.getDeployCount(projectId));
     }
 
 
@@ -94,9 +86,7 @@ public class DevopsProjectOverviewController {
     public ResponseEntity<CountVO> getCiCount(
             @ApiParam(value = "项目id", required = true)
             @PathVariable("project_id") Long projectId) {
-        return Optional.ofNullable(devopsProjectOverview.getCiCount(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.overview.ci.count"));
+        return ResponseEntity.ok(devopsProjectOverview.getCiCount(projectId));
     }
 
     @ApiOperation("查看项目下所有待审核合并请求")

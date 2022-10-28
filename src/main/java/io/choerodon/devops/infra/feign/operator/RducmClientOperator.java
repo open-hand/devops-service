@@ -21,7 +21,7 @@ public class RducmClientOperator {
     public UserAppServiceIdsVO getAppServiceIds(Long organizationId, Long userId) {
         ResponseEntity<UserAppServiceIdsVO> response = rducmClient.getAppServiceIds(Objects.requireNonNull(organizationId), Objects.requireNonNull(userId));
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.list.app.id");
+            throw new CommonException("devops.list.app.id");
         }
         return response.getBody();
     }

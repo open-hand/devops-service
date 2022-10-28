@@ -15,13 +15,13 @@ public class DevopsCdStageVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("阶段名称")
-    @NotEmpty(message = "{error.stage.name.cannot.be.null}")
+    @NotEmpty(message = "{devops.stage.name.cannot.be.null}")
     private String name;
     @Encrypt
     @ApiModelProperty("阶段所属流水线id")
     private Long pipelineId;
     @ApiModelProperty("阶段顺序")
-    @NotNull(message = "{error.stage.sequence.cannot.be.null}")
+    @NotNull(message = "{devops.stage.sequence.cannot.be.null}")
     private Long sequence;
     @Valid
     private List<DevopsCdJobVO> jobList;

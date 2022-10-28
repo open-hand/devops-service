@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_NOT_IN_THIS_PROJECT;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 
 import java.util.*;
@@ -129,7 +131,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     public void checkName(Long projectId, String name, Long envId) {
         // 当查询结果不为空且不是更新部署配置时抛出异常
         if (!isNameUnique(projectId, name, envId)) {
-            throw new CommonException("error.devops.pipeline.value.name.exit");
+            throw new CommonException("devops.pipeline.value.name.exit");
         }
     }
 
@@ -195,7 +197,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             checkName(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getName(), devopsDeployValueDTO.getEnvId());
 
             checkAppServiceAndEnvInProject(devopsDeployValueDTO.getProjectId(), devopsDeployValueDTO.getEnvId(), devopsDeployValueDTO.getAppServiceId());
-            MapperUtil.resultJudgedInsert(devopsDeployValueMapper, devopsDeployValueDTO, "error.insert.pipeline.value");
+            MapperUtil.resultJudgedInsert(devopsDeployValueMapper, devopsDeployValueDTO, "devops.insert.pipeline.value");
         } else {
             DevopsDeployValueDTO original = devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO.getId());
             // 更新了名字就校验名称的唯一性
@@ -206,7 +208,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             devopsDeployValueDTO.setEnvId(null);
             devopsDeployValueDTO.setAppServiceId(null);
             devopsDeployValueDTO.setObjectVersionNumber(original.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployValueMapper, devopsDeployValueDTO, "error.update.pipeline.value");
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployValueMapper, devopsDeployValueDTO, "devops.update.pipeline.value");
         }
         return devopsDeployValueMapper.selectByPrimaryKey(devopsDeployValueDTO.getId());
     }
@@ -224,15 +226,15 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
             throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
         if (!projectId.equals(devopsEnvironmentDTO.getProjectId())) {
-            throw new CommonException("error.env.not.in.this.project", envId, projectId);
+            throw new CommonException("devops.env.not.in.this.project", envId, projectId);
         }
 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
-            throw new CommonException("error.app.id.not.exist", appServiceId);
+            throw new CommonException(DEVOPS_APP_ID_NOT_EXIST, appServiceId);
         }
         if (!projectId.equals(appServiceDTO.getProjectId())) {
-            throw new CommonException("error.app.not.in.this.project", appServiceId, projectId);
+            throw new CommonException(DEVOPS_APP_NOT_IN_THIS_PROJECT, appServiceId, projectId);
         }
     }
 

@@ -31,7 +31,6 @@ import io.choerodon.devops.app.eventhandler.payload.CreateAndUpdateUserEventPayl
 import io.choerodon.devops.app.eventhandler.payload.GitlabGroupPayload;
 import io.choerodon.devops.app.eventhandler.payload.ProjectPayload;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -102,7 +101,7 @@ public class SagaHandler {
         loggerInfo(gitlabGroupPayload);
         gitlabGroupService.createGroups(gitlabGroupPayload);
         //为新项目的三个组添加组织下管理员角色
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectPayload.getProjectId());
         List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getContent();
         if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
             orgAdministratorVOS.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, orgAdministratorVO.getId()));

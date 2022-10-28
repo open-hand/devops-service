@@ -33,7 +33,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/app_service_versions")
 public class AppServiceVersionController {
 
-    private static final String VERSION_QUERY_ERROR = "error.application.version.query";
+    private static final String VERSION_QUERY_ERROR = "devops.application.version.query";
 
     @Autowired
     private AppServiceVersionService appServiceVersionService;

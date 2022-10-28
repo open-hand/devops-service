@@ -41,26 +41,26 @@ public class HrdsCodeRepoClientOperator {
      */
     public List<RdmMemberViewDTO> listMembers(@Nullable Long organizationId, Long projectId, RdmMemberQueryDTO queryDTO) {
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<List<RdmMemberViewDTO>> response = rdupmClient.listMembers(
                 Objects.requireNonNull(organizationId), projectId, queryDTO.getRepositoryIds(), queryDTO.getRepositoryName(),
                 queryDTO.getRealName(), queryDTO.getLoginName(), queryDTO.getParams(), true, true, false);
         if (response == null) {
-            throw new CommonException("error.list.code.app.user.list", projectId, queryDTO);
+            throw new CommonException("devops.list.code.app.user.list", projectId, queryDTO);
         }
         return response.getBody();
     }
 
     public List<MemberPrivilegeViewDTO> selfPrivilege(Long organizationId, Long projectId, Set<Long> repositoryIds) {
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<String> response = hrdsCodeRepoClient.selfPrivilege(organizationId, projectId, repositoryIds);
         if (response == null) {
-            throw new CommonException("error.member.privilege.list");
+            throw new CommonException("devops.member.privilege.list");
         }
         return JsonHelper.unmarshalByJackson(response.getBody(), new TypeReference<List<MemberPrivilegeViewDTO>>() {
         });

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
 
 import java.io.*;
@@ -98,7 +99,7 @@ public class FileUtil {
             inputStream.close();
             return stringBuilder.toString();
         } catch (IOException e) {
-            throw new CommonException("error.param.render", e);
+            throw new CommonException("devops.param.render", e);
         }
     }
 
@@ -141,7 +142,7 @@ public class FileUtil {
                 String parentPath = a.getParent();
                 newFile = new File(parentPath + File.separator + params.get("{{service.code}}"));
                 if (!a.renameTo(newFile)) {
-                    throw new CommonException("error.rename.file");
+                    throw new CommonException("devops.rename.file");
                 }
             }
             if (newFile == null) {
@@ -165,7 +166,7 @@ public class FileUtil {
             try (InputStream inputStream = new FileInputStream(file)) {
                 FileUtils.writeStringToFile(file, replaceReturnString(inputStream, params));
             } catch (IOException e) {
-                throw new CommonException("error.param.replace", e);
+                throw new CommonException("devops.param.replace", e);
             }
         }
     }
@@ -201,7 +202,7 @@ public class FileUtil {
                 out.flush();
             }
         } catch (IOException e) {
-            throw new CommonException("error.file.transfer", e);
+            throw new CommonException("devops.file.transfer", e);
         }
         return path + System.getProperty("file.separator") + filename;
     }
@@ -526,7 +527,7 @@ public class FileUtil {
     private static InstanceValueVO loadResult(String yml) {
         String[] strings = yml.split("------love------you------choerodon------");
         if (strings.length < 2) {
-            throw new CommonException("error.value.illegal");
+            throw new CommonException("devops.value.illegal");
         }
         Yaml yaml = new Yaml();
         Object map = yaml.load(strings[2]);
@@ -680,7 +681,7 @@ public class FileUtil {
                 }
             }
         } catch (IOException e) {
-            throw new CommonException("error.file.read", e);
+            throw new CommonException("devops.file.read", e);
         }
         return content.toString();
     }
@@ -709,7 +710,7 @@ public class FileUtil {
             new File(file.getParent()).mkdirs();
             try {
                 if (!file.createNewFile()) {
-                    throw new CommonException("error.file.create");
+                    throw new CommonException(DEVOPS_FILE_CREATE);
                 }
             } catch (IOException e) {
                 logger.info(e.getMessage());
@@ -759,7 +760,7 @@ public class FileUtil {
         File toFile = new File(path + File.separator + fileName);
         //移动文件
         if (!toFile.exists() && !file.renameTo(toFile)) {
-            throw new CommonException("error.file.rename");
+            throw new CommonException("devops.file.rename");
         }
     }
 
@@ -813,7 +814,7 @@ public class FileUtil {
                 getUnZipPath(zip, entry, zipEntryName, descDir);
             }
         } catch (IOException e) {
-            throw new CommonException("error.not.zip", e);
+            throw new CommonException("devops.not.zip", e);
         }
         logger.info("******************解压完毕********************");
     }
@@ -833,7 +834,7 @@ public class FileUtil {
             logger.info(outPath);
             outPutUnZipFile(in, outPath);
         } catch (IOException e) {
-            throw new CommonException("error.zip.inputStream", e);
+            throw new CommonException("devops.zip.inputStream", e);
         }
     }
 
@@ -845,9 +846,9 @@ public class FileUtil {
                 out.write(buf1, 0, len);
             }
         } catch (FileNotFoundException e) {
-            throw new CommonException("error.outPath", e);
+            throw new CommonException("devops.outPath", e);
         } catch (IOException e) {
-            throw new CommonException("error.zip.outPutStream", e);
+            throw new CommonException("devops.zip.outPutStream", e);
         }
     }
 
@@ -1169,7 +1170,7 @@ public class FileUtil {
             compressArchive(tarFilePath, outputFilePath);
             deleteFile(tarFilePath);
         } catch (IOException e) {
-            throw new CommonException("error.package.tgz", e.getMessage());
+            throw new CommonException("devops.package.tgz", e.getMessage());
         }
     }
 

@@ -180,7 +180,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
@@ -192,7 +192,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             if (projectConfig != null) {
                 return projectConfig;
             }
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(resourceId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(resourceId);
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             DevopsConfigDTO organizationConfig = baseQueryByResourceAndType(organizationDTO.getTenantId(), ResourceLevel.ORGANIZATION.value(), configType);
             if (organizationConfig != null) {
@@ -211,7 +211,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public DevopsConfigDTO baseCreate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.insert(devopsConfigDTO) != 1) {
-            throw new CommonException("error.devops.project.config.create");
+            throw new CommonException("devops.project.config.create");
         }
         return devopsConfigDTO;
     }
@@ -219,7 +219,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public DevopsConfigDTO baseUpdate(DevopsConfigDTO devopsConfigDTO) {
         if (devopsConfigMapper.updateByPrimaryKeySelective(devopsConfigDTO) != 1) {
-            throw new CommonException("error.devops.project.config.update");
+            throw new CommonException("devops.project.config.update");
         }
         return devopsConfigMapper.selectByPrimaryKey(devopsConfigDTO);
     }
@@ -255,7 +255,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
     @Override
     public void baseDelete(Long id) {
         if (devopsConfigMapper.deleteByPrimaryKey(id) != 1) {
-            throw new CommonException("error.devops.project.config.delete");
+            throw new CommonException("devops.project.config.delete");
         }
     }
 
@@ -359,9 +359,9 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             chart = devopsConfigRepVO.getChart();
             chart.setCustom(Boolean.TRUE);
             ConfigVO configVO = chart.getConfig();
-            CommonExAssertUtil.assertNotNull(configVO, "error.chart.config.null");
-            boolean usernameEmpty = StringUtils.isEmpty(configVO.getUserName());
-            boolean passwordEmpty = StringUtils.isEmpty(configVO.getPassword());
+            CommonExAssertUtil.assertNotNull(configVO, "devops.chart.config.null");
+            boolean usernameEmpty = !StringUtils.hasText(configVO.getUserName());
+            boolean passwordEmpty = !StringUtils.hasText(configVO.getPassword());
             if (!usernameEmpty && !passwordEmpty) {
                 configVO.setUserName(configVO.getUserName());
                 configVO.setPassword(configVO.getPassword());
@@ -371,7 +371,7 @@ public class DevopsConfigServiceImpl implements DevopsConfigService {
             }
 
             // 用户名和密码要么都为空, 要么都有值
-            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "error.chart.auth.invalid");
+            CommonExAssertUtil.assertTrue(((usernameEmpty && passwordEmpty) || (!usernameEmpty && !passwordEmpty)), "devops.chart.auth.invalid");
         }
         if (chart == null) {
             return;

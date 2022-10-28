@@ -1,18 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
-import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -66,8 +66,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsHostServiceImpl implements DevopsHostService {
     public static final String PERMISSION_LABEL = "permissionLabel";
 
-    private static final String ERROR_HOST_NOT_FOUND = "error.host.not.found";
-    private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "error.host.status.is.not.disconnect";
+    private static final String ERROR_HOST_NOT_FOUND = "devops.host.not.found";
+    private static final String ERROR_HOST_STATUS_IS_NOT_DISCONNECT = "devops.host.status.is.not.disconnect";
     private static final String LOGIN_NAME = "loginName";
     private static final String REAL_NAME = "realName";
     private static final String HOST_AGENT = "curl -Lo host.sh %s/devops/v1/projects/%d/hosts/%d/download_file/%s && sh host.sh %s";
@@ -79,13 +79,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host.sh")) {
             HOST_ACTIVATE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.host.install.sh");
+            throw new CommonException("devops.load.host.install.sh");
         }
 
         try (InputStream inputStream = DevopsClusterServiceImpl.class.getResourceAsStream("/shell/host_upgrade.sh")) {
             HOST_UPGRADE_COMMAND_TEMPLATE = org.apache.commons.io.IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new CommonException("error.load.host.upgrade.sh");
+            throw new CommonException("devops.load.host.upgrade.sh");
         }
     }
 
@@ -140,20 +140,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     @Lazy
     private HostConnectionHandler hostConnectionHandler;
 
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
-        // 补充校验参数
-        devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
-        if (devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO)) {
-            devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
-        }
-        DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
-        devopsHostDTO.setProjectId(projectId);
-
-        devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
-        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
-        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "error.insert.host"), DevopsHostVO.class);
+    @NotNull
+    private static Supplier<String> handHostCheckMsg(List<CiCdPipelineDTO> ciCdPipelineDTOS) {
+        return () -> {
+            throw new CommonException("devops.host.linked.pipeline.delete", ciCdPipelineDTOS.get(0) == null ? "" : ciCdPipelineDTOS.get(0).getName());
+        };
     }
 
     /**
@@ -187,26 +178,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        CommonExAssertUtil.assertNotNull(devopsHostDTO, "error.host.not.exist", hostId);
-        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostUpdateRequestVO.getUsername(), devopsHostUpdateRequestVO.getPassword());
-
+    public DevopsHostVO createHost(Long projectId, DevopsHostCreateRequestVO devopsHostCreateRequestVO) {
         // 补充校验参数
-        if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
-            devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
+        devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostCreateRequestVO.getName());
+        if (devopsHostAdditionalCheckValidator.validIpAndSshPortComplete(devopsHostCreateRequestVO)) {
+            devopsHostAdditionalCheckValidator.validHostInformationMatch(devopsHostCreateRequestVO);
         }
+        DevopsHostDTO devopsHostDTO = ConvertUtils.convertObject(devopsHostCreateRequestVO, DevopsHostDTO.class);
+        devopsHostDTO.setProjectId(projectId);
 
-        devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
-        devopsHostDTO.setUsername(devopsHostUpdateRequestVO.getUsername());
-        devopsHostDTO.setPassword(devopsHostUpdateRequestVO.getPassword());
-        devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
-        devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
-        devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
-        devopsHostDTO.setDescription(devopsHostUpdateRequestVO.getDescription());
-        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "error.update.host");
+        devopsHostDTO.setHostStatus(DevopsHostStatus.DISCONNECT.getValue());
+        devopsHostDTO.setToken(GenerateUUID.generateUUID().replaceAll("-", ""));
+        return ConvertUtils.convertObject(MapperUtil.resultJudgedInsert(devopsHostMapper, devopsHostDTO, "devops.insert.host"), DevopsHostVO.class);
     }
 
     @Override
@@ -231,7 +214,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         //校验流水线是否引用了该主机
         List<CiCdPipelineDTO> ciCdPipelineDTOS = devopsHostMapper.selectPipelineByHostId(hostId);
         AssertUtils.isTrue(CollectionUtils.isEmpty(ciCdPipelineDTOS), handHostCheckMsg(ciCdPipelineDTOS));
-        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         try {
             devopsHostMapper.deleteByPrimaryKey(hostId);
 //            devopsDockerInstanceMapper.deleteByHostId(hostId);
@@ -269,17 +252,28 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
     }
 
-    public Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds) {
-        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
-        CommonExAssertUtil.assertTrue(devopsHostDTOList.size() > 0, "error.component.host.size");
-        Set<Long> connectionFailedHostIds = new HashSet<>();
-        devopsHostDTOList.forEach(d -> {
-            DevopsHostConnectionTestResultVO devopsHostConnectionTestResultVO = testConnection(projectId, ConvertUtils.convertObject(d, DevopsHostConnectionTestVO.class));
-            if (!DevopsHostStatus.SUCCESS.getValue().equals(devopsHostConnectionTestResultVO.getHostStatus())) {
-                connectionFailedHostIds.add(d.getId());
-            }
-        });
-        return encryptService.encryptIds(connectionFailedHostIds);
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateHost(Long projectId, Long hostId, DevopsHostUpdateRequestVO devopsHostUpdateRequestVO) {
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        CommonExAssertUtil.assertNotNull(devopsHostDTO, "devops.host.not.exist", hostId);
+        CommonExAssertUtil.assertTrue(devopsHostDTO.getProjectId().equals(projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
+        devopsHostAdditionalCheckValidator.validUsernamePasswordMatch(devopsHostUpdateRequestVO.getUsername(), devopsHostUpdateRequestVO.getPassword());
+
+        // 补充校验参数
+        if (!devopsHostDTO.getName().equals(devopsHostUpdateRequestVO.getName())) {
+            devopsHostAdditionalCheckValidator.validNameProjectUnique(projectId, devopsHostUpdateRequestVO.getName());
+        }
+
+        devopsHostDTO.setName(devopsHostUpdateRequestVO.getName());
+        devopsHostDTO.setUsername(devopsHostUpdateRequestVO.getUsername());
+        devopsHostDTO.setPassword(devopsHostUpdateRequestVO.getPassword());
+        devopsHostDTO.setAuthType(devopsHostUpdateRequestVO.getAuthType());
+        devopsHostDTO.setHostIp(devopsHostUpdateRequestVO.getHostIp());
+        devopsHostDTO.setSshPort(devopsHostUpdateRequestVO.getSshPort());
+        devopsHostDTO.setDescription(devopsHostUpdateRequestVO.getDescription());
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostMapper, devopsHostDTO, "devops.update.host");
     }
 
     @Override
@@ -290,7 +284,7 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         }
 
         CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-        CommonExAssertUtil.assertTrue(DevopsHostType.DEPLOY.getValue().equals(devopsHostDTO.getType()), "error.host.type.invalid");
+        CommonExAssertUtil.assertTrue(DevopsHostType.DEPLOY.getValue().equals(devopsHostDTO.getType()), "devops.host.type.invalid");
 
         return SshUtil.sshConnectForOK(devopsHostDTO.getHostIp(), devopsHostDTO.getSshPort(), devopsHostDTO.getAuthType(), devopsHostDTO.getUsername(), devopsHostDTO.getPassword());
     }
@@ -718,47 +712,17 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return DevopsHostUserPermissionVO.combine(projectMemberHostPermissionVO, projectOwnerHostPermissionVO, projectMembers, pageable, devopsHostDTO.getCreatedBy(), searchParamMap);
     }
 
-    @Override
-    public DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
-        DevopsHostUserPermissionDeleteResultVO deleteResultVO = new DevopsHostUserPermissionDeleteResultVO(true);
-        if (hostId == null || userId == null) {
-            return deleteResultVO;
-        }
-
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
-        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
-
-        if (devopsHostDTO == null) {
-            return deleteResultVO;
-        }
-
-        if (userId.equals(devopsHostDTO.getCreatedBy())) {
-            throw new CommonException("error.delete.permission.of.creator");
-        }
-
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
-
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
-
-        if (userAttrDTO == null) {
-            return deleteResultVO;
-        }
-
-        if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
-            throw new CommonException("error.delete.permission.of.project.owner");
-        }
-
-        // 删除数据库中的纪录
-        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
-        devopsHostUserPermissionDTO.setHostId(hostId);
-        devopsHostUserPermissionDTO.setIamUserId(userId);
-        devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
-
-        // 表示用户删除的不是自己的权限，前端不需要刷新整个页面
-        if (!userId.equals(DetailsHelper.getUserDetails().getUserId())) {
-            deleteResultVO.setRefreshAll(false);
-        }
-        return deleteResultVO;
+    public Set<Object> multiTestConnection(Long projectId, Set<Long> hostIds) {
+        List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, hostIds);
+        CommonExAssertUtil.assertTrue(devopsHostDTOList.size() > 0, "devops.component.host.size");
+        Set<Long> connectionFailedHostIds = new HashSet<>();
+        devopsHostDTOList.forEach(d -> {
+            DevopsHostConnectionTestResultVO devopsHostConnectionTestResultVO = testConnection(projectId, ConvertUtils.convertObject(d, DevopsHostConnectionTestVO.class));
+            if (!DevopsHostStatus.SUCCESS.getValue().equals(devopsHostConnectionTestResultVO.getHostStatus())) {
+                connectionFailedHostIds.add(d.getId());
+            }
+        });
+        return encryptService.encryptIds(connectionFailedHostIds);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -778,17 +742,46 @@ public class DevopsHostServiceImpl implements DevopsHostService {
     }
 
     @Override
-    public DevopsHostDTO checkHostAvailable(Long hostId) {
-        // 1. 获取主机信息
-        DevopsHostDTO hostDTO = baseQuery(hostId);
-        if (hostDTO == null) {
-            throw new CommonException("error.host.not.exist");
+    public DevopsHostUserPermissionDeleteResultVO deletePermissionOfUser(Long projectId, Long hostId, Long userId) {
+        DevopsHostUserPermissionDeleteResultVO deleteResultVO = new DevopsHostUserPermissionDeleteResultVO(true);
+        if (hostId == null || userId == null) {
+            return deleteResultVO;
         }
-        // 2. 校验主机已连接
-        hostConnectionHandler.checkHostConnection(hostId);
-        // 3. 校验主机权限
-        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
-        return hostDTO;
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+        devopsHostUserPermissionService.checkUserOwnManagePermissionOrThrow(projectId, devopsHostDTO, DetailsHelper.getUserDetails().getUserId());
+
+        if (devopsHostDTO == null) {
+            return deleteResultVO;
+        }
+
+        if (userId.equals(devopsHostDTO.getCreatedBy())) {
+            throw new CommonException("devops.delete.permission.of.creator");
+        }
+
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+
+        if (userAttrDTO == null) {
+            return deleteResultVO;
+        }
+
+        if (baseServiceClientOperator.isGitlabProjectOwner(userAttrDTO.getIamUserId(), projectId)) {
+            throw new CommonException(DEVOPS_DELETE_PERMISSION_OF_PROJECT_OWNER);
+        }
+
+        // 删除数据库中的纪录
+        DevopsHostUserPermissionDTO devopsHostUserPermissionDTO = new DevopsHostUserPermissionDTO();
+        devopsHostUserPermissionDTO.setHostId(hostId);
+        devopsHostUserPermissionDTO.setIamUserId(userId);
+        devopsHostUserPermissionService.baseDelete(devopsHostUserPermissionDTO);
+
+        // 表示用户删除的不是自己的权限，前端不需要刷新整个页面
+        if (!userId.equals(DetailsHelper.getUserDetails().getUserId())) {
+            deleteResultVO.setRefreshAll(false);
+        }
+        return deleteResultVO;
     }
 
     @Override
@@ -869,22 +862,18 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return "host:connect:" + projectId + ":" + hostId;
     }
 
-    @Async
-    void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String command) {
-        devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
-        SSHClient sshClient = null;
-        try {
-            sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
-            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, command);
-            redisTemplate.opsForHash().putAll(redisKey, createMap(map, execResultInfoVO.getExitCode() == 0 ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(), execResultInfoVO.getStdErr()));
-        } catch (IOException exception) {
-            throw new CommonException("error.connect.host");
-        } finally {
-            if (checkRedisStatusOperating(redisKey)) {
-                redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.FAILED.getValue(), "error.connect.host"));
-            }
-            IOUtils.closeQuietly(sshClient);
+    @Override
+    public DevopsHostDTO checkHostAvailable(Long hostId) {
+        // 1. 获取主机信息
+        DevopsHostDTO hostDTO = baseQuery(hostId);
+        if (hostDTO == null) {
+            throw new CommonException("devops.host.not.exist");
         }
+        // 2. 校验主机已连接
+        hostConnectionHandler.checkHostConnection(hostId);
+        // 3. 校验主机权限
+        devopsHostUserPermissionService.checkUserOwnUsePermissionOrThrow(hostDTO.getProjectId(), hostDTO, DetailsHelper.getUserDetails().getUserId());
+        return hostDTO;
     }
 
     private boolean checkRedisStatusOperating(String redisKey) {
@@ -897,10 +886,21 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         return map;
     }
 
-    @NotNull
-    private static Supplier<String> handHostCheckMsg(List<CiCdPipelineDTO> ciCdPipelineDTOS) {
-        return () -> {
-            throw new CommonException("error.host.linked.pipeline.delete", ciCdPipelineDTOS.get(0) == null ? "" : ciCdPipelineDTOS.get(0).getName());
-        };
+    @Async
+    void automaticHost(DevopsHostConnectionVO devopsHostConnectionVO, Map<String, String> map, String redisKey, String command) {
+        devopsHostAdditionalCheckValidator.validHostInformationMatch(Objects.requireNonNull(ConvertUtils.convertObject(devopsHostConnectionVO, DevopsHostCreateRequestVO.class)));
+        SSHClient sshClient = null;
+        try {
+            sshClient = SshUtil.sshConnect(devopsHostConnectionVO.getHostIp(), devopsHostConnectionVO.getSshPort(), devopsHostConnectionVO.getAuthType(), devopsHostConnectionVO.getUsername(), devopsHostConnectionVO.getPassword());
+            ExecResultInfoVO execResultInfoVO = sshUtil.execCommand(sshClient, command);
+            redisTemplate.opsForHash().putAll(redisKey, createMap(map, execResultInfoVO.getExitCode() == 0 ? DevopsHostStatus.SUCCESS.getValue() : DevopsHostStatus.FAILED.getValue(), execResultInfoVO.getStdErr()));
+        } catch (IOException exception) {
+            throw new CommonException("devops.connect.host");
+        } finally {
+            if (checkRedisStatusOperating(redisKey)) {
+                redisTemplate.opsForHash().putAll(redisKey, createMap(map, DevopsHostStatus.FAILED.getValue(), "devops.connect.host"));
+            }
+            IOUtils.closeQuietly(sshClient);
+        }
     }
 }

@@ -111,7 +111,7 @@ public class CertificationServiceImpl implements CertificationService {
     @Transactional(rollbackFor = Exception.class)
     public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
                                     MultipartFile key, MultipartFile cert) {
-        C7nCertificationVO certificationDTO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
+        C7nCertificationVO certificationDTO = processEncryptCertification(c7nCertificationCreateVO);
         Long envId = certificationDTO.getEnvId();
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -124,7 +124,7 @@ public class CertificationServiceImpl implements CertificationService {
         CommonExAssertUtil.assertNotNull(certManagerVersion, DEVOPS_CERT_MANAGER_NOT_INSTALLED);
 
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getDevopsComponentCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
@@ -382,7 +382,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<ProjectCertificationVO> listProjectCertInProject(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
             List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
@@ -670,5 +670,14 @@ public class CertificationServiceImpl implements CertificationService {
         if (devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId()) != null) {
             devopsCertificationFileMapper.deleteByPrimaryKey(certificationDTO.getCertificationFileId());
         }
+    }
+
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+        // TODO hzero 主键加密组件修复后删除
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        return certificationVO;
     }
 }

@@ -278,9 +278,7 @@ public class DevopsHostController {
             @PathVariable("host_id") Long hostId,
             @ApiParam(value = "token", required = true)
             @PathVariable("token") String token) {
-        return Optional.ofNullable(devopsHostService.downloadCreateHostFile(projectId, hostId, token))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.host.sh.download"));
+        return ResponseEntity.ok(devopsHostService.downloadCreateHostFile(projectId, hostId, token));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -378,9 +376,7 @@ public class DevopsHostController {
             @ApiIgnore @SortDefault(value = "creationDate", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsHostService.pageUserPermissionByHostId(projectId, pageable, params, hostId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.host.user.permission.get"));
+        return ResponseEntity.ok(devopsHostService.pageUserPermissionByHostId(projectId, pageable, params, hostId));
     }
 
 
@@ -408,9 +404,7 @@ public class DevopsHostController {
             @RequestParam(value = "iamUserId", required = false) Long selectedIamUserId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsHostService.pageNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.get.host.non.related.users"));
+        return ResponseEntity.ok(devopsHostService.pageNonRelatedMembers(projectId, hostId, selectedIamUserId, pageable, params));
     }
 
     /**

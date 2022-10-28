@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.*;
+import java.util.regex.Pattern;
+
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressRule;
 import io.kubernetes.client.models.V1beta1IngressTLS;
@@ -12,9 +15,6 @@ import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
-
-import java.util.*;
-import java.util.regex.Pattern;
 
 import io.choerodon.core.exception.CommonException;
 
@@ -64,19 +64,19 @@ public class K8sUtil {
 
     public static void checkPortName(String portName) {
         if (portName.length() > 15) {
-            throw new CommonException("error.container.port.name.illegal");
+            throw new CommonException("devops.container.port.name.illegal");
         }
         if (portName.contains("--")) {
-            throw new CommonException("error.container.port.name.illegal");
+            throw new CommonException("devops.container.port.name.illegal");
         }
         if (!K8sUtil.PORT_NAME_CHARSET_PATTERN.matcher(portName).matches()) {
-            throw new CommonException("error.container.port.name.illegal");
+            throw new CommonException("devops.container.port.name.illegal");
         }
         if (!K8sUtil.PORT_NAME_ONE_LETTER_PATTERN.matcher(portName).find()) {
-            throw new CommonException("error.container.port.name.illegal");
+            throw new CommonException("devops.container.port.name.illegal");
         }
         if (portName.startsWith("-") || portName.endsWith("-")) {
-            throw new CommonException("error.container.port.name.illegal");
+            throw new CommonException("devops.container.port.name.illegal");
         }
     }
 

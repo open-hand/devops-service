@@ -33,7 +33,7 @@ public class DockerDeployVO {
     private Long mktAppVersionId;
 
     @ApiModelProperty("部署values")
-    @NotNull(message = "error.value.is.null")
+    @NotNull(message = "{devops.value.is.null}")
     private String value;
 
     @ApiModelProperty("主机应用的名称")

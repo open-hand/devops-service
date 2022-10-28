@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.util;
 
-import com.fasterxml.jackson.databind.MapperFeature;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 
@@ -8,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hzero.core.base.BaseConstants;
 import org.springframework.util.Assert;
@@ -48,7 +48,7 @@ public final class JsonHelper {
         try {
             return OBJECT_MAPPER.readValue(json, type);
         } catch (IOException e) {
-            throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal error. The json is: " + json, e);
+            throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal devops. The json is: " + json, e);
         }
     }
 
@@ -66,7 +66,7 @@ public final class JsonHelper {
         try {
             return OBJECT_MAPPER.readValue(json, typeReference);
         } catch (IOException e) {
-            throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal error. The json is: " + json, e);
+            throw new CommonException("Failed to unmarshal by jackson. It's unexpected and may be an internal devops. The json is: " + json, e);
         }
     }
 
@@ -81,7 +81,7 @@ public final class JsonHelper {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
         } catch (IOException e) {
-            throw new CommonException("Failed to marshal by jackson. It's unexpected and may be an internal error. The object is: " + object.toString(), e);
+            throw new CommonException("Failed to marshal by jackson. It's unexpected and may be an internal devops. The object is: " + object.toString(), e);
         }
     }
 

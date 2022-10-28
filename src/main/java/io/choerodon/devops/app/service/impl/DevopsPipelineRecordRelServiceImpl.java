@@ -31,8 +31,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsPipelineRecordRelServiceImpl implements DevopsPipelineRecordRelService {
 
 
-    private static final String ERROR_UPDATE_PIPELINE_RECORD_REL = "error.update.pipeline.record.rel";
-    private static final String ERROR_PIPELINE_RECORD_REL_ID_IS_NULL = "error.pipeline.record.rel.id.is.null";
+    private static final String ERROR_UPDATE_PIPELINE_RECORD_REL = "devops.update.pipeline.record.rel";
+    private static final String ERROR_PIPELINE_RECORD_REL_ID_IS_NULL = "devops.pipeline.record.rel.id.is.null";
     @Autowired
     private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 

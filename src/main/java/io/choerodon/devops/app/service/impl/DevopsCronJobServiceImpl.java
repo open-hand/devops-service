@@ -124,7 +124,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsCronJobMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "CronJob", name);
+            throw new CommonException("devops.workload.exist", "CronJob", name);
         }
     }
 
@@ -142,7 +142,7 @@ public class DevopsCronJobServiceImpl implements DevopsCronJobService, ChartReso
             DevopsCronJobDTO devopsCronJobDTO = devopsCronJobMapper.selectByPrimaryKey(devopsCronJobDTOToUpdate.getId());
             devopsCronJobDTOToUpdate.setObjectVersionNumber(devopsCronJobDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCronJobMapper, devopsCronJobDTOToUpdate, "error.cronjob.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCronJobMapper, devopsCronJobDTOToUpdate, "devops.cronjob.update");
     }
 
     @Override

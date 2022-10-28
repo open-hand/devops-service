@@ -24,7 +24,7 @@ public class MiddlewareInventoryVO {
                 this.mysql.append("[mysql]\n");
                 break;
             default:
-                throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
+                throw new CommonException("devops.middleware.unsupported.type", middlewareTypeEnum.getType());
         }
     }
 

@@ -59,19 +59,19 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsIngressServiceImpl.class);
 
-    public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
+    public static final String ERROR_DOMAIN_PATH_EXIST = "devops.domain.path.exist";
     public static final String INGRESS = "Ingress";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
     public static final String V1_INGRESS_PATH_TYPE_PREFIX = "Prefix";
-    public static final String V1_INGRESS_PATH_TYPE_IMPLEMENT = "ImplementationSpecific";
-    public static final String V1_INGRESS_PATH_TYPE_EXACT = "Exact";
-    private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
-    private static final String PATH_ERROR = "error.path.empty";
-    private static final String PATH_DUPLICATED = "error.path.duplicated";
-    private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
-    private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
+    private static final String DOMAIN_NAME_EXIST_ERROR = "devops.domain.name.exist";
+    private static final String PATH_ERROR = "devops.path.empty";
+    private static final String PATH_DUPLICATED = "devops.path.duplicated";
+    private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "devops.service.notContain.port";
+    private static final String DEVOPS_INGRESS_SERVICE_APPLICATION = "devops.ingress.service.application";
+    private static final String DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE = "devops.ingress.annotations.too.large";
+    private static final String CERT_NOT_ACTIVE = "devops.cert.notActive";
     private static final String INGRESS_NOT_EXIST = "ingress.not.exist";
     private static final Gson gson = new Gson();
     private static final JSON k8sJson = new JSON();
@@ -113,9 +113,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
-    private JSON json = new JSON();
-
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
@@ -148,7 +145,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (devopsIngressVO.getAppServiceId() != null) {
             Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
             if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
-                throw new CommonException("error.ingress.service.application");
+                throw new CommonException(DEVOPS_INGRESS_SERVICE_APPLICATION);
             }
         }
 
@@ -182,7 +179,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (devopsIngressVO.getAppServiceId() != null) {
             Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
             if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
-                throw new CommonException("error.ingress.service.application");
+                throw new CommonException(DEVOPS_INGRESS_SERVICE_APPLICATION);
             }
         }
 
@@ -302,7 +299,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (devopsIngressVO.getAppServiceId() != null) {
             Set<Long> serviceIds = devopsIngressVO.getPathList().stream().map(DevopsIngressPathVO::getServiceId).collect(Collectors.toSet());
             if (!isAllServiceInApp(devopsIngressVO.getAppServiceId(), serviceIds)) {
-                throw new CommonException("error.ingress.service.application");
+                throw new CommonException(DEVOPS_INGRESS_SERVICE_APPLICATION);
             }
         }
 
@@ -819,7 +816,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             String annotations = gson.toJson(ingress.getMetadata().getAnnotations());
             // 避免数据比数据库结构的size还大
             if (annotations.length() > 2000) {
-                throw new CommonException("error.ingress.annotations.too.large");
+                throw new CommonException(DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE);
             }
             devopsIngressDO.setAnnotations(annotations);
         }
@@ -932,7 +929,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         Long id = devopsIngressDTO.getId();
         DevopsIngressDTO ingressDTO = devopsIngressMapper.selectByPrimaryKey(id);
         if (ingressDTO == null) {
-            throw new CommonException("domain.not.exist");
+            throw new CommonException("devops.domain.not.exist");
         }
         if (!devopsIngressDTO.getName().equals(ingressDTO.getName())
                 && !baseCheckName(devopsIngressDTO.getEnvId(), devopsIngressDTO.getName())) {
@@ -1054,7 +1051,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     @Override
     public DevopsIngressDTO baseCreateIngress(DevopsIngressDTO devopsIngressDTO) {
         if (devopsIngressMapper.insert(devopsIngressDTO) != 1) {
-            throw new CommonException("error.domain.insert");
+            throw new CommonException("devops.domain.insert");
         }
         return devopsIngressDTO;
     }
@@ -1221,7 +1218,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         String annotations = gson.toJson(v1Ingress.getMetadata().getAnnotations());
         // 避免数据比数据库结构的size还大
         if (annotations.length() > 2000) {
-            throw new CommonException("error.ingress.annotations.too.large");
+            throw new CommonException(DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE);
         }
         devopsIngressDTO.setAnnotations(annotations);
         devopsIngressDTO.setEnvId(envId);
@@ -1269,7 +1266,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         String annotations = gson.toJson(v1beta1Ingress.getMetadata().getAnnotations());
         // 避免数据比数据库结构的size还大
         if (annotations.length() > 2000) {
-            throw new CommonException("error.ingress.annotations.too.large");
+            throw new CommonException(DEVOPS_INGRESS_ANNOTATIONS_TOO_LARGE);
         }
         devopsIngressDTO.setAnnotations(annotations);
         devopsIngressDTO.setEnvId(envId);

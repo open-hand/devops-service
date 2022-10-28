@@ -71,7 +71,7 @@ public class ClusterConnectionHandler {
             return;
         }
         if (!getEnvConnectionStatus(clusterId)) {
-            throw new CommonException("error.env.disconnect");
+            throw new CommonException("devops.env.disconnect");
         }
     }
 
@@ -104,7 +104,7 @@ public class ClusterConnectionHandler {
 
 
     public String handDevopsEnvGitRepository(Long projectId, String envCode, Long envId, String envRsa, String envType, String clusterCode) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         //本地路径
         String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), clusterCode, envCode, envId);
@@ -129,7 +129,7 @@ public class ClusterConnectionHandler {
                         FileUtil.deleteDirectory(file);
                         gitUtil.cloneBySsh(path, url, envRsa);
                     } else {
-                        throw new CommonException("error.git.pull", e);
+                        throw new CommonException("devops.git.pull", e);
                     }
                 }
             } else {
