@@ -14,7 +14,7 @@
           SELECT derd.id FROM devops_env_resource_detail derd
           LEFT JOIN devops_env_resource der ON derd.id = der.resource_detail_id
           WHERE der.id is null
-          limit 1000
+          limit 4000
     </select>
 
       <delete id="batchDeleteByIdInNewTrans">
