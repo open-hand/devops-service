@@ -59,7 +59,7 @@ public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDeta
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void batchDeleteByIdInNewTrans(List<Long> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             devopsEnvResourceDetailMapper.batchDeleteByIdInNewTrans(ids);
