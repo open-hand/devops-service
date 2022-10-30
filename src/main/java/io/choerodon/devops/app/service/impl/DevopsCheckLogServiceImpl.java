@@ -103,6 +103,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         // 每次删除1000条
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Start Delete dirty data for devops_env_resource_detail >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
         List<Long> ids = devopsEnvResourceDetailMapper.selectDirtyDataIdWithLimit();
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>devops_env_resource_detail ids： {}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", JsonHelper.marshalByJackson(ids));
+
         int count = 1;
         while (!CollectionUtils.isEmpty(ids)) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Process Delete dirty data for devops_env_resource_detail, count: {} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", count);
