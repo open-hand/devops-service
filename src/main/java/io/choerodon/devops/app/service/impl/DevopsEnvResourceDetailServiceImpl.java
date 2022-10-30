@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -54,5 +56,13 @@ public class DevopsEnvResourceDetailServiceImpl implements DevopsEnvResourceDeta
 
        }
        return  devopsEnvResourceDetailDTOS;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void batchDeleteByIdInNewTrans(List<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            devopsEnvResourceDetailMapper.batchDeleteByIdInNewTrans(ids);
+        }
     }
 }

@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -39,6 +40,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
     public static final String FIX_HELM_VERSION_DATA = "fixHelmVersionData";
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
+    public static final String DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA = "deleteDevopsEnvResourceDetailData";
 
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
@@ -58,6 +60,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
+
+    @Autowired
+    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
+    @Autowired
+    private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -80,6 +87,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case FIX_IMAGE_VERSION_DATA:
                 fixImageVersionData();
                 break;
+            case DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA:
+                deleteDevopsEnvResourceDetailData();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -87,6 +97,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void deleteDevopsEnvResourceDetailData() {
+        // 每次删除1000条
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Start Delete dirty data for devops_env_resource_detail >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        List<Long> ids = devopsEnvResourceDetailMapper.selectDirtyDataIdWithLimit();
+        int count = 1;
+        while (!CollectionUtils.isEmpty(ids)) {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Process Delete dirty data for devops_env_resource_detail, count: {} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", count);
+            devopsEnvResourceDetailService.batchDeleteByIdInNewTrans(ids);
+            count++;
+        }
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>End Delete dirty data for devops_env_resource_detail >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+
     }
 
     private void fixImageVersionData() {

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
+import io.choerodon.asgard.schedule.enums.TriggerTypeEnum;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 
 /**
@@ -88,6 +89,25 @@ public class DevopsFixDataTask {
     public void fixImageVersionData(Map<String, Object> map) {
         try {
             devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
+    /**
+     * 删除devops_env_resource_detail脏数据
+     *
+     * @param map
+     */
+    @JobTask(maxRetryCount = 3, code = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA, description = "删除资源详情脏数据")
+    @TimedTask(name = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA,
+            description = "删除资源详情脏数据",
+            params = {},
+            triggerType = TriggerTypeEnum.CRON_TRIGGER,
+            cronExpression = "0 0 1 * * ?")
+    public void deleteDevopsEnvResourceDetailData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA);
         } catch (Exception e) {
             logger.error("devops.fix.data", e);
         }
