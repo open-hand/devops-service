@@ -102,15 +102,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private void deleteDevopsEnvResourceDetailData() {
         // 每次删除1000条
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Start Delete dirty data for devops_env_resource_detail >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
-        List<Long> ids = devopsEnvResourceDetailMapper.selectDirtyDataIdWithLimit();
-        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>devops_env_resource_detail ids： {}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", JsonHelper.marshalByJackson(ids));
-
+        List<Long> ids;
         int count = 1;
-        while (!CollectionUtils.isEmpty(ids)) {
-            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Process Delete dirty data for devops_env_resource_detail, count: {} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", count);
-            devopsEnvResourceDetailService.batchDeleteByIdInNewTrans(ids);
+        do {
+            ids = devopsEnvResourceDetailMapper.selectDirtyDataIdWithLimit();
+            if (!CollectionUtils.isEmpty(ids)) {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Process Delete dirty data for devops_env_resource_detail, count: {} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", count);
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>devops_env_resource_detail data size {}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", ids.size());
+                devopsEnvResourceDetailService.batchDeleteByIdInNewTrans(ids);
+            } else {
+                LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>Process Delete dirty data for devops_env_resource_detail is empty,end while control.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            }
             count++;
-        }
+        } while (!CollectionUtils.isEmpty(ids));
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>End Delete dirty data for devops_env_resource_detail >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
 
     }
