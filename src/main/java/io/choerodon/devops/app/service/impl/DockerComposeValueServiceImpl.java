@@ -30,7 +30,7 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
     @Override
     @Transactional
     public void baseCreate(DockerComposeValueDTO dockerComposeValueDTO) {
-        MapperUtil.resultJudgedInsertSelective(dockerComposeValueMapper, dockerComposeValueDTO, "error.save.compose.value");
+        MapperUtil.resultJudgedInsertSelective(dockerComposeValueMapper, dockerComposeValueDTO, "devops.save.compose.value");
     }
 
     @Override
@@ -41,7 +41,7 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
     @Override
     @Transactional
     public void deleteByAppId(Long appId) {
-        Assert.notNull(appId, "error.appId.is.null");
+        Assert.notNull(appId, "devops.appId.is.null");
 
         DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO();
         dockerComposeValueDTO.setAppId(appId);
@@ -51,12 +51,12 @@ public class DockerComposeValueServiceImpl implements DockerComposeValueService 
     @Override
     @Transactional
     public void baseUpdate(DockerComposeValueDTO dockerComposeValueDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(dockerComposeValueMapper, dockerComposeValueDTO, "error.update.compose.value");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(dockerComposeValueMapper, dockerComposeValueDTO, "devops.update.compose.value");
     }
 
     @Override
     public List<DockerComposeValueDTO> listRemarkValuesByAppId(Long appId, String searchParam) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        Assert.notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
 
         return dockerComposeValueMapper.listRemarkValuesByAppId(appId, searchParam);
     }

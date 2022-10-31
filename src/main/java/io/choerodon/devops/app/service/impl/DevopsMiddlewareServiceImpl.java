@@ -101,17 +101,17 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         try (InputStream redisSentinelInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-sentinel-value-template.yaml")) {
             REDIS_SENTINEL_VALUE_TEMPLATE = IOUtils.toString(redisSentinelInputStream, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new CommonException("error.middleware.value.template");
+            throw new CommonException("devops.middleware.value.template");
         }
         try (InputStream redisStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/redis/redis-standalone-value-template.yaml")) {
             REDIS_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(redisStandaloneInputStream, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new CommonException("error.middleware.value.template");
+            throw new CommonException("devops.middleware.value.template");
         }
         try (InputStream mysqlStandaloneInputStream = DevopsMiddlewareServiceImpl.class.getResourceAsStream("/template/middleware/mysql/mysql-standalone-value-template.yaml")) {
             MYSQL_STANDALONE_VALUE_TEMPLATE = IOUtils.toString(mysqlStandaloneInputStream, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new CommonException("error.middleware.value.template");
+            throw new CommonException("devops.middleware.value.template");
         }
     }
 
@@ -231,8 +231,8 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         List<DevopsHostDTO> devopsHostDTOList = devopsHostMapper.listByProjectIdAndIds(projectId, middlewareRedisHostDeployVO.getHostIds());
 
         if (SENTINEL.getValue().equals(middlewareRedisHostDeployVO.getMode())) {
-            CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "error.host.size.less.than.3");
-            CommonExAssertUtil.assertTrue(devopsHostDTOList.size() >= 3, "error.host.size.less.than.3");
+            CommonExAssertUtil.assertTrue(middlewareRedisHostDeployVO.getHostIds().size() >= 3, "devops.host.size.less.than.3");
+            CommonExAssertUtil.assertTrue(devopsHostDTOList.size() >= 3, "devops.host.size.less.than.3");
         }
 
         // 根据部署模式以及版本查询部署部署对象id和市场服务id
@@ -240,7 +240,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
@@ -366,10 +366,10 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         // master-slave模式，节点数量必须为2，且需要设置virtualIp
         if (MASTER_SLAVE.getValue().equals(middlewareMySqlHostDeployVO.getMode()) && middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
             if (middlewareMySqlHostDeployVO.getHostIds().size() != 2) {
-                throw new CommonException("error.mysql.master-slave.host.count");
+                throw new CommonException("devops.mysql.master-slave.host.count");
             }
             if (!GitOpsConstants.IP_REG_PATTERN.matcher(middlewareMySqlHostDeployVO.getVirtualIp()).matches()) {
-                throw new CommonException("error.virtual.ip.invalid");
+                throw new CommonException("devops.virtual.ip.invalid");
             }
         }
 
@@ -384,7 +384,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
         DevopsHostDTO devopsHostDTOForConnection = devopsHostDTOList.get(0);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setDeployObjectId(middlewareServiceReleaseInfo.getId());
         deploySourceVO.setType(AppSourceType.PLATFORM_PRESET.getValue());
@@ -578,7 +578,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     @Transactional
     public void updateHostInstance(Long projectId, MiddlewareHostInstanceVO middlewareHostInstanceVO) {
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(middlewareHostInstanceVO.getInstanceId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "error.operating.resource.in.other.project");
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "devops.operating.resource.in.other.project");
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsHostAppInstanceDTO.getAppId());
         devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
         devopsHostAppDTO.setName(middlewareHostInstanceVO.getAppName());
@@ -597,7 +597,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 hostIds,
                 configuration
         );
-        MapperUtil.resultJudgedInsertSelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "error.middleware.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsMiddlewareMapper, devopsMiddlewareDTO, "devops.middleware.insert");
         return devopsMiddlewareDTO;
     }
 
@@ -629,7 +629,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                             .append(System.lineSeparator());
                     break;
                 default:
-                    throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
+                    throw new CommonException("devops.middleware.unsupported.type", middlewareTypeEnum.getType());
             }
         }
         return middlewareInventoryVO;
@@ -742,11 +742,11 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
 
     public void checkMiddlewareNameAndCode(Long projectId, String name, String code, String type) {
         if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name))) {
-            throw new CommonException("error.middleware.name.exists");
+            throw new CommonException("devops.middleware.name.exists");
         }
 
         AppServiceInstanceValidator.checkCode(code);
-        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkCodeUnique(projectId, code, type) < 1, "error.middleware.code.exists");
+        CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkCodeUnique(projectId, code, type) < 1, "devops.middleware.code.exists");
     }
 
     private String preProcessShell() {
@@ -859,7 +859,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
                 uninstallCommand = MYSQL_UNINSTALL_COMMAND;
                 break;
             default:
-                throw new CommonException("error.middleware.unsupported.type", middlewareTypeEnum.getType());
+                throw new CommonException("devops.middleware.unsupported.type", middlewareTypeEnum.getType());
         }
         return String.format(UNINSTALL_MIDDLEWARE_ANSIBLE_COMMAND_TEMPLATE, inventoryIni, configuration, uninstallCommand, "/tmp/middleware-uninstall.log");
     }

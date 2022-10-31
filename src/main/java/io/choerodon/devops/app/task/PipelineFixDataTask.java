@@ -33,7 +33,7 @@ public class PipelineFixDataTask {
         try {
             devopsCheckLogService.checkLog(PIPELINE_CONTENT_FIX);
         } catch (Exception e) {
-            logger.error("error.fix.data", e);
+            logger.error("devops.fix.data", e);
         }
     }
 }

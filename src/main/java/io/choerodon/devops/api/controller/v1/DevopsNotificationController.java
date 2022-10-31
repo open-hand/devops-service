@@ -48,9 +48,7 @@ public class DevopsNotificationController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "资源对象类型")
             @RequestParam(value = "object_type") String objectType) {
-        return Optional.ofNullable(notificationService.checkResourceDelete(projectId, envId, objectType))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.check.resource.delete"));
+        return ResponseEntity.ok(notificationService.checkResourceDelete(projectId, envId, objectType));
     }
 
 

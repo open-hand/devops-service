@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.validator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CdEnvDeployInfoDTOCode.DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,11 @@ import io.choerodon.devops.infra.enums.InstanceStatus;
  */
 @Component
 public class DevopsEnvironmentValidator {
+
+    private static final String DEVOPS_ENV_STOP_INSTANCE_EXIST = "devops.env.stop.instanceExist";
+    private static final String DEVOPS_ENV_STOP_SERVICE_EXIST = "devops.env.stop.serviceExist";
+    private static final String DEVOPS_ENV_STOP_INGRESS_EXIST = "devops.env.stop.IngressExist";
+
     @Autowired
     @Lazy
     private AppServiceInstanceService appServiceInstanceService;
@@ -39,16 +46,16 @@ public class DevopsEnvironmentValidator {
         if (appServiceInstanceService.baseListByEnvId(envId).stream()
                 .anyMatch(applicationInstanceE ->
                         InstanceStatus.RUNNING.getStatus().equals(applicationInstanceE.getStatus()))) {
-            throw new CommonException("error.env.stop.instanceExist");
+            throw new CommonException(DEVOPS_ENV_STOP_INSTANCE_EXIST);
         }
         if (devopsServiceService.baseCheckServiceByEnv(envId)) {
-            throw new CommonException("error.env.stop.serviceExist");
+            throw new CommonException(DEVOPS_ENV_STOP_SERVICE_EXIST);
         }
         if (devopsIngressService.baseCheckByEnv(envId)) {
-            throw new CommonException("error.env.stop.IngressExist");
+            throw new CommonException(DEVOPS_ENV_STOP_INGRESS_EXIST);
         }
         if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
-            throw new CommonException("error.env.stop.pipeline.app.deploy.exist");
+            throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
         }
     }
 }

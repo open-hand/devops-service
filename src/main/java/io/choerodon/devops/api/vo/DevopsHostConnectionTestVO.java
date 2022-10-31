@@ -8,8 +8,8 @@ import org.hibernate.validator.constraints.Range;
 
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.devops.infra.enums.DevopsHostType;
+import io.choerodon.devops.infra.enums.HostAuthType;
 
 /**
  * @author zmf
@@ -19,30 +19,30 @@ public class DevopsHostConnectionTestVO {
     /**
      * {@link io.choerodon.devops.infra.enums.DevopsHostType}
      */
-    @EnumCheck(message = "error.host.type.invalid", enumClass = DevopsHostType.class)
+    @EnumCheck(message = "{devops.host.type.invalid}", enumClass = DevopsHostType.class)
     @ApiModelProperty("主机类型")
     private String type;
 
-    @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "error.host.ip.invalid")
+    @Pattern(regexp = GitOpsConstants.IP_PATTERN, message = "{devops.host.ip.invalid}")
     @ApiModelProperty("主机ip")
     private String hostIp;
 
-    @Range(max = 65535, message = "error.ssh.port.invalid")
+    @Range(max = 65535, message = "{devops.ssh.port.invalid}")
     @ApiModelProperty("主机ssh的端口")
     private Integer sshPort;
 
     /**
      * {@link HostAuthType}
      */
-    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class)
+    @EnumCheck(message = "{devops.host.auth.type.invalid}", enumClass = HostAuthType.class)
     @ApiModelProperty("认证类型")
     private String authType;
 
-    @NotEmpty(message = "error.host.username.empty")
+    @NotEmpty(message = "{devops.host.username.empty}")
     @ApiModelProperty("用户名")
     private String username;
 
-    @NotEmpty(message = "error.host.password.empty")
+    @NotEmpty(message = "{devops.host.password.empty}")
     @ApiModelProperty("密码/rsa秘钥")
     private String password;
 

@@ -40,8 +40,6 @@ public class DevopsGitlabEmailController {
     public ResponseEntity<Boolean> doesEmailExists(
             @ApiParam(value = "用户邮箱", required = true)
             @RequestParam(value = "email") String email) {
-        return Optional.ofNullable(gitlabUserService.doesEmailExists(email))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.gitlab.user.email.check"));
+        return ResponseEntity.ok(gitlabUserService.doesEmailExists(email));
     }
 }

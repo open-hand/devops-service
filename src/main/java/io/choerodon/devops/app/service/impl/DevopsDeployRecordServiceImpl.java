@@ -36,7 +36,10 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.DeployDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -61,7 +64,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
 
     private static final String UPDATE_DEPLOY_RECORD_STATUS_FAILED = "update.deploy.record.status.failed";
-    private static final String ERROR_UPDATE_DEPLOY_RECORD_FAILED = "error.update.deploy.record.failed";
+    private static final String ERROR_UPDATE_DEPLOY_RECORD_FAILED = "devops.update.deploy.record.failed";
 
     @Autowired
     private DevopsDeployRecordMapper devopsDeployRecordMapper;
@@ -206,33 +209,8 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
     public void baseCreate(DevopsDeployRecordDTO devopsDeployRecordDTO) {
         Objects.requireNonNull(devopsDeployRecordDTO.getDeployTime(), "Deploy time can't be null");
         if (devopsDeployRecordMapper.insert(devopsDeployRecordDTO) != 1) {
-            throw new CommonException("error.deploy.record.insert");
+            throw new CommonException("devops.deploy.record.insert");
         }
-    }
-
-    /**
-     * 这里使用REQUIRES_NEW 是为了在catch中不会被回滚
-     *
-     * @param recordId 记录id
-     * @param status   状态
-     * @param errorMsg 错误消息
-     */
-    @Override
-    public void updateRecord(Long recordId, String status, String errorMsg) {
-        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordMapper.selectByPrimaryKey(recordId);
-        devopsDeployRecordDTO.setDeployResult(status);
-        devopsDeployRecordDTO.setErrorMessage(errorMsg);
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployRecordMapper, devopsDeployRecordDTO, "error.deploy.record.insert");
-    }
-
-    /**
-     * 不关注更新结果
-     *
-     * @param devopsDeployRecordDTO
-     */
-    @Override
-    public void updateRecord(DevopsDeployRecordDTO devopsDeployRecordDTO) {
-        devopsDeployRecordMapper.updateByPrimaryKey(devopsDeployRecordDTO);
     }
 
     @Override
@@ -356,7 +334,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public DeployRecordVO queryEnvDeployRecordByCommandId(Long commandId) {
-        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+        Assert.notNull(commandId, ResourceCheckConstant.DEVOPS_COMMAND_ID_IS_NULL);
 
         DeployRecordVO deployRecordVO = devopsDeployRecordMapper.queryEnvDeployRecordByCommandId(commandId);
         if (deployRecordVO == null) {
@@ -374,7 +352,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public DeployRecordVO queryHostDeployRecordByCommandId(Long commandId) {
-        Assert.notNull(commandId, ResourceCheckConstant.ERROR_COMMAND_ID_IS_NULL);
+        Assert.notNull(commandId, ResourceCheckConstant.DEVOPS_COMMAND_ID_IS_NULL);
 
         return devopsDeployRecordMapper.queryHostDeployRecordByCommandId(commandId);
     }

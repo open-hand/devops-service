@@ -5,16 +5,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.DevopsCdAuditRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobRecordService;
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
@@ -34,21 +31,13 @@ import io.choerodon.devops.infra.mapper.DevopsCdStageRecordMapper;
 public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordService {
     public static final Logger LOGGER = LoggerFactory.getLogger(DevopsCdStageRecordServiceImpl.class);
 
-    private static final String SAVE_STAGE_RECORD_FAILED = "save.stage.record.failed";
-    private static final String UPDATE_STAGE_RECORD_FAILED = "update.stage.record.failed";
+    private static final String DEVOPS_SAVE_STAGE_RECORD_FAILED = "devops.save.stage.record.failed";
+    private static final String DEVOPS_UPDATE_STAGE_RECORD_FAILED = "devops.update.stage.record.failed";
 
     @Autowired
     private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
     @Autowired
     private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-
-    @Autowired
-    private DevopsCdAuditRecordService devopsCdAuditRecordService;
-
     @Autowired
     private DevopsCdJobRecordService devopsCdJobRecordService;
 
@@ -56,7 +45,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Transactional
     public void save(DevopsCdStageRecordDTO devopsCdStageRecordDTO) {
         if (devopsCdStageRecordMapper.insert(devopsCdStageRecordDTO) != 1) {
-            throw new CommonException(SAVE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_SAVE_STAGE_RECORD_FAILED);
         }
     }
 
@@ -76,7 +65,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Transactional
     public void update(DevopsCdStageRecordDTO devopsCdStageRecord) {
         if (devopsCdStageRecordMapper.updateByPrimaryKeySelective(devopsCdStageRecord) != 1) {
-            throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_STAGE_RECORD_FAILED);
         }
     }
 
@@ -94,13 +83,13 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
         recordDTO.setStatus(status);
         if (devopsCdStageRecordMapper.updateByPrimaryKey(recordDTO) != 1) {
-            throw new CommonException(UPDATE_STAGE_RECORD_FAILED);
+            throw new CommonException(DEVOPS_UPDATE_STAGE_RECORD_FAILED);
         }
     }
 
     @Override
     public DevopsCdStageRecordDTO queryById(Long id) {
-        Assert.notNull(id, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(id, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         return devopsCdStageRecordMapper.selectByPrimaryKey(id);
     }
 
@@ -115,7 +104,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Override
     @Transactional
     public void deleteByPipelineRecordId(Long pipelineRecordId) {
-        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);
         List<DevopsCdStageRecordDTO> devopsCdStageRecordDTOS = devopsCdStageRecordMapper.select(devopsCdStageRecordDTO);
@@ -134,7 +123,7 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
     @Override
     @Transactional
     public void updateStageStatusStop(Long stageRecordId) {
-        Assert.notNull(stageRecordId, PipelineCheckConstant.ERROR_STAGE_RECORD_ID_IS_NULL);
+        Assert.notNull(stageRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
         // 更新阶段状态为stop
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = devopsCdStageRecordMapper.selectByPrimaryKey(stageRecordId);
         devopsCdStageRecordDTO.setStatus(PipelineStatus.STOP.toValue());
@@ -146,8 +135,8 @@ public class DevopsCdStageRecordServiceImpl implements DevopsCdStageRecordServic
 
     @Override
     public List<DevopsCdStageRecordDTO> queryStageWithPipelineRecordIdAndStatus(Long pipelineRecordId, String status) {
-        Assert.notNull(pipelineRecordId, PipelineCheckConstant.ERROR_PIPELINE_RECORD_ID_IS_NULL);
-        Assert.notNull(status, PipelineCheckConstant.ERROR_STAGE_STATUS_IS_NULL);
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
+        Assert.notNull(status, PipelineCheckConstant.DEVOPS_STAGE_STATUS_IS_NULL);
 
         DevopsCdStageRecordDTO devopsCdStageRecordDTO = new DevopsCdStageRecordDTO();
         devopsCdStageRecordDTO.setPipelineRecordId(pipelineRecordId);

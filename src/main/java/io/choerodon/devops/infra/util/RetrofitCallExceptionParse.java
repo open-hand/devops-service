@@ -87,7 +87,7 @@ public class RetrofitCallExceptionParse {
             Response<ResponseBody> execute = call.execute();
             if (execute == null) {
                 logger.info("::Retrofit::response is null");
-                throw new CommonException("error.retrofit.execute.response.is.empty");
+                throw new CommonException("devops.retrofit.execute.response.is.empty");
             }
             if (!execute.isSuccessful()) {
                 logger.info("::Retrofit::unsuccessful");
@@ -95,19 +95,19 @@ public class RetrofitCallExceptionParse {
                     try {
                         logger.info("::Retrofit::error body:{}", v.string());
                     } catch (IOException e) {
-                        throw new CommonException("error.retrofit.execute.is.unsuccessful", e);
+                        throw new CommonException("devops.retrofit.execute.is.unsuccessful", e);
                     }
                 });
-                throw new CommonException("error.retrofit.execute.is.unsuccessful");
+                throw new CommonException("devops.retrofit.execute.is.unsuccessful");
             }
             if (ObjectUtils.isEmpty(execute.body())) {
                 logger.info("::Retrofit::response body is null");
-                throw new CommonException("error.retrofit.execute.response.body.is.empty");
+                throw new CommonException("devops.retrofit.execute.response.body.is.empty");
             }
             bodyStr = execute.body().string();
         } catch (IOException e) {
             logger.info("::Retrofit::An exception occurred during execution:{}", e);
-            throw new CommonException("error.retrofit.execute", e);
+            throw new CommonException("devops.retrofit.execute", e);
         }
         return bodyStr;
     }

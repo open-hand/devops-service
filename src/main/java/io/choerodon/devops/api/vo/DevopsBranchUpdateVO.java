@@ -11,7 +11,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsBranchUpdateVO {
     @ApiModelProperty("应用服务id / 必填")
-    @NotNull(message = "error.app.service.id.null")
+    @NotNull(message = "{devops.app.service.id.null}")
     @Encrypt
     private Long appServiceId;
 
@@ -22,11 +22,11 @@ public class DevopsBranchUpdateVO {
     private Long issueId;
 
     @ApiModelProperty("分支名 / 必填")
-    @NotNull(message = "error.branch.name.null")
+    @NotNull(message = "{devops.branch.name.null}")
     private String branchName;
 
     @ApiModelProperty("分支纪录的版本号 / 必填")
-    @NotNull(message = "error.object.version.number.null")
+    @NotNull(message = "{devops.object.version.number.null}")
     private Long objectVersionNumber;
 
     public Long getAppServiceId() {

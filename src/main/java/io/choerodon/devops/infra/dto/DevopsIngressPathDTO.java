@@ -28,7 +28,7 @@ public class DevopsIngressPathDTO extends AuditDomain {
     private String path;
     private Long serviceId;
     private String serviceName;
-    private Long servicePort;
+    private Integer servicePort;
 
     public DevopsIngressPathDTO() {
     }
@@ -40,7 +40,7 @@ public class DevopsIngressPathDTO extends AuditDomain {
     /**
      * 构造函数
      */
-    public DevopsIngressPathDTO(Long ingressId, String path, Long serviceId, String serviceName, Long servicePort) {
+    public DevopsIngressPathDTO(Long ingressId, String path, Long serviceId, String serviceName, Integer servicePort) {
         this.ingressId = ingressId;
         this.path = path;
         this.serviceId = serviceId;
@@ -90,11 +90,11 @@ public class DevopsIngressPathDTO extends AuditDomain {
         this.serviceName = serviceName;
     }
 
-    public Long getServicePort() {
+    public Integer getServicePort() {
         return servicePort;
     }
 
-    public void setServicePort(Long servicePort) {
+    public void setServicePort(Integer servicePort) {
         this.servicePort = servicePort;
     }
 
@@ -110,7 +110,7 @@ public class DevopsIngressPathDTO extends AuditDomain {
         return Objects.equals(ingressId, that.ingressId)
                 && Objects.equals(path, that.path)
                 && Objects.equals(serviceId, that.serviceId)
-                && Objects.equals(servicePort,that.servicePort);
+                && Objects.equals(servicePort, that.servicePort);
     }
 
     @Override

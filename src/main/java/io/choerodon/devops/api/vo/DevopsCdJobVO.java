@@ -22,8 +22,8 @@ public class DevopsCdJobVO {
     @Encrypt
     private Long id;
     @ApiModelProperty("任务名称")
-    @Size(min = 1, max = 30, message = "error.cd.job.name.length")
-    @NotEmpty(message = "error.job.name.cannot.be.null")
+    @Size(min = 1, max = 30, message = "devops.cd.job.name.length")
+    @NotEmpty(message = "{devops.job.name.cannot.be.null}")
     private String name;
 
     @Encrypt
@@ -38,7 +38,7 @@ public class DevopsCdJobVO {
     /**
      * {@link io.choerodon.devops.infra.enums.JobTypeEnum}
      */
-    @NotEmpty(message = "error.job.type.cannot.be.null")
+    @NotEmpty(message = "{devops.job.type.cannot.be.null}")
     private String type;
     @ApiModelProperty("触发类型对应的值")
     private String triggerValue;
@@ -52,7 +52,7 @@ public class DevopsCdJobVO {
     @ApiModelProperty("详细信息")
     private String metadata;
     private String envName;
-    @NotNull(message = "error.job.sequence.cannot.be.null")
+    @NotNull(message = "{devops.job.sequence.cannot.be.null}")
     private Long sequence;
 
     @Encrypt

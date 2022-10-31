@@ -78,7 +78,12 @@ public enum DevopsCiStepTypeEnum {
     /**
      * 自定义任务
      */
-    CUSTOM("custom");
+    CUSTOM("custom"),
+
+    /**
+     * 发布应用服务版本
+     */
+    PUBLISH_APP_VERSION("publish_app_version");
 
 
     private String value;

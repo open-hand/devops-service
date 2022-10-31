@@ -100,9 +100,7 @@ public class DevopsIngressController {
             @Encrypt
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
-        return Optional.ofNullable(devopsIngressService.queryIngress(projectId, id))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.IngressName.query"));
+        return ResponseEntity.ok(devopsIngressService.queryIngress(projectId, id));
     }
 
 
@@ -124,9 +122,7 @@ public class DevopsIngressController {
             @Encrypt
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
-        return Optional.ofNullable(devopsIngressService.queryIngressDetailById(projectId, id))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.query.by.id"));
+        return ResponseEntity.ok(devopsIngressService.queryIngressDetailById(projectId, id));
     }
 
     /**
@@ -166,9 +162,7 @@ public class DevopsIngressController {
             @ApiParam(value = "环境id", required = true)
             @Encrypt
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsIngressService.checkName(envId, name))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.ingress.check"));
+        return ResponseEntity.ok(devopsIngressService.checkName(envId, name));
     }
 
     /**
@@ -197,9 +191,7 @@ public class DevopsIngressController {
             @Encrypt
             @ApiParam(value = "ingress ID")
             @RequestParam(value = "id", required = false) Long id) {
-        return Optional.ofNullable(devopsIngressService.checkDomainAndPath(envId, domain, path, id))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.domain.name.check"));
+        return ResponseEntity.ok(devopsIngressService.checkDomainAndPath(envId, domain, path, id));
     }
 
 
@@ -229,8 +221,6 @@ public class DevopsIngressController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsIngressService.pageByEnv(projectId, envId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appServiceInstance.query"));
+        return ResponseEntity.ok(devopsIngressService.pageByEnv(projectId, envId, pageable, params));
     }
 }

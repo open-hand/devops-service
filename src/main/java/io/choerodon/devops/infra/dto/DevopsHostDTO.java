@@ -7,6 +7,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.enums.HostAuthType;
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -24,6 +25,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_host")
 public class DevopsHostDTO extends AuditDomain {
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 

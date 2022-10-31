@@ -90,7 +90,7 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
             DevopsEnvUserPermissionDTO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDTO(envId, userId);
             devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
             if (devopsEnvUserPermissionDO == null) {
-                throw new CommonException("error.env.user.permission.get");
+                throw new CommonException("devops.env.user.permission.get");
             }
         }
     }
@@ -115,18 +115,13 @@ public class DevopsEnvUserPermissionServiceImpl implements DevopsEnvUserPermissi
     @Override
     public void baseCreate(DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO) {
         if (devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDTO) != 1) {
-            throw new CommonException("error.insert.host.user.permission");
+            throw new CommonException("devops.insert.host.user.permission");
         }
     }
 
     @Override
     public List<DevopsEnvUserPermissionDTO> baseListByEnvId(Long envId) {
         return devopsEnvUserPermissionMapper.listByEnvId(envId);
-    }
-
-    @Override
-    public List<DevopsEnvUserPermissionDTO> baseListAll(Long envId) {
-        return devopsEnvUserPermissionMapper.listAll(envId);
     }
 
     @Override

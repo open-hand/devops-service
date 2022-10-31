@@ -11,7 +11,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
 import io.choerodon.devops.infra.constant.GitOpsConstants;
-import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
@@ -155,15 +154,6 @@ public class GitlabCiUtil {
         return result;
     }
 
-    /**
-     * 获取默认的sonar命令
-     *
-     * @return 命令
-     */
-    public static String getDefaultSonarCommand(Boolean skipTests) {
-        return String.format(DEFAULT_SONAR_TEMPLATE, skipTests);
-    }
-
     public static String getDefaultSonarScannerCommand(String sources) {
         return String.format(DEFAULT_SONAR_SCANNNER_TEMPLATE, sources);
     }
@@ -201,19 +191,6 @@ public class GitlabCiUtil {
     }
 
     /**
-     * 生成用于发布jar包的命令
-     *
-     * @param serverId 用户认证信息在settings文件的id
-     * @param repoUrl  maven仓库地址
-     * @return shell命令
-     */
-    public static String deployJar(String serverId, String repoUrl) {
-        // IDEA建议直接字符串拼接而不是StringBuilder
-        // 结果形如: mvn deploy -DaltDeploymentRepository=local-snapshot::default::http://localhost:8081/repository/test-snapshot/ -s settings.xml
-        return "mvn deploy -DaltDeploymentRepository=" + serverId + "::default::" + repoUrl + " -s settings.xml";
-    }
-
-    /**
      * 根据参数生成获取相应maven settings文件到本地的命令
      *
      * @return String  shell命令
@@ -221,42 +198,6 @@ public class GitlabCiUtil {
     public static String downloadMavenSettings(Long projectId, Long mvnSettingsId) {
         String rawCommand = "downloadSettingsFileByUId %s %s";
         return String.format(rawCommand, projectId, mvnSettingsId);
-    }
-
-    /**
-     * 生成docker构建需要的脚本
-     *
-     * @param skipTlsVerify 是否跳过证书校验
-     */
-    public static List<String> generateDockerScripts(Long projectId,
-                                                     DevopsCiDockerBuildConfigDTO devopsCiDockerBuildConfigDTO,
-                                                     boolean skipTlsVerify,
-                                                     boolean imageScan,
-                                                     Long jobId) {
-
-        String dockerBuildContextDir = devopsCiDockerBuildConfigDTO.getDockerContextDir();
-        String dockerFilePath = devopsCiDockerBuildConfigDTO.getDockerFilePath();
-
-        List<String> commands = new ArrayList<>();
-        // 如果没有配置镜像仓库，镜像默认推送到应用服务关联的制品库,配置了则推送到指定仓库
-        if (devopsCiDockerBuildConfigDTO.getRepoId() != null
-                && org.apache.commons.lang3.StringUtils.isNotBlank(devopsCiDockerBuildConfigDTO.getRepoType())) {
-            String cmd = "rewrite_image_info %s %s %s";
-            commands.add(String.format(cmd, projectId, devopsCiDockerBuildConfigDTO.getRepoType(), devopsCiDockerBuildConfigDTO.getRepoId()));
-        }
-
-        String rawCommand = "kaniko_build %s %s %s";
-
-        commands.add(String.format(rawCommand, skipTlsVerify ? "--skip-tls-verify=true " : "--skip-tls-verify=false ", dockerBuildContextDir, dockerFilePath));
-        //kaniko推镜像成功后可以执行trivy  这里是将镜像扫描的结果保存为json文件 以commmit_tag作为文件的名字 这个文件存在于runner的 /builds/orgCode-projectCode/appCode下，runner的pod停掉以后会自动删除
-        if (imageScan) {
-            String resolveCommond = "trivyScanImage %s";
-            commands.add(String.format(resolveCommond, jobId));
-        }
-
-        commands.add("skopeo_copy");
-        commands.add("saveImageMetadata");
-        return commands;
     }
 
     /**

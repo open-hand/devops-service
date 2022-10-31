@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -39,8 +42,7 @@ import io.choerodon.devops.infra.util.*;
 public class PolarisScanningServiceImpl implements PolarisScanningService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PolarisScanningServiceImpl.class);
 
-    private static final String ERROR_ENV_ID_NOT_EXIST = "error.env.id.not.exist";
-    private static final String ERROR_PROJECT_NOT_FOUND = "error.project.not.found";
+    private static final String ERROR_PROJECT_NOT_FOUND = "devops.project.not.found";
 
     /**
      * polaris扫描的超时时间
@@ -90,7 +92,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     @Override
     public DevopsPolarisRecordRespVO queryRecordByScopeAndScopeId(Long projectId, String scope, Long scopeId) {
         PolarisScopeType scopeType = PolarisScopeType.forValue(scope);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         if (projectDTO == null) {
             throw new CommonException(ERROR_PROJECT_NOT_FOUND);
         }
@@ -103,7 +105,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         if (PolarisScopeType.ENV == scopeType) {
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(scopeId);
             if (devopsEnvironmentDTO == null) {
-                throw new CommonException(ERROR_ENV_ID_NOT_EXIST, scopeId);
+                throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, scopeId);
             }
             devopsEnvUserPermissionService.checkEnvDeployPermission(DetailsHelper.getUserDetails().getUserId(), scopeId);
         } else {
@@ -181,7 +183,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public String queryEnvPolarisResult(Long projectId, Long envId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
 
         // 校验用户权限
@@ -202,9 +204,9 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         LOGGER.info("Scanning env {}", envId);
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
         if (devopsEnvironmentDTO == null) {
-            throw new CommonException(ERROR_ENV_ID_NOT_EXIST, envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvironmentDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         Long clusterId = devopsEnvironmentDTO.getClusterId();
 
@@ -227,7 +229,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         LOGGER.info("scanning cluster  {}", clusterId);
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         // 校验项目是否拥有集群权限
@@ -235,7 +237,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
             List<DevopsClusterProPermissionDTO> devopsClusterProPermissionDTOS = devopsClusterProPermissionService.baseListByClusterId(clusterId);
             if (CollectionUtils.isEmpty(devopsClusterProPermissionDTOS)
                     || devopsClusterProPermissionDTOS.stream().map(DevopsClusterProPermissionDTO::getProjectId).noneMatch(v -> v.equals(projectId))) {
-                throw new CommonException(MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+                throw new CommonException(MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
             }
         }
         // 校验集群是否连接
@@ -253,7 +255,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public DevopsPolarisSummaryVO clusterPolarisSummary(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
         DevopsPolarisRecordDTO devopsPolarisRecordDTO = queryRecordByScopeIdAndScope(clusterId, PolarisScopeType.CLUSTER.getValue());
@@ -286,7 +288,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
     public ClusterPolarisEnvDetailsVO clusterPolarisEnvDetail(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(clusterId);
         if (devopsClusterDTO == null || !Objects.equals(devopsClusterDTO.getProjectId(), projectId)) {
-            throw new CommonException("error.cluster.not.exist", clusterId);
+            throw new CommonException(DEVOPS_CLUSTER_NOT_EXIST, clusterId);
         }
 
 
@@ -429,7 +431,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
             // 上一条纪录处理中时不允许再次扫描
             if (PolarisScanningStatus.OPERATING.getStatus().equals(existedRecord.getStatus())) {
-                throw new CommonException("error.polaris.scanning.operating");
+                throw new CommonException("devops.polaris.scanning.operating");
             }
 
             // 更新扫描纪录前先清除上一次扫描相关的数据
@@ -496,6 +498,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
 
         // 处理record信息
         LOGGER.info("Polaris: auditTime: {}", polarisScanResultVO.getAuditData().getAuditTime());
+        recordDTO.setKubernetesVersion(polarisScanResultVO.getAuditData().getClusterInfo().getVersion());
         recordDTO.setLastScanDateTime(polarisScanResultVO.getAuditData().getAuditTime());
         recordDTO.setSuccesses(summaryVO.getSuccesses());
         recordDTO.setWarnings(summaryVO.getWarnings());
@@ -896,7 +899,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         polarisNamespaceResultDTOS.forEach(i -> {
             detailDTO.setId(null);
             detailDTO.setDetail(i.getDetail());
-            MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "error.insert.polaris.namespace.detail");
+            MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "devops.insert.polaris.namespace.detail");
             i.setDetailId(detailDTO.getId());
         });
         devopsPolarisNamespaceResultMapper.batchInsert(polarisNamespaceResultDTOS);
@@ -917,7 +920,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
         categoryResultDTOList.forEach(i -> {
             detailDTO.setId(null);
             detailDTO.setDetail(i.getDetail());
-            MapperUtil.resultJudgedInsertSelective(devopsPolarisCategoryDetailMapper, detailDTO, "error.insert.polaris.category.detail");
+            MapperUtil.resultJudgedInsertSelective(devopsPolarisCategoryDetailMapper, detailDTO, "devops.insert.polaris.category.detail");
             i.setDetailId(detailDTO.getId());
         });
         devopsPolarisCategoryResultMapper.batchInsert(categoryResultDTOList);
@@ -1040,7 +1043,7 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      * @return 插入的纪录
      */
     private DevopsPolarisRecordDTO checkedInsert(DevopsPolarisRecordDTO devopsPolarisRecordDTO) {
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "error.insert.polaris.record");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "devops.insert.polaris.record");
     }
 
     /**
@@ -1050,15 +1053,15 @@ public class PolarisScanningServiceImpl implements PolarisScanningService {
      */
     private void checkedUpdate(DevopsPolarisRecordDTO devopsPolarisRecordDTO) {
         Objects.requireNonNull(devopsPolarisRecordDTO.getId());
-        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "error.update.polaris.record");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(devopsPolarisRecordMapper, devopsPolarisRecordDTO, "devops.update.polaris.record");
     }
 
     private DevopsPolarisNamespaceDetailDTO checkedInsertNamespaceDetail(DevopsPolarisNamespaceDetailDTO detailDTO) {
         Objects.requireNonNull(detailDTO.getDetail());
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "error.insert.polaris.namespace.detail");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceDetailMapper, detailDTO, "devops.insert.polaris.namespace.detail");
     }
 
     private DevopsPolarisNamespaceResultDTO checkedInsertNamespaceResult(DevopsPolarisNamespaceResultDTO resultDTO) {
-        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceResultMapper, resultDTO, "error.insert.polaris.namespace.record");
+        return MapperUtil.resultJudgedInsertSelective(devopsPolarisNamespaceResultMapper, resultDTO, "devops.insert.polaris.namespace.record");
     }
 }

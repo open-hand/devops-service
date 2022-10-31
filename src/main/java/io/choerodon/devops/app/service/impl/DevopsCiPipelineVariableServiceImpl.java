@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiPipelineVariableService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineVariableMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -20,6 +21,9 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class DevopsCiPipelineVariableServiceImpl implements DevopsCiPipelineVariableService {
+
+    private static final String DEVOPS_SAVE_PIPELINE_VARIABLE_FAILED = "devops.save.pipeline.variable.failed";
+
     @Autowired
     private DevopsCiPipelineVariableMapper devopsCiPipelineVariableMapper;
 
@@ -29,13 +33,13 @@ public class DevopsCiPipelineVariableServiceImpl implements DevopsCiPipelineVari
     public void baseCreate(DevopsCiPipelineVariableDTO devopsCiPipelineVariableDTO) {
         MapperUtil.resultJudgedInsertSelective(devopsCiPipelineVariableMapper,
                 devopsCiPipelineVariableDTO,
-                "error.save.pipeline.variable.failed");
+                DEVOPS_SAVE_PIPELINE_VARIABLE_FAILED);
     }
 
     @Override
     @Transactional
     public void deleteByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, "error.pipeline.id.is.null");
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         DevopsCiPipelineVariableDTO devopsCiPipelineVariableDTO = new DevopsCiPipelineVariableDTO();
         devopsCiPipelineVariableDTO.setDevopsPipelineId(pipelineId);
@@ -44,7 +48,7 @@ public class DevopsCiPipelineVariableServiceImpl implements DevopsCiPipelineVari
 
     @Override
     public List<DevopsCiPipelineVariableDTO> listByPipelineId(Long pipelineId) {
-        Assert.notNull(pipelineId, "error.pipeline.id.is.null");
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         DevopsCiPipelineVariableDTO devopsCiPipelineVariableDTO = new DevopsCiPipelineVariableDTO();
         devopsCiPipelineVariableDTO.setDevopsPipelineId(pipelineId);

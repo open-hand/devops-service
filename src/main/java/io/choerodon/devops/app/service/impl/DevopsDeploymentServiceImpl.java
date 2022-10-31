@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2Deployment;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -93,7 +93,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     public void checkExist(Long envId, String name) {
         if (devopsDeploymentMapper.selectCountByEnvIdAndName(envId, name) != 0) {
-            throw new CommonException("error.workload.exist", "Deployment", name);
+            throw new CommonException("devops.workload.exist", "Deployment", name);
         }
     }
 
@@ -111,7 +111,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentMapper.selectByPrimaryKey(devopsDeploymentDTOToUpdate.getId());
             devopsDeploymentDTOToUpdate.setObjectVersionNumber(devopsDeploymentDTO.getObjectVersionNumber());
         }
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, devopsDeploymentDTOToUpdate, "error.deployment.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeploymentMapper, devopsDeploymentDTOToUpdate, "devops.deployment.update");
     }
 
     @Override
@@ -191,9 +191,9 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
             DeploymentInfoVO deploymentVO = ConvertUtils.convertObject(v, DeploymentInfoVO.class);
             if (detailDTOMap.get(v.getResourceDetailId()) != null) {
                 // 参考实例详情查询逻辑
-                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                V1Deployment v1beta2Deployment = json.deserialize(
                         detailDTOMap.get(v.getResourceDetailId()).getMessage(),
-                        V1beta2Deployment.class);
+                        V1Deployment.class);
                 deploymentVO.setDesired(TypeUtil.objToLong(v1beta2Deployment.getSpec().getReplicas()));
                 deploymentVO.setCurrent(TypeUtil.objToLong(v1beta2Deployment.getStatus().getReplicas()));
                 deploymentVO.setUpToDate(TypeUtil.objToLong(v1beta2Deployment.getStatus().getUpdatedReplicas()));
@@ -227,7 +227,7 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     @Transactional(propagation = Propagation.NESTED)
     public void saveOrUpdateChartResource(String detailsJson, AppServiceInstanceDTO appServiceInstanceDTO) {
-        V1beta2Deployment v1beta2Deployment = json.deserialize(detailsJson, V1beta2Deployment.class);
+        V1Deployment v1beta2Deployment = json.deserialize(detailsJson, V1Deployment.class);
 
         DevopsDeploymentDTO oldDevopsDeploymentDTO = baseQueryByEnvIdAndName(appServiceInstanceDTO.getEnvId(), v1beta2Deployment.getMetadata().getName());
         if (oldDevopsDeploymentDTO != null) {
@@ -253,8 +253,8 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_INSTANCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_INSTANCE_NAME_IS_NULL);
         DevopsDeploymentDTO deploymentDTO = new DevopsDeploymentDTO();
         deploymentDTO.setName(name);
         deploymentDTO.setEnvId(envId);

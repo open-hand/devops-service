@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.WorkflowCode.*;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -18,25 +20,25 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
 
     @Override
     public ResponseEntity<String> create(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        throw new CommonException("error.workflow.create");
+        throw new CommonException(DEVOPS_WORKFLOW_CREATE);
     }
     @Override
     public ResponseEntity<Boolean> approveUserTask(Long projectId, String businessKey) {
-        throw new CommonException("error.workflow.approve");
+        throw new CommonException(DEVOPS_WORKFLOW_APPROVE);
     }
 
     @Override
     public ResponseEntity stopInstance(Long projectId, String businessKey) {
-        throw new CommonException("error.workflow.stop");
+        throw new CommonException(DEVOPS_WORKFLOW_STOP);
     }
 
     @Override
     public ResponseEntity<String> createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-        throw new CommonException("error.workflow.create");
+        throw new CommonException(DEVOPS_WORKFLOW_CREATE);
     }
 
     @Override
     public ResponseEntity<String> createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
-        throw new CommonException("error.hzero.deploy.create");
+        throw new CommonException("devops.hzero.deploy.create");
     }
 }

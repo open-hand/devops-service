@@ -79,8 +79,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHostAppServiceImpl.class);
 
-    private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
-    private static final String ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST = "error.host.instance.kill.command.exist";
+    private static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "devops.update.java.instance.failed";
+    private static final String ERROR_HOST_INSTANCE_KILL_COMMAND_EXIST = "devops.host.instance.kill.command.exist";
 
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
@@ -202,7 +202,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public List<DevopsHostAppDTO> listByHostId(Long hostId) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
+        Assert.notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
         return devopsHostAppMapper.listByHostId(hostId);
     }
 
@@ -225,8 +225,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public DevopsHostAppDTO queryByHostIdAndCode(Long hostId, String code) {
-        Assert.notNull(hostId, ResourceCheckConstant.ERROR_HOST_ID_IS_NULL);
-        Assert.notNull(code, ResourceCheckConstant.ERROR_JAR_NAME_IS_NULL);
+        Assert.notNull(hostId, ResourceCheckConstant.DEVOPS_HOST_ID_IS_NULL);
+        Assert.notNull(code, ResourceCheckConstant.DEVOPS_JAR_NAME_IS_NULL);
         DevopsHostAppDTO devopsHostAppDTO = new DevopsHostAppDTO(hostId, code);
         return devopsHostAppMapper.selectOne(devopsHostAppDTO);
     }
@@ -322,7 +322,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         // 表示中间件，需要查询额外字段
         if (RdupmTypeEnum.MIDDLEWARE.value().equals(devopsHostAppVO.getRdupmType())) {
-            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getInstanceId());
+            DevopsMiddlewareDTO devopsMiddlewareDTO = devopsMiddlewareService.queryByInstanceId(devopsHostAppVO.getId());
             devopsHostAppVO.setMiddlewareMode(DevopsMiddlewareServiceImpl.MODE_MAP.get(devopsMiddlewareDTO.getMode()));
             devopsHostAppVO.setMiddlewareVersion(devopsMiddlewareDTO.getVersion());
         }
@@ -339,6 +339,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setGroupId(devopsHostAppInstanceDTO.getGroupId());
                 devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                 devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
+                devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
             }
 
         }
@@ -395,13 +396,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
         if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
-            throw new CommonException("error.host.app.code.exist");
+            throw new CommonException("devops.host.app.code.exist");
         }
     }
 
     public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
         if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
-            throw new CommonException("error.host.app.name.exist");
+            throw new CommonException("devops.host.app.name.exist");
         }
     }
 
@@ -420,7 +421,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     public void deleteById(Long projectId, Long hostId, Long appId) {
         // 校验应用是否关联流水线，是则抛出异常，不能删除
         if (queryPipelineReferenceHostApp(projectId, appId) != null) {
-            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
         // 校验主机是否处于连接状态，未连接则抛出异常，不能删除
         hostConnectionHandler.checkHostConnection(hostId);
@@ -464,6 +465,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsDockerInstanceDTO.setAppId(appId);
             List<DevopsDockerInstanceDTO> devopsDockerInstanceDTOS = devopsDockerInstanceMapper.select(devopsDockerInstanceDTO);
             if (CollectionUtils.isEmpty(devopsDockerInstanceDTOS)) {
+                devopsHostAppMapper.deleteByPrimaryKey(appId);
                 return;
             }
             DevopsDockerInstanceDTO dockerInstanceDTO = devopsDockerInstanceDTOS.get(0);
@@ -615,7 +617,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         Long hostId = customDeployVO.getHostId();
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(hostId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(customDeployVO.getSourceType());
@@ -734,7 +736,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         // 校验主机已连接
         hostConnectionHandler.checkHostConnection(devopsHostDTO.getId());
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         DeploySourceVO deploySourceVO = new DeploySourceVO();
         deploySourceVO.setType(jarDeployVO.getSourceType());
@@ -753,7 +755,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(jarDeployVO.getMarketDeployObjectInfoVO().getMktDeployObjectId()));
             JarReleaseConfigVO jarReleaseConfigVO = JsonHelper.unmarshalByJackson(marketServiceDeployObjectVO.getMarketJarLocation(), JarReleaseConfigVO.class);
             if (Objects.isNull(marketServiceDeployObjectVO.getMarketMavenConfigVO())) {
-                throw new CommonException("error.maven.deploy.object.not.exist");
+                throw new CommonException("devops.maven.deploy.object.not.exist");
             }
 
             deployObjectName = marketServiceDeployObjectVO.getMarketServiceName();

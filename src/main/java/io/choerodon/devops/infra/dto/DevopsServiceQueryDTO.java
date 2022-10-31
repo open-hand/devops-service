@@ -35,6 +35,15 @@ public class DevopsServiceQueryDTO extends AuditDomain {
     private Long targetAppServiceId;
     private Long targetDeploymentId;
     private Long instanceId;
+    private String annotations;
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
+    }
 
     public Long getInstanceId() {
         return instanceId;

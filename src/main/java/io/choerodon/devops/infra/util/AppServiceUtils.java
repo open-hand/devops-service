@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
+
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +21,7 @@ import io.choerodon.devops.infra.mapper.AppServiceMapper;
  */
 @Component
 public class AppServiceUtils {
-    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "error.project.app.svc.num.max";
+    private static final String ERROR_PROJECT_APP_SVC_NUM_MAX = "devops.project.app.svc.num.max";
 
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
@@ -58,7 +61,7 @@ public class AppServiceUtils {
      */
     public void checkName(Long projectId, String name) {
         if (!isNameUnique(projectId, name)) {
-            throw new CommonException("error.name.exist");
+            throw new CommonException(DEVOPS_NAME_EXIST);
         }
     }
 
@@ -70,7 +73,7 @@ public class AppServiceUtils {
      */
     public void checkCode(Long projectId, String code) {
         if (!isCodeUnique(projectId, code)) {
-            throw new CommonException("error.code.exist");
+            throw new CommonException(DEVOPS_CODE_EXIST);
         }
     }
 
@@ -106,7 +109,7 @@ public class AppServiceUtils {
 
     public void checkCodeExist(String appCode) {
         if (!StringUtils.hasText(appCode)) {
-            throw new CommonException("error.code.is.null");
+            throw new CommonException("devops.app.code.notExist");
         }
     }
 }

@@ -20,7 +20,7 @@ public class HzeroMessageClientOperator {
     public MessageSettingVO getMessageSettingVO(String notifyType, Long projectId, String messageCode) {
         MessageSettingVO messageSettingVO = hzeroMessageClient.queryByEnvIdAndEventNameAndProjectIdAndCode(notifyType, projectId, messageCode, null, null);
         if (messageSettingVO == null) {
-            throw new CommonException("error.get.message.setting");
+            throw new CommonException("devops.get.message.setting");
         }
         return messageSettingVO;
     }

@@ -1,5 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsEnvGroupValidator;
 import io.choerodon.devops.api.vo.DevopsEnvGroupVO;
@@ -11,14 +20,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import java.util.List;
 
 /**
  * Creator: Runge
@@ -49,7 +50,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     @Override
     public DevopsEnvGroupVO update(DevopsEnvGroupVO devopsEnvGroupVO, Long projectId) {
         DevopsEnvGroupDTO devopsEnvGroupDTOToCheck = devopsEnvGroupMapper.selectByPrimaryKey(devopsEnvGroupVO.getId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTOToCheck.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTOToCheck.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupVO.getId(), devopsEnvGroupVO.getName(), projectId);
         DevopsEnvGroupDTO devopsEnvGroupDTO = ConvertUtils.convertObject(devopsEnvGroupVO, DevopsEnvGroupDTO.class);
         devopsEnvGroupDTO.setProjectId(projectId);
@@ -76,7 +77,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             devopsEnvGroupDTO.setId(groupId);
             devopsEnvGroupDTO.setProjectId(projectId);
             if (devopsEnvGroupMapper.selectOne(devopsEnvGroupDTO) == null) {
-                throw new CommonException("error.group.id.project.id.not.match", projectId, groupId);
+                throw new CommonException("devops.group.id.project.id.not.match", projectId, groupId);
             }
         }
     }
@@ -90,7 +91,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             return;
         }
 
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsEnvGroupDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         baseDelete(id);
         //删除环境组，将原环境组内所有环境的env_group_id置为null
@@ -99,7 +100,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
 
     @Override
     public DevopsEnvGroupDTO baseCreate(DevopsEnvGroupDTO devopsEnvGroupDTO) {
-        return MapperUtil.resultJudgedInsert(devopsEnvGroupMapper, devopsEnvGroupDTO, "error.insert.env.group");
+        return MapperUtil.resultJudgedInsert(devopsEnvGroupMapper, devopsEnvGroupDTO, "devops.insert.env.group");
     }
 
     @Override
@@ -133,11 +134,6 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
             updateCheck = devopsEnvGroupDOS.size() == 1 && id.equals(devopsEnvGroupDOS.get(0).getId());
         }
         return devopsEnvGroupDOS.isEmpty() || updateCheck;
-    }
-
-    @Override
-    public Boolean baseCheckUniqueInProject(String name, Long projectId) {
-        return baseCheckUniqueInProject(null, name, projectId);
     }
 
     @Override

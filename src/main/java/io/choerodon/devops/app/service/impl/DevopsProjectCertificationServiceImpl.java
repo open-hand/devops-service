@@ -43,7 +43,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    private static final String ERROR_CERTIFICATION_NOT_EXIST = "error.certification.not.exist";
+    private static final String ERROR_CERTIFICATION_NOT_EXIST = "devops.certification.not.exist";
 
     private final Gson gson = new Gson();
     @Autowired
@@ -68,7 +68,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         }
 
         if (certificationDTO.getProjectId() == null) {
-            throw new CommonException("error.not.project.certification", update.getCertificationId());
+            throw new CommonException("devops.not.project.certification", update.getCertificationId());
         }
 
         if (certificationDTO.getSkipCheckProjectPermission()) {
@@ -124,12 +124,12 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             // 如果不搜索，在数据库中进行分页
             Page<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.doPage(pageable, () -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
             return ConvertUtils.convertPage(relationPage, permission -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
             });
         } else {
             // 如果要搜索，需要手动在程序内分页
-            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -176,7 +176,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         ProjectCertificationVO projectCertificationVO = ConvertUtils.convertObject(createUpdateVO, ProjectCertificationVO.class);
         projectCertificationVO.setId(KeyDecryptHelper.decryptValue(createUpdateVO.getId()));
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, organizationDTO.getTenantNum(), FILE_SEPARATOR, GenerateUUID.generateUUID().substring(0, 5));
         String certFileName;
@@ -253,7 +253,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             paramList = Optional.ofNullable((List) TypeUtil.cast(maps.get(TypeUtil.PARAMS))).orElse(new ArrayList<>());
         }
         //查询出该项目所属组织下的所有项目
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(iamProjectDTO.getOrganizationId());
         List<ProjectDTO> projectDTOList = baseServiceClientOperator.listIamProjectByOrgId(organizationDTO.getTenantId(),
                 searchParamMap.get("name"),
@@ -273,7 +273,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
                 .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
-            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectDTO selectedProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(selectedProjectDTO.getId(), selectedProjectDTO.getName(), selectedProjectDTO.getCode());
             if (!nonRelatedMembers.isEmpty()) {
                 nonRelatedMembers.remove(projectReqVO);
@@ -292,14 +292,14 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
         if (certificationDTO == null) {
             return;
         }
-        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(certificationDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<CertificationDTO> certificationDTOS = certificationService.baseListByOrgCertId(certId);
         if (certificationDTOS.isEmpty()) {
             devopsCertificationProRelationshipService.baseDeleteByCertificationId(certId);
             certificationService.baseDeleteById(certId);
         } else {
-            throw new CommonException("error.cert.related");
+            throw new CommonException("devops.cert.related");
         }
     }
 

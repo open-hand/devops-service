@@ -58,9 +58,7 @@ public class DevopsPvcController {
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsPvcService.pageByOptions(projectId, envId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pvc.page"));
+        return ResponseEntity.ok(devopsPvcService.pageByOptions(projectId, envId, pageable, params));
     }
 
     @PostMapping
@@ -72,9 +70,7 @@ public class DevopsPvcController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "PVC信息", required = true)
             @RequestBody @Valid DevopsPvcReqVO devopsPvcReqVO) {
-        return Optional.ofNullable(devopsPvcService.create(projectId, devopsPvcReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pvc.create"));
+        return ResponseEntity.ok(devopsPvcService.create(projectId, devopsPvcReqVO));
     }
 
     /**
@@ -97,9 +93,7 @@ public class DevopsPvcController {
             @Encrypt
             @ApiParam(value = "PVC id", required = true)
             @PathVariable(value = "pvc_id") Long pvcId) {
-        return Optional.of(devopsPvcService.delete(projectId, envId, pvcId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pvc.delete"));
+        return ResponseEntity.ok(devopsPvcService.delete(projectId, envId, pvcId));
     }
 
     /**

@@ -49,9 +49,7 @@ public class DevopsEnvAppServiceController {
             @RequestBody DevopsEnvAppServiceVO devopsEnvAppServiceVO) {
         validator.checkEnvIdExist(devopsEnvAppServiceVO.getEnvId());
         validator.checkAppIdsExist(devopsEnvAppServiceVO.getAppServiceIds());
-        return Optional.ofNullable(devopsEnvApplicationService.batchCreate(projectId, devopsEnvAppServiceVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.service.create"));
+        return ResponseEntity.ok(devopsEnvApplicationService.batchCreate(projectId, devopsEnvAppServiceVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -83,9 +81,7 @@ public class DevopsEnvAppServiceController {
             @Encrypt
             @ApiParam(value = "环境id", required = true)
             @RequestParam(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvApplicationService.listAppByEnvId(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.service.query"));
+        return ResponseEntity.ok(devopsEnvApplicationService.listAppByEnvId(envId));
     }
 
     /**
@@ -105,9 +101,7 @@ public class DevopsEnvAppServiceController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(devopsEnvApplicationService.listLabelByAppAndEnvId(envId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.service.label.query"));
+        return ResponseEntity.ok(devopsEnvApplicationService.listLabelByAppAndEnvId(envId, appServiceId));
     }
 
 
@@ -128,9 +122,7 @@ public class DevopsEnvAppServiceController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @RequestParam(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(devopsEnvApplicationService.listPortByAppAndEnvId(envId, appServiceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.service.port.query"));
+        return ResponseEntity.ok(devopsEnvApplicationService.listPortByAppAndEnvId(envId, appServiceId));
     }
 
 

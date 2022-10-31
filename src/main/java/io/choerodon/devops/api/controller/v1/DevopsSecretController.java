@@ -59,9 +59,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @RequestBody @Valid SecretReqVO secretReqVO) {
         secretReqVO.setType("create");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, secretReqVO))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.create"));
+        return ResponseEntity.ok(devopsSecretService.createOrUpdate(projectId, secretReqVO));
     }
 
     /**
@@ -80,9 +78,7 @@ public class DevopsSecretController {
             @ApiParam(value = "请求体", required = true)
             @RequestBody @Valid SecretUpdateVO secretUpdateVO) {
         secretUpdateVO.setType("update");
-        return Optional.ofNullable(devopsSecretService.createOrUpdate(projectId, ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.update"));
+        return ResponseEntity.ok(devopsSecretService.createOrUpdate(projectId, ConvertUtils.convertObject(secretUpdateVO, SecretReqVO.class)));
     }
 
     /**
@@ -105,9 +101,7 @@ public class DevopsSecretController {
             @Encrypt
             @ApiParam(value = "密钥id", required = true)
             @PathVariable(value = "secret_id") Long secretId) {
-        return Optional.ofNullable(devopsSecretService.deleteSecret(projectId, envId, secretId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.delete"));
+        return ResponseEntity.ok(devopsSecretService.deleteSecret(projectId, envId, secretId));
     }
 
     /**
@@ -140,9 +134,7 @@ public class DevopsSecretController {
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsSecretService.pageByOption(envId, pageable, params, appServiceId, toDecode))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.list"));
+        return ResponseEntity.ok(devopsSecretService.pageByOption(envId, pageable, params, appServiceId, toDecode));
     }
 
     /**
@@ -163,9 +155,7 @@ public class DevopsSecretController {
             @PathVariable(value = "secret_id") Long secretId,
             @ApiParam(value = "是否解码值")
             @RequestParam(value = "to_decode", required = false, defaultValue = "false") boolean toDecode) {
-        return Optional.ofNullable(devopsSecretService.querySecret(secretId, toDecode))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.query"));
+        return ResponseEntity.ok(devopsSecretService.querySecret(secretId, toDecode));
     }
 
     /**

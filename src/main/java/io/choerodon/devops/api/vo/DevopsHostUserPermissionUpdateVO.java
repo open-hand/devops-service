@@ -11,12 +11,12 @@ import io.choerodon.devops.infra.enums.DevopsHostUserPermissionLabelEnums;
 public class DevopsHostUserPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("主机id / 必需")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long hostId;
 
     @Encrypt
     @ApiModelProperty("要添加权限的用户id / 必需")
-    @NotNull(message = "error.user.ids.null")
+    @NotNull(message = "{devops.user.ids.null}")
     private List<Long> userIds;
 
     /**

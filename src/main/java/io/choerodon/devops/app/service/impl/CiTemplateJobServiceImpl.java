@@ -19,6 +19,7 @@ import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHa
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -54,7 +55,7 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
 
     @Override
     public List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId) {
-        Assert.notNull(stageId, "error.stage.id.is.null");
+        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
 
         List<CiTemplateJobDTO> ciTemplateJobDTOList = ciTemplateJobmapper.listByStageId(stageId);
 
@@ -69,8 +70,8 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
 
     @Override
     public List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
-        List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobmapper.listByTenantIdAndGroupId(projectDTO.getOrganizationId(), groupId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobmapper.listByTenantIdAndGroupId(projectId, projectDTO.getOrganizationId(), groupId);
 
         if (CollectionUtils.isEmpty(templateJobDTOS)) {
             return new ArrayList<>();

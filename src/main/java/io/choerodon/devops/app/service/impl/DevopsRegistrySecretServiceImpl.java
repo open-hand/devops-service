@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -36,7 +35,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
     @Override
     public DevopsRegistrySecretDTO baseCreate(DevopsRegistrySecretDTO devopsRegistrySecretDTO) {
         if (devopsRegistrySecretMapper.insert(devopsRegistrySecretDTO) != 1) {
-            throw new CommonException("error.registry.secret.create.error");
+            throw new CommonException("devops.registry.secret.create.error");
         }
         return devopsRegistrySecretDTO;
     }
@@ -76,7 +75,7 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
         DevopsRegistrySecretDTO beforeDevopsRegistrySecretDTO = devopsRegistrySecretMapper.selectByPrimaryKey(devopsRegistrySecretDTO.getId());
         devopsRegistrySecretDTO.setObjectVersionNumber(beforeDevopsRegistrySecretDTO.getObjectVersionNumber());
         if (devopsRegistrySecretMapper.updateByPrimaryKeySelective(devopsRegistrySecretDTO) != 1) {
-            throw new CommonException("error.registry.secret.update.error");
+            throw new CommonException("devops.registry.secret.update.error");
         }
         return beforeDevopsRegistrySecretDTO;
     }
@@ -94,13 +93,6 @@ public class DevopsRegistrySecretServiceImpl implements DevopsRegistrySecretServ
                 Objects.requireNonNull(clusterId),
                 Objects.requireNonNull(namespace),
                 Objects.requireNonNull(projectId));
-    }
-
-    @Override
-    public List<DevopsRegistrySecretDTO> baseListByConfig(Long configId) {
-        DevopsRegistrySecretDTO devopsRegistrySecretDTO = new DevopsRegistrySecretDTO();
-        devopsRegistrySecretDTO.setConfigId(configId);
-        return devopsRegistrySecretMapper.select(devopsRegistrySecretDTO);
     }
 
     @Override

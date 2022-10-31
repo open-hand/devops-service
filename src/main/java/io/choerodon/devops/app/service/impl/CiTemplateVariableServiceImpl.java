@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiTemplateVariableService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiTemplateVariableDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateVariableMapper;
 
@@ -24,7 +25,7 @@ public class CiTemplateVariableServiceImpl implements CiTemplateVariableService 
 
     @Override
     public List<CiTemplateVariableDTO> listByTemplateId(Long templateId) {
-        Assert.notNull(templateId, "error.template.id.is.null");
+        Assert.notNull(templateId, PipelineCheckConstant.DEVOPS_PIPELINE_TEMPLATE_ID_IS_NULL);
 
         CiTemplateVariableDTO ciTemplateVariableDTO = new CiTemplateVariableDTO();
         ciTemplateVariableDTO.setPipelineTemplateId(templateId);

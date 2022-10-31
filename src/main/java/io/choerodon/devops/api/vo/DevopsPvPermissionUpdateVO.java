@@ -13,15 +13,15 @@ public class DevopsPvPermissionUpdateVO {
 
     @Encrypt
     @ApiModelProperty("pvId/必填")
-    @NotNull(message = "error.pv.id.null")
+    @NotNull(message = "{devops.pv.id.null}")
     private Long pvId;
 
     @ApiModelProperty("pv公开范围，指定项目id/必填，可为空数组")
-    @NotNull(message = "error.project.ids.null")
+    @NotNull(message = "{devops.project.ids.null}")
     private List<Long> projectIds;
 
     @ApiModelProperty("是否跳过项目权限校验/必填")
-    @NotNull(message = "error.skip.check.project.permission.null")
+    @NotNull(message = "{devops.skip.check.project.permission.null}")
     private Boolean skipCheckProjectPermission;
 
     @ApiModelProperty("更新了skipCheckProjectPermission字段")

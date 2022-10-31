@@ -1,13 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsCustomizeResourceContentService;
 import io.choerodon.devops.infra.dto.DevopsCustomizeResourceContentDTO;
 import io.choerodon.devops.infra.mapper.DevopsCustomizeResourceContentMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -23,7 +24,7 @@ public class DevopsCustomizeResourceContentServiceImpl implements DevopsCustomiz
     @Override
     public DevopsCustomizeResourceContentDTO baseCreate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO) {
         if (devopsCustomizeResourceContentMapper.insert(devopsCustomizeResourceContentDTO) != 1) {
-            throw new CommonException("error.customize.resource.content.insert.error");
+            throw new CommonException("devops.customize.resource.content.insert.error");
         }
         return devopsCustomizeResourceContentDTO;
     }
@@ -36,14 +37,14 @@ public class DevopsCustomizeResourceContentServiceImpl implements DevopsCustomiz
     @Override
     public void baseUpdate(DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO) {
         if (devopsCustomizeResourceContentMapper.updateByPrimaryKey(devopsCustomizeResourceContentDTO) != 1) {
-            throw new CommonException("error.customize.resource.content.update.error");
+            throw new CommonException("devops.customize.resource.content.update.error");
         }
     }
 
     @Override
     public void baseDelete(Long contentId) {
         if (devopsCustomizeResourceContentMapper.deleteByPrimaryKey(contentId) != 1) {
-            throw new CommonException("error.customize.resource.content.delete.error");
+            throw new CommonException("devops.customize.resource.content.delete.error");
         }
     }
 

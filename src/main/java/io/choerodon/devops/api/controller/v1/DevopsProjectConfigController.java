@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CheckInfoVO;
 import io.choerodon.devops.api.vo.ConfigVO;
 import io.choerodon.devops.api.vo.DefaultConfigVO;
 import io.choerodon.devops.api.vo.DevopsConfigRepVO;
@@ -65,10 +66,7 @@ public class DevopsProjectConfigController {
     public ResponseEntity<DevopsConfigRepVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryConfig(projectId, ResourceLevel.PROJECT.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
+        return ResponseEntity.ok(devopsConfigService.queryConfig(projectId, ResourceLevel.PROJECT.value()));
     }
 
 
@@ -84,10 +82,7 @@ public class DevopsProjectConfigController {
     public ResponseEntity<DefaultConfigVO> queryProjectDefaultConfig(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(
-                devopsConfigService.queryDefaultConfig(projectId, ResourceLevel.PROJECT.value()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
+        return ResponseEntity.ok(devopsConfigService.queryDefaultConfig(projectId, ResourceLevel.PROJECT.value()));
     }
 
     /**
@@ -98,14 +93,11 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @PostMapping(value = "/check_chart")
-    public ResponseEntity<Boolean> checkChart(
+    public ResponseEntity<CheckInfoVO> checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartMuseum信息", required = true)
             @RequestBody ConfigVO configVO) {
-        return Optional.ofNullable(
-                appServiceService.checkChart(configVO.getUrl(), configVO.getUserName(), configVO.getPassword()))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.connection.failed"));
+        return ResponseEntity.ok(appServiceService.checkChart(projectId, configVO.getUrl(), configVO.getUsername(), configVO.getPassword()));
     }
 }

@@ -3,8 +3,8 @@ package io.choerodon.devops.app.eventhandler.payload;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsServiceDTO;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import io.kubernetes.client.openapi.models.V1Service;
 import io.swagger.annotations.ApiModelProperty;
 
 /**

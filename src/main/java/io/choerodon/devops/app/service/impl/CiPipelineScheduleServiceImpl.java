@@ -32,6 +32,15 @@ import io.choerodon.devops.infra.util.*;
  */
 @Service
 public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService {
+
+    private static final String DEVOPS_SAVE_PIPELINE_SCHEDULE_FAILED = "devops.save.pipeline.schedule.failed";
+    private static final String DEVOPS_CI_PIPELINE_SCHEDULE_NOT_FOUND = "devops.ci.pipeline.schedule.not.found";
+    private static final String DEVOPS_TRIGGER_TYPE_INVALID = "devops.trigger.type.invalid";
+    private static final String DEVOPS_START_HOUR_OF_DAY_IS_NULL = "devops.start.hour.of.day.is.null";
+    private static final String DEVOPS_END_HOUR_OF_DAY_IS_NULL = "devops.end.hour.of.day.is.null";
+    private static final String DEVOPS_PERIOD_IS_NULL = "devops.period.is.null";
+    private static final String DEVOPS_EXECUTE_TIME_IS_NULL = "devops.executeTime.is.null";
+
     @Autowired
     private CiPipelineScheduleMapper ciPipelineScheduleMapper;
     @Autowired
@@ -97,7 +106,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         CiPipelineScheduleDTO ciPipelineScheduleDTO = ConvertUtils.convertObject(ciPipelineScheduleVO, CiPipelineScheduleDTO.class);
         ciPipelineScheduleDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
 
-        MapperUtil.resultJudgedInsertSelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO, "error.save.pipeline.schedule.failed");
+        MapperUtil.resultJudgedInsertSelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO, DEVOPS_SAVE_PIPELINE_SCHEDULE_FAILED);
         if (!CollectionUtils.isEmpty(ciPipelineScheduleVO.getVariableVOList())) {
             ciPipelineScheduleVO.getVariableVOList().forEach(variable -> {
                 CiScheduleVariableDTO ciScheduleVariableDTO = ConvertUtils.convertObject(variable, CiScheduleVariableDTO.class);
@@ -235,7 +244,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
         CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
         if (ciPipelineScheduleDTO == null) {
-            throw new CommonException("error.ci.pipeline.schedule.not.found");
+            throw new CommonException(DEVOPS_CI_PIPELINE_SCHEDULE_NOT_FOUND);
         }
 
         Long appServiceId = ciPipelineScheduleDTO.getAppServiceId();
@@ -362,7 +371,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         ciPipelineScheduleDTO1.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
         ciPipelineScheduleDTO1.setAppServiceId(null);
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO1, "error.save.pipeline.schedule.failed");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciPipelineScheduleMapper, ciPipelineScheduleDTO1, DEVOPS_SAVE_PIPELINE_SCHEDULE_FAILED);
 
         // 先删除再新建
         ciScheduleVariableService.deleteByPipelineScheduleId(ciPipelineScheduleDTO.getId());
@@ -398,7 +407,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             minute = split[1];
             hour = split[0];
         } else {
-            throw new CommonException("error.trigger.type.invalid");
+            throw new CommonException(DEVOPS_TRIGGER_TYPE_INVALID);
         }
 
 
@@ -409,20 +418,20 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     private void validate(CiPipelineScheduleVO ciPipelineScheduleVO) {
         if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(ciPipelineScheduleVO.getTriggerType())) {
             if (ciPipelineScheduleVO.getStartHourOfDay() == null) {
-                throw new CommonException("error.start.hour.of.day.is.null");
+                throw new CommonException(DEVOPS_START_HOUR_OF_DAY_IS_NULL);
             }
             if (ciPipelineScheduleVO.getEndHourOfDay() == null) {
-                throw new CommonException("error.end.hour.of.day.is.null");
+                throw new CommonException(DEVOPS_END_HOUR_OF_DAY_IS_NULL);
             }
             if (ciPipelineScheduleVO.getPeriod() == null) {
-                throw new CommonException("error.period.is.null");
+                throw new CommonException(DEVOPS_PERIOD_IS_NULL);
             }
         } else if (CiPipelineScheduleTriggerTypeEnum.SINGLE.value().equals(ciPipelineScheduleVO.getTriggerType())) {
             if (ciPipelineScheduleVO.getExecuteTime() == null) {
-                throw new CommonException("error.executeTime.is.null");
+                throw new CommonException(DEVOPS_EXECUTE_TIME_IS_NULL);
             }
         } else {
-            throw new CommonException("error.trigger.type.invalid");
+            throw new CommonException(DEVOPS_TRIGGER_TYPE_INVALID);
         }
     }
 }

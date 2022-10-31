@@ -21,10 +21,10 @@ public class CustomDeployVO {
     @ApiModelProperty("部署来源")
     private String sourceType;
     @ApiModelProperty("应用名")
-    @Length(max = 128, min = 1,message = "error.host.app.name.length")
+    @Length(max = 128, min = 1, message = "devops.host.app.name.length")
     private String appName;
     @ApiModelProperty("应用编码")
-    @Length(max = 64,min=1 ,message = "error.host.app.code.length")
+    @Length(max = 64, min = 1, message = "devops.host.app.code.length")
     private String appCode;
     @ApiModelProperty("来源配置")
     private String sourceConfig;

@@ -2,7 +2,7 @@ package io.choerodon.devops.app.eventhandler.payload;
 
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsPvcDTO;
-import io.kubernetes.client.models.V1PersistentVolumeClaim;
+import io.kubernetes.client.openapi.models.V1PersistentVolumeClaim;
 
 public class PersistentVolumeClaimPayload {
     private Long projectId;

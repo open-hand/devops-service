@@ -84,7 +84,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
         devopsUserSyncRecordDTO.setType(userSyncType.getValue());
         devopsUserSyncRecordDTO.setStartTime(new Date());
         devopsUserSyncRecordDTO.setStatus(UserSyncRecordStatus.OPERATING.getValue());
-        MapperUtil.resultJudgedInsertSelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "error.insert.user.sync.record");
+        MapperUtil.resultJudgedInsertSelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "devops.insert.user.sync.record");
         return devopsUserSyncRecordMapper.selectByPrimaryKey(devopsUserSyncRecordDTO.getId());
     }
 
@@ -109,7 +109,7 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
             }
         }
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "error.update.user.sync.record");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "devops.update.user.sync.record");
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -121,6 +121,6 @@ public class DevopsUserSyncRecordServiceImpl implements DevopsUserSyncRecordServ
         devopsUserSyncRecordDTO.setEndTime(new Date());
         devopsUserSyncRecordDTO.setStatus(UserSyncRecordStatus.FINISHED.getValue());
 
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "error.update.user.sync.record");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsUserSyncRecordMapper, devopsUserSyncRecordDTO, "devops.update.user.sync.record");
     }
 }

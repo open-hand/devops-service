@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_GROUP_ID_SELECT;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GROUP_NOT_SYNC;
+
 import java.util.*;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONArray;
@@ -35,7 +37,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class DevopsProjectServiceImpl implements DevopsProjectService {
-    private Logger logger = LoggerFactory.getLogger(DevopsProjectServiceImpl.class);
+    private static final String DEVOPS_INSERT_PROJECT_ATTR_ERROR = "devops.insert.project.attr.error";
+    private static final String DEVOPS_PROJECT_INSERT = "devops.project.insert";
+    private static final String DEVOPS_PROJECT_UPDATE = "devops.project.update";
+    private Logger LOGGER = LoggerFactory.getLogger(DevopsProjectServiceImpl.class);
 
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
@@ -48,10 +53,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         devopsProjectDTO.setIamProjectId(projectId);
         devopsProjectDTO = devopsProjectMapper.selectOne(devopsProjectDTO);
         if (devopsProjectDTO == null) {
-            throw new CommonException("error.group.not.sync");
+            throw new CommonException(DEVOPS_GROUP_NOT_SYNC);
         }
         if (devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
-            throw new CommonException("error.gitlab.groupId.select");
+            throw new CommonException(DEVOPS_GITLAB_GROUP_ID_SELECT);
         }
         return devopsProjectDTO.getDevopsAppGroupId() != null;
     }
@@ -60,10 +65,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
     public DevopsProjectDTO baseQueryByProjectId(Long projectId) {
         DevopsProjectDTO devopsProjectDTO = queryWithoutCheck(projectId);
         if (devopsProjectDTO == null) {
-            throw new CommonException("error.group.not.sync");
+            throw new CommonException(DEVOPS_GROUP_NOT_SYNC);
         }
         if (devopsProjectDTO.getDevopsAppGroupId() == null || devopsProjectDTO.getDevopsEnvGroupId() == null) {
-            throw new CommonException("error.gitlab.groupId.select");
+            throw new CommonException(DEVOPS_GITLAB_GROUP_ID_SELECT);
         }
         return devopsProjectDTO;
     }
@@ -81,7 +86,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         // create project in db
         DevopsProjectDTO devopsProjectDTO = new DevopsProjectDTO(projectPayload.getProjectId());
         if (devopsProjectMapper.insert(devopsProjectDTO) != 1) {
-            throw new CommonException("insert project attr error");
+            throw new CommonException(DEVOPS_INSERT_PROJECT_ATTR_ERROR);
         }
     }
 
@@ -106,7 +111,7 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
 
     public void baseCreate(DevopsProjectDTO devopsProjectDTO) {
         if (devopsProjectMapper.insert(devopsProjectDTO) != 1) {
-            throw new CommonException("insert project attr error");
+            throw new CommonException(DEVOPS_INSERT_PROJECT_ATTR_ERROR);
         }
     }
 
@@ -121,10 +126,10 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
         DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
         if (oldDevopsProjectDTO == null) {
             try {
-                MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, "error.project.insert", (Object[]) null);
+                MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, DEVOPS_PROJECT_INSERT, (Object[]) null);
             } catch (Exception e) {
-                logger.info("An exception occurred when inserting into devops_project: {}", JSONObject.toJSONString(devopsProjectDTO));
-                logger.info("The exception is: ", e);
+                LOGGER.info("An exception occurred when inserting into devops_project: {}", JSONObject.toJSONString(devopsProjectDTO));
+                LOGGER.info("The exception is: ", e);
                 // 如果插入纪录失败则说明在查询纪录为null之后有别的线程插入了数据
                 // 此时对此数据再进行一次更新操作
                 oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
@@ -133,24 +138,13 @@ public class DevopsProjectServiceImpl implements DevopsProjectService {
             }
         } else {
             devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
-        }
-    }
-
-    @Override
-    public void baseUpdateByPrimaryKey(DevopsProjectDTO devopsProjectDTO) {
-        DevopsProjectDTO oldDevopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDTO);
-        if (oldDevopsProjectDTO == null) {
-            MapperUtil.resultJudgedInsertSelective(devopsProjectMapper, devopsProjectDTO, "error.project.insert", (Object[]) null);
-        } else {
-            devopsProjectDTO.setObjectVersionNumber(oldDevopsProjectDTO.getObjectVersionNumber());
-            MapperUtil.resultJudgedUpdateByPrimaryKey(devopsProjectMapper, devopsProjectDTO, "error.project.update", (Object[]) null);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsProjectMapper, devopsProjectDTO, DEVOPS_PROJECT_UPDATE, (Object[]) null);
         }
     }
 
     @Override
     public Page<ProjectReqVO> pageProjects(Long projectId, PageRequest pageable, String searchParams) {
-        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         return pageProjectsByOrganizationId(iamProjectDTO.getOrganizationId(), pageable, searchParams);
     }
 

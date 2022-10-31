@@ -21,6 +21,4 @@ public interface DevopsCdAuditRecordService {
     void save(DevopsCdAuditRecordDTO devopsCdAuditRecordDTO);
 
     DevopsCdAuditRecordDTO queryByJobRecordIdAndUserId(Long jobRecordId, Long userId);
-
-    void fixProjectId();
 }

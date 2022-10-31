@@ -30,14 +30,14 @@ public class DevopsHostConstants {
     public static final String HOST_DOCKER_PROCESS_INFO_KEY = "devops:host:%s:dockerProcess";
 
 
-    public static final String ERROR_SAVE_APP_HOST_REL_FAILED = "error.save.app.host.rel.failed";
-    public static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "error.save.java.instance.failed";
-    public static final String ERROR_SAVE_CUSTOM_INSTANCE_FAILED = "error.save.custom.instance.failed";
-    public static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "error.update.java.instance.failed";
+    public static final String ERROR_SAVE_APP_HOST_REL_FAILED = "devops.save.app.host.rel.failed";
+    public static final String ERROR_SAVE_JAVA_INSTANCE_FAILED = "devops.save.java.instance.failed";
+    public static final String ERROR_SAVE_CUSTOM_INSTANCE_FAILED = "devops.save.custom.instance.failed";
+    public static final String ERROR_UPDATE_JAVA_INSTANCE_FAILED = "devops.update.java.instance.failed";
 
-    public static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "error.save.docker.instance.failed";
+    public static final String ERROR_SAVE_DOCKER_INSTANCE_FAILED = "devops.save.docker.instance.failed";
 
-    public static final String ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED = "error.save.middleware.instance.failed";
+    public static final String ERROR_SAVE_MIDDLEWARE_INSTANCE_FAILED = "devops.save.middleware.instance.failed";
 
 
 }

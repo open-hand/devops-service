@@ -32,7 +32,6 @@ import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.infra.constant.DevopsAnsibleCommandConstants;
 import io.choerodon.devops.infra.dto.DevopsClusterNodeDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.mapper.DevopsClusterNodeMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.SshUtil;
 
@@ -46,7 +45,7 @@ import io.choerodon.devops.infra.util.SshUtil;
 @Service
 public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOperatorService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsClusterNodeOperatorServiceImpl.class);
-    private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
+    private static final String ERROR_ADD_NODE_FAILED = "devops.add.node.failed";
 
     private static final String ADD_NODE_OPERATING_FAILED_FLAG = "add:node:operating:failed:%s:Long";
     @Autowired
@@ -60,8 +59,6 @@ public class DevopsClusterNodeOperatorServiceImpl implements DevopsClusterNodeOp
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private DevopsClusterService devopsClusterService;
-    @Autowired
-    private DevopsClusterNodeMapper devopsClusterNodeMapper;
 
     @Override
     public void addNode(Long projectId, Long clusterId, String operatingId, DevopsClusterNodeVO nodeVO) {

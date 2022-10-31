@@ -45,7 +45,6 @@ public class SshUtil {
      * 默认超时时间, 10秒
      */
     private static final int DEFAULT_TIMEOUT_MILLISECONDS = 10000;
-    private static final String CAT_FILE_TEMPLATE = "cat %s";
 
 
     @Autowired
@@ -81,7 +80,7 @@ public class SshUtil {
             cmd.join(5, TimeUnit.SECONDS);
             LOGGER.info("** exit status: {}", cmd.getExitStatus());
             if (cmd.getExitStatus() != 0) {
-                throw new CommonException("error.test.connection");
+                throw new CommonException("devops.test.connection");
             }
         } catch (Exception ex) {
             LOGGER.warn("Failed to connect to host by ssh, the host is {}, port is {}, username: {}", hostIp, sshPort, username);
@@ -165,14 +164,6 @@ public class SshUtil {
         }
     }
 
-    private Boolean checkInstruction(String type, String instruction) {
-        if (type.equals("jar")) {
-            return instruction.contains("${jar}");
-        } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
-        }
-    }
-
     private static void addAuth(SSHClient ssh, String hostIp, Integer sshPort, String authType, String username, String password) throws IOException {
         ssh.addHostKeyVerifier(new PromiscuousVerifier());
         ssh.connect(hostIp, sshPort);
@@ -189,17 +180,6 @@ public class SshUtil {
             ssh.newSCPFileTransfer().upload(new FileSystemFile(file), targetFile);
         } catch (IOException e) {
             throw new CommonException(String.format("failed to upload file %s to host(%s),target path is %s,error is:%s", file, ssh.getRemoteHostname(), targetFile, e.getMessage()));
-        }
-    }
-
-    public static void closeSsh(SSHClient ssh, Session session) {
-        try {
-            if (session != null) {
-                session.close();
-            }
-            ssh.disconnect();
-        } catch (IOException e) {
-            LOGGER.error("close ssh", e);
         }
     }
 
@@ -233,66 +213,5 @@ public class SshUtil {
         String filePath = String.format(ANSIBLE_CONFIG_BASE_DIR_TEMPLATE, suffix) + SLASH + "pre-process.sh";
         FileUtil.saveDataToFile(filePath, preProcessShell);
         this.uploadFile(ssh, filePath, PRE_KUBEADM_HA_SH);
-    }
-
-    /**
-     * 执行指令
-     *
-     * @param command 指令
-     * @return true表示执行成功
-     */
-    public static boolean execForOk(SSHClient sshClient, String command) {
-        if (sshClient == null || StringUtils.isEmpty(command)) {
-            return false;
-        }
-        Session session = null;
-        try {
-            session = sshClient.startSession();
-            Session.Command cmd = session.exec(command);
-            cmd.join(DEFAULT_TIMEOUT_MILLISECONDS, TimeUnit.MILLISECONDS);
-            return isExitStatusOk(cmd.getExitStatus());
-        } catch (Exception e) {
-            return false;
-        } finally {
-            IOUtils.closeQuietly(session);
-        }
-    }
-
-
-    /**
-     * 退出码是否是ok
-     *
-     * @param exitStatus 退出码
-     * @return true表示Ok
-     */
-    public static boolean isExitStatusOk(String exitStatus) {
-        return exitStatus != null && "0".equals(exitStatus.trim());
-    }
-
-
-    /**
-     * 退出码是否是ok
-     *
-     * @param exitStatus 退出码
-     * @return true表示Ok
-     */
-    public static boolean isExitStatusOk(Integer exitStatus) {
-        return null != exitStatus && 0 == exitStatus;
-    }
-
-    /**
-     * 获取节点上指定路径文件的内容
-     */
-    public String catFile(SSHClient sshClient, String filePath) throws IOException {
-        String command = String.format(CAT_FILE_TEMPLATE, filePath);
-        try (Session session = sshClient.startSession()) {
-            Session.Command cmd = session.exec(command);
-            cmd.join(1, TimeUnit.MINUTES);
-            if (cmd.getExitStatus() == 0) {
-                return IOUtils.readFully(cmd.getInputStream()).toString();
-            } else {
-                return String.format("failed to read file %s. the error is %s .please login in server for more detail", filePath, IOUtils.readFully(cmd.getInputStream()));
-            }
-        }
     }
 }

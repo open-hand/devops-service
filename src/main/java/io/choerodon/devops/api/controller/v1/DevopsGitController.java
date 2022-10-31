@@ -58,9 +58,7 @@ public class DevopsGitController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(devopsGitService.queryUrl(projectId, appServiceId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.url.get"));
+        return ResponseEntity.ok(devopsGitService.queryUrl(projectId, appServiceId));
     }
 
     /**
@@ -166,9 +164,7 @@ public class DevopsGitController {
             @Encrypt
             @ApiParam(value = "服务id", required = true)
             @PathVariable(value = "app_service_id") Long appServiceId) {
-        return Optional.ofNullable(devopsGitService.listTags(projectId, appServiceId))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.tags.get"));
+        return ResponseEntity.ok(devopsGitService.listTags(projectId, appServiceId));
     }
 
     /**
@@ -190,9 +186,7 @@ public class DevopsGitController {
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "Tag 名称", required = true)
             @RequestParam(value = "tag_name") String tagName) {
-        return Optional.ofNullable(devopsGitService.checkTag(projectId, appServiceId, tagName))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.tag.check"));
+        return ResponseEntity.ok(devopsGitService.checkTag(projectId, appServiceId, tagName));
     }
 
     /**
@@ -361,9 +355,7 @@ public class DevopsGitController {
             @PathVariable(value = "app_service_id") Long appServiceId,
             @ApiParam(value = "分支名", required = true)
             @RequestParam(value = "branch_name") String branchName) {
-        return Optional.ofNullable(devopsGitService.queryBranch(projectId, appServiceId, branchName))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.branch.get"));
+        return ResponseEntity.ok(devopsGitService.queryBranch(projectId, appServiceId, branchName));
     }
 
     /**
@@ -483,5 +475,30 @@ public class DevopsGitController {
             @ApiParam(value = "分支名")
             @RequestParam(value = "branch_name") String branchName) {
         return ResponseEntity.ok(devopsGitService.isBranchNameUnique(projectId, appServiceId, branchName));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分支同步")
+    @PostMapping("/sync_branch")
+    public ResponseEntity<Void> syncBranch(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        devopsGitService.syncBranch(projectId, appServiceId, true);
+        return Results.success();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验分支同步")
+    @GetMapping("/check_sync_branch")
+    public ResponseEntity<Integer> checkSyncBranch(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "服务ID")
+            @PathVariable(value = "app_service_id") Long appServiceId) {
+        return Results.success(devopsGitService.syncBranch(projectId, appServiceId, false));
     }
 }

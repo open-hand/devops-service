@@ -9,15 +9,4 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
-    void devopsCiPipelineDataFix();
-
-    void pipelineDataMavenPublishFix();
-
-    /**
-     * 流水线结构调整数据修复
-     */
-    void pipelineStructureFix();
-
-    void pipelineSonarImageAndTemplateFix();
-
 }

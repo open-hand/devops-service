@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Pod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,7 @@ import org.springframework.util.StringUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ContainerVO;
-import io.choerodon.devops.api.vo.DevopsEnvPodInfoVO;
 import io.choerodon.devops.api.vo.DevopsEnvPodVO;
-import io.choerodon.devops.api.vo.PodMetricsRedisInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.KubernetesConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
@@ -44,7 +44,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private static JSON json = new JSON();
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
-    private static final String ERROR_DELETE_POD_FAILED = "error.delete.pod.failed";
+    private static final String ERROR_DELETE_POD_FAILED = "devops.delete.pod.failed";
 
     @Autowired
     private ClusterConnectionHandler clusterConnectionHandler;
@@ -110,7 +110,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     .map(container -> {
                         ContainerVO containerVO = new ContainerVO();
                         containerVO.setName(container.getName());
-                        containerVO.setReady(container.isReady());
+                        containerVO.setReady(container.getReady());
                         return containerVO;
                     })
                     .collect(Collectors.toList());
@@ -139,8 +139,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public DevopsEnvPodDTO baseQueryByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_POD_NAME_IS_NULL);
 
         DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
         devopsEnvPodDTO.setEnvId(envId);
@@ -149,22 +149,12 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     }
 
     @Override
-    public DevopsEnvPodDTO baseQueryByPod(DevopsEnvPodDTO devopsEnvPodDTO) {
-        List<DevopsEnvPodDTO> devopsEnvPodDOS =
-                devopsEnvPodMapper.select(devopsEnvPodDTO);
-        if (devopsEnvPodDOS.isEmpty()) {
-            return null;
-        }
-        return devopsEnvPodDOS.get(0);
-    }
-
-    @Override
     public void baseCreate(DevopsEnvPodDTO devopsEnvPodDTO) {
         DevopsEnvPodDTO envPodDTO = new DevopsEnvPodDTO();
         envPodDTO.setName(devopsEnvPodDTO.getName());
         envPodDTO.setNamespace(devopsEnvPodDTO.getNamespace());
         if (devopsEnvPodMapper.selectOne(envPodDTO) == null) {
-            MapperUtil.resultJudgedInsert(devopsEnvPodMapper, devopsEnvPodDTO, "error.insert.env.pod");
+            MapperUtil.resultJudgedInsert(devopsEnvPodMapper, devopsEnvPodDTO, "devops.insert.env.pod");
         }
     }
 
@@ -229,8 +219,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Override
     @Transactional
     public void baseDeleteByNameAndEnvId(String name, Long envId) {
-        Assert.notNull(name, ResourceCheckConstant.ERROR_POD_NAME_IS_NULL);
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_POD_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
 
         DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
         devopsEnvPodDTO.setEnvId(envId);
@@ -244,14 +234,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     @Override
     public void baseDeleteById(Long id) {
         devopsEnvPodMapper.deleteByPrimaryKey(id);
-    }
-
-    @Override
-    public DevopsEnvPodDTO queryByNameAndEnvName(String name, String namespace) {
-        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
-        devopsEnvPodDTO.setName(name);
-        devopsEnvPodDTO.setNamespace(namespace);
-        return devopsEnvPodMapper.selectOne(devopsEnvPodDTO);
     }
 
     private static Map<String, DevopsEnvResourceDTO> listToMap(List<DevopsEnvResourceDTO> resources) {
@@ -274,50 +256,6 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
             return one;
         }
         return one.getReversion() > theOther.getReversion() ? one : theOther;
-    }
-
-    @Override
-    public List<DevopsEnvPodInfoVO> queryEnvPodInfo(Long envId, String sort) {
-        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsEnvironmentDTO.getClusterId());
-        List<DevopsEnvPodInfoVO> devopsEnvPodInfoVOList = devopsEnvPodMapper.queryEnvPodIns(envId);
-
-        // 根据devopsEnvPodInfoVOList获取name集合，批量查询devopsEnvResourceDTO和DevopsEnvResourceDetailDTO
-        List<String> podNames = devopsEnvPodInfoVOList.stream().map(DevopsEnvPodInfoVO::getName).collect(Collectors.toList());
-        List<DevopsEnvResourceDTO> devopsEnvResourceDTOList = devopsEnvResourceService.listEnvResourceByOptions(envId, ResourceType.POD.getType(), podNames);
-        Set<Long> resourceDetailIds = devopsEnvResourceDTOList.stream().map(DevopsEnvResourceDTO::getResourceDetailId).collect(Collectors.toSet());
-        Map<String, DevopsEnvResourceDTO> devopsEnvResourceMap = listToMap(devopsEnvResourceDTOList);
-        List<DevopsEnvResourceDetailDTO> devopsEnvResourceDetailDTOS = devopsEnvResourceDetailService.listByResourceDetailsIds(resourceDetailIds);
-        Map<Long, DevopsEnvResourceDetailDTO> devopsEnvResourceDetailMap = devopsEnvResourceDetailDTOS.stream().collect(Collectors.toMap(DevopsEnvResourceDetailDTO::getId, Function.identity()));
-
-        devopsEnvPodInfoVOList.forEach(devopsEnvPodInfoVO -> {
-            PodMetricsRedisInfoVO podMetricsRedisInfoVO = agentPodService.queryLatestPodSnapshot(devopsEnvPodInfoVO.getName(), devopsEnvPodInfoVO.getNamespace(), devopsClusterDTO.getCode());
-            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceMap.get(devopsEnvPodInfoVO.getName());
-            DevopsEnvResourceDetailDTO devopsEnvResourceDetailDTO = devopsEnvResourceDetailMap.get(devopsEnvResourceDTO.getResourceDetailId());
-            V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailDTO.getMessage(), V1Pod.class);
-            devopsEnvPodInfoVO.setStatus(K8sUtil.changePodStatus(v1Pod));
-            devopsEnvPodInfoVO.setPodIp(v1Pod == null ? null : v1Pod.getStatus().getPodIP());
-            if (podMetricsRedisInfoVO != null) {
-                devopsEnvPodInfoVO.setCpuUsed(podMetricsRedisInfoVO.getCpu());
-                devopsEnvPodInfoVO.setMemoryUsed(podMetricsRedisInfoVO.getMemory());
-            }
-        });
-
-        // 根据cpu进行逆序排序，考虑为null值的情况
-        if ("cpu".equals(sort)) {
-            devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
-                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getCpuUsed, Comparator.nullsFirst(String::compareTo)).reversed())
-                    .collect(Collectors.toList());
-        }
-
-        // 默认根据memory进行逆序排序，考虑为null值的情况
-        if ("memory".equals(sort)) {
-            devopsEnvPodInfoVOList = devopsEnvPodInfoVOList.stream()
-                    .sorted(Comparator.comparing(DevopsEnvPodInfoVO::getMemoryUsed, Comparator.nullsFirst(String::compareTo)).reversed())
-                    .collect(Collectors.toList());
-        }
-
-        return devopsEnvPodInfoVOList;
     }
 
     @Override
@@ -479,7 +417,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
                     .map(container -> {
                         ContainerVO containerVO = new ContainerVO();
                         containerVO.setName(container.getName());
-                        containerVO.setReady(container.isReady());
+                        containerVO.setReady(container.getReady());
                         return containerVO;
                     })
                     .collect(Collectors.toList());

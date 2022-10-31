@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineSonarService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineSonarDTO;
@@ -24,12 +25,13 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarService {
 
-    @Autowired
-    private AppServiceService appServiceService;
+    private static final String SONAR = "sonar";
+    private static final String DEVOPS_SAVE_SONAR_INFO = "devops.save.sonar.info";
 
     @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
     private DevopsCiPipelineSonarMapper devopsCiPipelineSonarMapper;
-    private static final String SONAR = "sonar";
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
@@ -51,9 +53,9 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     @Override
     public DevopsCiPipelineSonarDTO queryByPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName) {
-        Assert.notNull(appServiceId, ResourceCheckConstant.ERROR_APP_SERVICE_ID_IS_NULL);
-        Assert.notNull(gitlabPipelineId, ResourceCheckConstant.ERROR_GITLAB_PIPELINE_ID_IS_NULL);
-        Assert.notNull(jobName, ResourceCheckConstant.ERROR_JOB_NAME_ID_IS_NULL);
+        Assert.notNull(appServiceId, ResourceCheckConstant.DEVOPS_APP_SERVICE_ID_IS_NULL);
+        Assert.notNull(gitlabPipelineId, PipelineCheckConstant.DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
+        Assert.notNull(jobName, ResourceCheckConstant.DEVOPS_JOB_NAME_ID_IS_NULL);
 
         DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO = new DevopsCiPipelineSonarDTO(appServiceId, gitlabPipelineId, jobName);
         return devopsCiPipelineSonarMapper.selectOne(devopsCiPipelineSonarDTO);
@@ -62,7 +64,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
     @Override
     @Transactional
     public void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, "error.save.sonar.info");
+        MapperUtil.resultJudgedInsertSelective(devopsCiPipelineSonarMapper, devopsCiPipelineSonarDTO, DEVOPS_SAVE_SONAR_INFO);
     }
 }
 

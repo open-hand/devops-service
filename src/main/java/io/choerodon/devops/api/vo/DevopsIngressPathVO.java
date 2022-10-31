@@ -22,7 +22,7 @@ public class DevopsIngressPathVO {
     @ApiModelProperty("网络的错误信息")
     private String serviceError;
     @ApiModelProperty("网络端口")
-    private Long servicePort;
+    private Integer servicePort;
 
 
     public String getPath() {
@@ -57,11 +57,11 @@ public class DevopsIngressPathVO {
         this.serviceStatus = serviceStatus;
     }
 
-    public Long getServicePort() {
+    public Integer getServicePort() {
         return servicePort;
     }
 
-    public void setServicePort(Long servicePort) {
+    public void setServicePort(Integer servicePort) {
         this.servicePort = servicePort;
     }
 

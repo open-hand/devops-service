@@ -44,7 +44,7 @@ public class AppServiceInstanceValidator {
 
     public static void checkCode(String code) {
         if (!isCodeValid(code)) {
-            throw new CommonException("error.app.instance.code.invalid");
+            throw new CommonException("devops.app.instance.code.invalid");
         }
     }
 
@@ -59,15 +59,15 @@ public class AppServiceInstanceValidator {
      */
     public void validateBatchDeployment(List<AppServiceDeployVO> appServiceDeployVOS) {
         if (appServiceDeployVOS.isEmpty()) {
-            throw new CommonException("error.request.instance.empty");
+            throw new CommonException("devops.request.instance.empty");
         }
         int size = appServiceDeployVOS.size();
         if (size > batchDeploymentMaxSize) {
-            throw new CommonException("error.batch.deployment.size", size);
+            throw new CommonException("devops.batch.deployment.size", size);
         }
 
         Long envId = appServiceDeployVOS.get(0).getEnvironmentId();
-        CommonExAssertUtil.assertTrue(envId != null, "error.env.id.null");
+        CommonExAssertUtil.assertTrue(envId != null, "devops.env.id.null");
         appServiceDeployVOS.forEach(ins -> ins.setEnvironmentId(envId));
 
         List<String> serviceNames = new ArrayList<>(size);
@@ -93,7 +93,7 @@ public class AppServiceInstanceValidator {
                     });
                 }
                 if (serviceNames.contains(appServiceDeployVO.getDevopsServiceReqVO().getName())) {
-                    throw new CommonException("error.service.name.duplicated.in.list", appServiceDeployVO.getDevopsServiceReqVO().getName());
+                    throw new CommonException("devops.service.name.duplicated.in.list", appServiceDeployVO.getDevopsServiceReqVO().getName());
                 }
                 serviceNames.add(appServiceDeployVO.getDevopsServiceReqVO().getName());
             }
@@ -101,7 +101,7 @@ public class AppServiceInstanceValidator {
             // 校验Ingress
             if (appServiceDeployVO.getDevopsIngressVO() != null) {
                 if (ingressNames.contains(appServiceDeployVO.getDevopsIngressVO().getName())) {
-                    throw new CommonException("error.ingress.name.duplicated.in.list", appServiceDeployVO.getDevopsIngressVO().getName());
+                    throw new CommonException("devops.ingress.name.duplicated.in.list", appServiceDeployVO.getDevopsIngressVO().getName());
                 }
                 ingressNames.add(appServiceDeployVO.getDevopsIngressVO().getName());
                 DevopsIngressValidator.checkVOForBatchDeployment(appServiceDeployVO.getDevopsIngressVO());

@@ -358,7 +358,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 refWithPipelineIds.put(key, devopsGitlabPipelineDTO.getPipelineId());
             }
         });
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //获取pipeline记录
@@ -427,7 +427,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Override
     public void baseCreate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO) {
         if (devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDTO) != 1) {
-            throw new CommonException("error.gitlab.pipeline.create");
+            throw new CommonException("devops.gitlab.pipeline.create");
         }
     }
 
@@ -442,7 +442,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void baseUpdate(DevopsGitlabPipelineDTO devopsGitlabPipelineDTO) {
         devopsGitlabPipelineDTO.setObjectVersionNumber(devopsGitlabPipelineMapper.selectByPrimaryKey(devopsGitlabPipelineDTO.getId()).getObjectVersionNumber());
         if (devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDTO) != 1) {
-            throw new CommonException("error.gitlab.pipeline.update");
+            throw new CommonException("devops.gitlab.pipeline.update");
         }
     }
 
@@ -463,11 +463,6 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public Page<DevopsGitlabPipelineDTO> basePageByApplicationId(Long appServiceId, PageRequest pageable, Date startTime, Date endTime) {
         return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () ->
                 devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appServiceId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
-    }
-
-    @Override
-    public void baseDeleteWithoutCommit() {
-        devopsGitlabPipelineMapper.deleteWithoutCommit();
     }
 
     @Override

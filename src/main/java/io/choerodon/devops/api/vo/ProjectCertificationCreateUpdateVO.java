@@ -13,7 +13,7 @@ public class ProjectCertificationCreateUpdateVO {
     private String id;
 
     @ApiModelProperty("证书名称")
-    @NotNull(message = "error.name.null")
+    @NotNull(message = "{devops.name.null}")
     private String name;
 
     @ApiModelProperty("key文件内容")
@@ -23,7 +23,7 @@ public class ProjectCertificationCreateUpdateVO {
     private String certValue;
 
     @ApiModelProperty("域名")
-    @NotNull(message = "error.domain.null")
+    @NotNull(message = "{devops.domain.null}")
     private String domain;
 
     @ApiModelProperty("是否跳过权限校验")

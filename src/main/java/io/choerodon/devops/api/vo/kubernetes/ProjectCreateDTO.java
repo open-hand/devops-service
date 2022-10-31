@@ -6,9 +6,10 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
-import io.choerodon.devops.api.vo.iam.RoleVO;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
+
+import io.choerodon.devops.api.vo.iam.RoleVO;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -28,15 +29,15 @@ public class ProjectCreateDTO {
     private Long id;
 
     @ApiModelProperty(value = "项目名/必填")
-    @NotEmpty(message = "error.project.name.empty")
-    @Size(min = 1, max = 32, message = "error.project.code.size")
-    @Pattern(regexp = PROJECT_NAME_REG, message = "error.project.name.regex")
+    @NotEmpty(message = "devops.project.name.empty")
+    @Size(min = 1, max = 32, message = "devops.project.code.size")
+    @Pattern(regexp = PROJECT_NAME_REG, message = "devops.project.name.regex")
     private String name;
 
     @ApiModelProperty(value = "项目编码/必填")
-    @NotEmpty(message = "error.project.code.empty")
-    @Size(min = 1, max = 14, message = "error.project.code.size")
-    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "error.project.code.illegal")
+    @NotEmpty(message = "devops.project.code.empty")
+    @Size(min = 1, max = 14, message = "devops.project.code.size")
+    @Pattern(regexp = CODE_REGULAR_EXPRESSION, message = "devops.project.code.illegal")
     private String code;
 
     @ApiParam(name = "organization_id", value = "组织id")

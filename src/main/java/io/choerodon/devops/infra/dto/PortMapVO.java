@@ -14,9 +14,9 @@ public class PortMapVO implements Comparable<PortMapVO> {
     @ApiModelProperty("名称")
     private String name;
     @ApiModelProperty("端口号")
-    private Long port;
+    private Integer port;
     @ApiModelProperty("nodeport")
-    private Long nodePort;
+    private Integer nodePort;
     @ApiModelProperty("协议")
     private String protocol;
     @ApiModelProperty("目标端口")
@@ -30,11 +30,19 @@ public class PortMapVO implements Comparable<PortMapVO> {
         this.name = name;
     }
 
-    public Long getNodePort() {
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    public Integer getNodePort() {
         return nodePort;
     }
 
-    public void setNodePort(Long nodePort) {
+    public void setNodePort(Integer nodePort) {
         this.nodePort = nodePort;
     }
 
@@ -44,14 +52,6 @@ public class PortMapVO implements Comparable<PortMapVO> {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public String getTargetPort() {

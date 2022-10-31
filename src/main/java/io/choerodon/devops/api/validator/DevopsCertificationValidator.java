@@ -34,13 +34,13 @@ public class DevopsCertificationValidator {
 
     private void checkCertificationName(String name) {
         if (!K8sUtil.NAME_PATTERN.matcher(name).matches()) {
-            throw new CommonException("error.certification.name.illegal");
+            throw new CommonException("devops.certification.name.illegal");
         }
     }
 
     private void checkCertificationExists(Long envId, String name) {
         if (!certificationService.baseCheckCertNameUniqueInEnv(envId, name)) {
-            throw new CommonException("error.certNameInEnv.notUnique");
+            throw new CommonException("devops.certNameInEnv.notUnique");
         }
     }
 

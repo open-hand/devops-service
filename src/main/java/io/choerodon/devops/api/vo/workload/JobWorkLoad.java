@@ -45,7 +45,7 @@ public class JobWorkLoad extends WorkLoad {
     public Long getWorkloadId(Long envId, String workloadName) {
         DevopsJobDTO devopsJobDTO = devopsJobService.baseQueryByEnvIdAndName(envId, workloadName);
         if (devopsJobDTO == null) {
-            throw new CommonException("error.workload.resource.not.exist", workloadName, "Job");
+            throw new CommonException("devops.workload.resource.not.exist", workloadName, "Job");
         }
         return devopsJobDTO.getId();
     }

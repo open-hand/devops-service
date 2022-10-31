@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_GITLAB_ACCESS_LEVEL;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +32,7 @@ import io.choerodon.devops.infra.feign.operator.HrdsCodeRepoClientOperator;
  */
 @Service
 public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevelService {
-    private static final String EMPTY_GITLAB_ACCESS_LEVEL = "error.empty.gitlab.access.level";
+    private static final String DEVOPS_EMPTY_GITLAB_ACCESS_LEVEL = "devops.empty.gitlab.access.level";
     @Autowired
     private HrdsCodeRepoClientOperator hrdsCodeRepoClientOperator;
     @Autowired
@@ -49,20 +51,20 @@ public class CheckGitlabAccessLevelServiceImpl implements CheckGitlabAccessLevel
             return;
         }
         if (!permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId)) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             List<MemberPrivilegeViewDTO> viewDTOList = hrdsCodeRepoClientOperator.selfPrivilege(projectDTO.getOrganizationId(), projectId, Collections.singleton(appServiceId));
             if (CollectionUtils.isEmpty(viewDTOList) || viewDTOList.get(0).getAccessLevel() == null) {
-                throw new CommonException(EMPTY_GITLAB_ACCESS_LEVEL);
+                throw new CommonException(DEVOPS_EMPTY_GITLAB_ACCESS_LEVEL);
             }
             Optional<Integer> max = viewDTOList.stream().map(MemberPrivilegeViewDTO::getAccessLevel).collect(Collectors.toSet()).stream().max(Integer::compare);
             if (max.isPresent()) {
                 Integer maxAccessLevel = max.get();
                 if (maxAccessLevel <= appServiceEvent.getAccessLevel()) {
-                    throw new GitlabAccessInvalidException("error.gitlab.access.level", AccessLevel.getAccessLevelName(maxAccessLevel));
+                    throw new GitlabAccessInvalidException(DEVOPS_GITLAB_ACCESS_LEVEL, AccessLevel.getAccessLevelName(maxAccessLevel));
                 }
             } else {
-                throw new CommonException(EMPTY_GITLAB_ACCESS_LEVEL);
+                throw new CommonException(DEVOPS_EMPTY_GITLAB_ACCESS_LEVEL);
             }
         }
     }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_OWNER;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +37,6 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.CommandStatus;
-import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
@@ -56,7 +56,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
     private static final String DESTINATION_PATH = "devops";
     private static final String STORE_PATH = "stores";
-    private static final String ERROR_VERSION_INSERT = "error.version.insert";
+    private static final String ERROR_VERSION_INSERT = "devops.version.insert";
 
     @Value("${demo.data.file.path:demo/demo-data.json}")
     private String demoDataFilePath;
@@ -95,6 +95,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppServiceVersionReadmeMapper appServiceVersionReadmeMapper;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
 
     private final Gson gson = new Gson();
 
@@ -195,7 +197,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppServiceRepVO createDemoApp(Long projectId, AppServiceReqVO applicationReqDTO) {
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplicationService(applicationReqDTO.getCode());
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceDTO applicationDTO = ConvertUtils.convertObject(applicationReqDTO, AppServiceDTO.class);
 
@@ -222,7 +224,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
                     TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId()),
                     TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             if (gitlabMember == null || !Objects.equals(gitlabMember.getAccessLevel(), AccessLevel.OWNER.toValue())) {
-                throw new CommonException("error.user.not.owner");
+                throw new CommonException(DEVOPS_USER_NOT_OWNER);
             }
         }
 
@@ -245,7 +247,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         Long appServiceId = applicationDTO.getId();
         if (appServiceId == null) {
-            throw new CommonException("error.application.create.insert");
+            throw new CommonException("devops.application.create.insert");
         }
 
         devOpsAppServicePayload.setAppServiceId(applicationDTO.getId());
@@ -330,7 +332,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
         AppServiceVersionDTO appServiceVersionDTO = new AppServiceVersionDTO();
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         AppServiceVersionDTO newApplicationVersion = appServiceVersionService.baseQueryByAppServiceIdAndVersion(appServiceDTO.getId(), version);
         appServiceVersionDTO.setAppServiceId(appServiceDTO.getId());
@@ -342,10 +344,12 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         appServiceVersionDTO.setRef(GitOpsConstants.MASTER);
 
         // 查询helm仓库配置id
-        DevopsConfigDTO devopsConfigDTO = devopsConfigService.queryRealConfig(appServiceDTO.getId(), MiscConstants.APP_SERVICE, ProjectConfigType.CHART.getType(), null);
-        ConfigVO helmConfig = gson.fromJson(devopsConfigDTO.getConfig(), ConfigVO.class);
+        DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+
+        ConfigVO helmConfig = ConvertUtils.convertObject(devopsHelmConfigDTO, ConfigVO.class);
+        helmConfig.setIsPrivate(devopsHelmConfigDTO.getRepoPrivate());
         String helmUrl = helmConfig.getUrl();
-        appServiceVersionDTO.setHelmConfigId(devopsConfigDTO.getId());
+        appServiceVersionDTO.setHelmConfigId(devopsHelmConfigDTO.getId());
 
         appServiceVersionDTO.setRepository(helmUrl.endsWith("/") ? helmUrl + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : helmUrl + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/");
         String storeFilePath = STORE_PATH + version;
@@ -353,7 +357,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         String destFilePath = DESTINATION_PATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
         //上传chart包到chartmuseum
-        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUserName(), helmConfig.getPassword());
+        chartUtil.uploadChart(helmUrl, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), new File(path), helmConfig.getUsername(), helmConfig.getPassword());
 
         // 有需求让重新上传chart包，所以校验重复推后
         if (newApplicationVersion != null) {
@@ -367,7 +371,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
 
         if (valuesFile == null) {
             FileUtil.deleteDirectories(storeFilePath, destFilePath);
-            throw new CommonException("error.find.values.yaml.in.chart");
+            throw new CommonException("devops.find.values.yaml.in.chart");
         }
 
         String values;

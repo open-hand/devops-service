@@ -14,6 +14,6 @@ public class HzeroMessageServiceClientFallBack implements HzeroMessageClient {
 
     @Override
     public MessageSettingVO queryByEnvIdAndEventNameAndProjectIdAndCode(String notifyType, Long projectId, String code, Long envId, String eventName) {
-        throw new CommonException("error.query.message.setting");
+        throw new CommonException("devops.query.message.setting");
     }
 }

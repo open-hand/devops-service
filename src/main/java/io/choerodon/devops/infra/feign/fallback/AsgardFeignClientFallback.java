@@ -17,11 +17,11 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
 
     @Override
     public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
-        throw new CommonException("error.query.instance.detail");
+        throw new CommonException("devops.query.instance.detail");
     }
 
     @Override
     public ResponseEntity<Void> retry(Long projectId, Long instanceId) {
-        throw new CommonException("error.retry.saga.instance");
+        throw new CommonException("devops.retry.saga.instance");
     }
 }

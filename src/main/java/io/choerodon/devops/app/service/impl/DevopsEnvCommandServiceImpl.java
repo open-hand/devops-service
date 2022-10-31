@@ -54,7 +54,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     public DevopsEnvCommandDTO baseCreate(DevopsEnvCommandDTO devopsEnvCommandDTO) {
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDTO) != 1) {
-            throw new CommonException("error.env.command.insert");
+            throw new CommonException("devops.env.command.insert");
         }
         return devopsEnvCommandMapper.selectByPrimaryKey(devopsEnvCommandDTO);
     }
@@ -70,7 +70,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
                 .selectByPrimaryKey(devopsEnvCommandDTO.getId());
         devopsEnvCommandDTO.setObjectVersionNumber(oldDevopsEnvCommandDO.getObjectVersionNumber());
         if (devopsEnvCommandMapper.updateByPrimaryKeySelective(devopsEnvCommandDTO) != 1) {
-            throw new CommonException("error.env.command.update");
+            throw new CommonException("devops.env.command.update");
         }
 
         return devopsEnvCommandDTO;
@@ -78,7 +78,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void baseUpdateSha(Long commandId, String sha) {
-        CommonExAssertUtil.assertNotNull(sha, "error.commit.sha.null");
+        CommonExAssertUtil.assertNotNull(sha, "devops.commit.sha.null");
         devopsEnvCommandMapper.updateSha(commandId, sha);
     }
 
@@ -172,9 +172,9 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
 
     @Override
     public void updateOperatingToSuccessBeforeDate(ObjectType objectType, Long objectId, Date beforeDate) {
-        CommonExAssertUtil.assertNotNull(objectType, "error.object.type.null");
-        CommonExAssertUtil.assertNotNull(objectId, "error.object.id.null");
-        CommonExAssertUtil.assertNotNull(beforeDate, "error.before.date.null");
+        CommonExAssertUtil.assertNotNull(objectType, "devops.object.type.null");
+        CommonExAssertUtil.assertNotNull(objectId, "devops.object.id.null");
+        CommonExAssertUtil.assertNotNull(beforeDate, "devops.before.date.null");
         devopsEnvCommandMapper.updateOperatingToSuccessBeforeDate(objectType.getType(), objectId, beforeDate);
     }
 
@@ -186,7 +186,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
     @Override
     @Transactional
     public void deleteByInstanceId(Long instanceId) {
-        Assert.notNull(instanceId, ResourceCheckConstant.ERROR_INSTANCE_ID_IS_NULL);
+        Assert.notNull(instanceId, ResourceCheckConstant.DEVOPS_INSTANCE_ID_IS_NULL);
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         devopsEnvCommandDTO.setObjectId(instanceId);
         devopsEnvCommandDTO.setObject(ObjectType.INSTANCE.getType());

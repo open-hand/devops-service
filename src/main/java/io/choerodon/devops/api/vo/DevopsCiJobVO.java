@@ -26,7 +26,7 @@ public class DevopsCiJobVO {
     private Long id;
 
     @ApiModelProperty("任务名称")
-    @NotEmpty(message = "error.job.name.cannot.be.null")
+    @NotEmpty(message = "{devops.job.name.cannot.be.null}")
     private String name;
 
     @ApiModelProperty("runner镜像地址")
@@ -47,11 +47,11 @@ public class DevopsCiJobVO {
     private Long ciPipelineId;
 
     @ApiModelProperty("任务类型")
-    @NotEmpty(message = "error.job.type.cannot.be.null")
+    @NotEmpty(message = "{devops.job.type.cannot.be.null}")
     private String type;
 
     @ApiModelProperty("触发类型对应的值")
-    @NotEmpty(message = "error.job.trigger.type.cannot.be.null")
+    @NotEmpty(message = "{devops.job.trigger.type.cannot.be.null}")
     private String triggerValue;
 
     /**
@@ -64,7 +64,7 @@ public class DevopsCiJobVO {
      * {@link CiConfigVO}
      */
     @ApiModelProperty("详细信息 / 如果是自定义任务, 这个字段是base64加密过的")
-    @NotEmpty(message = "error.job.metadata.cannot.be.null")
+    @NotEmpty(message = "{devops.job.metadata.cannot.be.null}")
     private String metadata;
 
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")

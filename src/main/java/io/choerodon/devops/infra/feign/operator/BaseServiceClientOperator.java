@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_QUERY_USER_BY_LOGIN_NAME;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_GET;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_ORGANIZATION_ROLE_ID_GET;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -62,7 +66,7 @@ public class BaseServiceClientOperator {
         if (roleResponseEntity.getStatusCode().is2xxSuccessful() && roleDTOList != null && !CollectionUtils.isEmpty(roleDTOList)) {
             return roleDTOList.get(0).getId();
         } else {
-            throw new CommonException("error.organization.role.id.get", code);
+            throw new CommonException(DEVOPS_ORGANIZATION_ROLE_ID_GET, code);
         }
     }
 
@@ -84,35 +88,28 @@ public class BaseServiceClientOperator {
         }
     }
 
-
-    public ProjectDTO queryIamProjectById(Long projectId) {
-        return queryIamProjectById(projectId, true, true, true);
-    }
-
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
-        return queryIamProjectById(projectId, false, false, false);
-    }
-
-    public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo) {
-        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo);
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProjectBasicInfo(projectId);
         ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
         // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
         if (projectDTO == null || projectDTO.getId() == null) {
-            throw new CommonException("error.project.query.by.id", projectId);
+            throw new CommonException("devops.project.query.by.id", projectId);
+        }
+        return projectDTO;
+    }
+
+    public ProjectDTO queryIamProjectById(Long projectId, Boolean withCategory, Boolean withUserInfo, Boolean withAgileInfo, Boolean withWorkGroup, Boolean withProjectClassfication) {
+        ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProject(Objects.requireNonNull(projectId), withCategory, withUserInfo, withAgileInfo, withWorkGroup, withProjectClassfication);
+        ProjectDTO projectDTO = projectDTOResponseEntity.getBody();
+        // 判断id是否为空是因为可能会返回 CommonException 但是也会被反序列化为  ProjectDTO
+        if (projectDTO == null || projectDTO.getId() == null) {
+            throw new CommonException("devops.project.query.by.id", projectId);
         }
         return projectDTO;
     }
 
     public Tenant queryOrganizationById(Long organizationId) {
-        return queryOrganizationById(organizationId, true);
-    }
-
-    public Tenant queryOrganizationBasicInfoById(Long organizationId) {
-        return queryOrganizationById(organizationId, false);
-    }
-
-    public Tenant queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
-        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationById(organizationId, withMoreInfo);
+        ResponseEntity<Tenant> organizationDTOResponseEntity = baseServiceClient.queryOrganizationBasicInfoWithCache(organizationId);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             Tenant tenant = organizationDTOResponseEntity.getBody();
             if (tenant != null && tenant.getTenantId() != null) {
@@ -122,7 +119,7 @@ public class BaseServiceClientOperator {
                 LOGGER.info("queryOrganizationById: unexpected result: {}", JSONObject.toJSONString(tenant));
             }
         }
-        throw new CommonException("error.organization.get", organizationId);
+        throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
     }
 
     public List<Tenant> listOrganizationByIds(Set<Long> organizationIds) {
@@ -133,7 +130,7 @@ public class BaseServiceClientOperator {
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
-            throw new CommonException("error.organization.get", organizationIds.toString());
+            throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationIds.toString());
         }
     }
 
@@ -176,7 +173,7 @@ public class BaseServiceClientOperator {
                     userDTOS = Collections.emptyList();
                 }
             } catch (Exception e) {
-                throw new CommonException("error.users.get", e);
+                throw new CommonException("devops.users.get", e);
             }
         }
         return userDTOS;
@@ -186,7 +183,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.check.user.site.access", e);
+            throw new CommonException("devops.check.user.site.access", e);
         }
     }
 
@@ -231,7 +228,7 @@ public class BaseServiceClientOperator {
 //                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
 //                }
 //            } catch (Exception e) {
-//                throw new CommonException("error.users.get", e);
+//                throw new CommonException("devops.users.get", e);
 //            }
 //        } else {
 //            resultMap = Collections.emptyMap();
@@ -291,7 +288,7 @@ public class BaseServiceClientOperator {
 //                    resultMap = userDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
 //                }
 //            } catch (Exception e) {
-//                throw new CommonException("error.users.get", e);
+//                throw new CommonException("devops.users.get", e);
 //            }
 //        } else {
 //            resultMap = Collections.emptyMap();
@@ -322,7 +319,7 @@ public class BaseServiceClientOperator {
             }
             return userDTOS;
         } catch (Exception e) {
-            throw new CommonException("error.users.get", e);
+            throw new CommonException("devops.users.get", e);
         }
     }
 
@@ -350,7 +347,7 @@ public class BaseServiceClientOperator {
             return baseServiceClient
                     .listUsersWithGitlabLabel(projectId, roleAssignmentSearchVO, labelName).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.user.get.byGitlabLabel");
+            throw new CommonException("devops.user.get.byGitlabLabel");
         }
     }
 
@@ -497,11 +494,11 @@ public class BaseServiceClientOperator {
         try {
             ClientVO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
             if (client == null || client.getId() == null) {
-                throw new CommonException("error.create.client");
+                throw new CommonException("devops.create.client");
             }
             return client;
         } catch (Exception ex) {
-            throw new CommonException("error.create.client");
+            throw new CommonException("devops.create.client");
         }
     }
 
@@ -509,7 +506,7 @@ public class BaseServiceClientOperator {
         try {
             return baseServiceClient.queryClientByName(organization, name).getBody();
         } catch (Exception ex) {
-            throw new CommonException("error.get.client");
+            throw new CommonException("devops.get.client");
         }
     }
 
@@ -517,7 +514,7 @@ public class BaseServiceClientOperator {
         try {
             baseServiceClient.deleteClient(organizationId, clientId);
         } catch (Exception ex) {
-            throw new CommonException("error.delete.client");
+            throw new CommonException("devops.delete.client");
         }
     }
 
@@ -526,7 +523,7 @@ public class BaseServiceClientOperator {
             ResponseEntity<ClientVO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, clientId);
             return responseEntity.getBody();
         } catch (Exception ex) {
-            throw new CommonException("error.query.client");
+            throw new CommonException("devops.query.client");
         }
     }
 
@@ -541,11 +538,11 @@ public class BaseServiceClientOperator {
             ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(loginName);
             IamUserDTO iamUserDTO = responseEntity.getBody();
             if (iamUserDTO == null || iamUserDTO.getId() == null) {
-                throw new CommonException("error.query.user.by.login.name", loginName);
+                throw new CommonException(DEVOPS_QUERY_USER_BY_LOGIN_NAME, loginName);
             }
             return iamUserDTO;
         } catch (Exception ex) {
-            throw new CommonException("error.query.user.by.login.name", loginName);
+            throw new CommonException(DEVOPS_QUERY_USER_BY_LOGIN_NAME, loginName);
         }
     }
 
