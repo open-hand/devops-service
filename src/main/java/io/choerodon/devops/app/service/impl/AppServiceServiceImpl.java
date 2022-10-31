@@ -1340,7 +1340,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         appServiceDTO.setCode(appServiceImportVO.getCode());
 
         // 校验repository（和token） 地址是否有效
-        if (importFromGeneralGit) {
+        if (!importFromGeneralGit) {
             checkRepositoryUrlAndUsernameAndPassword(appServiceImportVO.getRepositoryUrl(), appServiceImportVO.getUsername(), appServiceImportVO.getPassword());
         } else if (isTemplate == null || !isTemplate) {
             GitPlatformType gitPlatformType = GitPlatformType.from(appServiceImportVO.getPlatformType());
