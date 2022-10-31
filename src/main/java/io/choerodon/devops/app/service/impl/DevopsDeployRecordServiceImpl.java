@@ -36,7 +36,10 @@ import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.api.vo.market.MarketServiceDeployObjectVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.DeployDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -303,16 +306,7 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
     @Override
     public Page<DeployRecordVO> paging(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion) {
-        Page<DeployRecordVO> deployRecordVOPage = PageHelper
-                .doPageAndSort(pageRequest,
-                        () -> devopsDeployRecordMapper.listByParams(
-                                projectId,
-                                deployType,
-                                deployMode,
-                                deployPayloadName,
-                                deployResult,
-                                deployObjectName,
-                                deployObjectVersion));
+        Page<DeployRecordVO> deployRecordVOPage = pageRecord(projectId, pageRequest, deployType, deployMode, deployPayloadName, deployResult, deployObjectName, deployObjectVersion);
 
         if (CollectionUtils.isEmpty(deployRecordVOPage.getContent())) {
             return deployRecordVOPage;
@@ -351,6 +345,21 @@ public class DevopsDeployRecordServiceImpl implements DevopsDeployRecordService 
 
         });
 
+        return deployRecordVOPage;
+    }
+
+    protected Page<DeployRecordVO> pageRecord(Long projectId, PageRequest pageRequest, String deployType, String deployMode, String deployPayloadName, String deployResult, String deployObjectName, String deployObjectVersion) {
+        Page<DeployRecordVO> deployRecordVOPage = PageHelper
+                .doPageAndSort(pageRequest,
+                        () -> devopsDeployRecordMapper.listByParams(
+                                projectId,
+                                deployType,
+                                deployMode,
+                                deployPayloadName,
+                                deployResult,
+                                deployObjectName,
+                                deployObjectVersion,
+                                null));
         return deployRecordVOPage;
     }
 
