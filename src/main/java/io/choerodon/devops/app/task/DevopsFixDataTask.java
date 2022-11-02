@@ -79,6 +79,17 @@ public class DevopsFixDataTask {
         }
     }
 
+
+    @JobTask(maxRetryCount = 3, code = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据")
+    @TimedTask(name = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixRemainHelmVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_HELM_IMAGE_VERSION_OF_NULL_DATA);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
     /**
      * 迁移应用服务版本中镜像版本数据
      *

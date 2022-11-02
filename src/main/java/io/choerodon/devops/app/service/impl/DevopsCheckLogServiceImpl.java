@@ -177,7 +177,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
             pageNumber++;
         } while (pageNumber <= total);
-        System.out.println(appServiceHelmVersionMapper.count());
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
 
