@@ -25,17 +25,20 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.GitlabUserRequestVO;
-import io.choerodon.devops.app.service.DevopsUserSyncRecordService;
-import io.choerodon.devops.app.service.GitlabUserService;
-import io.choerodon.devops.app.service.SendNotificationService;
-import io.choerodon.devops.app.service.UserAttrService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
+import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.dto.DevopsProjectDTO;
 import io.choerodon.devops.infra.dto.DevopsUserSyncRecordDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitLabUserDTO;
 import io.choerodon.devops.infra.dto.gitlab.GitlabUserReqDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectCategoryDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.enums.UserSyncType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -94,6 +97,10 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private DevopsUserSyncRecordService devopsUserSyncRecordService;
     @Autowired
     private UserAttrMapper userAttrMapper;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsProjectService devopsProjectService;
 
     @Override
     public void createGitlabUser(GitlabUserRequestVO gitlabUserReqDTO) {
@@ -402,6 +409,65 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         UserAttrDTO userAttrDTO = userAttrService.checkUserSync(userAttrService.baseQueryById(iamUserId), iamUserId);
         gitlabServiceClientOperator.deleteAdmin(iamUserId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         userAttrService.updateAdmin(iamUserId, Boolean.FALSE);
+    }
+
+    @Override
+    public void syncGroupPermission(Long projectId) {
+
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        Long userId = userDetails.getUserId();
+
+        // 查询项目类型，包含devops或运维类型才修复
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId, true, false, false, false, false);
+        List<ProjectCategoryDTO> categories = projectDTO.getCategories();
+        if (CollectionUtils.isEmpty(categories)) {
+            return;
+        }
+        if (categories.stream().anyMatch(c -> MiscConstants.DEVOPS.equals(c.getCode()) || MiscConstants.OPERATIONS.equals(c.getCode()))) {
+            Boolean isProjectAdmin = baseServiceClientOperator.checkIsOrgOrProjectGitlabOwner(userId, projectId);
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(userId);
+            DevopsProjectDTO devopsProjectDTO = devopsProjectService.baseQueryByProjectId(projectId);
+
+            Long gitlabUserId = userAttrDTO.getGitlabUserId();
+            Long devopsEnvGroupId = devopsProjectDTO.getDevopsEnvGroupId();
+            Long devopsClusterEnvGroupId = devopsProjectDTO.getDevopsClusterEnvGroupId();
+
+            // 修复gitops、clusterops group owner权限
+            MemberDTO gitOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsEnvGroupId),
+                    TypeUtil.objToInteger(gitlabUserId));
+            boolean isGitOpsOwner = gitOpsMemberDTO != null && gitOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+
+            MemberDTO clusterOpsMemberDTO = gitlabGroupMemberService.queryByUserId(
+                    TypeUtil.objToInteger(devopsClusterEnvGroupId),
+                    TypeUtil.objToInteger(gitlabUserId));
+            boolean isClusterOpsOwner = clusterOpsMemberDTO != null && clusterOpsMemberDTO.getAccessLevel().equals(AccessLevel.OWNER.value);
+
+
+            if (Boolean.TRUE.equals(isProjectAdmin)) {
+                if (!isGitOpsOwner) {
+                    LOGGER.info("【GitopsSync】user: {} is project owner, but has no project: {} gitops owner permission, addd it.", userDetails.getUsername(), projectDTO.getId());
+                    MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
+                            , AccessLevel.OWNER.toValue(), "");
+                    gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsEnvGroupId), memberDTO);
+                }
+                if (!isClusterOpsOwner) {
+                    LOGGER.info("【ClusteropsSync】user: {} is project owner, but has no project: {} clusterops owner permission, add it.", userDetails.getUsername(), projectDTO.getId());
+                    MemberDTO memberDTO = new MemberDTO((TypeUtil.objToInteger(gitlabUserId))
+                            , AccessLevel.OWNER.toValue(), "");
+                    gitlabGroupMemberService.create(TypeUtil.objToInteger(devopsClusterEnvGroupId), memberDTO);
+                }
+            } else {
+                if (isGitOpsOwner) {
+                    LOGGER.info("【GitopsSync】user: {} not project owner, but has project: {} gitops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
+                    gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
+                }
+                if (isClusterOpsOwner) {
+                    LOGGER.info("【ClusteropsSync】user: {} not project owner, but has project: {} clusterops owner permission, remove it.", userDetails.getUsername(), projectDTO.getId());
+                    gitlabGroupMemberService.delete(TypeUtil.objToInteger(devopsClusterEnvGroupId), TypeUtil.objToInteger(gitlabUserId));
+                }
+            }
+        }
     }
 
     @Override
