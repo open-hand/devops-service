@@ -31,5 +31,10 @@
             #{versionId}
         </foreach>
     </select>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT count(*)
+        from devops_app_service_version
+    </select>
 </mapper>
 

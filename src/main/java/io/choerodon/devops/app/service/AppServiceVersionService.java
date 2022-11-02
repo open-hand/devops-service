@@ -244,4 +244,8 @@ public interface AppServiceVersionService {
     Integer queryCountVersionsWithHelmConfig();
 
     Integer queryCountVersionsWithHarborConfig();
+
+    Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
 }
