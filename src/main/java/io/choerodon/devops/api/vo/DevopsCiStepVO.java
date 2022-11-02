@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 
@@ -50,6 +51,16 @@ public class DevopsCiStepVO {
 
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
     private DevopsCiMavenBuildConfigVO mavenBuildConfig;
+    @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
+    private CiAuditConfigVO ciAuditConfig;
+
+    public CiAuditConfigVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiAuditConfigVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
 
     public DevopsCiMavenPublishConfigVO getMavenPublishConfig() {
         return mavenPublishConfig;
