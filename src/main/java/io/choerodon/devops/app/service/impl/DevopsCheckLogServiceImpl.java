@@ -138,7 +138,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // 如果版本关联的harbor仓库版本为null，查询默认仓库
                     String harborConfigIdCacheKey = String.format(HARBOR_CONFIG_ID_CACHE_KEY_TEMPLATE, v.getProjectId(), v.getAppServiceId());
                     if (harborConfigIdNotExistKeys.contains(harborConfigIdCacheKey)) {
-                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(v));
                         return;
                     }
                     Long harborConfigId = cachedHarborConfigId.get(harborConfigIdCacheKey);
@@ -149,13 +148,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             cachedHarborConfigId.put(harborConfigIdCacheKey, harborConfigDTO.getId());
                         } catch (Exception e) {
                             harborConfigIdNotExistKeys.add(harborConfigIdCacheKey);
-                            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {},error is {} <<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(v), e.getMessage());
                             return;
                         }
                     }
                     if (harborConfigId == null) {
                         harborConfigIdNotExistKeys.add(harborConfigIdCacheKey);
-                        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(v));
                         return;
                     }
                     appServiceHelmVersionDTO.setHarborConfigId(harborConfigId);
