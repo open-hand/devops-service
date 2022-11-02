@@ -987,6 +987,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         return appServiceVersionMapper.queryCountVersionsWithHarborConfig();
     }
 
+    @Override
+    public Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull() {
+        return appServiceVersionMapper.queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+    }
+
+    @Override
+    public List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull() {
+        return appServiceVersionMapper.listAllVersionsWithHelmConfigNullOrImageConfigNull();
+    }
+
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {
         Set<AppServiceVersionDTO> deleteErrorVersion = new HashSet<>();
         AppServiceInstanceDTO appServiceInstanceDTO = new AppServiceInstanceDTO();

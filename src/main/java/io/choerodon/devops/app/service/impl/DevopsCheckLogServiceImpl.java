@@ -24,6 +24,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.AppServiceHelmVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -42,6 +43,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
     public static final String DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA = "deleteDevopsEnvResourceDetailData";
 
+    public static final String HARBOR_CONFIG_ID_CACHE_KEY_TEMPLATE = "%s-%s";
+
+    public static final String FIX_HELM_IMAGE_VERSION_OF_NULL_DATA = "fixHelmImageVersionOfNullData";
     @Autowired
     private DevopsCheckLogMapper devopsCheckLogMapper;
     @Autowired
@@ -59,7 +63,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
+    private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
+    @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
+
+    @Autowired
+    private HarborService harborService;
 
     @Autowired
     private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
@@ -90,6 +99,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             case DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA:
                 deleteDevopsEnvResourceDetailData();
                 break;
+            case FIX_HELM_IMAGE_VERSION_OF_NULL_DATA:
+                fixIHelmImageVersionOfNullData();
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -97,6 +108,73 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    private void fixIHelmImageVersionOfNullData() {
+        // 应用服务版本与helm仓库关联关系
+        // 数量非常大，需要分页操作
+        int count = appServiceVersionService.queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+        int pageSize = 500;
+        int total = (count + pageSize - 1) / pageSize;
+        int pageNumber = 0;
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
+        DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value(), 0L);
+        do {
+            LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>app version helm config {}/{} >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!", pageNumber, total);
+            PageRequest pageRequest = new PageRequest();
+            pageRequest.setPage(pageNumber);
+            pageRequest.setSize(pageSize);
+            List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert = new ArrayList<>();
+
+            Page<AppServiceVersionDTO> appServiceVersionDTOPage = PageHelper.doPage(pageRequest, () -> appServiceVersionService.listAllVersionsWithHelmConfigNullOrImageConfigNull());
+            Map<String, Long> cachedHarborConfigId = new HashMap<>();
+            HashSet<String> harborConfigIdNotExistKeys = new HashSet<>();
+            appServiceVersionDTOPage.getContent().forEach(v -> {
+                AppServiceHelmVersionDTO appServiceHelmVersionDTO = new AppServiceHelmVersionDTO();
+                appServiceHelmVersionDTO.setAppServiceVersionId(v.getId());
+                appServiceHelmVersionDTO.setHelmConfigId(v.getHelmConfigId() == null ? devopsHelmConfigDTOOnSite.getId() : v.getHelmConfigId());
+                appServiceHelmVersionDTO.setHarborRepoType(v.getRepoType());
+                if (v.getHarborConfigId() == null) {
+                    // 如果版本关联的harbor仓库版本为null，查询默认仓库
+                    String harborConfigIdCacheKey = String.format(HARBOR_CONFIG_ID_CACHE_KEY_TEMPLATE, v.getProjectId(), v.getAppServiceId());
+                    if (harborConfigIdNotExistKeys.contains(harborConfigIdCacheKey)) {
+                        return;
+                    }
+                    Long harborConfigId = cachedHarborConfigId.get(harborConfigIdCacheKey);
+                    if (harborConfigId == null) {
+                        try {
+                            DevopsConfigDTO harborConfigDTO = harborService.queryRepoConfigToDevopsConfig(v.getProjectId(), v.getAppServiceId(), "pull");
+                            harborConfigId = harborConfigDTO.getId();
+                            cachedHarborConfigId.put(harborConfigIdCacheKey, harborConfigDTO.getId());
+                        } catch (Exception e) {
+                            harborConfigIdNotExistKeys.add(harborConfigIdCacheKey);
+                            return;
+                        }
+                    }
+                    if (harborConfigId == null) {
+                        harborConfigIdNotExistKeys.add(harborConfigIdCacheKey);
+                        return;
+                    }
+                    appServiceHelmVersionDTO.setHarborConfigId(harborConfigId);
+                } else {
+                    appServiceHelmVersionDTO.setHarborConfigId(v.getHarborConfigId());
+                }
+                appServiceHelmVersionDTO.setValueId(v.getValueId());
+                appServiceHelmVersionDTO.setReadmeValueId(v.getReadmeValueId());
+                appServiceHelmVersionDTO.setImage(v.getImage());
+                appServiceHelmVersionDTO.setRepository(v.getRepository());
+                if (appServiceHelmVersionDTO.getValueId() == null || appServiceHelmVersionDTO.getImage() == null || appServiceHelmVersionDTO.getRepository() == null) {
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(v));
+                } else {
+                    appServiceHelmVersionDTOToInsert.add(appServiceHelmVersionDTO);
+                }
+            });
+            if (!CollectionUtils.isEmpty(appServiceHelmVersionDTOToInsert)) {
+                appServiceHelmVersionService.batchInsertInNewTrans(appServiceHelmVersionDTOToInsert);
+            }
+            pageNumber++;
+        } while (pageNumber <= total);
+        LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>end fix app version helm config >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!");
     }
 
     private void deleteDevopsEnvResourceDetailData() {
@@ -175,12 +253,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 appServiceHelmVersionDTO.setReadmeValueId(v.getReadmeValueId());
                 appServiceHelmVersionDTO.setImage(v.getImage());
                 appServiceHelmVersionDTO.setRepository(v.getRepository());
-                if (appServiceHelmVersionDTO.getValueId() == null
-                        || appServiceHelmVersionDTO.getReadmeValueId() == null
-                        || appServiceHelmVersionDTO.getImage() == null
-                        || appServiceHelmVersionDTO.getRepository() == null) {
-                    LOGGER.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<",
-                            JsonHelper.marshalByJackson(appServiceHelmVersionDTO));
+                if (appServiceHelmVersionDTO.getValueId() == null || appServiceHelmVersionDTO.getReadmeValueId() == null || appServiceHelmVersionDTO.getImage() == null || appServiceHelmVersionDTO.getRepository() == null) {
+                    LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> fix app service version failed, version info is {} <<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(appServiceHelmVersionDTO));
                 } else {
                     appServiceHelmVersionDTOToInsert.add(appServiceHelmVersionDTO);
                 }

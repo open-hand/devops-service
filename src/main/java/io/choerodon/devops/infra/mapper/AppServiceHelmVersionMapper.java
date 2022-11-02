@@ -21,5 +21,6 @@ public interface AppServiceHelmVersionMapper extends BaseMapper<AppServiceHelmVe
 
     void batchInsert(@Param("appServiceHelmVersionDTOToInsert") List<AppServiceHelmVersionDTO> appServiceHelmVersionDTOToInsert);
 
+    Integer count();
 }
 
