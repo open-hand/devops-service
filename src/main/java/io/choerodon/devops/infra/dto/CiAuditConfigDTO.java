@@ -28,7 +28,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_audit_config")
 public class CiAuditConfigDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_STEP_ID = "stepId";
     public static final String FIELD_COUNTERSIGNED = "countersigned";
     private static final long serialVersionUID = 831700646155956076L;
     @Id
