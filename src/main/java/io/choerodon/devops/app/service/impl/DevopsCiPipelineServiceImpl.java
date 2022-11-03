@@ -1787,7 +1787,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
 
-                    ciJob.setScript(buildScript(Objects.requireNonNull(organizationId), projectId, job));
+                    AbstractJobHandler handler = jobOperator.getHandler(job.getType());
+                    ciJob.setScript(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 
                     gitlabCi.addJob(job.getName(), ciJob);
                 });

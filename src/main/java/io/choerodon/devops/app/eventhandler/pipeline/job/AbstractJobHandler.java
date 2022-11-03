@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,4 +73,14 @@ public abstract class AbstractJobHandler {
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         // do nothing
     }
+
+    /**
+     * 把配置转换为gitlab-ci配置（maven,sonarqube）
+     *
+     * @param organizationId 组织id
+     * @param projectId      项目id
+     * @param devopsCiJobDTO 生成脚本
+     * @return 生成的脚本列表
+     */
+    public abstract List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO);
 }

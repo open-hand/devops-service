@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +82,15 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         ciAuditConfigService.queryConfigWithUserDetailsById(devopsCiJobVO.getConfigId());
+    }
+
+    @Override
+    public List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
+        List<String> result = new ArrayList<>();
+
+        result.add("process_audit");
+
+        return result;
     }
 
     @Override
