@@ -80,6 +80,14 @@ public class CiTemplateJobVO {
     @ApiModelProperty("关联的任务配置id")
     private Long configId;
 
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
     public Boolean getOpenParallel() {
         return openParallel;
     }
