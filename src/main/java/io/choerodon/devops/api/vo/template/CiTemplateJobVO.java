@@ -77,6 +77,9 @@ public class CiTemplateJobVO {
     @ApiModelProperty("是否开启并发")
     private Boolean openParallel;
 
+    @ApiModelProperty("关联的任务配置id")
+    private Long configId;
+
     public Boolean getOpenParallel() {
         return openParallel;
     }
