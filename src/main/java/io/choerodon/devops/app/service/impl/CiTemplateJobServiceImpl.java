@@ -15,6 +15,8 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.app.service.CiTemplateJobService;
@@ -46,6 +48,8 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
     private CiTemplateStepService ciTemplateStepService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private JobOperator jobOperator;
 
 
     @Override
@@ -87,6 +91,9 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
         ciTemplateJobVOList.forEach(templateJobVO -> {
             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(templateJobVO, DevopsCiJobVO.class);
             devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+            // 填充任务配置
+            AbstractJobHandler handler = jobOperator.getHandler(templateJobVO.getType());
+            handler.fillJobConfigInfo(devopsCiJobVO);
             // 填充步骤信息
             List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
             if (!CollectionUtils.isEmpty(ciTemplateStepVOList)) {
