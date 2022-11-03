@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_audit.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'countersigned', type: 'TINYINT UNSIGNED', defaultValue: 0, remarks: '是否会签 1是会签,0 是或签') {
+            column(name: 'is_countersigned', type: 'TINYINT UNSIGNED', defaultValue: 0, remarks: '是否会签 1是会签,0 是或签') {
                 constraints(nullable: false)
             }
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

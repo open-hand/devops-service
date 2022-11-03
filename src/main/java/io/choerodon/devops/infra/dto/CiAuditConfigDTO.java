@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -36,6 +37,7 @@ public class CiAuditConfigDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     @NotNull
+    @Column(name = "is_countersigned")
     private Boolean countersigned;
 
 
