@@ -15,8 +15,6 @@ public class CiTemplateAuditConfigVO {
 
 
     private Long id;
-    @ApiModelProperty(value = "所属步骤id", required = true)
-    private Long ciTemplateStepId;
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     private Boolean countersigned;
 
@@ -32,14 +30,6 @@ public class CiTemplateAuditConfigVO {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getCiTemplateStepId() {
-        return ciTemplateStepId;
-    }
-
-    public void setCiTemplateStepId(Long ciTemplateStepId) {
-        this.ciTemplateStepId = ciTemplateStepId;
     }
 
     public Boolean getCountersigned() {

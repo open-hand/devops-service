@@ -44,7 +44,7 @@ public class CiTemplateAuditDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Object getCountersigned() {
+    public Boolean getCountersigned() {
         return countersigned;
     }
 
