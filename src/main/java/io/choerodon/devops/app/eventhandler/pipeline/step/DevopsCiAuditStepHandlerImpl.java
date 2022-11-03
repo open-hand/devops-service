@@ -52,7 +52,7 @@ public class DevopsCiAuditStepHandlerImpl extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        devopsCiStepVO.setCiAuditConfig(ciAuditConfigService.queryConfigWithUsersByStepId(devopsCiStepVO.getId()));
+        devopsCiStepVO.setCiAuditConfig(ciAuditConfigService.queryConfigWithUserDetailsByStepId(devopsCiStepVO.getId()));
     }
 
     @Override

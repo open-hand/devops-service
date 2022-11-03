@@ -1,0 +1,39 @@
+package io.choerodon.devops.app.service.impl;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import io.choerodon.devops.app.service.CiAuditUserRecordService;
+import io.choerodon.devops.infra.dto.CiAuditUserRecordDTO;
+import io.choerodon.devops.infra.enums.AuditStatusEnum;
+import io.choerodon.devops.infra.mapper.CiAuditUserRecordMapper;
+
+/**
+ * ci 人工卡点用户审核记录表(CiAuditUserRecord)应用服务
+ *
+ * @author hao.wang@zknow.com
+ * @since 2022-11-03 10:32:19
+ */
+@Service
+public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
+    @Autowired
+    private CiAuditUserRecordMapper ciAuditUserRecordMapper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void initAuditRecord(Long auditRecordId, List<Long> cdAuditUserIds) {
+        if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
+            List<CiAuditUserRecordDTO> auditUserRecordDTOS = cdAuditUserIds
+                    .stream()
+                    .map(v -> new CiAuditUserRecordDTO(auditRecordId, v, AuditStatusEnum.NOT_AUDIT.value())).collect(Collectors.toList());
+            ciAuditUserRecordMapper.insertList(auditUserRecordDTOS);
+        }
+
+    }
+}
+

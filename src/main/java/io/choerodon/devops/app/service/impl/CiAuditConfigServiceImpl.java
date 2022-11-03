@@ -48,8 +48,14 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
 
         List<CiAuditUserDTO> ciAuditUserDTOS = ciAuditUserService.listByAuditConfigId(ciAuditConfigDTO.getId());
         List<Long> userIds = ciAuditUserDTOS.stream().map(CiAuditUserDTO::getUserId).collect(Collectors.toList());
-        ciAuditConfigVO.setIamUserDTOS(baseServiceClientOperator.listUsersByIds(userIds));
         ciAuditConfigVO.setCdAuditUserIds(userIds);
+        return ciAuditConfigVO;
+    }
+
+    @Override
+    public CiAuditConfigVO queryConfigWithUserDetailsByStepId(Long stepId) {
+        CiAuditConfigVO ciAuditConfigVO = queryConfigWithUsersByStepId(stepId);
+        ciAuditConfigVO.setIamUserDTOS(baseServiceClientOperator.listUsersByIds(ciAuditConfigVO.getCdAuditUserIds()));
         return ciAuditConfigVO;
     }
 

@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.Date;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -21,6 +23,16 @@ public class CiJobWebHookVO {
     private Date finishedAt;
     private GitlabWebHookUserVO user;
     private String metadata;
+
+    private CiAuditConfigVO ciAuditConfigVO;
+
+    public CiAuditConfigVO getCiAuditConfigVO() {
+        return ciAuditConfigVO;
+    }
+
+    public void setCiAuditConfigVO(CiAuditConfigVO ciAuditConfigVO) {
+        this.ciAuditConfigVO = ciAuditConfigVO;
+    }
 
     public String getGroupType() {
         return groupType;

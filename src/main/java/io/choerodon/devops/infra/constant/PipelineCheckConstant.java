@@ -40,6 +40,7 @@ public class PipelineCheckConstant {
     public static final String DEVOPS_JOB_STATUS_IS_NULL = "devops.job.status.is.null";
     public static final String DEVOPS_CD_HOST_JOB_UNION_CI_JOB = "devops.cd.host.job.union.ci.job";
     public static final String DEVOPS_CI_CD_TRIGGER_TYPE_INVALID = "devops.ci.cd.trigger.type.invalid";
+    public static final String DEVOPS_UNSUPPORTED_JOB_TYPE = "devops.unsupported.job.type";
 
     // step
     public static final String DEVOPS_STEP_TYPE_IS_INVALID = "devops.step.type.is.invalid";

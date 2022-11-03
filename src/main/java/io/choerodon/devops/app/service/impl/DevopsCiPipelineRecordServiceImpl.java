@@ -36,6 +36,8 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
 import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
 import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -138,6 +140,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Value("${nexus.proxy.urlDisplay:false}")
     private Boolean urlDisplay;
 
+    @Autowired
+    private JobOperator jobOperator;
+
 
     // @lazy解决循环依赖
     public DevopsCiPipelineRecordServiceImpl(DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
@@ -208,7 +213,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             } else {
                 job.setType(devopsCiJobDTO.getType());
                 job.setGroupType(devopsCiJobDTO.getGroupType());
-                job.setMetadata(devopsCiJobDTO.getMetadata());
+                JobHandler handler = jobOperator.getHandler(devopsCiJobDTO.getType());
+                if (handler != null) {
+                    handler.fillJobAdditionalInfo(devopsCiJobDTO, job);
+                }
+
             }
 //            if (devopsCiJobDTO != null) {
 //                job.setType(devopsCiJobDTO.getType());
@@ -328,6 +337,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setAppServiceId(appServiceId);
                 fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
+                JobHandler handler = jobOperator.getHandler(ciJobWebHookVO.getType());
+                if (handler != null) {
+                    handler.saveAdditionalRecordInfo(devopsCiJobRecordDTO, pipelineWebHookVO.getObjectAttributes().getId(), ciJobWebHookVO);
+                }
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
