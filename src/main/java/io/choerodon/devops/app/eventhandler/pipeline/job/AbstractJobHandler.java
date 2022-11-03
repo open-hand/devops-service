@@ -75,6 +75,15 @@ public abstract class AbstractJobHandler {
     }
 
     /**
+     * 查询任务模板时，给包含任务配置的任务填充信息
+     *
+     * @param devopsCiJobVO
+     */
+    public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        // do nothing
+    }
+
+    /**
      * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
      * @param organizationId 组织id

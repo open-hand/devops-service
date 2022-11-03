@@ -94,7 +94,7 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
             // 填充任务配置
             AbstractJobHandler handler = jobOperator.getHandler(templateJobVO.getType());
             if (handler != null) {
-                handler.fillJobConfigInfo(devopsCiJobVO);
+                handler.fillJobTemplateConfigInfo(devopsCiJobVO);
             }
             // 填充步骤信息
             List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());

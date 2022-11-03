@@ -5,7 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
 import io.choerodon.devops.app.service.CiTemplateAuditService;
 import io.choerodon.devops.app.service.CiTemplateAuditUserService;
@@ -41,6 +43,16 @@ public class CiTemplateAuditServiceImpl implements CiTemplateAuditService {
         ciTemplateAuditConfigVO.setIamUserDTOS(baseServiceClientOperator.listUsersByIds(userIds));
 
         return ciTemplateAuditConfigVO;
+    }
+
+    @Override
+    public CiAuditConfigVO queryConfigWithUserDetailsById(Long id) {
+        CiTemplateAuditConfigVO ciTemplateAuditConfigVO = queryConfigWithUsersById(id);
+        List<Long> cdAuditUserIds = ciTemplateAuditConfigVO.getCdAuditUserIds();
+        if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
+            ciTemplateAuditConfigVO.setIamUserDTOS(baseServiceClientOperator.listUsersByIds(cdAuditUserIds));
+        }
+        return ConvertUtils.convertObject(ciTemplateAuditConfigVO, CiAuditConfigVO.class);
     }
 }
 

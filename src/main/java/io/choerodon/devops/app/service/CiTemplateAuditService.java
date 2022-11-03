@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
 
 /**
@@ -11,5 +12,7 @@ import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
 public interface CiTemplateAuditService {
 
     CiTemplateAuditConfigVO queryConfigWithUsersById(Long id);
+
+    CiAuditConfigVO queryConfigWithUserDetailsById(Long id);
 }
 

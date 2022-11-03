@@ -16,7 +16,7 @@ public interface CiAuditConfigService {
 
     CiAuditConfigVO queryConfigWithUsersById(Long id);
 
-    CiAuditConfigVO queryConfigWithUserDetailsById(Long stepId);
+    CiAuditConfigVO queryConfigWithUserDetailsById(Long id);
 
     CiAuditConfigDTO baseCreate(CiAuditConfigDTO ciAuditConfigDTO);
 

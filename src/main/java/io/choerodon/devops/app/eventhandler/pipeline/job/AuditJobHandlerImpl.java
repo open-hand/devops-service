@@ -81,7 +81,12 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        ciAuditConfigService.queryConfigWithUserDetailsById(devopsCiJobVO.getConfigId());
+        devopsCiJobVO.setCiAuditConfig(ciAuditConfigService.queryConfigWithUserDetailsById(devopsCiJobVO.getConfigId()));
+    }
+
+    @Override
+    public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        devopsCiJobVO.setCiAuditConfig(ciTemplateAuditService.queryConfigWithUserDetailsById(devopsCiJobVO.getConfigId()));
     }
 
     @Override
