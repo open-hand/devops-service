@@ -34,6 +34,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.api.vo.pipeline.*;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.*;
@@ -175,6 +177,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private CiPipelineAppVersionService ciPipelineAppVersionService;
     @Autowired
     private DevopsHostService devopsHostService;
+    @Autowired
+    private JobOperator jobOperator;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -573,11 +577,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 // 保存ci job信息
                 if (!CollectionUtils.isEmpty(devopsCiStageVO.getJobList())) {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
-                        // 不让数据库存加密的值
-                        DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
-                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
-                        devopsCiJobDTO.setCiStageId(savedDevopsCiStageDTO.getId());
-                        devopsCiJobService.create(devopsCiJobDTO);
+                        // 保存任务信息
+                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
+                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
                         // 保存任务中的步骤信息
                         batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
@@ -810,13 +812,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Map<Long, List<DevopsCiStepDTO>> jobStepMap = devopsCiStepDTOS.stream().collect(Collectors.groupingBy(DevopsCiStepDTO::getDevopsCiJobId));
 
         devopsCiJobVOS.forEach(devopsCiJobVO -> {
+            AbstractJobHandler jobHandler = jobOperator.getHandler(devopsCiJobVO.getType());
+            jobHandler.fillJobConfigInfo(devopsCiJobVO);
+
             List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
-            List<DevopsCiStepVO> devopsCiStepVOList = ConvertUtils.convertList(ciStepDTOS, DevopsCiStepVO.class);
-            devopsCiStepVOList.forEach(ciStepVO -> {
-                AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(ciStepVO.getType());
-                handler.fillStepConfigInfo(ciStepVO);
-            });
-            devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+            if (!CollectionUtils.isEmpty(ciStepDTOS)) {
+                List<DevopsCiStepVO> devopsCiStepVOList = ConvertUtils.convertList(ciStepDTOS, DevopsCiStepVO.class);
+                devopsCiStepVOList.forEach(ciStepVO -> {
+                    AbstractDevopsCiStepHandler handler = devopsCiStepOperator.getHandler(ciStepVO.getType());
+                    handler.fillStepConfigInfo(ciStepVO);
+                });
+                devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
+            }
+
         });
         return devopsCiJobVOS.stream().collect(Collectors.groupingBy(DevopsCiJobVO::getCiStageId));
     }

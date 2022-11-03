@@ -82,6 +82,16 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty("job的并发数")
     private Integer parallel;
+    @ApiModelProperty("关联的任务配置id")
+    private Long configId;
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
 
     public Integer getParallel() {
         return parallel;

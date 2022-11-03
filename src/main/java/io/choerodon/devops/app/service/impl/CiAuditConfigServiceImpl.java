@@ -39,11 +39,9 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
-    public CiAuditConfigVO queryConfigWithUsersByStepId(Long stepId) {
-        CiAuditConfigDTO record = new CiAuditConfigDTO();
-        record.setStepId(stepId);
+    public CiAuditConfigVO queryConfigWithUsersById(Long id) {
 
-        CiAuditConfigDTO ciAuditConfigDTO = ciAuditConfigMapper.selectOne(record);
+        CiAuditConfigDTO ciAuditConfigDTO = ciAuditConfigMapper.selectByPrimaryKey(id);
         CiAuditConfigVO ciAuditConfigVO = ConvertUtils.convertObject(ciAuditConfigDTO, CiAuditConfigVO.class);
 
         List<CiAuditUserDTO> ciAuditUserDTOS = ciAuditUserService.listByAuditConfigId(ciAuditConfigDTO.getId());
@@ -53,8 +51,8 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
     }
 
     @Override
-    public CiAuditConfigVO queryConfigWithUserDetailsByStepId(Long stepId) {
-        CiAuditConfigVO ciAuditConfigVO = queryConfigWithUsersByStepId(stepId);
+    public CiAuditConfigVO queryConfigWithUserDetailsById(Long id) {
+        CiAuditConfigVO ciAuditConfigVO = queryConfigWithUsersById(id);
         ciAuditConfigVO.setIamUserDTOS(baseServiceClientOperator.listUsersByIds(ciAuditConfigVO.getCdAuditUserIds()));
         return ciAuditConfigVO;
     }

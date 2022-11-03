@@ -24,21 +24,21 @@ import io.choerodon.core.exception.CommonException;
 public class JobOperator {
 
     @Autowired
-    private List<JobHandler> jobHandlerList;
+    private List<AbstractJobHandler> abstractJobHandlerList;
 
-    private Map<String, JobHandler> jobHandlerMap;
+    private Map<String, AbstractJobHandler> jobHandlerMap;
 
     @PostConstruct
     void init() {
-        jobHandlerMap = jobHandlerList.stream().collect(Collectors.toMap(v -> v.getType().value(), Function.identity()));
+        jobHandlerMap = abstractJobHandlerList.stream().collect(Collectors.toMap(v -> v.getType().value(), Function.identity()));
     }
 
-    public JobHandler getHandler(String type) {
+    public AbstractJobHandler getHandler(String type) {
         return jobHandlerMap.get(type);
     }
 
-    public JobHandler getHandlerOrThrowE(String type) {
-        JobHandler handler = jobHandlerMap.get(type);
+    public AbstractJobHandler getHandlerOrThrowE(String type) {
+        AbstractJobHandler handler = jobHandlerMap.get(type);
         if (handler == null) {
             throw new CommonException(DEVOPS_UNSUPPORTED_JOB_TYPE, type);
         }

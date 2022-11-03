@@ -31,11 +31,8 @@ public class CiTemplateAuditServiceImpl implements CiTemplateAuditService {
     private BaseServiceClientOperator baseServiceClientOperator;
 
     @Override
-    public CiTemplateAuditConfigVO queryConfigWithUsersByStepId(Long stepId) {
-        CiTemplateAuditDTO record = new CiTemplateAuditDTO();
-        record.setCiTemplateStepId(stepId);
-
-        CiTemplateAuditDTO ciTemplateAuditDTO = ciTemplateAuditMapper.selectOne(record);
+    public CiTemplateAuditConfigVO queryConfigWithUsersById(Long id) {
+        CiTemplateAuditDTO ciTemplateAuditDTO = ciTemplateAuditMapper.selectByPrimaryKey(id);
         CiTemplateAuditConfigVO ciTemplateAuditConfigVO = ConvertUtils.convertObject(ciTemplateAuditDTO, CiTemplateAuditConfigVO.class);
 
         List<CiTemplateAuditUserDTO> ciTemplateAuditUserDTOS = ciTemplateAuditUserService.listByConfigId(ciTemplateAuditDTO.getId());

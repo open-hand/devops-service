@@ -26,19 +26,14 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_template_audit")
 public class CiTemplateAuditDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_CI_TEMPLATE_STEP_ID = "ciTemplateStepId";
     public static final String FIELD_COUNTERSIGNED = "countersigned";
     private static final long serialVersionUID = -83944196707848494L;
     @Id
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "所属步骤Id")
-    private Long ciTemplateStepId;
-
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     private Boolean countersigned;
-
 
     public Long getId() {
         return id;
@@ -46,14 +41,6 @@ public class CiTemplateAuditDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getCiTemplateStepId() {
-        return ciTemplateStepId;
-    }
-
-    public void setCiTemplateStepId(Long ciTemplateStepId) {
-        this.ciTemplateStepId = ciTemplateStepId;
     }
 
     public Object getCountersigned() {

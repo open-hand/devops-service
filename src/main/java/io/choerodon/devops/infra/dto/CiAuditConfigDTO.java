@@ -34,10 +34,6 @@ public class CiAuditConfigDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "所属步骤id", required = true)
-    @NotNull
-    private Long stepId;
-
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     @NotNull
     private Boolean countersigned;
@@ -49,14 +45,6 @@ public class CiAuditConfigDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getStepId() {
-        return stepId;
-    }
-
-    public void setStepId(Long stepId) {
-        this.stepId = stepId;
     }
 
     public Boolean getCountersigned() {

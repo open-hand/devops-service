@@ -14,9 +14,9 @@ import io.choerodon.devops.infra.dto.CiAuditConfigDTO;
  */
 public interface CiAuditConfigService {
 
-    CiAuditConfigVO queryConfigWithUsersByStepId(Long stepId);
+    CiAuditConfigVO queryConfigWithUsersById(Long id);
 
-    CiAuditConfigVO queryConfigWithUserDetailsByStepId(Long stepId);
+    CiAuditConfigVO queryConfigWithUserDetailsById(Long stepId);
 
     CiAuditConfigDTO baseCreate(CiAuditConfigDTO ciAuditConfigDTO);
 

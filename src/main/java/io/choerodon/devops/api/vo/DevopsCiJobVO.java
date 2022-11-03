@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
@@ -86,6 +87,27 @@ public class DevopsCiJobVO {
     private Boolean completed = true;
 
     private String stageName;
+    @ApiModelProperty("任务配置id")
+    private Long configId;
+
+    @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
+    private CiAuditConfigVO ciAuditConfig;
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
+    public CiAuditConfigVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiAuditConfigVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
 
     public String getStageName() {
         return stageName;

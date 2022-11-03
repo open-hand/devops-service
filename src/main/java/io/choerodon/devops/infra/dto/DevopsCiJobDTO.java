@@ -66,6 +66,17 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("脚本类型任务的自定义脚本")
     private String script;
 
+    @ApiModelProperty("任务配置id")
+    private Long configId;
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
     public String getOldType() {
         return oldType;
     }

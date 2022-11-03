@@ -10,6 +10,6 @@ import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
  */
 public interface CiTemplateAuditService {
 
-    CiTemplateAuditConfigVO queryConfigWithUsersByStepId(Long stepId);
+    CiTemplateAuditConfigVO queryConfigWithUsersById(Long id);
 }
 
