@@ -15,6 +15,7 @@ import io.kubernetes.client.openapi.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.ObjectType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonYamlConversionUtil;
@@ -46,6 +48,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Autowired
     private DevopsEnvResourceMapper devopsEnvResourceMapper;
+    @Autowired
+    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper;
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
@@ -563,16 +567,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
     @Override
+    @Transactional
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
         Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
         Assert.notNull(kind, ResourceCheckConstant.DEVOPS_KIND_NAME_IS_NULL);
         Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
 
-        DevopsEnvResourceDTO devopsEnvResourceDO = new DevopsEnvResourceDTO();
-        devopsEnvResourceDO.setEnvId(envId);
-        devopsEnvResourceDO.setKind(kind);
-        devopsEnvResourceDO.setName(name);
-        devopsEnvResourceMapper.delete(devopsEnvResourceDO);
+        DevopsEnvResourceDTO devopsEnvResourceDTO = baseQueryByKindAndName(envId, kind, name);
+        cascadeDeleteByObject(devopsEnvResourceDTO);
     }
 
     @Override
@@ -587,11 +589,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
-        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
-        devopsEnvResourceDTO.setKind(kind);
-        devopsEnvResourceDTO.setName(name);
-        devopsEnvResourceDTO.setInstanceId(instanceId);
-        devopsEnvResourceMapper.delete(devopsEnvResourceDTO);
+        DevopsEnvResourceDTO devopsEnvResourceDTO = baseQueryOptions(instanceId, null, null, kind, name);
+        cascadeDeleteByObject(devopsEnvResourceDTO);
     }
 
     @Override
@@ -667,4 +666,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         }
         return devopsEnvPodVOS;
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cascadeDeleteByObject(DevopsEnvResourceDTO devopsEnvResourceDTO) {
+        if (devopsEnvResourceDTO != null) {
+            devopsEnvResourceDetailMapper.deleteByPrimaryKey(devopsEnvResourceDTO.getResourceDetailId());
+            devopsEnvResourceMapper.delete(devopsEnvResourceDTO);
+        }
+    }
+
 }

@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nullable;
 
 import io.choerodon.core.domain.Page;
@@ -392,8 +391,6 @@ public interface AppServiceInstanceService {
     String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 
     void updateStatus(AppServiceInstanceDTO appServiceInstanceDTO);
-
-    ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO);
 
     Integer countByOptions(Long envId, String status, Long appServiceId);
 

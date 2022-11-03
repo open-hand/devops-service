@@ -23,4 +23,6 @@ public interface DevopsEnvResourceDetailService {
      * @return
      */
     List<DevopsEnvResourceDetailDTO> listByResourceDetailsIds(Set<Long> resourceDetailIds);
+
+    int batchDeleteByIdInNewTrans();
 }

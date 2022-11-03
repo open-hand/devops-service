@@ -83,4 +83,10 @@ public interface DevopsEnvResourceService {
     String queryDetailsYamlByKindAndName(Long envId, String kind, String name);
 
     List<DevopsEnvPodVO> listPodResourceByInstanceId(Long instanceId);
+
+    /**
+     * 级联删除资源与资源详情
+     * @param devopsEnvResourceDTO
+     */
+    void cascadeDeleteByObject(DevopsEnvResourceDTO devopsEnvResourceDTO);
 }
