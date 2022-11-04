@@ -24,6 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_host")
 public class DevopsHostDTO extends AuditDomain {
+    @Encrypt
     @Id
     @Encrypt
     @GeneratedValue

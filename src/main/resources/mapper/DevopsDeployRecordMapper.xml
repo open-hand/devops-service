@@ -302,6 +302,9 @@
 			<if test="deployObjectVersion != null">
 				and ddr.deploy_object_version LIKE CONCAT(CONCAT('%', #{deployObjectVersion, jdbcType=VARCHAR}),'%')
 			</if>
+			<if test="createdBy != null">
+				and ddr.created_by = #{createdBy}
+			</if>
 		</where>
 
 	</select>
