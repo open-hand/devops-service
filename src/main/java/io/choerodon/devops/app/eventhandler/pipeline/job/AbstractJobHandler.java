@@ -24,19 +24,18 @@ public abstract class AbstractJobHandler {
     @Autowired
     private DevopsCiJobService devopsCiJobService;
 
+    public abstract CiJobTypeEnum getType();
+
     /**
-     * 初始化ci任务记录时，需要记录当前的任务配置信息
+     * 把配置转换为gitlab-ci配置（maven,sonarqube）
      *
-     * @param devopsCiJobDTO
-     * @param job
+     * @param organizationId 组织id
+     * @param projectId      项目id
+     * @param devopsCiJobDTO 生成脚本
+     * @return 生成的脚本列表
      */
-    public void fillJobAdditionalInfo(DevopsCiJobDTO devopsCiJobDTO, CiJobWebHookVO job) {
+    public abstract List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO);
 
-    }
-
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
-
-    }
 
     @Transactional(rollbackFor = Exception.class)
     public DevopsCiJobDTO saveJobInfo(Long ciPipelineId, Long ciStageId, DevopsCiJobVO devopsCiJobVO) {
@@ -52,6 +51,16 @@ public abstract class AbstractJobHandler {
     }
 
     /**
+     * 初始化ci任务记录时，需要记录当前的任务配置信息
+     *
+     * @param devopsCiJobDTO
+     * @param job
+     */
+    public void fillJobAdditionalInfo(DevopsCiJobDTO devopsCiJobDTO, CiJobWebHookVO job) {
+
+    }
+
+    /**
      * 保存任务配置，实现类如果需要存储任务配置则重写
      *
      * @param devopsCiJobVO
@@ -62,9 +71,6 @@ public abstract class AbstractJobHandler {
         // do nothong
         return null;
     }
-
-    public abstract CiJobTypeEnum getType();
-
     /**
      * 查询流水线详情时，给包含任务配置的任务填充信息
      *
@@ -84,12 +90,13 @@ public abstract class AbstractJobHandler {
     }
 
     /**
-     * 把配置转换为gitlab-ci配置（maven,sonarqube）
+     * 初始化流水线记录时需要额外保存的信息
      *
-     * @param organizationId 组织id
-     * @param projectId      项目id
-     * @param devopsCiJobDTO 生成脚本
-     * @return 生成的脚本列表
+     * @param devopsCiJobRecordDTO
+     * @param gitlabPipelineId
+     * @param ciJobWebHookVO
      */
-    public abstract List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO);
+    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
+
+    }
 }

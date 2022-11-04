@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_chart_deploy_config.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_chart_deploy_cfg.groovy') {
     changeSet(author: 'wanghao', id: '2020-07-08-create-table') {
-        createTable(tableName: "devops_ci_chart_deploy_config", remarks: 'CI chart部署任务配置表') {
+        createTable(tableName: "devops_ci_tpl_chart_deploy_cfg", remarks: '流水线模板 chart部署任务配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
