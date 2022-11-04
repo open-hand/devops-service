@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper">
+  <update id="updateAllHelmConfigRepoDefaultToFalse">
+    UPDATE devops_helm_config
+    SET repo_default=0
+    WHERE resource_id = #{projectId}
+      AND resource_type = 'project'
+  </update>
+
+  <update id="updateHelmConfigRepoDefaultToTrue">
+    UPDATE devops_helm_config
+    SET repo_default=1
+    WHERE id = #{helmConfigId}
+      AND resource_id = #{projectId}
+      AND resource_type = 'project'
+  </update>
+
+  <update id="updateDevopsHelmConfigToNonDefaultRepoOnOrganization">
+    UPDATE devops_helm_config
+    SET repo_default=0
+    WHERE resource_id = #{resourceId}
+      AND resource_type = 'organization'
+  </update>
+
+  <select id="checkNameExists" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_helm_config
+            WHERE resource_type = 'project'
+              AND name = #{name}
+    <if test="helmConfigId != null">
+      AND id != #{helmConfigId}
+      AND deleted=0
+    </if>
+  </select>
+
+    <select id="listHelmConfigWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+        SELECT id, name, creation_date
+        FROM devops_helm_config
+        WHERE resource_id = #{resourceId}
+          AND resource_type = #{resourceType}
+      AND deleted=0
+    </select>
+
+  <select id="selectOneWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT id, name
+    FROM devops_helm_config
+    WHERE resource_id = #{resourceId}
+      AND resource_type = #{resourceType}
+      AND repo_default = #{defaultRepo}
+    AND deleted=0
+  </select>
+
+  <select id="selectWithIdAndNameByAppServiceId" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT dhc.id   AS id,
+           dhc.name AS name
+    FROM devops_helm_config dhc
+                 JOIN devops_app_service_helm_rel dashr ON dashr.helm_config_id = dhc.id
+    WHERE dashr.app_service_id = #{appServiceId}
+    AND deleted=0
+  </select>
+
+  <insert id="batchInsert">
+    insert ignore into devops_helm_config(
+    id,
+    name,
+    resource_type,
+    resource_id,
+    url,
+    username,
+    password,
+    repo_private,
+    repo_default)
+    values
+    <foreach collection="devopsHelmConfigDTOS" item="devopsHelmConfigDTO" separator=",">
+      (#{devopsHelmConfigDTO.id},
+      #{devopsHelmConfigDTO.name},
+      #{devopsHelmConfigDTO.resourceType},
+      #{devopsHelmConfigDTO.resourceId},
+      #{devopsHelmConfigDTO.url},
+      #{devopsHelmConfigDTO.username},
+      #{devopsHelmConfigDTO.password},
+      #{devopsHelmConfigDTO.repoPrivate},
+      #{devopsHelmConfigDTO.repoDefault}
+      )
+    </foreach>
+  </insert>
+
+  <select id="listObjectVersionNumberById" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
+    SELECT id,object_version_number
+    FROM devops_helm_config
+    WHERE id=#{helmConfigId}
+    AND deleted=0
+  </select>
+</mapper>

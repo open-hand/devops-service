@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,11 +59,10 @@ public class GitUtil {
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String GIT_SUFFIX = "/.git";
-    private static final String ERROR_GIT_CLONE = "error.git.clone";
+    private static final String ERROR_GIT_CLONE = "devops.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(GitUtil.class);
     private static final Pattern PATTERN = Pattern.compile("^[-\\+]?[\\d]*$");
-    private static final String ERROR_GIT_PUSH = "error.git.push";
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
     @Autowired
@@ -132,7 +133,7 @@ public class GitUtil {
         LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
         lsRemoteCommand.setRemote(repositoryUrl);
         if (ObjectUtils.isEmpty(username) || ObjectUtils.isEmpty(password)) {
-            throw new CommonException("error.general.git.username.or.password.empty");
+            throw new CommonException("devops.general.git.username.or.password.empty");
         }
         lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
         try {
@@ -300,7 +301,7 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             checkout(commit, repository);
         } catch (IOException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -309,7 +310,7 @@ public class GitUtil {
         try (Git git = new Git(repository)) {
             git.checkout().setName(commit).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.checkout", e);
+            throw new CommonException(DEVOPS_GIT_CHECKOUT, e);
         }
     }
 
@@ -333,7 +334,7 @@ public class GitUtil {
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
             return pullBySsh(repository, envRas);
         } catch (IOException e) {
-            throw new CommonException("error.git.pull", e);
+            throw new CommonException("devops.git.pull", e);
         }
     }
 
@@ -481,7 +482,7 @@ public class GitUtil {
                     "", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -518,7 +519,7 @@ public class GitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -538,7 +539,7 @@ public class GitUtil {
                     .setCredentialsProvider(new UsernamePasswordCredentialsProvider("", accessToken))
                     .call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -553,7 +554,7 @@ public class GitUtil {
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("admin", accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         }
     }
 
@@ -569,7 +570,7 @@ public class GitUtil {
             Iterable<RevCommit> log = git.log().call();
             commit = log.iterator().next().getName();
         } catch (GitAPIException e) {
-            throw new CommonException("error.get.commit");
+            throw new CommonException("devops.get.commit");
         }
         return commit;
     }
@@ -598,7 +599,7 @@ public class GitUtil {
                     userName, accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(ERROR_GIT_PUSH, e);
+            throw new CommonException(DEVOPS_GIT_PUSH, e);
         } finally {
             //删除模板
             if (deleteFile != null && deleteFile) {
@@ -635,7 +636,7 @@ public class GitUtil {
             try {
                 FileUtils.deleteDirectory(file);
             } catch (IOException e) {
-                throw new CommonException("error.directory.delete", e);
+                throw new CommonException(DEVOPS_DIRECTORY_DELETE, e);
             }
         }
     }
@@ -645,7 +646,7 @@ public class GitUtil {
         try {
             git = Git.init().setDirectory(file).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.init", e);
+            throw new CommonException("devops.git.init", e);
         }
         return git;
     }
@@ -826,7 +827,7 @@ public class GitUtil {
         LOGGER.info("Get git config to init cluster: agent name: {}", gitConfigVO.getAgentName());
         List<GitEnvConfigVO> gitEnvConfigDTOS = new ArrayList<>();
         devopsEnvironments.forEach(devopsEnvironmentDTO -> {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
             Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
             String repoUrl = GitUtil.getGitlabSshUrl(PATTERN, gitlabSshUrl, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsClusterDTO.getCode());
 

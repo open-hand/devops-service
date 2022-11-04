@@ -209,11 +209,11 @@ public class SslUtil {
      */
     public static PublicKey validateCert(File cert) {
         if (cert == null) {
-            throw new CommonException("err.crt.file.not.exist");
+            throw new CommonException("devops.crt.file.not.exist");
         }
         PublicKey publicKey = getPublicKey(cert);
         if (publicKey == null) {
-            throw new CommonException("err.crt.file.format.error");
+            throw new CommonException("devops.crt.file.format.error");
         }
         return publicKey;
     }
@@ -226,11 +226,11 @@ public class SslUtil {
      */
     public static PrivateKey validatePrivateKey(File key) {
         if (key == null) {
-            throw new CommonException("err.key.file.not.exist");
+            throw new CommonException("devops.key.file.not.exist");
         }
         PrivateKey privateKey = getPrivateKey(key);
         if (privateKey == null) {
-            throw new CommonException("err.key.file.format.error");
+            throw new CommonException("devops.key.file.format.error");
         }
         return privateKey;
     }
@@ -251,7 +251,7 @@ public class SslUtil {
         String encryptStr = encrypt(publicKey, str);//根据证书公钥对字符串进行加密
         String decryptStr = decrypt(privateKey, encryptStr);//根据证书私钥对加密字符串进行解密
         if (!str.equals(decryptStr)) {//字符串根据证书公钥加密，私钥解密后不能还原说明证书与私钥不匹配
-            throw new CommonException("err.key.crt.not.equal");
+            throw new CommonException("devops.key.crt.not.equal");
         }
     }
 }

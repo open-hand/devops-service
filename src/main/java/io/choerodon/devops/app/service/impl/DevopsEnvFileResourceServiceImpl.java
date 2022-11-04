@@ -46,7 +46,7 @@ public class DevopsEnvFileResourceServiceImpl implements DevopsEnvFileResourceSe
 
     @Override
     public DevopsEnvFileResourceDTO baseCreate(DevopsEnvFileResourceDTO devopsEnvFileResourceDTO) {
-        return MapperUtil.resultJudgedInsert(devopsEnvFileResourceMapper, devopsEnvFileResourceDTO, "error.insert.env.file.resource");
+        return MapperUtil.resultJudgedInsert(devopsEnvFileResourceMapper, devopsEnvFileResourceDTO, "devops.insert.env.file.resource");
     }
 
     @Override

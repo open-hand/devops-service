@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.SecretReqVO;
 import io.choerodon.devops.api.vo.SecretRespVO;
 import io.choerodon.devops.infra.dto.DevopsSecretDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Created by n!Ck
@@ -96,8 +96,6 @@ public interface DevopsSecretService {
     boolean isNameUnique(Long envId, String name);
 
     SecretReqVO dtoToReqVo(DevopsSecretDTO devopsSecretDTO);
-
-    SecretRespVO dtoToRespVo(DevopsSecretDTO devopsSecretDTO);
 
     DevopsSecretDTO baseQuery(Long secretId);
 

@@ -57,4 +57,12 @@ public class UserController {
     public ResponseEntity<DevopsUserSyncRecordVO> latestSyncRecord() {
         return ResponseEntity.ok(devopsUserSyncRecordService.queryLatestRecord());
     }
+
+    @ApiOperation("同步用户的gitlab group权限")
+    @Permission(permissionLogin = true)
+    @PostMapping("/sync_group_permission")
+    public ResponseEntity<Void> syncGroupPermission(@RequestParam(value = "project_id") Long projectId) {
+        gitlabUserService.syncGroupPermission(projectId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

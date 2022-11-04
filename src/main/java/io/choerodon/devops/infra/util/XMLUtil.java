@@ -30,7 +30,7 @@ public class XMLUtil {
             xmlObject = unmarshaller.unmarshal(getStringStream(settings));
 
         } catch (Exception e) {
-            LOGGER.error("error.xml.to.object", e);
+            LOGGER.error("devops.xml.to.object", e);
         }
         return xmlObject;
     }
@@ -40,7 +40,7 @@ public class XMLUtil {
             try {
                 return new ByteArrayInputStream(sInputString.getBytes());
             } catch (Exception ex) {
-                LOGGER.error("error.get.stream", ex);
+                LOGGER.error("devops.get.stream", ex);
             }
         }
         return null;

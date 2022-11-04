@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.validator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_APP_ID_NOT_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +43,11 @@ public class EnvironmentApplicationValidator {
      */
     public void checkEnvIdExist(Long envId) {
         if (envId == null) {
-            throw new CommonException("error.env.id.null");
+            throw new CommonException("devops.env.id.null");
         }
 
         if (devopsEnvironmentMapper.selectByPrimaryKey(envId) == null) {
-            throw new CommonException("error.env.id.not.exist", envId);
+            throw new CommonException(DEVOPS_ENV_ID_NOT_EXIST, envId);
         }
     }
 
@@ -56,12 +59,12 @@ public class EnvironmentApplicationValidator {
      */
     public void checkAppIdsExist(List<Long> appServiceIds) {
         if (appServiceIds == null || appServiceIds.size() == 0) {
-            throw new CommonException("error.app.ids.null");
+            throw new CommonException("devops.app.ids.null");
         }
 
         appServiceIds.forEach(id -> {
             if (appServiceMapper.selectByPrimaryKey(id) == null) {
-                throw new CommonException("error.app.id.not.exist", id);
+                throw new CommonException(DEVOPS_APP_ID_NOT_EXIST, id);
             }
         });
     }
@@ -71,15 +74,15 @@ public class EnvironmentApplicationValidator {
      */
     public void checkEnvIdAndAppIdsExist(Long projectId, Long envId, Long appServiceId) {
         if (envId == null) {
-            throw new CommonException("error.env.id.null");
+            throw new CommonException("devops.env.id.null");
         }
         if (appServiceId == null) {
-            throw new CommonException("error.app.id.null");
+            throw new CommonException("devops.app.id.null");
         }
         permissionHelper.checkEnvBelongToProject(projectId, envId);
         DevopsEnvAppServiceDTO devopsEnvAppServiceDTO = new DevopsEnvAppServiceDTO(appServiceId, envId);
         if (devopsEnvAppServiceMapper.selectOne(devopsEnvAppServiceDTO) == null) {
-            throw new CommonException("error.envAndApp.not.exist", envId, appServiceId);
+            throw new CommonException("devops.envAndApp.not.exist", envId, appServiceId);
         }
     }
 }

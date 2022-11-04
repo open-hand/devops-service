@@ -67,9 +67,7 @@ public class DevopsProjectController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsProjectService.pageProjects(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
+        return ResponseEntity.ok(devopsProjectService.pageProjects(projectId, pageable, params));
     }
 
     /**
@@ -91,9 +89,7 @@ public class DevopsProjectController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params
     ) {
-        return Optional.ofNullable(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.users.all.list"));
+        return ResponseEntity.ok(devopsProjectService.listAllOwnerAndMembers(projectId, pageable, params));
     }
 
 

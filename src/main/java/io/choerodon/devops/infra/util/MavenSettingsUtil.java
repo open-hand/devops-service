@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_MAVEN_REPOSITORY_TYPE;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -40,7 +42,7 @@ public class MavenSettingsUtil {
     }
 
     private static final String DEFAULT_PROFILE_ID = "default";
-    private static final String ERROR_CI_MAVEN_REPOSITORY_TYPE = "error.ci.maven.repository.type";
+
 
     /**
      * 数组字节流的初始大小
@@ -62,7 +64,7 @@ public class MavenSettingsUtil {
             if (m.getType() != null) {
                 String[] types = m.getType().split(GitOpsConstants.COMMA);
                 if (types.length > 2) {
-                    throw new CommonException(ERROR_CI_MAVEN_REPOSITORY_TYPE, m.getType());
+                    throw new CommonException(DEVOPS_CI_MAVEN_REPOSITORY_TYPE, m.getType());
                 }
             }
             if (Boolean.TRUE.equals(m.getPrivateRepo())) {
@@ -104,7 +106,7 @@ public class MavenSettingsUtil {
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
         } catch (JAXBException e) {
             LOGGER.warn("Maven util: internal errors: failed to generate settings: servers: {}, repositories: {}", servers, repositories);
-            throw new CommonException("error.generate.maven.settings");
+            throw new CommonException("devops.generate.maven.settings");
         }
     }
 
@@ -168,7 +170,7 @@ public class MavenSettingsUtil {
                 }
             }
         } catch (DocumentException e) {
-            throw new CommonException("error.parse.pom", e.getCause());
+            throw new CommonException("devops.parse.pom", e.getCause());
         }
         CiPipelineMavenDTO ciPipelineMavenDTO = new CiPipelineMavenDTO();
         ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);

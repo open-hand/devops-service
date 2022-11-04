@@ -6,8 +6,10 @@ import java.util.Set;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.infra.dto.AppServiceLatestVersionDTO;
+import io.choerodon.devops.api.vo.AppServiceVersionAndCommitVO;
+import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.AppServiceVersionVO;
+import io.choerodon.devops.api.vo.AppServiceVersionWithHelmConfigVO;
 import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -76,15 +78,6 @@ public interface AppServiceVersionService {
      */
     List<AppServiceVersionRespVO> listUpgradeableAppVersion(Long projectId, Long appServiceServiceId);
 
-    /**
-     * 项目下查询应用最新的版本和各环境下部署的版本
-     *
-     * @param appServiceId 应用ID
-     * @return DeployVersionVO
-     */
-    DeployVersionVO queryDeployedVersions(Long appServiceId);
-
-
     String queryVersionValue(Long appServiceServiceId);
 
     AppServiceVersionRespVO queryById(Long appServiceServiceId);
@@ -141,8 +134,6 @@ public interface AppServiceVersionService {
      */
     Page<AppServiceVersionRespVO> pageShareVersionByAppServiceIdAndVersion(Long appServiceId, PageRequest pageable, String version);
 
-    List<AppServiceLatestVersionDTO> baseListAppNewestVersion(Long projectId);
-
     List<AppServiceVersionDTO> baseListByAppServiceId(Long appServiceId);
 
 
@@ -163,8 +154,6 @@ public interface AppServiceVersionService {
     void baseCheckByProjectAndVersionId(Long projectId, Long appServiceServiceId);
 
     List<AppServiceVersionDTO> baseQueryByCommitSha(Long appServiceId, String ref, String sha);
-
-    AppServiceVersionDTO baseQueryNewestVersion(Long appServiceId);
 
     List<AppServiceVersionDTO> baseListByAppServiceVersionIds(List<Long> appServiceServiceIds);
 
@@ -212,8 +201,6 @@ public interface AppServiceVersionService {
 
     void deleteByAppServiceId(Long appServiceId);
 
-    void fixHarbor();
-
     /**
      * 批量删除应用服务版本
      *
@@ -226,4 +213,39 @@ public interface AppServiceVersionService {
     AppServiceVersionDTO queryByCommitShaAndRef(Long appServiceId, String commitSha, String ref);
 
     AppServiceVersionWithHelmConfigVO queryVersionWithHelmConfig(Long projectId, Long appServiceVersionId);
+
+    /**
+     * 发布应用服务版本
+     * @param token
+     * @param version
+     * @param commit
+     * @param ref
+     * @param gitlabPipelineId
+     * @param jobName
+     */
+    AppServiceVersionDTO publishAppVersion(String token, String version, String commit, String ref, Long gitlabPipelineId, String jobName);
+
+    AppServiceVersionDTO saveAppVersion(String version, String commit, String ref, Long gitlabPipelineId, Long appServiceId);
+
+    /**
+     * 保存应用服务版本
+     * @param appServiceId 应用服务id
+     * @param version 版本名
+     * @param commit commit sha
+     * @param ref 分支
+     * @return
+     */
+    AppServiceVersionDTO create(Long appServiceId, String version, String commit, String ref);
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfig();
+
+    List<AppServiceVersionDTO> listAllVersionsWithHarborConfig();
+
+    Integer queryCountVersionsWithHelmConfig();
+
+    Integer queryCountVersionsWithHarborConfig();
+
+    Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
 }

@@ -3,10 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1Container;
-import io.kubernetes.client.models.V1ContainerPort;
-import io.kubernetes.client.models.V1beta2Deployment;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.V1Container;
+import io.kubernetes.client.openapi.models.V1ContainerPort;
+import io.kubernetes.client.openapi.models.V1Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,7 +92,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         }
 
         if (!checkCanDelete(envId, appServiceId)) {
-            throw new CommonException("error.delete.env.app-service.relationship");
+            throw new CommonException("devops.delete.env.app-service.relationship");
         }
 
         devopsEnvAppServiceMapper.delete(searchCondition);
@@ -127,8 +127,8 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appServiceId);
         List<Map<String, String>> listLabel = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
-            V1beta2Deployment v1beta2Deployment = json.deserialize(
-                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
+            V1Deployment v1beta2Deployment = json.deserialize(
+                    devopsEnvMessageVO.getDetail(), V1Deployment.class);
             listLabel.add(v1beta2Deployment.getMetadata().getLabels());
         });
         return listLabel;
@@ -139,8 +139,8 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
         List<DevopsEnvMessageVO> devopsEnvMessageVOS = baseListResourceByEnvAndApp(envId, appServiceId);
         List<DevopsEnvPortVO> devopsEnvPortVOS = new ArrayList<>();
         devopsEnvMessageVOS.forEach(devopsEnvMessageVO -> {
-            V1beta2Deployment v1beta2Deployment = json.deserialize(
-                    devopsEnvMessageVO.getDetail(), V1beta2Deployment.class);
+            V1Deployment v1beta2Deployment = json.deserialize(
+                    devopsEnvMessageVO.getDetail(), V1Deployment.class);
             List<V1Container> containers = v1beta2Deployment.getSpec().getTemplate().getSpec().getContainers();
             for (V1Container container : containers) {
                 List<V1ContainerPort> ports = container.getPorts();
@@ -162,7 +162,7 @@ public class DevopsEnvApplicationServiceImpl implements DevopsEnvApplicationServ
     @Override
     public DevopsEnvAppServiceDTO baseCreate(DevopsEnvAppServiceDTO devopsEnvAppServiceDTO) {
         if (devopsEnvAppServiceMapper.insert(devopsEnvAppServiceDTO) != 1) {
-            throw new CommonException("error.insert.env.app");
+            throw new CommonException("devops.insert.env.app");
         }
         return devopsEnvAppServiceDTO;
     }

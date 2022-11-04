@@ -14,16 +14,16 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvPermissionUpdateVO {
     @Encrypt
     @ApiModelProperty("环境id / 必需")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long envId;
 
     @Encrypt
     @ApiModelProperty("要添加权限的用户id / 必需")
-    @NotNull(message = "error.user.ids.null")
+    @NotNull(message = "{devops.user.ids.null}")
     private List<Long> userIds;
 
     @ApiModelProperty("是否跳过权限校验 / 必需")
-    @NotNull(message = "error.is.skip.permission.check.null")
+    @NotNull(message = "{devops.is.skip.permission.check.null}")
     private Boolean skipCheckPermission;
 
     @ApiModelProperty("环境的版本号, 如果更新了'skipCheckPermission'字段则必填")

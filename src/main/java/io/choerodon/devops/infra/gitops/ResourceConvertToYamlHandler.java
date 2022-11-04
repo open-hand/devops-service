@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.gitops;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -10,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -39,13 +41,14 @@ public class ResourceConvertToYamlHandler<T> {
 
     public static final String UPDATE = "update";
     private static final String C7NTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nHelmRelease";
-    private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
-    private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
+    private static final String V1_INGTAG = "!!io.kubernetes.client.openapi.models.V1Ingress";
+    private static final String V1_BETA1_INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
+    private static final String SVCTAG = "!!io.kubernetes.client.openapi.models.V1Service";
     private static final String CERTTAG = "!!io.choerodon.devops.api.vo.kubernetes.C7nCertification";
-    private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
-    private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
-    private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
-    private static final String DEPLOYMENT = "!!io.kubernetes.client.models.V1beta2Deployment";
+    private static final String CONFIGMAPTAG = "!!io.kubernetes.client.openapi.models.V1ConfigMap";
+    private static final String SECRET = "!!io.kubernetes.client.openapi.models.V1Secret";
+    private static final String ENDPOINTS = "!!io.kubernetes.client.openapi.models.V1Endpoints";
+    private static final String DEPLOYMENT = "!!io.kubernetes.client.openapi.models.V1Deployment";
     private static final List<String> WORKLOAD_RESOURCE_TYPE = new ArrayList<>();
 
     @Value(value = "${devops.deploy.enableDeleteBlankLine:true}")
@@ -102,7 +105,7 @@ public class ResourceConvertToYamlHandler<T> {
             try {
                 content = JsonYamlConversionUtil.json2yaml(jsonStr);
             } catch (IOException e) {
-                throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+                throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
             }
         } else {
             content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -119,7 +122,7 @@ public class ResourceConvertToYamlHandler<T> {
             DevopsEnvFileResourceService devopsEnvFileResourceService = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceService.class);
             DevopsEnvFileResourceDTO devopsEnvFileResourceDTO = devopsEnvFileResourceService.baseQueryByEnvIdAndResourceId(envId, objectId, objectType);
             if (devopsEnvFileResourceDTO == null) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                     endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
@@ -247,17 +250,7 @@ public class ResourceConvertToYamlHandler<T> {
         V1Service newV1Service;
         if (objectType.equals(ResourceType.SERVICE.getType()) && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
             if (operationType.equals(UPDATE)) {
-                Map<String, String> oldAnnotations = v1Service.getMetadata().getAnnotations();
                 newV1Service = (V1Service) t;
-                Map<String, String> newAnnotations = newV1Service.getMetadata().getAnnotations();
-                if (!CollectionUtils.isEmpty(oldAnnotations)) {
-                    oldAnnotations.forEach((key, value) -> {
-                        if (!key.equals("choerodon.io/network-service-instances") && !key.equals("choerodon.io/network-service-app")) {
-                            newAnnotations.put(key, value);
-                        }
-                    });
-                }
-                newV1Service.getMetadata().setAnnotations(newAnnotations);
             } else {
                 return;
             }
@@ -274,31 +267,59 @@ public class ResourceConvertToYamlHandler<T> {
 
     private void handleIngress(T t, Boolean deleteCert, String objectType, String operationType, StringBuilder
             resultBuilder, JSONObject jsonObject) {
-        Yaml yaml2 = new Yaml();
-        V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
-        V1beta1Ingress newV1beta1Ingress;
+        if (t instanceof V1Ingress) {
+            Yaml yaml2 = new Yaml();
+            V1Ingress v1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1Ingress.class);
+            V1Ingress newV1Ingress;
 
-        // 如果这个Ingress对象是被修改的对象
-        if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
-            if (operationType.equals(UPDATE)) {
-                newV1beta1Ingress = (V1beta1Ingress) t;
-                if (!deleteCert) {
-                    if (newV1beta1Ingress.getSpec().getTls() != null && !newV1beta1Ingress.getSpec().getTls().isEmpty()) {
-                        newV1beta1Ingress.getSpec().setTls(newV1beta1Ingress.getSpec().getTls());
-                    } else {
-                        newV1beta1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+            // 如果这个Ingress对象是被修改的对象
+            if (objectType.equals(ResourceType.INGRESS.getType()) && v1Ingress.getMetadata().getName().equals(((V1Ingress) t).getMetadata().getName())) {
+                if (operationType.equals(UPDATE)) {
+                    newV1Ingress = (V1Ingress) t;
+                    if (!deleteCert) {
+                        if (newV1Ingress.getSpec().getTls() != null && !newV1Ingress.getSpec().getTls().isEmpty()) {
+                            newV1Ingress.getSpec().setTls(newV1Ingress.getSpec().getTls());
+                        } else {
+                            newV1Ingress.getSpec().setTls(v1Ingress.getSpec().getTls());
+                        }
                     }
+                } else {
+                    // 如果是 DELETE 直接返回
+                    return;
                 }
             } else {
-                // 如果是 DELETE 直接返回
-                return;
+                // 如果不是，进行保留
+                newV1Ingress = v1Ingress;
             }
+            Tag tag2 = new Tag(V1_INGTAG);
+            resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1Ingress).replace(V1_INGTAG, "---"));
         } else {
-            // 如果不是，进行保留
-            newV1beta1Ingress = v1beta1Ingress;
+            Yaml yaml2 = new Yaml();
+            V1beta1Ingress v1beta1Ingress = yaml2.loadAs(jsonObject.toJSONString(), V1beta1Ingress.class);
+            V1beta1Ingress newV1Ingress;
+
+            // 如果这个Ingress对象是被修改的对象
+            if (objectType.equals(ResourceType.INGRESS.getType()) && v1beta1Ingress.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
+                if (operationType.equals(UPDATE)) {
+                    newV1Ingress = (V1beta1Ingress) t;
+                    if (!deleteCert) {
+                        if (newV1Ingress.getSpec().getTls() != null && !newV1Ingress.getSpec().getTls().isEmpty()) {
+                            newV1Ingress.getSpec().setTls(newV1Ingress.getSpec().getTls());
+                        } else {
+                            newV1Ingress.getSpec().setTls(v1beta1Ingress.getSpec().getTls());
+                        }
+                    }
+                } else {
+                    // 如果是 DELETE 直接返回
+                    return;
+                }
+            } else {
+                // 如果不是，进行保留
+                newV1Ingress = v1beta1Ingress;
+            }
+            Tag tag2 = new Tag(V1_BETA1_INGTAG);
+            resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1Ingress).replace(V1_BETA1_INGTAG, "---"));
         }
-        Tag tag2 = new Tag(INGTAG);
-        resultBuilder.append("\n").append(getYamlObject(tag2, true).dump(newV1beta1Ingress).replace(INGTAG, "---"));
     }
 
     private void handleC7nHelmRelease(T t, String objectType, String operationType, StringBuilder
@@ -353,8 +374,8 @@ public class ResourceConvertToYamlHandler<T> {
 
     private void handleSecret(T t, String objectType, String operationType, StringBuilder resultBuilder,
                               JSONObject jsonObject) {
-        Yaml yaml6 = new Yaml();
-        V1Secret v1Secret = yaml6.loadAs(jsonObject.toJSONString(), V1Secret.class);
+        JSON json = new JSON();
+        V1Secret v1Secret = json.deserialize(jsonObject.toJSONString(), V1Secret.class);
         V1Secret newV1Secret;
         if (objectType.equals(ResourceType.SECRET.getType()) && v1Secret.getMetadata().getName()
                 .equals(((V1Secret) t).getMetadata().getName())) {
@@ -393,7 +414,7 @@ public class ResourceConvertToYamlHandler<T> {
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
         } catch (IOException e) {
-            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+            throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
         }
     }
 
@@ -419,7 +440,7 @@ public class ResourceConvertToYamlHandler<T> {
         try {
             resultBuilder.append("\n").append(JsonYamlConversionUtil.json2yaml(jsonStr));
         } catch (IOException e) {
-            throw new CommonException("error.dump.pv.or.pvc.to.yaml", e);
+            throw new CommonException("devops.dump.pv.or.pvc.to.yaml", e);
         }
     }
 

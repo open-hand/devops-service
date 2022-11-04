@@ -61,9 +61,4 @@ public interface TestServiceClient {
                                                  @ApiParam(value = "套件记录id", required = true)
                                                  @Encrypt
                                                  @PathVariable("id") Long suiteRecordId);
-
-    @ApiOperation("测试jmeter服务器是够可用于分布式测试 / devops-service用")
-    @GetMapping("/v1/distribute_hosts/connection_test")
-    ResponseEntity<String> testConnection(@RequestParam("host_ip") String hostIp,
-                                          @RequestParam("jmeter_port") Integer jmeterPort);
 }

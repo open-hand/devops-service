@@ -1,7 +1,8 @@
 package io.choerodon.devops.api.vo.market;
 
-import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotEmpty;
+
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -19,12 +20,12 @@ public class JarReleaseConfigVO {
     private Long nexusServerId;
     @ApiModelProperty("maven仓库地址/来源是custom时需要/形如: https://nexus.test.com.cn/repository/choerodon-maven/")
     private String nexusRepoUrl;
-    @NotEmpty(message = "error.groupId.empty")
+    @NotEmpty(message = "devops.groupId.empty")
     private String groupId;
-    @NotEmpty(message = "error.artifactId.empty")
+    @NotEmpty(message = "devops.artifactId.empty")
     private String artifactId;
     @ApiModelProperty("nexus中的版本")
-    @NotEmpty(message = "error.version.empty")
+    @NotEmpty(message = "devops.version.empty")
     private String version;
     @ApiModelProperty("拉取jar包的用户信息/来源是 custom 时才需要")
     private String username;

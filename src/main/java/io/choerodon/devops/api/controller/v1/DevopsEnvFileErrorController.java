@@ -1,13 +1,11 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsEnvFileErrorVO;
@@ -57,9 +54,7 @@ public class DevopsEnvFileErrorController {
             @ApiParam(value = "环境 ID", required = true)
             @Encrypt
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvFileService.listByEnvId(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
+        return ResponseEntity.ok(devopsEnvFileService.listByEnvId(envId));
     }
 
     /**
@@ -83,8 +78,6 @@ public class DevopsEnvFileErrorController {
             @ApiParam(value = "环境 ID", required = true)
             @Encrypt
             @PathVariable(value = "env_id") Long envId) {
-        return Optional.ofNullable(devopsEnvFileService.pageByEnvId(envId, pageable))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.fileError.baseList"));
+        return ResponseEntity.ok(devopsEnvFileService.pageByEnvId(envId, pageable));
     }
 }

@@ -10,16 +10,16 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsEnvironmentReqVO {
     @ApiModelProperty("环境名称 / 必需")
-    @NotNull(message = "error.name.null")
+    @NotNull(message = "{devops.name.null}")
     private String name;
 
     @Encrypt
     @ApiModelProperty("集群ID / 必需")
-    @NotNull(message = "error.cluster.id.null")
+    @NotNull(message = "{devops.cluster.id.null}")
     private Long clusterId;
 
     @ApiModelProperty("环境code / 必需")
-    @NotNull(message = "error.code.null")
+    @NotNull(message = "{devops.code.null}")
     private String code;
 
     @ApiModelProperty("环境描述 / 非必需")

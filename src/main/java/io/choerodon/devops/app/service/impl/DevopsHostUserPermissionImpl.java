@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsHostService;
@@ -38,7 +37,7 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(DevopsHostUserPermissionDTO devopsHostUserPermissionDTO) {
         if (devopsHostUserPermissionMapper.insert(devopsHostUserPermissionDTO) != 1) {
-            throw new CommonException("error.insert.host.user.permission");
+            throw new CommonException("devops.insert.host.user.permission");
         }
     }
 
@@ -89,7 +88,7 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return;
         }
         // 抛出异常
-        throw new CommonException("error.host.user.permission");
+        throw new CommonException("devops.host.user.permission");
     }
 
     @Override
@@ -109,7 +108,7 @@ public class DevopsHostUserPermissionImpl implements DevopsHostUserPermissionSer
             return;
         }
         // 抛出异常
-        throw new CommonException("error.host.user.permission");
+        throw new CommonException("devops.host.user.permission");
     }
 
     @Override

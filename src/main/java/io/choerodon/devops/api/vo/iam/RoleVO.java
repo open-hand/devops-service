@@ -20,12 +20,12 @@ public class RoleVO {
     private Long id;
 
     @ApiModelProperty(value = "角色名/必填")
-    @NotEmpty(message = "error.role.name.empty")
+    @NotEmpty(message = "devops.role.name.empty")
     @Size(min = 1, max = 64)
     private String name;
 
     @ApiModelProperty(value = "角色编码/必填")
-    @NotEmpty(message = "error.role.code.empty")
+    @NotEmpty(message = "devops.role.code.empty")
     @Size(min = 1, max = 128)
     private String code;
 
@@ -33,7 +33,7 @@ public class RoleVO {
     private String description;
 
     @ApiModelProperty(value = "角色层级/必填")
-    @NotEmpty(message = "error.role.level.empty")
+    @NotEmpty(message = "devops.role.level.empty")
     private String level;
 
     @ApiModelProperty(value = "是否启用/非必填")

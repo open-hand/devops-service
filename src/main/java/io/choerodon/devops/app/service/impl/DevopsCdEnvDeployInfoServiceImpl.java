@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL;
+
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +24,11 @@ import io.choerodon.devops.infra.mapper.DevopsCdEnvDeployInfoMapper;
 @Service
 public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoService {
 
-    private static final String ERROR_ENV_ID_IS_NULL = "error.env.id.is.null";
-    private static final String ERROR_VALUE_ID_IS_NULL = "error.value.id.is.null";
+    private static final String ERROR_VALUE_ID_IS_NULL = "devops.value.id.is.null";
 
-    private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "error.deploy.info.id.is.null";
-    private static final String ERROR_SAVE_DEPLOY_INFO = "error.save.deploy.info";
-    private static final String ERROR_UPDATE_DEPLOY_INFO = "error.update.deploy.info";
+    private static final String ERROR_DEPLOY_INFO_ID_IS_NULL = "devops.deploy.info.id.is.null";
+    private static final String ERROR_SAVE_DEPLOY_INFO = "devops.save.deploy.info";
+    private static final String ERROR_UPDATE_DEPLOY_INFO = "devops.update.deploy.info";
 
     @Autowired
     private DevopsCdEnvDeployInfoMapper devopsCdEnvDeployInfoMapper;
@@ -36,18 +37,8 @@ public class DevopsCdEnvDeployInfoServiceImpl implements DevopsCdEnvDeployInfoSe
     @Transactional
     public DevopsCdEnvDeployInfoDTO save(DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO) {
         // 参数校验
-        Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), ERROR_ENV_ID_IS_NULL);
-//        if (CommandType.CREATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-//            if (devopsCdEnvDeployInfoDTO.getInstanceName() == null || devopsCdEnvDeployInfoDTO.getInstanceId() != null) {
-//                throw new CommonException(ERROR_PARAM_IS_INVALID);
-//            }
-//        } else if (CommandType.UPDATE.getType().equals(devopsCdEnvDeployInfoDTO.getDeployType())) {
-//            if (devopsCdEnvDeployInfoDTO.getInstanceId() == null) {
-//                throw new CommonException(ERROR_PARAM_IS_INVALID);
-//            }
-//        } else {
-//            throw new CommonException(ERROR_PARAM_IS_INVALID);
-//        }
+        Assert.notNull(devopsCdEnvDeployInfoDTO.getEnvId(), DEVOPS_ENV_ID_IS_NULL);
+
         // 保存记录
         if (devopsCdEnvDeployInfoMapper.insertSelective(devopsCdEnvDeployInfoDTO) != 1) {
             throw new CommonException(ERROR_SAVE_DEPLOY_INFO);

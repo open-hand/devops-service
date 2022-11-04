@@ -1,14 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.BranchCode.DEVOPS_BRANCH_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import org.hzero.mybatis.BatchInsertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -23,7 +24,6 @@ import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
 import io.choerodon.devops.infra.enums.DevopsIssueRelObjectTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.mapper.DevopsIssueRelMapper;
 import io.choerodon.devops.infra.util.LogUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -40,15 +40,12 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 public class DevopsBranchServiceImpl implements DevopsBranchService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsBranchServiceImpl.class);
 
+    private static final String DEVOPS_QUERY_BRANCH_BY_NAME = "devops.query.branch.by.name";
+    private static final String DEVOPS_BRANCH_UPDATE = "devops.branch.update";
+    private static final String DEVOPS_BRANCH_DELETE = "devops.branch.delete";
+
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
-
-    @Autowired
-    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
-
-    @Autowired
-    @Qualifier("devopsIssueRelBatchInsertHelper")
-    private BatchInsertHelper<DevopsIssueRelDTO> batchInsertHelper;
 
     @Autowired
     private DevopsIssueRelService devopsIssueRelService;
@@ -85,7 +82,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                 .queryByAppAndBranchNameWithIssueIds(devopsBranchDTO.getAppServiceId(), devopsBranchDTO.getBranchName());
 
         if (oldDevopsBranchDTO == null) {
-            throw new CommonException("error.query.branch.by.name");
+            throw new CommonException(DEVOPS_QUERY_BRANCH_BY_NAME);
         }
 
         Long branchId = oldDevopsBranchDTO.getId();
@@ -136,7 +133,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
         exist.setAppServiceId(devopsBranchDTO.getAppServiceId());
         exist.setBranchName(devopsBranchDTO.getBranchName());
         if (devopsBranchMapper.selectOne(exist) != null) {
-            throw new CommonException("error.branch.exist");
+            throw new CommonException(DEVOPS_BRANCH_EXIST);
         }
         devopsBranchMapper.insert(devopsBranchDTO);
         return devopsBranchDTO;
@@ -152,7 +149,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     public void baseUpdateBranch(DevopsBranchDTO devopsBranchDTO) {
         devopsBranchDTO.setObjectVersionNumber(devopsBranchMapper.selectByPrimaryKey(devopsBranchDTO.getId()).getObjectVersionNumber());
         if (devopsBranchMapper.updateByPrimaryKey(devopsBranchDTO) != 1) {
-            throw new CommonException("error.branch.update");
+            throw new CommonException(DEVOPS_BRANCH_UPDATE);
         }
     }
 
@@ -171,7 +168,7 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
                         } else if ("creation_date".equals(property)) {
                             property = "db.creation_date";
                         } else {
-                            throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
+                            throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, t.getProperty());
                         }
                         return property + " " + t.getDirection();
                     })
@@ -197,9 +194,8 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
             DevopsBranchDTO deleteCondition = new DevopsBranchDTO();
             deleteCondition.setAppServiceId(appServiceId);
             deleteCondition.setBranchName(branchName);
-            int resultCount;
-            if ((resultCount = devopsBranchMapper.delete(deleteCondition)) != 1) {
-                throw new CommonException("Failed to delete branch due to result count " + resultCount);
+            if (devopsBranchMapper.delete(deleteCondition) != 1) {
+                throw new CommonException(DEVOPS_BRANCH_DELETE);
             }
             // 在2021.7.5之前，删除分支会移除敏捷问题关联关系
             // 在此之后会保留该关系，是为了在gitlab或界面上删除分支后，敏捷照样能够获得分支和问题的关联关系
@@ -247,8 +243,12 @@ public class DevopsBranchServiceImpl implements DevopsBranchService {
     @Override
     public void copyIssueBranchRel(Long projectId, Long oldIssueId, Long newIssueId) {
         Set<DevopsIssueRelDTO> devopsIssueRelDTOS = devopsIssueRelService.listRelationByIssueIdAndObjectType(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), oldIssueId);
-        devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> {
-            devopsIssueRelService.addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getBranchId(), devopsIssueRelDTO.getProjectId(), devopsIssueRelDTO.getAppServiceCode(), newIssueId);
-        });
+        devopsIssueRelDTOS.forEach(devopsIssueRelDTO -> devopsIssueRelService
+                .addRelation(DevopsIssueRelObjectTypeEnum.BRANCH.getValue(),
+                        devopsIssueRelDTO.getBranchId(),
+                        devopsIssueRelDTO.getBranchId(),
+                        devopsIssueRelDTO.getProjectId(),
+                        devopsIssueRelDTO.getAppServiceCode(),
+                        newIssueId));
     }
 }

@@ -27,13 +27,13 @@ public class CiCdPipelineVO {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @ApiModelProperty("流水线名称")
-    @NotEmpty(message = "error.pipeline.name.cannot.be.null")
+    @NotEmpty(message = "{devops.pipeline.name.cannot.be.null}")
     private String name;
     @ApiModelProperty("项目id")
     private Long projectId;
     @Encrypt
     @ApiModelProperty("流水线关联应用服务id")
-    @NotNull(message = "error.pipeline.appSvc.id.cannot.be.null")
+    @NotNull(message = "{devops.pipeline.appSvc.id.cannot.be.null}")
     private Long appServiceId;
     @ApiModelProperty("流水线关联应用服务名称/nullable")
     private String appServiceName;

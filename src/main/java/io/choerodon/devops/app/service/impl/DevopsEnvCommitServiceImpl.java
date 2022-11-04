@@ -24,7 +24,7 @@ public class DevopsEnvCommitServiceImpl implements DevopsEnvCommitService {
     @Override
     public DevopsEnvCommitDTO baseCreate(DevopsEnvCommitDTO devopsEnvCommitDTO) {
         if (devopsEnvCommitMapper.insert(devopsEnvCommitDTO) != 1) {
-            throw new CommonException("error.devops.env.commit.create");
+            throw new CommonException("devops.devops.env.commit.create");
         }
         return devopsEnvCommitDTO;
     }

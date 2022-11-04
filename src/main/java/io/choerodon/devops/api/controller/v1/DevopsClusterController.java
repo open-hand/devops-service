@@ -27,10 +27,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/clusters")
 public class DevopsClusterController {
-    private static final String ERROR_CLUSTER_QUERY = "error.cluster.query";
-    private static final String ERROR_CLUSTER_INSERT = "error.devops.cluster.insert";
-
-
     @Autowired
     private DevopsClusterService devopsClusterService;
     @Autowired
@@ -50,9 +46,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
             @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) throws Exception {
-        return Optional.ofNullable(devopsClusterService.createCluster(projectId, devopsClusterReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_INSERT));
+        return ResponseEntity.ok(devopsClusterService.createCluster(projectId, devopsClusterReqVO));
     }
 
     /**
@@ -66,9 +60,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群id", required = true)
             @RequestParam(value = "key") String key) {
-        return Optional.ofNullable(devopsClusterService.checkProgress(projectId, key))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.node.check.process.get"));
+        return ResponseEntity.ok(devopsClusterService.checkProgress(projectId, key));
     }
 
     /**
@@ -101,9 +93,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群信息", required = true)
             @RequestBody @Valid DevopsClusterReqVO devopsClusterReqVO) {
-        return Optional.ofNullable(devopsClusterService.activateCluster(projectId, devopsClusterReqVO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
+        return ResponseEntity.ok(devopsClusterService.activateCluster(projectId, devopsClusterReqVO));
     }
 
     /**
@@ -141,9 +131,7 @@ public class DevopsClusterController {
             @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.query(clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+        return ResponseEntity.ok(devopsClusterService.query(clusterId));
     }
 
     /**
@@ -160,9 +148,7 @@ public class DevopsClusterController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "集群Code")
             @RequestParam String code) {
-        return Optional.ofNullable(devopsClusterService.queryByCode(projectId, code))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+        return ResponseEntity.ok(devopsClusterService.queryByCode(projectId, code));
     }
 
     /**
@@ -221,9 +207,7 @@ public class DevopsClusterController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "模糊搜索参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.project.query"));
+        return ResponseEntity.ok(devopsClusterService.pageRelatedProjects(projectId, clusterId, pageable, params));
     }
 
     /**
@@ -250,7 +234,7 @@ public class DevopsClusterController {
             @RequestParam(value = "id", required = false) Long selectedProjectId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return new ResponseEntity<>(devopsClusterService.listNonRelatedProjects(projectId, clusterId, selectedProjectId, pageable, params), HttpStatus.OK);
+        return ResponseEntity.ok(devopsClusterService.listNonRelatedProjects(projectId, clusterId, selectedProjectId, pageable, params));
     }
 
     /**
@@ -316,9 +300,7 @@ public class DevopsClusterController {
             @Encrypt
             @ApiParam(value = "集群Id", required = true)
             @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.queryShell(clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+        return ResponseEntity.ok(devopsClusterService.queryShell(clusterId));
     }
 
     /**
@@ -332,9 +314,7 @@ public class DevopsClusterController {
     public ResponseEntity<List<DevopsClusterBasicInfoVO>> queryClustersAndNodes(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsClusterService.queryClustersAndNodes(projectId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+        return ResponseEntity.ok(devopsClusterService.queryClustersAndNodes(projectId));
     }
 
     /**
@@ -356,9 +336,7 @@ public class DevopsClusterController {
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsClusterService.pageClusters(projectId, doPage, pageable, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+        return ResponseEntity.ok(devopsClusterService.pageClusters(projectId, doPage, pageable, params));
     }
 
 
@@ -396,9 +374,7 @@ public class DevopsClusterController {
             @Encrypt
             @ApiParam(value = "集群Id")
             @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.checkConnectEnvsAndPV(clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.connect.env.query"));
+        return ResponseEntity.ok(devopsClusterService.checkConnectEnvsAndPV(clusterId));
     }
 
     /**
@@ -427,9 +403,7 @@ public class DevopsClusterController {
             @ApiIgnore PageRequest pageable,
             @ApiParam(value = "查询参数", required = false)
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsClusterService.pagePodsByNodeName(clusterId, nodeName, pageable, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.node.pod.query", nodeName));
+        return ResponseEntity.ok(devopsClusterService.pagePodsByNodeName(clusterId, nodeName, pageable, searchParam));
     }
 
     /**

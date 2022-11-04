@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
-import io.choerodon.devops.infra.dto.DevopsCiSonarConfigDTO;
 
 /**
  * 〈功能简述〉
@@ -32,7 +32,7 @@ public class DevopsCiStepVO {
     private String script;
 
     @ApiModelProperty("步骤顺序")
-    @NotNull(message = "error.step.sequence.cannot.be.null")
+    @NotNull(message = "{devops.step.sequence.cannot.be.null}")
     private Long sequence;
 
     @Encrypt
@@ -40,7 +40,7 @@ public class DevopsCiStepVO {
     private Long devopsCiJobId;
 
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
-    private DevopsCiSonarConfigDTO sonarConfig;
+    private DevopsCiSonarConfigVO sonarConfig;
 
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
     private DevopsCiDockerBuildConfigDTO dockerBuildConfig;
@@ -67,11 +67,11 @@ public class DevopsCiStepVO {
         this.mavenBuildConfig = mavenBuildConfig;
     }
 
-    public DevopsCiSonarConfigDTO getSonarConfig() {
+    public DevopsCiSonarConfigVO getSonarConfig() {
         return sonarConfig;
     }
 
-    public void setSonarConfig(DevopsCiSonarConfigDTO sonarConfig) {
+    public void setSonarConfig(DevopsCiSonarConfigVO sonarConfig) {
         this.sonarConfig = sonarConfig;
     }
 

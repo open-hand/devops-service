@@ -45,13 +45,13 @@ public class RdupmClientOperator {
             return Collections.emptyList();
         }
         if (organizationId == null) {
-            organizationId = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId))
+            organizationId = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId))
                     .getOrganizationId();
         }
         ResponseEntity<List<NexusMavenRepoDTO>> response = rdupmClient.getRepoUserByProject(
                 Objects.requireNonNull(organizationId), projectId, repositoryIds);
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.query.nexus.repo.user.list", projectId, repositoryIds);
+            throw new CommonException("devops.query.nexus.repo.user.list", projectId, repositoryIds);
         }
         return response.getBody();
     }
@@ -66,7 +66,7 @@ public class RdupmClientOperator {
 
         ResponseEntity<List<HarborC7nRepoVo>> response = rdupmClient.listImageRepo(Objects.requireNonNull(projectId));
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.query.nexus.repo.list", projectId);
+            throw new CommonException("devops.query.nexus.repo.list", projectId);
         }
         return response.getBody();
     }
@@ -84,7 +84,7 @@ public class RdupmClientOperator {
     public HarborC7nRepoImageTagVo listImageTag(String repoType, @Nullable Long repoId, String imageName, @Nullable String tagName) {
         ResponseEntity<HarborC7nRepoImageTagVo> response = rdupmClient.listImageTag(repoType, repoId, imageName, tagName);
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.query.nexus.repo.list.tag");
+            throw new CommonException("devops.query.nexus.repo.list.tag");
         }
         return response.getBody();
     }
@@ -92,7 +92,7 @@ public class RdupmClientOperator {
     public HarborCustomRepo queryCustomRepoById(Long projectId, Long repoId) {
         ResponseEntity<HarborCustomRepo> response = rdupmClient.queryCustomRepoById(projectId, repoId);
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.query.nexus.repo.list.tag");
+            throw new CommonException("devops.query.nexus.repo.list.tag");
         }
         return response.getBody();
     }
@@ -116,7 +116,7 @@ public class RdupmClientOperator {
                                                           String versionRegular) {
         ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, versionRegular);
         if (response == null || response.getBody() == null) {
-            throw new CommonException("error.query.nexus.maven.list");
+            throw new CommonException("devops.query.nexus.maven.list");
         }
         return response.getBody();
     }
@@ -124,7 +124,7 @@ public class RdupmClientOperator {
     public HarborRepoDTO queryHarborRepoConfigById(Long projectId, Long harborConfigId, String repoType) {
         ResponseEntity<HarborRepoDTO> response = rdupmClient.queryHarborRepoConfigById(projectId, harborConfigId, repoType);
         if (response == null || response.getBody() == null || response.getBody().getHarborRepoConfig() == null) {
-            throw new CommonException("error.query.harbor.repo");
+            throw new CommonException("devops.query.harbor.repo");
         }
         return response.getBody();
     }

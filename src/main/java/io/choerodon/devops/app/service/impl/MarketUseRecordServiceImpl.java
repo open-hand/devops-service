@@ -47,17 +47,17 @@ public class MarketUseRecordServiceImpl implements MarketUseRecordService {
     public void saveMarketUseRecord(String purpose, Long projectId, DeploySourceVO deploySourceVO, Long userId) {
         MarketAppUseRecordDTO marketAppUseRecordDTO = new MarketAppUseRecordDTO();
         marketAppUseRecordDTO.setPurpose(purpose);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId));
         MarketServiceDeployObjectVO marketServiceDeployObjectVO = marketServiceClientOperator.queryDeployObject(Objects.requireNonNull(projectId), Objects.requireNonNull(deploySourceVO.getDeployObjectId()));
 
         AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceId());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionMapper.selectByPrimaryKey(marketServiceDeployObjectVO.getDevopsAppServiceVersionId());
         if (!Objects.isNull(appServiceDTO)) {
             marketAppUseRecordDTO.setAppServiceAndVersion(appServiceDTO.getName() + "(" + appServiceVersionDTO.getVersion() + ")");
-            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(appServiceDTO.getProjectId()));
+            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(appServiceDTO.getProjectId()));
             marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
         } else {
-            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectById(Objects.requireNonNull(projectId));
+            ProjectDTO sourceProject = baseServiceClientOperator.queryIamProjectBasicInfoById(Objects.requireNonNull(projectId));
             marketAppUseRecordDTO.setAppServiceSource(sourceProject.getName());
         }
         marketAppUseRecordDTO.setUserOrg(projectDTO.getName());

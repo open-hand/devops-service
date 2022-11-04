@@ -46,7 +46,7 @@ public class StatefulSetWorkLoad extends WorkLoad {
     public Long getWorkloadId(Long envId, String workloadName) {
         DevopsStatefulSetDTO devopsStatefulSetDTO = devopsStatefulSetService.baseQueryByEnvIdAndName(envId, workloadName);
         if (devopsStatefulSetDTO == null) {
-            throw new CommonException("error.workload.resource.not.exist", workloadName, "StatefulSet");
+            throw new CommonException("devops.workload.resource.not.exist", workloadName, "StatefulSet");
         }
         return devopsStatefulSetDTO.getId();
     }

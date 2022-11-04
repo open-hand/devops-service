@@ -26,6 +26,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsHostDTO extends AuditDomain {
     @Encrypt
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 

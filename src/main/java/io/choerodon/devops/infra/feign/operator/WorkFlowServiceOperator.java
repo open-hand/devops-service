@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.WorkflowCode.*;
+
 import io.reactivex.Emitter;
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -29,7 +31,7 @@ public class WorkFlowServiceOperator {
     public Boolean approveUserTask(Long projectId, String businessKey) {
         ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, businessKey);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.approve");
+            throw new CommonException(DEVOPS_WORKFLOW_APPROVE);
         }
         return responseEntity.getBody();
     }
@@ -65,14 +67,14 @@ public class WorkFlowServiceOperator {
     public void stopInstance(Long projectId, String businessKey) {
         ResponseEntity<Void> responseEntity = workFlowServiceClient.stopInstance(projectId, businessKey);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.stop");
+            throw new CommonException(DEVOPS_WORKFLOW_STOP);
         }
     }
 
     public String createCiCdPipeline(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
         ResponseEntity<String> responseEntity = workFlowServiceClient.createCiCdPipeline(projectId, devopsPipelineDTO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.workflow.create");
+            throw new CommonException(DEVOPS_WORKFLOW_CREATE);
         }
         return responseEntity.getBody();
     }
@@ -80,7 +82,7 @@ public class WorkFlowServiceOperator {
     public String createHzeroPipeline(Long projectId, HzeroDeployPipelineVO hzeroDeployPipelineVO) {
         ResponseEntity<String> responseEntity = workFlowServiceClient.createHzeroPipeline(projectId, hzeroDeployPipelineVO);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-            throw new CommonException("error.hzero.workflow.create");
+            throw new CommonException("devops.hzero.workflow.create");
         }
         return responseEntity.getBody();
     }

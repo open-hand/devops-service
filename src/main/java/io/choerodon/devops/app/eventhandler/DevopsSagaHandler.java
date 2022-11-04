@@ -11,7 +11,7 @@ import java.util.Objects;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.kubernetes.client.JSON;
+import io.kubernetes.client.openapi.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -268,7 +268,7 @@ public class DevopsSagaHandler {
             LOGGER.error("update environment gitlab permission for iam users {} error", devopsEnvUserPayload.getIamUserIds());
             throw e;
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvUserPayload.getIamProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvUserPayload.getIamProjectId());
         if (Objects.isNull(projectDTO)) {
             return payload;
         }
@@ -470,7 +470,7 @@ public class DevopsSagaHandler {
                 try {
                     sw.close();
                 } catch (IOException e1) {
-                    LOGGER.error("error.sw.close", e1);
+                    LOGGER.error("devops.sw.close", e1);
                 }
             }
             if (pw != null) {
@@ -549,7 +549,7 @@ public class DevopsSagaHandler {
         devopsEnvironmentService.deleteEnvSaga(envId);
         LOGGER.info("================删除环境成功，envId：{}", envId);
         //删除环境成功，发送webhook
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         if (Objects.isNull(projectDTO)) {
             return;
         }

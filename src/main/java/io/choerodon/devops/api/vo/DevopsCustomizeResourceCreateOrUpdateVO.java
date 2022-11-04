@@ -10,7 +10,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class DevopsCustomizeResourceCreateOrUpdateVO {
 
     @ApiModelProperty("环境id/必填")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private String envId;
 
     @ApiModelProperty("资源id")

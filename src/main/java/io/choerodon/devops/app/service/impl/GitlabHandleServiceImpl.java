@@ -16,7 +16,6 @@ import io.choerodon.devops.app.service.GitlabHandleService;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
-import io.choerodon.devops.infra.dto.iam.RoleDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -55,7 +54,7 @@ public class GitlabHandleServiceImpl implements GitlabHandleService {
 
         //2.同步项目下gitlab用户角色
         //2.1 同步root用户的角色
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectPayload.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectPayload.getProjectId());
         List<OrgAdministratorVO> orgAdministratorVOS = baseServiceClientOperator.listOrgAdministrator(projectDTO.getOrganizationId()).getContent();
         if (!CollectionUtils.isEmpty(orgAdministratorVOS)) {
             orgAdministratorVOS.forEach(orgAdministratorVO -> gitlabGroupMemberService.assignGitLabGroupMemberForOwner(projectDTO, orgAdministratorVO.getId()));

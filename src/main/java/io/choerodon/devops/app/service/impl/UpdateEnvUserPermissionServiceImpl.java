@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
-import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsProjectService;
 import io.choerodon.devops.app.service.UserAttrService;
@@ -32,6 +31,9 @@ import io.choerodon.devops.infra.util.TypeUtil;
  */
 @Service
 public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionService {
+
+    private static final String DEVOPS_GITLAB_PROJECT_SYNC_FAILED = "devops.gitlab.project.sync.failed";
+
     private final DevopsEnvironmentService devopsEnvironmentService;
     private final UserAttrService userAttrService;
     private final DevopsProjectService devopsProjectService;
@@ -39,8 +41,14 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     private final BaseServiceClientOperator baseServiceClientOperator;
 
     @Autowired
-    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService, DevopsEnvUserPermissionService devopsEnvUserPermissionService, UserAttrService userAttrService, DevopsProjectService devopsProjectService, GitlabServiceClientOperator gitlabServiceClientOperator, BaseServiceClientOperator baseServiceClientOperator, AppServiceMapper appServiceMapper, DevopsEnvironmentMapper devopsEnvironmentMapper) {
-        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper,baseServiceClientOperator);
+    public UpdateEnvUserPermissionServiceImpl(DevopsEnvironmentService devopsEnvironmentService,
+                                              UserAttrService userAttrService,
+                                              DevopsProjectService devopsProjectService,
+                                              GitlabServiceClientOperator gitlabServiceClientOperator,
+                                              BaseServiceClientOperator baseServiceClientOperator,
+                                              AppServiceMapper appServiceMapper,
+                                              DevopsEnvironmentMapper devopsEnvironmentMapper) {
+        super(gitlabServiceClientOperator, userAttrService, appServiceMapper, devopsEnvironmentMapper, baseServiceClientOperator);
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.userAttrService = userAttrService;
         this.devopsProjectService = devopsProjectService;
@@ -66,7 +74,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
 
         // 如果之前对应的gitlab project同步失败时，不进行后续操作
         if (gitlabProjectId == null) {
-            throw new CommonException("error.gitlab.project.sync.failed");
+            throw new CommonException(DEVOPS_GITLAB_PROJECT_SYNC_FAILED);
         }
 
         switch (devopsEnvUserPayload.getOption()) {

@@ -28,6 +28,8 @@ public class DevopsDeployValueDTO extends AuditDomain {
     @Transient
     private String appServiceName;
     @Transient
+    private String appServiceCode;
+    @Transient
     private String envName;
 
     public String getAppServiceName() {
@@ -100,5 +102,13 @@ public class DevopsDeployValueDTO extends AuditDomain {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getAppServiceCode() {
+        return appServiceCode;
+    }
+
+    public void setAppServiceCode(String appServiceCode) {
+        this.appServiceCode = appServiceCode;
     }
 }

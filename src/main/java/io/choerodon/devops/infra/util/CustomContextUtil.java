@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.util;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CONTEXT_SET_ERROR;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.Callable;
@@ -75,7 +77,7 @@ public class CustomContextUtil {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            throw new CommonException("context.set.error", e);
+            throw new CommonException(DEVOPS_CONTEXT_SET_ERROR, e);
         }
     }
 
@@ -95,7 +97,7 @@ public class CustomContextUtil {
             authentication.setDetails(oAuth2AuthenticationDetails);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
-            throw new CommonException("context.set.error", e);
+            throw new CommonException(DEVOPS_CONTEXT_SET_ERROR, e);
         }
     }
 
@@ -116,7 +118,7 @@ public class CustomContextUtil {
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.execute.in.certain.context", ex);
+            throw new CommonException("devops.execute.in.certain.context", ex);
         } finally {
             setUserContext(preContext);
         }
@@ -137,7 +139,7 @@ public class CustomContextUtil {
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.execute.in.certain.context", ex);
+            throw new CommonException("devops.execute.in.certain.context", ex);
         } finally {
             setUserContext(preContext);
         }

@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.task;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 
 import com.google.gson.Gson;
 import okhttp3.ResponseBody;
@@ -19,12 +17,14 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ConfigVO;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.sonar.UserToken;
 import io.choerodon.devops.api.vo.sonar.UserTokens;
 import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.devops.app.service.DevopsHelmConfigService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -50,6 +50,8 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private DevopsConfigMapper devopsConfigMapper;
+    @Autowired
+    private DevopsHelmConfigService devopsHelmConfigService;
 
     @Value("${services.helm.url}")
     private String servicesHelmUrl;
@@ -67,44 +69,43 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            ConfigVO chartConfig = new ConfigVO();
-            chartConfig.setUrl(servicesHelmUrl);
+            DevopsHelmConfigDTO devopsHelmConfigDTO = new DevopsHelmConfigDTO();
+            devopsHelmConfigDTO.setUrl(servicesHelmUrl);
+            devopsHelmConfigDTO.setName(UUID.randomUUID().toString());
             // 只有helm的用户名密码都设置了, 才设置到数据库中
             if (StringUtils.hasText(servicesHelmUserName) && StringUtils.hasText(servicesHelmPassword)) {
-                chartConfig.setUserName(servicesHelmUserName);
-                chartConfig.setPassword(servicesHelmPassword);
-                chartConfig.setIsPrivate(Boolean.TRUE);
+                devopsHelmConfigDTO.setUsername(servicesHelmUserName);
+                devopsHelmConfigDTO.setPassword(servicesHelmPassword);
+                devopsHelmConfigDTO.setRepoPrivate(Boolean.TRUE);
             }
-            initConfig(chartConfig, DEFAULT_CHART_NAME, ProjectConfigType.CHART.getType());
+            initHelmConfig(devopsHelmConfigDTO);
 
             if (sonarqubeUrl != null && !sonarqubeUrl.isEmpty()) {
                 createSonarToken();
             }
         } catch (Exception e) {
-            throw new CommonException("error.init.project.config", e);
+            throw new CommonException("devops.init.project.config", e);
         }
     }
 
-    private void initConfig(ConfigVO configDTO, String configName, String configType) {
-        DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
-        newConfigDTO.setConfig(gson.toJson(configDTO));
-        newConfigDTO.setName(configName);
-        newConfigDTO.setType(configType);
-        DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, configName);
+    private void initHelmConfig(DevopsHelmConfigDTO devopsHelmConfigDTO) {
+        devopsHelmConfigDTO.setResourceId(0L);
+        devopsHelmConfigDTO.setResourceType(ResourceLevel.SITE.value());
+        devopsHelmConfigDTO.setRepoDefault(true);
+        DevopsHelmConfigDTO oldConfigDTO = devopsHelmConfigService.queryDefaultDevopsHelmConfigByLevel(ResourceLevel.SITE.value(),0L);
         if (oldConfigDTO == null) {
-            devopsConfigService.baseCreate(newConfigDTO);
-        } else if (!gson.toJson(configDTO).equals(oldConfigDTO.getConfig())) {
-            // 存在判断是否已经生成服务版本，无服务版本，直接覆盖更新；有服务版本，将原config对应的resourceId设置为null,新建config
-            if (appServiceVersionService.isVersionUseConfig(oldConfigDTO.getId(), oldConfigDTO.getType())) {
-                // 将原有配置的name, app_service, project_id, organization_id 字段置为null
-                devopsConfigMapper.updateConfigFieldsNull(oldConfigDTO.getId());
-                newConfigDTO.setId(null);
-                devopsConfigService.baseCreate(newConfigDTO);
-            } else {
-                newConfigDTO.setId(oldConfigDTO.getId());
-                newConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
-                devopsConfigService.baseUpdate(newConfigDTO);
+            devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
+        } else if (Objects.equals(oldConfigDTO.getUrl(), devopsHelmConfigDTO.getUrl())) {
+            if (!Objects.equals(oldConfigDTO.getUsername(), devopsHelmConfigDTO.getUsername())
+                    || !Objects.equals(oldConfigDTO.getPassword(), devopsHelmConfigDTO.getPassword())) {
+                devopsHelmConfigDTO.setId(oldConfigDTO.getId());
+                devopsHelmConfigDTO.setObjectVersionNumber(oldConfigDTO.getObjectVersionNumber());
+                devopsHelmConfigService.updateDevopsHelmConfig(devopsHelmConfigDTO);
             }
+        } else {
+            oldConfigDTO.setRepoDefault(false);
+            devopsHelmConfigService.updateDevopsHelmConfig(oldConfigDTO);
+            devopsHelmConfigService.createDevopsHelmConfig(devopsHelmConfigDTO);
         }
     }
 
@@ -115,15 +116,19 @@ public class DevopsCommandRunner implements CommandLineRunner {
         map.put("name", "ci-token");
         map.put("login", userName);
         Call<ResponseBody> responseCall = sonarClient.listToken();
-        UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "error.sonar.token.get", UserTokens.class);
+        UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "devops.sonar.token.get", UserTokens.class);
         Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
         UserToken userToken;
         if (userTokenOptional.isPresent()) {
-            userToken = userTokenOptional.get();
-        } else {
-            Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
-            userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "error.create.sonar.token", UserToken.class);
+            Call<Void> revokeToken = sonarClient.revokeToken(map);
+            try {
+                revokeToken.execute();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+        Call<ResponseBody> responseCallNew = sonarClient.createToken(map);
+        userToken = RetrofitCallExceptionParse.executeCall(responseCallNew, "devops.create.sonar.token", UserToken.class);
         if (oldConfigDTO == null) {
             DevopsConfigDTO newConfigDTO = new DevopsConfigDTO();
             newConfigDTO.setConfig(userToken.getToken());

@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.gitops;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.infra.dto.DevopsEnvFileResourceDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.TypeUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class ResourceFileCheckHandler {
@@ -59,7 +60,7 @@ public class ResourceFileCheckHandler {
         }
         if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                 filePath)) {
-            throw new CommonException("error.gitops.file.not.exist");
+            throw new CommonException("devops.gitops.file.not.exist");
         }
     }
 }

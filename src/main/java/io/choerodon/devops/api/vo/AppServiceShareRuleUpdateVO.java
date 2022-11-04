@@ -12,20 +12,20 @@ import io.choerodon.devops.api.validator.annotation.AtLeastOneNotEmpty;
  * @author lihao
  * @date 2019-09-15 15:32
  */
-@AtLeastOneNotEmpty(fields = {"versionType", "version"},message = "error.atleast.one.not.empty")
+@AtLeastOneNotEmpty(fields = {"versionType", "version"}, message = "{devops.atleast.one.not.empty}")
 public class AppServiceShareRuleUpdateVO {
     @Encrypt
     @ApiModelProperty("共享规则id")
-    @NotNull(message = "error.app.share.id.null")
+    @NotNull(message = "{devops.app.share.id.null}")
     private Long id;
 
     @Encrypt
     @ApiModelProperty("应用服务Id/必填")
-    @NotNull(message = "error.app.id.null")
+    @NotNull(message = "{devops.app.id.null}")
     private Long appServiceId;
 
     @ApiModelProperty("共享层级,organization/project 必填")
-    @NotBlank(message = "error.app.share.level.null")
+    @NotBlank(message = "{devops.app.share.level.null}")
     private String shareLevel;
 
     @ApiModelProperty("共享版本类型")
@@ -44,7 +44,7 @@ public class AppServiceShareRuleUpdateVO {
     private String appName;
 
     @ApiModelProperty("版本号/必须")
-    @NotNull(message = "error.object.version.number.null")
+    @NotNull(message = "{devops.object.version.number.null}")
     private Long objectVersionNumber;
 
     public String getProjectName() {

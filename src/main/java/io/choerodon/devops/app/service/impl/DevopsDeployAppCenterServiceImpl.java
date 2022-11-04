@@ -11,12 +11,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.hzero.mybatis.BatchInsertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +33,6 @@ import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
@@ -94,9 +91,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
-    @Qualifier("devopsAppCenterHelper")
-    private BatchInsertHelper<DevopsDeployAppCenterEnvDTO> batchInsertHelper;
-    @Autowired
     @Lazy
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
@@ -117,14 +111,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Override
     public void checkNameUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
         if (Boolean.FALSE.equals(checkNameUnique(envId, rdupmType, objectId, name))) {
-            throw new CommonException("error.env.app.center.name.exist");
+            throw new CommonException("devops.env.app.center.name.exist");
         }
     }
 
     @Override
     public void checkCodeUniqueAndThrow(Long envId, String rdupmType, Long objectId, String name) {
         if (Boolean.FALSE.equals(checkCodeUnique(envId, rdupmType, objectId, name))) {
-            throw new CommonException("error.env.app.center.code.exist");
+            throw new CommonException("devops.env.app.center.code.exist");
         }
     }
 
@@ -376,13 +370,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     @Override
     public void baseCreate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
-        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.insert");
+        MapperUtil.resultJudgedInsertSelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "devops.env.app.center.insert");
     }
 
     @Transactional
     @Override
     public void baseUpdate(DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "error.env.app.center.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsDeployAppCenterEnvMapper, devopsDeployAppCenterEnvDTO, "devops.env.app.center.update");
     }
 
     @Override
@@ -412,54 +406,6 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         devopsDeployAppCenterEnvDTO.setRdupmType(rdupmTypeEnum.value());
         devopsDeployAppCenterEnvDTO.setObjectId(objectId);
         return devopsDeployAppCenterEnvMapper.selectOne(devopsDeployAppCenterEnvDTO);
-    }
-
-    @Override
-    public void fixData() {
-        int totalCount = appServiceInstanceService.countInstance();
-        int pageNumber = 0;
-        int pageSize = 100;
-        int totalPage = (totalCount + pageSize - 1) / pageSize;
-        LOGGER.info("start to fix DevopsDeployAppCenterEnv data.");
-        do {
-            LOGGER.info("=====DevopsDeployAppCenterEnv================={}/{}=================", pageNumber, totalPage - 1);
-            PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(pageNumber);
-            pageRequest.setSize(pageSize);
-            Page<AppServiceInstanceDTO> result = PageHelper.doPage(pageRequest, () -> appServiceInstanceService.listInstances());
-            if (!CollectionUtils.isEmpty(result.getContent())) {
-                List<DevopsDeployAppCenterEnvDTO> devopsDeployAppCenterEnvDTOList = result.getContent().stream().map(i -> {
-                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = new DevopsDeployAppCenterEnvDTO();
-                    devopsDeployAppCenterEnvDTO.setName(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setCode(i.getCode());
-                    devopsDeployAppCenterEnvDTO.setProjectId(i.getProjectId());
-                    devopsDeployAppCenterEnvDTO.setEnvId(i.getEnvId());
-                    devopsDeployAppCenterEnvDTO.setObjectId(i.getId());
-                    devopsDeployAppCenterEnvDTO.setRdupmType(RdupmTypeEnum.CHART.value());
-                    devopsDeployAppCenterEnvDTO.setOperationType(AppSourceType.MIDDLEWARE.getValue().equals(i.getSource()) ? OperationTypeEnum.BASE_COMPONENT.value() : OperationTypeEnum.CREATE_APP.value());
-
-                    // 如果是normal，需要具体判断本项目还是共享应用
-                    if (AppSourceType.NORMAL.getValue().equals(i.getSource())) {
-                        AppServiceDTO appServiceDTO = appServiceService.baseQuery(i.getAppServiceId());
-                        if (appServiceDTO == null) {
-                            // 该实例对应的应用服务信息不存在
-                            return null;
-                        }
-                        if (appServiceDTO.getProjectId().equals(i.getProjectId())) {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.NORMAL.getValue());
-                        } else {
-                            devopsDeployAppCenterEnvDTO.setChartSource(AppSourceType.SHARE.getValue());
-                        }
-                    } else {
-                        devopsDeployAppCenterEnvDTO.setChartSource(i.getSource());
-                    }
-                    return devopsDeployAppCenterEnvDTO;
-                }).filter(Objects::nonNull)
-                        .collect(Collectors.toList());
-                batchInsertHelper.batchInsert(devopsDeployAppCenterEnvDTOList);
-            }
-            pageNumber++;
-        } while (pageNumber < totalPage);
     }
 
     @Override
@@ -531,7 +477,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             return;
         }
         if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
-            throw new CommonException(ResourceCheckConstant.ERROR_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }
 
@@ -547,7 +493,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     public void enableMetric(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(true);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);
@@ -570,7 +516,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Transactional
     public void disableMetric(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterEnvMapper.selectByPrimaryKey(appId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsDeployAppCenterEnvDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         devopsDeployAppCenterEnvDTO.setMetricDeployStatus(false);
         devopsDeployAppCenterEnvMapper.updateByPrimaryKeySelective(devopsDeployAppCenterEnvDTO);

@@ -61,10 +61,8 @@ public class DevopsEnvPodController {
             @RequestParam(value = "instance_id", required = false) Long instanceId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsEnvPodService.pageByOptions(
-                projectId, envId, appServiceId, instanceId, pageable, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.pod.query"));
+        return ResponseEntity.ok(devopsEnvPodService.pageByOptions(
+                projectId, envId, appServiceId, instanceId, pageable, searchParam));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

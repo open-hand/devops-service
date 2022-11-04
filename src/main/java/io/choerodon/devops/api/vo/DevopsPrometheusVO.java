@@ -16,16 +16,16 @@ public class DevopsPrometheusVO {
     private Long id;
 
     @ApiModelProperty("admin密码/必填")
-    @NotNull(message = "error.admin.password.null")
+    @NotNull(message = "{devops.admin.password.null}")
     private String adminPassword;
 
     @ApiModelProperty("grafana域名/必填")
-    @NotNull(message = "error.grafana.null")
+    @NotNull(message = "devops.grafana.null")
     private String grafanaDomain;
 
     @Encrypt
     @ApiModelProperty("PrometheusPvId/必填")
-    @NotNull(message = "error.prometheus.pv.id.null")
+    @NotNull(message = "{devops.prometheus.pv.id.null}")
     private Long prometheusPvId;
 
     @ApiModelProperty("PrometheusPv状态")
@@ -36,7 +36,7 @@ public class DevopsPrometheusVO {
 
     @Encrypt
     @ApiModelProperty("GrafanaPvId/必填")
-    @NotNull(message = "error.grafana.pv.id.null")
+    @NotNull(message = "{devops.grafana.pv.id.null}")
     private Long grafanaPvId;
 
     @ApiModelProperty("GrafanaPv状态")
@@ -47,7 +47,7 @@ public class DevopsPrometheusVO {
 
     @Encrypt
     @ApiModelProperty("AlertmanagerPvId/必填")
-    @NotNull(message = "error.alertmanager.pv.id.null")
+    @NotNull(message = "{devops.alertmanager.pv.id.null}")
     private Long alertmanagerPvId;
 
     @ApiModelProperty("AlertmanagerPv状态")

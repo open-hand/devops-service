@@ -142,6 +142,18 @@ public class AppServiceRepVO {
     @ApiModelProperty("用户权限等级")
     private Integer accessLevel;
 
+    @ApiModelProperty("helm仓库配置id")
+    @Encrypt
+    private Long helmConfigId;
+
+    public Long getHelmConfigId() {
+        return helmConfigId;
+    }
+
+    public void setHelmConfigId(Long helmConfigId) {
+        this.helmConfigId = helmConfigId;
+    }
+
     public Long getExternalConfigId() {
         return externalConfigId;
     }

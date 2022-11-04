@@ -16,26 +16,21 @@ public class TestServiceClientFallback implements TestServiceClient {
 
     @Override
     public ResponseEntity<String> executeTask(Long projectId, ApiTestExecuteVO apiTestExecuteVO, Long executorId, String triggerType, Long triggerId) {
-        throw new CommonException("error.failed.to.execute.task");
+        throw new CommonException("devops.failed.to.execute.task");
     }
 
     @Override
     public ResponseEntity<String> executeSuite(Long projectId, Long apiTestSuiteId, Long executorId, String triggerType, Long triggerId) {
-        throw new CommonException("error.failed.to.execute.suite.task");
+        throw new CommonException("devops.failed.to.execute.suite.task");
     }
 
     @Override
     public ResponseEntity<String> queryById(Long projectId, Long recordId) {
-        throw new CommonException("error.failed.to.query.test.record");
+        throw new CommonException("devops.failed.to.query.test.record");
     }
 
     @Override
     public ResponseEntity<String> querySuitePreviewById(Long projectId, Long suiteRecordId) {
-        throw new CommonException("error.failed.to.query.suite.record");
-    }
-
-    @Override
-    public ResponseEntity<String> testConnection(String hostIp, Integer jmeterPort) {
-        throw new CommonException("error.failed.to.test.host.connection");
+        throw new CommonException("devops.failed.to.query.suite.record");
     }
 }

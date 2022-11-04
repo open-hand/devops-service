@@ -83,7 +83,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
     @Override
     public DevopsEnvFileDTO baseCreate(DevopsEnvFileDTO devopsEnvFileDTO) {
         if (devopsEnvFileMapper.insert(devopsEnvFileDTO) != 1) {
-            throw new CommonException("error.env.file.create");
+            throw new CommonException("devops.env.file.create");
         }
         return devopsEnvFileDTO;
     }
@@ -125,14 +125,6 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         devopsEnvFileMapper.delete(devopsEnvFileDTO);
     }
 
-    @Override
-    public List<DevopsEnvFileDTO> baseListByEnvIdAndPath(Long envId, String path) {
-        DevopsEnvFileDTO devopsEnvFileDTO = new DevopsEnvFileDTO();
-        devopsEnvFileDTO.setEnvId(envId);
-        devopsEnvFileDTO.setFilePath(path);
-        return devopsEnvFileMapper.select(devopsEnvFileDTO);
-    }
-
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteByEnvId(Long envId) {
@@ -147,7 +139,7 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
         if (devopsEnvironmentDTO == null) {
             return "";
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsEnvironmentDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         return String.format("%s%s%s-%s-gitops/%s/tree/",

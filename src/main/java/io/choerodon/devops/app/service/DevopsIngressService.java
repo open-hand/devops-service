@@ -1,5 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import org.apache.catalina.core.ApplicationContext;
+
+import java.util.List;
+
+import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
@@ -7,8 +12,6 @@ import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.DevopsIngressDTO;
 import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 
 public interface DevopsIngressService {
@@ -142,8 +145,6 @@ public interface DevopsIngressService {
 
     Long baseUpdateStatus(Long envId, String name, String status);
 
-    List<String> baseListNameByServiceId(Long serviceId);
-
     Boolean baseCheckName(Long envId, String name);
 
     Boolean baseCheckPath(Long envId, String domain, String path, Long id);
@@ -160,4 +161,5 @@ public interface DevopsIngressService {
 
     void updateStatus(Long envId, String name, String status);
 
+    boolean operateForOldTypeIngress(Long clusterId);
 }

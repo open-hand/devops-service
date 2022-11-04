@@ -15,17 +15,17 @@ public class MiddlewareMySqlHostDeployVO {
     @ApiModelProperty("部署模式")
     private String mode;
     @ApiModelProperty("应用中心应用名称")
-    @Size(min = 1, max = 53, message = "error.env.app.center.name.length")
-    @NotBlank(message = "error.app.instance.name.null")
+    @Size(min = 1, max = 53, message = "{devops.env.app.center.name.length}")
+    @NotBlank(message = "{devops.app.instance.name.null}")
     private String appName;
 
     @ApiModelProperty("应用中心应用code，同时也作为实例名称")
-    @Size(min = 1, max = 53, message = "error.env.app.center.code.length")
-    @NotBlank(message = "error.app.instance.code.null")
+    @Size(min = 1, max = 53, message = "{devops.env.app.center.code.length}")
+    @NotBlank(message = "{devops.app.instance.code.null}")
     private String appCode;
     @ApiModelProperty("密码")
-    @Size(min = 6, max = 32, message = "error.middleware.redis.password.length")
-    @NotBlank(message = "error.middleware.redis.password.empty")
+    @Size(min = 6, max = 32, message = "{devops.middleware.redis.password.length}")
+    @NotBlank(message = "{devops.middleware.redis.password.empty}")
     private String password;
     @ApiModelProperty("部署版本")
     private String version;

@@ -50,6 +50,9 @@ public class CertificationServiceImpl implements CertificationService {
     private static final String CERT_PREFIX = "cert-";
     private static final String MASTER = "master";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static final String DEVOPS_CERT_MANAGER_NOT_INSTALLED = "devops.cert.manager.not.installed";
+    private static final String DEVOPS_CERTIFICATION_CREATE = "devops.certification.create";
+    private static final String DEVOPS_INSERT_CERTIFICATION_FILE = "devops.insert.certification.file";
 
 
     @Autowired
@@ -104,16 +107,6 @@ public class CertificationServiceImpl implements CertificationService {
 
     private final Gson gson = new Gson();
 
-
-    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
-        // TODO hzero 主键加密组件修复后删除
-        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
-        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
-        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
-        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
-        return certificationVO;
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createCertification(Long projectId, C7nCertificationCreateVO c7nCertificationCreateVO,
@@ -128,10 +121,10 @@ public class CertificationServiceImpl implements CertificationService {
         String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
         // 校验CertManager已经安装
         // TODO 也许有必要进一步校验 CertManager 的状态是否为可用的
-        CommonExAssertUtil.assertNotNull(certManagerVersion, "error.cert.manager.not.installed");
+        CommonExAssertUtil.assertNotNull(certManagerVersion, DEVOPS_CERT_MANAGER_NOT_INSTALLED);
 
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         String path = String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectDTO.getDevopsComponentCode(), FILE_SEPARATOR, devopsEnvironmentDTO.getCode());
 
         String certFileName;
@@ -171,7 +164,7 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationFileDTO certificationFileDTO = null;
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
-            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+            CommonExAssertUtil.assertTrue(permissionHelper.projectPermittedToCert(certificationDTO.getCertId(), projectId), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
             certificationDTO.setType(UPLOAD);
             type = certificationDTO.getType();
@@ -389,7 +382,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public List<ProjectCertificationVO> listProjectCertInProject(Long projectId) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         List<ProjectCertificationVO> projectCertificationVOS = new ArrayList<>();
         baseListByProject(projectId, projectDTO.getOrganizationId()).forEach(certificationDTO -> {
             List<String> domains = gson.fromJson(certificationDTO.getDomains(), new TypeToken<List<String>>() {
@@ -518,7 +511,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public CertificationDTO baseCreate(CertificationDTO certificationDTO) {
-        return MapperUtil.resultJudgedInsert(devopsCertificationMapper, certificationDTO, "error.certification.create");
+        return MapperUtil.resultJudgedInsert(devopsCertificationMapper, certificationDTO, DEVOPS_CERTIFICATION_CREATE);
     }
 
     @Override
@@ -631,7 +624,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public Long baseStoreCertFile(CertificationFileDTO certificationFileDTO) {
-        return MapperUtil.resultJudgedInsert(devopsCertificationFileMapper, certificationFileDTO, "error.insert.certification.file").getId();
+        return MapperUtil.resultJudgedInsert(devopsCertificationFileMapper, certificationFileDTO, DEVOPS_INSERT_CERTIFICATION_FILE).getId();
     }
 
     @Override
@@ -677,5 +670,14 @@ public class CertificationServiceImpl implements CertificationService {
         if (devopsCertificationFileMapper.selectByPrimaryKey(certificationDTO.getCertificationFileId()) != null) {
             devopsCertificationFileMapper.deleteByPrimaryKey(certificationDTO.getCertificationFileId());
         }
+    }
+
+    private C7nCertificationVO processEncryptCertification(C7nCertificationCreateVO c7nCertificationCreateVO) {
+        // TODO hzero 主键加密组件修复后删除
+        C7nCertificationVO certificationVO = ConvertUtils.convertObject(c7nCertificationCreateVO, C7nCertificationVO.class);
+        certificationVO.setCertId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getCertId()));
+        certificationVO.setEnvId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getEnvId()));
+        certificationVO.setId(KeyDecryptHelper.decryptValue(c7nCertificationCreateVO.getId()));
+        return certificationVO;
     }
 }

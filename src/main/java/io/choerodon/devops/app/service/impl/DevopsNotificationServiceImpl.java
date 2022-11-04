@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -223,7 +221,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
             messageClient.async().sendMessage(messageSender);
         } catch (Exception e) {
             redisTemplate.delete(resendKey);
-            throw new CommonException("error.msg.send.failed");
+            throw new CommonException("devops.msg.send.failed");
         }
     }
 
@@ -244,7 +242,7 @@ public class DevopsNotificationServiceImpl implements DevopsNotificationService 
         String objectCode = getObjectCode(objectId, objectType);
         String resendKey = String.format("choerodon:devops:env:%s:%s:%s", devopsEnvironmentDTO.getCode(), objectType, objectCode);
         if (!captcha.equals(redisTemplate.opsForValue().get(resendKey))) {
-            throw new CommonException("error.captcha");
+            throw new CommonException("devops.captcha.error");
         }
         redisTemplate.delete(resendKey);
     }

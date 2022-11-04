@@ -12,8 +12,8 @@ import io.choerodon.devops.app.service.WorkloadService;
 import io.choerodon.devops.app.service.impl.DevopsDeploymentServiceImpl;
 import io.choerodon.devops.infra.dto.DevopsDeploymentDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvCommandDTO;
-import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 import io.choerodon.devops.infra.enums.InstanceStatus;
+import io.choerodon.devops.infra.enums.WorkloadSourceTypeEnums;
 
 /**
  * Created by wangxiang on 2021/7/14
@@ -55,7 +55,7 @@ public class DeploymentWorkLoad extends WorkLoad {
     public Long getWorkloadId(Long envId, String workloadName) {
         DevopsDeploymentDTO devopsDeploymentDTO = devopsDeploymentService.baseQueryByEnvIdAndName(envId, workloadName);
         if (devopsDeploymentDTO == null) {
-            throw new CommonException("error.workload.resource.not.exist", workloadName, "Deployment");
+            throw new CommonException("devops.workload.resource.not.exist", workloadName, "Deployment");
         }
         return devopsDeploymentDTO.getId();
     }

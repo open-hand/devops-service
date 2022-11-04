@@ -2,19 +2,21 @@ package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_LABEL;
 import static io.choerodon.devops.app.service.AppServiceInstanceService.PARENT_WORK_LOAD_NAME_LABEL;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT;
 import static io.choerodon.devops.infra.enums.ResourceType.DEPLOYMENT;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.netflix.servo.util.Strings;
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.JSON;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -208,12 +210,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
 
         //初始化V1Service对象
-        V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+        V1Service v1Service = initV1Service(devopsServiceReqVO);
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqVO.getEndPoints() != null) {
             // 应用服务下不能创建endpoints类型网络
             if (devopsServiceReqVO.getAppServiceId() != null) {
-                throw new CommonException("error.app.create.endpoints.service");
+                throw new CommonException("devops.app.create.endpoints.service");
             }
             v1Endpoints = initV1EndPoints(devopsServiceReqVO);
         }
@@ -235,7 +237,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(CommandType.CREATE.getType());
 
         //初始化V1Service对象
-        V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+        V1Service v1Service = initV1Service(devopsServiceReqVO);
 
         // 先创建网络纪录
         baseCreate(devopsServiceDTO);
@@ -309,7 +311,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             return false;
         } else {
             //初始化V1Service对象
-            V1Service v1Service = initV1Service(devopsServiceReqVO, null);
+            V1Service v1Service = initV1Service(devopsServiceReqVO);
             if (devopsServiceReqVO.getEndPoints() != null) {
                 // 应用服务下的网络更新为EndPoints类型时，应用服务id更新为null
                 if (devopsServiceDTO.getTargetAppServiceId() != null) {
@@ -498,7 +500,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                         } else if ("id".equals(property)) {
                             property = "ds.id";
                         } else {
-                            throw new CommonException("error.field.not.supported.for.sort", t.getProperty());
+                            throw new CommonException(DEVOPS_FIELD_NOT_SUPPORTED_FOR_SORT, t.getProperty());
                         }
                         return property + " " + t.getDirection();
                     })
@@ -538,7 +540,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     @Override
     public DevopsServiceDTO baseCreate(DevopsServiceDTO devopsServiceDTO) {
         if (devopsServiceMapper.insert(devopsServiceDTO) != 1) {
-            throw new CommonException("error.k8s.service.create");
+            throw new CommonException("devops.k8s.service.create");
         }
         return devopsServiceDTO;
     }
@@ -564,7 +566,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
         devopsServiceDTO.setObjectVersionNumber(oldDevopsServiceDTO.getObjectVersionNumber());
         if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDTO) != 1) {
-            throw new CommonException("error.k8s.service.update");
+            throw new CommonException("devops.k8s.service.update");
         }
     }
 
@@ -580,8 +582,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     }
 
     @Override
-    public List<Long> baseListEnvByRunningService() {
-        return devopsServiceMapper.selectDeployedEnv();
+    public void baseUpdateAnnotations(Long id) {
+        devopsServiceMapper.updateAnnotationsToNull(id);
     }
 
     @Override
@@ -631,7 +633,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         DevopsEnvironmentDTO devopsEnvironmentDTO =
                 devopsEnvironmentService.baseQueryById(devopsServiceReqVO.getEnvId());
         if (!baseCheckName(devopsEnvironmentDTO.getId(), devopsServiceReqVO.getName())) {
-            throw new CommonException("error.service.name.exist");
+            throw new CommonException("devops.service.name.exist");
         }
 
         //初始化DevopsService对象
@@ -669,6 +671,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         }
         if (devopsServiceQueryDTO.getClusterIp() != null) {
             devopsServiceConfigVO.setClusterIp(devopsServiceQueryDTO.getClusterIp());
+        }
+        if (!ObjectUtils.isEmpty(devopsServiceQueryDTO.getAnnotations())) {
+            devopsServiceVO.setAnnotations(JsonHelper.unmarshalByJackson(devopsServiceQueryDTO.getAnnotations(), new TypeReference<Map<String, String>>() {
+            }));
         }
         devopsServiceVO.setConfig(devopsServiceConfigVO);
 
@@ -862,6 +868,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             baseUpdateSelectors(devopsServiceDTO.getId());
             devopsServiceDTO.setSelectors(null);
         }
+        if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations())) {
+            devopsServiceDTO.setAnnotations(JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()));
+        } else {
+            baseUpdateAnnotations(devopsServiceDTO.getId());
+            devopsServiceDTO.setAnnotations(null);
+        }
         if (devopsServiceReqVO.getEndPoints() != null) {
             devopsServiceDTO.setEndPoints(gson.toJson(devopsServiceReqVO.getEndPoints()));
         } else {
@@ -921,11 +933,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
         initDevopsServicePorts(devopsServiceReqVO);
 
         if (!devopsServiceDTO.getEnvId().equals(devopsServiceReqVO.getEnvId())) {
-            throw new CommonException("error.env.notEqual");
+            throw new CommonException("devops.env.notEqual");
         }
         String serviceName = devopsServiceReqVO.getName();
         if (!serviceName.equals(devopsServiceDTO.getName())) {
-            throw new CommonException("error.name.notEqual");
+            throw new CommonException("devops.name.notEqual");
         }
         //验证网络是否需要更新
         List<PortMapVO> oldPort = gson.fromJson(devopsServiceDTO.getPorts(), new TypeToken<ArrayList<PortMapVO>>() {
@@ -943,6 +955,19 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 isUpdate = true;
             }
         }
+        if (!isUpdate) {
+            // 将annotations去掉
+            if (ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && !ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations())) {
+                isUpdate = true;
+            } else if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations())) {
+                // 添加annotations
+                isUpdate = true;
+            } else if (!ObjectUtils.isEmpty(devopsServiceReqVO.getAnnotations()) && !ObjectUtils.isEmpty(devopsServiceDTO.getAnnotations()) && !JsonHelper.marshalByJackson(devopsServiceReqVO.getAnnotations()).equals(devopsServiceDTO.getAnnotations())) {
+                // 修改annotations
+                isUpdate = true;
+            }
+        }
+
         if (!isUpdate && devopsServiceReqVO.getEndPoints() != null && devopsServiceDTO.getEndPoints() != null) {
             if (!gson.toJson(devopsServiceReqVO.getEndPoints()).equals(devopsServiceDTO.getEndPoints())) {
                 isUpdate = true;
@@ -969,13 +994,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     /**
      * 获取k8s service的yaml格式
      */
-    private V1Service initV1Service(DevopsServiceReqVO devopsServiceReqVO, Map<String, String> annotations) {
+    private V1Service initV1Service(DevopsServiceReqVO devopsServiceReqVO) {
         V1Service service = new V1Service();
         service.setKind(SERVICE);
         service.setApiVersion("v1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsServiceReqVO.getName());
-        metadata.setAnnotations(annotations);
+        metadata.setAnnotations(devopsServiceReqVO.getAnnotations());
         Map<String, String> label = new HashMap<>();
         label.put(SERVICE_LABLE, SERVICE_LABLE_VALUE);
         metadata.setLabels(label);
@@ -1072,11 +1097,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             }).collect(Collectors.toList()));
             final Integer[] serialNumber = {0};
             v1EndpointSubset.setPorts(value.stream().map(port -> {
-                V1EndpointPort v1EndpointPort = new V1EndpointPort();
-                v1EndpointPort.setPort(port.getPort());
+                CoreV1EndpointPort coreV1EndpointPort = new CoreV1EndpointPort();
+                coreV1EndpointPort.setPort(port.getPort());
                 serialNumber[0] = serialNumber[0] + 1;
-                v1EndpointPort.setName(port.getName() == null ? "http" + serialNumber[0] : port.getName());
-                return v1EndpointPort;
+                coreV1EndpointPort.setName(port.getName() == null ? "http" + serialNumber[0] : port.getName());
+                return coreV1EndpointPort;
             }).collect(Collectors.toList()));
             v1EndpointSubsets.add(v1EndpointSubset);
         });
@@ -1322,7 +1347,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
             // do nothing
         } else {
             // 其他类型不保存
-            throw new CommonException("error.unknown.service.type");
+            throw new CommonException("devops.unknown.service.type");
         }
 
         // 添加选择器
@@ -1351,8 +1376,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
     @Override
     @Transactional
     public void deleteByEnvIdAndName(Long envId, String name) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(name, ResourceCheckConstant.ERROR_RESOURCE_NAME_IS_NULL);
+        Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
+        Assert.notNull(name, ResourceCheckConstant.DEVOPS_RESOURCE_NAME_IS_NULL);
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         devopsServiceDTO.setEnvId(envId);
         devopsServiceDTO.setName(name);

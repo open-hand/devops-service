@@ -21,6 +21,7 @@ public class DevopsServiceTargetVO {
     @ApiModelProperty("目标应用服务名称")
     private String targetAppServiceName;
     @ApiModelProperty("目标部署组id")
+    @Encrypt
     private Long targetDeploymentId;
     @ApiModelProperty("目标部署组名称")
     private String targetDeploymentName;

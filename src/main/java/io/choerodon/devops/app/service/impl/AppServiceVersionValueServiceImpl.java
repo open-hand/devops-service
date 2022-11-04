@@ -21,6 +21,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class AppServiceVersionValueServiceImpl implements AppServiceVersionValueService {
 
+    private static final String DEVOPS_VERSION_VALUE_INSERT = "devops.version.value.insert";
+    private static final String DEVOPS_VERSION_VALUE_UPDATE = "devops.version.value.update";
 
     @Autowired
     private AppServiceVersionValueMapper appServiceVersionValueMapper;
@@ -28,14 +30,14 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
     @Override
     public AppServiceVersionValueDTO baseCreate(AppServiceVersionValueDTO appServiceVersionValueDTO) {
         if (appServiceVersionValueMapper.insert(appServiceVersionValueDTO) != 1) {
-            throw new CommonException("error.version.value.insert");
+            throw new CommonException(DEVOPS_VERSION_VALUE_INSERT);
         }
         return appServiceVersionValueDTO;
     }
 
     @Override
     public AppServiceVersionValueDTO baseUpdate(AppServiceVersionValueDTO appServiceVersionValueDTO) {
-        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceVersionValueMapper, appServiceVersionValueDTO, "error.version.value.update");
+        MapperUtil.resultJudgedUpdateByPrimaryKey(appServiceVersionValueMapper, appServiceVersionValueDTO, DEVOPS_VERSION_VALUE_UPDATE);
         return appServiceVersionValueDTO;
     }
 
@@ -48,7 +50,7 @@ public class AppServiceVersionValueServiceImpl implements AppServiceVersionValue
     @Override
     @Transactional
     public void baseDeleteById(Long appServiceServiceValueId) {
-        Assert.notNull(appServiceServiceValueId, ResourceCheckConstant.ERROR_SERVICE_VERSION_VALUE_ID_IS_NULL);
+        Assert.notNull(appServiceServiceValueId, ResourceCheckConstant.DEVOPS_SERVICE_VERSION_VALUE_ID_IS_NULL);
         appServiceVersionValueMapper.deleteByPrimaryKey(appServiceServiceValueId);
     }
 

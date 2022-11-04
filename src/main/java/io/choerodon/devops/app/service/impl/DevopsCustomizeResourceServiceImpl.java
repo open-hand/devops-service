@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CustomResourceCode.DEVOPS_LOAD_YAML_CONTENT;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_RESOURCE_NOT_EXIST;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -110,7 +113,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             try {
                 content = new String(contentFile.getBytes());
             } catch (IOException e) {
-                throw new CommonException("error.read.multipart.file");
+                throw new CommonException("devops.read.multipart.file");
             }
         }
 
@@ -145,7 +148,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         } catch (CommonException ex) {
             throw ex;
         } catch (Exception ex) {
-            throw new CommonException("error.load.yaml.content");
+            throw new CommonException(DEVOPS_LOAD_YAML_CONTENT);
         }
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {
@@ -164,10 +167,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceReqVO.getResourceId());
             if (!gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), "master",
                     devopsCustomizeResourceDTO.getFilePath())) {
-                throw new CommonException("error.fileResource.not.exist");
+                throw new CommonException(DEVOPS_FILE_RESOURCE_NOT_EXIST);
             }
             //获取更新内容
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(devopsCustomizeResourceDTO);
             // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
@@ -185,7 +189,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
     @Override
     public void createOrUpdateResourceByGitOps(String type, DevopsCustomizeResourceDTO devopsCustomizeResourceDTO, Long envId, Long userId) {
-        CommonExAssertUtil.assertNotNull(devopsCustomizeResourceDTO.getResourceContent(), "error.resource.content.null");
+        CommonExAssertUtil.assertNotNull(devopsCustomizeResourceDTO.getResourceContent(), "devops.resource.content.null");
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsCustomizeResourceDTO.getEnvId());
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
@@ -232,11 +236,11 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             return;
         }
 
-        List<DevopsCustomizeResourceDTO> devopsCustomizeResourceDTOS = listByEnvAndFilePath(devopsEnvironmentDTO.getId(), devopsCustomizeResourceDTO.getFilePath());
+        List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService.baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), devopsCustomizeResourceDTO.getFilePath());
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
-        if (devopsCustomizeResourceDTOS.size() == 1) {
-            if (devopsCustomizeResourceDTOS.get(0).getId().equals(resourceId)) {
+        if (devopsEnvFileResourceDTOS.size() == 1) {
+            if (devopsEnvFileResourceDTOS.get(0).getId().equals(resourceId)) {
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsCustomizeResourceDTO.getFilePath(),
@@ -250,6 +254,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             //获取更新内容
             DevopsCustomizeResourceContentDTO devopsCustomizeResourceContentDTO = devopsCustomizeResourceContentService.baseQuery(devopsCustomizeResourceDTO.getContentId());
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
+            resourceConvertToYamlHandler.setType(devopsCustomizeResourceContentDTO);
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentDTO.getContent()), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
             gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
@@ -329,13 +334,13 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             DevopsCustomizeResourceDTO devopsCustomizeResourceDTO = devopsCustomizeResourceMapper.selectByPrimaryKey(resourceId);
             devopsCustomizeResourceDTO.setLastUpdatedBy(userId);
             if (kind == null) {
-                throw new CommonException("error.custom.resource.kind.null");
+                throw new CommonException("devops.custom.resource.kind.null");
             }
             if (!kind.equals(devopsCustomizeResourceDTO.getK8sKind())) {
-                throw new CommonException("error.custom.resource.kind.modify");
+                throw new CommonException("devops.custom.resource.kind.modify");
             }
             if (!name.equals(devopsCustomizeResourceDTO.getName())) {
-                throw new CommonException("error.custom.resource.name.modify");
+                throw new CommonException("devops.custom.resource.name.modify");
             }
 
             //更新自定义资源的yaml文件内容
@@ -394,7 +399,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
         }
         //禁止创建平台已有的资源
         if (RESOURCE_TYPE.contains(kind.toString())) {
-            throw new CommonException("error.kind.is.forbidden");
+            throw new CommonException("devops.kind.is.forbidden");
         }
         if (metadata == null) {
             throw new CommonException("custom.resource.metadata.not.found");
@@ -411,7 +416,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public DevopsCustomizeResourceDTO baseCreate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO) {
         if (devopsCustomizeResourceMapper.insert(devopsCustomizeResourceDTO) != 1) {
-            throw new CommonException("error.customize.resource.create.error");
+            throw new CommonException("devops.customize.resource.create.error");
         }
         return devopsCustomizeResourceDTO;
     }
@@ -425,7 +430,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     public void baseUpdate(DevopsCustomizeResourceDTO devopsCustomizeResourceDTO) {
         devopsCustomizeResourceDTO.setObjectVersionNumber(devopsCustomizeResourceMapper.selectByPrimaryKey(devopsCustomizeResourceDTO.getId()).getObjectVersionNumber());
         if (devopsCustomizeResourceMapper.updateByPrimaryKey(devopsCustomizeResourceDTO) != 1) {
-            throw new CommonException("error.customize.resource.update.error");
+            throw new CommonException("devops.customize.resource.update.error");
         }
     }
 
@@ -454,7 +459,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
     @Override
     public void checkExist(Long envId, String kind, String name) {
         if (selectCount(envId, kind, name) > 0) {
-            throw new CommonException("error.kind.name.exist");
+            throw new CommonException("devops.kind.name.exist");
         }
     }
 

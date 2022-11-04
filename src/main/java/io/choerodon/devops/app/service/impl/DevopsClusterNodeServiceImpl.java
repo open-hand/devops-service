@@ -63,9 +63,9 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
      * 集群安装信息保存在redis的key, cluster-info-${projectId}-${集群code}
      */
     public static final String CLUSTER_INFO_REDIS_KEY_TEMPLATE = "cluster-info-%d-%s";
-    private static final String ERROR_DELETE_NODE_FAILED = "error.delete.node.failed";
-    private static final String ERROR_ADD_NODE_FAILED = "error.add.node.failed";
-    private static final String ERROR_ADD_NODE_ROLE_FAILED = "error.add.node.role.failed";
+    private static final String ERROR_DELETE_NODE_FAILED = "devops.delete.node.failed";
+    private static final String ERROR_ADD_NODE_FAILED = "devops.add.node.failed";
+    private static final String ERROR_ADD_NODE_ROLE_FAILED = "devops.add.node.role.failed";
     private static final String CLUSTER_STATUS_SYNC_REDIS_LOCK = "cluster-status-sync-lock";
     private static final Integer MAX_LOG_MSG_LENGTH = 65535;
 
@@ -128,7 +128,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     public void batchInsert(List<DevopsClusterNodeDTO> devopsClusterNodeDTOList) {
         int size = devopsClusterNodeDTOList.size();
         if (devopsClusterNodeMapper.batchInsert(devopsClusterNodeDTOList) != size) {
-            throw new CommonException("error.batch.insert.node");
+            throw new CommonException("devops.batch.insert.node");
         }
     }
 
@@ -141,7 +141,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     public NodeDeleteCheckVO checkEnableDelete(Long projectId, Long nodeId) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
         NodeDeleteCheckVO nodeDeleteCheckVO = new NodeDeleteCheckVO();
@@ -187,12 +187,12 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     @Transactional
     public Long delete(Long projectId, Long nodeId) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
 
 
         DevopsClusterNodeDTO devopsClusterNodeDTO = devopsClusterNodeMapper.selectByPrimaryKey(nodeId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterNodeDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         checkNodeNumByRole(devopsClusterNodeDTO);
 
         // 更新集群操作状态为
@@ -250,7 +250,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
 
     @Override
     public Boolean checkEnableDeleteRole(Long projectId, Long nodeId, Integer role) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
         Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
 
@@ -309,7 +309,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     @Transactional
     public Long deleteRole(Long projectId, Long nodeId, Integer role) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(nodeId, ClusterCheckConstant.ERROR_NODE_ID_IS_NULL);
         Assert.notNull(role, ClusterCheckConstant.ERROR_ROLE_ID_IS_NULL);
 
@@ -454,7 +454,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     @Override
     @Saga(code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchemaClass = DevopsAddNodePayload.class)
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
-        Assert.notNull(projectId, ResourceCheckConstant.ERROR_PROJECT_ID_IS_NULL);
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);
         nodeVO.setProjectId(projectId);
 

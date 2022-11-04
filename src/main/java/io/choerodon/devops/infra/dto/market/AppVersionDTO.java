@@ -28,18 +28,18 @@ public class AppVersionDTO {
     @Encrypt
     private Long marketAppId;
 
-    @Size(message = "error.app.version.version.length")
-    @NotNull(message = "error.app.version.version.null")
+    @Size(message = "devops.app.version.version.length")
+    @NotNull(message = "devops.app.version.version.null")
     @ApiModelProperty("应用版本号（30字符）")
     private String versionNumber;
 
-    @Size(message = "error.app.version.introduction.length")
-    @NotNull(message = "error.app.version.introduction.null")
+    @Size(message = "devops.app.version.introduction.length")
+    @NotNull(message = "devops.app.version.introduction.null")
     @ApiModelProperty("版本描述（200字符）")
     private String introduction;
 
-    @Size(message = "error.app.version.document.url.length")
-    @NotNull(message = "error.app.version.document.url.null")
+    @Size(message = "devops.app.version.document.url.length")
+    @NotNull(message = "devops.app.version.document.url.null")
     @ApiModelProperty("版本文档（400字符）")
     private String documentUrl;
 
@@ -56,7 +56,7 @@ public class AppVersionDTO {
 
     private Long objectVersionNumber;
 
-    @NotEmpty(message = "error.app.version.service.null")
+    @NotEmpty(message = "devops.app.version.service.null")
     @ApiModelProperty("这个应用版本所对应的市场服务")
     private List<MarketServiceVO> marketServiceVOList;
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_YAML_FORMAT_INVALID;
+
 import java.util.Map;
 import javax.annotation.Nullable;
 
@@ -96,7 +98,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 RdupmTypeEnum.DOCKER_COMPOSE.value(),
                 OperationTypeEnum.CREATE_APP.value());
 
-        devopsHostAppService.baseCreate(devopsHostAppDTO, "error.create.app");
+        devopsHostAppService.baseCreate(devopsHostAppDTO, "devops.create.app");
 
         Long appId = devopsHostAppDTO.getId();
         String remark = dockerComposeDeployVO.getDockerComposeValueDTO().getRemark();
@@ -120,7 +122,11 @@ public class DockerComposeServiceImpl implements DockerComposeService {
 
     @Override
     @Transactional
-    public DevopsHostCommandDTO updateDockerComposeApp(Long projectId, Long appId, @Nullable Long cdJobRecordId, DockerComposeDeployVO dockerComposeDeployVO) {
+    public DevopsHostCommandDTO updateDockerComposeApp(Long projectId,
+                                                       Long appId,
+                                                       @Nullable Long cdJobRecordId,
+                                                       DockerComposeDeployVO dockerComposeDeployVO,
+                                                       Boolean fromPipeline) {
         // 查询应用
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
@@ -160,7 +166,9 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         boolean downFlag = isRemoveService(currentValue, value);
 
         // 更新应用信息
-        devopsHostAppDTO.setRunCommand(runCommand);
+        if (Boolean.FALSE.equals(fromPipeline)) {
+            devopsHostAppDTO.setRunCommand(runCommand);
+        }
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
@@ -188,7 +196,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
             }
 
         } catch (Exception e) {
-            throw new CommonException("error.yaml.format.invalid", e);
+            throw new CommonException(DEVOPS_YAML_FORMAT_INVALID, e);
         }
 
     }
@@ -209,7 +217,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         dockerComposeDeployVO.setRunCommand(devopsHostAppDTO.getRunCommand());
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
 
-        updateDockerComposeApp(projectId, appId, null, dockerComposeDeployVO);
+        updateDockerComposeApp(projectId, appId, null, dockerComposeDeployVO, false);
     }
 
     @Override
@@ -303,7 +311,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 HostCommandStatusEnum.OPERATING.value());
         devopsHostCommandDTO.setCdJobRecordId(cdJobRecordId);
         devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
 
         // 保存部署记录

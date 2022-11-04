@@ -36,8 +36,8 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsHzeroDeployDetailsServiceImpl.class);
 
-    private static final String ERROR_SAVE_DEPLOY_DETAILS_FAILED = "error.save.deploy.details.failed";
-    private static final String ERROR_UPDATE_DEPLOY_DETAILS_FAILED = "error.update.deploy.details.failed";
+    private static final String ERROR_SAVE_DEPLOY_DETAILS_FAILED = "devops.save.deploy.details.failed";
+    private static final String ERROR_UPDATE_DEPLOY_DETAILS_FAILED = "devops.update.deploy.details.failed";
 
     @Autowired
     private DevopsHzeroDeployDetailsMapper devopsHzeroDeployDetailsMapper;
@@ -75,18 +75,10 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
 
     @Override
     public DevopsHzeroDeployDetailsDTO baseQueryByAppId(Long appId) {
-        Assert.notNull(appId, ResourceCheckConstant.ERROR_APP_ID_IS_NULL);
+        Assert.notNull(appId, ResourceCheckConstant.DEVOPS_APP_ID_IS_NULL);
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
         devopsHzeroDeployDetailsDTO.setAppId(appId);
         return devopsHzeroDeployDetailsMapper.selectOne(devopsHzeroDeployDetailsDTO);
-    }
-
-    @Override
-    public DevopsHzeroDeployDetailsDTO baseQueryDeployingByEnvIdAndInstanceCode(Long envId, String appCode) {
-        Assert.notNull(envId, ResourceCheckConstant.ERROR_ENV_ID_IS_NULL);
-        Assert.notNull(appCode, ResourceCheckConstant.ERROR_INSTANCE_CODE_IS_NULL);
-
-        return devopsHzeroDeployDetailsMapper.baseQueryDeployingByEnvIdAndInstanceCode(envId, appCode);
     }
 
     @Override
@@ -96,7 +88,7 @@ public class DevopsHzeroDeployDetailsServiceImpl implements DevopsHzeroDeployDet
 
     @Override
     public List<DevopsHzeroDeployDetailsDTO> listByDeployRecordId(Long deployRecordId) {
-        Assert.notNull(deployRecordId, ResourceCheckConstant.ERROR_DEPLOY_RECORD_ID_IS_NULL);
+        Assert.notNull(deployRecordId, ResourceCheckConstant.DEVOPS_DEPLOY_RECORD_ID_IS_NULL);
         DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = new DevopsHzeroDeployDetailsDTO();
         devopsHzeroDeployDetailsDTO.setDeployRecordId(deployRecordId);
         return devopsHzeroDeployDetailsMapper.select(devopsHzeroDeployDetailsDTO);

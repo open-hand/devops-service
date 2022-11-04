@@ -60,6 +60,9 @@ public interface SonarClient {
     @POST("api/user_tokens/generate")
     Call<ResponseBody> createToken(@QueryMap Map<String, String> maps);
 
+    @POST("api/user_tokens/revoke")
+    Call<Void> revokeToken(@QueryMap Map<String, String> maps);
+
     @GET("api/user_tokens/search")
     Call<ResponseBody> listToken();
 

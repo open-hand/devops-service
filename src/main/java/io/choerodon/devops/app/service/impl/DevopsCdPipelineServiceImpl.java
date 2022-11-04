@@ -84,8 +84,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private static final String STATUS_CODE = "statusCode";
 
 
-    private static final String ERROR_PIPELINE_STATUS_CHANGED = "error.pipeline.status.changed";
-    private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "error.permission.mismatch.for.audit";
+    private static final String ERROR_PIPELINE_STATUS_CHANGED = "devops.pipeline.status.changed";
+    private static final String ERROR_PERMISSION_MISMATCH_FOR_AUDIT = "devops.permission.mismatch.for.audit";
     private static final String AUDIT_TASK_CALLBACK_URL = "/devops/v1/cd_pipeline/external_approval_task/callback";
     private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
 
@@ -492,7 +492,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             }
 
         } catch (Exception e) {
-            LOGGER.error("error.create.pipeline.auto.deploy.instance", e);
+            LOGGER.error("devops.create.pipeline.auto.deploy.instance", e);
             log.append("Deploy app instance failed").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             devopsCdStageRecordService.updateStageStatusFailed(stageRecordId);
@@ -625,8 +625,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                     devopsCdEnvDeployInfoDTO.getAppCode(),
                     devopsDeployAppCenterEnvDTO.getObjectId(),
                     CommandType.UPDATE.getType(),
-                    devopsCdEnvDeployInfoDTO.getAppName(),
-                    devopsCdEnvDeployInfoDTO.getAppCode());
+                    null,
+                    null);
             appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(devopsCdJobRecordDTO.getProjectId(), appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
@@ -713,7 +713,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         prodJarInfoVO.setUsername(DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername()));
                         prodJarInfoVO.setPassword(DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword()));
                     }
-                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdJobRecordDTO.getProjectId());
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdJobRecordDTO.getProjectId());
                     C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), devopsCdJobRecordDTO.getProjectId(), ciPipelineMavenDTO.getNexusRepoId());
 
                     prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
@@ -1094,7 +1094,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             aduitStatusChangeVO.setCountersigned(devopsCdJobRecordDTO.getCountersigned());
             return aduitStatusChangeVO;
         } else {
-            throw new CommonException(ResourceCheckConstant.ERROR_PARAM_IS_INVALID);
+            throw new CommonException(ResourceCheckConstant.DEVOPS_PARAM_IS_INVALID);
         }
     }
 
@@ -1221,7 +1221,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         }
         LOGGER.info(">>>>>>>>>>>>>>>>>>>  Execute api test task. pipelineRecordId : {}, stageRecordId : {} ,jobRecordId : {} <<<<<<<<<<<<<<<<<<<<", pipelineRecordId, stageRecordId, jobRecordId);
         if (!JobTypeEnum.CD_API_TEST.value().equals(devopsCdJobRecordDTO.getType())) {
-            throw new CommonException("error.invalid.job.type");
+            throw new CommonException("devops.invalid.job.type");
         }
         DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(devopsCdJobRecordDTO.getDeployInfoId());
 
@@ -1247,7 +1247,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                                 ApiTestTriggerType.PIPELINE.getValue(),
                                 jobRecordId);
             } else {
-                throw new CommonException("error.task.type.invalid");
+                throw new CommonException("devops.task.type.invalid");
             }
 
             DevopsCdJobRecordDTO devopsCdJobRecordDTO1 = devopsCdJobRecordService.queryById(jobRecordId);
@@ -1339,7 +1339,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
         try {
             responseEntity = restTemplateForIp.exchange(externalApprovalJobVO.getTriggerUrl(), HttpMethod.POST, entity, Void.class);
             if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-                throw new RestClientException("error.trigger.external.approval.task");
+                throw new RestClientException("devops.trigger.external.approval.task");
             }
 
             log.append("\u001B[0K\u001B[32;1mResponse headers: \u001B[0;m").append(System.lineSeparator());
@@ -1354,7 +1354,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsCdJobRecordDTO.setStatus(PipelineStatus.RUNNING.toString());
             devopsCdJobRecordService.update(devopsCdJobRecordDTO);
         } catch (Exception e) {
-            LOGGER.info("error.trigger.external.approval.task", e);
+            LOGGER.info("devops.trigger.external.approval.task", e);
             log.append("\u001B[0K\u001B[31;1mTrigger error msg: \u001B[0;m").append(System.lineSeparator());
             log.append(LogUtil.cutOutString(LogUtil.readContentOfThrowable(e), 2500)).append(System.lineSeparator());
             String logStr = log.toString();
@@ -1475,7 +1475,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                         Map<String, String> param = new HashMap<>();
-                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
                         String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                         param.put("projectName", projectDTO.getName());
                         param.put("pipelineName", devopsCdPipelineRecordDTO.getPipelineName());
@@ -1564,8 +1564,8 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         }
                         LOGGER.info(">>>>>>>>>>>>>>>>>>> Do Send warning message <<<<<<<<<<<<<<<<<<<<");
                         Map<String, String> param = new HashMap<>();
-                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(devopsCdPipelineRecordDTO.getProjectId());
-                        Tenant tenant = baseServiceClientOperator.queryOrganizationBasicInfoById(projectDTO.getOrganizationId());
+                        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsCdPipelineRecordDTO.getProjectId());
+                        Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
                         String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCdPipelineRecordDTO.getPipelineId(), devopsPipelineRecordRelDTO.getId());
                         param.put("projectName", projectDTO.getName());
                         param.put("tenantName", tenant.getTenantName());
@@ -1690,7 +1690,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     private Boolean checkAutoDeploy(Long envId) {
         DevopsEnvironmentDTO environmentDTO = devopsEnvironmentMapper.selectByPrimaryKey(envId);
         if (environmentDTO == null) {
-            throw new CommonException("error.get.environment");
+            throw new CommonException("devops.get.environment");
         }
         return environmentDTO.getAutoDeploy();
     }

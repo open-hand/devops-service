@@ -14,10 +14,10 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
  */
 public class DevopsAppTemplateCreateVO {
     @ApiModelProperty("应用模板名称")
-    @Length(min = 1, max = 40, message = "error.app.template.name.invalid")
+    @Length(min = 1, max = 40, message = "devops.app.template.name.invalid")
     private String name;
     @ApiModelProperty("应用模板code")
-    @Pattern(regexp = "([a-z]+[a-z0-9-]*[a-z0-9]+){1,30}", message = "error.app.template.code.invalid")
+    @Pattern(regexp = "([a-z]+[a-z0-9-]*[a-z0-9]+){1,30}", message = "devops.app.template.code.invalid")
     private String code;
     @ApiModelProperty("创建方式：template（已有模板创建）;gitlab;github")
     private String createType;

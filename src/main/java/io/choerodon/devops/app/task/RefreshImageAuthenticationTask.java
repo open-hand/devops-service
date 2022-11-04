@@ -54,7 +54,7 @@ public class RefreshImageAuthenticationTask {
             //1.查询默认仓库的secret
             refresh();
         } catch (Exception e) {
-            logger.error("error.refresh.image.auth", e);
+            logger.error("devops.refresh.image.auth", e);
         }
     }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PVCode.DEVOPS_PV_NOT_EXISTS;
+
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -8,7 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.Quantity;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.openapi.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,7 +96,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     @Override
     public Page<DevopsPvDTO> basePagePvByOptions(Long projectId, PageRequest pageable, String params) {
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         // search_param 根据确定的键值对查询
         // params 是遍历字段模糊查询
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
@@ -127,7 +129,6 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         devopsPvDTO.setStatus(PvStatus.OPERATING.getStatus());
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         // 如果系统环境id为空那么先去创建系统环境,更新集群关联的系统环境
         if (devopsClusterDTO.getSystemEnvId() == null) {
@@ -183,13 +184,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         List<Long> boundPvIds = getBoundPvIds(devopsPrometheusMapper, 1);
 
         if ("Available".equals(devopsPvDTO.getStatus()) && boundPvIds.contains(pvId)) {
-            throw new CommonException("error.pv.bound.with.prometheus");
+            throw new CommonException("devops.pv.bound.with.prometheus");
         }
 
         // 创建pv的环境是所选集群关联的系统环境
         DevopsClusterDTO devopsClusterDTO = devopsClusterService.baseQuery(devopsPvDTO.getClusterId());
 
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(devopsClusterDTO.getSystemEnvId());
 
@@ -330,13 +331,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public void baseupdatePv(DevopsPvDTO devopsPvDTO) {
         DevopsPvDTO oldDevopsPvDTO = devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
         if (oldDevopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         devopsPvDTO.setObjectVersionNumber(oldDevopsPvDTO.getObjectVersionNumber());
 
         if (devopsPvMapper.updateByPrimaryKeySelective(devopsPvDTO) != 1) {
-            throw new CommonException("error.pv.update.error");
+            throw new CommonException("devops.pv.update.error");
         }
     }
 
@@ -354,14 +355,14 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> listNonRelatedProjects(Long projectId, Long pvId, Long selectedProjectId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         PageRequest customPageRequest = new PageRequest(1, 0);
 
         List<ProjectReqVO> projectReqVOList = Optional.ofNullable(pageProjects(projectId, pvId, customPageRequest, params))
                 .map(Page::getContent)
-                .orElseThrow(() -> new CommonException("error.project.get"));
+                .orElseThrow(() -> new CommonException("devops.project.get"));
 
         //根据PvId查权限表中关联的projectId
         List<Long> permitted = devopsPvProPermissionService.baseListByPvId(pvId)
@@ -375,7 +376,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .collect(Collectors.toList());
 
         if (selectedProjectId != null) {
-            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(selectedProjectId);
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(selectedProjectId);
             ProjectReqVO projectReqVO = new ProjectReqVO(projectDTO.getId(), projectDTO.getName(), projectDTO.getCode());
             if (!projectReqVOS.isEmpty()) {
                 projectReqVOS.remove(projectReqVO);
@@ -444,7 +445,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
     private DevopsPvDTO createPvRecord(DevopsPvDTO devopsPvDTO) {
         if (1 != devopsPvMapper.insertSelective(Objects.requireNonNull(devopsPvDTO))) {
-            throw new CommonException("error.pv.insert", devopsPvDTO.getName());
+            throw new CommonException("devops.pv.insert", devopsPvDTO.getName());
         }
         return devopsPvMapper.selectByPrimaryKey(devopsPvDTO.getId());
     }
@@ -470,7 +471,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> pageProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(devopsPvDTO.getClusterId());
@@ -487,7 +488,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     public Page<ProjectReqVO> pageRelatedProjects(Long projectId, Long pvId, PageRequest pageable, String params) {
         DevopsPvDTO devopsPvDTO = baseQueryById(pvId);
         if (devopsPvDTO == null) {
-            throw new CommonException("error.pv.not.exists");
+            throw new CommonException(DEVOPS_PV_NOT_EXISTS);
         }
 
 
@@ -506,12 +507,12 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             // 如果不搜索
             Page<DevopsPvProPermissionDTO> relationPage = PageHelper.doPage(pageable, () -> devopsPvProPermissionService.baseListByPvId(pvId));
             return ConvertUtils.convertPage(relationPage, permission -> {
-                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(permission.getProjectId());
+                ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(permission.getProjectId());
                 return new ProjectReqVO(permission.getProjectId(), projectDTO.getName(), projectDTO.getCode());
             });
         } else {
             // 如果要搜索，需要手动在程序内分页
-            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+            ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
             List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
@@ -546,7 +547,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     public void baseUpdate(DevopsPvDTO devopsPvDTO) {
         if (devopsPvMapper.updateByPrimaryKeySelective(Objects.requireNonNull(devopsPvDTO)) != 1) {
-            throw new CommonException("error.update.pv", devopsPvDTO.getName());
+            throw new CommonException("devops.update.pv", devopsPvDTO.getName());
         }
     }
 
@@ -591,7 +592,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         //pv类型不存在抛异常
         if (volumeTypeEnum == null) {
-            throw new CommonException("error.py.type.not.exist");
+            throw new CommonException("devops.py.type.not.exist");
         }
 
         switch (volumeTypeEnum) {
@@ -691,7 +692,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
 
         //数据库创建pv
         if (devopsPvMapper.insert(devopsPvDTO) != 1) {
-            throw new CommonException("error.pv.create.error");
+            throw new CommonException("devops.pv.create.error");
         }
 
         Long pvId = devopsPvDTO.getId();
@@ -761,7 +762,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
     @Override
     public List<DevopsPvLabelVO> listLabels(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
-        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.ERROR_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        CommonExAssertUtil.assertTrue(projectId.equals(devopsClusterDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<String> labelsInString = devopsPvMapper.listLabelsByClusterId(clusterId);
         List<DevopsPvLabelVO> labels = new ArrayList<>();
@@ -769,13 +770,13 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 .filter(s -> !StringUtils.isEmpty(s))
                 .map(s -> JsonHelper.unmarshalByJackson(s, new TypeReference<Map<String, String>>() {
                 }))
-                .forEach(l -> l.forEach((k, v)->{
+                .forEach(l -> l.forEach((k, v) -> {
                     DevopsPvLabelVO devopsPvLabelVO = new DevopsPvLabelVO();
                     devopsPvLabelVO.setKey(k);
                     devopsPvLabelVO.setValue(v);
-                  if (!labels.contains(devopsPvLabelVO)){
-                      labels.add(devopsPvLabelVO);
-                  }
+                    if (!labels.contains(devopsPvLabelVO)) {
+                        labels.add(devopsPvLabelVO);
+                    }
                 }));
         return labels;
     }
@@ -787,10 +788,10 @@ public class DevopsPvServiceImpl implements DevopsPvService {
                 DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
                 clusterId = devopsEnvironmentDTO.getClusterId();
             } else {
-                throw new CommonException("error.envId.and.clusterId.null");
+                throw new CommonException("devops.envId.and.clusterId.null");
             }
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectById(projectId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Map<String, Object> searchParamMap = TypeUtil.castMapParams(params);
         Map<String, String> map = (Map) searchParamMap.get(TypeUtil.SEARCH_PARAM);
 

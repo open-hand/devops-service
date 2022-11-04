@@ -12,10 +12,10 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 public class DevopsEnvironmentUpdateVO {
     @Encrypt
     @ApiModelProperty("环境id")
-    @NotNull(message = "error.env.id.null")
+    @NotNull(message = "{devops.env.id.null}")
     private Long id;
     @ApiModelProperty("环境名称，不能为空")
-    @NotBlank(message = "error.env.name.empty")
+    @NotBlank(message = "{devops.env.name.empty}")
     private String name;
     @ApiModelProperty("环境描述")
     private String description;
@@ -27,7 +27,7 @@ public class DevopsEnvironmentUpdateVO {
     private Long devopsEnvGroupId;
 
     @ApiModelProperty("版本号 / 更新必须")
-    @NotNull(message = "error.object.version.number.null")
+    @NotNull(message = "{devops.object.version.number.null}")
     private Long objectVersionNumber;
 
     public Long getId() {

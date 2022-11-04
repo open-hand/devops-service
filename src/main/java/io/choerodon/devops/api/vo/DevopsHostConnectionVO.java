@@ -1,8 +1,9 @@
 package io.choerodon.devops.api.vo;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.validator.annotation.EnumCheck;
 import io.choerodon.devops.infra.enums.HostAuthType;
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * @author shanyu
@@ -18,7 +19,7 @@ public class DevopsHostConnectionVO {
     /**
      * {@link HostAuthType}
      */
-    @EnumCheck(message = "error.host.auth.type.invalid", enumClass = HostAuthType.class, skipNull = true)
+    @EnumCheck(message = "{devops.host.auth.type.invalid}", enumClass = HostAuthType.class, skipNull = true)
     @ApiModelProperty("认证类型")
     private String authType;
 

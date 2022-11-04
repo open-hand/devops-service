@@ -1,8 +1,11 @@
 package io.choerodon.devops.infra.feign.operator;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitopsCode.DEVOPS_FILE_UPDATE;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL;
 import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,9 +50,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class GitlabServiceClientOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabServiceClientOperator.class);
-    private static final String ERROR_CREATE_PIPELINE_FILED = "error.create.pipeline.failed";
-    private static final String ERROR_RETRY_PIPELINE_FILED = "error.retry.pipeline.filed";
-    private static final String ERROR_CANCEL_PIPELINE_FILED = "error.cancel.pipeline.filed";
+    private static final String ERROR_CREATE_PIPELINE_FILED = "devops.create.pipeline.failed";
+    private static final String ERROR_RETRY_PIPELINE_FILED = "devops.retry.pipeline.filed";
+    private static final String ERROR_CANCEL_PIPELINE_FILED = "devops.cancel.pipeline.filed";
     @Autowired
     @Lazy
     private GitlabServiceClient gitlabServiceClient;
@@ -73,7 +76,6 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setPassword(password);
             userDOResponseEntity = gitlabServiceClient.createUser(projectsLimit, gitlabTransferDTO);
         } catch (Exception e) {
-            LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e.getMessage(), e);
         }
         return userDOResponseEntity.getBody();
@@ -255,7 +257,7 @@ public class GitlabServiceClientOperator {
             throw new CommonException(e);
         }
         if (impersonationToken.getBody() == null) {
-            throw new CommonException("error.create.project.token");
+            throw new CommonException("devops.create.project.token");
         }
         return impersonationToken.getBody().getToken();
     }
@@ -270,7 +272,7 @@ public class GitlabServiceClientOperator {
     public String createImpersonationToken(Integer userId, String name) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken = gitlabServiceClient.createProjectToken(userId, name, null);
         if (impersonationToken.getBody() == null) {
-            throw new CommonException("error.create.project.token");
+            throw new CommonException("devops.create.project.token");
         }
         return impersonationToken.getBody().getToken();
     }
@@ -337,7 +339,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null);
             if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
-                throw new CommonException("error.file.create");
+                throw new CommonException(DEVOPS_FILE_CREATE);
             }
         } catch (Exception e) {
             throw new CommonException(e);
@@ -362,7 +364,7 @@ public class GitlabServiceClientOperator {
                             null,
                             null);
             if (result == null || result.getBody() == null || result.getBody().getFilePath() == null) {
-                throw new CommonException("error.file.create");
+                throw new CommonException(DEVOPS_FILE_CREATE);
             }
         } catch (RetryableException e) {
             LOGGER.info(e.getMessage(), e);
@@ -387,7 +389,7 @@ public class GitlabServiceClientOperator {
                             appExternalConfigDTO.getUsername(),
                             appExternalConfigDTO.getPassword());
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
-                throw new CommonException("error.file.create");
+                throw new CommonException(DEVOPS_FILE_CREATE);
             }
         } catch (RetryableException e) {
             LOGGER.info(e.getMessage(), e);
@@ -415,7 +417,7 @@ public class GitlabServiceClientOperator {
             ResponseEntity<RepositoryFileDTO> result = gitlabServiceClient
                     .updateFile(projectId, fileCreationVO, null, null, null, null, null);
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
-                throw new CommonException("error.file.update");
+                throw new CommonException(DEVOPS_FILE_UPDATE);
             }
         } catch (Exception e) {
             throw new CommonException(e);
@@ -440,7 +442,7 @@ public class GitlabServiceClientOperator {
                             appExternalConfigDTO.getUsername(),
                             appExternalConfigDTO.getPassword());
             if (result.getBody() == null || result.getBody().getFilePath() == null) {
-                throw new CommonException("error.file.update");
+                throw new CommonException(DEVOPS_FILE_UPDATE);
             }
         } catch (Exception e) {
             throw new CommonException(e);
@@ -462,7 +464,7 @@ public class GitlabServiceClientOperator {
                     null,
                     null);
         } catch (Exception e) {
-            throw new CommonException("error.file.delete", e, path);
+            throw new CommonException("devops.file.delete", e, path);
         }
     }
 
@@ -483,7 +485,7 @@ public class GitlabServiceClientOperator {
                     appExternalConfigDTO.getUsername(),
                     appExternalConfigDTO.getPassword());
         } catch (Exception e) {
-            throw new CommonException("error.file.delete", e, path);
+            throw new CommonException("devops.file.delete", e, path);
         }
     }
 
@@ -491,7 +493,7 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.deleteProjectByName(groupName, projectName, userId);
         } catch (Exception e) {
-            throw new CommonException("error.app.delete", e);
+            throw new CommonException("devops.app.delete", e);
         }
     }
 
@@ -516,7 +518,7 @@ public class GitlabServiceClientOperator {
             gitlabServiceClient.createProtectedBranch(
                     projectId, gitlabTransferDTO, userId);
         } catch (Exception e) {
-            throw new CommonException("error.branch.create", e);
+            throw new CommonException(DEVOPS_BRANCH_CREATE, e);
         }
     }
 
@@ -537,7 +539,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.createProjectHook(projectId, userId, projectHookDTO).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.projecthook.create", e);
+            throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
 
         }
     }
@@ -546,7 +548,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.updateWebHook(projectId, userId, hookId, projectHookDTO).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.projecthook.create", e);
+            throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
 
         }
     }
@@ -565,20 +567,9 @@ public class GitlabServiceClientOperator {
                     appExternalConfigVO.getPassword()).getBody();
             return JsonHelper.unmarshalByJackson(response, ProjectHookDTO.class);
         } catch (Exception e) {
-            throw new CommonException("error.projecthook.create", e);
+            throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
 
         }
-    }
-
-    public ProjectHookDTO updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
-        ResponseEntity<ProjectHookDTO> projectHookResponseEntity;
-        try {
-            projectHookResponseEntity = gitlabServiceClient
-                    .updateProjectHook(projectId, hookId, userId);
-        } catch (Exception e) {
-            throw new CommonException(e.getMessage(), e);
-        }
-        return projectHookResponseEntity.getBody();
     }
 
     public GitlabProjectDTO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
@@ -586,7 +577,7 @@ public class GitlabServiceClientOperator {
             return gitlabServiceClient
                     .createProject(groupId, projectName, userId, visibility).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.gitlab.project.create", e);
+            throw new CommonException("devops.gitlab.project.create", e);
 
         }
     }
@@ -619,7 +610,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.listAppServiceVariable(projectId, userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.devops.ci.variable.key.list");
+            throw new CommonException("devops.devops.ci.variable.key.list");
         }
     }
 
@@ -627,7 +618,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.listProjectVariable(projectId, userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.devops.ci.variable.key.list");
+            throw new CommonException("devops.devops.ci.variable.key.list");
         }
     }
 
@@ -647,7 +638,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setSshKey(key);
             gitlabServiceClient.createDeploykey(projectId, gitlabTransferDTO, canPush, userId);
         } catch (Exception e) {
-            throw new CommonException("error.deploykey.create", e);
+            throw new CommonException("devops.deploykey.create", e);
         }
     }
 
@@ -655,7 +646,7 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.createProjectMember(projectId, memberDTO);
         } catch (Exception e) {
-            throw new CommonException("error.member.add", e);
+            throw new CommonException("devops.member.add", e);
         }
     }
 
@@ -663,7 +654,7 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.updateProjectMember(projectId, memberDTOS);
         } catch (Exception e) {
-            throw new CommonException("error.member.update", e);
+            throw new CommonException("devops.member.update", e);
         }
     }
 
@@ -671,16 +662,7 @@ public class GitlabServiceClientOperator {
         try {
             gitlabServiceClient.deleteProjectMember(groupId, userId);
         } catch (Exception e) {
-            throw new CommonException("error.member.remove", e);
-        }
-    }
-
-
-    public List<GitlabProjectDTO> listProjectByUser(Integer userId) {
-        try {
-            return gitlabServiceClient.listProjectByUser(userId).getBody();
-        } catch (Exception e) {
-            throw new CommonException("error.project.get.by.userId", e);
+            throw new CommonException("devops.member.remove", e);
         }
     }
 
@@ -784,7 +766,7 @@ public class GitlabServiceClientOperator {
             responseEntity =
                     gitlabServiceClient.createBranch(projectId, gitlabTransferDTO, userId);
         } catch (Exception e) {
-            throw new CommonException("error.branch.create", e);
+            throw new CommonException(DEVOPS_BRANCH_CREATE, e);
         }
         return responseEntity.getBody();
     }
@@ -801,7 +783,7 @@ public class GitlabServiceClientOperator {
                     memberDTO = gitlabServiceClientOperator.getMember(Long.valueOf(gitlabProjectId), Long.valueOf(userId));
                 }
                 if (memberDTO == null) {
-                    throw new CommonException("error.user.not.in.gitlab.project");
+                    throw new CommonException(DEVOPS_USER_NOT_IN_GITLAB_PROJECT);
                 }
             }
         }
@@ -903,7 +885,7 @@ public class GitlabServiceClientOperator {
         try {
             tagResponseEntity = gitlabServiceClient.getTags(projectId, userId, null, null, null, null, null);
         } catch (Exception e) {
-            throw new CommonException("error.tags.get", e);
+            throw new CommonException(DEVOPS_TAGS_GET, e);
         }
         return tagResponseEntity.getBody();
     }
@@ -921,7 +903,7 @@ public class GitlabServiceClientOperator {
                     appExternalConfigDTO.getUsername(),
                     appExternalConfigDTO.getPassword());
         } catch (Exception e) {
-            throw new CommonException("error.tags.get", e);
+            throw new CommonException(DEVOPS_TAGS_GET, e);
         }
         return tagResponseEntity.getBody();
     }
@@ -931,7 +913,7 @@ public class GitlabServiceClientOperator {
         try {
             return gitlabServiceClient.queryBranch(gitlabProjectId, branch).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.branch.get", e);
+            throw new CommonException(DEVOPS_BRANCH_GET, e);
 
         }
     }
@@ -944,7 +926,7 @@ public class GitlabServiceClientOperator {
             gitlabTransferDTO.setTo(to);
             return gitlabServiceClient.queryCompareResult(gitlabProjectId, gitlabTransferDTO).getBody();
         } catch (Exception e) {
-            throw new CommonException("error.diffs.get", e);
+            throw new CommonException("devops.diffs.get", e);
         }
     }
 
@@ -1305,7 +1287,7 @@ public class GitlabServiceClientOperator {
         }
 
         if (!Boolean.TRUE.equals(result)) {
-            throw new CommonException("failed.to.set.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+            throw new CommonException("devops.failed.to.set.user.gitlab.admin", Objects.requireNonNull(iamUserId));
         }
     }
 
@@ -1320,7 +1302,7 @@ public class GitlabServiceClientOperator {
         }
 
         if (!Boolean.TRUE.equals(result)) {
-            throw new CommonException("failed.to.delete.user.gitlab.admin", Objects.requireNonNull(iamUserId));
+            throw new CommonException("devops.failed.to.delete.user.gitlab.admin", Objects.requireNonNull(iamUserId));
         }
     }
 
@@ -1433,7 +1415,7 @@ public class GitlabServiceClientOperator {
             CommitPayloadDTO commitPayloadDTO = new CommitPayloadDTO(Objects.requireNonNull(branch), Objects.requireNonNull(commitMessage), actions);
             gitlabServiceClient.createCommit(Objects.requireNonNull(gitlabProjectId), Objects.requireNonNull(gitlabUserId), commitPayloadDTO);
         } catch (Exception ex) {
-            throw new CommonException("error.manipulate.gitlab.files");
+            throw new CommonException("devops.manipulate.gitlab.files");
         }
     }
 
@@ -1586,9 +1568,9 @@ public class GitlabServiceClientOperator {
      * @param ciConfigPath    ci文件地址
      */
     public void updateProjectCiConfigPath(Integer gitlabProjectId, Integer userId, String ciConfigPath) {
-        CommonExAssertUtil.assertNotNull(gitlabProjectId, "error.project.id.null");
-        CommonExAssertUtil.assertNotNull(ciConfigPath, "error.ci.config.path.null");
-        CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
+        CommonExAssertUtil.assertNotNull(gitlabProjectId, DEVOPS_PROJECT_ID_IS_NULL);
+        CommonExAssertUtil.assertNotNull(ciConfigPath, "devops.ci.config.path.null");
+        CommonExAssertUtil.assertNotNull(userId, "devops.user.id.null");
         Project project = new Project();
         project.setId(gitlabProjectId);
         project.setCiConfigPath(ciConfigPath);
@@ -1634,14 +1616,10 @@ public class GitlabServiceClientOperator {
     }
 
     public void updateNameAndPath(Integer userId, Integer projectId, String newName) {
-        CommonExAssertUtil.assertNotNull(projectId, "error.project.id.null");
-        CommonExAssertUtil.assertNotNull(newName, "error.ci.newName.null");
-        CommonExAssertUtil.assertNotNull(userId, "error.user.id.null");
+        CommonExAssertUtil.assertNotNull(projectId, DEVOPS_PROJECT_ID_IS_NULL);
+        CommonExAssertUtil.assertNotNull(newName, "devops.ci.newName.null");
+        CommonExAssertUtil.assertNotNull(userId, "devops.user.id.null");
         gitlabServiceClient.updateNameAndPath(projectId, userId, newName);
-    }
-
-    public InputStream downloadArchiveByFormat(Integer gitlabProjectId, Integer userId, String commitSha, String format) {
-        return gitlabServiceClient.downloadArchiveByFormat(gitlabProjectId, userId, commitSha, format).getBody();
     }
 
     public GitlabProjectDTO queryExternalProjectByCode(AppExternalConfigDTO appExternalConfigDTO) {

@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.dto.iam;
 
 
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * wanghao
@@ -19,9 +19,9 @@ public class ClientVO {
     private Long id;
 
     @ApiModelProperty(value = "客户端名称/必填")
-    @Size(min = 1, max = 12, message = "error.client.name.size")
-    @NotNull(message = "error.clientName.null")
-    @Pattern(regexp = REGEX, message = "error.client.name.regex")
+    @Size(min = 1, max = 12, message = "devops.client.name.size")
+    @NotNull(message = "devops.clientName.null")
+    @Pattern(regexp = REGEX, message = "devops.client.name.regex")
     private String name;
 
     @ApiModelProperty(value = "组织ID/必填")
@@ -31,16 +31,16 @@ public class ClientVO {
     private String resourceIds;
 
     @ApiModelProperty(value = "客户端秘钥/必填")
-    @Size(min = 6, max = 16, message = "error.client.secret.size")
-    @NotNull(message = "error.secret.null")
-    @Pattern(regexp = REGEX, message = "error.client.secret.regex")
+    @Size(min = 6, max = 16, message = "devops.client.secret.size")
+    @NotNull(message = "devops.secret.null")
+    @Pattern(regexp = REGEX, message = "devops.client.secret.regex")
     private String secret;
 
     @ApiModelProperty(value = "作用域/非必填")
     private String scope;
 
     @ApiModelProperty(value = "授权类型/必填")
-    @NotNull(message = "error.authorizedGrantTypes.null")
+    @NotNull(message = "devops.authorizedGrantTypes.null")
     private String authorizedGrantTypes;
 
     @ApiModelProperty(value = "重定向地址/非必填")
@@ -59,11 +59,11 @@ public class ClientVO {
     private String autoApprove;
 
     @ApiModelProperty(value = "资源id")
-    @NotNull(message = "error.sourceId.null")
+    @NotNull(message = "devops.sourceId.null")
     private Long sourceId;
 
     @ApiModelProperty(value = "client类型")
-    @NotEmpty(message = "error.sourceType.null")
+    @NotEmpty(message = "devops.sourceType.null")
     private String sourceType;
 
     @ApiModelProperty(value = "客户端可访问角色")

@@ -46,7 +46,7 @@ public class CronJobWorkLoad extends WorkLoad {
     public Long getWorkloadId(Long envId, String workloadName) {
         DevopsCronJobDTO devopsCronJobDTO = devopsCronJobService.baseQueryByEnvIdAndName(envId, workloadName);
         if (devopsCronJobDTO == null) {
-            throw new CommonException("error.workload.resource.not.exist", workloadName, "CronJob");
+            throw new CommonException("devops.workload.resource.not.exist", workloadName, "CronJob");
         }
         return devopsCronJobDTO.getId();
     }
