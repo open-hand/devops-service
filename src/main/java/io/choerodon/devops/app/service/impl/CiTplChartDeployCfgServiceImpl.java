@@ -3,7 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
+import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiTplChartDeployCfgService;
 import io.choerodon.devops.infra.dto.CiTplChartDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.CiTplChartDeployCfgMapper;
@@ -21,8 +21,8 @@ public class CiTplChartDeployCfgServiceImpl implements CiTplChartDeployCfgServic
     private CiTplChartDeployCfgMapper ciTplChartDeployCfgMapper;
 
     @Override
-    public CiAuditConfigVO queryConfigVoById(Long id) {
-        return ConvertUtils.convertObject(queryConfigById(id), CiAuditConfigVO.class);
+    public CiChartDeployConfigVO queryConfigVoById(Long id) {
+        return ConvertUtils.convertObject(queryConfigById(id), CiChartDeployConfigVO.class);
     }
 
     @Override

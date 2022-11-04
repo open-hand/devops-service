@@ -51,7 +51,7 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setCiAuditConfig(ciTplChartDeployCfgService.queryConfigVoById(devopsCiJobVO.getConfigId()));
+        devopsCiJobVO.setCiChartDeployConfig(ciTplChartDeployCfgService.queryConfigVoById(devopsCiJobVO.getConfigId()));
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
+import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.infra.dto.CiTplChartDeployCfgDTO;
 
 /**
@@ -11,7 +11,7 @@ import io.choerodon.devops.infra.dto.CiTplChartDeployCfgDTO;
  */
 public interface CiTplChartDeployCfgService {
 
-    CiAuditConfigVO queryConfigVoById(Long id);
+    CiChartDeployConfigVO queryConfigVoById(Long id);
 
     CiTplChartDeployCfgDTO queryConfigById(Long id);
 }
