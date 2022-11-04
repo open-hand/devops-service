@@ -129,6 +129,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_QUERY_USER_BY_LOGIN_NAME = "devops.query.user.by.login.name";
         public static final String DEVOPS_GITLAB_USER_SYNC_FAILED = "devops.gitlab.user.sync.failed";
         public static final String DEVOPS_USER_GET = "devops.user.get";
+        public static final String DEVOPS_JOB_QUERY = "devops.job.query";
 
 
     }

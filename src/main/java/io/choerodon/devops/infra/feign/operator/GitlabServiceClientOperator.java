@@ -1548,6 +1548,10 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public JobDTO queryJob(int gitlabProjectId, int jobId) {
+        return gitlabServiceClient.queryJob(gitlabProjectId, jobId).getBody();
+    }
+
     public BranchDTO getBranch(int gitlabProjectId, String ref) {
         return gitlabServiceClient.queryBranch(gitlabProjectId, ref).getBody();
     }

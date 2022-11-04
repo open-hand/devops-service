@@ -2680,6 +2680,15 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public AppServiceDTO queryByTokenOrThrowE(String token) {
+        AppServiceDTO appServiceDTO = baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
+        }
+        return appServiceDTO;
+    }
+
+    @Override
     public void baseDelete(Long appServiceId) {
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }

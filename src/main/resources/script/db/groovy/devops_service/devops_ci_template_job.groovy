@@ -61,7 +61,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
     }
     changeSet(author: 'wanghao', id: '2022-11-03-add-column') {
         addColumn(tableName: 'devops_ci_template_job') {
-            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: 'devops_ci_template_audit.id')
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '任务关联的配置id')
         }
     }
 }

@@ -70,4 +70,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'type', type: 'VARCHAR(255)', remarks: '任务类型 normal 普通，custom 自定义脚本')
         }
     }
+    changeSet(author: 'wanghao', id: '2022-11-04-add-column') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '任务关联的配置id')
+        }
+    }
 }

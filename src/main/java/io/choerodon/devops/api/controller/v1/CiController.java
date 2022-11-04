@@ -18,8 +18,11 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
+import io.choerodon.devops.app.eventhandler.pipeline.exec.CommandOperator;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -50,6 +53,8 @@ public class CiController {
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
     @Autowired
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
+    @Autowired
+    private CommandOperator commandOperator;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -307,6 +312,21 @@ public class CiController {
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId) {
         return ResponseEntity.ok(ciPipelineImageService.queryImageRepoInfo(token, gitlabPipelineId));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "流水线触发chart部署", hidden = true)
+    @GetMapping("/chart_deploy")
+    public ResponseEntity<CiResponseVO> chartDeploy(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "GitLab Jobid", required = true)
+            @RequestParam(value = "gitlab_joh_id") Long gitlabJobId,
+            @ApiParam(value = "部署配置id", required = true)
+            @RequestParam(value = "config_id") Long configId) {
+        return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, CiCommandTypeEnum.CHART_DEPLOY));
     }
 
 }

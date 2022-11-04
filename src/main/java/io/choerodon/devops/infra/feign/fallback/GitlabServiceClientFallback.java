@@ -513,6 +513,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<JobDTO> queryJob(Integer projectId, Integer jobId) {
+        return null;
+    }
+
+    @Override
     public ResponseEntity<GitLabUserDTO> queryAdminUser() {
         throw new CommonException("devops.gitlab.admin.id.query");
     }
