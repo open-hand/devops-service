@@ -1,12 +1,13 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_cd_host_deploy_info.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_host_deploy_info.groovy') {
     changeSet(author: 'lihao', id: '2022-11-07-create-table') {
-        createTable(tableName: "devops_cd_host_deploy_info", remarks: 'CD主机部署任务配置表') {
+        createTable(tableName: "devops_ci_host_deploy_info", remarks: 'ci主机部署任务配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
             column(name: 'host_id', type: 'BIGINT UNSIGNED', remarks: '主机Id')
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id')
             column(name: 'deploy_type', type: 'VARCHAR(100)', remarks: '部署类型：create 新建实例， update 替换实例')
             column(name: 'app_name', type: 'VARCHAR(64)', remarks: '应用名称')
             column(name: 'app_code', type: 'VARCHAR(64)', remarks: '应用编码')

@@ -25,6 +25,10 @@ public enum CiJobTypeEnum {
      */
     DEPLOYMENT_DEPLOY("deployment_deploy"),
     /**
+     * API test
+     */
+    API_TEST("api_test"),
+    /**
      * 脚本任务类型
      */
     CUSTOM("custom");
