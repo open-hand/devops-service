@@ -27,8 +27,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
-    private static final String API_TEST_COMMAND_TEMPLATE = "environment=runner type=%s choerodonUrl=%s taskId=%s configId=%s java -jar /choerodon/app.jar";
-    private static final String SUITE_TEST_COMMAND_TEMPLATE = "environment=runner type=%s choerodonUrl=%s suiteId=%s java -jar /choerodon/app.jar";
+    private static final String API_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s";
+    private static final String SUITE_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s";
 
     @Value("${services.test.url}")
     private String testManagerServiceUrl;

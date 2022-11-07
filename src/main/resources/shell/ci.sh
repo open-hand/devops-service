@@ -747,3 +747,7 @@ function app_deploy() {
     fi
   fi
 }
+
+function execute_api_test(){
+  environment=runner type=$1 choerodonUrl=$2 taskId=$3 suiteId=$3 configId=$4  java -jar /choerodon/app.jar
+}
