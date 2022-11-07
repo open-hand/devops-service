@@ -38,7 +38,7 @@ public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigServic
 
     @Override
     public CiChartDeployConfigVO queryConfigVoById(Long id) {
-        CiChartDeployConfigVO ciChartDeployConfigVO = ConvertUtils.convertObject(queryConfigVoById(id), CiChartDeployConfigVO.class);
+        CiChartDeployConfigVO ciChartDeployConfigVO = ConvertUtils.convertObject(queryConfigById(id), CiChartDeployConfigVO.class);
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(ciChartDeployConfigVO.getValueId());
         ciChartDeployConfigVO.setValue(devopsDeployValueDTO.getValue());
         return ciChartDeployConfigVO;
