@@ -716,36 +716,21 @@ function rewrite_image_info_for_chart() {
 ## chart部署
 ## $1 部署配置id
 function chart_deploy() {
-  echo "Start chart deploy job"
-  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=chart_deploy")
-  if [ "$http_status_code" != "200" ];
-  then
-    echo "Chart deploy failed."
-    exit 1
-  else
-    is_failed=$(jq -r .failed result.json)
-    log=$(jq -r .message result.json)
-    # 打印后台返回的日志
-    if [ -z "${message}" ]; then
-        echo "${message}"
-    fi
-    # 判断是否成功
-    if [ "${is_failed}" == "true" ];
-    then
-      echo "Chart deploy failed"
-      exit 1
-    fi
-  fi
+  app_deploy "${1}" chart_deploy
 }
 
 ## chart部署
 ## $1 部署配置id
 function deployment_deploy() {
-  echo "Start deployment deploy job"
-  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=deployment_deploy")
+  app_deploy "${1}" deployment_deploy
+}
+## $1 部署配置id
+## $2 指令类型
+function app_deploy() {
+  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
   if [ "$http_status_code" != "200" ];
   then
-    echo "Chart deployment failed."
+    echo "Deploy failed."
     exit 1
   else
     is_failed=$(jq -r .failed result.json)
@@ -757,7 +742,7 @@ function deployment_deploy() {
     # 判断是否成功
     if [ "${is_failed}" == "true" ];
     then
-      echo "Deployment deploy failed"
+      echo "Deploy failed"
       exit 1
     fi
   fi
