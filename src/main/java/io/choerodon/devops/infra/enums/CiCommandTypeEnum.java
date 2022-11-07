@@ -20,7 +20,11 @@ public enum CiCommandTypeEnum {
     /**
      * 部署组部署
      */
-    DEPLOYMENT_DEPLOY("deployment_deploy");
+    DEPLOYMENT_DEPLOY("deployment_deploy"),
+    /**
+     * 主机部署
+     */
+    HOST_DEPLOY("host_deploy");
 
     private final String value;
 

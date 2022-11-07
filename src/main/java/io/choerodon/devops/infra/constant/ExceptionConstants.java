@@ -87,8 +87,12 @@ public class ExceptionConstants {
         public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
     }
 
+    public static class CiHostDeployCode {
+        public static final String DEVOPS_HOST_DEPLOY_INFO_CREATE = "error.devops.ci.host.deploy.info.save";
+    }
+
     public static class CiApiTestCode {
-        public static final String DEVOPS_CI_API_TEST_INFO_CREATE = "error.devops.ci.api.info.create";
+        public static final String DEVOPS_CI_API_TEST_INFO_SAVE = "error.devops.ci.api.info.save";
         public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "error.devops.ci.api.info.type.unknown";
     }
 

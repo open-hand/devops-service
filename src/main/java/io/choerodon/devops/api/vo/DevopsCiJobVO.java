@@ -12,10 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
-import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
-import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
-import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
+import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
@@ -102,6 +99,9 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("任务为api_test类型，保存api测试相关配置信息")
     private DevopsCiApiTestInfoVO devopsCiApiTestInfoVO;
+
+    @ApiModelProperty("任务为主机部署类型，保存主机部署相关配置信息")
+    private DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO;
 
     public CiDeployDeployCfgVO getCiDeployDeployCfg() {
         return ciDeployDeployCfg;
@@ -312,11 +312,19 @@ public class DevopsCiJobVO {
         this.configVO = configVO;
     }
 
-    public DevopsCiApiTestInfoVO getCiApiTestConfigVO() {
+    public DevopsCiHostDeployInfoVO getDevopsCiHostDeployInfoVO() {
+        return devopsCiHostDeployInfoVO;
+    }
+
+    public void setDevopsCiHostDeployInfoVO(DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO) {
+        this.devopsCiHostDeployInfoVO = devopsCiHostDeployInfoVO;
+    }
+
+    public DevopsCiApiTestInfoVO getDevopsCiApiTestInfoVO() {
         return devopsCiApiTestInfoVO;
     }
 
-    public void setCiApiTestConfigVO(DevopsCiApiTestInfoVO devopsCiApiTestInfoVO) {
+    public void setDevopsCiApiTestInfoVO(DevopsCiApiTestInfoVO devopsCiApiTestInfoVO) {
         this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
     }
 }

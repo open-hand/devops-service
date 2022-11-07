@@ -29,6 +29,10 @@ public enum CiJobTypeEnum {
      */
     API_TEST("api_test"),
     /**
+     * 主机部署
+     */
+    HOST_DEPLOY("host_deploy"),
+    /**
      * 脚本任务类型
      */
     CUSTOM("custom");
