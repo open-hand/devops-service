@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
-import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 
 /**
  * 〈功能简述〉
@@ -47,8 +46,8 @@ public class CommandOperator {
         return handler;
     }
 
-    public CiResponseVO executeCommandByType(String token, Long gitlabPipelineId, Long gitlabJobId, Long configId, CiCommandTypeEnum chartDeploy) {
-        AbstractCiCommandHandler handler = getHandlerOrThrowE(chartDeploy.value());
+    public CiResponseVO executeCommandByType(String token, Long gitlabPipelineId, Long gitlabJobId, Long configId, String commandType) {
+        AbstractCiCommandHandler handler = getHandlerOrThrowE(commandType);
         return handler.executeCommand(token, gitlabPipelineId, gitlabJobId, configId);
     }
 }

@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.eventhandler.pipeline.exec.CommandOperator;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -316,7 +315,7 @@ public class CiController {
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "流水线触发chart部署", hidden = true)
-    @GetMapping("/chart_deploy")
+    @GetMapping("/exec_comand")
     public ResponseEntity<CiResponseVO> chartDeploy(
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
@@ -325,8 +324,10 @@ public class CiController {
             @ApiParam(value = "GitLab Jobid", required = true)
             @RequestParam(value = "gitlab_joh_id") Long gitlabJobId,
             @ApiParam(value = "部署配置id", required = true)
-            @RequestParam(value = "config_id") Long configId) {
-        return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, CiCommandTypeEnum.CHART_DEPLOY));
+            @RequestParam(value = "config_id") Long configId,
+            @ApiParam(value = "指令类型", required = true)
+            @RequestParam(value = "command_type") String commandType) {
+        return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, commandType));
     }
 
 }
