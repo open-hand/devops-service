@@ -118,6 +118,7 @@ public class ChartDeployCommandHandlerAbstract extends AbstractCiCommandHandler 
         } else {
             log.append("Deploy Version is ").append(appServiceVersionDTO.getVersion()).append(System.lineSeparator());
         }
+
         log.append("## 4.Deploy app instance.").append(System.lineSeparator());
         AppServiceDeployVO appServiceDeployVO = null;
         Long commandId = null;

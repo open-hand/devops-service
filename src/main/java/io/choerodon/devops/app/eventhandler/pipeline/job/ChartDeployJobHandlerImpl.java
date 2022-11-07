@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,9 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
-        return null;
+        CiChartDeployConfigVO ciChartDeployConfigVO = ciChartDeployConfigService.queryConfigVoById(devopsCiJobDTO.getConfigId());
+        List<String> cmds = new ArrayList<>();
+        cmds.add(String.format("chart_deploy %s", ciChartDeployConfigVO.getId()));
+        return cmds;
     }
 }
