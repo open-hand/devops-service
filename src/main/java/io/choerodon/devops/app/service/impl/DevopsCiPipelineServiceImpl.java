@@ -4,6 +4,7 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.D
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.*;
 import static io.choerodon.devops.infra.constant.PipelineConstants.*;
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
+import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
 
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
@@ -90,6 +91,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Value("${devops.ci.default.image}")
     private String defaultCiImage;
 
+    @Value("${services.test.runner-image}")
+    private String testRunnerImage;
     @Autowired
     private DevopsCiSonarConfigService devopsCiSonarConfigService;
 
@@ -1782,6 +1785,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJobServices.setName(defaultCiImage);
                         ciJobServices.setAlias("kaniko");
                         ciJob.setServices(ArrayUtil.singleAsList(ciJobServices));
+                    }
+                    if (job.getType().equals(API_TEST.value())) {
+                        ciJob.setImage(testRunnerImage);
                     }
 
                     ciJob.setCache(buildJobCache(job));

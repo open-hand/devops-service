@@ -218,6 +218,10 @@ extraEnv:
   DEVOPS_CI_MAVEN_PROXY_PORT: 80
   # 流水线执行代码扫描的用户token.需要Analysis和Create权限
   SERVICES_SONARQUBE_ANALYSIS_USER_TOKEN:
+  # 测试服务访问地址
+  TEST_MANAGER_SERVICE_URL:
+  # api测试的runner镜像
+  TEST_RUNNER_IMAGE:
 
 # -- ConfigMap with extra environment variables
 ##
