@@ -89,6 +89,7 @@ public class ExceptionConstants {
 
     public static class CiApiTestCode {
         public static final String DEVOPS_CI_API_TEST_INFO_CREATE = "error.devops.ci.api.info.create";
+        public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "error.devops.ci.api.info.type.unknown";
     }
 
     public static class EnvCommandCode {
