@@ -18,12 +18,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_chart_deploy_cfg.groovy') {
             column(name: "skip_check_permission", type: "TINYINT UNSIGNED", defaultValue: "0", remarks: '是否校验环境权限') {
                 constraints(nullable: false)
             }
-            column(name: 'app_name', type: 'VARCHAR(64)', remarks: '应用名称,devops_deploy_app_center_env.name') {
-                constraints(nullable: false)
-            }
-            column(name: 'app_code', type: 'VARCHAR(64)', remarks: '应用编码,devops_deploy_app_center_env.code') {
-                constraints(nullable: false)
-            }
+            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id,devops_deploy_app_center_env.id')
+            column(name: 'app_name', type: 'VARCHAR(64)', remarks: '应用名称,devops_deploy_app_center_env.name')
+            column(name: 'app_code', type: 'VARCHAR(64)', remarks: '应用编码,devops_deploy_app_center_env.code')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")

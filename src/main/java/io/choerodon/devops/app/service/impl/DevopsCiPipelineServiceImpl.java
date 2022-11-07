@@ -579,7 +579,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     devopsCiStageVO.getJobList().forEach(devopsCiJobVO -> {
                         // 保存任务信息
                         AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
-                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
+                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
                         // 保存任务中的步骤信息
                         batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());

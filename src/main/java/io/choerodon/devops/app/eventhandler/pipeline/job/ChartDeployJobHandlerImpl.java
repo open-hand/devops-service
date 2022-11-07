@@ -10,9 +10,13 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
 import io.choerodon.devops.app.service.CiTplChartDeployCfgService;
+import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.devops.infra.dto.CiChartDeployConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
@@ -29,10 +33,36 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
     private CiChartDeployConfigService ciChartDeployConfigService;
     @Autowired
     private CiTplChartDeployCfgService ciTplChartDeployCfgService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+
 
     @Override
     public CiJobTypeEnum getType() {
         return CiJobTypeEnum.CHART_DEPLOY;
+    }
+
+    /**
+     * 校验任务配置信息
+     *
+     * @param projectId
+     * @param devopsCiJobVO
+     */
+    @Override
+    protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+        CiChartDeployConfigVO ciChartDeployConfig = devopsCiJobVO.getCiChartDeployConfig();
+        if (DeployTypeEnum.CREATE.value().equals(ciChartDeployConfig.getDeployType())) {
+            // 校验应用编码和应用名称
+            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(ciChartDeployConfig.getEnvId(),
+                    RdupmTypeEnum.CHART.value(),
+                    null,
+                    ciChartDeployConfig.getAppName(),
+                    ciChartDeployConfig.getAppCode());
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciChartDeployConfig.getAppId());
+            ciChartDeployConfig.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+            ciChartDeployConfig.setAppName(devopsDeployAppCenterEnvDTO.getName());
+        }
     }
 
     @Override

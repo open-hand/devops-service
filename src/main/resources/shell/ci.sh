@@ -717,18 +717,23 @@ function rewrite_image_info_for_chart() {
 ## $1 部署配置id
 function chart_deploy() {
   echo "Start chart deploy job"
-  http_status_code=$(curl -o rewrite_image_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}")
-  echo "Query chart repo info status code is :"  $http_status_code
+  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=chart_deploy")
   if [ "$http_status_code" != "200" ];
   then
-    echo "Query chart repo info failed,skip rewrite image info"
+    echo "Chart deploy failed."
+    exit 1
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .faild result.json)
+    log=$(jq -r .log result.json)
+    # 打印后台返回的日志
+    if [ -z ${log} ]; then
+        echo ${log}
+    fi
+    # 判断是否成功
     if [ "${is_failed}" == "true" ];
     then
-      echo "Query chart repo info failed,skip rewrite image info"
-    else
-
+      echo "Chart deploy failed"
+      exit 1
     fi
   fi
 

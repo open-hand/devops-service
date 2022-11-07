@@ -11,6 +11,9 @@ public class CiChartDeployConfigVO {
 
     @Encrypt
     private Long id;
+    @ApiModelProperty(value = "应用idId", required = true)
+    @Encrypt
+    private Long appId;
     @ApiModelProperty(value = "环境Id,devops_env.id", required = true)
     @Encrypt
     private Long envId;
@@ -26,6 +29,13 @@ public class CiChartDeployConfigVO {
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
     private String appCode;
 
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getId() {
         return id;

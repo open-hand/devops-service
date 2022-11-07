@@ -36,10 +36,21 @@ public abstract class AbstractJobHandler {
      */
     public abstract List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO);
 
+    /**
+     * 校验任务配置信息
+     *
+     * @param projectId
+     * @param devopsCiJobVO
+     */
+    protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+
+    }
 
     @Transactional(rollbackFor = Exception.class)
-    public DevopsCiJobDTO saveJobInfo(Long ciPipelineId, Long ciStageId, DevopsCiJobVO devopsCiJobVO) {
+    public DevopsCiJobDTO saveJobInfo(Long projectId, Long ciPipelineId, Long ciStageId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiJobDTO devopsCiJobDTO = ConvertUtils.convertObject(devopsCiJobVO, DevopsCiJobDTO.class);
+        // 校验任务配置
+        checkConfigInfo(projectId, devopsCiJobVO);
         // 保存任务配置
         Long configId = saveConfig(devopsCiJobVO);
 
