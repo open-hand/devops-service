@@ -14,6 +14,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
+import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
@@ -95,6 +96,16 @@ public class DevopsCiJobVO {
     private CiAuditConfigVO ciAuditConfig;
     @ApiModelProperty("任务为chart部署时需要，保存chart部署相关配置信息")
     private CiChartDeployConfigVO ciChartDeployConfig;
+    @ApiModelProperty("任务为deploment部署时需要，保存deployment部署相关配置信息")
+    private CiDeployDeployCfgVO ciDeployDeployCfg;
+
+    public CiDeployDeployCfgVO getCiDeployDeployCfg() {
+        return ciDeployDeployCfg;
+    }
+
+    public void setCiDeployDeployCfg(CiDeployDeployCfgVO ciDeployDeployCfg) {
+        this.ciDeployDeployCfg = ciDeployDeployCfg;
+    }
 
     public CiChartDeployConfigVO getCiChartDeployConfig() {
         return ciChartDeployConfig;

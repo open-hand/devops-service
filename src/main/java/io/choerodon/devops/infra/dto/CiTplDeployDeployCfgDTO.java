@@ -3,8 +3,6 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
@@ -15,53 +13,51 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * CI chart部署任务配置表(CiChartDeployConfig)实体类
+ * CI deployment部署任务配置表(CiTplDeployDeployCfg)实体类
  *
  * @author hao.wang@zknow.com
- * @since 2022-11-04 14:45:36
+ * @since 2022-11-07 10:15:45
  */
 
-@ApiModel("CI chart部署任务配置表")
+@ApiModel("CI deployment部署任务配置表")
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_ci_chart_deploy_cfg")
-public class CiChartDeployConfigDTO extends AuditDomain {
+@Table(name = "devops_ci_tpl_deploy_deploy_cfg")
+public class CiTplDeployDeployCfgDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_ENV_ID = "envId";
-    public static final String FIELD_VALUE_ID = "valueId";
     public static final String FIELD_DEPLOY_TYPE = "deployType";
     public static final String FIELD_SKIP_CHECK_PERMISSION = "skipCheckPermission";
     public static final String FIELD_APP_NAME = "appName";
     public static final String FIELD_APP_CODE = "appCode";
-    private static final long serialVersionUID = 310832479417371197L;
+    public static final String FIELD_APP_CONFIG_JSON = "appConfigJson";
+    public static final String FIELD_CONTAINER_CONFIG_JSON = "containerConfigJson";
+    private static final long serialVersionUID = 429194058675839087L;
     @Id
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "环境Id,devops_env.id", required = true)
-    @NotNull
+    @ApiModelProperty(value = "环境Id,devops_env.id")
     private Long envId;
 
-    @ApiModelProperty(value = "valueId,devops_deploy_value.id", required = true)
-    @NotNull
-    private Long valueId;
-
-    @ApiModelProperty(value = "部署类型：create 新建实例， update 替换实例", required = true)
-    @NotBlank
+    @ApiModelProperty(value = "部署类型：create 新建实例， update 替换实例")
     private String deployType;
 
-    @ApiModelProperty(value = "是否校验环境权限", required = true)
-    @NotNull
-    private Boolean skipCheckPermission;
+    @ApiModelProperty(value = "是否校验环境权限")
+    private Object skipCheckPermission;
 
-    @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name", required = true)
-    @NotBlank
+    @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name")
     private String appName;
 
-    @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
-    @NotBlank
+    @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code")
     private String appCode;
+
+    @ApiModelProperty(value = "应用配置")
+    private String appConfigJson;
+
+    @ApiModelProperty(value = "容器配置")
+    private String containerConfigJson;
 
 
     public Long getId() {
@@ -80,14 +76,6 @@ public class CiChartDeployConfigDTO extends AuditDomain {
         this.envId = envId;
     }
 
-    public Long getValueId() {
-        return valueId;
-    }
-
-    public void setValueId(Long valueId) {
-        this.valueId = valueId;
-    }
-
     public String getDeployType() {
         return deployType;
     }
@@ -96,11 +84,11 @@ public class CiChartDeployConfigDTO extends AuditDomain {
         this.deployType = deployType;
     }
 
-    public Boolean getSkipCheckPermission() {
+    public Object getSkipCheckPermission() {
         return skipCheckPermission;
     }
 
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+    public void setSkipCheckPermission(Object skipCheckPermission) {
         this.skipCheckPermission = skipCheckPermission;
     }
 
@@ -118,6 +106,22 @@ public class CiChartDeployConfigDTO extends AuditDomain {
 
     public void setAppCode(String appCode) {
         this.appCode = appCode;
+    }
+
+    public String getAppConfigJson() {
+        return appConfigJson;
+    }
+
+    public void setAppConfigJson(String appConfigJson) {
+        this.appConfigJson = appConfigJson;
+    }
+
+    public String getContainerConfigJson() {
+        return containerConfigJson;
+    }
+
+    public void setContainerConfigJson(String containerConfigJson) {
+        this.containerConfigJson = containerConfigJson;
     }
 
 }
