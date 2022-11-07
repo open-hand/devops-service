@@ -28,6 +28,16 @@ public class CiChartDeployConfigVO {
     private String appName;
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
     private String appCode;
+    @ApiModelProperty(value = "部署配置values", required = true)
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Long getAppId() {
         return appId;

@@ -6,7 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
+import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.infra.dto.CiChartDeployConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.mapper.CiChartDeployConfigMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -25,6 +27,8 @@ public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigServic
 
     @Autowired
     private CiChartDeployConfigMapper ciChartDeployConfigMapper;
+    @Autowired
+    private DevopsDeployValueService devopsDeployValueService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -34,7 +38,10 @@ public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigServic
 
     @Override
     public CiChartDeployConfigVO queryConfigVoById(Long id) {
-        return ConvertUtils.convertObject(queryConfigVoById(id), CiChartDeployConfigVO.class);
+        CiChartDeployConfigVO ciChartDeployConfigVO = ConvertUtils.convertObject(queryConfigVoById(id), CiChartDeployConfigVO.class);
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(ciChartDeployConfigVO.getValueId());
+        ciChartDeployConfigVO.setValue(devopsDeployValueDTO.getValue());
+        return ciChartDeployConfigVO;
     }
 
     @Override
