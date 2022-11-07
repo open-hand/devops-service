@@ -315,7 +315,7 @@ public class CiController {
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "流水线触发chart部署", hidden = true)
-    @GetMapping("/exec_comand")
+    @GetMapping("/exec_command")
     public ResponseEntity<CiResponseVO> chartDeploy(
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
