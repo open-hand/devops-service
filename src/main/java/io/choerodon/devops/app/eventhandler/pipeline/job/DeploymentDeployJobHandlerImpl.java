@@ -10,9 +10,13 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.app.service.CiDeployDeployCfgService;
 import io.choerodon.devops.app.service.CiTplDeployDeployCfgService;
+import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -30,11 +34,36 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
     private CiDeployDeployCfgService ciDeployDeployCfgService;
     @Autowired
     private CiTplDeployDeployCfgService ciTplDeployDeployCfgService;
+    @Autowired
+    private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
 
     @Override
     public CiJobTypeEnum getType() {
         return CiJobTypeEnum.DEPLOYMENT_DEPLOY;
+    }
+
+    /**
+     * 校验任务配置信息
+     *
+     * @param projectId
+     * @param devopsCiJobVO
+     */
+    @Override
+    protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+        CiDeployDeployCfgVO ciDeployDeployCfg = devopsCiJobVO.getCiDeployDeployCfg();
+        if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfg.getDeployType())) {
+            // 校验应用编码和应用名称
+            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(ciDeployDeployCfg.getEnvId(),
+                    RdupmTypeEnum.CHART.value(),
+                    null,
+                    ciDeployDeployCfg.getAppName(),
+                    ciDeployDeployCfg.getAppCode());
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciDeployDeployCfg.getAppId());
+            ciDeployDeployCfg.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+            ciDeployDeployCfg.setAppName(devopsDeployAppCenterEnvDTO.getName());
+        }
     }
 
     @Override

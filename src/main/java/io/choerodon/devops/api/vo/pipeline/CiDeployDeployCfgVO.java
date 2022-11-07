@@ -22,6 +22,9 @@ public class CiDeployDeployCfgVO {
     private String deployType;
     @ApiModelProperty(value = "是否校验环境权限", required = true)
     private Object skipCheckPermission;
+    @ApiModelProperty(value = "应用idId", required = true)
+    @Encrypt
+    private Long appId;
     @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name", required = true)
     private String appName;
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
@@ -35,6 +38,15 @@ public class CiDeployDeployCfgVO {
     private String appConfigJson;
     @ApiModelProperty(value = "容器配置", required = true)
     private String containerConfigJson;
+
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public DevopsDeployGroupAppConfigVO getAppConfig() {
         return appConfig;

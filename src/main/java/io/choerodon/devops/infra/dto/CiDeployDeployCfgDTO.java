@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -51,7 +52,9 @@ public class CiDeployDeployCfgDTO extends AuditDomain {
     @ApiModelProperty(value = "是否校验环境权限", required = true)
     @NotNull
     private Object skipCheckPermission;
-
+    @ApiModelProperty(value = "应用idId", required = true)
+    @Encrypt
+    private Long appId;
     @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name", required = true)
     @NotBlank
     private String appName;
@@ -68,6 +71,13 @@ public class CiDeployDeployCfgDTO extends AuditDomain {
     @NotBlank
     private String containerConfigJson;
 
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public Long getId() {
         return id;
