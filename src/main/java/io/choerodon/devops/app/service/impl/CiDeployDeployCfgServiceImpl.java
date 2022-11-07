@@ -1,14 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.devops.api.vo.DevopsDeployGroupAppConfigVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.app.service.CiDeployDeployCfgService;
 import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.CiDeployDeployCfgMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -34,7 +40,15 @@ public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
 
     @Override
     public CiDeployDeployCfgVO queryConfigVoById(Long configId) {
-        return ConvertUtils.convertObject(ciDeployDeployCfgMapper.selectByPrimaryKey(configId), CiDeployDeployCfgVO.class);
+        CiDeployDeployCfgVO ciDeployDeployCfgVO = ConvertUtils.convertObject(ciDeployDeployCfgMapper.selectByPrimaryKey(configId), CiDeployDeployCfgVO.class);
+        if (ciDeployDeployCfgVO.getAppConfigJson() != null) {
+            ciDeployDeployCfgVO.setAppConfig(JsonHelper.unmarshalByJackson(ciDeployDeployCfgVO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
+        }
+        if (ciDeployDeployCfgVO.getContainerConfigJson() != null) {
+            ciDeployDeployCfgVO.setContainerConfig(JsonHelper.unmarshalByJackson(ciDeployDeployCfgVO.getContainerConfigJson(), new TypeReference<List<DevopsDeployGroupContainerConfigVO>>() {
+            }));
+        }
+        return ciDeployDeployCfgVO;
     }
 }
 
