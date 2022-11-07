@@ -322,7 +322,7 @@ public class CiController {
             @ApiParam(value = "GitLab流水线id", required = true)
             @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
             @ApiParam(value = "GitLab Jobid", required = true)
-            @RequestParam(value = "gitlab_joh_id") Long gitlabJobId,
+            @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
             @ApiParam(value = "部署配置id", required = true)
             @RequestParam(value = "config_id") Long configId,
             @ApiParam(value = "指令类型", required = true)
