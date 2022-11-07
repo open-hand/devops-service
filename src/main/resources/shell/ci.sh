@@ -715,7 +715,7 @@ function rewrite_image_info_for_chart() {
 }
 ## chart部署
 ## $1 部署配置id
-function deployment_deploy() {
+function chart_deploy() {
   echo "Start chart deploy job"
   http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=chart_deploy")
   if [ "$http_status_code" != "200" ];
