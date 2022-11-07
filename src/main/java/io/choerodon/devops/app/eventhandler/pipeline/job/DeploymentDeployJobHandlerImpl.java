@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
-        return null;
+        CiDeployDeployCfgVO ciDeployDeployCfgVO = ciDeployDeployCfgService.queryConfigVoById(devopsCiJobDTO.getConfigId());
+        List<String> cmds = new ArrayList<>();
+        cmds.add(String.format("deployment_deploy %s", ciDeployDeployCfgVO.getId()));
+        return cmds;
     }
 }
