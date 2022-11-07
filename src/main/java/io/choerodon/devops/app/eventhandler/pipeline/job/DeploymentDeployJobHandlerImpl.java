@@ -55,7 +55,7 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
         if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfg.getDeployType())) {
             // 校验应用编码和应用名称
             devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(ciDeployDeployCfg.getEnvId(),
-                    RdupmTypeEnum.CHART.value(),
+                    RdupmTypeEnum.DEPLOYMENT.value(),
                     null,
                     ciDeployDeployCfg.getAppName(),
                     ciDeployDeployCfg.getAppCode());

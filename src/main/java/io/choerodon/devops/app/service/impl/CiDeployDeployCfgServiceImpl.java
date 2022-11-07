@@ -27,6 +27,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
 
     private static final String DEVOPS_DEPLOYMENT_CONFIG_SAVE = "devops.deployment.config.save";
+    private static final String DEVOPS_DEPLOYMENT_CONFIG_UPDATE = "devops.deployment.config.update";
 
 
     @Autowired
@@ -40,7 +41,7 @@ public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
 
     @Override
     public CiDeployDeployCfgVO queryConfigVoById(Long configId) {
-        CiDeployDeployCfgVO ciDeployDeployCfgVO = ConvertUtils.convertObject(ciDeployDeployCfgMapper.selectByPrimaryKey(configId), CiDeployDeployCfgVO.class);
+        CiDeployDeployCfgVO ciDeployDeployCfgVO = ConvertUtils.convertObject(queryConfigById(configId), CiDeployDeployCfgVO.class);
         if (ciDeployDeployCfgVO.getAppConfigJson() != null) {
             ciDeployDeployCfgVO.setAppConfig(JsonHelper.unmarshalByJackson(ciDeployDeployCfgVO.getAppConfigJson(), DevopsDeployGroupAppConfigVO.class));
         }
@@ -49,6 +50,18 @@ public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
             }));
         }
         return ciDeployDeployCfgVO;
+    }
+
+    @Override
+    public CiDeployDeployCfgDTO queryConfigById(Long id) {
+        return ciDeployDeployCfgMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdateByVO(CiDeployDeployCfgVO ciDeployDeployCfgVO) {
+        CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ConvertUtils.convertObject(ciDeployDeployCfgVO, CiDeployDeployCfgDTO.class);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciDeployDeployCfgMapper, ciDeployDeployCfgDTO, DEVOPS_DEPLOYMENT_CONFIG_UPDATE);
     }
 }
 

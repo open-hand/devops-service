@@ -45,7 +45,7 @@ public abstract class AbstractCiCommandHandler {
         }
         CustomContextUtil.setUserContext(devopsCiJobRecordDTO.getTriggerUserId());
         try {
-            content = execute(appServiceDTO, gitlabPipelineId, gitlabJobId, configId, log);
+            execute(appServiceDTO, gitlabPipelineId, gitlabJobId, configId, log, content);
         } catch (Exception e) {
             ciResponseVO.setSuccess(false);
         }
@@ -54,5 +54,5 @@ public abstract class AbstractCiCommandHandler {
         return ciResponseVO;
     }
 
-    protected abstract Object execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log);
+    protected abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Object content);
 }

@@ -14,5 +14,9 @@ public interface CiDeployDeployCfgService {
     void baseCreate(CiDeployDeployCfgDTO ciDeployDeployCfgDTO);
 
     CiDeployDeployCfgVO queryConfigVoById(Long configId);
+
+    CiDeployDeployCfgDTO queryConfigById(Long id);
+
+    void baseUpdateByVO(CiDeployDeployCfgVO ciDeployDeployCfgVO);
 }
 
