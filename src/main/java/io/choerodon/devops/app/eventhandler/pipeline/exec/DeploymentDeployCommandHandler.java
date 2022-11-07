@@ -31,7 +31,7 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
  * @since 2022/11/4 16:03
  */
 @Service
-public class ChartDeployCommandHandlerAbstract extends AbstractCiCommandHandler {
+public class DeploymentDeployCommandHandler extends AbstractCiCommandHandler {
 
     @Autowired
     private CiChartDeployConfigService ciChartDeployConfigService;
@@ -56,7 +56,7 @@ public class ChartDeployCommandHandlerAbstract extends AbstractCiCommandHandler 
 
     @Override
     public CiCommandTypeEnum getType() {
-        return CiCommandTypeEnum.CHART_DEPLOY;
+        return CiCommandTypeEnum.DEPLOYMENT_DEPLOY;
     }
 
     @Override

@@ -1,7 +1,12 @@
 package io.choerodon.devops.api.vo.pipeline;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.api.vo.DevopsDeployGroupAppConfigVO;
+import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
 
 /**
  * @author hao.wang@zknow.com
@@ -21,11 +26,31 @@ public class CiDeployDeployCfgVO {
     private String appName;
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
     private String appCode;
+
+    @ApiModelProperty("部署组：应用配置")
+    private DevopsDeployGroupAppConfigVO appConfig;
+    @ApiModelProperty("部署组：容器配置")
+    private List<DevopsDeployGroupContainerConfigVO> containerConfig;
     @ApiModelProperty(value = "应用配置", required = true)
     private String appConfigJson;
     @ApiModelProperty(value = "容器配置", required = true)
     private String containerConfigJson;
 
+    public DevopsDeployGroupAppConfigVO getAppConfig() {
+        return appConfig;
+    }
+
+    public void setAppConfig(DevopsDeployGroupAppConfigVO appConfig) {
+        this.appConfig = appConfig;
+    }
+
+    public List<DevopsDeployGroupContainerConfigVO> getContainerConfig() {
+        return containerConfig;
+    }
+
+    public void setContainerConfig(List<DevopsDeployGroupContainerConfigVO> containerConfig) {
+        this.containerConfig = containerConfig;
+    }
 
     public Long getId() {
         return id;

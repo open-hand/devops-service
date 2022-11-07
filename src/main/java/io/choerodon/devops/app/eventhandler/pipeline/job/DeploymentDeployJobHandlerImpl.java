@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -40,6 +41,12 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
     protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
         CiDeployDeployCfgVO ciDeployDeployCfg = devopsCiJobVO.getCiDeployDeployCfg();
         CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ConvertUtils.convertObject(ciDeployDeployCfg, CiDeployDeployCfgDTO.class);
+        if (ciDeployDeployCfg.getAppConfig() != null) {
+            ciDeployDeployCfgDTO.setAppConfigJson(JsonHelper.marshalByJackson(ciDeployDeployCfg.getAppConfig()));
+        }
+        if (ciDeployDeployCfg.getContainerConfig() != null) {
+            ciDeployDeployCfgDTO.setContainerConfigJson(JsonHelper.marshalByJackson(ciDeployDeployCfg.getContainerConfig()));
+        }
         ciDeployDeployCfgDTO.setId(null);
 
         ciDeployDeployCfgService.baseCreate(ciDeployDeployCfgDTO);
