@@ -15,6 +15,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
@@ -98,6 +99,9 @@ public class DevopsCiJobVO {
     private CiChartDeployConfigVO ciChartDeployConfig;
     @ApiModelProperty("任务为deploment部署时需要，保存deployment部署相关配置信息")
     private CiDeployDeployCfgVO ciDeployDeployCfg;
+
+    @ApiModelProperty("任务为api_test类型，保存api测试相关配置信息")
+    private DevopsCiApiTestInfoVO devopsCiApiTestInfoVO;
 
     public CiDeployDeployCfgVO getCiDeployDeployCfg() {
         return ciDeployDeployCfg;
@@ -306,5 +310,13 @@ public class DevopsCiJobVO {
 
     public void setConfigVO(CiConfigVO configVO) {
         this.configVO = configVO;
+    }
+
+    public DevopsCiApiTestInfoVO getCiApiTestConfigVO() {
+        return devopsCiApiTestInfoVO;
+    }
+
+    public void setCiApiTestConfigVO(DevopsCiApiTestInfoVO devopsCiApiTestInfoVO) {
+        this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
     }
 }

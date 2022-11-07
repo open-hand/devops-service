@@ -88,7 +88,12 @@ public enum DevopsCiStepTypeEnum {
     /**
      * 发布应用服务版本
      */
-    PUBLISH_APP_VERSION("publish_app_version");
+    PUBLISH_APP_VERSION("publish_app_version"),
+
+    /**
+     * API测试
+     */
+    API_TEST("api_test");
 
 
     private String value;

@@ -172,4 +172,6 @@ public class DevopsCiHostDeployInfoDTO extends AuditDomain {
     public void setHealthProb(String healthProb) {
         this.healthProb = healthProb;
     }
+
+
 }

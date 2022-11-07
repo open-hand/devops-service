@@ -87,6 +87,10 @@ public class ExceptionConstants {
         public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
     }
 
+    public static class CiApiTestCode {
+        public static final String DEVOPS_CI_API_TEST_INFO_CREATE = "error.devops.ci.api.info.create";
+    }
+
     public static class EnvCommandCode {
         public static final String DEVOPS_COMMAND_NOT_EXIST = "devops.command.not.exist";
     }
