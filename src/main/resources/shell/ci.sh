@@ -673,7 +673,7 @@ function rewrite_image_info() {
     cat rewrite_image_info.json
     echo "Query repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       cat rewrite_image_info.json
@@ -700,7 +700,7 @@ function rewrite_image_info_for_chart() {
   then
     echo "Query chart repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       echo "Query chart repo info failed,skip rewrite image info"
@@ -723,11 +723,11 @@ function chart_deploy() {
     echo "Chart deploy failed."
     exit 1
   else
-    is_failed=$(jq -r .faild result.json)
-    log=$(jq -r .log result.json)
+    is_failed=$(jq -r .failed result.json)
+    log=$(jq -r .message result.json)
     # 打印后台返回的日志
-    if [ -z "${log}" ]; then
-        echo "${log}"
+    if [ -z "${message}" ]; then
+        echo "${message}"
     fi
     # 判断是否成功
     if [ "${is_failed}" == "true" ];
@@ -748,11 +748,11 @@ function deployment_deploy() {
     echo "Chart deployment failed."
     exit 1
   else
-    is_failed=$(jq -r .faild result.json)
+    is_failed=$(jq -r .failed result.json)
     log=$(jq -r .log result.json)
     # 打印后台返回的日志
-    if [ -z "${log}" ]; then
-        echo "${log}"
+    if [ -z "${message}" ]; then
+        echo "${message}"
     fi
     # 判断是否成功
     if [ "${is_failed}" == "true" ];

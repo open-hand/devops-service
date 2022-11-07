@@ -8,24 +8,24 @@ package io.choerodon.devops.api.vo.pipeline;
  * @since 2022/11/4 15:20
  */
 public class CiResponseVO {
-    private Boolean success;
-    private String log;
+    private Boolean failed = false;
+    private String message;
     private Object content;
 
-    public Boolean getSuccess() {
-        return success;
+    public Boolean getFailed() {
+        return failed;
     }
 
-    public void setSuccess(Boolean success) {
-        this.success = success;
+    public void setFailed(Boolean failed) {
+        this.failed = failed;
     }
 
-    public String getLog() {
-        return log;
+    public String getMessage() {
+        return message;
     }
 
-    public void setLog(String log) {
-        this.log = log;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Object getContent() {
