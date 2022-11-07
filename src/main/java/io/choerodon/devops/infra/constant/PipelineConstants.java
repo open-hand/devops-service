@@ -25,6 +25,8 @@ public class PipelineConstants {
 
     }
 
+    public static final Integer GITLAB_ADMIN_ID = 1;
+
     public static final Long DEFAULT_CI_CD_PIPELINE_RECORD_ID = 0L;
 
     public static final Long DEFAULT_CI_PIPELINE_FUNCTION_ID = 0L;

@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigService {
 
     private static final String DEVOPS_CI_CHART_DEPLOY_CONFIG_SAVE = "devops.ci.chart.deploy.config.save";
+    private static final String DEVOPS_CI_CHART_DEPLOY_CONFIG_UPDATE = "devops.ci.chart.deploy.config.update";
 
     @Autowired
     private CiChartDeployConfigMapper ciChartDeployConfigMapper;
@@ -39,6 +40,12 @@ public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigServic
     @Override
     public CiChartDeployConfigDTO queryConfigById(Long id) {
         return ciChartDeployConfigMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(CiChartDeployConfigDTO ciChartDeployConfigDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciChartDeployConfigMapper, ciChartDeployConfigDTO, DEVOPS_CI_CHART_DEPLOY_CONFIG_UPDATE);
     }
 
 }

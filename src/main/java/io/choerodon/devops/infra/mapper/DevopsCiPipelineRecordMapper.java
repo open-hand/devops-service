@@ -48,4 +48,6 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
     List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(@Param("date") Date date);
 
     DevopsCiPipelineRecordVO selectById(Long ciPipelineRecordId);
+
+    DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(@Param("appServiceId") Long appServiceId, @Param("gitlabPipelineId") Long gitlabPipelineId);
 }

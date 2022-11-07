@@ -16,5 +16,7 @@ public interface CiChartDeployConfigService {
     CiChartDeployConfigVO queryConfigVoById(Long id);
 
     CiChartDeployConfigDTO queryConfigById(Long id);
+
+    void baseUpdate(CiChartDeployConfigDTO ciChartDeployConfigDTO);
 }
 

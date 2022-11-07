@@ -1036,4 +1036,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
         return devopsCiPipelineRecordVO;
     }
+
+    @Override
+    public DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(Long appServiceId, Long gitlabPipelineId) {
+        return devopsCiPipelineRecordMapper.queryByAppServiceIdAndGitlabPipelineId(appServiceId, gitlabPipelineId);
+    }
 }

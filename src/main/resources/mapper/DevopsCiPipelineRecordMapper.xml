@@ -41,4 +41,12 @@
         FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.id = #{ciPipelineId}
     </select>
+    <select id="queryByAppServiceIdAndGitlabPipelineId"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        SELECT *
+        FROM devops_ci_pipeline_record dcpr
+                 left join devops_cicd_pipeline dcp on dcp.id = dcpr.ci_pipeline_id
+        WHERE dcpr.gitlab_pipeline_id = #{gitlabPipelineId}
+          and dcp.app_service_id = #{appServiceId}
+    </select>
 </mapper>
