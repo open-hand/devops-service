@@ -727,7 +727,7 @@ function deployment_deploy() {
 ## $1 部署配置id
 ## $2 指令类型
 function app_deploy() {
-  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+  http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
   if [ "$http_status_code" != "200" ];
   then
     echo "Deploy failed."
