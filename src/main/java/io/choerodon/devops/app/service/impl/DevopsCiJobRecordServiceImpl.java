@@ -3,11 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +17,19 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.AduitStatusChangeVO;
+import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.JobWebHookVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiJobRecordService;
-import io.choerodon.devops.app.service.DevopsCiJobService;
-import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.enums.AuditStatusEnum;
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
@@ -42,7 +46,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 @Service
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
-
+    private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
@@ -52,6 +56,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    private CiAuditRecordService ciAuditRecordService;
+    @Autowired
+    private CiAuditUserRecordService ciAuditUserRecordService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -204,5 +216,128 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
         return devopsCiJobRecordMapper.select(recordDTO);
+    }
+
+    @Override
+    public DevopsCiJobRecordDTO baseQueryById(Long id) {
+        return devopsCiJobRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AuditResultVO auditJob(Long projectId, Long jobRecordId, String result) {
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryById(jobRecordId);
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+        Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
+        Long gitlabProjectId = devopsCiJobRecordDTO.getGitlabProjectId();
+        Long gitlabJobId = devopsCiJobRecordDTO.getGitlabJobId();
+        Long appServiceId = devopsCiJobRecordDTO.getAppServiceId();
+        String name = devopsCiJobRecordDTO.getName();
+
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+        Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
+
+
+        CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(appServiceId, gitlabPipelineId, name);
+
+        List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+        Optional<CiAuditUserRecordDTO> auditUserRecord = ciAuditUserRecordDTOS
+                .stream()
+                .filter(v -> v.getUserId().equals(userId)
+                        && AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()))
+                .findFirst();
+        if (!auditUserRecord.isPresent()) {
+            throw new CommonException(DEVOPS_AUDIT_RECORD_NOT_EXIST);
+        }
+        // 更新审核记录
+        CiAuditUserRecordDTO ciAuditUserRecordDTO = auditUserRecord.get();
+        ciAuditUserRecordDTO.setStatus(result);
+        ciAuditUserRecordService.baseUpdate(ciAuditUserRecordDTO);
+
+        // 计算审核结果
+        AuditResultVO auditResultVO = new AuditResultVO();
+        boolean auditFinishFlag;
+        if (ciAuditRecordDTO.getCountersigned()) {
+            auditResultVO.setCountersigned(1);
+            auditFinishFlag = ciAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+            // 添加审核人员信息
+            List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+            Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+            ciAuditUserRecordDTOS.forEach(v -> {
+                if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
+                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                    if (iamUserDTO != null) {
+                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getRealName());
+                    }
+                } else if (AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())) {
+                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                    if (iamUserDTO != null) {
+                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getRealName());
+                    }
+                }
+            });
+
+        } else {
+            auditResultVO.setCountersigned(0);
+            auditFinishFlag = ciAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+        }
+        // 审核结束则执行job
+        if (auditFinishFlag) {
+            gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(gitlabProjectId),
+                    TypeUtil.objToInteger(gitlabJobId),
+                    null,
+                    null);
+        }
+
+        return auditResultVO;
+    }
+
+    @Override
+    public AduitStatusChangeVO checkAuditStatus(Long projectId, Long id) {
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryById(id);
+
+        Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
+        Long appServiceId = devopsCiJobRecordDTO.getAppServiceId();
+        String name = devopsCiJobRecordDTO.getName();
+
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+        Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
+
+
+        CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(appServiceId, gitlabPipelineId, name);
+
+        List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+        AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
+        aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
+        if (PipelineStatus.STOP.toValue().equals(devopsCiJobRecordDTO.getStatus())) {
+            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+            aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
+        } else if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordDTO.getStatus())) {
+            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+            aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+        }
+
+        return aduitStatusChangeVO;
+    }
+
+    private void calculatAuditUserName(List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
+
+        if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {
+            aduitStatusChangeVO.setAuditStatusChanged(true);
+            List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+            List<String> userNameList = new ArrayList<>();
+            iamUserDTOS.forEach(iamUserDTO -> {
+                if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
+                    userNameList.add(iamUserDTO.getLoginName());
+                } else {
+                    userNameList.add(iamUserDTO.getEmail());
+                }
+            });
+            aduitStatusChangeVO.setAuditUserName(StringUtils.join(userNameList, ","));
+        }
     }
 }

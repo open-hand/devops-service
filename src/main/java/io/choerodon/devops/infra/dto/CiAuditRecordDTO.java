@@ -59,8 +59,7 @@ public class CiAuditRecordDTO extends AuditDomain {
     private String jobName;
 
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
-    @NotNull
-    private Object countersigned;
+    private Boolean countersigned;
 
     public CiAuditRecordDTO() {
     }
@@ -71,7 +70,7 @@ public class CiAuditRecordDTO extends AuditDomain {
         this.jobName = jobName;
     }
 
-    public CiAuditRecordDTO(@NotNull Long appServiceId, @NotNull Long jobRecordId, @NotNull Long gitlabPipelineId, @NotBlank String jobName, @NotNull Object countersigned) {
+    public CiAuditRecordDTO(@NotNull Long appServiceId, @NotNull Long jobRecordId, @NotNull Long gitlabPipelineId, @NotBlank String jobName, Boolean countersigned) {
         this.appServiceId = appServiceId;
         this.jobRecordId = jobRecordId;
         this.gitlabPipelineId = gitlabPipelineId;
@@ -119,13 +118,12 @@ public class CiAuditRecordDTO extends AuditDomain {
         this.jobName = jobName;
     }
 
-    public Object getCountersigned() {
+    public Boolean getCountersigned() {
         return countersigned;
     }
 
-    public void setCountersigned(Object countersigned) {
+    public void setCountersigned(Boolean countersigned) {
         this.countersigned = countersigned;
     }
-
 }
 

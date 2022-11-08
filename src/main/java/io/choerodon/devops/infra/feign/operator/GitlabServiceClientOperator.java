@@ -1528,7 +1528,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public JobDTO playJob(int gitlabProjectId, int jobId, int gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
+    public JobDTO playJob(Integer gitlabProjectId, Integer jobId, Integer gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
         if (appExternalConfigDTO == null) {
             return gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
                     null,

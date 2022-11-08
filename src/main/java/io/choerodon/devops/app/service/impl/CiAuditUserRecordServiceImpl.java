@@ -12,6 +12,7 @@ import io.choerodon.devops.app.service.CiAuditUserRecordService;
 import io.choerodon.devops.infra.dto.CiAuditUserRecordDTO;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.mapper.CiAuditUserRecordMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * ci 人工卡点用户审核记录表(CiAuditUserRecord)应用服务
@@ -21,6 +22,9 @@ import io.choerodon.devops.infra.mapper.CiAuditUserRecordMapper;
  */
 @Service
 public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
+
+    private static final String DEVOPS_AUDIT_USER_RECORD_UPDATE = "devops.audit.user.record.update";
+
     @Autowired
     private CiAuditUserRecordMapper ciAuditUserRecordMapper;
 
@@ -34,6 +38,20 @@ public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
             ciAuditUserRecordMapper.insertList(auditUserRecordDTOS);
         }
 
+    }
+
+    @Override
+    public List<CiAuditUserRecordDTO> listByAuditRecordId(Long auditRecordId) {
+        CiAuditUserRecordDTO ciAuditUserRecordDTO = new CiAuditUserRecordDTO();
+        ciAuditUserRecordDTO.setAuditRecordId(auditRecordId);
+
+        return ciAuditUserRecordMapper.select(ciAuditUserRecordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(CiAuditUserRecordDTO ciAuditUserRecordDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciAuditUserRecordMapper, ciAuditUserRecordDTO, DEVOPS_AUDIT_USER_RECORD_UPDATE);
     }
 }
 
