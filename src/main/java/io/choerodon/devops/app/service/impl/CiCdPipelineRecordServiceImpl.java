@@ -419,6 +419,10 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
         recordPage.forEach(recordVO -> {
             devopsCiPipelineRecordService.fillAdditionalInfo(recordVO);
             recordVO.setViewId(CiCdPipelineUtils.handleId(recordVO.getId()));
+
+            // 填充前端需要的字段
+            recordVO.setCiRecordId(recordVO.getId());
+            recordVO.setPipelineId(recordVO.getCiPipelineId());
         });
 
 //        cdPipelineRecordVOS.getContent().forEach(recordVO -> {
