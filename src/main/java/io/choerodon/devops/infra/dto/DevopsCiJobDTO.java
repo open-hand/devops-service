@@ -4,7 +4,6 @@ import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import io.choerodon.devops.infra.annotation.YamlProperty;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -70,7 +69,7 @@ public class DevopsCiJobDTO extends AuditDomain {
     @ApiModelProperty("任务配置id")
     private Long configId;
 
-    @YamlProperty(value = "start_in")
+    @ApiModelProperty("启动延时")
     private Integer startIn;
 
     public Integer getStartIn() {

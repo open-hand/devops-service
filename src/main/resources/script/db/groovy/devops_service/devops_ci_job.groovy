@@ -78,7 +78,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
 
     changeSet(author: 'lihao', id: '20220-11-08-add-column') {
         addColumn(tableName: 'devops_ci_job') {
-            column(name: 'delay_time', type: 'int(5)', remarks: '任务启动延时时间')
+            column(name: 'start_in', type: 'int(5)', remarks: '任务启动延时时间')
         }
     }
 }
