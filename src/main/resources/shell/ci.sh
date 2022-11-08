@@ -749,23 +749,27 @@ function app_deploy() {
 }
 ## 执行人工审核任务
 function process_audit() {
-  http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+  http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/audit_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&job_name=${CI_JOB_NAME}")
   if [ "$http_status_code" != "200" ];
   then
-    echo "Deploy failed."
+    echo "audit failed."
     exit 1
   else
-    is_failed=$(jq -r .failed result.json)
-    log=$(jq -r .log result.json)
-    # 打印后台返回的日志
-    if [ -z "${message}" ]; then
-        echo "${message}"
+    if [ "$(jq -r .countersigned result.json)" == "true" ];
+      then
+        echo "审核模式为：会签"
+      else
+        echo "审核模式为：或签"
     fi
-    # 判断是否成功
-    if [ "${is_failed}" == "true" ];
+    echo "审核通过人员：$(jq -r .passedUserNameList result.json)"
+    echo "审核拒绝人员：$(jq -r .refusedUserNameList result.json)"
+    echo "未审核人员：$(jq -r .notAuditUserNameList result.json)"
+    if [ "$(jq -r .success result.json)" == "true" ];
     then
-      echo "Deploy failed"
-      exit 1
+        echo "审核结果：通过"
+    else
+        echo "审核结果：终止"
+        exit 1
     fi
   fi
 }
