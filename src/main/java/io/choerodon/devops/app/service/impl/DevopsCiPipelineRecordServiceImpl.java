@@ -579,7 +579,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
-
+        devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
     }
 

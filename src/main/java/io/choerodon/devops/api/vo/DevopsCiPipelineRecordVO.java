@@ -33,6 +33,9 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
+    @ApiModelProperty("界面展示id")
+    private String viewId;
+
     @ApiModelProperty("ci阶段记录的集合")
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("关联流水线信息")
@@ -49,6 +52,14 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Long gitlabProjectId;
     @ApiModelProperty("gitlab commit sha")
     private String commitSha;
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
+    }
 
     public String getCommitSha() {
         return commitSha;
