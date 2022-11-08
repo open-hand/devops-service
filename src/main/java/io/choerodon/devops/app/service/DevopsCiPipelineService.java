@@ -63,6 +63,8 @@ public interface DevopsCiPipelineService {
      */
     CiCdPipelineVO queryById(Long ciPipelineId);
 
+    CiCdPipelineDTO baseQueryById(Long id);
+
     /**
      * 停用流水线
      */

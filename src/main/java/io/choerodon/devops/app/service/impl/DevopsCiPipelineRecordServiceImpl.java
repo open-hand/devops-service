@@ -523,7 +523,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
         if (!Objects.isNull(iamUserDTO)) {
-            devopsCiPipelineRecordVO.setUserDTO(iamUserDTO);
+            devopsCiPipelineRecordVO.setIamUserDTO(iamUserDTO);
             devopsCiPipelineRecordVO.setUsername(iamUserDTO.getRealName());
         }
         devopsCiPipelineRecordVO.setCreatedDate(devopsCiPipelineRecordDTO.getCreationDate());
@@ -532,7 +532,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(devopsPipelineId);
         Long appServiceId = ciCdPipelineVO.getAppServiceId();
 
-        devopsCiPipelineRecordVO.setDevopsCiPipelineVO(ciCdPipelineVO);
+        devopsCiPipelineRecordVO.setCiCdPipelineVO(ciCdPipelineVO);
         addCommitInfo(appServiceId, devopsCiPipelineRecordVO, devopsCiPipelineRecordDTO);
 
         // 查询流水线记录下的job记录
@@ -578,7 +578,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
-        devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
+        devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
 
         return devopsCiPipelineRecordVO;
     }
@@ -1033,7 +1033,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
-        devopsCiPipelineRecordVO.setStageRecordVOList(devopsCiStageRecordVOS);
+        devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
         return devopsCiPipelineRecordVO;
     }
 

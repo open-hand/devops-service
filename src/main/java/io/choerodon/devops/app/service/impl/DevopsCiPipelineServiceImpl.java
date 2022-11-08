@@ -954,6 +954,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
+    public CiCdPipelineDTO baseQueryById(Long id) {
+        return devopsCiCdPipelineMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
     @Transactional
     public CiCdPipelineDTO disablePipeline(Long projectId, Long pipelineId) {
         CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
@@ -1245,7 +1250,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private List<StageRecordVO> getStageRecordVOS(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
         List<StageRecordVO> stageRecordVOS = new ArrayList<>();
         if (!Objects.isNull(devopsCiPipelineRecordVO)) {
-            stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOList());
+            stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOS());
         }
         if (!Objects.isNull(devopsCdPipelineRecordVO)) {
             stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());

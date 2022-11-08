@@ -33,17 +33,19 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
-    private List<DevopsCiStageRecordVO> stageRecordVOList;
-    private CiCdPipelineVO devopsCiPipelineVO;
-
-    private IamUserDTO userDTO;
+    @ApiModelProperty("ci阶段记录的集合")
+    private List<DevopsCiStageRecordVO> stageRecordVOS;
+    @ApiModelProperty("关联流水线信息")
+    private CiCdPipelineVO ciCdPipelineVO;
+    @ApiModelProperty("创建者信息")
+    private IamUserDTO iamUserDTO;
     @ApiModelProperty("提交信息")
     private CustomCommitVO commit;
 
     @JsonIgnore
     @ApiModelProperty("最后更新时间")
     private Date lastUpdateDate;
-
+    @ApiModelProperty("关联gitlab project id")
     private Long gitlabProjectId;
     @ApiModelProperty("gitlab commit sha")
     private String commitSha;
@@ -107,28 +109,28 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
         this.durationSeconds = durationSeconds;
     }
 
-    public List<DevopsCiStageRecordVO> getStageRecordVOList() {
-        return stageRecordVOList;
+    public List<DevopsCiStageRecordVO> getStageRecordVOS() {
+        return stageRecordVOS;
     }
 
-    public void setStageRecordVOList(List<DevopsCiStageRecordVO> stageRecordVOList) {
-        this.stageRecordVOList = stageRecordVOList;
+    public void setStageRecordVOS(List<DevopsCiStageRecordVO> stageRecordVOS) {
+        this.stageRecordVOS = stageRecordVOS;
     }
 
-    public IamUserDTO getUserDTO() {
-        return userDTO;
+    public IamUserDTO getIamUserDTO() {
+        return iamUserDTO;
     }
 
-    public void setUserDTO(IamUserDTO userDTO) {
-        this.userDTO = userDTO;
+    public void setIamUserDTO(IamUserDTO iamUserDTO) {
+        this.iamUserDTO = iamUserDTO;
     }
 
-    public CiCdPipelineVO getDevopsCiPipelineVO() {
-        return devopsCiPipelineVO;
+    public CiCdPipelineVO getCiCdPipelineVO() {
+        return ciCdPipelineVO;
     }
 
-    public void setDevopsCiPipelineVO(CiCdPipelineVO devopsCiPipelineVO) {
-        this.devopsCiPipelineVO = devopsCiPipelineVO;
+    public void setCiCdPipelineVO(CiCdPipelineVO ciCdPipelineVO) {
+        this.ciCdPipelineVO = ciCdPipelineVO;
     }
 
     public String getGitlabTriggerRef() {

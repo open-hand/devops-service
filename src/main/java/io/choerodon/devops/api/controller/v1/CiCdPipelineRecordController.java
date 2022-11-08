@@ -13,9 +13,10 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiPipelineRecordVO;
+import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -28,17 +29,19 @@ public class CiCdPipelineRecordController {
 
     @Autowired
     private CiCdPipelineRecordService ciCdPipelineRecordService;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/details")
-    public ResponseEntity<CiCdPipelineRecordVO> queryPipelineRecordDetails(
+    public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "ci与cd记录关系表", required = true)
-            @RequestParam(value = "record_rel_id") Long recordRelId) {
-        return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, recordRelId));
+            @ApiParam(value = "ci记录id", required = true)
+            @RequestParam(value = "id") Long id) {
+        return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, id));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
