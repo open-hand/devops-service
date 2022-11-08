@@ -747,6 +747,28 @@ function app_deploy() {
     fi
   fi
 }
+## 执行人工审核任务
+function process_audit() {
+  http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Deploy failed."
+    exit 1
+  else
+    is_failed=$(jq -r .failed result.json)
+    log=$(jq -r .log result.json)
+    # 打印后台返回的日志
+    if [ -z "${message}" ]; then
+        echo "${message}"
+    fi
+    # 判断是否成功
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Deploy failed"
+      exit 1
+    fi
+  fi
+}
 
 function execute_api_test(){
   environment=runner type=$1 choerodonUrl=$2 taskId=$3 suiteId=$3 configId=$4  java -jar /choerodon/app.jar

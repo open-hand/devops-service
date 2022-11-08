@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CiAuditResultVO;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
@@ -54,6 +55,8 @@ public class CiController {
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
     @Autowired
     private CommandOperator commandOperator;
+    @Autowired
+    private CiAuditRecordService ciAuditRecordService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -345,5 +348,18 @@ public class CiController {
             @ApiParam(value = "指令类型", required = true)
             @RequestParam(value = "command_type") String commandType) {
         return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, commandType));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询人工卡点任务审核状态", hidden = true)
+    @PostMapping("/audit_status")
+    public ResponseEntity<CiAuditResultVO> queryAuditStatus(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName) {
+        return ResponseEntity.ok(ciAuditRecordService.queryAuditStatus(token, gitlabPipelineId, jobName));
     }
 }

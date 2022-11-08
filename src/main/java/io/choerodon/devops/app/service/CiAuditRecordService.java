@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.CiAuditResultVO;
 import io.choerodon.devops.infra.dto.CiAuditRecordDTO;
 
 /**
@@ -13,5 +14,7 @@ public interface CiAuditRecordService {
     CiAuditRecordDTO queryByUniqueOption(Long appServiceId, Long gitlabPipelineId, String name);
 
     CiAuditRecordDTO baseCreate(CiAuditRecordDTO ciAuditRecordDTO);
+
+    CiAuditResultVO queryAuditStatus(String token, Long gitlabPipelineId, String jobName);
 }
 

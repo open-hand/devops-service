@@ -31,6 +31,7 @@ public class DevopsCdPipelineAuditController {
     /**
      * 审核人工卡点任务
      */
+    @Deprecated
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核人工卡点任务")
     @PostMapping("/stage_records/{stage_record_id}/job_records/{job_record_id}/audit")
@@ -54,6 +55,7 @@ public class DevopsCdPipelineAuditController {
     /**
      * 校验stage、job审核状态是否改变
      */
+    @Deprecated
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验stage、job审核状态是否改变")
     @PostMapping("check_audit_status")
