@@ -13,8 +13,7 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
     }
 
     @Override
-    protected Object execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log) {
-        // todo lihao 主机部署
-        return null;
+    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Object content) {
+
     }
 }
