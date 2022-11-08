@@ -198,4 +198,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         condition.setCiPipelineRecordId(Objects.requireNonNull(ciPipelineRecordId));
         return devopsCiJobRecordMapper.selectCount(condition);
     }
+
+    @Override
+    public List<DevopsCiJobRecordDTO> listByCiPipelineRecordId(Long ciPipelineRecordId) {
+        DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
+        recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
+        return devopsCiJobRecordMapper.select(recordDTO);
+    }
 }

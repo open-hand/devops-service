@@ -14,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -86,7 +87,7 @@ public class CiCdPipelineRecordController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询流水线执行记录")
     @GetMapping("/{pipeline_id}")
-    public ResponseEntity<Page<CiCdPipelineRecordVO>> pagingPipelineRecord(
+    public ResponseEntity<Page<CiPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

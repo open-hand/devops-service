@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
@@ -63,4 +64,13 @@ public interface DevopsCiPipelineRecordService {
     DevopsCiPipelineRecordVO queryByCiPipelineRecordId(Long ciPipelineRecordId);
 
     DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(Long appServiceId, Long gitlabPipelineId);
+
+    List<CiPipelineRecordVO> listByPipelineId(Long pipelineId);
+
+    /**
+     * 为流水线记录添加阶段，任务等信息
+     *
+     * @param recordVO
+     */
+    void fillAdditionalInfo(CiPipelineRecordVO recordVO);
 }

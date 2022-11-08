@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper">
 
-    <select id="listByCiPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO">
+    <select id="listByCiPipelineId" resultType="io.choerodon.devops.api.vo.CiPipelineRecordVO">
         SELECT *
         FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
+        order by id desc
     </select>
     <update id="updateStatusByGitlabPipelineId">
         UPDATE devops_ci_pipeline_record

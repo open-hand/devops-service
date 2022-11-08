@@ -45,4 +45,6 @@ public interface DevopsCiJobRecordService {
      * @return job纪录数量
      */
     int selectCountByCiPipelineRecordId(Long ciPipelineRecordId);
+
+    List<DevopsCiJobRecordDTO> listByCiPipelineRecordId(Long ciPipelineRecordId);
 }
