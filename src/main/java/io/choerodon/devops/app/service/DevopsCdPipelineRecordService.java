@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.DevopsCdPipelineRecordVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCdPipelineRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 
 /**
@@ -49,4 +51,12 @@ public interface DevopsCdPipelineRecordService {
 //    Boolean testConnection(HostConnectionVO hostConnectionVO);
 
     DevopsCdPipelineRecordVO queryByCdPipelineRecordId(Long cdPipelineRecordId);
+
+    void ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    void ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    void ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    void ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 }
