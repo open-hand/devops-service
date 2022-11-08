@@ -75,4 +75,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '任务关联的配置id')
         }
     }
+
+    changeSet(author: 'lihao', id: '20220-11-08-add-column') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'delay_time', type: 'int(5)', remarks: '任务启动延时时间')
+        }
+    }
 }

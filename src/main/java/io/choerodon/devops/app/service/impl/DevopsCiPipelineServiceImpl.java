@@ -1793,6 +1793,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     }
                     if (job.getType().equals(API_TEST.value())) {
                         ciJob.setImage(testRunnerImage);
+                        ciJob.setStartIn(String.format("%s minutes", job.getStartIn().toString()));
+                        ciJob.setWhen("delayed");
                     }
 
                     ciJob.setCache(buildJobCache(job));
