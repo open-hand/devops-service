@@ -237,8 +237,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
 
-
-        CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(appServiceId, gitlabPipelineId, name);
+        CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOptionForUpdate(appServiceId, gitlabPipelineId, name);
 
         List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
         Optional<CiAuditUserRecordDTO> auditUserRecord = ciAuditUserRecordDTOS

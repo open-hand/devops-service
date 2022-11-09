@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.CiAuditRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -10,5 +12,9 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2022-11-03 10:16:51
  */
 public interface CiAuditRecordMapper extends BaseMapper<CiAuditRecordDTO> {
+
+    CiAuditRecordDTO queryByUniqueOptionForUpdate(@Param("appServiceId") Long appServiceId,
+                                                  @Param("gitlabPipelineId") Long gitlabPipelineId,
+                                                  @Param("name") String name);
 }
 

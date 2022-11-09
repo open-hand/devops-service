@@ -13,6 +13,8 @@ public interface CiAuditRecordService {
 
     CiAuditRecordDTO queryByUniqueOption(Long appServiceId, Long gitlabPipelineId, String name);
 
+    CiAuditRecordDTO queryByUniqueOptionForUpdate(Long appServiceId, Long gitlabPipelineId, String name);
+
     CiAuditRecordDTO baseCreate(CiAuditRecordDTO ciAuditRecordDTO);
 
     CiAuditResultVO queryAuditStatus(String token, Long gitlabPipelineId, String jobName);

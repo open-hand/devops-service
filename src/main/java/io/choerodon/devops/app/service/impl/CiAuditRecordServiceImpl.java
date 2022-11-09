@@ -62,6 +62,11 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
     }
 
     @Override
+    public CiAuditRecordDTO queryByUniqueOptionForUpdate(Long appServiceId, Long gitlabPipelineId, String name) {
+        return ciAuditRecordMapper.queryByUniqueOptionForUpdate(appServiceId, gitlabPipelineId, name);
+    }
+
+    @Override
     public CiAuditRecordDTO baseCreate(CiAuditRecordDTO ciAuditRecordDTO) {
         return MapperUtil.resultJudgedInsertSelective(ciAuditRecordMapper, ciAuditRecordDTO, DEVOPS_AUDIT_RECORD_SAVE);
     }
@@ -108,6 +113,9 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
     @Override
     public void sendJobAuditMessage(Long appServiceId, Long ciPipelineId, Long ciPipelineRecordId, Long gitlabPipelineId, String name) {
         CiAuditRecordDTO ciAuditRecordDTO = queryByUniqueOption(appServiceId, gitlabPipelineId, name);
+        if (ciAuditRecordDTO == null) {
+            return;
+        }
         List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getJobRecordId());
         if (CollectionUtils.isEmpty(auditUserRecordDTOList)) {
             return;
