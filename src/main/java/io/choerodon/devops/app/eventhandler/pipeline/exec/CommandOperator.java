@@ -27,7 +27,7 @@ import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 @Component
 public class CommandOperator {
 
-    @Value("devops.ci.host-deploy-timeout")
+    @Value("${devops.ci.host-deploy-timeout}")
     private Integer deployTimeout;
 
     @Autowired
