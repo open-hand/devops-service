@@ -23,7 +23,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_cd_api_test_info")
+@Table(name = "devops_ci_api_test_info")
 public class DevopsCiApiTestInfoDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_API_TEST_TASK_ID = "apiTestTaskId";
