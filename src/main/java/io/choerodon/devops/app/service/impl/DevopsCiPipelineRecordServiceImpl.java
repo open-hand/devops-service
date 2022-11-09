@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -51,6 +52,7 @@ import io.choerodon.devops.infra.dto.maven.Server;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.*;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -73,6 +75,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
 
     private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
+    protected static final String ENV = "env";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
@@ -143,6 +146,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private CiAuditRecordService ciAuditRecordService;
     @Autowired
     private CiAuditUserRecordService ciAuditUserRecordService;
+    @Autowired
+    protected DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    protected DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    protected AppServiceInstanceService appServiceInstanceService;
+    @Autowired
+    protected DevopsDeploymentService devopsDeploymentService;
 
 
     // @lazy解决循环依赖
@@ -581,6 +592,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 fillAuditInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加当前用户流水线待审核任务列表
                 addPipelineAuditInfo(gitlabPipelineId, userId, appServiceId, pipelineAuditInfo, devopsCiJobRecordVO);
+                // 添加chart部署记录信息
+                addChartDeployInfo(devopsCiJobRecordVO);
+                // 添加部署组部署记录信息
+                addDeploymentDeployInfo(devopsCiJobRecordVO);
 
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
@@ -596,6 +611,70 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
         devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
+    }
+
+    private void addDeploymentDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        Long commandId = devopsCiJobRecordVO.getCommandId();
+        if (commandId != null) {
+            DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+            if (deployRecordVO != null) {
+                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                DeployInfo deployInfo = new DeployInfo();
+                deployInfo.setEnvId(deployRecordVO.getEnvId());
+                deployInfo.setEnvName(deployRecordVO.getDeployPayloadName());
+                deployInfo.setAppId(deployRecordVO.getAppId());
+                deployInfo.setAppName(deployRecordVO.getAppName());
+                if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                    deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                    deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                    deployInfo.setDeployType(ENV);
+                    deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                    if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                        DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
+                        if (!ObjectUtils.isEmpty(deploymentDTO)) {
+                            deployInfo.setStatus(deploymentDTO.getStatus());
+                        }
+                    }
+                }
+                devopsCiJobRecordVO.setDeployInfo(deployInfo);
+            }
+        }
+
+    }
+
+    private void addChartDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        if (CiJobTypeEnum.CHART_DEPLOY.value().equals(devopsCiJobRecordVO.getType())
+                && io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+            Long commandId = devopsCiJobRecordVO.getCommandId();
+            if (commandId != null) {
+                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                if (deployRecordVO != null) {
+                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                    DeployInfo deployInfo = new DeployInfo();
+                    deployInfo.setAppServiceName(deployRecordVO.getDeployObjectName());
+                    deployInfo.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
+                    deployInfo.setEnvId(deployRecordVO.getEnvId());
+                    deployInfo.setEnvName(deployRecordVO.getDeployPayloadName());
+                    deployInfo.setAppId(deployRecordVO.getAppId());
+                    deployInfo.setAppName(deployRecordVO.getAppName());
+                    if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                        deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                        deployInfo.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
+                        deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                        deployInfo.setDeployType(ENV);
+                        deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                        if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                            AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId(), devopsDeployAppCenterEnvDTO.getObjectId());
+                            if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
+                                deployInfo.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
+                                deployInfo.setStatus(appServiceInstanceInfoVO.getStatus());
+                            }
+                        }
+                    }
+                    devopsCiJobRecordVO.setDeployInfo(deployInfo);
+                }
+            }
+        }
     }
 
     private void addPipelineAuditInfo(Long gitlabPipelineId, Long userId, Long appServiceId, List<DevopsCiPipelineAuditVO> pipelineAuditInfo, DevopsCiJobRecordVO devopsCiJobRecordVO) {

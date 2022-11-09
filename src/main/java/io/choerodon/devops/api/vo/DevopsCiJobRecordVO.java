@@ -51,6 +51,7 @@ public class DevopsCiJobRecordVO {
     private Boolean imageScan;
     @ApiModelProperty("任务记录关联的maven配置id")
     private Long mavenSettingId;
+    private Long commandId;
 
     @ApiModelProperty("ci生成jar包地址")
     private PipelineJarInfoVO pipelineJarInfo;
@@ -64,6 +65,24 @@ public class DevopsCiJobRecordVO {
     private List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
     @ApiModelProperty("人工卡点任务信息")
     private Audit audit;
+    @ApiModelProperty("chart部署任务信息")
+    private DeployInfo deployInfo;
+
+    public DeployInfo getDeployInfo() {
+        return deployInfo;
+    }
+
+    public void setDeployInfo(DeployInfo deployInfo) {
+        this.deployInfo = deployInfo;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
 
     public Audit getAudit() {
         return audit;
