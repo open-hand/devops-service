@@ -82,23 +82,23 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     });
                 });
-        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
-            ciCdPipelineVO.getDevopsCdStageVOS()
-                    .stream()
-                    .forEach(stage -> {
-                        if (CollectionUtils.isEmpty(stage.getJobList())) {
-                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
-                        }
-
-                        // 校验stage名称唯一
-                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
-
-                        stage.getJobList().forEach(job -> {
-                            validateTriggerRefRegex(job);
-                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
-                        });
-                    });
-        }
+//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+//            ciCdPipelineVO.getDevopsCdStageVOS()
+//                    .stream()
+//                    .forEach(stage -> {
+//                        if (CollectionUtils.isEmpty(stage.getJobList())) {
+//                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
+//                        }
+//
+//                        // 校验stage名称唯一
+//                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+//
+//                        stage.getJobList().forEach(job -> {
+//                            validateTriggerRefRegex(job);
+//                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
+//                        });
+//                    });
+//        }
 
     }
 

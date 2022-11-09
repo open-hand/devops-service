@@ -54,7 +54,7 @@ public interface DevopsCiPipelineService {
     CiCdPipelineDTO queryByAppSvcId(Long appServiceId);
 
     /**
-     * 查询项目下流水线列表（包含5条执行记录）
+     * 查询项目下流水线列表
      */
     Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status);
 

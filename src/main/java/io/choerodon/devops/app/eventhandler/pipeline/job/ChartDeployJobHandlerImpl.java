@@ -1,11 +1,14 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueCode.DEVOPS_DEPLOY_VALUE_ID_NULL;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
@@ -62,6 +65,9 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciChartDeployConfig.getAppId());
             ciChartDeployConfig.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciChartDeployConfig.setAppName(devopsDeployAppCenterEnvDTO.getName());
+        }
+        if (ciChartDeployConfig.getValueId() == null) {
+            throw new CommonException(DEVOPS_DEPLOY_VALUE_ID_NULL);
         }
     }
 

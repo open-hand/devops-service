@@ -73,4 +73,6 @@ public interface DevopsCiPipelineRecordService {
      * @param recordVO
      */
     void fillAdditionalInfo(CiPipelineRecordVO recordVO);
+
+    DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(Long pipelineId);
 }

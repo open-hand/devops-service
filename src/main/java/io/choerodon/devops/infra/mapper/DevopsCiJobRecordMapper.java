@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -18,4 +19,5 @@ public interface DevopsCiJobRecordMapper extends BaseMapper<DevopsCiJobRecordDTO
 
     void batchInert(@Param("devopsCiJobRecordDTOS") List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS);
 
+    DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(@Param("pipelineId") Long pipelineId);
 }

@@ -1203,4 +1203,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         recordVO.setStageRecordVOS(devopsCiStageRecordVOS);
     }
+
+    @Override
+    public DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(Long pipelineId) {
+        return devopsCiJobRecordMapper.queryLatestedPipelineRecord(pipelineId);
+    }
 }

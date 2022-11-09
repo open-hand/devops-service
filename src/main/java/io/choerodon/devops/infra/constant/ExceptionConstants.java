@@ -163,6 +163,10 @@ public class ExceptionConstants {
         public static final String DEVOPS_WORKFLOW_STOP = "devops.workflow.stop";
     }
 
+    public static class DeployValueCode {
+        public static final String DEVOPS_DEPLOY_VALUE_ID_NULL = "devops.deploy.value.id.null";
+    }
+
     public static class CustomResourceCode {
         public static final String DEVOPS_LOAD_YAML_CONTENT = "devops.load.yaml.content";
     }

@@ -34,7 +34,13 @@
     </foreach>
 
 
-
-
     </insert>
+    <select id="queryLatestedPipelineRecord"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select *
+        from devops_ci_pipeline_record dcpr
+        where ci_pipeline_id = #{pipelineId}
+        order by id desc
+        limit 1;
+    </select>
 </mapper>
