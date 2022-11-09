@@ -83,8 +83,8 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
-        List<Long> notifyUserIds = KeyDecryptHelper.decryptJson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<List<Long>>() {
-        });
+        Long[] notifyUserIds = KeyDecryptHelper.decryptIdArray(JsonHelper.unmarshalByJackson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<String[]>() {
+        }));
         devopsCiApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(notifyUserIds));
         devopsCiApiTestInfoDTO.setId(null);
         MapperUtil.resultJudgedInsert(devopsCiApiTestInfoMapper, devopsCiApiTestInfoDTO, DEVOPS_CI_API_TEST_INFO_SAVE);

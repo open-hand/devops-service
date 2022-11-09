@@ -10,7 +10,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -166,27 +165,6 @@ public final class KeyDecryptHelper {
             }
         } else {
             return JsonHelper.unmarshalByJackson(json, type);
-        }
-    }
-
-    /**
-     * 对json进行反序列化, 同时对相应的字段进行解密
-     *
-     * @param json          json
-     * @param typeReference 类型
-     * @param <T>           泛型
-     * @return 对象
-     */
-    public static <T> T decryptJson(String json, TypeReference<T> typeReference) {
-        if (EncryptContext.isEncrypt()) {
-            ensureInitObjectMapper();
-            try {
-                return SPRINT_OBJECT_MAPPER.readValue(json, typeReference);
-            } catch (IOException e) {
-                throw new CommonException("devops.decrypt.json", e);
-            }
-        } else {
-            return JsonHelper.unmarshalByJackson(json, typeReference);
         }
     }
 
