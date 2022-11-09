@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.Audit;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -52,6 +53,26 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Long gitlabProjectId;
     @ApiModelProperty("gitlab commit sha")
     private String commitSha;
+    @ApiModelProperty("待审核状态时需要的一些数据")
+    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+
+    private Audit audit;
+
+    public Audit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Audit audit) {
+        this.audit = audit;
+    }
+
+    public DevopsCdPipelineDeatilVO getDevopsCdPipelineDeatilVO() {
+        return devopsCdPipelineDeatilVO;
+    }
+
+    public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
+        this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
+    }
 
     public String getViewId() {
         return viewId;

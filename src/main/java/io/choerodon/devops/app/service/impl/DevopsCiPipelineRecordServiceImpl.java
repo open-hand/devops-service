@@ -32,10 +32,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
-import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
+import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
@@ -144,6 +141,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private JobOperator jobOperator;
     @Autowired
     private CiAuditRecordService ciAuditRecordService;
+    @Autowired
+    private CiAuditUserRecordService ciAuditUserRecordService;
 
 
     // @lazy解决循环依赖
@@ -576,6 +575,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 //是否本次流水线有镜像的扫描结果 有则展示
                 fillImageScanInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 fillUnitTestInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                // 添加人工审核记录信息
+                fillAuditInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
 
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
@@ -590,6 +591,24 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
         devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
+    }
+
+    private void fillAuditInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
+        if (ciAuditRecordDTO != null) {
+            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+            if (!CollectionUtils.isEmpty(auditUserRecordDTOList)) {
+
+                List<Long> uids = auditUserRecordDTOList.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+                List<IamUserDTO> allIamUserDTOS = baseServiceClientOperator.listUsersByIds(uids);
+                List<Long> reviewedUids = auditUserRecordDTOList.stream()
+                        .filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()) || AuditStatusEnum.REFUSED.value().equals(v.getStatus()))
+                        .map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+                List<IamUserDTO> reviewedUsers = allIamUserDTOS.stream().filter(u -> reviewedUids.contains(u.getId())).collect(Collectors.toList());
+                Audit audit = new Audit(allIamUserDTOS, reviewedUsers, devopsCiJobRecordVO.getStatus());
+                devopsCiJobRecordVO.setAudit(audit);
+            }
+        }
     }
 
     /**

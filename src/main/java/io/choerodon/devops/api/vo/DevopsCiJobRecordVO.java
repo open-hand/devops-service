@@ -6,10 +6,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
-import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
+import io.choerodon.devops.api.vo.pipeline.*;
 
 /**
  * 〈功能简述〉
@@ -64,7 +61,17 @@ public class DevopsCiJobRecordVO {
     @ApiModelProperty("ci任务产生的镜像信息")
     private PipelineImageInfoVO pipelineImageInfo;
     @ApiModelProperty("ci任务产生的单元测试信息")
-    List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
+    private List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
+    @ApiModelProperty("人工卡点任务信息")
+    private Audit audit;
+
+    public Audit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Audit audit) {
+        this.audit = audit;
+    }
 
     public List<DevopsCiUnitTestReportVO> getDevopsCiUnitTestReportInfoList() {
         return devopsCiUnitTestReportInfoList;
