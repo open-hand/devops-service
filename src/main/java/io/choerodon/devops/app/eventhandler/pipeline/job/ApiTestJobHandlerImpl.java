@@ -9,6 +9,7 @@ import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PR
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.mapper.DevopsCiApiTestInfoMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.KeyDecryptHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
@@ -80,6 +83,9 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
+        List<Long> notifyUserIds = KeyDecryptHelper.decryptJson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<List<Long>>() {
+        });
+        devopsCiApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(notifyUserIds));
         devopsCiApiTestInfoDTO.setId(null);
         MapperUtil.resultJudgedInsert(devopsCiApiTestInfoMapper, devopsCiApiTestInfoDTO, DEVOPS_CI_API_TEST_INFO_SAVE);
         return devopsCiApiTestInfoDTO.getId();
