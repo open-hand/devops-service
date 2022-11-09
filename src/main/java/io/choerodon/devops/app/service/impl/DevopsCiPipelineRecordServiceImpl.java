@@ -527,6 +527,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
+        Long userId = DetailsHelper.getUserDetails().getUserId();
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -551,6 +552,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
 
         List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = new ArrayList<>();
+        List<DevopsCiPipelineAuditVO> pipelineAuditInfo = new ArrayList<>();
         for (Map.Entry<String, List<DevopsCiJobRecordDTO>> entry : jobRecordMap.entrySet()) {
             String k = entry.getKey();
             List<DevopsCiJobRecordDTO> value = entry.getValue();
@@ -577,6 +579,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 fillUnitTestInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加人工审核记录信息
                 fillAuditInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
+                // 添加当前用户流水线待审核任务列表
+                addPipelineAuditInfo(gitlabPipelineId, userId, appServiceId, pipelineAuditInfo, devopsCiJobRecordVO);
 
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
@@ -589,8 +593,25 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
+        devopsCiPipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
         devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
+    }
+
+    private void addPipelineAuditInfo(Long gitlabPipelineId, Long userId, Long appServiceId, List<DevopsCiPipelineAuditVO> pipelineAuditInfo, DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        if (CiJobTypeEnum.AUDIT.value().equals(devopsCiJobRecordVO.getType())
+                && io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+            CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(appServiceId, gitlabPipelineId, devopsCiJobRecordVO.getName());
+            if (ciAuditRecordDTO != null) {
+                List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+                if (!CollectionUtils.isEmpty(auditUserRecordDTOList)) {
+                    if (auditUserRecordDTOList.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
+                        DevopsCiPipelineAuditVO devopsCiPipelineAuditVO = new DevopsCiPipelineAuditVO(devopsCiJobRecordVO.getName(), devopsCiJobRecordVO.getId(), true);
+                        pipelineAuditInfo.add(devopsCiPipelineAuditVO);
+                    }
+                }
+            }
+        }
     }
 
     private void fillAuditInfo(Long appServiceId, Long gitlabPipelineId, DevopsCiJobRecordVO devopsCiJobRecordVO) {

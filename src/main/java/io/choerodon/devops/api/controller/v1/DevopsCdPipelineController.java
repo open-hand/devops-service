@@ -155,6 +155,7 @@ public class DevopsCdPipelineController {
     }
 
 
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "执行外部卡点任务")
     @PostMapping(value = "/execute_external_approval_task")
@@ -169,6 +170,7 @@ public class DevopsCdPipelineController {
         return ResponseEntity.noContent().build();
     }
 
+    @Deprecated
     @Permission(permissionPublic = true)
     @ApiOperation(value = "外部卡点任务执行回调接口")
     @PutMapping("/external_approval_task/callback")
@@ -187,6 +189,7 @@ public class DevopsCdPipelineController {
         return ResponseEntity.noContent().build();
     }
 
+    @Deprecated
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询外部卡点任务执行回调接口URL")
     @GetMapping("/external_approval_task/callback_url")
