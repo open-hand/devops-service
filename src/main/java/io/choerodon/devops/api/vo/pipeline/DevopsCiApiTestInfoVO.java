@@ -30,9 +30,6 @@ public class DevopsCiApiTestInfoVO {
     @Encrypt
     private Long apiTestConfigId;
 
-    @ApiModelProperty(value = "部署任务名称")
-    private String deployJobName;
-
     @ApiModelProperty(value = "是否启用告警设置")
     private Boolean enableWarningSetting;
 
@@ -89,14 +86,6 @@ public class DevopsCiApiTestInfoVO {
 
     public void setApiTestConfigId(Long apiTestConfigId) {
         this.apiTestConfigId = apiTestConfigId;
-    }
-
-    public String getDeployJobName() {
-        return deployJobName;
-    }
-
-    public void setDeployJobName(String deployJobName) {
-        this.deployJobName = deployJobName;
     }
 
     public Boolean getEnableWarningSetting() {

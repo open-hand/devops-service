@@ -16,6 +16,7 @@ import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.app.service.DevopsCiApiTestInfoService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -37,6 +38,9 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     private String apiGateway;
     @Autowired
     DevopsCiApiTestInfoMapper devopsCiApiTestInfoMapper;
+    @Autowired
+    private
+    DevopsCiApiTestInfoService devopsCiApiTestInfoService;
 
     @Override
     public CiJobTypeEnum getType() {
@@ -79,5 +83,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         devopsCiApiTestInfoDTO.setId(null);
         MapperUtil.resultJudgedInsert(devopsCiApiTestInfoMapper, devopsCiApiTestInfoDTO, DEVOPS_CI_API_TEST_INFO_SAVE);
         return devopsCiApiTestInfoDTO.getId();
+    }
+
+    @Override
+    public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()));
     }
 }

@@ -10,7 +10,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_api_test_info.groovy') {
             column(name: 'api_test_task_id', type: 'BIGINT UNSIGNED', remarks: '测试任务id')
             column(name: 'api_test_suite_id', type: 'BIGINT UNSIGNED', remarks: '测试套件id')
             column(name: 'api_test_config_id', type: 'BIGINT UNSIGNED', remarks: '测试任务关联的任务配置id')
-            column(name: 'deploy_job_name', type: 'VARCHAR(100)', remarks: '部署任务名称')
             column(name: 'enable_warning_setting', type: 'TINYINT', remarks: '是否启用告警设置')
             column(name: 'perform_threshold', type: 'DOUBLE', remarks: '阈值')
             column(name: 'notify_user_ids', type: 'VARCHAR(2048)', remarks: '通知对象集合')

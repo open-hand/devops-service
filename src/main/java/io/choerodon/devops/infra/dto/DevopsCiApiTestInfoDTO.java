@@ -56,9 +56,6 @@ public class DevopsCiApiTestInfoDTO extends AuditDomain {
     @ApiModelProperty(value = "测试任务关联的任务配置id")
     private Long apiTestConfigId;
 
-    @ApiModelProperty(value = "部署任务名称")
-    private String deployJobName;
-
     @ApiModelProperty(value = "是否启用告警设置")
     private Boolean enableWarningSetting;
 
@@ -115,14 +112,6 @@ public class DevopsCiApiTestInfoDTO extends AuditDomain {
 
     public void setApiTestConfigId(Long apiTestConfigId) {
         this.apiTestConfigId = apiTestConfigId;
-    }
-
-    public String getDeployJobName() {
-        return deployJobName;
-    }
-
-    public void setDeployJobName(String deployJobName) {
-        this.deployJobName = deployJobName;
     }
 
     public Boolean getEnableWarningSetting() {
