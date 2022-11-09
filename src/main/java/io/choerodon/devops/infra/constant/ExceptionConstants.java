@@ -83,6 +83,10 @@ public class ExceptionConstants {
         public static final String DEVOPS_UPDATE_IMAGE_RECORD = "devops.update.image.record";
     }
 
+    public static class CiJobCode {
+        public static final String DEVOPS_CI_JOB_DELAY_TIME_INVALID = "error.devops.ci.job.delay.time.invalid";
+    }
+
     public static class CdEnvDeployInfoDTOCode {
         public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
     }

@@ -69,7 +69,6 @@ services:
     password: password
     analysis-user-token: ${SERVICES_SONARQUBE_ANALYSIS_USER_TOKEN:} # 流水线执行代码扫描的用户token.需要Analysis和Create权限
   test:
-    url: ${TEST_MANAGER_SERVICE_URL:http://test.example.com}
     runner-image: ${TEST_RUNNER_IMAGE:example.com/choerodon-test-runner:1.0.0}
 hzero:
   service:

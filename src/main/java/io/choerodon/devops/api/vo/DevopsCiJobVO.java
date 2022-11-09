@@ -90,6 +90,9 @@ public class DevopsCiJobVO {
     @ApiModelProperty("任务配置id")
     private Long configId;
 
+    @ApiModelProperty("启动延时,单位默认为分")
+    private Integer startIn;
+
     @ApiModelProperty("任务为人工卡点时需要，保存人工卡点相关配置信息")
     private CiAuditConfigVO ciAuditConfig;
     @ApiModelProperty("任务为chart部署时需要，保存chart部署相关配置信息")
@@ -326,5 +329,13 @@ public class DevopsCiJobVO {
 
     public void setDevopsCiApiTestInfoVO(DevopsCiApiTestInfoVO devopsCiApiTestInfoVO) {
         this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
+    }
+
+    public Integer getStartIn() {
+        return startIn;
+    }
+
+    public void setStartIn(Integer startIn) {
+        this.startIn = startIn;
     }
 }

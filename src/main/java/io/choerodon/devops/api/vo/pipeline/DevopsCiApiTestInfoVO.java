@@ -4,10 +4,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCiApiTestInfoVO {
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     /**
@@ -17,12 +19,15 @@ public class DevopsCiApiTestInfoVO {
     private String taskType;
 
     @ApiModelProperty(value = "测试任务id")
+    @Encrypt
     private Long apiTestTaskId;
 
     @ApiModelProperty(value = "测试套件id")
+    @Encrypt
     private Long apiTestSuiteId;
 
     @ApiModelProperty(value = "测试任务关联的任务配置id")
+    @Encrypt
     private Long apiTestConfigId;
 
     @ApiModelProperty(value = "部署任务名称")
