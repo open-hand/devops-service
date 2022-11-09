@@ -106,13 +106,12 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
     }
 
     @Override
-    public void sendJobAuditMessage(Long appServiceId, Long ciPipelineRecordId, Long gitlabPipelineId, String name) {
+    public void sendJobAuditMessage(Long appServiceId, Long ciPipelineId, Long ciPipelineRecordId, Long gitlabPipelineId, String name) {
         CiAuditRecordDTO ciAuditRecordDTO = queryByUniqueOption(appServiceId, gitlabPipelineId, name);
         List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getJobRecordId());
         if (CollectionUtils.isEmpty(auditUserRecordDTOList)) {
             return;
         }
-
         // 发送审核通知
         List<Receiver> userList = new ArrayList<>();
         List<Long> userIds = auditUserRecordDTOList.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
@@ -133,7 +132,7 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
         HashMap<String, String> params = new HashMap<>();
         params.put(STAGE_NAME, name);
         params.put(REL_ID, ciPipelineRecordId.toString());
-        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineRecordId));
+        params.put(PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
         sendNotificationService.sendCdPipelineNotice(ciPipelineRecordId, MessageCodeConstants.PIPELINE_AUDIT, userList, params);
     }
 }
