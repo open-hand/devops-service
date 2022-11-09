@@ -64,7 +64,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                              Long envId,
                              String appCode,
                              String appName,
-                             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
+                             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
         Long objectId = null;
         if (DeployTypeEnum.UPDATE.value().equals(appDeployConfigVO.getDeployType())) {
@@ -133,9 +133,10 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                 false,
                 true);
         Long commandId = devopsDeployAppCenterEnvVO.getCommandId();
-        Long appId;
+        devopsCiJobRecordDTO.setCommandId(commandId);
+        devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
         if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfgVO.getDeployType())) {
-            appId = devopsDeployAppCenterEnvVO.getId();
+            Long appId = devopsDeployAppCenterEnvVO.getId();
             ciDeployDeployCfgVO.setAppId(appId);
             ciDeployDeployCfgVO.setDeployType(DeployTypeEnum.UPDATE.value());
             ciDeployDeployCfgService.baseUpdateByVO(ciDeployDeployCfgVO);

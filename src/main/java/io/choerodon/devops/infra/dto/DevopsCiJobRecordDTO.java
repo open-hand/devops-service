@@ -54,13 +54,23 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
-
+    @Deprecated
     @ApiModelProperty("详细信息")
     private String metadata;
     /**
      * maven Setting Id
      */
     private Long mavenSettingId;
+    @ApiModelProperty("部署操作commandId")
+    private Long commandId;
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
 
     public String getGroupType() {
         return groupType;

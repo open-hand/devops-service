@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
+import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
 /**
@@ -47,6 +48,7 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
+    private static final String DEVOPS_JOB_RECORD_UPDATE = "devops.job.record.update";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
@@ -96,6 +98,12 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             devopsCiJobRecordDTO.setDurationSeconds(jobWebHookVO.getBuildDuration());
             devopsCiJobRecordMapper.updateByPrimaryKeySelective(devopsCiJobRecordDTO);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_JOB_RECORD_UPDATE);
     }
 
     @Override

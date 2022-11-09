@@ -23,6 +23,8 @@ public interface DevopsCiJobRecordService {
 
     void update(JobWebHookVO jobWebHookVO, String token);
 
+    void baseUpdate(DevopsCiJobRecordDTO devopsCiJobRecordDTO);
+
     void deleteByPipelineId(Long ciPipelineId);
 
     /**

@@ -108,5 +108,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             UPDATE devops_ci_job_record dcjr set dcjr.type = 'normal' WHERE dcjr.type != 'custom'
         """)
     }
+    changeSet(author: 'wanghao', id: '2022-11-09-add-column') {
+
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '部署操作commandId', afterColumn: 'trigger_user_id')
+        }
+    }
 
 }

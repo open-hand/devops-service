@@ -9,10 +9,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.pipeline.AppDeployConfigVO;
+import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
@@ -34,6 +36,8 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
+    DevopsCiJobRecordService devopsCiJobRecordService;
 
     @Override
     public CiCommandTypeEnum getType() {
@@ -59,13 +63,13 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
 
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByAppServiceIdAndGitlabPipelineId(appServiceId, gitlabPipelineId);
 
-
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
         // 1. 校验环境是否开启一键关闭自动部署
         if (checkAutoMaticDeploy(log, envId)) return;
         // 2. 校验用户权限
         if (checkUserPermission(log, userId, envId, skipCheckPermission)) return;
         // 获取部署版本信息
-        deployApp(appServiceDTO, log, appDeployConfigVO, projectId, appServiceId, envId, appCode, appName, devopsCiPipelineRecordDTO);
+        deployApp(appServiceDTO, log, appDeployConfigVO, projectId, appServiceId, envId, appCode, appName, devopsCiPipelineRecordDTO, devopsCiJobRecordDTO);
     }
 
     protected abstract void deployApp(AppServiceDTO appServiceDTO,
@@ -76,7 +80,8 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
                                       Long envId,
                                       String appCode,
                                       String appName,
-                                      DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO);
+                                      DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO,
+                                      DevopsCiJobRecordDTO devopsCiJobRecordDTO);
 
     protected boolean checkUserPermission(StringBuilder log, Long userId, Long envId, Boolean skipCheckPermission) {
         log.append("## 2.Check user env permission.").append(System.lineSeparator());

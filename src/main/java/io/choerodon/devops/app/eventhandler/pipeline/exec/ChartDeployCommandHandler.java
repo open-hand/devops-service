@@ -201,7 +201,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                              Long envId,
                              String appCode,
                              String appName,
-                             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO) {
+                             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO,
+                             DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
         log.append("## 3.Query Deploy version.").append(System.lineSeparator());
         AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(appServiceId,
                 devopsCiPipelineRecordDTO.getCommitSha(),
@@ -289,6 +290,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
             appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
+            devopsCiJobRecordDTO.setCommandId(commandId);
+            devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
         }
     }
 
