@@ -747,6 +747,63 @@ function app_deploy() {
     fi
   fi
 }
+
+# 部署主机应用
+## $1 部署配置id
+## $2 指令类型
+function host_deploy(){
+    http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command_for_host?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+    if [ "$http_status_code" != "200" ];
+    then
+      echo "Deploy failed."
+      exit 1
+    else
+      is_failed=$(jq -r .failed result.json)
+      log=$(jq -r .log result.json)
+      command_id=$(jq -r .commandId result.json)
+      # 打印后台返回的日志
+      if [ -z "${log}" ]; then
+          echo "${log}"
+      fi
+
+      # 判断是否成功
+      if [ "${is_failed}" == "true" ];then
+        echo "Deploy failed"
+        exit 1
+      else
+        host_deploy_status_check ${command_id}
+      fi
+    fi
+}
+
+# 检查主机应用部署命令执行结果
+function host_deploy_status_check() {
+    while :
+    do
+     http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/host_command_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&command_id=$1")
+        if [ "$http_status_code" != "200" ];
+        then
+          echo "Failed to check deploy status.HttpStatusCode is ${http_status_code}.Response is:\n"
+          cat result.json
+          exit 1
+        else
+          is_failed=$(jq -r .failed result.json)
+          status=$(jq -r .status result.json)
+          error_msg=${jq -r .errorMsg result.json}
+          if [ "${is_failed}" == "true" ];then
+            echo "Deploy failed"
+            echo "${error_msg}"
+            exit 1
+          else
+            if [ "${status}" == "success" ]; then
+                echo "Deploy success"
+                exit 0
+            fi
+          fi
+        fi
+    done
+}
+
 ## 执行人工审核任务
 function process_audit() {
   http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/audit_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&job_name=${CI_JOB_NAME}")

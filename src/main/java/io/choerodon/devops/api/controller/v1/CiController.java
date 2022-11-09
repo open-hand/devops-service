@@ -57,6 +57,8 @@ public class CiController {
     private CommandOperator commandOperator;
     @Autowired
     private CiAuditRecordService ciAuditRecordService;
+    @Autowired
+    private DevopsHostCommandService hostCommandService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -286,7 +288,7 @@ public class CiController {
             @ApiParam(value = "测试报告", required = true)
             @RequestParam MultipartFile file,
             @ApiParam(value = "测试结果（如果传了则使用用户上传的结果）")
-                    DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
+            DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
         return ResponseEntity.ok().build();
     }
@@ -348,6 +350,19 @@ public class CiController {
             @ApiParam(value = "指令类型", required = true)
             @RequestParam(value = "command_type") String commandType) {
         return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, commandType));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "流水线runner中查询主机部署命令执行状态", hidden = true)
+    @PostMapping("/host_command_status")
+    public ResponseEntity<CiResponseVO> hostCommandStatus(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "commandId", required = true)
+            @RequestParam(value = "command_id") Long commandId) {
+        return ResponseEntity.ok(commandOperator.getHostCommandStatus(token, gitlabPipelineId, commandId));
     }
 
     @Permission(permissionPublic = true)

@@ -85,6 +85,8 @@ public class ExceptionConstants {
 
     public static class CiJobCode {
         public static final String DEVOPS_CI_JOB_DELAY_TIME_INVALID = "error.devops.ci.job.delay.time.invalid";
+
+        public static final String DEVOPS_JOB_CONFIG_ID_IS_NULL = "error.devops.ci.job.config.id.null";
     }
 
     public static class CdEnvDeployInfoDTOCode {

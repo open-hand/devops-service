@@ -17,7 +17,6 @@ import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.*;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
-import io.choerodon.devops.infra.util.SshUtil;
 
 @Component
 public class HostDeployCommandHandler extends AbstractCiCommandHandler {
@@ -72,9 +71,6 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
 
     @Autowired
     protected DevopsHostMapper devopsHostMapper;
-
-    @Autowired
-    protected SshUtil sshUtil;
 
     @Autowired
     protected DevopsDeployRecordService devopsDeployRecordService;
