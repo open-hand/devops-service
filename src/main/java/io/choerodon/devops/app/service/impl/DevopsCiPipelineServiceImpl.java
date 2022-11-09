@@ -411,7 +411,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 1.保存ci stage信息
         saveCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
         // 2.保存cd stage信息
-        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+//        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 3. 为gitlab-ci文件添加include指令
         // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
@@ -900,17 +900,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
         pipelinePage.getContent().forEach(pipelineVO -> {
             // 查询每条流水线，最新的一条执行记录
-            PipelineCompositeRecordVO pipelineCompositeRecordVO = devopsPipelineRecordRelService.queryLatestedPipelineRecord(pipelineVO.getId());
-            if (pipelineCompositeRecordVO != null) {
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryLatestedPipelineRecord(pipelineVO.getId());
+//            PipelineCompositeRecordVO pipelineCompositeRecordVO = devopsPipelineRecordRelService.queryLatestedPipelineRecord(pipelineVO.getId());
+            if (devopsCiPipelineRecordDTO != null) {
                 // 判断是否存在记录
                 pipelineVO.setHasRecords(true);
                 //计算流水线上一次执行的状态和时间
-                String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
-                pipelineVO.setLatestExecuteStatus(latestExecuteStatus);
-                pipelineVO.setLatestExecuteDate(pipelineCompositeRecordVO.getCreationDate());
+//                String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
+                pipelineVO.setLatestExecuteStatus(devopsCiPipelineRecordDTO.getStatus());
+                pipelineVO.setLatestExecuteDate(devopsCiPipelineRecordDTO.getCreationDate());
             } else {
-                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
-                pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
+//                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
+//                pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
             }
 
         });
@@ -1597,7 +1598,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //更新CI流水线
         updateCiPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO, initCiFileFlag);
         //更新CD流水线
-        updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+//        updateCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
 
         // 生成gitlab-ci.yaml文件，（避免第一次执行没有保存mavenSettings文件）
         devopsCiContentService.queryLatestContent(ciCdPipelineDTO.getToken());
