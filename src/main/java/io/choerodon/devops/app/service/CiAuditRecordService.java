@@ -16,5 +16,7 @@ public interface CiAuditRecordService {
     CiAuditRecordDTO baseCreate(CiAuditRecordDTO ciAuditRecordDTO);
 
     CiAuditResultVO queryAuditStatus(String token, Long gitlabPipelineId, String jobName);
+
+    void sendJobAuditMessage(Long appServiceId, Long ciPipelineRecordId, Long gitlabPipelineId, String name);
 }
 

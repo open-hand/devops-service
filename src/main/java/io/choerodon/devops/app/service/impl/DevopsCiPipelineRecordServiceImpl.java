@@ -142,6 +142,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     private JobOperator jobOperator;
+    @Autowired
+    private CiAuditRecordService ciAuditRecordService;
 
 
     // @lazy解决循环依赖
@@ -349,6 +351,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
+            }
+
+            //如果当前任务状态为manual且任务类型为audit则发送审核邮件
+            if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus())) {
+                ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(), pipelineRecordId,
+                        pipelineWebHookVO.getObjectAttributes().getId(),
+                        devopsCiJobRecordDTO.getName());
             }
         });
     }
