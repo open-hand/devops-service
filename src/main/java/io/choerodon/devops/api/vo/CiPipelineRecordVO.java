@@ -59,7 +59,7 @@ public class CiPipelineRecordVO extends BaseDomain {
     @ApiModelProperty("ci和cd阶段记录的集合")
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("待审核状态时需要的一些数据")
-    private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
+    private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
 
     public Long getId() {
         return id;
@@ -150,12 +150,12 @@ public class CiPipelineRecordVO extends BaseDomain {
         this.ciCdPipelineVO = ciCdPipelineVO;
     }
 
-    public DevopsCdPipelineDeatilVO getDevopsCdPipelineDeatilVO() {
-        return devopsCdPipelineDeatilVO;
+    public List<DevopsCiPipelineAuditVO> getPipelineAuditInfo() {
+        return pipelineAuditInfo;
     }
 
-    public void setDevopsCdPipelineDeatilVO(DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO) {
-        this.devopsCdPipelineDeatilVO = devopsCdPipelineDeatilVO;
+    public void setPipelineAuditInfo(List<DevopsCiPipelineAuditVO> pipelineAuditInfo) {
+        this.pipelineAuditInfo = pipelineAuditInfo;
     }
 
     public Long getCiRecordId() {
@@ -216,7 +216,6 @@ public class CiPipelineRecordVO extends BaseDomain {
                 ", commit=" + commit +
                 ", ciCdPipelineVO=" + ciCdPipelineVO +
                 ", stageRecordVOS=" + stageRecordVOS +
-                ", devopsCdPipelineDeatilVO=" + devopsCdPipelineDeatilVO +
                 ", pipelineName='" + pipelineName + '\'' +
                 ", gitlabProjectId=" + gitlabProjectId +
                 ", viewId='" + viewId + '\'' +

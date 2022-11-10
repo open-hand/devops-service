@@ -39,6 +39,7 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @ApiParam(value = "ci记录id", required = true)
             @RequestParam(value = "id") Long id) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, id));
