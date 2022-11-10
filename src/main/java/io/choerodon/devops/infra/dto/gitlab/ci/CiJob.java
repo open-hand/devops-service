@@ -37,9 +37,21 @@ public class CiJob {
     @ApiModelProperty("运行该job的时间")
     private String when;
 
+    @ApiModelProperty("任务时候后是否影响后续流程")
+    @YamlProperty(value = "allow_failure")
+    private Boolean allowFailure;
+
     @ApiModelProperty("当when的值为delayed时，设置该字段，表示延时时间")
     @YamlProperty(value = "start_in")
     private String startIn;
+
+    public Boolean getAllowFailure() {
+        return allowFailure;
+    }
+
+    public void setAllowFailure(Boolean allowFailure) {
+        this.allowFailure = allowFailure;
+    }
 
     public Integer getParallel() {
         return parallel;

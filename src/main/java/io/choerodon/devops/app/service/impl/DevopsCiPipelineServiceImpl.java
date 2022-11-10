@@ -1807,6 +1807,10 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setStartIn(String.format("%s minutes", job.getStartIn().toString()));
                         ciJob.setWhen("delayed");
                     }
+                    if (CiJobTypeEnum.AUDIT.value().equals(job.getType())) {
+                        ciJob.setWhen("manual");
+                        ciJob.setAllowFailure(false);
+                    }
 
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
