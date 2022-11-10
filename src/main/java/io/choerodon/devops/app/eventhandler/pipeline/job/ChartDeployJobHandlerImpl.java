@@ -72,13 +72,19 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         CiChartDeployConfigVO ciChartDeployConfig = devopsCiJobVO.getCiChartDeployConfig();
         CiChartDeployConfigDTO ciChartDeployConfigDTO = ConvertUtils.convertObject(ciChartDeployConfig, CiChartDeployConfigDTO.class);
         ciChartDeployConfigDTO.setId(null);
+        ciChartDeployConfigDTO.setCiPipelineId(ciPipelineId);
 
         ciChartDeployConfigService.baseCreate(ciChartDeployConfigDTO);
         return ciChartDeployConfigDTO.getId();
+    }
+
+    @Override
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        ciChartDeployConfigService.deleteConfigByPipelineId(ciPipelineId);
     }
 
     @Override

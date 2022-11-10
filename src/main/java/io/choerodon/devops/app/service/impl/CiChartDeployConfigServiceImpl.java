@@ -3,10 +3,12 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiChartDeployConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.mapper.CiChartDeployConfigMapper;
@@ -53,6 +55,16 @@ public class CiChartDeployConfigServiceImpl implements CiChartDeployConfigServic
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(CiChartDeployConfigDTO ciChartDeployConfigDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciChartDeployConfigMapper, ciChartDeployConfigDTO, DEVOPS_CI_CHART_DEPLOY_CONFIG_UPDATE);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiChartDeployConfigDTO ciChartDeployConfigDTO = new CiChartDeployConfigDTO();
+        ciChartDeployConfigDTO.setCiPipelineId(ciPipelineId);
+        ciChartDeployConfigMapper.delete(ciChartDeployConfigDTO);
     }
 
 }

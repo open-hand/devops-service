@@ -39,6 +39,8 @@ public class CiChartDeployConfigDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
 
     @ApiModelProperty(value = "应用idId", required = true)
     @Encrypt
@@ -67,6 +69,14 @@ public class CiChartDeployConfigDTO extends AuditDomain {
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code", required = true)
     @NotBlank
     private String appCode;
+
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
+    }
 
     public Long getAppId() {
         return appId;

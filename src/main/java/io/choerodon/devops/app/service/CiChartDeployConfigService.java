@@ -18,5 +18,7 @@ public interface CiChartDeployConfigService {
     CiChartDeployConfigDTO queryConfigById(Long id);
 
     void baseUpdate(CiChartDeployConfigDTO ciChartDeployConfigDTO);
+
+    void deleteConfigByPipelineId(Long ciPipelineId);
 }
 

@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_deploy_deploy_cfg.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'ci_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
+                constraints(nullable: false)
+            }
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境Id,devops_env.id') {
                 constraints(nullable: false)
             }
@@ -31,5 +34,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_deploy_deploy_cfg.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'wanghao', id: '2022-11-10-add-index') {
+        createIndex(tableName: 'devops_ci_deploy_deploy_cfg', indexName: 'devops_ci_deploy_deploy_cfg_n1') {
+            column(name: 'ci_pipeline_id')
+        }
+    }
+
 
 }

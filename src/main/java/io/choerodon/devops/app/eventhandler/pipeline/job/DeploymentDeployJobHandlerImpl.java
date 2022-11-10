@@ -67,7 +67,7 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         CiDeployDeployCfgVO ciDeployDeployCfg = devopsCiJobVO.getCiDeployDeployCfg();
         CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ConvertUtils.convertObject(ciDeployDeployCfg, CiDeployDeployCfgDTO.class);
         if (ciDeployDeployCfg.getAppConfig() != null) {
@@ -77,9 +77,15 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
             ciDeployDeployCfgDTO.setContainerConfigJson(JsonHelper.marshalByJackson(ciDeployDeployCfg.getContainerConfig()));
         }
         ciDeployDeployCfgDTO.setId(null);
+        ciDeployDeployCfgDTO.setCiPipelineId(ciPipelineId);
 
         ciDeployDeployCfgService.baseCreate(ciDeployDeployCfgDTO);
         return ciDeployDeployCfgDTO.getId();
+    }
+
+    @Override
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        ciDeployDeployCfgService.deleteConfigByPipelineId(ciPipelineId);
     }
 
     @Override

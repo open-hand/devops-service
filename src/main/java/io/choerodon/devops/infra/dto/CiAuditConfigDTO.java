@@ -33,12 +33,21 @@ public class CiAuditConfigDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
 
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     @NotNull
     @Column(name = "is_countersigned")
     private Boolean countersigned;
 
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
+    }
 
     public Long getId() {
         return id;

@@ -81,14 +81,20 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
         Long[] notifyUserIds = KeyDecryptHelper.decryptIdArray(JsonHelper.unmarshalByJackson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<String[]>() {
         }));
         devopsCiApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(notifyUserIds));
         devopsCiApiTestInfoDTO.setId(null);
+        devopsCiApiTestInfoDTO.setCiPipelineId(ciPipelineId);
         MapperUtil.resultJudgedInsert(devopsCiApiTestInfoMapper, devopsCiApiTestInfoDTO, DEVOPS_CI_API_TEST_INFO_SAVE);
         return devopsCiApiTestInfoDTO.getId();
+    }
+
+    @Override
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        devopsCiApiTestInfoService.deleteConfigByPipelineId(ciPipelineId);
     }
 
     @Override

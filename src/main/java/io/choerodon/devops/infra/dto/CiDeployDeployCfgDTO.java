@@ -40,6 +40,8 @@ public class CiDeployDeployCfgDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
 
     @ApiModelProperty(value = "环境Id,devops_env.id", required = true)
     @NotNull
@@ -70,6 +72,14 @@ public class CiDeployDeployCfgDTO extends AuditDomain {
     @ApiModelProperty(value = "容器配置", required = true)
     @NotBlank
     private String containerConfigJson;
+
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
+    }
 
     public Long getAppId() {
         return appId;

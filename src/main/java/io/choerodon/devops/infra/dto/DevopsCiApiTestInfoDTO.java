@@ -40,6 +40,8 @@ public class DevopsCiApiTestInfoDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
 
     /**
      * {@link io.choerodon.devops.infra.enums.test.ApiTestTaskType}
@@ -73,6 +75,14 @@ public class DevopsCiApiTestInfoDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否中断后续的任务")
     private Boolean blockAfterJob;
+
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
+    }
 
     public String getTaskType() {
         return taskType;

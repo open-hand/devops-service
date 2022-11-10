@@ -46,6 +46,11 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        ciAuditConfigService.deleteConfigByPipelineId(ciPipelineId);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
         CiAuditConfigVO ciAuditConfigVO = ciJobWebHookVO.getCiAuditConfigVO();
@@ -67,10 +72,12 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         CiAuditConfigVO ciAuditConfig = devopsCiJobVO.getCiAuditConfig();
         CiAuditConfigDTO ciAuditConfigDTO = ConvertUtils.convertObject(ciAuditConfig, CiAuditConfigDTO.class);
         ciAuditConfigDTO.setId(null);
+        ciAuditConfigDTO.setCiPipelineId(ciPipelineId);
+
 
         ciAuditConfigService.baseCreate(ciAuditConfigDTO);
 

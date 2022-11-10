@@ -16,6 +16,7 @@ import org.springframework.util.Assert;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.DevopsHostAppService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
@@ -63,10 +64,20 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiHostDeployInfoVO(), DevopsCiHostDeployInfoDTO.class);
         devopsCiHostDeployInfoDTO.setId(null);
+        devopsCiHostDeployInfoDTO.setCiPipelineId(ciPipelineId);
         MapperUtil.resultJudgedInsert(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_HOST_DEPLOY_INFO_CREATE);
         return devopsCiHostDeployInfoDTO.getId();
+    }
+
+    @Override
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = new DevopsCiHostDeployInfoDTO();
+        devopsCiHostDeployInfoDTO.setCiPipelineId(ciPipelineId);
+        devopsCiHostDeployInfoMapper.delete(devopsCiHostDeployInfoDTO);
     }
 }

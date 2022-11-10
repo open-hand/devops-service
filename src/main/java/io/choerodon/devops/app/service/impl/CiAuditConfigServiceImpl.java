@@ -8,11 +8,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.app.service.CiAuditConfigService;
 import io.choerodon.devops.app.service.CiAuditUserService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiAuditConfigDTO;
 import io.choerodon.devops.infra.dto.CiAuditUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -73,6 +75,16 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
     @Transactional(rollbackFor = Exception.class)
     public void batchDeleteByIds(List<Long> ids) {
         ciAuditConfigMapper.batchDeleteByIds(ids);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiAuditConfigDTO ciAuditConfigDTO = new CiAuditConfigDTO();
+        ciAuditConfigDTO.setCiPipelineId(ciPipelineId);
+        ciAuditConfigMapper.delete(ciAuditConfigDTO);
     }
 
     @Override

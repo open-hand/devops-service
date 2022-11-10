@@ -997,6 +997,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobService.deleteByPipelineId(pipelineId);
         devopsCdJobService.deleteByPipelineId(pipelineId);
 
+        //删除任务配置
 
         // 删除 ci job记录
         devopsCiJobRecordService.deleteByAppServiceId(appServiceDTO.getId());

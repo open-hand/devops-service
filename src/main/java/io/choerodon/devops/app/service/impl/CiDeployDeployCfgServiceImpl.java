@@ -6,11 +6,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.api.vo.DevopsDeployGroupAppConfigVO;
 import io.choerodon.devops.api.vo.DevopsDeployGroupContainerConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.app.service.CiDeployDeployCfgService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.CiDeployDeployCfgMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -62,6 +64,17 @@ public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
     public void baseUpdateByVO(CiDeployDeployCfgVO ciDeployDeployCfgVO) {
         CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ConvertUtils.convertObject(ciDeployDeployCfgVO, CiDeployDeployCfgDTO.class);
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciDeployDeployCfgMapper, ciDeployDeployCfgDTO, DEVOPS_DEPLOYMENT_CONFIG_UPDATE);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiDeployDeployCfgDTO ciDeployDeployCfgDTO = new CiDeployDeployCfgDTO();
+        ciDeployDeployCfgDTO.setCiPipelineId(ciPipelineId);
+        ciDeployDeployCfgMapper.delete(ciDeployDeployCfgDTO);
+
     }
 }
 

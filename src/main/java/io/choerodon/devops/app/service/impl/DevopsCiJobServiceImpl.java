@@ -24,6 +24,8 @@ import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -79,6 +81,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private AppServiceMapper appServiceMapper;
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
+
+    @Autowired
+    private JobOperator jobOperator;
 
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
@@ -271,6 +276,14 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         // 删除maven settings
         deleteMavenSettingsRecordByJobIds(jobIds);
+
+        // 删除任务配置，删除流水线时才删除
+        devopsCiJobDTOS.forEach(job -> {
+            AbstractJobHandler handler = jobOperator.getHandler(job.getType());
+            if (handler != null) {
+                handler.deleteConfigByPipelineId(ciPipelineId);
+            }
+        });
 
         // 删除步骤
         devopsCiStepService.deleteByJobIds(jobIds);

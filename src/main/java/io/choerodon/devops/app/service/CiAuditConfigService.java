@@ -23,5 +23,7 @@ public interface CiAuditConfigService {
     List<CiAuditConfigDTO> listByStepIds(Set<Long> stepIds);
 
     void batchDeleteByIds(List<Long> ids);
+
+    void deleteConfigByPipelineId(Long ciPipelineId);
 }
 

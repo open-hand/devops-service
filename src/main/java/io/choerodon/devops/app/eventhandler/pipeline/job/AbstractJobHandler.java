@@ -52,7 +52,7 @@ public abstract class AbstractJobHandler {
         // 校验任务配置
         checkConfigInfo(projectId, devopsCiJobVO);
         // 保存任务配置
-        Long configId = saveConfig(devopsCiJobVO);
+        Long configId = saveConfig(ciPipelineId, devopsCiJobVO);
 
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         devopsCiJobDTO.setCiStageId(ciStageId);
@@ -74,14 +74,16 @@ public abstract class AbstractJobHandler {
     /**
      * 保存任务配置，实现类如果需要存储任务配置则重写
      *
+     * @param ciPipelineId
      * @param devopsCiJobVO
      * @return
      */
     @Transactional(rollbackFor = Exception.class)
-    protected Long saveConfig(DevopsCiJobVO devopsCiJobVO) {
+    protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         // do nothong
         return null;
     }
+
     /**
      * 查询流水线详情时，给包含任务配置的任务填充信息
      *
@@ -108,6 +110,11 @@ public abstract class AbstractJobHandler {
      * @param ciJobWebHookVO
      */
     public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
 
     }
 }
