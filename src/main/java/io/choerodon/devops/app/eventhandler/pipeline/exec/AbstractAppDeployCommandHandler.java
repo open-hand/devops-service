@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.pipeline.exec;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -46,7 +48,7 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Object content) {
+    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content) {
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         AppDeployConfigVO appDeployConfigVO = queryConfigById(configId);
         if (appDeployConfigVO == null) {

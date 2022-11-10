@@ -759,11 +759,11 @@ function host_deploy(){
       exit 1
     else
       is_failed=$(jq -r .failed result.json)
-      log=$(jq -r .log result.json)
+      message=$(jq -r .message result.json)
       command_id=$(jq -r .commandId result.json)
       # 打印后台返回的日志
-      if [ -z "${log}" ]; then
-          echo "${log}"
+      if [ -z "${message}" ]; then
+          echo "${message}"
       fi
 
       # 判断是否成功

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.pipeline.exec;
 
+import java.util.Map;
+
 import org.hzero.websocket.helper.KeySocketSendHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,28 +138,30 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
     }
 
     @Override
-    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Object content) {
+    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content) {
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = devopsCiHostDeployInfoMapper.selectByPrimaryKey(configId);
+        Long commandId = null;
         if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(RdupmTypeEnum.DOCKER.value())) {
-            ApplicationContextHelper
+            commandId = ApplicationContextHelper
                     .getSpringFactory()
                     .getBean(DevopsCdPipelineRecordService.class)
                     .ciPipelineDeployImage(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            ApplicationContextHelper
+            commandId = ApplicationContextHelper
                     .getSpringFactory()
                     .getBean(DevopsCdPipelineRecordService.class)
                     .ciPipelineDeployJar(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
-            ApplicationContextHelper
+            commandId = ApplicationContextHelper
                     .getSpringFactory()
                     .getBean(DevopsCdPipelineRecordService.class)
                     .ciPipelineDeployDockerCompose(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else {
-            ApplicationContextHelper
+            commandId = ApplicationContextHelper
                     .getSpringFactory()
                     .getBean(DevopsCdPipelineRecordService.class)
                     .ciPipelineCustomDeploy(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         }
+        content.put("commandId", commandId);
     }
 }

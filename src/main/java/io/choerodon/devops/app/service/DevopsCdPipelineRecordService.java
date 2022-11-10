@@ -52,11 +52,11 @@ public interface DevopsCdPipelineRecordService {
 
     DevopsCdPipelineRecordVO queryByCdPipelineRecordId(Long cdPipelineRecordId);
 
-    void ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+    Long ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 
-    void ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+    Long ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 
-    void ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+    Long ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 
-    void ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+    Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 }

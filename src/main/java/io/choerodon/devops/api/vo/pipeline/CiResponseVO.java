@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.pipeline;
 
+import java.util.Map;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -10,7 +12,7 @@ package io.choerodon.devops.api.vo.pipeline;
 public class CiResponseVO {
     private Boolean failed = false;
     private String message;
-    private Object content;
+    private Map<String, Object> content;
 
     public Boolean getFailed() {
         return failed;
@@ -28,11 +30,11 @@ public class CiResponseVO {
         this.message = message;
     }
 
-    public Object getContent() {
+    public Map<String, Object> getContent() {
         return content;
     }
 
-    public void setContent(Object content) {
+    public void setContent(Map<String, Object> content) {
         this.content = content;
     }
 }

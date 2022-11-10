@@ -524,20 +524,20 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public void ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
+    public Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
         LOGGER.info("start jar deploy cd host job,pipelineRecordId{}", gitlabPipelineId);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         Long hostId = devopsCiHostDeployInfoDTO.getHostId();
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
 
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            LOGGER.info("host {} not connect, skip this task.", hostId);
-            return;
+            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
         }
-
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
@@ -639,6 +639,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+        return devopsHostCommandDTO.getId();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -880,21 +881,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
+    public Long ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
         LOGGER.info("start jar deploy cd host job,pipelineRecordId:{}", gitlabPipelineId);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         Long hostId = devopsCiHostDeployInfoDTO.getHostId();
 
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
 
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            LOGGER.info("host {} not connect, skip this task.", hostId);
-            return;
+            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
         }
 
-        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
         CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
 
         // 0.1 从制品库获取仓库信息
@@ -937,8 +938,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 0.3 获取并记录信息
             List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, versionRegular);
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                LOGGER.info("no jar to deploy,pipelineRecordID:{}", gitlabPipelineId);
-                return;
+                throw new CommonException("no jar to deploy");
             }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
@@ -1017,8 +1017,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoDTO.getAppId());
             if (devopsHostAppDTO == null) {
-                LOGGER.info("App not found, is deleted? Skip this task.appId:{},appName:{},appCode{}", devopsCiHostDeployInfoDTO.getAppId(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode());
-                return;
+                throw new CommonException(String.format("App not found, is deleted? Skip this task.appId:{},appName:{},appCode{}", devopsCiHostDeployInfoDTO.getAppId(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode()));
             }
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
@@ -1096,7 +1095,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-
+        return devopsHostCommandDTO.getId();
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -1261,7 +1260,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
+    public Long ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
         LOGGER.info("start image deploy ,gitlabPipelineId:{}", gitlabPipelineId);
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         String deployVersion = null;
@@ -1275,13 +1274,21 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         String repoType = null;
         String tag = null;
 
+        Long hostId = devopsCiHostDeployInfoDTO.getHostId();
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+        }
+
         DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         CdHostDeployConfigVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class);
 
-        Long hostId = devopsCiHostDeployInfoDTO.getHostId();
-        DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(hostId);
         log.append("Start deploy image to host: ").append(devopsHostDTO.getName()).append(System.lineSeparator());
 
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, gitlabPipelineId, imageDeploy.getPipelineTask());
@@ -1404,6 +1411,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
         log.append("Sending deploy command to agent success.").append(System.lineSeparator());
+        return devopsHostCommandDTO.getId();
     }
 
 
@@ -1469,10 +1477,19 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
     }
 
     @Override
-    public void ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
+    public Long ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
         LOGGER.info("start image deploy cd host job,pipelineRecordId:{}", gitlabPipelineId);
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        Long hostId = devopsCiHostDeployInfoDTO.getHostId();
+
+        DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+
+        List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
+
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+        }
+
         Long appServiceId = appServiceDTO.getId();
 
         Long appId = devopsCiHostDeployInfoDTO.getAppId();
@@ -1511,6 +1528,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         log.append("[info] Start update app").append(System.lineSeparator());
         DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, null, gitlabPipelineId, dockerComposeDeployVO, true);
         log.append("[info] Update app success").append(System.lineSeparator());
+        return devopsHostCommandDTO.getId();
     }
 
     private String replaceValue(String code, String imageTag, String value) {
