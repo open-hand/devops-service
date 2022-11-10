@@ -55,7 +55,7 @@ public class HostDeployUtil {
         values = values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
 
         String result = "";
-        result += "export CONTAINER_TAG=" + tag + "\n";
+        result += "export IMAGE_TAG=" + tag + "\n";
         result += values;
         return result;
     }
@@ -114,7 +114,7 @@ public class HostDeployUtil {
         String tag = dockerDeployDTO.getImage().substring(lastIndexOfColon + 1);
         String values = value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
         String result = "";
-        result += "export CONTAINER_TAG=" + tag + "\n";
+        result += "export IMAGE_TAG=" + tag + "\n";
         result += values;
         return result;
     }
