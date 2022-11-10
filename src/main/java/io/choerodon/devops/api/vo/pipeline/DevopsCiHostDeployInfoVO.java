@@ -7,6 +7,8 @@ import javax.persistence.Id;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.CdHostDeployConfigVO;
+
 public class DevopsCiHostDeployInfoVO {
     @Encrypt
     @Id
@@ -38,6 +40,12 @@ public class DevopsCiHostDeployInfoVO {
     private String dockerCommand;
 
     private String imageJobName;
+
+    @ApiModelProperty("jar部署详情")
+    private CdHostDeployConfigVO.JarDeploy jarDeploy;
+
+    @ApiModelProperty("jar部署详情")
+    private CdHostDeployConfigVO.ImageDeploy imageDeploy;
 
     public Long getId() {
         return id;
@@ -157,5 +165,21 @@ public class DevopsCiHostDeployInfoVO {
 
     public void setImageJobName(String imageJobName) {
         this.imageJobName = imageJobName;
+    }
+
+    public CdHostDeployConfigVO.JarDeploy getJarDeploy() {
+        return jarDeploy;
+    }
+
+    public void setJarDeploy(CdHostDeployConfigVO.JarDeploy jarDeploy) {
+        this.jarDeploy = jarDeploy;
+    }
+
+    public CdHostDeployConfigVO.ImageDeploy getImageDeploy() {
+        return imageDeploy;
+    }
+
+    public void setImageDeploy(CdHostDeployConfigVO.ImageDeploy imageDeploy) {
+        this.imageDeploy = imageDeploy;
     }
 }
