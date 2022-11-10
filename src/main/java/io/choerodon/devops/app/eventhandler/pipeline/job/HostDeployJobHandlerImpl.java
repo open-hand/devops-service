@@ -18,6 +18,7 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.DevopsHostAppService;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCiApiTestInfoMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiHostDeployInfoMapper;
@@ -57,7 +58,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         Assert.notNull(jobId, DEVOPS_JOB_ID_IS_NULL);
         Assert.notNull(devopsCiJobDTO.getConfigId(), DEVOPS_JOB_CONFIG_ID_IS_NULL);
         List<String> result = new ArrayList<>();
-        result.add(String.format("host_deploy %s", devopsCiJobDTO.getConfigId()));
+        result.add(String.format("host_deploy %s %s", devopsCiJobDTO.getConfigId(), CiCommandTypeEnum.HOST_DEPLOY.value()));
         return result;
     }
 
