@@ -736,6 +736,7 @@ function app_deploy() {
     -F "command_type=$2" \
     "${CHOERODON_URL}/devops/ci/exec_command" \
     -o "result.json" \
+    -s \
     -w %{http_code})
   if [ "$http_status_code" != "200" ];
   then
@@ -822,6 +823,7 @@ function process_audit() {
     -F "job_name=${CI_JOB_NAME}" \
     "${CHOERODON_URL}/devops/ci/audit_status" \
     -o "result.json" \
+    -s \
     -w %{http_code})
   if [ "$http_status_code" != "200" ];
   then
