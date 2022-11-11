@@ -122,10 +122,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCiPipelineRecordService ciPipelineRecordService;
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
-    @Autowired
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
