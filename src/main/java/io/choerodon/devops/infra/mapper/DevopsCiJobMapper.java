@@ -22,4 +22,7 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
 
     void updateImageByIds(@Param("ids") List<Long> longList, @Param("image") String sonarImage);
 
+    List<DevopsCiJobDTO> listByProjectAndType(@Param("projectId") Long projectId, @Param("type") String type);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(@Param("projectId") Long projectId, @Param("suiteId") Long suiteId);
 }

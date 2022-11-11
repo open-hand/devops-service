@@ -296,6 +296,14 @@ public class CiCdPipelineController {
         return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
+    @ApiOperation("查询测试套件是否关联流水线")
+    @GetMapping("/suite_related_with_pipeline")
+    public ResponseEntity<Boolean> doesApiTestSuiteRelatedWithPipeline(@ApiParam(value = "项目Id", required = true)
+                                                                       @PathVariable(value = "project_id") Long projectId,
+                                                                       @RequestParam(value = "suite_id") Long suiteId) {
+        return Results.success(devopsCiPipelineService.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询流水线下定义的函数")

@@ -119,4 +119,6 @@ public interface DevopsCiPipelineService {
     List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
 
     List<String> listPipelineNameReferenceByConfigId(Long projectId, Long configId);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
 }

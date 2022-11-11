@@ -7,6 +7,7 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.SonarInfoVO;
 import io.choerodon.devops.api.vo.SonarQubeConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 
 /**
  * 〈功能简述〉
@@ -116,4 +117,8 @@ public interface DevopsCiJobService {
     List<DevopsCiJobDTO> listAll();
 
     String queryMavenSettings(Long projectId, String token, Long id);
+
+    List<DevopsCiJobDTO> listByProjectIdAndType(Long projectId, CiJobTypeEnum typeEnum);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
 }

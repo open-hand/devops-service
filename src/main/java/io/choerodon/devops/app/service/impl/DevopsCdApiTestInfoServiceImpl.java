@@ -34,10 +34,5 @@ public class DevopsCdApiTestInfoServiceImpl implements DevopsCdApiTestInfoServic
     public DevopsCdApiTestInfoDTO queryById(Long deployInfoId) {
         return devopsCdApiTestInfoMapper.selectByPrimaryKey(deployInfoId);
     }
-
-    @Override
-    public Boolean doesApiTestSuiteRelatedWithPipeline(Long suiteId) {
-       return devopsCdApiTestInfoMapper.doesApiTestSuiteRelatedWithPipeline(suiteId);
-    }
 }
 

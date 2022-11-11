@@ -1349,17 +1349,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds) {
         List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
-        List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByProjectIdAndType(projectId, JobTypeEnum.CD_API_TEST);
-        if (CollectionUtils.isEmpty(devopsCdJobDTOS)) {
+        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByProjectIdAndType(projectId, API_TEST);
+        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
             return pipelineInstanceReferenceVOList;
         }
 
         // 收集与测试任务关联的任务列表，并记录对应关系
-        for (DevopsCdJobDTO devopsCdJobDTO : devopsCdJobDTOS) {
-            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCdJobDTO.getMetadata(), CdApiTestConfigVO.class);
+        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOS) {
+            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CdApiTestConfigVO.class);
             if (taskIds.contains(cdApiTestConfigVO.getApiTestTaskId())) {
                 PipelineInstanceReferenceVO pipelineInstanceReferenceVO = new PipelineInstanceReferenceVO();
-                pipelineInstanceReferenceVO.setJobId(devopsCdJobDTO.getId());
+                pipelineInstanceReferenceVO.setJobId(devopsCiJobDTO.getId());
                 pipelineInstanceReferenceVO.setTaskId(cdApiTestConfigVO.getApiTestTaskId());
                 pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
             }
@@ -1395,6 +1395,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Override
     public List<String> listPipelineNameReferenceByConfigId(Long projectId, Long taskConfigId) {
         return ciCdPipelineMapper.listPipelineNameByTaskConfigId(taskConfigId);
+    }
+
+    @Override
+    public Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId) {
+        return devopsCiJobService.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId);
     }
 
     private CiCdPipelineRecordVO dtoToVo(DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO) {
