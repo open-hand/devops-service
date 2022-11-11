@@ -87,5 +87,13 @@ public class MessageCodeConstants {
     public static final String PIPELINE_API_TEST_WARNING = "PIPELINE_API_TEST_WARNING";
     public static final String PIPELINE_API_SUITE_WARNING = "PIPELINE_API_SUITE_WARNING";
 
+    public static final String LINK = "link";
+    public static final String PROJECT_NAME = "projectName";
+    public static final String PIPE_LINE_NAME = "pipelineName";
+    public static final String STAGE_NAME = "stageName";
+    public static final String REL_ID = "pipelineIdRecordId";
+    public static final String PIPELINE_ID = "pipelineId";
+    public static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
+
 
 }

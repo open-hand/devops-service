@@ -367,7 +367,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus())) {
                 ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(), ciPipelineId, pipelineRecordId,
                         pipelineWebHookVO.getObjectAttributes().getId(),
-                        devopsCiJobRecordDTO.getName());
+                        devopsCiJobRecordDTO.getName(),
+                        ciJobWebHookVO.getStage());
             }
         });
     }
