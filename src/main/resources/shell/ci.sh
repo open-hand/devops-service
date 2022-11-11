@@ -834,9 +834,9 @@ function process_audit() {
       else
         echo "审核模式为：或签"
     fi
-    echo "审核通过人员：$(jq -r .passedUserNameList result.json)"
-    echo "审核拒绝人员：$(jq -r .refusedUserNameList result.json)"
-    echo "未审核人员：$(jq -r .notAuditUserNameList result.json)"
+    echo "审核通过人员：$(jq -r '.passedUserNameList | join(",")' result.json)"
+    echo "审核拒绝人员：$(jq -r '.refusedUserNameList | join(",")' result.json)"
+    echo "未审核人员：$(jq -r '.notAuditUserNameList | join(",")' result.json)"
     if [ "$(jq -r .success result.json)" == "true" ];
     then
         echo "审核结果：通过"
