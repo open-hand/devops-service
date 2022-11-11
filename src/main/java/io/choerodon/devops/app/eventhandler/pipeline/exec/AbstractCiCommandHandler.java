@@ -51,9 +51,9 @@ public abstract class AbstractCiCommandHandler {
             execute(appServiceDTO, gitlabPipelineId, gitlabJobId, configId, log, content);
         } catch (Exception e) {
             ciResponseVO.setFailed(true);
-            appendMessage(ciResponseVO, e.getMessage());
+            log.append(e.getMessage());
         }
-        appendMessage(ciResponseVO, log.toString());
+        ciResponseVO.setMessage(log.toString());
         ciResponseVO.setContent(content);
         return ciResponseVO;
     }
