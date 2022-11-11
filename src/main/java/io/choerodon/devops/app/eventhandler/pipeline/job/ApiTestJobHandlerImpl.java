@@ -8,7 +8,6 @@ import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PR
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -83,8 +82,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
-        Long[] notifyUserIds = KeyDecryptHelper.decryptIdArray(JsonHelper.unmarshalByJackson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<String[]>() {
-        }));
+        Long[] notifyUserIds = KeyDecryptHelper.decryptIdArray(devopsCiApiTestInfoDTO.getNotifyUserIds().split(","));
         devopsCiApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(notifyUserIds));
         devopsCiApiTestInfoDTO.setId(null);
         devopsCiApiTestInfoDTO.setCiPipelineId(ciPipelineId);
@@ -106,8 +104,8 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiTplApiTestInfoCfgDTO devopsCiTplApiTestInfoCfgDTO = devopsCiTplApiTestInfoCfgService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
-        if (devopsCiTplApiTestInfoCfgDTO==null){
-            devopsCiTplApiTestInfoCfgDTO=new DevopsCiTplApiTestInfoCfgDTO();
+        if (devopsCiTplApiTestInfoCfgDTO == null) {
+            devopsCiTplApiTestInfoCfgDTO = new DevopsCiTplApiTestInfoCfgDTO();
         }
         devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplApiTestInfoCfgDTO, DevopsCiApiTestInfoVO.class));
     }
