@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
+import io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO;
 
 public interface DevopsCiApiTestInfoService {
-    DevopsCiApiTestInfoVO selectByPrimaryKey(Long id);
+    void insert(DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO);
+
+    DevopsCiApiTestInfoDTO selectByPrimaryKey(Long id);
 
     void deleteConfigByPipelineId(Long ciPipelineId);
 }

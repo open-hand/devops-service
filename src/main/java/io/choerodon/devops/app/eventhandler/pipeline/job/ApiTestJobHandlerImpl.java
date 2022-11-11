@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiApiTestCode.DEVOPS_CI_API_TEST_INFO_SAVE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.CiApiTestCode.DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_ORGANIZATION_ID_IS_NULL;
@@ -17,17 +16,18 @@ import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
 import io.choerodon.devops.app.service.DevopsCiApiTestInfoService;
+import io.choerodon.devops.app.service.DevopsCiTplApiTestInfoCfgService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCiTplApiTestInfoCfgDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
-import io.choerodon.devops.infra.mapper.DevopsCiApiTestInfoMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.KeyDecryptHelper;
-import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
 public class ApiTestJobHandlerImpl extends AbstractJobHandler {
@@ -40,10 +40,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Value("${services.gateway.url}")
     private String apiGateway;
     @Autowired
-    DevopsCiApiTestInfoMapper devopsCiApiTestInfoMapper;
-    @Autowired
     private
     DevopsCiApiTestInfoService devopsCiApiTestInfoService;
+    @Autowired
+    private DevopsCiTplApiTestInfoCfgService devopsCiTplApiTestInfoCfgService;
 
     @Override
     public CiJobTypeEnum getType() {
@@ -58,7 +58,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         final Long jobId = devopsCiJobDTO.getId();
         Assert.notNull(jobId, DEVOPS_JOB_ID_IS_NULL);
         List<String> result = new ArrayList<>();
-        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoMapper.selectByPrimaryKey(devopsCiJobDTO.getConfigId());
+        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobDTO.getConfigId());
         switch (ApiTestTaskType.valueOf(devopsCiApiTestInfoDTO.getTaskType().toUpperCase())) {
             case TASK:
                 result.add(String.format(API_TEST_COMMAND_TEMPLATE, "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiApiTestInfoDTO.getApiTestConfigId()));
@@ -88,7 +88,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         devopsCiApiTestInfoDTO.setNotifyUserIds(JsonHelper.marshalByJackson(notifyUserIds));
         devopsCiApiTestInfoDTO.setId(null);
         devopsCiApiTestInfoDTO.setCiPipelineId(ciPipelineId);
-        MapperUtil.resultJudgedInsert(devopsCiApiTestInfoMapper, devopsCiApiTestInfoDTO, DEVOPS_CI_API_TEST_INFO_SAVE);
+        devopsCiApiTestInfoService.insert(devopsCiApiTestInfoDTO);
         return devopsCiApiTestInfoDTO.getId();
     }
 
@@ -99,6 +99,13 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setDevopsCiApiTestInfoVO(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()));
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiApiTestInfoVO.class));
+    }
+
+
+    @Override
+    public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        DevopsCiTplApiTestInfoCfgDTO devopsCiTplApiTestInfoCfgDTO = devopsCiTplApiTestInfoCfgService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplApiTestInfoCfgDTO, DevopsCiApiTestInfoVO.class));
     }
 }
