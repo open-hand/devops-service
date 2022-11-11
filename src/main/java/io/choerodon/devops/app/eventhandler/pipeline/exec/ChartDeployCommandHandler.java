@@ -238,8 +238,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                     true);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
-
-            appDeployConfigVO.setDeployType(DeployTypeEnum.UPDATE.value());
+            ciChartDeployConfigDTO.setAppId(appId);
+            ciChartDeployConfigDTO.setDeployType(DeployTypeEnum.UPDATE.value());
             ciChartDeployConfigService.baseUpdate(ciChartDeployConfigDTO);
         } else {
             // 3. 如果是更新应用，先判断应用是否存在。不存在则跳过。
@@ -290,9 +290,9 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
             appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
             commandId = appServiceInstanceVO.getCommandId();
-            devopsCiJobRecordDTO.setCommandId(commandId);
-            devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
         }
+        devopsCiJobRecordDTO.setCommandId(commandId);
+        devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
     }
 
     @Override
