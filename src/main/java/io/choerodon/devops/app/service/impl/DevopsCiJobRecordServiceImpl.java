@@ -286,7 +286,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
         } else {
             auditResultVO.setCountersigned(0);
-            auditFinishFlag = ciAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+            auditFinishFlag = !ciAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
