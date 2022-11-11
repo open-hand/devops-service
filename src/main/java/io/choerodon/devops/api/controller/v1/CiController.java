@@ -336,23 +336,6 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "流水线触发主机部署", hidden = true)
-    @PostMapping("/exec_command_for_host")
-    public ResponseEntity<CiResponseVO> hostDeploy(
-            @ApiParam(value = "token", required = true)
-            @RequestParam String token,
-            @ApiParam(value = "GitLab流水线id", required = true)
-            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
-            @ApiParam(value = "GitLab Jobid", required = true)
-            @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
-            @ApiParam(value = "部署配置id", required = true)
-            @RequestParam(value = "config_id") Long configId,
-            @ApiParam(value = "指令类型", required = true)
-            @RequestParam(value = "command_type") String commandType) {
-        return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, commandType));
-    }
-
-    @Permission(permissionPublic = true)
     @ApiOperation(value = "流水线runner中查询主机部署命令执行状态", hidden = true)
     @PostMapping("/host_command_status")
     public ResponseEntity<CiResponseVO> hostCommandStatus(
