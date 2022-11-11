@@ -106,6 +106,9 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiTplApiTestInfoCfgDTO devopsCiTplApiTestInfoCfgDTO = devopsCiTplApiTestInfoCfgService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
+        if (devopsCiTplApiTestInfoCfgDTO==null){
+            devopsCiTplApiTestInfoCfgDTO=new DevopsCiTplApiTestInfoCfgDTO();
+        }
         devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplApiTestInfoCfgDTO, DevopsCiApiTestInfoVO.class));
     }
 }
