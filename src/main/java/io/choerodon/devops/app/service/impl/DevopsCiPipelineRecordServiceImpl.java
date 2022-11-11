@@ -1178,6 +1178,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public void fillAdditionalInfo(CiPipelineRecordVO recordVO) {
         Long ciPipelineRecordId = recordVO.getId();
+        Long gitlabPipelineId = recordVO.getGitlabPipelineId();
+        Long userId = DetailsHelper.getUserDetails().getUserId();
+
 //        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordVO.getStatus(), devopsCiPipelineRecordVO.getLastUpdateDate(), devopsCiPipelineRecordVO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordVO.getGitlabPipelineId()));
         // 查询流水线记录下的job记录
 
@@ -1199,6 +1202,24 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
             devopsCiStageRecordVOS.add(devopsCiStageRecordVO);
         }
+        List<DevopsCiPipelineAuditVO> pipelineAuditInfo = new ArrayList<>();
+        devopsCiJobRecordDTOS.forEach(devopsCiJobRecordVO -> {
+            if (CiJobTypeEnum.AUDIT.value().equals(devopsCiJobRecordVO.getType())
+                    && io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+
+                CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(devopsCiJobRecordVO.getAppServiceId(), gitlabPipelineId, devopsCiJobRecordVO.getName());
+                if (ciAuditRecordDTO != null) {
+                    List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+                    if (!CollectionUtils.isEmpty(auditUserRecordDTOList)) {
+                        if (auditUserRecordDTOList.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
+                            DevopsCiPipelineAuditVO devopsCiPipelineAuditVO = new DevopsCiPipelineAuditVO(devopsCiJobRecordVO.getName(), devopsCiJobRecordVO.getId(), true);
+                            pipelineAuditInfo.add(devopsCiPipelineAuditVO);
+                        }
+                    }
+                }
+            }
+        });
+        recordVO.setPipelineAuditInfo(pipelineAuditInfo);
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         recordVO.setStageRecordVOS(devopsCiStageRecordVOS);
