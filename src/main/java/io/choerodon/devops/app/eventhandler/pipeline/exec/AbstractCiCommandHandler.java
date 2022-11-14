@@ -6,8 +6,6 @@ import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_JOB
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
@@ -17,6 +15,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 
@@ -29,12 +28,12 @@ import io.choerodon.devops.infra.util.LogUtil;
  */
 public abstract class AbstractCiCommandHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCiCommandHandler.class);
-
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     public abstract CiCommandTypeEnum getType();
 
@@ -46,6 +45,8 @@ public abstract class AbstractCiCommandHandler {
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
         }
+        Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
+
         // 查询任务记录设置用户上下文
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
         if (devopsCiJobRecordDTO == null) {
@@ -64,11 +65,4 @@ public abstract class AbstractCiCommandHandler {
     }
 
     protected abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content);
-
-    private void appendMessage(CiResponseVO ciResponseVO, String message) {
-        if (ciResponseVO.getMessage() == null) {
-            ciResponseVO.setMessage(message);
-        }
-        ciResponseVO.setMessage(ciResponseVO.getMessage() + message);
-    }
 }

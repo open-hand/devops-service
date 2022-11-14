@@ -92,12 +92,47 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
         devopsDeployGroupContainerConfigVOS.forEach(config -> {
             if (config.getPipelineJobName() != null) {
                 if (RdupmTypeEnum.DOCKER.value().equals(config.getType())) {
-                    fillDockerConfig(projectId, appServiceId, gitlabPipelineId, config);
+                    fillDockerConfig(projectId, appServiceId, gitlabPipelineId, config, log);
+                    CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
+                            gitlabPipelineId,
+                            config.getPipelineJobName());
+                    if (ciPipelineImageDTO == null) {
+                        log.append("查询流水线上游制品失败，请检查关联镜像构建任务是否成功推送镜像！").append(System.lineSeparator());
+                        return;
+                    }
+                    HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId,
+                            ciPipelineImageDTO.getHarborRepoId(),
+                            ciPipelineImageDTO.getRepoType());
 
+                    DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
+                    dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+
+                    int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
+                    String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
+                    String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
+
+                    ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
+                            harborRepoDTO.getRepoType(),
+                            harborRepoDTO.getHarborRepoConfig().getRepoId(),
+                            imageName,
+                            tagName,
+                            Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
+                            ciPipelineImageDTO.getImageTag());
+                    dockerDeployVO.setImageInfo(prodImageInfoVO);
+                    config.setPipelineJobName(null);
+                    config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+                    config.setDockerDeployVO(dockerDeployVO);
                 } else {
                     CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceId,
                             gitlabPipelineId,
                             config.getPipelineJobName());
+                    if (ciPipelineMavenDTO == null) {
+                        log.append("查询流水线上游制品失败，请检查关联Maven构建/发布任务")
+                                .append("'").append(config.getPipelineJobName()).append("'")
+                                .append("是否成功推送制品！")
+                                .append(System.lineSeparator());
+                        return;
+                    }
                     ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(ciPipelineMavenDTO.getNexusRepoId(),
                             ciPipelineMavenDTO.getGroupId(),
                             ciPipelineMavenDTO.getArtifactId(),
@@ -114,7 +149,6 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                             ciPipelineMavenDTO.getNexusRepoId());
 
                     prodJarInfoVO.setNexusId(c7nNexusRepoDTO.getConfigId());
-
 
                     DevopsDeployGroupJarDeployVO devopsDeployGroupJarDeployVO = new DevopsDeployGroupJarDeployVO();
                     devopsDeployGroupJarDeployVO.setProdJarInfoVO(prodJarInfoVO);
@@ -159,32 +193,8 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
         }
     }
 
-    protected void fillDockerConfig(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsDeployGroupContainerConfigVO config) {
-        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
-                gitlabPipelineId,
-                config.getPipelineJobName());
-        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId,
-                ciPipelineImageDTO.getHarborRepoId(),
-                ciPipelineImageDTO.getRepoType());
+    protected void fillDockerConfig(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsDeployGroupContainerConfigVO config, StringBuilder log) {
 
-        DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
-        dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
-
-        int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
-        String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
-        String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
-
-        ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
-                harborRepoDTO.getRepoType(),
-                harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                imageName,
-                tagName,
-                Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
-                ciPipelineImageDTO.getImageTag());
-        dockerDeployVO.setImageInfo(prodImageInfoVO);
-        config.setPipelineJobName(null);
-        config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
-        config.setDockerDeployVO(dockerDeployVO);
     }
 
 
