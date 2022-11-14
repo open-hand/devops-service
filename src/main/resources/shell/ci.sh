@@ -852,13 +852,13 @@ function process_audit() {
 function execute_api_test(){
   # 这里的configId关联的是ci job关联的测试任务信息id
   http_status_code=$(curl -X POST \
-      "${CHOERODON_URL}/devops/ci/update_job_config_id?ci_job_record_id=${CI_JOB_ID}&config_id=$6" \
+      "${CHOERODON_URL}/devops/ci/update_job_config_id?gitlab_job_id=${CI_JOB_ID}&config_id=$6" \
       -o "result.json" \
       -s \
       -w %{http_code})
     if [ "$http_status_code" != "200" ]; then
       echo "Failed to update job config id "
-      echo "cat result.json"
+      cat result.json
       exit 1
     fi
 
