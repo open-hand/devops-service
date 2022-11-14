@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.infra.dto.DevopsCiTplHostDeployInfoDTO;
+import io.choerodon.devops.infra.dto.DevopsCiTplHostDeployInfoCfgDTO;
 
 public interface DevopsCiTplHostDeployInfoService {
 
-    DevopsCiTplHostDeployInfoDTO selectByPrimaryKey(Long configId);
+    DevopsCiTplHostDeployInfoCfgDTO selectByPrimaryKey(Long configId);
 }

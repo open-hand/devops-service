@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.DevopsHostAppService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiTplHostDeployInfoDTO;
+import io.choerodon.devops.infra.dto.DevopsCiTplHostDeployInfoCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
@@ -124,10 +124,10 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        DevopsCiTplHostDeployInfoDTO devopsCiTplHostDeployInfoDTO = devopsCiTplHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
-        if (devopsCiTplHostDeployInfoDTO == null) {
-            devopsCiTplHostDeployInfoDTO = new DevopsCiTplHostDeployInfoDTO();
+        DevopsCiTplHostDeployInfoCfgDTO devopsCiTplHostDeployInfoCfgDTO = devopsCiTplHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
+        if (devopsCiTplHostDeployInfoCfgDTO == null) {
+            devopsCiTplHostDeployInfoCfgDTO = new DevopsCiTplHostDeployInfoCfgDTO();
         }
-        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplHostDeployInfoDTO, DevopsCiApiTestInfoVO.class));
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplHostDeployInfoCfgDTO, DevopsCiApiTestInfoVO.class));
     }
 }

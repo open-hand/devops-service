@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info_cfg.groovy') {
     changeSet(author: 'lihao', id: '2022-11-07-create-table') {
-        createTable(tableName: "devops_ci_tpl_host_deploy_info", remarks: 'ci主机部署任务配置表') {
+        createTable(tableName: "devops_ci_tpl_host_deploy_info_cfg", remarks: 'ci主机部署任务配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -33,7 +33,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info.groovy') 
         }
     }
     changeSet(author: 'wanghao', id: '2022-11-10-add-index') {
-        createIndex(tableName: 'devops_ci_tpl_host_deploy_info', indexName: 'devops_ci_tpl_host_deploy_info_n1') {
+        createIndex(tableName: 'devops_ci_tpl_host_deploy_info_cfg', indexName: 'devops_ci_host_deploy_info_n1') {
             column(name: 'ci_pipeline_id')
         }
     }
