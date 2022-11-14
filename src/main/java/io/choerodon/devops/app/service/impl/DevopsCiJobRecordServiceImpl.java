@@ -22,6 +22,7 @@ import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.JobWebHookVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -66,6 +67,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -264,11 +267,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         // 计算审核结果
         AuditResultVO auditResultVO = new AuditResultVO();
         boolean auditFinishFlag;
+        List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
         if (ciAuditRecordDTO.getCountersigned()) {
             auditResultVO.setCountersigned(1);
             auditFinishFlag = ciAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
             // 添加审核人员信息
-            List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
             Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
             ciAuditUserRecordDTOS.forEach(v -> {
                 if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
@@ -287,6 +290,15 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         } else {
             auditResultVO.setCountersigned(0);
             auditFinishFlag = !ciAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+
+            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
+                    devopsCiPipelineRecordDTO.getCiPipelineId(),
+                    userIds,
+                    ciPipelineRecordId,
+                    devopsCiJobRecordDTO.getStage(),
+                    userId,
+                    projectId);
+
         }
         // 审核结束则执行job
         if (auditFinishFlag) {

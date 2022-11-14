@@ -365,7 +365,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
             //如果当前任务状态为manual且任务类型为audit则发送审核邮件
             if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus())) {
-                ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(), ciPipelineId, pipelineRecordId,
+                ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),
+                        ciPipelineId,
+                        pipelineRecordId,
                         pipelineWebHookVO.getObjectAttributes().getId(),
                         devopsCiJobRecordDTO.getName(),
                         ciJobWebHookVO.getStage());

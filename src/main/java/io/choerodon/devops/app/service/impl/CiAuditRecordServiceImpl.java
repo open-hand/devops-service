@@ -120,7 +120,7 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
         if (ciAuditRecordDTO == null) {
             return;
         }
-        List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getJobRecordId());
+        List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
         if (CollectionUtils.isEmpty(auditUserRecordDTOList)) {
             return;
         }

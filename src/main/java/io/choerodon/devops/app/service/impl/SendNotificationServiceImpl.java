@@ -122,6 +122,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCiPipelineRecordService ciPipelineRecordService;
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -1133,22 +1135,42 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendPipelineAuditResultMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId, Long userId) {
-        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
+    public void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
         doWithTryCatchAndLog(
                 () -> {
-                    List<Receiver> userList = new ArrayList<>();
                     List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
+                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.baseQueryById(ciPipelineId);
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+
+                    List<Receiver> userList = new ArrayList<>();
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
-                    sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
+                    params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
+                    params.put("pipelineIdRecordId", pipelineRecordId.toString());
+                    //加上查看详情的url
+                    params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+                            projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId), pipelineRecordId.toString()));
+                    addSpecifierList(type, projectDTO.getId(), userList);
+                    sendNotices(type, userList, constructParamsForPipeline(ciCdPipelineDTO, projectDTO, params, stageName), projectDTO.getId());
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
         );
+    }
+
+    private Map<String, String> constructParamsForPipeline(CiCdPipelineDTO ciCdPipelineDTO, ProjectDTO projectDTO, Map<String, String> params, String stageName) {
+        return StringMapBuilder.newBuilder()
+                .put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName())
+                .put(PROJECT_ID, projectDTO.getId())
+                .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
+                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                .put(STAGE_NAME, stageName)
+                .putAll(params)
+                .build();
     }
 
     @Override
