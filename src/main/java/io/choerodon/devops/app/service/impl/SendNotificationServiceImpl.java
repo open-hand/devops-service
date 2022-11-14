@@ -123,6 +123,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
     @Autowired
+    @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
 
     /**

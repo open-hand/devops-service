@@ -291,14 +291,25 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             auditResultVO.setCountersigned(0);
             auditFinishFlag = !ciAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
 
-            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
+            // 审核通过只有或签才发送通知
+            if (AuditStatusEnum.PASSED.value().equals(result)) {
+                sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
+                        devopsCiPipelineRecordDTO.getCiPipelineId(),
+                        userIds,
+                        ciPipelineRecordId,
+                        devopsCiJobRecordDTO.getStage(),
+                        userId,
+                        projectId);
+            }
+        }
+        if (AuditStatusEnum.REFUSED.value().equals(result)) {
+            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_STOP,
                     devopsCiPipelineRecordDTO.getCiPipelineId(),
                     userIds,
                     ciPipelineRecordId,
                     devopsCiJobRecordDTO.getStage(),
                     userId,
                     projectId);
-
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
