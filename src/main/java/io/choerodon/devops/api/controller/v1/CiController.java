@@ -348,7 +348,7 @@ public class CiController {
         return ResponseEntity.ok(commandOperator.getHostCommandStatus(token, gitlabPipelineId, commandId));
     }
 
-    @Permission(permissionLogin = true)
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "更新ci job关联的配置id", hidden = true)
     @PostMapping("/update_job_config_id")
     public ResponseEntity<Void> updateJobConfigId(@ApiParam(value = "GitLab Jobid", required = true)
