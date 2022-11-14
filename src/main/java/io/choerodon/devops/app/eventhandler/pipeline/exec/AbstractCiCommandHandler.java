@@ -6,6 +6,8 @@ import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_JOB
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
@@ -25,6 +27,8 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
  * @since 2022/11/4 15:50
  */
 public abstract class AbstractCiCommandHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCiCommandHandler.class);
 
     @Autowired
     private AppServiceService appServiceService;
@@ -50,6 +54,7 @@ public abstract class AbstractCiCommandHandler {
         try {
             execute(appServiceDTO, gitlabPipelineId, gitlabJobId, configId, log, content);
         } catch (Exception e) {
+            LOGGER.info("exec command failed", e);
             ciResponseVO.setFailed(true);
             log.append(e.getMessage());
         }
