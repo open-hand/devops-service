@@ -15,7 +15,6 @@ import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.DevopsCiHostDeployInfoService;
 import io.choerodon.devops.app.service.DevopsCiTplHostDeployInfoService;
@@ -128,6 +127,6 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         if (devopsCiTplHostDeployInfoCfgDTO == null) {
             devopsCiTplHostDeployInfoCfgDTO = new DevopsCiTplHostDeployInfoCfgDTO();
         }
-        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplHostDeployInfoCfgDTO, DevopsCiApiTestInfoVO.class));
+        devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(devopsCiTplHostDeployInfoCfgDTO, DevopsCiHostDeployInfoVO.class));
     }
 }
