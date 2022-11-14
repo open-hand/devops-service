@@ -33,7 +33,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info.groovy') 
         }
     }
     changeSet(author: 'wanghao', id: '2022-11-10-add-index') {
-        createIndex(tableName: 'devops_ci_host_deploy_info', indexName: 'devops_ci_host_deploy_info_n1') {
+        createIndex(tableName: 'devops_ci_tpl_host_deploy_info', indexName: 'devops_ci_tpl_host_deploy_info_n1') {
             column(name: 'ci_pipeline_id')
         }
     }
