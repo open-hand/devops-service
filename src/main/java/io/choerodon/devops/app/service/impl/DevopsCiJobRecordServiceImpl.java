@@ -69,6 +69,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
                                         @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
@@ -355,6 +357,27 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Override
     public void updateConfigId(Long gitlabJobId, Long configId) {
         devopsCiJobRecordMapper.updateConfigId(gitlabJobId, configId);
+    }
+
+    @Override
+    public void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId) {
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO;
+        JobDTO jobDTO = gitlabServiceClientOperator.queryJob(gitlabProjectId, TypeUtil.objToInteger(gitlabJobId));
+        DevopsCiJobDTO devopsCiJobDTO = devopsCiJobService.queryByCiPipelineIdAndName(ciPipelineId, jobDTO.getName());
+
+        devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
+        devopsCiJobRecordDTO.setGitlabJobId(gitlabJobId);
+        devopsCiJobRecordDTO.setCiPipelineRecordId(ciPipelineRecordId);
+        devopsCiJobRecordDTO.setStartedDate(jobDTO.getStartedAt());
+        devopsCiJobRecordDTO.setFinishedDate(jobDTO.getFinishedAt());
+        devopsCiJobRecordDTO.setStage(jobDTO.getStage());
+        devopsCiJobRecordDTO.setType(devopsCiJobDTO.getType());
+        devopsCiJobRecordDTO.setGroupType(devopsCiJobDTO.getGroupType());
+        devopsCiJobRecordDTO.setName(jobDTO.getName());
+        devopsCiJobRecordDTO.setStatus(jobDTO.getStatus().toString());
+        devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(jobDTO.getUser().getUsername()));
+        devopsCiJobRecordDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectId));
+        devopsCiJobRecordDTO.setAppServiceId(appServiceId);
     }
 
     private void calculatAuditUserName(List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

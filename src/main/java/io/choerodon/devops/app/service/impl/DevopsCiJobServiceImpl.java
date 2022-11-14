@@ -403,6 +403,16 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return devopsCiJobMapper.selectByPrimaryKey(id);
     }
 
+    @Override
+    public DevopsCiJobDTO queryByCiPipelineIdAndName(Long ciPipelineId, String name) {
+
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobDTO.setName(name);
+        return devopsCiJobMapper.selectOne(devopsCiJobDTO);
+
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();

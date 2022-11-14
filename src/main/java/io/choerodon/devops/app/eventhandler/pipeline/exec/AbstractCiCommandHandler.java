@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.eventhandler.pipeline.exec;
 
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.DEVOPS_TOKEN_INVALID;
-import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_CI_JOB_RECORD_QUERY;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -9,10 +8,10 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiJobRecordService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -33,7 +32,13 @@ public abstract class AbstractCiCommandHandler {
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsCiJobService devopsCiJobService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     public abstract CiCommandTypeEnum getType();
 
@@ -45,12 +50,20 @@ public abstract class AbstractCiCommandHandler {
         if (appServiceDTO == null) {
             throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
         }
+        Long appServiceId = appServiceDTO.getId();
+
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByAppServiceIdAndGitlabPipelineId(appServiceId, gitlabPipelineId);
+        Long ciPipelineRecordId = devopsCiPipelineRecordDTO.getId();
+        Long ciPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
+
         Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
 
         // 查询任务记录设置用户上下文
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
         if (devopsCiJobRecordDTO == null) {
-            throw new DevopsCiInvalidException(DEVOPS_CI_JOB_RECORD_QUERY);
+            devopsCiJobRecordService.syncJobRecord(gitlabJobId, appServiceId, ciPipelineRecordId, ciPipelineId, gitlabProjectId);
+
+//            throw new DevopsCiInvalidException(DEVOPS_CI_JOB_RECORD_QUERY);
         }
         CustomContextUtil.setUserContext(devopsCiJobRecordDTO.getTriggerUserId());
         try {
@@ -62,6 +75,10 @@ public abstract class AbstractCiCommandHandler {
         ciResponseVO.setMessage(log.toString());
         ciResponseVO.setContent(content);
         return ciResponseVO;
+    }
+
+    private void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId) {
+
     }
 
     protected abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content);

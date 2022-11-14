@@ -70,6 +70,8 @@ public interface UserAttrService {
 
     UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName);
 
+    Long getIamUserIdByGitlabUserName(String username);
+
     /**
      * 更改用户 is_gitlab_admin字段的值
      *
