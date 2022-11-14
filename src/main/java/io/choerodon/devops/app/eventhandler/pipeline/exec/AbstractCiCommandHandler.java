@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 
 /**
  * 〈功能简述〉
@@ -54,9 +55,8 @@ public abstract class AbstractCiCommandHandler {
         try {
             execute(appServiceDTO, gitlabPipelineId, gitlabJobId, configId, log, content);
         } catch (Exception e) {
-            LOGGER.info("exec command failed", e);
             ciResponseVO.setFailed(true);
-            log.append(e.getMessage());
+            log.append(LogUtil.readContentOfThrowable(e));
         }
         ciResponseVO.setMessage(log.toString());
         ciResponseVO.setContent(content);
