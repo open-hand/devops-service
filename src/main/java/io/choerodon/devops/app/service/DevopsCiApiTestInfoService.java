@@ -7,5 +7,7 @@ public interface DevopsCiApiTestInfoService {
 
     DevopsCiApiTestInfoDTO selectByPrimaryKey(Long id);
 
+    DevopsCiApiTestInfoDTO selectById(Long id);
+
     void deleteConfigByPipelineId(Long ciPipelineId);
 }

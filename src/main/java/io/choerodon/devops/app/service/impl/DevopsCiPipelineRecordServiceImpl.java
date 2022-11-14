@@ -1022,6 +1022,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
+    public DevopsCiPipelineRecordDTO queryByIdWithPipelineName(Long ciPipelineRecordId) {
+        return devopsCiPipelineRecordMapper.queryByIdWithPipelineName(ciPipelineRecordId);
+    }
+
+    @Override
     public DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId) {
         Assert.notNull(gitlabPipelineId, DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(devopsPipelineId, DEVOPS_PIPELINE_ID_IS_NULL);

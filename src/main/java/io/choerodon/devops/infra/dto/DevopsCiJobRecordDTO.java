@@ -64,6 +64,17 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     @ApiModelProperty("部署操作commandId")
     private Long commandId;
 
+    @ApiModelProperty("配置id")
+    private Long configId;
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
     public Long getCommandId() {
         return commandId;
     }

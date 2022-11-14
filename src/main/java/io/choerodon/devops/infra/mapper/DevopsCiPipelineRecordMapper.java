@@ -51,4 +51,6 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
     DevopsCiPipelineRecordVO selectById(Long ciPipelineRecordId);
 
     DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(@Param("appServiceId") Long appServiceId, @Param("gitlabPipelineId") Long gitlabPipelineId);
+
+    DevopsCiPipelineRecordDTO queryByIdWithPipelineName(@Param("ciPipelineRecordId") Long ciPipelineRecordId);
 }

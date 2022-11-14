@@ -57,4 +57,6 @@ public interface DevopsCiJobRecordService {
     AuditResultVO auditJob(Long projectId, Long id, String result);
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);
+
+    void updateConfigId(Long gitlabJobId, Long configId);
 }

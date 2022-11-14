@@ -850,5 +850,34 @@ function process_audit() {
 }
 
 function execute_api_test(){
-  environment=runner type=$1 choerodonUrl=$2 taskId=$3 suiteId=$3 configId=$4  java -jar /choerodon/app.jar
+  # 这里的configId关联的是ci job关联的测试任务信息id
+  http_status_code=$(curl -X POST \
+      "${CHOERODON_URL}/devops/ci/update_job_config_id?ci_job_record_id=${CI_JOB_ID}&config_id=$6" \
+      -o "result.json" \
+      -s \
+      -w %{http_code})
+    if [ "$http_status_code" != "200" ]; then
+      echo "Failed to update job config id "
+      echo "cat result.json"
+      exit 1
+    fi
+
+  # 这里的configId是测试任务关联的任务配置id
+  environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  java -jar /choerodon/app.jar
+
+  # 检查是否执行失败以及是否达到阈值
+  is_failed=$(jq -r .failed result.json)
+  successRate=$(jq -r .successRate result.json)
+  if [ "$is_failed" == true ]; then
+      echo "Failed to execute test"
+      exit 1
+  fi
+
+  block=$1
+  rate=$2
+
+  if [ `echo "$successRate < $rate" |bc` -eq 1  ]&&[ "${bock}" == "true " ]; then
+      echo "The success rate did not reach the set threshold."
+  fi
+
 }

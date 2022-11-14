@@ -43,4 +43,10 @@
         order by id desc
         limit 1;
     </select>
+
+  <update id="updateConfigId">
+    UPDATE devops_ci_job_record
+    SET config_id=#{configId}
+    WHERE gitlab_job_id = #{gitlabJobId}
+  </update>
 </mapper>

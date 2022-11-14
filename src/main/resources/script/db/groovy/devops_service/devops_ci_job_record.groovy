@@ -115,4 +115,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2022-11-14-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '配置id', afterColumn: 'command_id')
+        }
+    }
 }

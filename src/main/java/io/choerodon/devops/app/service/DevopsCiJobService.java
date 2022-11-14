@@ -121,4 +121,6 @@ public interface DevopsCiJobService {
     List<DevopsCiJobDTO> listByProjectIdAndType(Long projectId, CiJobTypeEnum typeEnum);
 
     Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
+
+    DevopsCiJobDTO selectByPrimaryKey(Long id);
 }

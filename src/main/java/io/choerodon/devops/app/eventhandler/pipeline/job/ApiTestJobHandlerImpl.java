@@ -32,8 +32,8 @@ import io.choerodon.devops.infra.util.KeyDecryptHelper;
 @Service
 public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
-    private static final String API_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s";
-    private static final String SUITE_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s";
+    private static final String API_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s %s %s %s";
+    private static final String SUITE_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s %s %s";
 
     public static final Integer MAX_DELAY_MINUTE = 7 * 24 * 60;
 
@@ -61,10 +61,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobDTO.getConfigId());
         switch (ApiTestTaskType.valueOf(devopsCiApiTestInfoDTO.getTaskType().toUpperCase())) {
             case TASK:
-                result.add(String.format(API_TEST_COMMAND_TEMPLATE, "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiApiTestInfoDTO.getApiTestConfigId()));
+                result.add(String.format(API_TEST_COMMAND_TEMPLATE, devopsCiApiTestInfoDTO.getBlockAfterJob(), devopsCiApiTestInfoDTO.getPerformThreshold(), "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiJobDTO.getConfigId(), devopsCiApiTestInfoDTO.getApiTestConfigId()));
                 break;
             case SUITE:
-                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId()));
+                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, devopsCiApiTestInfoDTO.getBlockAfterJob(), devopsCiApiTestInfoDTO.getPerformThreshold(), "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId(), devopsCiJobDTO.getConfigId()));
                 break;
             default:
                 throw new CommonException(DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN, devopsCiApiTestInfoDTO.getTaskType());

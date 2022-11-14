@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
@@ -75,6 +76,17 @@ public class DevopsCiApiTestInfoDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否中断后续的任务")
     private Boolean blockAfterJob;
+
+    @Transient
+    public Long projectId;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
 
     public Long getCiPipelineId() {
         return ciPipelineId;

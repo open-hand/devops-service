@@ -398,6 +398,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return devopsCiJobMapper.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId);
     }
 
+    @Override
+    public DevopsCiJobDTO selectByPrimaryKey(Long id) {
+        return devopsCiJobMapper.selectByPrimaryKey(id);
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();

@@ -352,6 +352,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         return aduitStatusChangeVO;
     }
 
+    @Override
+    public void updateConfigId(Long gitlabJobId, Long configId) {
+        devopsCiJobRecordMapper.updateConfigId(gitlabJobId, configId);
+    }
+
     private void calculatAuditUserName(List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
 
         if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {

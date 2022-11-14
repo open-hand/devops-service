@@ -50,4 +50,22 @@
         WHERE dcpr.gitlab_pipeline_id = #{gitlabPipelineId}
           and dcp.app_service_id = #{appServiceId}
     </select>
+
+  <select id="queryByIdWithPipelineName" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+    SELECT dcpr.id,
+           dcpr.ci_pipeline_id,
+           dcpr.gitlab_pipeline_id,
+           dcpr.commit_sha,
+           dcpr.gitlab_trigger_ref,
+           dcpr.status,
+           dcpr.trigger_user_id,
+           dcpr.created_date,
+           dcpr.finished_date,
+           dcpr.duration_seconds,
+           dcpr.gitlab_project_id,
+           dcp.name
+    FROM devops_ci_pipeline_record dcpr
+           JOIN devops_cicd_pipeline dcp ON dcp.id = dcpr.ci_pipeline_id
+    WHERE dcpr.id = #{ciPipelineRecordId}
+  </select>
 </mapper>

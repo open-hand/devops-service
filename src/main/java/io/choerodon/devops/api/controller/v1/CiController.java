@@ -58,7 +58,7 @@ public class CiController {
     @Autowired
     private CiAuditRecordService ciAuditRecordService;
     @Autowired
-    private DevopsHostCommandService hostCommandService;
+    private DevopsCiJobRecordService devopsCiJobRecordService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -346,6 +346,17 @@ public class CiController {
             @ApiParam(value = "commandId", required = true)
             @RequestParam(value = "command_id") Long commandId) {
         return ResponseEntity.ok(commandOperator.getHostCommandStatus(token, gitlabPipelineId, commandId));
+    }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "更新ci job关联的配置id", hidden = true)
+    @PostMapping("/update_job_config_id")
+    public ResponseEntity<Void> updateJobConfigId(@ApiParam(value = "GitLab Jobid", required = true)
+                                                  @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
+                                                  @ApiParam(value = "configId", required = true)
+                                                  @RequestParam(value = "config_id") Long configId) {
+        devopsCiJobRecordService.updateConfigId(gitlabJobId, configId);
+        return ResponseEntity.ok().build();
     }
 
     @Permission(permissionPublic = true)

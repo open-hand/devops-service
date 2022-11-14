@@ -20,4 +20,6 @@ public interface DevopsCiJobRecordMapper extends BaseMapper<DevopsCiJobRecordDTO
     void batchInert(@Param("devopsCiJobRecordDTOS") List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS);
 
     DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(@Param("pipelineId") Long pipelineId);
+
+    void updateConfigId(@Param("gitlabJobId") Long gitlabJobId, @Param("configId") Long configId);
 }

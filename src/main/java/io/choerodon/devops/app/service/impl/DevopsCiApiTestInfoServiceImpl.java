@@ -29,6 +29,11 @@ public class DevopsCiApiTestInfoServiceImpl implements DevopsCiApiTestInfoServic
     }
 
     @Override
+    public DevopsCiApiTestInfoDTO selectById(Long id) {
+        return devopsCiApiTestInfoMapper.selectById(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteConfigByPipelineId(Long ciPipelineId) {
         Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
