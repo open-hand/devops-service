@@ -61,8 +61,11 @@ public class CiDeployDeployCfgServiceImpl implements CiDeployDeployCfgService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void baseUpdateByVO(CiDeployDeployCfgVO ciDeployDeployCfgVO) {
-        CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ConvertUtils.convertObject(ciDeployDeployCfgVO, CiDeployDeployCfgDTO.class);
+    public void updateAppIdAndDeployType(Long id, Long appId, String deployType) {
+        CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ciDeployDeployCfgMapper.selectByPrimaryKey(id);
+
+        ciDeployDeployCfgDTO.setAppId(appId);
+        ciDeployDeployCfgDTO.setDeployType(deployType);
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciDeployDeployCfgMapper, ciDeployDeployCfgDTO, DEVOPS_DEPLOYMENT_CONFIG_UPDATE);
     }
 

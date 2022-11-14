@@ -17,7 +17,7 @@ public interface CiDeployDeployCfgService {
 
     CiDeployDeployCfgDTO queryConfigById(Long id);
 
-    void baseUpdateByVO(CiDeployDeployCfgVO ciDeployDeployCfgVO);
+    void updateAppIdAndDeployType(Long id, Long appId, String deployType);
 
     void deleteConfigByPipelineId(Long ciPipelineId);
 }
