@@ -1221,6 +1221,45 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    public void sendPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds) {
+        List<Receiver> userList = new ArrayList<>();
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        userIds.forEach(id -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(id);
+            if (iamUserDTO != null) {
+                Receiver user = new Receiver();
+                user.setEmail(iamUserDTO.getEmail());
+                user.setUserId(iamUserDTO.getId());
+                user.setPhone(iamUserDTO.getPhone());
+                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
+                userList.add(user);
+            }
+        });
+
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.baseQueryById(ciPipelineId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(ciCdPipelineDTO.getProjectId());
+
+        HashMap<String, String> params = new HashMap<>();
+        params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
+        params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
+        params.put(MessageCodeConstants.STAGE_NAME, stage);
+        params.put(MessageCodeConstants.REL_ID, ciPipelineRecordId.toString());
+        params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
+        params.put(MessageCodeConstants.LINK,
+                String.format(MessageCodeConstants.BASE_URL,
+                        frontUrl,
+                        projectDTO.getId(),
+                        projectDTO.getName(),
+                        projectDTO.getOrganizationId(),
+                        KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId),
+                        ciPipelineRecordId.toString()));
+
+        sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
+    }
+
+    @Override
     public void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus) {
         doWithTryCatchAndLog(
                 () -> {

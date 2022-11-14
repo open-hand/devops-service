@@ -221,6 +221,8 @@ public interface SendNotificationService {
 
     void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
 
+    void sendPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds);
+
     /**
      * 实例状态变更发送webhook josn
      */
