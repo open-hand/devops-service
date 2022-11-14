@@ -17,4 +17,9 @@ public class DevopsCiHostDeployInfoServiceImpl implements DevopsCiHostDeployInfo
     public void baseUpdate(DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO) {
         devopsCiHostDeployInfoMapper.updateByPrimaryKeySelective(devopsCiHostDeployInfoDTO);
     }
+
+    @Override
+    public DevopsCiHostDeployInfoDTO selectByPrimaryKey(Long configId) {
+        return devopsCiHostDeployInfoMapper.selectByPrimaryKey(configId);
+    }
 }
