@@ -746,7 +746,7 @@ function app_deploy() {
     is_failed=$(jq -r .failed result.json)
     message=$(jq -r .message result.json)
     # 打印后台返回的日志
-    if [ -z "${message}" ]; then
+    if [ -n "${message}" ]; then
         echo "${message}"
     fi
     # 判断是否成功
@@ -772,7 +772,7 @@ function host_deploy(){
       message=$(jq -r .message result.json)
       command_id=$(jq -r .commandId result.json)
       # 打印后台返回的日志
-      if [ -z "${message}" ]; then
+      if [ -n "${message}" ]; then
           echo "${message}"
       fi
 
