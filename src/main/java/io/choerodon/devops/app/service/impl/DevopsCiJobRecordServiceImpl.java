@@ -340,15 +340,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
         aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
         if (!ciAuditRecordDTO.getCountersigned()) {
-            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()) || AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
             List<CiAuditUserRecordDTO> passedAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
             List<CiAuditUserRecordDTO> refusedAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(passedAuditUserRecordDTOS)) {
-                calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+                calculatAuditUserName(passedAuditUserRecordDTOS, aduitStatusChangeVO);
                 aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
             }
             if (!CollectionUtils.isEmpty(refusedAuditUserRecordDTOS)) {
-                calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+                calculatAuditUserName(refusedAuditUserRecordDTOS, aduitStatusChangeVO);
                 aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
             }
         }
