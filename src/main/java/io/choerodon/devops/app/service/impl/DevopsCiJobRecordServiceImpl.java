@@ -350,6 +350,20 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
                 calculatAuditUserName(refusedAuditUserRecordDTOS, aduitStatusChangeVO);
                 aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
             }
+        } else {
+            List<CiAuditUserRecordDTO> notAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())).collect(Collectors.toList());
+            // 没有未审核的则状态改变
+            if (CollectionUtils.isEmpty(notAuditUserRecordDTOS)) {
+                List<CiAuditUserRecordDTO> refusedAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+                // 没人拒绝则审核通过
+                if (CollectionUtils.isEmpty(refusedAuditUserRecordDTOS)) {
+                    calculatAuditUserName(ciAuditUserRecordDTOS, aduitStatusChangeVO);
+                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+                } else {
+                    calculatAuditUserName(ciAuditUserRecordDTOS, aduitStatusChangeVO);
+                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
+                }
+            }
         }
 
         return aduitStatusChangeVO;
