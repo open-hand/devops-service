@@ -11,8 +11,10 @@ public interface CiCdPipelineRecordService {
 
     CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId);
 
+    @Deprecated
     void retryPipeline(Long projectId, Long id, Long gitlabProjectId);
 
+    @Deprecated
     void cancel(Long projectId, Long ciPipelineRecordId, Long gitlabProjectId);
 
     void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag, Map<String, String> variables);

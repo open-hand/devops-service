@@ -55,7 +55,7 @@ public class CiCdPipelineRecordController {
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.retryPipeline(projectId, id, gitlabProjectId);
+        devopsCiPipelineRecordService.retryPipeline(projectId, id, gitlabProjectId);
         return Results.success();
     }
 
@@ -85,7 +85,7 @@ public class CiCdPipelineRecordController {
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.cancel(projectId, id, gitlabProjectId);
+        devopsCiPipelineRecordService.cancelPipeline(projectId, id, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 

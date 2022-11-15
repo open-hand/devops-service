@@ -954,6 +954,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void retry(Long projectId, Long gitlabPipelineId, Long gitlabProjectId) {
         Assert.notNull(gitlabPipelineId, DEVOPS_GITLAB_PIPELINE_ID_IS_NULL);
         Assert.notNull(gitlabProjectId, DEVOPS_GITLAB_PROJECT_ID_IS_NULL);
@@ -1228,5 +1229,19 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(Long pipelineId) {
         return devopsCiJobRecordMapper.queryLatestedPipelineRecord(pipelineId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void retryPipeline(Long projectId, Long id, Long gitlabProjectId) {
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = queryById(id);
+        retry(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
+
+    }
+
+    @Override
+    public void cancelPipeline(Long projectId, Long id, Long gitlabProjectId) {
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = queryById(id);
+        cancel(projectId, devopsCiPipelineRecordDTO.getGitlabPipelineId(), gitlabProjectId);
     }
 }

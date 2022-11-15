@@ -77,4 +77,22 @@ public interface DevopsCiPipelineRecordService {
     void fillAdditionalInfo(CiPipelineRecordVO recordVO);
 
     DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(Long pipelineId);
+
+    /**
+     * 重试流水线
+     *
+     * @param projectId
+     * @param id
+     * @param gitlabProjectId
+     */
+    void retryPipeline(Long projectId, Long id, Long gitlabProjectId);
+
+    /**
+     * 取消流水线
+     *
+     * @param projectId
+     * @param id
+     * @param gitlabProjectId
+     */
+    void cancelPipeline(Long projectId, Long id, Long gitlabProjectId);
 }
