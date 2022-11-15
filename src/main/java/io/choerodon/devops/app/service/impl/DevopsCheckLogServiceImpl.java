@@ -20,9 +20,7 @@ import org.springframework.util.ObjectUtils;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
-import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
-import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
+import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
@@ -73,6 +71,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
+
 
     static {
         jobTypeMapping.put(JobTypeEnum.CD_AUDIT.value(), CiJobTypeEnum.AUDIT.value());
@@ -221,11 +224,29 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
                                         }
                                     }
-                                    if (JobTypeEnum.CD_API_TEST.value().equals(cdJobDTO.getType())) {
-
-                                    }
                                     if (JobTypeEnum.CD_HOST.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdHostDeployInfoDTO != null) {
+                                            DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, DevopsCiHostDeployInfoVO.class);
 
+                                            devopsCiJobVO.setType(CiJobTypeEnum.HOST_DEPLOY.value());
+                                            devopsCiJobVO.setDevopsCiHostDeployInfoVO(devopsCiHostDeployInfoVO);
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.HOST_DEPLOY.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
+                                    }
+                                    if (JobTypeEnum.CD_API_TEST.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdApiTestInfoDTO != null) {
+                                            DevopsCiApiTestInfoVO devopsCiApiTestInfoVO = ConvertUtils.convertObject(devopsCdApiTestInfoDTO, DevopsCiApiTestInfoVO.class);
+
+                                            devopsCiJobVO.setType(CiJobTypeEnum.API_TEST.value());
+                                            devopsCiJobVO.setDevopsCiApiTestInfoVO(devopsCiApiTestInfoVO);
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.API_TEST.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
                                     }
                                 }
                             }
