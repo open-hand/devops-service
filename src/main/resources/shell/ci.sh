@@ -863,21 +863,5 @@ function execute_api_test(){
     fi
 
   # 这里的configId是测试任务关联的任务配置id
-  environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  java -jar /choerodon/app.jar
-
-  # 检查是否执行失败以及是否达到阈值
-  is_failed=$(jq -r .failed result.json)
-  successRate=$(jq -r .successRate result.json)
-  if [ "$is_failed" == true ]; then
-      echo "Failed to execute test"
-      exit 1
-  fi
-
-  block=$1
-  rate=$2
-
-  if [ `echo "$successRate < $rate" |bc` -eq 1  ]&&[ "${bock}" == "true " ]; then
-      echo "The success rate did not reach the set threshold."
-  fi
-
+  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  java -jar /choerodon/app.jar
 }
