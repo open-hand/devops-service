@@ -72,7 +72,8 @@
            last_updated_by,
            last_update_date,
            type,
-           gitlab_project_id
+           gitlab_project_id,
+           config_id
     FROM devops_ci_job_record
     WHERE gitlab_job_id = #{gitlabJobId}
   </select>

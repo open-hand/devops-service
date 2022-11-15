@@ -1439,7 +1439,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryByGitlabJobId(apiTestCompleteEventVO.getTriggerId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByIdWithPipelineName(devopsCiJobRecordDTO.getCiPipelineRecordId());
-        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobRecordDTO.getConfigId());
+        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectById(devopsCiJobRecordDTO.getConfigId());
         // 流水线状态
         // 失败：
         // 1. API测试任务执行失败
@@ -1499,7 +1499,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     public void handleApiTestSuiteCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryByGitlabJobId(apiTestCompleteEventVO.getTriggerId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByIdWithPipelineName(devopsCiJobRecordDTO.getCiPipelineRecordId());
-        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobRecordDTO.getConfigId());
+        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectById(devopsCiJobRecordDTO.getConfigId());
 
         // 流水线状态
         // 失败：
