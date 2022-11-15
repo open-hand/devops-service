@@ -33,32 +33,33 @@ public class CiCdPipelineRecordController {
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/details")
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
+            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "ci记录id", required = true)
             @RequestParam(value = "id") Long id) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, id));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重试整条流水线")
     @GetMapping("/retry")
     public ResponseEntity<Void> retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
+            @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.retryPipeline(projectId, pipelineRecordRelId, gitlabProjectId);
+        ciCdPipelineRecordService.retryPipeline(projectId, id, gitlabProjectId);
         return Results.success();
     }
 
+    @Deprecated
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "重试cd任务")
     @GetMapping("/retry_cd_task")
@@ -75,16 +76,16 @@ public class CiCdPipelineRecordController {
     /**
      * Cancel jobs in a pipeline
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "取消流水线")
     @GetMapping(value = "/cancel")
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
+            @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.cancel(projectId, pipelineRecordRelId, gitlabProjectId);
+        ciCdPipelineRecordService.cancel(projectId, id, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 
