@@ -54,6 +54,9 @@ public interface DevopsCiJobRecordService {
 
     DevopsCiJobRecordDTO baseQueryByGitlabJobId(Long id);
 
+
+    DevopsCiJobRecordDTO baseQueryById(Long id);
+
     AuditResultVO auditJob(Long projectId, Long id, String result);
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);

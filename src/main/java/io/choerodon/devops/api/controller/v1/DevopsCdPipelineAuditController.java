@@ -21,6 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @author wanghao
  * @since 2020/7/7 23:42
  */
+@Deprecated
 @RestController
 @RequestMapping("/v1/projects/{project_id}/pipeline_records/{pipeline_record_id}")
 public class DevopsCdPipelineAuditController {
