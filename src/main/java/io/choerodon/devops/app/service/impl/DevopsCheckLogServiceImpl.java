@@ -146,14 +146,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             stageMap.forEach((pipelineId, cdStageDTOS) -> {
                 //
                 CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(pipelineId);
-                Long projectId = ciCdPipelineDTO.getProjectId();
                 if (ciCdPipelineDTO != null) {
+                    Long projectId = ciCdPipelineDTO.getProjectId();
                     List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
                     if (!CollectionUtils.isEmpty(devopsCiStageDTOS)) {
                         // 查询最大的阶段sequence
                         Long maxSequence = devopsCiStageDTOS.stream().max(Comparator.comparing(DevopsCiStageDTO::getSequence)).map(DevopsCiStageDTO::getSequence).get();
                         // 将cd的每个任务都渲染为一个单独的阶段
-                        for (DevopsCdStageDTO cdStageDTO : cdStageDTOS) {// 查询阶段下的任务
+                        for (DevopsCdStageDTO cdStageDTO : cdStageDTOS) {
+                            // 查询阶段下的任务
                             List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByStageId(cdStageDTO.getId());
                             if (!CollectionUtils.isEmpty(devopsCdJobDTOS)) {
                                 // 升序排序
