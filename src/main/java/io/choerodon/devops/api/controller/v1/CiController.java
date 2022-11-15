@@ -371,4 +371,14 @@ public class CiController {
             @RequestParam(value = "job_name") String jobName) {
         return ResponseEntity.ok(ciAuditRecordService.queryAuditStatus(token, gitlabPipelineId, jobName));
     }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "校验项目并返回触发job的用户id")
+    @GetMapping("/check_and_get_trigger_user_id")
+    public ResponseEntity<Long> checkAndGetTriggerUserId(@ApiParam("应用token")
+                                                         @RequestParam("token") String token,
+                                                         @ApiParam("gitlab job id")
+                                                         @RequestParam("gitlab_job_id") Long gitlabJobId) {
+        return ResponseEntity.ok(devopsCiJobRecordService.checkAndGetTriggerUserId(token, gitlabJobId));
+    }
 }

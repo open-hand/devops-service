@@ -22,6 +22,7 @@ import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.JobWebHookVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -375,6 +376,16 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(jobDTO.getUser().getUsername()));
         devopsCiJobRecordDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectId));
         devopsCiJobRecordDTO.setAppServiceId(appServiceId);
+    }
+
+    @Override
+    public Long checkAndGetTriggerUserId(String token, Long gitlabJobId) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordMapper.baseQueryByGitlabJobId(gitlabJobId);
+        if (appServiceDTO.getGitlabProjectId() != devopsCiJobRecordDTO.getGitlabProjectId().intValue()) {
+            throw new CommonException(ExceptionConstants.PublicCode.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        }
+        return devopsCiJobRecordDTO.getTriggerUserId();
     }
 
     private void calculatAuditUserName(List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

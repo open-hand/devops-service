@@ -865,5 +865,5 @@ function execute_api_test(){
     fi
 
   # 这里的configId是测试任务关联的任务配置id
-  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  java -jar /choerodon/app.jar
+  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  token=${Token} java -jar /choerodon/app.jar
 }

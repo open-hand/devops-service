@@ -15,6 +15,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_ORGANIZATION_ROLE_ID_GET = "devops.organization.role.id.get";
         public static final String DEVOPS_CONTEXT_SET_ERROR = "devops.context.set.error";
 
+        public static final String DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT = "devops.operating.resource.in.other.project";
+
     }
 
     /**
