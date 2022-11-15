@@ -324,7 +324,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     public AduitStatusChangeVO checkAuditStatus(Long projectId, Long id) {
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryByGitlabJobId(id);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordMapper.selectByPrimaryKey(id);
 
         Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
         Long appServiceId = devopsCiJobRecordDTO.getAppServiceId();
