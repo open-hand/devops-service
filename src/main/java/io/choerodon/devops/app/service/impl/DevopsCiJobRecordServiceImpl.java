@@ -339,14 +339,18 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
         AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
         aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
-        if (PipelineStatus.STOP.toValue().equals(devopsCiJobRecordDTO.getStatus())) {
-            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
-            calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
-            aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
-        } else if (PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordDTO.getStatus())) {
-            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
-            calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
-            aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+        if (!ciAuditRecordDTO.getCountersigned()) {
+            List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()) || AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            List<CiAuditUserRecordDTO> passedAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            List<CiAuditUserRecordDTO> refusedAuditUserRecordDTOS = ciAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(passedAuditUserRecordDTOS)) {
+                calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+                aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+            }
+            if (!CollectionUtils.isEmpty(refusedAuditUserRecordDTOS)) {
+                calculatAuditUserName(auditUserRecordDTOList, aduitStatusChangeVO);
+                aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
+            }
         }
 
         return aduitStatusChangeVO;
