@@ -349,10 +349,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setAppServiceId(appServiceId);
                 fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
-                AbstractJobHandler handler = jobOperator.getHandler(ciJobWebHookVO.getType());
-                if (handler != null) {
-                    handler.saveAdditionalRecordInfo(devopsCiJobRecordDTO, pipelineWebHookVO.getObjectAttributes().getId(), ciJobWebHookVO);
-                }
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
@@ -362,7 +358,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
             }
-
+            AbstractJobHandler handler = jobOperator.getHandler(ciJobWebHookVO.getType());
+            if (handler != null) {
+                handler.saveAdditionalRecordInfo(devopsCiJobRecordDTO, pipelineWebHookVO.getObjectAttributes().getId(), ciJobWebHookVO);
+            }
             //如果当前任务状态为manual且任务类型为audit则发送审核邮件
             if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus())) {
                 ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),

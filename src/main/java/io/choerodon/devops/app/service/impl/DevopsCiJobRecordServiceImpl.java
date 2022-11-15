@@ -52,9 +52,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private static final String DEVOPS_JOB_RECORD_UPDATE = "devops.job.record.update";
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
@@ -71,14 +68,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private UserAttrService userAttrService;
-
-    public DevopsCiJobRecordServiceImpl(DevopsCiJobRecordMapper devopsCiJobRecordMapper,
-                                        @Lazy DevopsCiPipelineRecordService devopsCiPipelineRecordService,
-                                        @Lazy DevopsCiJobService devopsCiJobService) {
-        this.devopsCiJobRecordMapper = devopsCiJobRecordMapper;
-        this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
-        this.devopsCiJobService = devopsCiJobService;
-    }
+    @Autowired
+    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
+    @Lazy
+    private DevopsCiJobService devopsCiJobService;
 
     @Override
     public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
