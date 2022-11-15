@@ -1,20 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -28,6 +30,8 @@ import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -52,6 +56,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
     private static final String DEVOPS_JOB_RECORD_UPDATE = "devops.job.record.update";
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
+    @Value(value = "${services.front.url: http://app.example.com}")
+    private String frontUrl;
 
     @Autowired
     private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
@@ -77,6 +84,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Autowired
     @Lazy
     private DevopsCiJobService devopsCiJobService;
+    @Autowired
+    private DevopsCiApiTestInfoService devopsCiApiTestInfoService;
 
     @Override
     public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
@@ -408,6 +417,31 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             throw new CommonException(ExceptionConstants.PublicCode.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
         return devopsCiJobRecordDTO.getTriggerUserId();
+    }
+
+    @Override
+    public void testResultNotify(String token, Long gitlabJobId, String successRate) {
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
+        DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectById(devopsCiJobRecordDTO.getConfigId());
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByIdWithPipelineName(devopsCiJobRecordDTO.getCiPipelineRecordId());
+
+        if (devopsCiApiTestInfoDTO.getEnableWarningSetting()) {
+            Map<String, String> param = new HashMap<>();
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
+            Tenant tenant = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            String link = String.format(PIPELINE_LINK_URL_TEMPLATE, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId(), devopsCiPipelineRecordDTO.getCiPipelineId(), devopsCiPipelineRecordDTO.getId());
+            param.put("projectName", projectDTO.getName());
+            param.put("tenantName", tenant.getTenantName());
+            param.put("pipelineName", devopsCiPipelineRecordDTO.getPipelineName());
+            param.put("taskName", devopsCiJobRecordDTO.getName());
+            param.put("successRate", successRate);
+            param.put("threshold", devopsCiApiTestInfoDTO.getPerformThreshold().toString());
+            param.put("link", frontUrl + link);
+            param.put("link_web", link);
+            Set<Long> userIds = Arrays.stream(devopsCiApiTestInfoDTO.getNotifyUserIds().split(",")).sorted().filter(ObjectUtils::isNotEmpty).map(Long::parseLong).collect(Collectors.toSet());
+            sendNotificationService.sendApiTestSuiteWarningMessage(userIds, param, devopsCiApiTestInfoDTO.getProjectId());
+        }
     }
 
     private void calculatAuditUserName(List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

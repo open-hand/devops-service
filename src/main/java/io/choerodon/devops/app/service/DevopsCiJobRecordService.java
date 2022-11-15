@@ -66,4 +66,6 @@ public interface DevopsCiJobRecordService {
     void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId);
 
     Long checkAndGetTriggerUserId(String token, Long gitlabJobId);
+
+    void testResultNotify(String token, Long gitlabJobId, String successRate);
 }

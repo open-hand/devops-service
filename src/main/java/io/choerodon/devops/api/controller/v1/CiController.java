@@ -1,9 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.Date;
-import java.util.Optional;
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Date;
+import java.util.Optional;
+import javax.validation.Valid;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiAuditResultVO;
@@ -380,5 +380,18 @@ public class CiController {
                                                          @ApiParam("gitlab job id")
                                                          @RequestParam("gitlab_job_id") Long gitlabJobId) {
         return ResponseEntity.ok(devopsCiJobRecordService.checkAndGetTriggerUserId(token, gitlabJobId));
+    }
+
+    @Permission(permissionLogin = true)
+    @ApiOperation(value = "api测试job触发通知")
+    @PostMapping("/test_result_notify")
+    public ResponseEntity<Void> testResultNotify(@ApiParam("应用token")
+                                                  @RequestParam("token") String token,
+                                                  @ApiParam("gitlab job id")
+                                                  @RequestParam("gitlab_job_id") Long gitlabJobId,
+                                                  @ApiParam("成功率")
+                                                  @RequestParam("success_rate") String successRate) {
+        devopsCiJobRecordService.testResultNotify(token, gitlabJobId, successRate);
+        return ResponseEntity.ok().build();
     }
 }
