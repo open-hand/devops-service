@@ -799,7 +799,7 @@ function host_deploy_status_check() {
         else
           is_failed=$(jq -r .failed result.json)
           status=$(jq -r .status result.json)
-          error_msg=${jq -r .errorMsg result.json}
+          error_msg=$(jq -r .errorMsg result.json)
           if [ "${is_failed}" == "true" ];then
             echo "Deploy failed"
             echo "${error_msg}"
