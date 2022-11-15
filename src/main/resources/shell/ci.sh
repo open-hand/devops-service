@@ -852,6 +852,8 @@ function process_audit() {
 function execute_api_test(){
   # 这里的configId关联的是ci job关联的测试任务信息id
   http_status_code=$(curl -X POST \
+      -F "gitlab_job_id=${CI_JOB_ID}" \
+      -F "config_id=$6" \
       "${CHOERODON_URL}/devops/ci/update_job_config_id?gitlab_job_id=${CI_JOB_ID}&config_id=$6" \
       -o "result.json" \
       -s \

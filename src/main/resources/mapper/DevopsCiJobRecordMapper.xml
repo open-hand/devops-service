@@ -49,4 +49,31 @@
     SET config_id=#{configId}
     WHERE gitlab_job_id = #{gitlabJobId}
   </update>
+
+  <select id="baseQueryByGitlabJobId" resultType="io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO">
+    SELECT id,
+           gitlab_job_id,
+           ci_pipeline_record_id,
+           name,
+           stage,
+           group_type,
+           status,
+           trigger_user_id,
+           command_id,
+           started_date,
+           finished_date,
+           duration_seconds,
+           app_service_id,
+           maven_setting_id,
+           metadata,
+           object_version_number,
+           created_by,
+           creation_date,
+           last_updated_by,
+           last_update_date,
+           type,
+           gitlab_project_id
+    FROM devops_ci_job_record
+    WHERE gitlab_job_id = #{gitlabJobId}
+  </select>
 </mapper>

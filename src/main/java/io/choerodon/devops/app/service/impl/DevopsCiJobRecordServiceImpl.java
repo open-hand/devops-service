@@ -229,14 +229,14 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public DevopsCiJobRecordDTO baseQueryById(Long id) {
-        return devopsCiJobRecordMapper.selectByPrimaryKey(id);
+    public DevopsCiJobRecordDTO baseQueryByGitlabJobId(Long gitlabJobId) {
+        return devopsCiJobRecordMapper.baseQueryByGitlabJobId(gitlabJobId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuditResultVO auditJob(Long projectId, Long jobRecordId, String result) {
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryById(jobRecordId);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryByGitlabJobId(jobRecordId);
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
         Long gitlabProjectId = devopsCiJobRecordDTO.getGitlabProjectId();
@@ -323,7 +323,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     @Override
     public AduitStatusChangeVO checkAuditStatus(Long projectId, Long id) {
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryById(id);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryByGitlabJobId(id);
 
         Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
         Long appServiceId = devopsCiJobRecordDTO.getAppServiceId();

@@ -52,7 +52,7 @@ public interface DevopsCiJobRecordService {
 
     List<DevopsCiJobRecordDTO> listByCiPipelineRecordId(Long ciPipelineRecordId);
 
-    DevopsCiJobRecordDTO baseQueryById(Long id);
+    DevopsCiJobRecordDTO baseQueryByGitlabJobId(Long id);
 
     AuditResultVO auditJob(Long projectId, Long id, String result);
 

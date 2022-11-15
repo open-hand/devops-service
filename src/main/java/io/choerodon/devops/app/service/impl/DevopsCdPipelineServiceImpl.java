@@ -1437,7 +1437,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     @Transactional
     public void handleApiTestTaskCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryById(apiTestCompleteEventVO.getTriggerId());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryByGitlabJobId(apiTestCompleteEventVO.getTriggerId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByIdWithPipelineName(devopsCiJobRecordDTO.getCiPipelineRecordId());
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobRecordDTO.getConfigId());
         // 流水线状态
@@ -1497,7 +1497,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     @Override
     @Transactional
     public void handleApiTestSuiteCompleteEvent(ApiTestCompleteEventVO apiTestCompleteEventVO) {
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryById(apiTestCompleteEventVO.getTriggerId());
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.baseQueryByGitlabJobId(apiTestCompleteEventVO.getTriggerId());
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByIdWithPipelineName(devopsCiJobRecordDTO.getCiPipelineRecordId());
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobRecordDTO.getConfigId());
 
