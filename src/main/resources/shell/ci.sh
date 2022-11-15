@@ -802,7 +802,7 @@ function host_deploy_status_check() {
           error_msg=$(jq -r .errorMsg result.json)
           if [ "${is_failed}" == "true" ];then
             echo "Deploy failed"
-            echo "${error_msg}"
+            cat result.json
             exit 1
           else
             if [ "${status}" == "success" ]; then
