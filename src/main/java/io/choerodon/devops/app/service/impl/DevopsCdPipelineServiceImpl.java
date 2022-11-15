@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.UUIDUtils;
@@ -1485,8 +1486,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("successCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount()));
                         param.put("failedCount", String.valueOf(apiTestTaskRecordVO.getFailCount()));
                         param.put("caseCount", String.valueOf(apiTestTaskRecordVO.getSuccessCount() + apiTestTaskRecordVO.getFailCount()));
-                        Set<Long> userIds = JsonHelper.unmarshalByJackson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<Set<Long>>() {
-                        });
+                        Set<Long> userIds = Arrays.stream(devopsCiApiTestInfoDTO.getNotifyUserIds().split(",")).sorted().filter(ObjectUtils::isNotEmpty).map(Long::parseLong).collect(Collectors.toSet());
                         sendNotificationService.sendApiTestWarningMessage(userIds, param, devopsCiApiTestInfoDTO.getProjectId());
                     }
                 }
@@ -1549,8 +1549,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
                         param.put("threshold", devopsCiApiTestInfoDTO.getPerformThreshold().toString());
                         param.put("link", frontUrl + link);
                         param.put("link_web", link);
-                        Set<Long> userIds = JsonHelper.unmarshalByJackson(devopsCiApiTestInfoDTO.getNotifyUserIds(), new TypeReference<Set<Long>>() {
-                        });
+                        Set<Long> userIds = Arrays.stream(devopsCiApiTestInfoDTO.getNotifyUserIds().split(",")).sorted().filter(ObjectUtils::isNotEmpty).map(Long::parseLong).collect(Collectors.toSet());
                         sendNotificationService.sendApiTestSuiteWarningMessage(userIds, param, devopsCiApiTestInfoDTO.getProjectId());
                     }
                 }
