@@ -42,7 +42,11 @@ public interface DevopsCdJobService {
 
     /**
      * 修复数据使用，查询所有apiTest类型的数据
+     *
      * @return
      */
     List<CdApiTestConfigForSagaVO> listCdApiTestConfig();
+
+
+    List<DevopsCdJobDTO> listByStageId(Long stageId);
 }
