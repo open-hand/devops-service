@@ -120,4 +120,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '配置id', afterColumn: 'command_id')
         }
     }
+
+    changeSet(author: 'lihao', id: '2022-11-16-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'api_test_task_record_id', type: 'BIGINT UNSIGNED', remarks: 'api测试任务记录id', afterColumn: 'config_id')
+        }
+    }
 }

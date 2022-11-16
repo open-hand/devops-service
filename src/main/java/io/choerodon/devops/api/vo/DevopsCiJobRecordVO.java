@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.*;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 
 /**
  * 〈功能简述〉
@@ -67,6 +68,40 @@ public class DevopsCiJobRecordVO {
     private Audit audit;
     @ApiModelProperty("chart部署任务信息")
     private DeployInfo deployInfo;
+
+    @ApiModelProperty("api测试记录id")
+    @Encrypt
+    private Long apiTestTaskRecordId;
+
+    @Encrypt
+    @ApiModelProperty("关联的配置id")
+    private Long configId;
+
+    private ApiTestTaskRecordVO apiTestTaskRecordVO;
+
+    public ApiTestTaskRecordVO getApiTestTaskRecordVO() {
+        return apiTestTaskRecordVO;
+    }
+
+    public void setApiTestTaskRecordVO(ApiTestTaskRecordVO apiTestTaskRecordVO) {
+        this.apiTestTaskRecordVO = apiTestTaskRecordVO;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
 
     public DeployInfo getDeployInfo() {
         return deployInfo;

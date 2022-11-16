@@ -34,6 +34,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.*;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
@@ -57,6 +58,7 @@ import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.mapper.*;
@@ -76,6 +78,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
     protected static final String ENV = "env";
+    protected static final String HOST = "host";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
     private final DevopsCiJobRecordService devopsCiJobRecordService;
@@ -130,6 +133,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
     @Autowired
     private RdupmClientOperator rdupmClientOperator;
+    @Autowired
+    DevopsHostAppService devopsHostAppService;
+    @Autowired
+    private DevopsCiApiTestInfoService devopsCiApiTestInfoService;
+    @Autowired
+    private TestServiceClientOperator testServiceClientOperator;
 
     @Value("${services.gateway.url}")
     private String api;
@@ -598,6 +607,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 addChartDeployInfo(devopsCiJobRecordVO);
                 // 添加部署组部署记录信息
                 addDeploymentDeployInfo(devopsCiJobRecordVO);
+                // 添加主机部署记录信息
+                addHostDeployInfo(devopsCiJobRecordVO);
+                // 添加api测试执行信息
+                addApiTestInfo(devopsCiJobRecordVO);
 
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
@@ -613,6 +626,38 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         devopsCiPipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
         devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
+    }
+
+    private void addApiTestInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        try {
+            DevopsCiApiTestInfoDTO ciApiTestInfoDTO = devopsCiApiTestInfoService.selectById(devopsCiJobRecordVO.getConfigId());
+            ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientOperator.queryById(ciApiTestInfoDTO.getProjectId(), devopsCiJobRecordVO.getApiTestTaskRecordId());
+            apiTestTaskRecordVO.setDeployJobName(devopsCiJobRecordVO.getName());
+            apiTestTaskRecordVO.setPerformThreshold(ciApiTestInfoDTO.getPerformThreshold());
+            devopsCiJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
+        } catch (Exception ex) {
+            LOGGER.warn("Failed to query api test task record..., the ex code is {}", ex.getMessage());
+        }
+    }
+
+    private void addHostDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        Long commandId = devopsCiJobRecordVO.getCommandId();
+        if (commandId != null) {
+            DeployRecordVO deployRecordVO = devopsDeployRecordService.queryHostDeployRecordByCommandId(commandId);
+            DeployInfo deployInfo = new DeployInfo();
+            deployInfo.setAppId(deployRecordVO.getAppId());
+            deployInfo.setAppName(deployRecordVO.getAppName());
+            deployInfo.setHostName(deployRecordVO.getDeployPayloadName());
+            deployInfo.setDeployType(HOST);
+            deployInfo.setDeployTypeId(deployRecordVO.getDeployPayloadId());
+            deployInfo.setOperationType(deployRecordVO.getDeployObjectType());
+            deployInfo.setRdupmType(deployRecordVO.getDeployObjectType());
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(deployRecordVO.getAppId());
+            if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
+                deployInfo.setOperationType(devopsHostAppDTO.getOperationType());
+            }
+            devopsCiJobRecordVO.setDeployInfo(deployInfo);
+        }
     }
 
     private void addDeploymentDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
