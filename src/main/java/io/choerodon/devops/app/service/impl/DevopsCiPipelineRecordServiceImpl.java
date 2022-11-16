@@ -644,51 +644,59 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     }
 
     private void addHostDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        Long commandId = devopsCiJobRecordVO.getCommandId();
-        if (commandId != null) {
-            DeployRecordVO deployRecordVO = devopsDeployRecordService.queryHostDeployRecordByCommandId(commandId);
-            DeployInfo deployInfo = new DeployInfo();
-            deployInfo.setAppId(deployRecordVO.getAppId());
-            deployInfo.setAppName(deployRecordVO.getAppName());
-            deployInfo.setHostName(deployRecordVO.getDeployPayloadName());
-            deployInfo.setDeployType(HOST);
-            deployInfo.setDeployTypeId(deployRecordVO.getDeployPayloadId());
-            deployInfo.setOperationType(deployRecordVO.getDeployObjectType());
-            deployInfo.setRdupmType(deployRecordVO.getDeployObjectType());
-            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(deployRecordVO.getAppId());
-            if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
-                deployInfo.setOperationType(devopsHostAppDTO.getOperationType());
-            }
-            devopsCiJobRecordVO.setDeployInfo(deployInfo);
-        }
-    }
-
-    private void addDeploymentDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
-        Long commandId = devopsCiJobRecordVO.getCommandId();
-        if (commandId != null) {
-            DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
-            if (deployRecordVO != null) {
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+        if (CiJobTypeEnum.HOST_DEPLOY.value().equals(devopsCiJobRecordVO.getType())
+                && io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+            Long commandId = devopsCiJobRecordVO.getCommandId();
+            if (commandId != null) {
+                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryHostDeployRecordByCommandId(commandId);
                 DeployInfo deployInfo = new DeployInfo();
-                deployInfo.setEnvId(deployRecordVO.getEnvId());
-                deployInfo.setEnvName(deployRecordVO.getDeployPayloadName());
                 deployInfo.setAppId(deployRecordVO.getAppId());
                 deployInfo.setAppName(deployRecordVO.getAppName());
-                if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
-                    deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
-                    deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
-                    deployInfo.setDeployType(ENV);
-                    deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
-                    if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-                        DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
-                        if (!ObjectUtils.isEmpty(deploymentDTO)) {
-                            deployInfo.setStatus(deploymentDTO.getStatus());
-                        }
-                    }
+                deployInfo.setHostName(deployRecordVO.getDeployPayloadName());
+                deployInfo.setDeployType(HOST);
+                deployInfo.setDeployTypeId(deployRecordVO.getDeployPayloadId());
+                deployInfo.setOperationType(deployRecordVO.getDeployObjectType());
+                deployInfo.setRdupmType(deployRecordVO.getDeployObjectType());
+                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(deployRecordVO.getAppId());
+                if (!ObjectUtils.isEmpty(devopsHostAppDTO)) {
+                    deployInfo.setOperationType(devopsHostAppDTO.getOperationType());
                 }
                 devopsCiJobRecordVO.setDeployInfo(deployInfo);
             }
         }
+
+    }
+
+    private void addDeploymentDeployInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
+        if (CiJobTypeEnum.DEPLOYMENT_DEPLOY.value().equals(devopsCiJobRecordVO.getType())
+                && io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.SUCCESS.toValue().equals(devopsCiJobRecordVO.getStatus())) {
+            Long commandId = devopsCiJobRecordVO.getCommandId();
+            if (commandId != null) {
+                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                if (deployRecordVO != null) {
+                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                    DeployInfo deployInfo = new DeployInfo();
+                    deployInfo.setEnvId(deployRecordVO.getEnvId());
+                    deployInfo.setEnvName(deployRecordVO.getDeployPayloadName());
+                    deployInfo.setAppId(deployRecordVO.getAppId());
+                    deployInfo.setAppName(deployRecordVO.getAppName());
+                    if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                        deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                        deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                        deployInfo.setDeployType(ENV);
+                        deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                        if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                            DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
+                            if (!ObjectUtils.isEmpty(deploymentDTO)) {
+                                deployInfo.setStatus(deploymentDTO.getStatus());
+                            }
+                        }
+                    }
+                    devopsCiJobRecordVO.setDeployInfo(deployInfo);
+                }
+            }
+        }
+
 
     }
 
