@@ -707,7 +707,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         .filter(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()) || AuditStatusEnum.REFUSED.value().equals(v.getStatus()))
                         .map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
                 List<IamUserDTO> reviewedUsers = allIamUserDTOS.stream().filter(u -> reviewedUids.contains(u.getId())).collect(Collectors.toList());
-                Audit audit = new Audit(allIamUserDTOS, reviewedUsers, devopsCiJobRecordVO.getStatus());
+                Audit audit = new Audit(allIamUserDTOS, reviewedUsers, devopsCiJobRecordVO.getStatus(), ciAuditRecordDTO.getCountersigned());
                 devopsCiJobRecordVO.setAudit(audit);
             }
         }
