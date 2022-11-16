@@ -9,7 +9,6 @@ import static io.choerodon.devops.infra.enums.CiJobTypeEnum.API_TEST;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -1348,36 +1347,36 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds) {
-        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
-        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByProjectIdAndType(projectId, API_TEST);
-        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
-            return pipelineInstanceReferenceVOList;
-        }
-
-        // 收集与测试任务关联的任务列表，并记录对应关系
-        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOS) {
-            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CdApiTestConfigVO.class);
-            if (taskIds.contains(cdApiTestConfigVO.getApiTestTaskId())) {
-                PipelineInstanceReferenceVO pipelineInstanceReferenceVO = new PipelineInstanceReferenceVO();
-                pipelineInstanceReferenceVO.setJobId(devopsCiJobDTO.getId());
-                pipelineInstanceReferenceVO.setTaskId(cdApiTestConfigVO.getApiTestTaskId());
-                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
-            }
-        }
-        if (CollectionUtils.isEmpty(pipelineInstanceReferenceVOList)) {
-            return pipelineInstanceReferenceVOList;
-        }
-        Set<Long> jobIds = pipelineInstanceReferenceVOList.stream().map(PipelineInstanceReferenceVO::getJobId).collect(Collectors.toSet());
-        List<DevopsCdJobVO> devopsCdJobVOS = devopsCdJobService.listByIdsWithNames(jobIds);
-        Map<Long, DevopsCdJobVO> cdJobVOMap = devopsCdJobVOS.stream().collect(Collectors.toMap(DevopsCdJobVO::getId, Function.identity()));
-        pipelineInstanceReferenceVOList.forEach(pipelineInstanceReferenceVO -> {
-            DevopsCdJobVO devopsCdJobVO = cdJobVOMap.get(pipelineInstanceReferenceVO.getJobId());
-            pipelineInstanceReferenceVO.setPipelineName(devopsCdJobVO.getPipelineName());
-            pipelineInstanceReferenceVO.setStageName(devopsCdJobVO.getStageName());
-            pipelineInstanceReferenceVO.setJobName(devopsCdJobVO.getName());
-        });
-
-        return pipelineInstanceReferenceVOList;
+        return devopsCiJobService.listApiTestTaskReferencePipelineInfo(projectId, taskIds);
+//        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByProjectIdAndType(projectId, API_TEST);
+//        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
+//            return pipelineInstanceReferenceVOList;
+//        }
+//
+//        // 收集与测试任务关联的任务列表，并记录对应关系
+//        for (DevopsCiJobDTO devopsCiJobDTO : devopsCiJobDTOS) {
+//            CdApiTestConfigVO cdApiTestConfigVO = JsonHelper.unmarshalByJackson(devopsCiJobDTO.getMetadata(), CdApiTestConfigVO.class);
+//            if (taskIds.contains(cdApiTestConfigVO.getApiTestTaskId())) {
+//                PipelineInstanceReferenceVO pipelineInstanceReferenceVO = new PipelineInstanceReferenceVO();
+//                pipelineInstanceReferenceVO.setJobId(devopsCiJobDTO.getId());
+//                pipelineInstanceReferenceVO.setTaskId(cdApiTestConfigVO.getApiTestTaskId());
+//                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+//            }
+//        }
+//        if (CollectionUtils.isEmpty(pipelineInstanceReferenceVOList)) {
+//            return pipelineInstanceReferenceVOList;
+//        }
+//        Set<Long> jobIds = pipelineInstanceReferenceVOList.stream().map(PipelineInstanceReferenceVO::getJobId).collect(Collectors.toSet());
+//        List<DevopsCdJobVO> devopsCdJobVOS = devopsCdJobService.listByIdsWithNames(jobIds);
+//        Map<Long, DevopsCdJobVO> cdJobVOMap = devopsCdJobVOS.stream().collect(Collectors.toMap(DevopsCdJobVO::getId, Function.identity()));
+//        pipelineInstanceReferenceVOList.forEach(pipelineInstanceReferenceVO -> {
+//            DevopsCdJobVO devopsCdJobVO = cdJobVOMap.get(pipelineInstanceReferenceVO.getJobId());
+//            pipelineInstanceReferenceVO.setPipelineName(devopsCdJobVO.getPipelineName());
+//            pipelineInstanceReferenceVO.setStageName(devopsCdJobVO.getStageName());
+//            pipelineInstanceReferenceVO.setJobName(devopsCdJobVO.getName());
+//        });
+//
+//        return pipelineInstanceReferenceVOList;
     }
 
     @Override

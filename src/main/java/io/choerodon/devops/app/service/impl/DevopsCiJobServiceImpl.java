@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -20,10 +21,7 @@ import org.springframework.util.CollectionUtils;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
@@ -411,6 +409,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         devopsCiJobDTO.setName(name);
         return devopsCiJobMapper.selectOne(devopsCiJobDTO);
 
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds) {
+        return devopsCiJobMapper.listApiTestTaskReferencePipelineInfo(projectId, taskIds);
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

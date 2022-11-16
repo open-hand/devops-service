@@ -1,10 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -24,4 +26,6 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
     List<DevopsCiJobDTO> listByProjectAndType(@Param("projectId") Long projectId, @Param("type") String type);
 
     Boolean doesApiTestSuiteRelatedWithPipeline(@Param("projectId") Long projectId, @Param("suiteId") Long suiteId);
+
+    List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(@Param("projectId") Long projectId, @Param("taskIds") Set<Long> taskIds);
 }
