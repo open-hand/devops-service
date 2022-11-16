@@ -631,10 +631,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private void addApiTestInfo(DevopsCiJobRecordVO devopsCiJobRecordVO) {
         try {
             DevopsCiApiTestInfoDTO ciApiTestInfoDTO = devopsCiApiTestInfoService.selectById(devopsCiJobRecordVO.getConfigId());
-            ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientOperator.queryById(ciApiTestInfoDTO.getProjectId(), devopsCiJobRecordVO.getApiTestTaskRecordId());
-            apiTestTaskRecordVO.setDeployJobName(devopsCiJobRecordVO.getName());
-            apiTestTaskRecordVO.setPerformThreshold(ciApiTestInfoDTO.getPerformThreshold());
-            devopsCiJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
+            if (ciApiTestInfoDTO != null) {
+                ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientOperator.queryById(ciApiTestInfoDTO.getProjectId(), devopsCiJobRecordVO.getApiTestTaskRecordId());
+                apiTestTaskRecordVO.setDeployJobName(devopsCiJobRecordVO.getName());
+                apiTestTaskRecordVO.setPerformThreshold(ciApiTestInfoDTO.getPerformThreshold());
+                devopsCiJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
+            }
         } catch (Exception ex) {
             LOGGER.warn("Failed to query api test task record..., the ex code is {}", ex.getMessage());
         }
