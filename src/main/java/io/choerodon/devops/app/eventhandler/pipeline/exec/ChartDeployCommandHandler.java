@@ -261,7 +261,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         preInstance.getId(),
                         true,
                         true);
-                commandId = devopsEnvCommandDTO.getId()
+                commandId = devopsEnvCommandDTO.getId();
                 log.append("Restart success.").append(System.lineSeparator());
                 return;
             } else {
