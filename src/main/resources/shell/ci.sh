@@ -770,7 +770,7 @@ function host_deploy(){
     else
       is_failed=$(jq -r .failed result.json)
       message=$(jq -r .message result.json)
-      command_id=$(jq -r .commandId result.json)
+      command_id=$(jq -r .content.commandId result.json)
       # 打印后台返回的日志
       if [ -n "${message}" ]; then
           echo "${message}"
@@ -798,8 +798,8 @@ function host_deploy_status_check() {
           exit 1
         else
           is_failed=$(jq -r .failed result.json)
-          status=$(jq -r .status result.json)
-          error_msg=$(jq -r .errorMsg result.json)
+          status=$(jq -r .content.status result.json)
+          error_msg=$(jq -r .content.errorMsg result.json)
           if [ "${is_failed}" == "true" ];then
             echo "Deploy failed"
             cat result.json
