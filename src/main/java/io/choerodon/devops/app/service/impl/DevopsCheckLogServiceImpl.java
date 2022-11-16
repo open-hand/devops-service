@@ -192,7 +192,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             Set<Long> uids = auditDTOList.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toSet());
                                             ciAuditConfigVO.setCdAuditUserIds(new ArrayList<>(uids));
                                         }
-
+                                        devopsCiJobVO.setTags("cd");
                                         devopsCiJobVO.setCiAuditConfig(ciAuditConfigVO);
                                         devopsCiJobVO.setType(CiJobTypeEnum.AUDIT.value());
 
@@ -205,6 +205,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (devopsCdEnvDeployInfoDTO != null) {
                                             CiChartDeployConfigVO ciChartDeployConfigVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, CiChartDeployConfigVO.class);
 
+                                            devopsCiJobVO.setTags("cd");
                                             devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigVO);
                                             devopsCiJobVO.setType(CiJobTypeEnum.CHART_DEPLOY.value());
 
@@ -217,6 +218,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (devopsCdEnvDeployInfoDTO != null) {
                                             CiDeployDeployCfgVO ciDeployDeployCfgVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, CiDeployDeployCfgVO.class);
 
+                                            devopsCiJobVO.setTags("cd");
                                             devopsCiJobVO.setCiDeployDeployCfg(ciDeployDeployCfgVO);
                                             devopsCiJobVO.setType(CiJobTypeEnum.DEPLOYMENT_DEPLOY.value());
 

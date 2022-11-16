@@ -125,4 +125,6 @@ public interface DevopsCiJobService {
     DevopsCiJobDTO queryByCiPipelineIdAndName(Long ciPipelineId, String name);
 
     List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
 }

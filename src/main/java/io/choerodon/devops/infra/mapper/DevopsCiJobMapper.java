@@ -28,4 +28,6 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
     Boolean doesApiTestSuiteRelatedWithPipeline(@Param("projectId") Long projectId, @Param("suiteId") Long suiteId);
 
     List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(@Param("projectId") Long projectId, @Param("taskIds") Set<Long> taskIds);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(@Param("projectId") Long projectId, @Param("appId") Long appId);
 }

@@ -96,6 +96,8 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
     @Autowired
+    private DevopsCiJobService devopsCiJobService;
+    @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
     @Override
@@ -467,7 +469,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+        return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
     }
 
     @Override
