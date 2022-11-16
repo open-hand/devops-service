@@ -263,7 +263,6 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         true);
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("Restart success.").append(System.lineSeparator());
-                return;
             } else {
                 // 要部署版本的commit
                 CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
