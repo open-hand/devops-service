@@ -84,8 +84,10 @@ public class CiTemplateJobDTO extends AuditDomain {
     private Integer parallel;
     @ApiModelProperty("关联的任务配置id")
     private Long configId;
+    @ApiModelProperty("延迟配置")
+    private Integer startIn;
 
-    @ApiModelProperty("任务tags")
+    @ApiModelProperty("任务启动延时时间")
     private String tags;
 
     public String getTags() {
@@ -94,6 +96,14 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Integer getStartIn() {
+        return startIn;
+    }
+
+    public void setStartIn(Integer startIn) {
+        this.startIn = startIn;
     }
 
     public Long getConfigId() {

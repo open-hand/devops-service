@@ -61,12 +61,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
     }
     changeSet(author: 'wanghao', id: '2022-11-03-add-column') {
         addColumn(tableName: 'devops_ci_template_job') {
-            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '任务关联的配置id')
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '任务关联的配置id', afterColumn: 'parallel')
         }
     }
     changeSet(author: 'wanghao', id: '2022-11-16-add-column') {
         addColumn(tableName: 'devops_ci_template_job') {
-            column(name: 'tags', type: 'VARCHAR(255)', remarks: 'job的tag标签')
+            column(name: 'start_in', type: 'int(5)', remarks: '任务启动延时时间', afterColumn: 'config_id')
+            column(name: 'tags', type: 'VARCHAR(255)', remarks: 'job的tag标签', afterColumn: 'config_id')
         }
     }
 }
