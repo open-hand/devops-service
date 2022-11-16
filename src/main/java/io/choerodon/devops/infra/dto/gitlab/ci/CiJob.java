@@ -45,6 +45,17 @@ public class CiJob {
     @YamlProperty(value = "start_in")
     private String startIn;
 
+    @ApiModelProperty("job tags")
+    private List<String> tags;
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
     public Boolean getAllowFailure() {
         return allowFailure;
     }

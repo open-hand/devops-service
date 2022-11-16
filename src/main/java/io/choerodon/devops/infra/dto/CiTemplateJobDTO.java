@@ -85,6 +85,17 @@ public class CiTemplateJobDTO extends AuditDomain {
     @ApiModelProperty("关联的任务配置id")
     private Long configId;
 
+    @ApiModelProperty("任务tags")
+    private String tags;
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
     public Long getConfigId() {
         return configId;
     }

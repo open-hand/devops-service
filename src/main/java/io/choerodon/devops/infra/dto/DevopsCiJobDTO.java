@@ -63,6 +63,16 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     @ApiModelProperty("启动延时")
     private Integer startIn;
+    @ApiModelProperty("任务tags")
+    private String tags;
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
     public Integer getStartIn() {
         return startIn;

@@ -85,4 +85,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
         dropColumn(columnName: "old_type", tableName: "devops_ci_job")
         dropColumn(columnName: "metadata", tableName: "devops_ci_job")
     }
+
+    changeSet(author: 'wanghao', id: '2022-11-16-add-column') {
+        addColumn(tableName: 'devops_ci_job') {
+            column(name: 'tags', type: 'VARCHAR(255)', remarks: 'job的tag标签')
+        }
+    }
 }

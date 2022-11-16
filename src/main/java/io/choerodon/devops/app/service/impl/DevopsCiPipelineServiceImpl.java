@@ -1821,7 +1821,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         ciJob.setWhen("manual");
                         ciJob.setAllowFailure(false);
                     }
-
+                    if (StringUtils.isNoneBlank(job.getTags())) {
+                        ciJob.setTags(Arrays.asList(job.getTags().split(",")));
+                    }
                     ciJob.setCache(buildJobCache(job));
                     processOnlyAndExcept(job, ciJob);
 
