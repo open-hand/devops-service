@@ -63,7 +63,7 @@
            dcpr.finished_date,
            dcpr.duration_seconds,
            dcpr.gitlab_project_id,
-           dcp.name
+           dcp.name AS pipeline_name
     FROM devops_ci_pipeline_record dcpr
            JOIN devops_cicd_pipeline dcp ON dcp.id = dcpr.ci_pipeline_id
     WHERE dcpr.id = #{ciPipelineRecordId}
