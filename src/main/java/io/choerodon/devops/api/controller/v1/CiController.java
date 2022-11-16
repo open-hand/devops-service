@@ -319,9 +319,9 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "流水线触发chart部署", hidden = true)
+    @ApiOperation(value = "执行命令", hidden = true)
     @PostMapping("/exec_command")
-    public ResponseEntity<CiResponseVO> chartDeploy(
+    public ResponseEntity<CiResponseVO> execCommand(
             @ApiParam(value = "token", required = true)
             @RequestParam String token,
             @ApiParam(value = "GitLab流水线id", required = true)

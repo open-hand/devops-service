@@ -389,7 +389,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId) {
+    public DevopsCiJobRecordDTO syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId) {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO;
         JobDTO jobDTO = gitlabServiceClientOperator.queryJob(gitlabProjectId, TypeUtil.objToInteger(gitlabJobId));
         DevopsCiJobDTO devopsCiJobDTO = devopsCiJobService.queryByCiPipelineIdAndName(ciPipelineId, jobDTO.getName());
@@ -407,6 +407,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(jobDTO.getUser().getUsername()));
         devopsCiJobRecordDTO.setGitlabProjectId(TypeUtil.objToLong(gitlabProjectId));
         devopsCiJobRecordDTO.setAppServiceId(appServiceId);
+        return devopsCiJobRecordDTO;
     }
 
     @Override

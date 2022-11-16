@@ -61,7 +61,7 @@ public abstract class AbstractCiCommandHandler {
         // 查询任务记录设置用户上下文
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
         if (devopsCiJobRecordDTO == null) {
-            devopsCiJobRecordService.syncJobRecord(gitlabJobId, appServiceId, ciPipelineRecordId, ciPipelineId, gitlabProjectId);
+            devopsCiJobRecordDTO = devopsCiJobRecordService.syncJobRecord(gitlabJobId, appServiceId, ciPipelineRecordId, ciPipelineId, gitlabProjectId);
 
 //            throw new DevopsCiInvalidException(DEVOPS_CI_JOB_RECORD_QUERY);
         }

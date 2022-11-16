@@ -63,7 +63,7 @@ public interface DevopsCiJobRecordService {
 
     void updateConfigId(Long gitlabJobId, Long configId);
 
-    void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId);
+    DevopsCiJobRecordDTO syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId);
 
     Long checkAndGetTriggerUserId(String token, Long gitlabJobId);
 
