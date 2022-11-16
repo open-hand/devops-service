@@ -850,20 +850,6 @@ function process_audit() {
 }
 
 function execute_api_test(){
-  # 这里的configId关联的是ci job关联的测试任务信息id
-  http_status_code=$(curl -X POST \
-      -F "gitlab_job_id=${CI_JOB_ID}" \
-      -F "config_id=$6" \
-      "${CHOERODON_URL}/devops/ci/update_job_config_id?gitlab_job_id=${CI_JOB_ID}&config_id=$6" \
-      -o "result.json" \
-      -s \
-      -w %{http_code})
-    if [ "$http_status_code" != "200" ]; then
-      echo "Failed to update job config id "
-      cat result.json
-      exit 1
-    fi
-
-  # 这里的configId是测试任务关联的任务配置id
-  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 configId=$7  token=${Token} java -jar /choerodon/app.jar
+  # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
+  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 apiTestInfoConfigId=$6 configId=$7 token=${Token} java -jar /choerodon/app.jar
 }
