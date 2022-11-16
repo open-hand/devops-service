@@ -895,26 +895,26 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 查询流水线
         Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status));
 
-        if (CollectionUtils.isEmpty(pipelinePage.getContent())) {
-            return pipelinePage;
-        }
-        pipelinePage.getContent().forEach(pipelineVO -> {
-            // 查询每条流水线，最新的一条执行记录
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryLatestedPipelineRecord(pipelineVO.getId());
-//            PipelineCompositeRecordVO pipelineCompositeRecordVO = devopsPipelineRecordRelService.queryLatestedPipelineRecord(pipelineVO.getId());
-            if (devopsCiPipelineRecordDTO != null) {
-                // 判断是否存在记录
-                pipelineVO.setHasRecords(true);
-                //计算流水线上一次执行的状态和时间
-//                String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
-                pipelineVO.setLatestExecuteStatus(devopsCiPipelineRecordDTO.getStatus());
-                pipelineVO.setLatestExecuteDate(devopsCiPipelineRecordDTO.getCreationDate());
-            } else {
-//                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
-//                pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
-            }
-
-        });
+//        if (CollectionUtils.isEmpty(pipelinePage.getContent())) {
+//            return pipelinePage;
+//        }
+//        pipelinePage.getContent().forEach(pipelineVO -> {
+//            // 查询每条流水线，最新的一条执行记录
+//            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryLatestedPipelineRecord(pipelineVO.getId());
+////            PipelineCompositeRecordVO pipelineCompositeRecordVO = devopsPipelineRecordRelService.queryLatestedPipelineRecord(pipelineVO.getId());
+//            if (devopsCiPipelineRecordDTO != null) {
+//                // 判断是否存在记录
+//                pipelineVO.setHasRecords(true);
+//                //计算流水线上一次执行的状态和时间
+////                String latestExecuteStatus = calculateExecuteStatus(pipelineCompositeRecordVO);
+//                pipelineVO.setLatestExecuteStatus(devopsCiPipelineRecordDTO.getStatus());
+//                pipelineVO.setLatestExecuteDate(devopsCiPipelineRecordDTO.getCreationDate());
+//            } else {
+////                pipelineVO.setLatestExecuteStatus(PipelineStatus.SKIPPED.toValue());
+////                pipelineVO.setLatestExecuteDate(pipelineVO.getCreationDate());
+//            }
+//
+//        });
         return pipelinePage;
     }
 
