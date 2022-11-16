@@ -64,7 +64,7 @@ public class CommandOperator {
         CiResponseVO ciResponseVO = new CiResponseVO();
         DevopsHostCommandDTO devopsHostCommandDTO = devopsHostCommandService.baseQueryById(commandId);
         Map<String, Object> result = new HashMap<>();
-        if (devopsHostCommandDTO.getCiPipelineRecordId().equals(gitlabPipelineId)) {
+        if (devopsHostCommandDTO != null && devopsHostCommandDTO.getCiPipelineRecordId().equals(gitlabPipelineId)) {
             result.put("status", devopsHostCommandDTO.getStatus());
             switch (HostCommandStatusEnum.valueOf(devopsHostCommandDTO.getStatus().toUpperCase())) {
                 case OPERATING:

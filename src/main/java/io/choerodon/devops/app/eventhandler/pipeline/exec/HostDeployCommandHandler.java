@@ -31,7 +31,7 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
     @Override
     protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content) {
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = devopsCiHostDeployInfoMapper.selectByPrimaryKey(configId);
-        Long commandId = null;
+        Long commandId;
         if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(RdupmTypeEnum.DOCKER.value())) {
             commandId = ApplicationContextHelper
                     .getSpringFactory()
@@ -56,6 +56,6 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
         devopsCiJobRecordDTO.setCommandId(commandId);
         devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
-        content.put("commandId", commandId);
+        content.put("commandId", commandId.toString());
     }
 }
