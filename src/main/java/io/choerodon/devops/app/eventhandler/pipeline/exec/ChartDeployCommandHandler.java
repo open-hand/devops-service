@@ -261,35 +261,37 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         preInstance.getId(),
                         true,
                         true);
+                commandId = devopsEnvCommandDTO.getId()
                 log.append("Restart success.").append(System.lineSeparator());
                 return;
+            } else {
+                // 要部署版本的commit
+                CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
+                // 已经部署版本的commit
+                CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
+                if (deploydCommit != null
+                        && currentCommit != null
+                        && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
+                    // 计算commitDate
+                    // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
+                    // 如果现在部署的版本落后于已经部署的版本则跳过
+                    log.append("Deploy version is behind to instance current version, skipped.").append(System.lineSeparator());
+                    return;
+                }
+                appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
+                        appServiceVersionDTO.getId(),
+                        envId,
+                        devopsDeployValueService.baseQueryById(valueId).getValue(),
+                        valueId,
+                        appCode,
+                        devopsDeployAppCenterEnvDTO.getObjectId(),
+                        CommandType.UPDATE.getType(),
+                        null,
+                        null);
+                appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
+                commandId = appServiceInstanceVO.getCommandId();
             }
-            // 要部署版本的commit
-            CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
-            // 已经部署版本的commit
-            CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
-            if (deploydCommit != null
-                    && currentCommit != null
-                    && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                // 计算commitDate
-                // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                // 如果现在部署的版本落后于已经部署的版本则跳过
-                log.append("Deploy version is behind to instance current version, skipped.").append(System.lineSeparator());
-                return;
-            }
-            appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
-                    appServiceVersionDTO.getId(),
-                    envId,
-                    devopsDeployValueService.baseQueryById(valueId).getValue(),
-                    valueId,
-                    appCode,
-                    devopsDeployAppCenterEnvDTO.getObjectId(),
-                    CommandType.UPDATE.getType(),
-                    null,
-                    null);
-            appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-            AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
-            commandId = appServiceInstanceVO.getCommandId();
         }
         devopsCiJobRecordDTO.setCommandId(commandId);
         devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
