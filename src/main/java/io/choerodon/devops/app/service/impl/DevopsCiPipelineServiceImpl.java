@@ -1347,7 +1347,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
     @Override
     public List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds) {
-        return devopsCiJobService.listApiTestTaskReferencePipelineInfo(projectId, taskIds);
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOS = devopsCiJobService.listApiTestTaskReferencePipelineInfo(projectId, taskIds);
+        if (CollectionUtils.isEmpty(pipelineInstanceReferenceVOS)) {
+            return new ArrayList<>();
+        }
+        return pipelineInstanceReferenceVOS;
 //        List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByProjectIdAndType(projectId, API_TEST);
 //        if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
 //            return pipelineInstanceReferenceVOList;
