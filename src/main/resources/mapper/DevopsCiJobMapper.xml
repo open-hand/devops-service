@@ -2,12 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiJobMapper">
 
-    <select id="listOldDataByType" resultType="io.choerodon.devops.infra.dto.DevopsCiJobDTO">
-        select *
-        from devops_ci_job dcj
-        where dcj.old_type = #{type}
-          and dcj.type is null
-    </select>
     <select id="listCustomByPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiJobVO">
         select dcj.*, dcs.name as stage_name
         from devops_ci_job dcj

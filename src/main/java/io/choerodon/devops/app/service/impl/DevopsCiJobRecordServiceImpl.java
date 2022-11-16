@@ -177,7 +177,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             }
             if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
                 recordDTO.setType(existDevopsCiJobDTO.getType());
-                recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
             }
 
             return recordDTO;
@@ -210,7 +209,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
-            recordDTO.setMetadata(existDevopsCiJobDTO.getMetadata());
             recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
             DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
             devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());

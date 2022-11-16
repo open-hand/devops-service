@@ -4,10 +4,8 @@ import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -60,13 +58,6 @@ public class DevopsCiJobVO {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
-
-    /**
-     * {@link CiConfigVO}
-     */
-    @ApiModelProperty("详细信息 / 如果是自定义任务, 这个字段是base64加密过的")
-    @NotEmpty(message = "{devops.job.metadata.cannot.be.null}")
-    private String metadata;
 
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
     private Boolean toUpload;
@@ -198,11 +189,6 @@ public class DevopsCiJobVO {
 
     private Long objectVersionNumber;
 
-    @JsonIgnore
-    @Transient
-    @ApiModelProperty("类型为build的job的metadata转为json后的对象")
-    private CiConfigVO configVO;
-
     public Integer getParallel() {
         return parallel;
     }
@@ -267,14 +253,6 @@ public class DevopsCiJobVO {
         this.triggerType = triggerType;
     }
 
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -305,14 +283,6 @@ public class DevopsCiJobVO {
 
     public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
-    }
-
-    public CiConfigVO getConfigVO() {
-        return configVO;
-    }
-
-    public void setConfigVO(CiConfigVO configVO) {
-        this.configVO = configVO;
     }
 
     public DevopsCiHostDeployInfoVO getDevopsCiHostDeployInfoVO() {

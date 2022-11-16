@@ -36,8 +36,6 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     @ApiModelProperty("任务类型")
     private String type;
-    @ApiModelProperty("v1.2之前的旧任务类型，仅数据修复用，v1.3即可删除")
-    private String oldType;
     @ApiModelProperty("触发类型对应的值")
     private String triggerValue;
     @ApiModelProperty("job的并发数")
@@ -48,12 +46,6 @@ public class DevopsCiJobDTO extends AuditDomain {
      */
     @ApiModelProperty("触发类型")
     private String triggerType;
-
-    /**
-     * {@link io.choerodon.devops.api.vo.CiConfigVO}
-     */
-    @ApiModelProperty("详细信息")
-    private String metadata;
 
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
     @Column(name = "is_to_upload")
@@ -86,14 +78,6 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     public void setConfigId(Long configId) {
         this.configId = configId;
-    }
-
-    public String getOldType() {
-        return oldType;
-    }
-
-    public void setOldType(String oldType) {
-        this.oldType = oldType;
     }
 
     public String getScript() {
@@ -174,14 +158,6 @@ public class DevopsCiJobDTO extends AuditDomain {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
     }
 
     public String getImage() {

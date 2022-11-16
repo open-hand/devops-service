@@ -81,4 +81,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job.groovy') {
             column(name: 'start_in', type: 'int(5)', remarks: '任务启动延时时间')
         }
     }
+    changeSet(author: 'wanghao', id: '2022-11-08-drop-column') {
+        dropColumn(columnName: "old_type", tableName: "devops_ci_job")
+        dropColumn(columnName: "metadata", tableName: "devops_ci_job")
+    }
 }

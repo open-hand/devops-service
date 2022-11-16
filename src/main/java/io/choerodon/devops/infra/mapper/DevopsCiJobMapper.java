@@ -16,7 +16,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @Date 2020/4/3 9:20
  */
 public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
-    List<DevopsCiJobDTO> listOldDataByType(String type);
 
     List<DevopsCiJobVO> listCustomByPipelineId(@Param("ciPipelineId") Long ciPipelineId);
 

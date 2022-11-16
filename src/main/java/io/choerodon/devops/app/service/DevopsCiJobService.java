@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
-import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 
@@ -125,4 +123,6 @@ public interface DevopsCiJobService {
     DevopsCiJobDTO selectByPrimaryKey(Long id);
 
     DevopsCiJobDTO queryByCiPipelineIdAndName(Long ciPipelineId, String name);
+
+    List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 }
