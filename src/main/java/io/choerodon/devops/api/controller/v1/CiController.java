@@ -349,9 +349,9 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "更新ci job关联的配置id", hidden = true)
-    @PostMapping("/update_job_config_id")
-    public ResponseEntity<Void> updateJobConfigId(@ApiParam(value = "GitLab Jobid", required = true)
+    @ApiOperation(value = "更新job 关联的api测试执行记录信息", hidden = true)
+    @PostMapping("/update_api_test_task_record_info")
+    public ResponseEntity<Void> updateApiTestTaskRecordInfo(@ApiParam(value = "GitLab Jobid", required = true)
                                                   @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
                                                   @ApiParam(value = "configId", required = true)
                                                   @RequestParam(value = "config_id") Long configId,
