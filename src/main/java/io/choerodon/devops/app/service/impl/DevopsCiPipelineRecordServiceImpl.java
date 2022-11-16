@@ -635,6 +635,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 ApiTestTaskRecordVO apiTestTaskRecordVO = testServiceClientOperator.queryById(ciApiTestInfoDTO.getProjectId(), devopsCiJobRecordVO.getApiTestTaskRecordId());
                 apiTestTaskRecordVO.setDeployJobName(devopsCiJobRecordVO.getName());
                 apiTestTaskRecordVO.setPerformThreshold(ciApiTestInfoDTO.getPerformThreshold());
+                apiTestTaskRecordVO.setTaskType(ciApiTestInfoDTO.getTaskType());
                 devopsCiJobRecordVO.setApiTestTaskRecordVO(apiTestTaskRecordVO);
             }
         } catch (Exception ex) {
