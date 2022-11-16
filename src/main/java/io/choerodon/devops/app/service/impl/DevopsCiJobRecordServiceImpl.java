@@ -1,5 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -11,12 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_GITLAB_JOB_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -412,7 +412,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Override
     public Long checkAndGetTriggerUserId(String token, Long gitlabJobId) {
         AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
-        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordMapper.baseQueryByGitlabJobId(gitlabJobId);
+        DevopsCiJobRecordDTO devopsCiJobRecordDTO = queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
         if (appServiceDTO.getGitlabProjectId() != devopsCiJobRecordDTO.getGitlabProjectId().intValue()) {
             throw new CommonException(ExceptionConstants.PublicCode.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         }
