@@ -39,6 +39,7 @@ public class DevopsCdPipelineController {
     /**
      * 主机模式镜像部署接口
      */
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "主机模式部署接口")
     @PostMapping(value = "/cd_host_deploy")
@@ -60,6 +61,7 @@ public class DevopsCdPipelineController {
     /**
      * 触发环境自动部署
      */
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "环境部署")
     @PostMapping(value = "/env_auto_deploy")
@@ -84,6 +86,7 @@ public class DevopsCdPipelineController {
      * @param stageRecordId    阶段记录Id
      * @param jobRecordId      任务Id
      */
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/auto_deploy/status")
@@ -110,6 +113,7 @@ public class DevopsCdPipelineController {
      * @param stageRecordId    阶段记录Id
      * @param jobRecordId      任务Id
      */
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询任务状态")
     @GetMapping("/job/status")
@@ -129,6 +133,7 @@ public class DevopsCdPipelineController {
     /**
      * 执行API测试任务
      */
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "执行api测试")
     @PostMapping(value = "/execute_api_test_task")
@@ -143,6 +148,7 @@ public class DevopsCdPipelineController {
         return Results.success();
     }
 
+    @Deprecated
     @Permission(permissionWithin = true)
     @ApiOperation(value = "查询部署任务状态")
     @GetMapping(value = "/deploy_status")
