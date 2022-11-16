@@ -77,9 +77,5 @@ public abstract class AbstractCiCommandHandler {
         return ciResponseVO;
     }
 
-    private void syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId) {
-
-    }
-
     protected abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content);
 }
