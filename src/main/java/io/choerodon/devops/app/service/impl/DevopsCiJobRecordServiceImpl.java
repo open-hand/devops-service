@@ -382,8 +382,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void updateConfigId(Long gitlabJobId, Long configId) {
-        devopsCiJobRecordMapper.updateConfigId(gitlabJobId, configId);
+    public void updateApiTestTaskRecordInfo(Long gitlabJobId, Long configId, Long apiTestTaskRecordId) {
+        devopsCiJobRecordMapper.updateApiTestTaskRecordInfo(gitlabJobId, configId, apiTestTaskRecordId);
     }
 
     @Override

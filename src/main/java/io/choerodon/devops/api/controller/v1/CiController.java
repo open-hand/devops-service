@@ -354,8 +354,10 @@ public class CiController {
     public ResponseEntity<Void> updateJobConfigId(@ApiParam(value = "GitLab Jobid", required = true)
                                                   @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
                                                   @ApiParam(value = "configId", required = true)
-                                                  @RequestParam(value = "config_id") Long configId) {
-        devopsCiJobRecordService.updateConfigId(gitlabJobId, configId);
+                                                  @RequestParam(value = "config_id") Long configId,
+                                                  @ApiParam(value = "测试任务执行记录id")
+                                                  @RequestParam(value = "api_test_task_record_id") Long apiTestTaskRecordId) {
+        devopsCiJobRecordService.updateApiTestTaskRecordInfo(gitlabJobId, configId, apiTestTaskRecordId);
         return ResponseEntity.ok().build();
     }
 
@@ -373,7 +375,7 @@ public class CiController {
     }
 
     @Permission(permissionWithin = true)
-    @ApiOperation(value = "校验项目并返回触发job的用户id")
+    @ApiOperation(value = "校验项目并返回触发job的用户id", hidden = true)
     @GetMapping("/check_and_get_trigger_user_id")
     public ResponseEntity<Long> checkAndGetTriggerUserId(@ApiParam("应用token")
                                                          @RequestParam("token") String token,
@@ -383,7 +385,7 @@ public class CiController {
     }
 
     @Permission(permissionPublic = true)
-    @ApiOperation(value = "api测试job触发通知")
+    @ApiOperation(value = "api测试job触发通知", hidden = true)
     @PostMapping("/test_result_notify")
     public ResponseEntity<Void> testResultNotify(@ApiParam("应用token")
                                                  @RequestParam("token") String token,

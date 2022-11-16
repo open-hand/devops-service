@@ -21,7 +21,7 @@ public interface DevopsCiJobRecordMapper extends BaseMapper<DevopsCiJobRecordDTO
 
     DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(@Param("pipelineId") Long pipelineId);
 
-    void updateConfigId(@Param("gitlabJobId") Long gitlabJobId, @Param("configId") Long configId);
+    void updateApiTestTaskRecordInfo(@Param("gitlabJobId") Long gitlabJobId, @Param("configId") Long configId, @Param("apiTestTaskRecordId") Long apiTestTaskRecordId);
 
     DevopsCiJobRecordDTO baseQueryByGitlabJobId(@Param("gitlabJobId") Long gitlabJobId);
 }

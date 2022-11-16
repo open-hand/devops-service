@@ -61,7 +61,7 @@ public interface DevopsCiJobRecordService {
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);
 
-    void updateConfigId(Long gitlabJobId, Long configId);
+    void updateApiTestTaskRecordInfo(Long gitlabJobId, Long configId, Long apiTestTaskRecordId);
 
     DevopsCiJobRecordDTO syncJobRecord(Long gitlabJobId, Long appServiceId, Long ciPipelineRecordId, Long ciPipelineId, Integer gitlabProjectId);
 
