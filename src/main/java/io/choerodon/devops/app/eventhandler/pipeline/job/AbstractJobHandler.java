@@ -109,7 +109,20 @@ public abstract class AbstractJobHandler {
      * @param gitlabPipelineId
      * @param ciJobWebHookVO
      */
+    @Transactional(rollbackFor = Exception.class)
     public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
+
+    }
+
+    /**
+     * 初始化流水线记录时需要额外保存的信息
+     *
+     * @param devopsCiJobRecordDTO
+     * @param gitlabPipelineId
+     * @param existDevopsCiJobDTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
 
     }
 

@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -23,6 +21,8 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.JobWebHookVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
@@ -37,7 +37,6 @@ import io.choerodon.devops.infra.enums.PipelineStatus;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
-import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
@@ -53,14 +52,14 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
+    private static final String DEVOPS_JOB_RECORD_CREATE = "devops.job.record.create";
     private static final String DEVOPS_JOB_RECORD_UPDATE = "devops.job.record.update";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
 
-    @Autowired
-    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
+    //    @Autowired
+//    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
@@ -85,6 +84,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsCiApiTestInfoService devopsCiApiTestInfoService;
+    @Autowired
+    private JobOperator jobOperator;
 
     @Override
     public DevopsCiJobRecordDTO queryByAppServiceIdAndGitlabJobId(Long appServiceId, Long gitlabJobId) {
@@ -154,36 +155,31 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
-        List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = jobDTOS.stream().map(jobDTO -> {
-            DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
-            recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
-            recordDTO.setGitlabProjectId(gitlabProjectId);
-            recordDTO.setStatus(jobDTO.getStatus().toValue());
-            recordDTO.setStage(jobDTO.getStage());
-            recordDTO.setGitlabJobId(TypeUtil.objToLong(jobDTO.getId()));
-            recordDTO.setStartedDate(jobDTO.getStartedAt());
-            recordDTO.setFinishedDate(jobDTO.getFinishedAt());
-            recordDTO.setName(jobDTO.getName());
-            recordDTO.setTriggerUserId(iamUserId);
-            recordDTO.setAppServiceId(appServiceId);
-            DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
-            if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
-                recordDTO.setType(existDevopsCiJobDTO.getType());
-                recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
-            }
-            return recordDTO;
-        }).collect(Collectors.toList());
-
-        devopsCiJobRecordMapper.batchInert(devopsCiJobRecordDTOS);
+        jobDTOS.forEach(jobDTO -> {
+            create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
+        });
 
     }
 
     @Override
-    public void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId, Long appServiceId) {
+    public void create(Long ciPipelineRecordId,
+                       Long gitlabProjectId,
+                       JobDTO jobDTO,
+                       Long iamUserId,
+                       Long appServiceId) {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
 
+        create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
+    }
+
+    public void create(Long ciPipelineRecordId,
+                       Long gitlabProjectId,
+                       JobDTO jobDTO,
+                       Long iamUserId,
+                       Long appServiceId,
+                       Map<String, DevopsCiJobDTO> jobMap) {
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
         recordDTO.setGitlabProjectId(gitlabProjectId);
@@ -199,16 +195,28 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
             recordDTO.setType(existDevopsCiJobDTO.getType());
             recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
-            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
-            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
+//            DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO = new DevopsCiMavenSettingsDTO();
+//            devopsCiMavenSettingsDTO.setCiJobId(existDevopsCiJobDTO.getId());
 //            DevopsCiMavenSettingsDTO ciMavenSettingsDTO = devopsCiMavenSettingsMapper.selectOne(devopsCiMavenSettingsDTO);
 //            if (!Objects.isNull(ciMavenSettingsDTO)) {
 //                recordDTO.setMavenSettingId(ciMavenSettingsDTO.getId());
 //            }
-
+        }
+        baseCreate(recordDTO);
+        if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
+            AbstractJobHandler handler = jobOperator.getHandler(existDevopsCiJobDTO.getType());
+            if (handler != null) {
+                handler.saveAdditionalRecordInfo(recordDTO, devopsCiPipelineRecordDTO.getGitlabPipelineId(), existDevopsCiJobDTO);
+            }
         }
 
-        devopsCiJobRecordMapper.insertSelective(recordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
+        MapperUtil.resultJudgedInsertSelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_JOB_RECORD_CREATE);
     }
 
     @Override
@@ -223,11 +231,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(ciPipelineRecordId);
         return devopsCiJobRecordMapper.select(recordDTO);
-    }
-
-    @Override
-    public DevopsCiJobRecordDTO baseQueryByGitlabJobId(Long gitlabJobId) {
-        return devopsCiJobRecordMapper.baseQueryByGitlabJobId(gitlabJobId);
     }
 
     @Override

@@ -61,7 +61,10 @@ import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper;
+import io.choerodon.devops.infra.mapper.DevopsImageScanResultMapper;
 import io.choerodon.devops.infra.util.*;
 
 /**
@@ -103,22 +106,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private AppServiceService appServiceService;
-
     @Autowired
     private DevopsCiPipelineChartService devopsCiPipelineChartService;
-
     @Autowired
     private RdupmClient rdupmClient;
-
-    @Autowired
-    private DevopsCiJobMapper devopsCiJobMapper;
-
-    @Autowired
-    private DevopsCiStageMapper devopsCiStageMapper;
-
-    @Autowired
-    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
-
     @Autowired
     private DevopsImageScanResultMapper devopsImageScanResultMapper;
     @Autowired

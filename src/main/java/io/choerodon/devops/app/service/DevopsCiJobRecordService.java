@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.JobWebHookVO;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 
@@ -42,6 +44,15 @@ public interface DevopsCiJobRecordService {
      */
     void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId, Long appServiceId);
 
+    void create(Long ciPipelineRecordId,
+                Long gitlabProjectId,
+                JobDTO jobDTO,
+                Long iamUserId,
+                Long appServiceId,
+                Map<String, DevopsCiJobDTO> jobMap);
+
+    void baseCreate(DevopsCiJobRecordDTO devopsCiJobRecordDTO);
+
     /**
      * 根据流水线纪录id获取job纪录的数量
      *
@@ -51,9 +62,6 @@ public interface DevopsCiJobRecordService {
     int selectCountByCiPipelineRecordId(Long ciPipelineRecordId);
 
     List<DevopsCiJobRecordDTO> listByCiPipelineRecordId(Long ciPipelineRecordId);
-
-    DevopsCiJobRecordDTO baseQueryByGitlabJobId(Long id);
-
 
     DevopsCiJobRecordDTO baseQueryById(Long id);
 
