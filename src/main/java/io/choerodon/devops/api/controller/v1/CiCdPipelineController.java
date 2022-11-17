@@ -24,8 +24,6 @@ import io.choerodon.devops.api.vo.CiCdPipelineVO;
 import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
-import io.choerodon.devops.app.service.CiCdPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
@@ -48,10 +46,6 @@ public class CiCdPipelineController {
 
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-    @Autowired
-    private DevopsCdJobService devopsCdJobService;
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线")

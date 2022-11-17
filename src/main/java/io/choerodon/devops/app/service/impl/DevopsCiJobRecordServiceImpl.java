@@ -39,7 +39,6 @@ import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiJobRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
 
@@ -168,11 +167,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             recordDTO.setTriggerUserId(iamUserId);
             recordDTO.setAppServiceId(appServiceId);
             DevopsCiJobDTO existDevopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(jobDTO.getName(), jobMap);
-            if (logger.isInfoEnabled()) {
-                logger.info("existDevopsCiJobDTO is : {}", JsonHelper.marshalByJackson(existDevopsCiJobDTO));
-            }
             if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
                 recordDTO.setType(existDevopsCiJobDTO.getType());
+                recordDTO.setGroupType(existDevopsCiJobDTO.getGroupType());
             }
             return recordDTO;
         }).collect(Collectors.toList());

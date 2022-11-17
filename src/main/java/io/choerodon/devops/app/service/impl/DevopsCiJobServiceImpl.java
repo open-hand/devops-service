@@ -25,7 +25,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
@@ -381,14 +380,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new DevopsCiInvalidException(DEVOPS_CI_MAVEN_SETTINGS_NOT_FOUND);
         }
         return devopsCiMavenSettingsDTO.getMavenSettings();
-    }
-
-    @Override
-    public List<DevopsCiJobDTO> listByProjectIdAndType(Long projectId, CiJobTypeEnum typeEnum) {
-        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
-        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_JOB_TYPE_IS_NULL);
-
-        return devopsCiJobMapper.listByProjectAndType(projectId, typeEnum.value());
     }
 
     @Override

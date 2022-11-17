@@ -20,13 +20,6 @@
         </foreach>
     </update>
 
-    <select id="listByProjectAndType" resultType="io.choerodon.devops.infra.dto.DevopsCiJobDTO">
-        SELECT * FROM devops_ci_job dcj
-        JOIN devops_cicd_pipeline dcp ON dcp.id=dcj.ci_pipeline_id
-        WHERE dcj.type=#{type}
-          AND dcp.project_id = #{projectId}
-    </select>
-
     <select id="doesApiTestSuiteRelatedWithPipeline" resultType="java.lang.Boolean">
         SELECT COUNT(*) > 0
         FROM devops_ci_job dcj
