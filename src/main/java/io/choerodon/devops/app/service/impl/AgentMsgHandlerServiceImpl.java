@@ -57,6 +57,7 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
+    public static final String CHOERODON_IO_REPLICAS_STRATEGY="choerodon.io/replicas-strategy";
     public static final String EVICTED = "Evicted";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";

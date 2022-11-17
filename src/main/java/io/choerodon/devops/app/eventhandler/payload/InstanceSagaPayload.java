@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.payload;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.api.vo.DevopsServiceReqVO;
@@ -22,6 +24,17 @@ public class InstanceSagaPayload {
     private AppServiceDeployVO appServiceDeployVO;
     private DevopsServiceReqVO devopsServiceReqVO;
     private DevopsIngressVO devopsIngressVO;
+
+    @ApiModelProperty("replicas生效策略在 values/deployment")
+    private String replicasStrategy;
+
+    public String getReplicasStrategy() {
+        return replicasStrategy;
+    }
+
+    public void setReplicasStrategy(String replicasStrategy) {
+        this.replicasStrategy = replicasStrategy;
+    }
 
 
     public InstanceSagaPayload() {

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
@@ -44,6 +45,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -85,7 +87,10 @@ import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
+import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -221,8 +226,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
-    @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
@@ -312,7 +315,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         Set<Long> marketInstanceCommandVersionIds = new HashSet<>();
         Set<Long> appServiceIds = new HashSet<>();
@@ -819,6 +822,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+
+                instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceDeployVO.getReplicasStrategy()).orElse(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.DEPLOYMENT.getStrategy())));
             }
             devopsDeployRecordService.saveRecord(
                     devopsEnvironmentDTO.getProjectId(),
@@ -1182,6 +1187,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getValues(),
                     instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
                     instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getReplicasStrategy(),
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
@@ -1532,6 +1538,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.DEPLOYMENT.getStrategy()));
 
         //目前重新部署也走gitops逻辑
         producer.apply(
@@ -2157,6 +2164,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getValues(),
                     instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
                     instanceSagaPayload.getSecretCode(),
+                    null,
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
@@ -2434,9 +2442,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private C7nHelmRelease getC7NHelmRelease(String code, String repository,
                                              Long appServiceId,
-                                             Long commandId, String appServiceCode,
-                                             String version, String deployValue,
-                                             Long deployVersionId, String secretName,
+                                             Long commandId,
+                                             String appServiceCode,
+                                             String version,
+                                             String deployValue,
+                                             Long deployVersionId,
+                                             String secretName,
+                                             String replicasStrategy,
                                              DevopsEnvironmentDTO devopsEnvironmentDTO) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
@@ -2453,6 +2465,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
+        }
+
+        if (!ObjectUtils.isEmpty(replicasStrategy)) {
+            Metadata metadata = c7nHelmRelease.getMetadata();
+            Map<String, String> annotations = new HashMap<>();
+            annotations.put(CHOERODON_IO_REPLICAS_STRATEGY, replicasStrategy);
+            metadata.setAnnotations(annotations);
         }
 
         // 如果是组件的实例进行部署
