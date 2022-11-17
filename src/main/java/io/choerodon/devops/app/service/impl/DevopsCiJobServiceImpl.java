@@ -91,7 +91,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
-                                  DevopsCiJobRecordService devopsCiJobRecordService,
+                                  @Lazy
+                                          DevopsCiJobRecordService devopsCiJobRecordService,
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,

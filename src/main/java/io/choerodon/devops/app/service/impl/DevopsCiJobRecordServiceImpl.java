@@ -57,9 +57,6 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
     @Value(value = "${services.front.url: http://app.example.com}")
     private String frontUrl;
-
-    //    @Autowired
-//    private DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper;
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
@@ -85,6 +82,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Autowired
     private DevopsCiApiTestInfoService devopsCiApiTestInfoService;
     @Autowired
+    @Lazy
     private JobOperator jobOperator;
 
     @Override
