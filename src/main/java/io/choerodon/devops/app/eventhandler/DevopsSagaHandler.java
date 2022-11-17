@@ -23,7 +23,6 @@ import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -39,7 +38,6 @@ import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.UseRecordType;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
-import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
@@ -306,19 +304,19 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    /**
-     * 监听gitlab ci pipeline事件，触发cd逻辑
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
-            description = "gitlab pipeline事件",
-            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 0,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            seq = 20)
-    public String gitlabCDPipeline(String data) {
-        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
-        return data;
-    }
+//    /**
+//     * 监听gitlab ci pipeline事件，触发cd逻辑
+//     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
+//            description = "gitlab pipeline事件",
+//            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
+//            maxRetryCount = 0,
+//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+//            seq = 20)
+//    public String gitlabCDPipeline(String data) {
+//        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+//        return data;
+//    }
 
     /**
      * 监听gitlab ci pipeline事件，触发cd逻辑

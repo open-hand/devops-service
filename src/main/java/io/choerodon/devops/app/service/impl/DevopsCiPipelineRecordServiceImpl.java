@@ -340,6 +340,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId, Long ciPipelineId, Long appServiceId) {
         pipelineWebHookVO.getBuilds().forEach(ciJobWebHookVO -> {
             DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, ciJobWebHookVO.getId());
+            boolean statusChangedFlag = true;
             if (devopsCiJobRecordDTO == null) {
                 LOGGER.debug("Start to create job with gitlab job id {}...", ciJobWebHookVO.getId());
                 devopsCiJobRecordDTO = new DevopsCiJobRecordDTO();
@@ -360,6 +361,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
                 LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
+                statusChangedFlag = !devopsCiJobRecordDTO.getStatus().equals(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
                 devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
@@ -372,7 +374,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 handler.saveAdditionalRecordInfo(devopsCiJobRecordDTO, pipelineWebHookVO.getObjectAttributes().getId(), ciJobWebHookVO);
             }
             //如果当前任务状态为manual且任务类型为audit则发送审核邮件
-            if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus())) {
+            // 存在的问题，同一阶段内存在多个人工卡点任务时，当某个审核任务通过时，其他处于manual状态的任务都会再收到一次审核通知
+            if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus()) && statusChangedFlag) {
                 ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),
                         ciPipelineId,
                         pipelineRecordId,
