@@ -19,7 +19,10 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCdJobService;
@@ -317,14 +320,14 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
 
-    @Deprecated
-    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-    @GetMapping("/api_test/list")
-    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Results.success(devopsCdJobService.listCdApiTestConfig());
-    }
+//    @Deprecated
+//    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
+//    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+//    @GetMapping("/api_test/list")
+//    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
+//            @ApiParam(value = "项目 ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId) {
+//        return Results.success(devopsCdJobService.listCdApiTestConfig());
+//    }
 
 }

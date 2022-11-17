@@ -57,10 +57,10 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     @Deprecated
     @ApiModelProperty("详细信息")
     private String metadata;
-    /**
-     * maven Setting Id
-     */
-    private Long mavenSettingId;
+    //    /**
+//     * maven Setting Id
+//     */
+//    private Long mavenSettingId;
     @ApiModelProperty("部署操作commandId")
     private Long commandId;
 
@@ -110,13 +110,13 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
-    public Long getMavenSettingId() {
-        return mavenSettingId;
-    }
-
-    public void setMavenSettingId(Long mavenSettingId) {
-        this.mavenSettingId = mavenSettingId;
-    }
+//    public Long getMavenSettingId() {
+//        return mavenSettingId;
+//    }
+//
+//    public void setMavenSettingId(Long mavenSettingId) {
+//        this.mavenSettingId = mavenSettingId;
+//    }
 
     public Long getId() {
         return id;
