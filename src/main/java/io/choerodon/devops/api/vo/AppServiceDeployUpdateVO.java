@@ -41,6 +41,17 @@ public class AppServiceDeployUpdateVO {
     @ApiModelProperty("应用中心应用名称")
     private String appName;
 
+    @ApiModelProperty("replicas生效策略在 values/deployment")
+    private  String replicasStrategy;
+
+    public String getReplicasStrategy() {
+        return replicasStrategy;
+    }
+
+    public void setReplicasStrategy(String replicasStrategy) {
+        this.replicasStrategy = replicasStrategy;
+    }
+
     public Long getAppServiceId() {
         return appServiceId;
     }
