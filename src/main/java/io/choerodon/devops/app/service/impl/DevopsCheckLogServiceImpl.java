@@ -231,6 +231,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (devopsCdHostDeployInfoDTO != null) {
                                             DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, DevopsCiHostDeployInfoVO.class);
 
+                                            devopsCiJobVO.setTags("cd");
                                             devopsCiJobVO.setType(CiJobTypeEnum.HOST_DEPLOY.value());
                                             devopsCiJobVO.setDevopsCiHostDeployInfoVO(devopsCiHostDeployInfoVO);
 
