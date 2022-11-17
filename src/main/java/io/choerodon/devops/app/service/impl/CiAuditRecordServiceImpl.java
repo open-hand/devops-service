@@ -132,7 +132,7 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
         if (ciAuditRecordDTO.getCountersigned()) {
             return auditUserRecordDTOList.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
         } else {
-            return auditUserRecordDTOList.stream().anyMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+            return auditUserRecordDTOList.stream().anyMatch(v -> !AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
         }
     }
 }
