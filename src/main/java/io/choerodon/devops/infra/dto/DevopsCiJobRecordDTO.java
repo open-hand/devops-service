@@ -54,9 +54,9 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
-    @Deprecated
-    @ApiModelProperty("详细信息")
-    private String metadata;
+    //    @Deprecated
+//    @ApiModelProperty("详细信息")
+//    private String metadata;
     //    /**
 //     * maven Setting Id
 //     */
@@ -214,11 +214,11 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
         this.gitlabProjectId = gitlabProjectId;
     }
 
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
+//    public String getMetadata() {
+//        return metadata;
+//    }
+//
+//    public void setMetadata(String metadata) {
+//        this.metadata = metadata;
+//    }
 }

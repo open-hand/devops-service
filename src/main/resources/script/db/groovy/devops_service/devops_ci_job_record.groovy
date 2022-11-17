@@ -126,4 +126,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             column(name: 'api_test_task_record_id', type: 'BIGINT UNSIGNED', remarks: 'api测试任务记录id', afterColumn: 'config_id')
         }
     }
+    changeSet(author: 'wanghao', id: '2022-11-17-drop-column') {
+        dropColumn(columnName: "metadata", tableName: "devops_ci_job_record")
+    }
 }
