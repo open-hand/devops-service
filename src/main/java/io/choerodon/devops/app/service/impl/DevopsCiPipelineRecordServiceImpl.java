@@ -367,12 +367,22 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             //如果当前任务状态为manual且任务类型为audit则发送审核邮件
             // 存在的问题，同一阶段内存在多个人工卡点任务时，当某个审核任务通过时，其他处于manual状态的任务都会再收到一次审核通知
             if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.MANUAL.toValue().equals(ciJobWebHookVO.getStatus()) && statusChangedFlag) {
-                ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),
-                        ciPipelineId,
-                        pipelineRecordId,
+                // 重试人工审核任务时，自动执行
+                if (ciAuditRecordService.queryAuditRecordIsFinish(devopsCiJobRecordDTO.getAppServiceId(),
                         pipelineWebHookVO.getObjectAttributes().getId(),
-                        devopsCiJobRecordDTO.getName(),
-                        ciJobWebHookVO.getStage());
+                        devopsCiJobRecordDTO.getName())) {
+                    gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(pipelineWebHookVO.getProject().getId()),
+                            TypeUtil.objToInteger(ciJobWebHookVO.getId()),
+                            null,
+                            null);
+                } else {
+                    ciAuditRecordService.sendJobAuditMessage(devopsCiJobRecordDTO.getAppServiceId(),
+                            ciPipelineId,
+                            pipelineRecordId,
+                            pipelineWebHookVO.getObjectAttributes().getId(),
+                            devopsCiJobRecordDTO.getName(),
+                            ciJobWebHookVO.getStage());
+                }
             }
         });
     }

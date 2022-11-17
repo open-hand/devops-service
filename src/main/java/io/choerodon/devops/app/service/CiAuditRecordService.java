@@ -20,5 +20,7 @@ public interface CiAuditRecordService {
     CiAuditResultVO queryAuditStatus(String token, Long gitlabPipelineId, String jobName);
 
     void sendJobAuditMessage(Long appServiceId, Long ciPipelineId, Long ciPipelineRecordId, Long gitlabPipelineId, String name, String stage);
+
+    Boolean queryAuditRecordIsFinish(Long appServiceId, Long gitlabPipelineId, String jobName);
 }
 

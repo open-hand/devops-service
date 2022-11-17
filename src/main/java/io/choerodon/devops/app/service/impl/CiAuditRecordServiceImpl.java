@@ -118,5 +118,22 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
 
         sendNotificationService.sendPipelineAuditMessage(ciPipelineId, ciPipelineRecordId, stage, userIds);
     }
+
+    @Override
+    public Boolean queryAuditRecordIsFinish(Long appServiceId, Long gitlabPipelineId, String jobName) {
+        CiAuditRecordDTO ciAuditRecordDTO = queryByUniqueOption(appServiceId, gitlabPipelineId, jobName);
+        if (ciAuditRecordDTO == null) {
+            return false;
+        }
+        List<CiAuditUserRecordDTO> auditUserRecordDTOList = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
+        if (CollectionUtils.isEmpty(auditUserRecordDTOList)) {
+            return false;
+        }
+        if (ciAuditRecordDTO.getCountersigned()) {
+            return auditUserRecordDTOList.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+        } else {
+            return auditUserRecordDTOList.stream().anyMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+        }
+    }
 }
 
