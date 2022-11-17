@@ -623,11 +623,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId);
-        //查询CD相关的阶段以及JOB
-        List<DevopsCdStageVO> devopsCdStageVOS = handleCdStage(pipelineId);
+//        //查询CD相关的阶段以及JOB
+//        List<DevopsCdStageVO> devopsCdStageVOS = handleCdStage(pipelineId);
         //封装流水线
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
-        ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
+//        ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
 
         // 添加是否开启执行计划
         List<CiPipelineScheduleVO> ciPipelineScheduleVOS = ciPipelineScheduleService.listByAppServiceId(projectId, appServiceDTO.getId());
@@ -1078,13 +1078,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         try {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = createCiPipelineRecord(pipelineId, gitlabProjectId, pipeline);
             // 保存流水线记录关系
-            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
-            devopsPipelineRecordRelDTO.setPipelineId(ciCdPipelineDTO.getId());
-            devopsPipelineRecordRelDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
-            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
-            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
+//            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+//            devopsPipelineRecordRelDTO.setPipelineId(ciCdPipelineDTO.getId());
+//            devopsPipelineRecordRelDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
+//            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
+//            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 初始化cd流水线记录
-            devopsCdPipelineService.initPipelineRecordWithStageAndJob(projectId, pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
+//            devopsCdPipelineService.initPipelineRecordWithStageAndJob(projectId, pipeline.getId().longValue(), pipeline.getSha(), pipeline.getRef(), pipeline.getTag(), ciCdPipelineDTO);
             List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
                     pipeline.getId(),
                     userAttrDTO.getGitlabUserId().intValue(),

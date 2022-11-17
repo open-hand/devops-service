@@ -166,7 +166,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "tag", defaultValue = "false") Boolean tag,
             @RequestBody Map<String, String> variables) {
         DevopsCiPipelineAdditionalValidator.additionalCheckVariablesKey(variables);
-        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref, tag, variables);
+        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         return ResponseEntity.noContent().build();
     }
 

@@ -20,7 +20,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.enums.AppServiceEvent;
 import io.choerodon.devops.infra.enums.JobTypeEnum;
@@ -32,7 +31,6 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -321,29 +319,29 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
     @Override
     @Transactional
     public void executeNew(Long projectId, Long pipelineId, Long gitlabProjectId, String ref, Boolean tag, Map<String, String> variables) {
-        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
-        DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
-        devopsCiStageDTO.setCiPipelineId(pipelineId);
-        if (devopsCiStageMapper.selectCount(devopsCiStageDTO) == 0) {
-            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
-
-            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
-            String sha;
-            List<CommitDTO> commitDTOList;
-            if (appExternalConfigDTO == null) {
-                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref);
-                if (CollectionUtils.isEmpty(commitDTOList)) {
-                    throw new CommonException(DEVOPS_REF_NO_COMMIT);
-                }
-            } else {
-                commitDTOList = gitlabServiceClientOperator.listExternalCommits(TypeUtil.objToInteger(gitlabProjectId), 1, 5, appExternalConfigDTO);
-            }
-            sha = commitDTOList.get(0).getId();
-
-            devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), sha, ref, tag, null);
-        } else {
-            devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
-        }
+//        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
+//        DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+//        devopsCiStageDTO.setCiPipelineId(pipelineId);
+//        if (devopsCiStageMapper.selectCount(devopsCiStageDTO) == 0) {
+//            AppServiceDTO appServiceDTO = appServiceMapper.selectByPrimaryKey(ciCdPipelineVO.getAppServiceId());
+//
+//            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+//            String sha;
+//            List<CommitDTO> commitDTOList;
+//            if (appExternalConfigDTO == null) {
+//                commitDTOList = gitlabServiceClientOperator.getCommits(TypeUtil.objToInteger(gitlabProjectId), ref);
+//                if (CollectionUtils.isEmpty(commitDTOList)) {
+//                    throw new CommonException(DEVOPS_REF_NO_COMMIT);
+//                }
+//            } else {
+//                commitDTOList = gitlabServiceClientOperator.listExternalCommits(TypeUtil.objToInteger(gitlabProjectId), 1, 5, appExternalConfigDTO);
+//            }
+//            sha = commitDTOList.get(0).getId();
+//
+//            devopsCdPipelineService.triggerCdPipeline(projectId, appServiceDTO.getToken(), sha, ref, tag, null);
+//        } else {
+        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
+//        }
     }
 
     @Transactional

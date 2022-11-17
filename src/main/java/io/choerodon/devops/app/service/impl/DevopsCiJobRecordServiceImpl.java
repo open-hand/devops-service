@@ -147,15 +147,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
-    public void create(Long ciPipelineRecordId, Long gitlabProjectId, List<JobDTO> jobDTOS, Long iamUserId, Long appServiceId) {
-        if (logger.isInfoEnabled()) {
-            logger.info("Save job record. ciPipelineRecordId: {}, gitlabProjectId：{}， jobDTOS: {}, iamUserId: {}, appServiceId: {}",
-                    ciPipelineRecordId,
-                    gitlabProjectId,
-                    JsonHelper.marshalByJackson(jobDTOS),
-                    iamUserId,
-                    appServiceId);
-        }
+    public void create(Long ciPipelineRecordId,
+                       Long gitlabProjectId,
+                       List<JobDTO> jobDTOS,
+                       Long iamUserId,
+                       Long appServiceId) {
         DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
@@ -178,13 +174,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             if (!CollectionUtils.isEmpty(jobMap) && existDevopsCiJobDTO != null) {
                 recordDTO.setType(existDevopsCiJobDTO.getType());
             }
-
             return recordDTO;
         }).collect(Collectors.toList());
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("final devopsCiJobRecordDTOS is : {}", JsonHelper.marshalByJackson(devopsCiJobRecordDTOS));
-        }
         devopsCiJobRecordMapper.batchInert(devopsCiJobRecordDTOS);
 
     }
