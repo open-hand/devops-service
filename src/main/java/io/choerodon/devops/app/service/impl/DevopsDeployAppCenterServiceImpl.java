@@ -469,7 +469,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
-        return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
+        if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+            return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+        } else {
+            return devopsCiJobService.queryChartPipelineReference(projectId, appId);
+        }
+
     }
 
     @Override

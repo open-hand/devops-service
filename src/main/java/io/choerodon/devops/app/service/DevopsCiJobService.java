@@ -127,4 +127,6 @@ public interface DevopsCiJobService {
     List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
     PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+
+    PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId);
 }
