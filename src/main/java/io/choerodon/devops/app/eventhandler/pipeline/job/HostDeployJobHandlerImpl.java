@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -36,6 +37,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     @Autowired
+    @Lazy
     private DevopsHostAppService devopsHostAppService;
     @Autowired
     private DevopsCiHostDeployInfoMapper devopsCiHostDeployInfoMapper;
