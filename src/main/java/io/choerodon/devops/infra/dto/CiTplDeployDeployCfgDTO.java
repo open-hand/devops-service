@@ -26,39 +26,13 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_tpl_deploy_deploy_cfg")
 public class CiTplDeployDeployCfgDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_ENV_ID = "envId";
     public static final String FIELD_DEPLOY_TYPE = "deployType";
-    public static final String FIELD_SKIP_CHECK_PERMISSION = "skipCheckPermission";
-    public static final String FIELD_APP_NAME = "appName";
-    public static final String FIELD_APP_CODE = "appCode";
-    public static final String FIELD_APP_CONFIG_JSON = "appConfigJson";
-    public static final String FIELD_CONTAINER_CONFIG_JSON = "containerConfigJson";
-    private static final long serialVersionUID = 429194058675839087L;
     @Id
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "环境Id,devops_env.id")
-    private Long envId;
-
-    @ApiModelProperty(value = "部署类型：create 新建实例， update 替换实例")
-    private String deployType;
-
     @ApiModelProperty(value = "是否校验环境权限")
     private Object skipCheckPermission;
-
-    @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name")
-    private String appName;
-
-    @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code")
-    private String appCode;
-
-    @ApiModelProperty(value = "应用配置")
-    private String appConfigJson;
-
-    @ApiModelProperty(value = "容器配置")
-    private String containerConfigJson;
-
 
     public Long getId() {
         return id;
@@ -68,60 +42,12 @@ public class CiTplDeployDeployCfgDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
-    }
-
-    public String getDeployType() {
-        return deployType;
-    }
-
-    public void setDeployType(String deployType) {
-        this.deployType = deployType;
-    }
-
     public Object getSkipCheckPermission() {
         return skipCheckPermission;
     }
 
     public void setSkipCheckPermission(Object skipCheckPermission) {
         this.skipCheckPermission = skipCheckPermission;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getAppCode() {
-        return appCode;
-    }
-
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
-    }
-
-    public String getAppConfigJson() {
-        return appConfigJson;
-    }
-
-    public void setAppConfigJson(String appConfigJson) {
-        this.appConfigJson = appConfigJson;
-    }
-
-    public String getContainerConfigJson() {
-        return containerConfigJson;
-    }
-
-    public void setContainerConfigJson(String containerConfigJson) {
-        this.containerConfigJson = containerConfigJson;
     }
 
 }
