@@ -27,18 +27,9 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Encrypt
-    private Long hostId;
 
     private String deployType;  // 部署类型：新建实例 create 替换实例 update
-
-    private Long appId;
-
-    private String appName;
-
-    private String appCode;
     private String hostDeployType;
-
     private String deployJson;
 
     private String preCommand;
@@ -77,44 +68,12 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(Long hostId) {
-        this.hostId = hostId;
-    }
-
     public String getDeployType() {
         return deployType;
     }
 
     public void setDeployType(String deployType) {
         this.deployType = deployType;
-    }
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
-    public String getAppCode() {
-        return appCode;
-    }
-
-    public void setAppCode(String appCode) {
-        this.appCode = appCode;
     }
 
     public String getHostDeployType() {
