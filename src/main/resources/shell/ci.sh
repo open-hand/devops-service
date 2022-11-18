@@ -790,27 +790,29 @@ function host_deploy(){
 function host_deploy_status_check() {
     while :
     do
-     http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/host_command_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&command_id=$1")
-        if [ "$http_status_code" != "200" ];
-        then
-          echo "Failed to check deploy status.HttpStatusCode is ${http_status_code}.Response is:\n"
+      echo "等待agent执行部署命令..."
+      sleep 5s
+      http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/host_command_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&command_id=$1")
+      if [ "$http_status_code" != "200" ];
+      then
+        echo "Failed to check deploy status.HttpStatusCode is ${http_status_code}.Response is:\n"
+        cat result.json
+        exit 1
+      else
+        is_failed=$(jq -r .failed result.json)
+        status=$(jq -r .content.status result.json)
+        error_msg=$(jq -r .content.errorMsg result.json)
+        if [ "${is_failed}" == "true" ];then
+          echo "部署失败"
           cat result.json
           exit 1
         else
-          is_failed=$(jq -r .failed result.json)
-          status=$(jq -r .content.status result.json)
-          error_msg=$(jq -r .content.errorMsg result.json)
-          if [ "${is_failed}" == "true" ];then
-            echo "Deploy failed"
-            cat result.json
-            exit 1
-          else
-            if [ "${status}" == "success" ]; then
-                echo "Deploy success"
-                exit 0
-            fi
+          if [ "${status}" == "success" ]; then
+              echo "部署成功"
+              exit 0
           fi
         fi
+      fi
     done
 }
 
