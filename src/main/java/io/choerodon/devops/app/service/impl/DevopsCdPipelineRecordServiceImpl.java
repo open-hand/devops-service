@@ -76,6 +76,7 @@ import io.choerodon.devops.infra.util.*;
 public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecordService {
 
     protected static final String ERROR_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
+    protected static final String DEVOPS_DEPLOY_FAILED = "devops.deploy.failed";
     protected static final String ERROR_UPDATE_PIPELINE_RECORD_FAILED = "devops.update.pipeline.record.failed";
     protected static final String ENV = "env";
     protected static final String HOST = "host";
@@ -882,8 +883,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
-        LOGGER.info("start jar deploy cd host job,pipelineRecordId:{}", gitlabPipelineId);
-
+        log.append("开始执行jar部署任务...").append(System.lineSeparator());
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         Long hostId = devopsCiHostDeployInfoDTO.getHostId();
@@ -891,14 +891,16 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
-
+        log.append("1. 检查主机连接状态...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
         }
-
+        log.append("主机连接状态检查通过").append(System.lineSeparator());
         CdHostDeployConfigVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.JarDeploy.class);
 
         // 0.1 从制品库获取仓库信息
+        log.append("2. 获取部署jar包信息...").append(System.lineSeparator());
         Long nexusRepoId;
         String groupId;
         String artifactId;
@@ -923,6 +925,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
             groupId = ciPipelineMavenDTO.getGroupId();
             artifactId = ciPipelineMavenDTO.getArtifactId();
+
             //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
             versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
             if (nexusRepoId == null) {
@@ -931,6 +934,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
                 version = ciPipelineMavenDTO.getVersion();
             }
+            log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
+            log.append("groupId：").append(groupId).append(System.lineSeparator());
+            log.append("artifactId：").append(artifactId).append(System.lineSeparator());
+            log.append("version：").append(getMavenVersion(ciPipelineMavenDTO.getVersion())).append(System.lineSeparator());
         }
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
         JarDeployVO jarDeployVO = null;
@@ -938,11 +945,13 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             // 0.3 获取并记录信息
             List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, versionRegular);
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                throw new CommonException("no jar to deploy");
+                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
+                throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
-                throw new CommonException("devops.get.maven.config");
+                log.append("获取制品仓库信息失败，请检查关联制品库是否正常").append(System.lineSeparator());
+                throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
 
             C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
@@ -982,8 +991,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         }
 
         // 2.保存记录
+        log.append("3. 开始部署...").append(System.lineSeparator());
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
+        log.append("部署模式：").append(DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoDTO.getDeployType()) ? "新建应用" : "更新应用").append(System.lineSeparator());
         if (DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
@@ -1017,7 +1028,9 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoDTO.getAppId());
             if (devopsHostAppDTO == null) {
-                throw new CommonException(String.format("App not found, is deleted? Skip this task.appId:{},appName:{},appCode{}", devopsCiHostDeployInfoDTO.getAppId(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode()));
+                log.append("应用：").append("'").append(devopsCiHostDeployInfoDTO.getAppName()).append("'")
+                        .append("不存在,请检查应用是否已删除").append(System.lineSeparator());
+                throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
             devopsHostAppDTO.setName(jarDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
@@ -1092,9 +1105,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
+        log.append("发送部署指令给agent...").append(System.lineSeparator());
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+        log.append("部署成功").append(System.lineSeparator());
         return devopsHostCommandDTO.getId();
     }
 
