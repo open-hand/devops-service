@@ -28,7 +28,6 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String deployType;  // 部署类型：新建实例 create 替换实例 update
     private String hostDeployType;
     private String deployJson;
 
@@ -66,14 +65,6 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getDeployType() {
-        return deployType;
-    }
-
-    public void setDeployType(String deployType) {
-        this.deployType = deployType;
     }
 
     public String getHostDeployType() {
