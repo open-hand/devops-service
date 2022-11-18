@@ -5,8 +5,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
@@ -22,7 +22,7 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
     @Override
     public CiCommandTypeEnum getType() {
@@ -34,16 +34,16 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = devopsCiHostDeployInfoMapper.selectByPrimaryKey(configId);
         Long commandId;
         if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(RdupmTypeEnum.DOCKER.value())) {
-            commandId = devopsCdPipelineRecordService
+            commandId = devopsCiPipelineRecordService
                     .ciPipelineDeployImage(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            commandId = devopsCdPipelineRecordService
+            commandId = devopsCiPipelineRecordService
                     .ciPipelineDeployJar(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
-            commandId = devopsCdPipelineRecordService
+            commandId = devopsCiPipelineRecordService
                     .ciPipelineDeployDockerCompose(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else {
-            commandId = devopsCdPipelineRecordService
+            commandId = devopsCiPipelineRecordService
                     .ciPipelineCustomDeploy(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         }
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);
