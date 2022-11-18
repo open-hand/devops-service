@@ -68,6 +68,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                              DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO, DevopsCiJobRecordDTO devopsCiJobRecordDTO) {
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
         Long objectId = null;
+        log.append("部署模式：").append(DeployTypeEnum.UPDATE.value().equals(appDeployConfigVO.getDeployType()) ? "更新应用" : "新建应用").append(System.lineSeparator());
         if (DeployTypeEnum.UPDATE.value().equals(appDeployConfigVO.getDeployType())) {
             // 3. 如果是更新应用，先判断应用是否存在。不存在则跳过。
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appDeployConfigVO.getAppId());
