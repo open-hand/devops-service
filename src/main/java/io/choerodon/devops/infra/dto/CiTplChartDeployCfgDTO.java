@@ -34,7 +34,7 @@ public class CiTplChartDeployCfgDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否校验环境权限", required = true)
     @NotNull
-    private Object skipCheckPermission;
+    private Boolean skipCheckPermission;
 
 
     public Long getId() {
@@ -45,13 +45,12 @@ public class CiTplChartDeployCfgDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Object getSkipCheckPermission() {
+    public Boolean getSkipCheckPermission() {
         return skipCheckPermission;
     }
 
-    public void setSkipCheckPermission(Object skipCheckPermission) {
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
         this.skipCheckPermission = skipCheckPermission;
     }
-
 }
 
