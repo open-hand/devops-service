@@ -526,7 +526,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
-        LOGGER.info("start jar deploy cd host job,pipelineRecordId{}", gitlabPipelineId);
+        log.append("开始执行其他制品部署任务...").append(System.lineSeparator());
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
@@ -535,13 +535,17 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
-
+        log.append("1. 检查主机连接状态...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
         }
+        log.append("主机连接状态检查通过").append(System.lineSeparator());
 
         DevopsHostAppDTO devopsHostAppDTO;
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO;
+        log.append("2. 开始部署...").append(System.lineSeparator());
+        log.append("部署模式：").append(DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoDTO.getDeployType()) ? "新建应用" : "更新应用").append(System.lineSeparator());
         if (DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoDTO.getDeployType())) {
             devopsHostAppDTO = new DevopsHostAppDTO(projectId,
                     hostId,
@@ -569,6 +573,11 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoDTO.getAppId());
+            if (devopsHostAppDTO == null) {
+                log.append("应用：").append("'").append(devopsCiHostDeployInfoDTO.getAppName()).append("'")
+                        .append("不存在,请检查应用是否已删除").append(System.lineSeparator());
+                throw new CommonException(DEVOPS_DEPLOY_FAILED);
+            }
             devopsHostAppDTO.setName(devopsCiHostDeployInfoDTO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
@@ -627,6 +636,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
         // 3. 发送部署指令给agent
+        log.append("发送部署指令给agent...").append(System.lineSeparator());
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -640,6 +650,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
+        log.append("发送成功").append(System.lineSeparator());
         return devopsHostCommandDTO.getId();
     }
 
@@ -1106,7 +1117,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-        log.append("部署成功").append(System.lineSeparator());
+        log.append("发送成功").append(System.lineSeparator());
         return devopsHostCommandDTO.getId();
     }
 
@@ -1273,8 +1284,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Long ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
-        LOGGER.info("start image deploy ,gitlabPipelineId:{}", gitlabPipelineId);
-        log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
+        log.append("开始执行镜像部署任务").append(System.lineSeparator());
         String deployVersion = null;
         String deployObjectName = null;
         String image = null;
@@ -1291,21 +1301,22 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
-
+        log.append("1. 检查主机连接状态...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
         }
-
+        log.append("主机连接状态检查通过").append(System.lineSeparator());
         DockerDeployDTO dockerDeployDTO = new DockerDeployDTO();
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
         CdHostDeployConfigVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoDTO.getDeployJson(), CdHostDeployConfigVO.ImageDeploy.class);
 
-        log.append("Start deploy image to host: ").append(devopsHostDTO.getName()).append(System.lineSeparator());
-
+        log.append("2. 获取部署镜像信息...").append(System.lineSeparator());
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId, gitlabPipelineId, imageDeploy.getPipelineTask());
         if (ciPipelineImageDTO == null) {
-            throw new CommonException("devops.deploy.images.not.exist");
+            log.append("获取部署镜像信息失败，请检查关联的构建任务是否执行成功").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
         }
         HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(projectId, ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
@@ -1339,13 +1350,14 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         deployVersion = imageVersion;
         deployObjectName = repoImageName.substring(repoImageName.lastIndexOf("/") + 1);
 
-        log.append("Deploy image is: ").append(imageTag).append(System.lineSeparator());
-        log.append("Container name is: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
-
+        log.append("镜像: ").append(imageTag).append(System.lineSeparator());
+        log.append("容器名称: ").append(imageDeploy.getContainerName()).append(System.lineSeparator());
         // 1. 更新状态 记录镜像信息
+        log.append("3. 开始部署...").append(System.lineSeparator());
         DevopsHostAppDTO devopsHostAppDTO = getDevopsHostAppDTO(projectId, hostId, devopsCiHostDeployInfoDTO.getDeployType(), devopsCiHostDeployInfoDTO.getAppName(), devopsCiHostDeployInfoDTO.getAppCode());
         // 2.保存记录
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceService.queryByHostIdAndName(hostId, imageDeploy.getContainerName());
+        log.append("部署模式：").append(devopsDockerInstanceDTO == null ? "新建应用" : "更新应用").append(System.lineSeparator());
         if (devopsDockerInstanceDTO == null) {
             // 新建实例
             devopsDockerInstanceDTO = new DevopsDockerInstanceDTO(hostId,
@@ -1409,7 +1421,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
                 new DeploySourceVO(AppSourceType.CURRENT_PROJECT, projectDTO.getName()));
 
         // 4. 发送部署指令给agent
-        log.append("Sending deploy command to agent.").append(System.lineSeparator());
+        log.append("发送部署指令给agent.").append(System.lineSeparator());
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
         hostAgentMsgVO.setHostId(String.valueOf(hostId));
         hostAgentMsgVO.setType(HostCommandEnum.DEPLOY_DOCKER.value());
@@ -1422,7 +1434,7 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
                 String.format(DevopsHostConstants.DOCKER_INSTANCE, hostId, devopsDockerInstanceDTO.getId()),
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
-        log.append("Sending deploy command to agent success.").append(System.lineSeparator());
+        log.append("发送成功.").append(System.lineSeparator());
         return devopsHostCommandDTO.getId();
     }
 
@@ -1490,17 +1502,18 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
 
     @Override
     public Long ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log) {
-        LOGGER.info("start image deploy cd host job,pipelineRecordId:{}", gitlabPipelineId);
-
+        log.append("开始执行镜像部署任务").append(System.lineSeparator());
         Long hostId = devopsCiHostDeployInfoDTO.getHostId();
 
         DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
-
+        log.append("1. 检查主机连接状态...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-            throw new CommonException(String.format("host %s not connect", devopsHostDTO.getName()));
+            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
         }
+        log.append("主机连接状态检查通过").append(System.lineSeparator());
 
         Long appServiceId = appServiceDTO.getId();
 
@@ -1508,24 +1521,26 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(appId);
 
         // 1. 查询关联构建任务生成的镜像
-        log.append("[info] Query deploy image info").append(System.lineSeparator());
+        log.append("2. 获取部署镜像信息...").append(System.lineSeparator());
         CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
                 gitlabPipelineId,
                 devopsCiHostDeployInfoDTO.getImageJobName());
         if (ciPipelineImageDTO == null) {
+            log.append("获取部署镜像信息失败，请检查关联的构建任务是否执行成功").append(System.lineSeparator());
             throw new CommonException("devops.deploy.images.not.exist");
         }
-        log.append("[info] Deploy image is ").append(ciPipelineImageDTO.getImageTag()).append(System.lineSeparator());
+        log.append("镜像：").append(ciPipelineImageDTO.getImageTag()).append(System.lineSeparator());
 
         // 2. 通过应用服务编码匹配service，替换镜像
         log.append("[info] Start replace docker-compose.yaml").append(System.lineSeparator());
+        log.append("3. 开始替换docker-compose.yaml文件").append(System.lineSeparator());
         String value = replaceValue(appServiceDTO.getCode(),
                 ciPipelineImageDTO.getImageTag(),
                 dockerComposeValueService
                         .baseQuery(devopsHostAppDTO.getEffectValueId())
                         .getValue());
 
-        log.append("[info] Replace docker-compose.yaml result is : ").append(System.lineSeparator());
+        log.append("替换后的 docker-compose.yaml 文件: ").append(System.lineSeparator());
         log.append(value).append(System.lineSeparator());
 
         DockerComposeValueDTO dockerComposeValueDTO = new DockerComposeValueDTO();
@@ -1537,9 +1552,10 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
         dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
 
         // 3. 更新docker-compose应用
-        log.append("[info] Start update app").append(System.lineSeparator());
+        log.append("4. 开始部署...").append(System.lineSeparator());
+        log.append("发送部署指令给agent.").append(System.lineSeparator());
         DevopsHostCommandDTO devopsHostCommandDTO = dockerComposeService.updateDockerComposeApp(projectId, appId, null, gitlabPipelineId, dockerComposeDeployVO, true);
-        log.append("[info] Update app success").append(System.lineSeparator());
+        log.append("发送成功").append(System.lineSeparator());
         return devopsHostCommandDTO.getId();
     }
 
