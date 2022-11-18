@@ -79,6 +79,8 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("关联的任务配置id")
     private Long configId;
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
 
     public Long getConfigId() {
         return configId;
@@ -256,5 +258,13 @@ public class CiTemplateJobVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
     }
 }

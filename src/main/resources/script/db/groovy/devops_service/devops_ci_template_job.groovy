@@ -39,7 +39,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'parallel', type: 'BIGINT UNSIGNED', remarks: '并发数')
 
 
-
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -68,6 +67,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
         addColumn(tableName: 'devops_ci_template_job') {
             column(name: 'start_in', type: 'int(5)', remarks: '任务启动延时时间', afterColumn: 'config_id')
             column(name: 'tags', type: 'VARCHAR(255)', remarks: 'job的tag标签', afterColumn: 'config_id')
+        }
+    }
+
+    changeSet(author: 'wx', id: '2022-11-18-add-column-visibility') {
+        addColumn(tableName: 'devops_ci_template_job') {
+            column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '可见性，1:可见，0:不可见') {
+                constraints(nullable: false)
+            }
         }
     }
 }

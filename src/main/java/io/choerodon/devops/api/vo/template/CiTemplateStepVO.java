@@ -71,6 +71,8 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
 
     public CiTemplateAuditConfigVO getCiAuditConfig() {
         return ciAuditConfig;
@@ -232,5 +234,13 @@ public class CiTemplateStepVO {
 
     public void setMavenBuildConfig(CiTemplateMavenBuildDTO mavenBuildConfig) {
         this.mavenBuildConfig = mavenBuildConfig;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
     }
 }

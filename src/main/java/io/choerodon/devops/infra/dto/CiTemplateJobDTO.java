@@ -90,6 +90,9 @@ public class CiTemplateJobDTO extends AuditDomain {
     @ApiModelProperty("任务启动延时时间")
     private String tags;
 
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+
     public String getTags() {
         return tags;
     }
@@ -213,6 +216,14 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
     }
 }
 
