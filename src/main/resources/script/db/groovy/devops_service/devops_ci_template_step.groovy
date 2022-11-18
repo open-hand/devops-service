@@ -49,7 +49,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_step.groovy') {
     }
 
     changeSet(author: 'wx', id: '2022-11-18-add-column-visibility') {
-        addColumn(tableName: 'devops_ci_template_job') {
+        addColumn(tableName: 'devops_ci_template_step') {
             column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '可见性，1:可见，0:不可见') {
                 constraints(nullable: false)
             }
