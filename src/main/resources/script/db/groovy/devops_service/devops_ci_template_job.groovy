@@ -75,6 +75,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: '可见性，1:可见，0:不可见') {
                 constraints(nullable: false)
             }
+            column(name: 'trigger_refs', type: 'VARCHAR(255)', remarks: '触发分支')
+            column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_refs', defaultValue: 'refs')
         }
     }
 }

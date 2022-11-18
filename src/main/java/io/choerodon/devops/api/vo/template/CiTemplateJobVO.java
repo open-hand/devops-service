@@ -81,6 +81,13 @@ public class CiTemplateJobVO {
     private Long configId;
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
 
     @ApiModelProperty("chart部署时候的配置")
     private CiTplChartDeployCfgVO ciTplChartDeployConfig;
@@ -93,6 +100,9 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("主机部署的配置")
     private CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO;
+
+    @ApiModelProperty("审核信息")
+    private CiTplAuditVO ciTplAuditVO;
 
 
     public Long getConfigId() {
@@ -311,5 +321,29 @@ public class CiTemplateJobVO {
 
     public void setCiTplHostDeployInfoCfgVO(CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO) {
         this.ciTplHostDeployInfoCfgVO = ciTplHostDeployInfoCfgVO;
+    }
+
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public CiTplAuditVO getCiTplAuditVO() {
+        return ciTplAuditVO;
+    }
+
+    public void setCiTplAuditVO(CiTplAuditVO ciTplAuditVO) {
+        this.ciTplAuditVO = ciTplAuditVO;
     }
 }

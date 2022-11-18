@@ -93,6 +93,14 @@ public class CiTemplateJobDTO extends AuditDomain {
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
 
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
+
     public String getTags() {
         return tags;
     }
@@ -224,6 +232,22 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     public void setVisibility(Boolean visibility) {
         this.visibility = visibility;
+    }
+
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 }
 
