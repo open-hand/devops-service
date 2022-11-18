@@ -122,7 +122,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
     @Autowired
@@ -181,7 +181,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
-            devopsCdHostDeployInfoService.updateJarDeployInfoFromAppCenter(jarDeployVO);
+            devopsCiHostDeployInfoService.updateJarDeployInfoFromAppCenter(jarDeployVO);
         }
     }
 
@@ -589,7 +589,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
-            devopsCdHostDeployInfoService.updateCustomDeployInfoFromAppCenter(customDeployVO);
+            devopsCiHostDeployInfoService.updateCustomDeployInfoFromAppCenter(customDeployVO);
         }
     }
 

@@ -8,6 +8,7 @@ import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -90,11 +91,27 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         }
         // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = ConvertUtils.convertObject(ciHostDeployInfoVO, DevopsCiHostDeployInfoDTO.class);
-        if (ciHostDeployInfoVO.getJarDeploy() != null && !StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-            devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(ciHostDeployInfoVO.getJarDeploy()));
+        if (!StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
+                ciHostDeployInfoVO.getArtifactId() != null
+        ) {
+            DevopsCiHostDeployInfoVO.JarDeploy jarDeployVO = new DevopsCiHostDeployInfoVO.JarDeploy();
+            jarDeployVO.setDeploySource("pipelineDeploy");
+            jarDeployVO.setRepositoryId(ciHostDeployInfoVO.getRepositoryId());
+            jarDeployVO.setGroupId(ciHostDeployInfoVO.getGroupId());
+            jarDeployVO.setArtifactId(ciHostDeployInfoVO.getArtifactId());
+            jarDeployVO.setVersionRegular(ciHostDeployInfoVO.getVersionRegular());
+            jarDeployVO.setPipelineTask(ciHostDeployInfoVO.getPipelineTask());
+
+            devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(jarDeployVO));
         }
-        if (ciHostDeployInfoVO.getImageDeploy() != null && StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-            devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(ciHostDeployInfoVO.getImageDeploy()));
+        if (StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
+                ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getPipelineTask()) &&
+                ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getContainerName())) {
+            DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = new DevopsCiHostDeployInfoVO.ImageDeploy();
+            imageDeploy.setPipelineTask(ciHostDeployInfoVO.getPipelineTask());
+            imageDeploy.setDeploySource("pipelineDeploy");
+            imageDeploy.setContainerName(ciHostDeployInfoVO.getContainerName());
+            devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
             devopsCiHostDeployInfoDTO.setDockerCommand(ciHostDeployInfoVO.getDockerCommand());
             devopsCiHostDeployInfoDTO.setKillCommand(null);
             devopsCiHostDeployInfoDTO.setPreCommand(null);
