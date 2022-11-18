@@ -82,6 +82,19 @@ public class CiTemplateJobVO {
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
 
+    @ApiModelProperty("chart部署时候的配置")
+    private CiTplChartDeployCfgVO ciTplChartDeployConfig;
+
+    @ApiModelProperty("api测试任务信息")
+    private CiTplApiTestInfoCfgVO ciTplApiTestInfoCfgVO;
+
+    @ApiModelProperty("deployment部署配置")
+    private CiTplDeployDeployCfgVO ciTplDeployDeployCfgVO;
+
+    @ApiModelProperty("主机部署的配置")
+    private CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO;
+
+
     public Long getConfigId() {
         return configId;
     }
@@ -266,5 +279,37 @@ public class CiTemplateJobVO {
 
     public void setVisibility(Boolean visibility) {
         this.visibility = visibility;
+    }
+
+    public CiTplChartDeployCfgVO getCiTplChartDeployConfig() {
+        return ciTplChartDeployConfig;
+    }
+
+    public void setCiTplChartDeployConfig(CiTplChartDeployCfgVO ciTplChartDeployConfig) {
+        this.ciTplChartDeployConfig = ciTplChartDeployConfig;
+    }
+
+    public CiTplApiTestInfoCfgVO getCiTplApiTestInfoCfgVO() {
+        return ciTplApiTestInfoCfgVO;
+    }
+
+    public void setCiTplApiTestInfoCfgVO(CiTplApiTestInfoCfgVO ciTplApiTestInfoCfgVO) {
+        this.ciTplApiTestInfoCfgVO = ciTplApiTestInfoCfgVO;
+    }
+
+    public CiTplDeployDeployCfgVO getCiTplDeployDeployCfgVO() {
+        return ciTplDeployDeployCfgVO;
+    }
+
+    public void setCiTplDeployDeployCfgVO(CiTplDeployDeployCfgVO ciTplDeployDeployCfgVO) {
+        this.ciTplDeployDeployCfgVO = ciTplDeployDeployCfgVO;
+    }
+
+    public CiTplHostDeployInfoCfgVO getCiTplHostDeployInfoCfgVO() {
+        return ciTplHostDeployInfoCfgVO;
+    }
+
+    public void setCiTplHostDeployInfoCfgVO(CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO) {
+        this.ciTplHostDeployInfoCfgVO = ciTplHostDeployInfoCfgVO;
     }
 }
