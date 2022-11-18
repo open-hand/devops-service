@@ -27,8 +27,6 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ApiModelProperty(value = "关联devops流水线id")
-    private Long ciPipelineId;
     @Encrypt
     private Long hostId;
 
@@ -54,14 +52,6 @@ public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
     private String dockerCommand;
 
     private String imageJobName;
-
-    public Long getCiPipelineId() {
-        return ciPipelineId;
-    }
-
-    public void setCiPipelineId(Long ciPipelineId) {
-        this.ciPipelineId = ciPipelineId;
-    }
 
     public String getImageJobName() {
         return imageJobName;
