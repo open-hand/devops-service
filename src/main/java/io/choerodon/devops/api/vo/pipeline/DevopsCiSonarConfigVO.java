@@ -54,6 +54,16 @@ public class DevopsCiSonarConfigVO extends AuditDomain {
     @ApiModelProperty("maven 构建步骤配置")
     private DevopsCiMavenBuildConfigVO mavenBuildConfig;
 
+    private DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO;
+
+    public DevopsCiSonarQualityGateVO getDevopsCiSonarQualityGateVO() {
+        return devopsCiSonarQualityGateVO;
+    }
+
+    public void setDevopsCiSonarQualityGateVO(DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO) {
+        this.devopsCiSonarQualityGateVO = devopsCiSonarQualityGateVO;
+    }
+
     public DevopsCiMavenBuildConfigVO getMavenBuildConfig() {
         return mavenBuildConfig;
     }

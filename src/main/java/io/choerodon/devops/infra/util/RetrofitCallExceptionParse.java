@@ -40,6 +40,9 @@ public class RetrofitCallExceptionParse {
     public static <T> T executeCall(Call<ResponseBody> call, String exceptionMessage, Class<T> clazz) {
         String bodyStr = parseException(call, exceptionMessage);
         try {
+            if (clazz.getName().equals(Void.class.getName())) {
+                return null;
+            }
             return gson.fromJson(bodyStr, clazz);
         } catch (Exception e) {
             parseCommonException(bodyStr, exceptionMessage);
