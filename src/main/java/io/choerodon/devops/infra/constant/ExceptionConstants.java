@@ -91,6 +91,13 @@ public class ExceptionConstants {
         public static final String DEVOPS_JOB_CONFIG_ID_IS_NULL = "error.devops.ci.job.config.id.null";
     }
 
+    public static class SonarCode {
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CREATE = "error.devops.sonar.quality.gate.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_DELETE = "error.devops.sonar.quality.gate.delete";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE = "error.devops.sonar.quality.gate.condition.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_DELETE = "error.devops.sonar.quality.gate.condition.delete";
+    }
+
     public static class CdEnvDeployInfoDTOCode {
         public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
     }

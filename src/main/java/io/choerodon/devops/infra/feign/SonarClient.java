@@ -4,6 +4,7 @@ import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.http.FieldMap;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
@@ -68,4 +69,16 @@ public interface SonarClient {
 
     @GET("api/measures/search")
     Call<ResponseBody> batchQueryMeasures(@QueryMap Map<String, String> maps);
+
+    @POST("api/qualitygates/create")
+    Call<ResponseBody> createQualityGate(@FieldMap Map<String, String> maps);
+
+    @POST("api/qualitygates/create_condition")
+    Call<ResponseBody> createQualityGateCondition(@FieldMap Map<String, String> maps);
+
+    @POST("api/qualitygates/delete_condition")
+    Call<ResponseBody> deleteQualityGateCondition(@FieldMap Map<String, String> maps);
+
+    @POST("api/qualitygates/destroy")
+    Call<ResponseBody> deleteQualityGate(@FieldMap Map<String, String> maps);
 }

@@ -18,11 +18,9 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
-import io.choerodon.devops.app.service.CiTemplateSonarService;
-import io.choerodon.devops.app.service.DevopsCiMavenBuildConfigService;
-import io.choerodon.devops.app.service.DevopsCiSonarConfigService;
-import io.choerodon.devops.app.service.DevopsConfigService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
@@ -55,6 +53,10 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     private CiTemplateSonarService ciTemplateSonarService;
     @Autowired
     private DevopsCiMavenBuildConfigService devopsCiMavenBuildConfigService;
+    @Autowired
+    private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
+    @Autowired
+    private DevopsCiSonarQualityGateConditionService devopsCiSonarQualityGateConditionService;
 
     @Override
     @Transactional
@@ -73,6 +75,10 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         devopsCiSonarConfigDTO.setId(null);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
 
+        // 质量门
+        if (sonarConfig.getDevopsCiSonarQualityGateVO() != null) {
+            processQualityGates(devopsCiSonarConfigDTO.getId(), sonarConfig.getDevopsCiSonarQualityGateVO());
+        }
     }
 
     @Override
@@ -227,5 +233,15 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
         }
         return true;
+    }
+
+    private void processQualityGates(Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO) {
+        devopsCiSonarQualityGateService.deleteAll(sonarQualityGateVO.getId());
+        // 判断是启用还是停用质量门
+        if (Boolean.TRUE.equals(sonarQualityGateVO.getGatesEnable())) {
+            // 如果是启用，重新插入数据
+            // 创建质量门
+            devopsCiSonarQualityGateService.createGate(configId, sonarQualityGateVO);
+        }
     }
 }

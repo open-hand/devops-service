@@ -105,5 +105,23 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
+    @Override
+    public Call<ResponseBody> createQualityGate(Map<String, String> maps) {
+        return null;
+    }
 
+    @Override
+    public Call<ResponseBody> createQualityGateCondition(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> deleteQualityGateCondition(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> deleteQualityGate(Map<String, String> maps) {
+        return null;
+    }
 }
