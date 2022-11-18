@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.app.service.DevopsCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
@@ -22,6 +21,8 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
     private DevopsCiHostDeployInfoMapper devopsCiHostDeployInfoMapper;
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
+    @Autowired
+    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
 
     @Override
     public CiCommandTypeEnum getType() {
@@ -33,24 +34,16 @@ public class HostDeployCommandHandler extends AbstractCiCommandHandler {
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = devopsCiHostDeployInfoMapper.selectByPrimaryKey(configId);
         Long commandId;
         if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(RdupmTypeEnum.DOCKER.value())) {
-            commandId = ApplicationContextHelper
-                    .getSpringFactory()
-                    .getBean(DevopsCdPipelineRecordService.class)
+            commandId = devopsCdPipelineRecordService
                     .ciPipelineDeployImage(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.JAR_DEPLOY.getValue())) {
-            commandId = ApplicationContextHelper
-                    .getSpringFactory()
-                    .getBean(DevopsCdPipelineRecordService.class)
+            commandId = devopsCdPipelineRecordService
                     .ciPipelineDeployJar(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else if (devopsCiHostDeployInfoDTO.getHostDeployType().equals(HostDeployType.DOCKER_COMPOSE.getValue())) {
-            commandId = ApplicationContextHelper
-                    .getSpringFactory()
-                    .getBean(DevopsCdPipelineRecordService.class)
+            commandId = devopsCdPipelineRecordService
                     .ciPipelineDeployDockerCompose(appServiceDTO.getProjectId(), appServiceDTO, gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         } else {
-            commandId = ApplicationContextHelper
-                    .getSpringFactory()
-                    .getBean(DevopsCdPipelineRecordService.class)
+            commandId = devopsCdPipelineRecordService
                     .ciPipelineCustomDeploy(appServiceDTO.getProjectId(), gitlabPipelineId, devopsCiHostDeployInfoDTO, log);
         }
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceDTO.getId(), gitlabJobId);

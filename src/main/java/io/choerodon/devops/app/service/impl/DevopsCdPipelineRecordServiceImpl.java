@@ -919,9 +919,6 @@ public class DevopsCdPipelineRecordServiceImpl implements DevopsCdPipelineRecord
             CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceDTO.getId(),
                     gitlabPipelineId,
                     jarDeploy.getPipelineTask());
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("pipeline deploy jar, ciPipelineMavenDTO is {}", JsonHelper.marshalByJackson(ciPipelineMavenDTO));
-            }
             nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
             groupId = ciPipelineMavenDTO.getGroupId();
             artifactId = ciPipelineMavenDTO.getArtifactId();
