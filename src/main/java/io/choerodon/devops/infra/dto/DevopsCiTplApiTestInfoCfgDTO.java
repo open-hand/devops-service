@@ -26,43 +26,17 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_tpl_api_test_info_cfg")
 public class DevopsCiTplApiTestInfoCfgDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_API_TEST_TASK_ID = "apiTestTaskId";
-    public static final String FIELD_API_TEST_SUITE_ID = "apiTestSuiteId";
     public static final String FIELD_API_TEST_CONFIG_ID = "apiTestConfigId";
-    public static final String FIELD_DEPLOY_JOB_NAME = "deployJobName";
-    public static final String FIELD_ENABLE_WARNING_SETTING = "enableWarningSetting";
-    public static final String FIELD_PERFORM_THRESHOLD = "performThreshold";
-    public static final String FIELD_NOTIFY_USER_IDS = "notifyUserIds";
     public static final String FIELD_SEND_EMAIL = "sendEmail";
-    public static final String FIELD_SEND_SITE_MESSAGE = "sendSiteMessage";
-    public static final String FIELD_BLOCK_AFTER_JOB = "blockAfterJob";
-    private static final long serialVersionUID = -88695884351721551L;
     @Id
     @GeneratedValue
     private Long id;
-    /**
-     * {@link io.choerodon.devops.infra.enums.test.ApiTestTaskType}
-     */
-    @ApiModelProperty(value = "测试任务类型")
-    private String taskType;
-
-    @ApiModelProperty(value = "测试任务id")
-    private Long apiTestTaskId;
-
-    @ApiModelProperty(value = "测试套件id")
-    private Long apiTestSuiteId;
-
-    @ApiModelProperty(value = "测试任务关联的任务配置id")
-    private Long apiTestConfigId;
 
     @ApiModelProperty(value = "是否启用告警设置")
     private Boolean enableWarningSetting;
 
     @ApiModelProperty(value = "阈值")
     private Double performThreshold;
-
-    @ApiModelProperty(value = "通知对象集合")
-    private String notifyUserIds;
 
     @ApiModelProperty(value = "是否发送邮件")
     private Boolean sendEmail;
@@ -73,44 +47,12 @@ public class DevopsCiTplApiTestInfoCfgDTO extends AuditDomain {
     @ApiModelProperty(value = "是否中断后续的任务")
     private Boolean blockAfterJob;
 
-    public String getTaskType() {
-        return taskType;
-    }
-
-    public void setTaskType(String taskType) {
-        this.taskType = taskType;
-    }
-
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getApiTestTaskId() {
-        return apiTestTaskId;
-    }
-
-    public void setApiTestTaskId(Long apiTestTaskId) {
-        this.apiTestTaskId = apiTestTaskId;
-    }
-
-    public Long getApiTestSuiteId() {
-        return apiTestSuiteId;
-    }
-
-    public void setApiTestSuiteId(Long apiTestSuiteId) {
-        this.apiTestSuiteId = apiTestSuiteId;
-    }
-
-    public Long getApiTestConfigId() {
-        return apiTestConfigId;
-    }
-
-    public void setApiTestConfigId(Long apiTestConfigId) {
-        this.apiTestConfigId = apiTestConfigId;
     }
 
     public Boolean getEnableWarningSetting() {
@@ -127,14 +69,6 @@ public class DevopsCiTplApiTestInfoCfgDTO extends AuditDomain {
 
     public void setPerformThreshold(Double performThreshold) {
         this.performThreshold = performThreshold;
-    }
-
-    public String getNotifyUserIds() {
-        return notifyUserIds;
-    }
-
-    public void setNotifyUserIds(String notifyUserIds) {
-        this.notifyUserIds = notifyUserIds;
     }
 
     public Boolean getSendEmail() {
