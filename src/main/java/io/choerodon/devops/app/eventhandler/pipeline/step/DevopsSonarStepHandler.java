@@ -236,6 +236,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     private void processQualityGates(Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO) {
+        // 校验任务配置是否合法
         devopsCiSonarQualityGateService.deleteAll(sonarQualityGateVO.getId());
         // 判断是启用还是停用质量门
         if (Boolean.TRUE.equals(sonarQualityGateVO.getGatesEnable())) {
