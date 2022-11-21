@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -20,16 +21,22 @@ import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
+import io.choerodon.devops.api.vo.sonar.Component;
+import io.choerodon.devops.api.vo.sonar.SonarProjectSearchPageResult;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.iam.ProjectDTO;
+import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.DevopsCiSonarQualityGateConditionMetricTypeEnum;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
 import io.choerodon.devops.infra.enums.sonar.SonarScannerType;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.SonarClientOperator;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
@@ -59,7 +66,11 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Autowired
     private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
     @Autowired
-    private DevopsCiSonarQualityGateConditionService devopsCiSonarQualityGateConditionService;
+    private AppServiceService appServiceService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private SonarClientOperator sonarClientOperator;
 
     @Override
     @Transactional
@@ -77,6 +88,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         devopsCiSonarConfigDTO.setStepId(stepId);
         devopsCiSonarConfigDTO.setId(null);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
+
+        // 判断sonarqube是否创建该应用，没有则创建
+        checkSonarQubeProjectOrCreate(devopsCiStepVO);
 
         // 质量门
         if (sonarConfig.getDevopsCiSonarQualityGateVO() != null) {
@@ -245,16 +259,30 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             for (DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO : devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList()) {
                 if (devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.DUPLICATED_LINES_DENSITY.getMetric()) || devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.NEW_DUPLICATED_LINES_DENSITY.getMetric())) {
                     if (Double.parseDouble(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
-                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO);
                     }
                 } else {
                     if (Integer.parseInt(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
-                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO);
                     }
                 }
             }
         }
         return true;
+    }
+
+    private void checkSonarQubeProjectOrCreate(DevopsCiStepVO devopsCiStepVO) {
+        Long appServiceId = devopsCiStepService.queryAppServiceIdByStepId(devopsCiStepVO.getId());
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        String sonarProjectKey = organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + ":" + appServiceDTO.getCode();
+        SonarProjectSearchPageResult sonarProjectSearchPageResult = sonarClientOperator.searchProjects(sonarProjectKey);
+        if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch("sonarProjectKey"::equals)) {
+            sonarClientOperator.createProject(appServiceDTO.getCode(), sonarProjectKey);
+        }
     }
 
     private void processQualityGates(Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO) {

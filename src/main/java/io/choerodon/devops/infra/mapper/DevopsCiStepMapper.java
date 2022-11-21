@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -20,4 +21,6 @@ public interface DevopsCiStepMapper extends BaseMapper<DevopsCiStepDTO> {
     List<DevopsCiStepDTO> listByJobIds(@Param("jobIds") List<Long> jobIds);
 
     void batchDeleteByIds(@Param("ids") Set<Long> ids);
+
+    Long queryAppServiceIdByStepId(Long id);
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.sonar.QualityGate;
 import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
+import io.choerodon.devops.api.vo.sonar.SonarProjectSearchPageResult;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
@@ -59,5 +60,19 @@ public class SonarClientOperator {
         Map<String, String> data = new HashMap<>();
         data.put("id", id);
         RetrofitCallExceptionParse.executeCall(sonarClient.deleteQualityGate(data), ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_DELETE, Void.class);
+    }
+
+    public SonarProjectSearchPageResult searchProjects(String sonarProjectKey) {
+        Map<String, String> data = new HashMap<>();
+        data.put("ps", "500");
+        data.put("q", sonarProjectKey);
+        return RetrofitCallExceptionParse.executeCall(sonarClient.searchProjects(data), ExceptionConstants.SonarCode.DEVOPS_SONAR_PROJECTS_SEARCH, SonarProjectSearchPageResult.class);
+    }
+
+    public void createProject(String code, String sonarProjectKey) {
+        Map<String, String> data = new HashMap<>();
+        data.put("project", sonarProjectKey);
+        data.put("name", code);
+        RetrofitCallExceptionParse.executeCall(sonarClient.createProject(data), ExceptionConstants.SonarCode.DEVOPS_SONAR_PROJECTS_SEARCH, Void.class);
     }
 }

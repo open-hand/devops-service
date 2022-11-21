@@ -40,6 +40,9 @@ public class DevopsCiStepVO {
     @ApiModelProperty("步骤所属任务id")
     private Long devopsCiJobId;
 
+    @ApiModelProperty("关联的应用服务id")
+    private Long appServiceId;
+
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
     private DevopsCiSonarConfigVO sonarConfig;
 
@@ -140,5 +143,13 @@ public class DevopsCiStepVO {
 
     public void setDevopsCiJobId(Long devopsCiJobId) {
         this.devopsCiJobId = devopsCiJobId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.DevopsCiStepService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
@@ -74,5 +75,10 @@ public class DevopsCiStepServiceImpl implements DevopsCiStepService {
         DevopsCiStepDTO devopsCiStepDTO = new DevopsCiStepDTO();
         devopsCiStepDTO.setDevopsCiJobId(jobId);
         return devopsCiStepMapper.select(devopsCiStepDTO);
+    }
+
+    @Override
+    public Long queryAppServiceIdByStepId(Long id) {
+        return devopsCiStepMapper.queryAppServiceIdByStepId(id);
     }
 }
