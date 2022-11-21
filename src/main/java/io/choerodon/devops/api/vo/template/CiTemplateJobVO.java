@@ -90,19 +90,19 @@ public class CiTemplateJobVO {
     private String triggerType;
 
     @ApiModelProperty("chart部署时候的配置")
-    private CiTplChartDeployCfgVO ciTplChartDeployConfig;
+    private CiTplChartDeployCfgVO ciChartDeployConfig;
 
     @ApiModelProperty("api测试任务信息")
-    private CiTplApiTestInfoCfgVO ciTplApiTestInfoCfgVO;
+    private CiTplApiTestInfoCfgVO devopsCiApiTestInfoVO;
 
     @ApiModelProperty("deployment部署配置")
-    private CiTplDeployDeployCfgVO ciTplDeployDeployCfgVO;
+    private CiTplDeployDeployCfgVO ciDeployDeployCfg;
 
     @ApiModelProperty("主机部署的配置")
-    private CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO;
+    private CiTplHostDeployInfoCfgVO devopsCiHostDeployInfoVO;
 
     @ApiModelProperty("审核信息")
-    private CiTplAuditVO ciTplAuditVO;
+    private CiTplAuditVO ciAuditConfig;
 
 
     public Long getConfigId() {
@@ -291,38 +291,6 @@ public class CiTemplateJobVO {
         this.visibility = visibility;
     }
 
-    public CiTplChartDeployCfgVO getCiTplChartDeployConfig() {
-        return ciTplChartDeployConfig;
-    }
-
-    public void setCiTplChartDeployConfig(CiTplChartDeployCfgVO ciTplChartDeployConfig) {
-        this.ciTplChartDeployConfig = ciTplChartDeployConfig;
-    }
-
-    public CiTplApiTestInfoCfgVO getCiTplApiTestInfoCfgVO() {
-        return ciTplApiTestInfoCfgVO;
-    }
-
-    public void setCiTplApiTestInfoCfgVO(CiTplApiTestInfoCfgVO ciTplApiTestInfoCfgVO) {
-        this.ciTplApiTestInfoCfgVO = ciTplApiTestInfoCfgVO;
-    }
-
-    public CiTplDeployDeployCfgVO getCiTplDeployDeployCfgVO() {
-        return ciTplDeployDeployCfgVO;
-    }
-
-    public void setCiTplDeployDeployCfgVO(CiTplDeployDeployCfgVO ciTplDeployDeployCfgVO) {
-        this.ciTplDeployDeployCfgVO = ciTplDeployDeployCfgVO;
-    }
-
-    public CiTplHostDeployInfoCfgVO getCiTplHostDeployInfoCfgVO() {
-        return ciTplHostDeployInfoCfgVO;
-    }
-
-    public void setCiTplHostDeployInfoCfgVO(CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO) {
-        this.ciTplHostDeployInfoCfgVO = ciTplHostDeployInfoCfgVO;
-    }
-
     public String getTriggerValue() {
         return triggerValue;
     }
@@ -339,11 +307,43 @@ public class CiTemplateJobVO {
         this.triggerType = triggerType;
     }
 
-    public CiTplAuditVO getCiTplAuditVO() {
-        return ciTplAuditVO;
+    public CiTplChartDeployCfgVO getCiChartDeployConfig() {
+        return ciChartDeployConfig;
     }
 
-    public void setCiTplAuditVO(CiTplAuditVO ciTplAuditVO) {
-        this.ciTplAuditVO = ciTplAuditVO;
+    public void setCiChartDeployConfig(CiTplChartDeployCfgVO ciChartDeployConfig) {
+        this.ciChartDeployConfig = ciChartDeployConfig;
+    }
+
+    public CiTplApiTestInfoCfgVO getDevopsCiApiTestInfoVO() {
+        return devopsCiApiTestInfoVO;
+    }
+
+    public void setDevopsCiApiTestInfoVO(CiTplApiTestInfoCfgVO devopsCiApiTestInfoVO) {
+        this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
+    }
+
+    public CiTplDeployDeployCfgVO getCiDeployDeployCfg() {
+        return ciDeployDeployCfg;
+    }
+
+    public void setCiDeployDeployCfg(CiTplDeployDeployCfgVO ciDeployDeployCfg) {
+        this.ciDeployDeployCfg = ciDeployDeployCfg;
+    }
+
+    public CiTplHostDeployInfoCfgVO getDevopsCiHostDeployInfoVO() {
+        return devopsCiHostDeployInfoVO;
+    }
+
+    public void setDevopsCiHostDeployInfoVO(CiTplHostDeployInfoCfgVO devopsCiHostDeployInfoVO) {
+        this.devopsCiHostDeployInfoVO = devopsCiHostDeployInfoVO;
+    }
+
+    public CiTplAuditVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiTplAuditVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
     }
 }

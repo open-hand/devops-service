@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.template;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -8,6 +9,7 @@ import javax.persistence.Id;
 public class CiTplDeployDeployCfgVO {
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "是否校验环境权限")

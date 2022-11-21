@@ -5,16 +5,16 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.DevopsCiTplHostDeployInfoService;
 import io.choerodon.devops.infra.dto.DevopsCiTplHostDeployInfoCfgDTO;
-import io.choerodon.devops.infra.mapper.DevopsCiTplHostDeployInfoMapper;
+import io.choerodon.devops.infra.mapper.CiTplHostDeployInfoMapper;
 
 @Service
 public class DevopsCiTplHostDeployInfoServiceImpl implements DevopsCiTplHostDeployInfoService {
 
     @Autowired
-    private DevopsCiTplHostDeployInfoMapper devopsCiTplHostDeployInfoMapper;
+    private CiTplHostDeployInfoMapper ciTplHostDeployInfoMapper;
 
     @Override
     public DevopsCiTplHostDeployInfoCfgDTO selectByPrimaryKey(Long configId) {
-        return devopsCiTplHostDeployInfoMapper.selectByPrimaryKey(configId);
+        return ciTplHostDeployInfoMapper.selectByPrimaryKey(configId);
     }
 }

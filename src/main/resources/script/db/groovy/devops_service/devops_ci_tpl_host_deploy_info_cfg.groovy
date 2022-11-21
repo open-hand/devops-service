@@ -7,7 +7,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info_cfg.groov
                 constraints(primaryKey: true)
             }
 
-            column(name: 'deploy_json', type: 'VARCHAR(2048)', remarks: 'jar部署配置json')
             column(name: 'host_deploy_type', type: 'VARCHAR(20)', remarks: '主机部署类型 jar/other')
             column(name: 'pre_command', type: 'TEXT', remarks: '前置命令')
             column(name: 'run_command', type: 'TEXT', remarks: '运行命令')
