@@ -12,6 +12,7 @@ import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.DevopsCiSonarQualityGateConditionDTO;
 import io.choerodon.devops.infra.feign.operator.SonarClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiSonarQualityGateConditionMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 @Service
@@ -44,5 +45,10 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
             sonarClientOperator.deleteQualityGateCondition(devopsCiSonarQualityGateConditionDTO.getSonarId());
             devopsCiSOnarQualityGateConditionMapper.deleteByPrimaryKey(devopsCiSonarQualityGateConditionDTO.getId());
         });
+    }
+
+    @Override
+    public List<DevopsCiSonarQualityGateConditionVO> listByGateId(Long gateId) {
+        return ConvertUtils.convertList(devopsCiSOnarQualityGateConditionMapper.listByGateId(gateId), DevopsCiSonarQualityGateConditionVO.class);
     }
 }
