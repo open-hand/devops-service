@@ -551,24 +551,24 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
-    private void saveCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
-        //2.保存cd stage 的信息
-        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
-            ciCdPipelineVO.getDevopsCdStageVOS().forEach(devopsCdStageVO -> {
-                DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
-                devopsCdStageDTO.setPipelineId(ciCdPipelineDTO.getId());
-                devopsCdStageDTO.setProjectId(projectId);
-                devopsCdStageService.create(devopsCdStageDTO);
-                // 保存cd job信息
-                if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
-                    devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
-                        // 添加人工卡点的任务类型时才 保存审核人员信息
-                        createCdJob(devopsCdJobVO, projectId, devopsCdStageDTO.getId(), ciCdPipelineDTO.getId());
-                    });
-                }
-            });
-        }
-    }
+//    private void saveCdPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
+//        //2.保存cd stage 的信息
+//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+//            ciCdPipelineVO.getDevopsCdStageVOS().forEach(devopsCdStageVO -> {
+//                DevopsCdStageDTO devopsCdStageDTO = ConvertUtils.convertObject(devopsCdStageVO, DevopsCdStageDTO.class);
+//                devopsCdStageDTO.setPipelineId(ciCdPipelineDTO.getId());
+//                devopsCdStageDTO.setProjectId(projectId);
+//                devopsCdStageService.create(devopsCdStageDTO);
+//                // 保存cd job信息
+//                if (!CollectionUtils.isEmpty(devopsCdStageVO.getJobList())) {
+//                    devopsCdStageVO.getJobList().forEach(devopsCdJobVO -> {
+//                        // 添加人工卡点的任务类型时才 保存审核人员信息
+//                        createCdJob(devopsCdJobVO, projectId, devopsCdStageDTO.getId(), ciCdPipelineDTO.getId());
+//                    });
+//                }
+//            });
+//        }
+//    }
 
     private void saveCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO) {
         if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
@@ -1649,7 +1649,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             devopsCdJobService.deleteByStageId(devopsCdStageDTO.getId());
         });
         //新增
-        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
+//        saveCdPipeline(projectId, ciCdPipelineVO, ciCdPipelineDTO);
     }
 
     private void updateCiPipeline(Long projectId, CiCdPipelineVO ciCdPipelineVO, CiCdPipelineDTO ciCdPipelineDTO, boolean initCiFileFlag) {
