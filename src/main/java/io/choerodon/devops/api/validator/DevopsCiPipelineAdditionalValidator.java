@@ -56,7 +56,7 @@ public class DevopsCiPipelineAdditionalValidator {
      * @param ciCdPipelineVO 流水线数据
      */
     public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
-        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS()) && CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
