@@ -4,9 +4,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCiSonarQualityGateVO {
     @JsonIgnore
+    @Encrypt
     private Long id;
 
     @JsonIgnore

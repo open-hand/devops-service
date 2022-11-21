@@ -120,6 +120,12 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             devopsCiSonarConfigVO.setMavenBuildConfig(devopsCiMavenBuildConfigService.dtoToVo(devopsCiMavenBuildConfigDTO));
         }
 
+        // 添加质量门配置
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.queryBySonarConfigId(devopsCiSonarConfigDTO.getId());
+        if (devopsCiSonarQualityGateVO!=null){
+            devopsCiSonarConfigVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateVO);
+        }
+
         devopsCiStepVO.setSonarConfig(devopsCiSonarConfigVO);
     }
 

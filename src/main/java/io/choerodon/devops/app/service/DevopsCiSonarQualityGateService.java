@@ -7,4 +7,6 @@ public interface DevopsCiSonarQualityGateService {
 
     void createGate(Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO);
     Boolean queryBlock(Long stepId);
+
+    DevopsCiSonarQualityGateVO queryBySonarConfigId(Long id);
 }
