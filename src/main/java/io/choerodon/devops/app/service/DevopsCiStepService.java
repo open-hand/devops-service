@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Set;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 
 /**
@@ -22,4 +23,6 @@ public interface DevopsCiStepService {
     void batchDeleteByIds(Set<Long> ids);
 
     List<DevopsCiStepDTO> listByJobId(Long jobId);
+
+    Long queryAppServiceIdByStepId(Long id);
 }

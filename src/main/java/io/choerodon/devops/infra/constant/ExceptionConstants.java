@@ -96,7 +96,10 @@ public class ExceptionConstants {
         public static final String DEVOPS_SONAR_QUALITY_GATE_DELETE = "error.devops.sonar.quality.gate.delete";
         public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE = "error.devops.sonar.quality.gate.condition.create";
         public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_DELETE = "error.devops.sonar.quality.gate.condition.delete";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO = "error.devops.sonar.quality.gate.condition.value.less.than.zero";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO = "error.devops.sonar.quality.gate.condition.value.grater.than.zero";
+        public static final String DEVOPS_SONAR_PROJECTS_SEARCH = "error.devops.sonar.projects.search";
+
+        public static final String DEVOPS_SONAR_PROJECTS_CREATE = "error.devops.sonar.projects.create";
     }
 
     public static class CdEnvDeployInfoDTOCode {

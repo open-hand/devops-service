@@ -81,4 +81,10 @@ public interface SonarClient {
 
     @POST("api/qualitygates/destroy")
     Call<ResponseBody> deleteQualityGate(@FieldMap Map<String, String> maps);
+
+    @GET("api/projects/search")
+    Call<ResponseBody> searchProjects(@QueryMap Map<String, String> data);
+
+    @POST("/api/projects/create")
+    Call<ResponseBody> createProject(@FieldMap Map<String, String> data);
 }

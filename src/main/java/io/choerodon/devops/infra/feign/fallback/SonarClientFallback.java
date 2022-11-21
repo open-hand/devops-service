@@ -124,4 +124,14 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> deleteQualityGate(Map<String, String> maps) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> searchProjects(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> createProject(Map<String, String> data) {
+        return null;
+    }
 }
