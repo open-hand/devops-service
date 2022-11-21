@@ -2,10 +2,7 @@ package io.choerodon.devops.app.eventhandler.pipeline.step;
 
 import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +22,7 @@ import io.choerodon.devops.api.vo.sonar.Component;
 import io.choerodon.devops.api.vo.sonar.SonarProjectSearchPageResult;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.impl.AppServiceServiceImpl;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
@@ -52,6 +50,7 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
+    private static final String CHECK_SONAR_QUALITY_GATE_RESULT_FUNCTION = "checkSonarQualityGateScanResult %s";
     private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
     private static final String MVN_COMPILE_USE_SETTINGS_FUNCTION = "mvnCompileUseSettings %s";
 
@@ -195,6 +194,10 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             throw new CommonException(ResourceCheckConstant.DEVOPS_SONAR_SCANNER_TYPE_INVALID);
         }
         scripts.add(String.format(SAVE_SONAR_INFO_FUNCTION, devopsCiSonarConfigDTO.getScannerType()));
+
+        // 有可能为null值
+        Boolean blockAfterFail = Optional.ofNullable(devopsCiSonarQualityGateService.queryBlock(devopsCiSonarConfigDTO.getId())).orElse(Boolean.FALSE);
+        scripts.add(String.format(CHECK_SONAR_QUALITY_GATE_RESULT_FUNCTION, blockAfterFail));
         return scripts;
     }
 
@@ -278,7 +281,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
-        String sonarProjectKey = organizationDTO.getTenantNum() + "-" + projectDTO.getDevopsComponentCode() + ":" + appServiceDTO.getCode();
+        String sonarProjectKey = AppServiceServiceImpl.getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
         SonarProjectSearchPageResult sonarProjectSearchPageResult = sonarClientOperator.searchProjects(sonarProjectKey);
         if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch("sonarProjectKey"::equals)) {
             sonarClientOperator.createProject(appServiceDTO.getCode(), sonarProjectKey);

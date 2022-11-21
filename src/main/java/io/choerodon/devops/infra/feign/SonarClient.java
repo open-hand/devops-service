@@ -87,4 +87,7 @@ public interface SonarClient {
 
     @POST("/api/projects/create")
     Call<ResponseBody> createProject(@FieldMap Map<String, String> data);
+
+    @GET("api/measures/component")
+    Call<ResponseBody> getSonarQualityGateResultDetail(@QueryMap Map<String, String> maps);
 }

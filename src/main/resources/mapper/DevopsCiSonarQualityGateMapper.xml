@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiSonarQualityGateMapper">
+  <select id="queryBlockByStepId" resultType="java.lang.Boolean">
+    SELECT gates_block_after_fail
+    FROM devops_ci_sonar_quality_gate
+    WHERE config_id = #{devopsCiSonarConfigId}
+  </select>
+</mapper>
