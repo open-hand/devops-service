@@ -241,14 +241,16 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
         DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiStepVO.getSonarConfig().getDevopsCiSonarQualityGateVO();
-        for (DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO : devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList()) {
-            if (devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.DUPLICATED_LINES_DENSITY.getMetric()) || devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.NEW_DUPLICATED_LINES_DENSITY.getMetric())) {
-                if (Double.parseDouble(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
-                    throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
-                }
-            } else {
-                if (Integer.parseInt(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
-                    throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+        if (devopsCiSonarQualityGateVO != null) {
+            for (DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO : devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList()) {
+                if (devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.DUPLICATED_LINES_DENSITY.getMetric()) || devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.NEW_DUPLICATED_LINES_DENSITY.getMetric())) {
+                    if (Double.parseDouble(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                    }
+                } else {
+                    if (Integer.parseInt(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                    }
                 }
             }
         }
