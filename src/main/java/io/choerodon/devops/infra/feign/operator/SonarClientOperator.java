@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.api.vo.sonar.QualityGate;
 import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
+import io.choerodon.devops.api.vo.sonar.SonarComponent;
 import io.choerodon.devops.api.vo.sonar.SonarProjectSearchPageResult;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.feign.SonarClient;
@@ -74,5 +75,16 @@ public class SonarClientOperator {
         data.put("project", sonarProjectKey);
         data.put("name", code);
         RetrofitCallExceptionParse.executeCall(sonarClient.createProject(data), ExceptionConstants.SonarCode.DEVOPS_SONAR_PROJECTS_SEARCH, Void.class);
+    }
+
+    public SonarComponent getSonarQualityGateResultDetail(String sonarProjectKey) {
+        //初始化查询参数
+        Map<String, String> queryContentMap = new HashMap<>();
+        queryContentMap.put("additionalFields", "metrics,periods");
+        queryContentMap.put("component", sonarProjectKey);
+        queryContentMap.put("metricKeys", "quality_gate_details");
+
+        //根据project-key查询sonarqube项目内容
+        return RetrofitCallExceptionParse.executeCall(sonarClient.getSonarQualityGateResultDetail(queryContentMap), ExceptionConstants.SonarCode.Devops_SONAR_QUALITY_GATE_DETAILS_GET, SonarComponent.class);
     }
 }

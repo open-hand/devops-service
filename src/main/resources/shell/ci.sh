@@ -521,6 +521,29 @@ function saveCustomJarInfo() {
   fi
 }
 
+############################### 检查sonar扫描的信息，并根据质量门设置，判断是否终止job ################################
+function checkSonarQualityGateScanResult(){
+  if [ "$1" == "true " ]; then
+    response_code=$(curl -X GET \
+        -F "token=${Token}" \
+        -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+        "${CHOERODON_URL}/devops/ci/get_sonar_quality_gate_result" \
+        -o "sonarQualityGateScanResult.json" \
+        -w %{http_code})
+
+    if [ "${response_code}" != 200 ]; then
+         cat sonarQualityGateScanResult.json
+         exit 1
+    fi
+
+    scan_result=$(cat sonarQualityGateScanResult.json)
+    if [ "${scan_result}" != true ]; then
+        echo "The sonar quality gate doesn't pass"
+        exit 1
+    fi
+  fi
+}
+
 
 ############################### 存储sonar扫描的信息 ################################
 # $1 scanner_type 扫描器类型

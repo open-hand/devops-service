@@ -979,7 +979,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setUrl(uri);
 
         appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createExternalWebHook(
-                projectId, appExternalConfigDTO, projectHookDTO)
+                        projectId, appExternalConfigDTO, projectHookDTO)
                 .getId()));
     }
 
@@ -1522,7 +1522,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = getSonarKey(appServiceDTO, projectDTO, organization);
+        String key = getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
 
         //校验sonarqube地址是否正确
@@ -1824,8 +1824,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         return sonarContentsVO;
     }
 
-    protected String getSonarKey(AppServiceDTO appServiceDTO, ProjectDTO projectDTO, Tenant organization) {
-        return String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+    public static String getSonarKey(String appServiceCode, String projectDevopsComponentCode, String organiztionCode) {
+        return String.format(SONAR_KEY, organiztionCode, projectDevopsComponentCode, appServiceCode);
     }
 
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
@@ -1871,7 +1871,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = getSonarKey(applicationDTO, projectDTO, organizationDTO);
+        String key = getSonarKey(applicationDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);
@@ -3055,8 +3055,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceVO> listAppByProjectId(Long projectId, Boolean doPage, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.pageServiceByProjectId(projectId,
-                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
                 .filter(appServiceDTO -> (appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed()))
                 .collect(toList());
         List<AppServiceVO> list = ConvertUtils.convertList(appServiceDTOList, AppServiceVO.class);

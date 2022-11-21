@@ -352,11 +352,11 @@ public class CiController {
     @ApiOperation(value = "更新job 关联的api测试执行记录信息", hidden = true)
     @PostMapping("/update_api_test_task_record_info")
     public ResponseEntity<Void> updateApiTestTaskRecordInfo(@ApiParam(value = "GitLab Jobid", required = true)
-                                                  @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
-                                                  @ApiParam(value = "configId", required = true)
-                                                  @RequestParam(value = "config_id") Long configId,
-                                                  @ApiParam(value = "测试任务执行记录id")
-                                                  @RequestParam(value = "api_test_task_record_id") Long apiTestTaskRecordId) {
+                                                            @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
+                                                            @ApiParam(value = "configId", required = true)
+                                                            @RequestParam(value = "config_id") Long configId,
+                                                            @ApiParam(value = "测试任务执行记录id")
+                                                            @RequestParam(value = "api_test_task_record_id") Long apiTestTaskRecordId) {
         devopsCiJobRecordService.updateApiTestTaskRecordInfo(gitlabJobId, configId, apiTestTaskRecordId);
         return ResponseEntity.ok().build();
     }
@@ -382,6 +382,16 @@ public class CiController {
                                                          @ApiParam("gitlab job id")
                                                          @RequestParam("gitlab_job_id") Long gitlabJobId) {
         return ResponseEntity.ok(devopsCiJobRecordService.checkAndGetTriggerUserId(token, gitlabJobId));
+    }
+
+    @Permission(permissionPublic = false)
+    @ApiOperation(value = "查询sonar质量门执行结果", hidden = true)
+    @GetMapping("/get_sonar_quality_gate_result")
+    public ResponseEntity<Boolean> getSonarQualityGateScanResult(@ApiParam(value = "GitLab流水线id", required = true)
+                                                                 @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+                                                                 @ApiParam(value = "job_name", required = true)
+                                                                 @RequestParam String token) {
+        return ResponseEntity.ok(devopsCiPipelineSonarService.getSonarQualityGateScanResult(gitlabPipelineId, token));
     }
 
     @Permission(permissionPublic = true)

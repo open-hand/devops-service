@@ -15,5 +15,7 @@ public interface DevopsCiPipelineSonarService {
     DevopsCiPipelineSonarDTO queryByPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 
     void baseCreate(DevopsCiPipelineSonarDTO devopsCiPipelineSonarDTO);
+
+    Boolean getSonarQualityGateScanResult(Long gitlabPipelineId, String token);
 }
 

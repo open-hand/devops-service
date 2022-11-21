@@ -44,4 +44,9 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
         MapperUtil.resultJudgedInsert(devopsCiSonarQualityGateMapper, devopsCiSonarQualityGateDTO, ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CREATE);
         devopsCiSonarQualityGateConditionService.createConditions(devopsCiSonarQualityGateDTO.getId(), qualityGate.getId(), sonarQualityGateVO.getSonarQualityGateConditionVOList());
     }
+
+    @Override
+    public Boolean queryBlock(Long devopsCiSonarConfigId) {
+        return devopsCiSonarQualityGateMapper.queryBlockByStepId(devopsCiSonarConfigId);
+    }
 }
