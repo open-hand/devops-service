@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.infra.dto.DevopsCiTplApiTestInfoCfgDTO;
+import io.choerodon.devops.infra.dto.CiTplApiTestInfoCfgDTO;
 
 public interface DevopsCiTplApiTestInfoCfgService {
-    DevopsCiTplApiTestInfoCfgDTO selectByPrimaryKey(Long configId);
+    CiTplApiTestInfoCfgDTO selectByPrimaryKey(Long configId);
 }

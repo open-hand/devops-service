@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.DevopsCiTplApiTestInfoCfgService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiTplApiTestInfoCfgDTO;
+import io.choerodon.devops.infra.dto.CiTplApiTestInfoCfgDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -104,10 +104,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        DevopsCiTplApiTestInfoCfgDTO devopsCiTplApiTestInfoCfgDTO = devopsCiTplApiTestInfoCfgService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
-        if (devopsCiTplApiTestInfoCfgDTO == null) {
-            devopsCiTplApiTestInfoCfgDTO = new DevopsCiTplApiTestInfoCfgDTO();
+        CiTplApiTestInfoCfgDTO ciTplApiTestInfoCfgDTO = devopsCiTplApiTestInfoCfgService.selectByPrimaryKey(devopsCiJobVO.getConfigId());
+        if (ciTplApiTestInfoCfgDTO == null) {
+            ciTplApiTestInfoCfgDTO = new CiTplApiTestInfoCfgDTO();
         }
-        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiTplApiTestInfoCfgDTO, DevopsCiApiTestInfoVO.class));
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(ciTplApiTestInfoCfgDTO, DevopsCiApiTestInfoVO.class));
     }
 }

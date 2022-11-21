@@ -22,7 +22,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_ci_tpl_host_deploy_info_cfg")
-public class DevopsCiTplHostDeployInfoCfgDTO extends AuditDomain {
+public class CiTplHostDeployInfoCfgDTO extends AuditDomain {
     @Encrypt
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

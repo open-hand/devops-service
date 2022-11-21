@@ -24,7 +24,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Table(name = "devops_ci_tpl_api_test_info_cfg")
-public class DevopsCiTplApiTestInfoCfgDTO extends AuditDomain {
+public class CiTplApiTestInfoCfgDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_API_TEST_CONFIG_ID = "apiTestConfigId";
     public static final String FIELD_SEND_EMAIL = "sendEmail";
