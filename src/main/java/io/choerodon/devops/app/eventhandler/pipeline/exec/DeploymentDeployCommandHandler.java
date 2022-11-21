@@ -165,7 +165,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
     }
 
     protected void fillDockerConfig(Long projectId, Long appServiceId, Long gitlabPipelineId, DevopsDeployGroupContainerConfigVO config, StringBuilder log) {
-        if (AppSourceType.CURRENT_PROJECT.getValue().equals(config.getDockerDeployVO().getSourceType())) {
+        if (AppSourceType.PIPELINE.getValue().equals(config.getDockerDeployVO().getSourceType())) {
             CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(appServiceId,
                     gitlabPipelineId,
                     config.getPipelineJobName());
