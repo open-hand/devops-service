@@ -18,11 +18,14 @@ import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.DevopsCiSonarQualityGateConditionMetricTypeEnum;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.enums.sonar.CiSonarConfigType;
 import io.choerodon.devops.infra.enums.sonar.SonarAuthType;
@@ -231,6 +234,25 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                 return StringUtils.hasText(sonarConfig.getToken());
             }
 
+        }
+        return true;
+    }
+
+    @Override
+    public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiStepVO.getSonarConfig().getDevopsCiSonarQualityGateVO();
+        if (devopsCiSonarQualityGateVO != null) {
+            for (DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO : devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList()) {
+                if (devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.DUPLICATED_LINES_DENSITY.getMetric()) || devopsCiSonarQualityGateConditionVO.getGatesMetric().equals(DevopsCiSonarQualityGateConditionMetricTypeEnum.NEW_DUPLICATED_LINES_DENSITY.getMetric())) {
+                    if (Double.parseDouble(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                    }
+                } else {
+                    if (Integer.parseInt(devopsCiSonarQualityGateConditionVO.getGatesValue()) <= 0) {
+                        throw new CommonException(ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_THAN_ZERO);
+                    }
+                }
+            }
         }
         return true;
     }
