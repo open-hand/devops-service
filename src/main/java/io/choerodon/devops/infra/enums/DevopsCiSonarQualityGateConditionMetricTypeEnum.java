@@ -17,7 +17,7 @@ public enum DevopsCiSonarQualityGateConditionMetricTypeEnum {
 
     private final String metric;
 
-    private String getMetric() {
+    public String getMetric() {
         return this.metric;
     }
 
