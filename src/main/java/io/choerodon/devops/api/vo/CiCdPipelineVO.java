@@ -75,9 +75,9 @@ public class CiCdPipelineVO {
     @ApiModelProperty(name = "ci阶段信息")
     @Valid
     private List<DevopsCiStageVO> devopsCiStageVOS;
-    @ApiModelProperty(name = "cd阶段信息")
-    @Valid
-    private List<DevopsCdStageVO> devopsCdStageVOS;
+    //    @ApiModelProperty(name = "cd阶段信息")
+//    @Valid
+//    private List<DevopsCdStageVO> devopsCdStageVOS;
     @ApiModelProperty(name = "流水线变量")
     private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
     @ApiModelProperty(name = "cicd 流水线下的执行记录")
@@ -265,13 +265,13 @@ public class CiCdPipelineVO {
         this.devopsCiStageVOS = devopsCiStageVOS;
     }
 
-    public List<DevopsCdStageVO> getDevopsCdStageVOS() {
-        return devopsCdStageVOS;
-    }
-
-    public void setDevopsCdStageVOS(List<DevopsCdStageVO> devopsCdStageVOS) {
-        this.devopsCdStageVOS = devopsCdStageVOS;
-    }
+//    public List<DevopsCdStageVO> getDevopsCdStageVOS() {
+//        return devopsCdStageVOS;
+//    }
+//
+//    public void setDevopsCdStageVOS(List<DevopsCdStageVO> devopsCdStageVOS) {
+//        this.devopsCdStageVOS = devopsCdStageVOS;
+//    }
 
     public Boolean getHasRecords() {
         return hasRecords;

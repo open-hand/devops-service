@@ -86,6 +86,9 @@ public class DevopsCiJobVO {
 
     private String tags;
 
+    @ApiModelProperty("是否有权限修改cd的job,默认有")
+    private boolean edit = true;
+
     @ApiModelProperty("任务为人工卡点时需要，保存人工卡点相关配置信息")
     private CiAuditConfigVO ciAuditConfig;
     @ApiModelProperty("任务为chart部署时需要，保存chart部署相关配置信息")
@@ -98,6 +101,14 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("任务为主机部署类型，保存主机部署相关配置信息")
     private DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO;
+
+    public boolean isEdit() {
+        return edit;
+    }
+
+    public void setEdit(boolean edit) {
+        this.edit = edit;
+    }
 
     public String getTags() {
         return tags;

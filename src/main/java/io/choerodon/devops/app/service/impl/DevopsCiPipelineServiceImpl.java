@@ -816,6 +816,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         devopsCiJobVOS.forEach(devopsCiJobVO -> {
             AbstractJobHandler jobHandler = jobOperator.getHandler(devopsCiJobVO.getType());
             jobHandler.fillJobConfigInfo(devopsCiJobVO);
+            jobHandler.fillJobAdditionalInfo(devopsCiJobVO);
 
             List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
             if (!CollectionUtils.isEmpty(ciStepDTOS)) {
@@ -854,7 +855,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     private CiCdPipelineVO getCiCdPipelineVO(Long pipelineId) {
-        CiCdPipelineDTO ciCdPipelineDTO = ciCdPipelineMapper.selectByPrimaryKey(pipelineId);
+        CiCdPipelineDTO ciCdPipelineDTO = baseQueryById(pipelineId);
         CommonExAssertUtil.assertTrue(ciCdPipelineDTO != null, DEVOPS_PIPELINE_NOT_EXIST, pipelineId);
         return ConvertUtils.convertObject(ciCdPipelineDTO, CiCdPipelineVO.class);
     }

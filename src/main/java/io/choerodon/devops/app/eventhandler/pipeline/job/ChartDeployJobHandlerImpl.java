@@ -17,6 +17,7 @@ import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.devops.infra.dto.CiChartDeployConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
@@ -30,7 +31,7 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  * @since 2022/11/4 14:47
  */
 @Service
-public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
+public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
 
     @Autowired
     private CiChartDeployConfigService ciChartDeployConfigService;
@@ -103,5 +104,11 @@ public class ChartDeployJobHandlerImpl extends AbstractJobHandler {
         List<String> cmds = new ArrayList<>();
         cmds.add(String.format("chart_deploy %s", ciChartDeployConfigVO.getId()));
         return cmds;
+    }
+
+    @Override
+    protected DevopsEnvironmentDTO queryEnvironmentByJobConfigId(Long configId) {
+        CiChartDeployConfigDTO ciChartDeployConfigDTO = ciChartDeployConfigService.queryConfigById(configId);
+        return devopsEnvironmentService.baseQueryById(ciChartDeployConfigDTO.getEnvId());
     }
 }

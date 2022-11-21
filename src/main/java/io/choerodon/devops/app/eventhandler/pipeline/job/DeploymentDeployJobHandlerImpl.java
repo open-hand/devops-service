@@ -14,6 +14,7 @@ import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
 import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
@@ -28,7 +29,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
  * @since 2022/11/4 14:47
  */
 @Service
-public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
+public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
 
     @Autowired
     private CiDeployDeployCfgService ciDeployDeployCfgService;
@@ -104,5 +105,11 @@ public class DeploymentDeployJobHandlerImpl extends AbstractJobHandler {
         List<String> cmds = new ArrayList<>();
         cmds.add(String.format("deployment_deploy %s", ciDeployDeployCfgVO.getId()));
         return cmds;
+    }
+
+    @Override
+    protected DevopsEnvironmentDTO queryEnvironmentByJobConfigId(Long configId) {
+        CiDeployDeployCfgDTO ciDeployDeployCfgDTO = ciDeployDeployCfgService.queryConfigById(configId);
+        return devopsEnvironmentService.baseQueryById(ciDeployDeployCfgDTO.getEnvId());
     }
 }

@@ -130,4 +130,13 @@ public abstract class AbstractJobHandler {
     public void deleteConfigByPipelineId(Long ciPipelineId) {
 
     }
+
+    /**
+     * 添加job额外的配置信息，比如部署任务是否可编辑
+     *
+     * @param devopsCiJobVO
+     */
+    public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
 }
