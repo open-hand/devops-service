@@ -16,16 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
-import io.choerodon.devops.app.service.DevopsCiHostDeployInfoService;
-import io.choerodon.devops.app.service.DevopsCiTplHostDeployInfoService;
-import io.choerodon.devops.app.service.DevopsHostAppService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.CiTplHostDeployInfoCfgDTO;
-import io.choerodon.devops.infra.dto.DevopsHostAppDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -46,6 +42,10 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
     @Autowired
     private DevopsCiTplHostDeployInfoService devopsCiTplHostDeployInfoService;
+    @Autowired
+    private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
 
 
     @Override
@@ -139,6 +139,14 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(devopsCiHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiHostDeployInfoVO.class));
     }
 
+
+    @Override
+    public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.baseQueryById(devopsCiJobVO.getCiPipelineId());
+        Long projectId = ciCdPipelineDTO.getProjectId();
+        DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = devopsCiHostDeployInfoMapper.selectByPrimaryKey(devopsCiJobVO.getConfigId());
+        devopsCiJobVO.setEdit(devopsHostUserPermissionService.checkUserOwnUsePermission(projectId, devopsCiHostDeployInfoDTO.getHostId(), DetailsHelper.getUserDetails().getUserId()));
+    }
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
