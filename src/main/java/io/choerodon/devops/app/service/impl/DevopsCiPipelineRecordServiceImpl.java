@@ -8,8 +8,6 @@ import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_PI
 import static io.choerodon.devops.infra.constant.PipelineConstants.DEVOPS_UPDATE_CI_JOB_RECORD;
 import static org.hzero.core.base.BaseConstants.Symbol.SLASH;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -34,7 +32,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
-import sun.misc.BASE64Decoder;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -91,7 +88,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     protected static final String CUSTOM_REPO = "CUSTOM_REPO";
     protected static final String CREATE = "create";
-    protected static final BASE64Decoder decoder = new BASE64Decoder();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
 
@@ -1505,12 +1501,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
-        try {
-            dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO,
-                    new String(decoder.decodeBuffer(devopsCiHostDeployInfoDTO.getDockerCommand()), StandardCharsets.UTF_8)));
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
+        dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, devopsCiHostDeployInfoDTO.getDockerCommand()));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
