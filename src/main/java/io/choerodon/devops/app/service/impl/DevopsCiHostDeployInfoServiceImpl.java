@@ -36,59 +36,59 @@ public class DevopsCiHostDeployInfoServiceImpl implements DevopsCiHostDeployInfo
 
     @Override
     public void updateDockerDeployInfoFromAppCenter(DockerDeployVO dockerDeployVO) {
-        List<DevopsCiHostDeployInfoDTO> DevopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(dockerDeployVO.getHostAppId());
-        if (CollectionUtils.isEmpty(DevopsCiHostDeployInfoDTOList)) {
+        List<DevopsCiHostDeployInfoDTO> devopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(dockerDeployVO.getHostAppId());
+        if (CollectionUtils.isEmpty(devopsCiHostDeployInfoDTOList)) {
             return;
         }
 
-        DevopsCiHostDeployInfoDTOList.forEach(DevopsCiHostDeployInfoDTO -> {
-            DevopsCiHostDeployInfoDTO.setDockerCommand(dockerDeployVO.getValue());
+        devopsCiHostDeployInfoDTOList.forEach(devopsCiHostDeployInfoDTO -> {
+            devopsCiHostDeployInfoDTO.setDockerCommand(dockerDeployVO.getValue());
 
-            DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(DevopsCiHostDeployInfoDTO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
+            DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoDTO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
             imageDeploy.setContainerName(dockerDeployVO.getContainerName());
 
-            DevopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
-            DevopsCiHostDeployInfoDTO.setAppName(dockerDeployVO.getAppName());
+            devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
+            devopsCiHostDeployInfoDTO.setAppName(dockerDeployVO.getAppName());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, DevopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO);
         });
 
     }
 
     @Override
     public void updateJarDeployInfoFromAppCenter(JarDeployVO jarDeployVO) {
-        List<DevopsCiHostDeployInfoDTO> DevopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(jarDeployVO.getAppId());
-        if (CollectionUtils.isEmpty(DevopsCiHostDeployInfoDTOList)) {
+        List<DevopsCiHostDeployInfoDTO> devopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(jarDeployVO.getAppId());
+        if (CollectionUtils.isEmpty(devopsCiHostDeployInfoDTOList)) {
             return;
         }
-        DevopsCiHostDeployInfoDTOList.forEach(DevopsCiHostDeployInfoDTO -> {
-            DevopsCiHostDeployInfoDTO.setAppName(jarDeployVO.getAppName());
-            DevopsCiHostDeployInfoDTO.setPreCommand(jarDeployVO.getPreCommand());
-            DevopsCiHostDeployInfoDTO.setRunCommand(jarDeployVO.getRunCommand());
-            DevopsCiHostDeployInfoDTO.setPostCommand(jarDeployVO.getPostCommand());
-            DevopsCiHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
-            DevopsCiHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
+        devopsCiHostDeployInfoDTOList.forEach(devopsCiHostDeployInfoDTO -> {
+            devopsCiHostDeployInfoDTO.setAppName(jarDeployVO.getAppName());
+            devopsCiHostDeployInfoDTO.setPreCommand(jarDeployVO.getPreCommand());
+            devopsCiHostDeployInfoDTO.setRunCommand(jarDeployVO.getRunCommand());
+            devopsCiHostDeployInfoDTO.setPostCommand(jarDeployVO.getPostCommand());
+            devopsCiHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
+            devopsCiHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, DevopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO);
 
         });
     }
 
     @Override
     public void updateCustomDeployInfoFromAppCenter(CustomDeployVO customDeployVO) {
-        List<DevopsCiHostDeployInfoDTO> DevopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(customDeployVO.getAppId());
-        if (CollectionUtils.isEmpty(DevopsCiHostDeployInfoDTOList)) {
+        List<DevopsCiHostDeployInfoDTO> devopsCiHostDeployInfoDTOList = devopsCiHostDeployInfoMapper.selectByHostAppId(customDeployVO.getAppId());
+        if (CollectionUtils.isEmpty(devopsCiHostDeployInfoDTOList)) {
             return;
         }
-        DevopsCiHostDeployInfoDTOList.forEach(DevopsCiHostDeployInfoDTO -> {
-            DevopsCiHostDeployInfoDTO.setAppName(customDeployVO.getAppName());
-            DevopsCiHostDeployInfoDTO.setPreCommand(customDeployVO.getPreCommand());
-            DevopsCiHostDeployInfoDTO.setRunCommand(customDeployVO.getRunCommand());
-            DevopsCiHostDeployInfoDTO.setPostCommand(customDeployVO.getPostCommand());
-            DevopsCiHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
-            DevopsCiHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
+        devopsCiHostDeployInfoDTOList.forEach(devopsCiHostDeployInfoDTO -> {
+            devopsCiHostDeployInfoDTO.setAppName(customDeployVO.getAppName());
+            devopsCiHostDeployInfoDTO.setPreCommand(customDeployVO.getPreCommand());
+            devopsCiHostDeployInfoDTO.setRunCommand(customDeployVO.getRunCommand());
+            devopsCiHostDeployInfoDTO.setPostCommand(customDeployVO.getPostCommand());
+            devopsCiHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
+            devopsCiHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
 
-            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, DevopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO);
         });
     }
 }
