@@ -52,8 +52,10 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
     }
 
     @Override
-    public DevopsCiSonarQualityGateVO queryBySonarConfigId(Long id) {
-        DevopsCiSonarQualityGateDTO devopsCiSonarQualityGateDTO = devopsCiSonarQualityGateMapper.selectByPrimaryKey(id);
+    public DevopsCiSonarQualityGateVO queryBySonarConfigId(Long configId) {
+        DevopsCiSonarQualityGateDTO devopsCiSonarQualityGateSearchDTO = new DevopsCiSonarQualityGateDTO();
+        devopsCiSonarQualityGateSearchDTO.setConfigId(configId);
+        DevopsCiSonarQualityGateDTO devopsCiSonarQualityGateDTO = devopsCiSonarQualityGateMapper.selectOne(devopsCiSonarQualityGateSearchDTO);
         if (devopsCiSonarQualityGateDTO == null) {
             return null;
         }
