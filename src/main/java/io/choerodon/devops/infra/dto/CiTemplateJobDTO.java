@@ -87,7 +87,7 @@ public class CiTemplateJobDTO extends AuditDomain {
     @ApiModelProperty("延迟配置")
     private Integer startIn;
 
-    @ApiModelProperty("任务启动延时时间")
+    @ApiModelProperty("任务标签")
     private String tags;
 
     @ApiModelProperty("任务模板是否可见")

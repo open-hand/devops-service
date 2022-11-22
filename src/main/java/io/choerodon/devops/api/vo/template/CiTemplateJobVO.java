@@ -41,6 +41,9 @@ public class CiTemplateJobVO {
 
     private String type;
 
+    @ApiModelProperty("任务标签")
+    private String tags;
+
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
@@ -104,6 +107,13 @@ public class CiTemplateJobVO {
     @ApiModelProperty("审核信息")
     private CiTplAuditVO ciAuditConfig;
 
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
 
     public Long getConfigId() {
         return configId;
