@@ -303,6 +303,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setEnvActive(environmentDTO.getActive());
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
 
+        detailVO.setAppCode(detailVO.getCode());
+        detailVO.setAppName(detailVO.getName());
+
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
