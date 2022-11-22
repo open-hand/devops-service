@@ -10,7 +10,7 @@ public interface DevopsCiSonarQualityGateService {
 
     Boolean queryBlock(Long stepId);
 
-    DevopsCiSonarQualityGateVO queryBySonarConfigId(Long id);
+    DevopsCiSonarQualityGateVO queryBySonarConfigId(Long configId);
 
     QualityGate createQualityGateOnSonarQube(String name);
 }
