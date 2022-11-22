@@ -755,27 +755,29 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
     }
 
     protected void fillDockerConfig(DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO, DevopsDeployGroupContainerConfigVO config, CiCdPipelineVO ciCdPipelineVO) {
-        CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
-        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
+        if (AppSourceType.PIPELINE.getValue().equals(config.getDockerDeployVO().getSourceType())) {
+            CiPipelineImageDTO ciPipelineImageDTO = ciPipelineImageService.queryByGitlabPipelineId(ciCdPipelineVO.getAppServiceId(), devopsCdPipelineRecordDTO.getGitlabPipelineId(), config.getPipelineJobName());
+            HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigById(devopsCdPipelineRecordDTO.getProjectId(), ciPipelineImageDTO.getHarborRepoId(), ciPipelineImageDTO.getRepoType());
 
-        DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
-        dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+            DevopsDeployGroupDockerDeployVO dockerDeployVO = new DevopsDeployGroupDockerDeployVO();
+            dockerDeployVO.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
 
-        int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
-        String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
-        String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
+            int index = ciPipelineImageDTO.getImageTag().lastIndexOf(":");
+            String imageName = ciPipelineImageDTO.getImageTag().substring(0, index);
+            String tagName = ciPipelineImageDTO.getImageTag().substring(index + 1);
 
-        ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
-                harborRepoDTO.getRepoType(),
-                harborRepoDTO.getHarborRepoConfig().getRepoId(),
-                imageName,
-                tagName,
-                Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
-                ciPipelineImageDTO.getImageTag());
-        dockerDeployVO.setImageInfo(prodImageInfoVO);
-        config.setPipelineJobName(null);
-        config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
-        config.setDockerDeployVO(dockerDeployVO);
+            ProdImageInfoVO prodImageInfoVO = new ProdImageInfoVO(harborRepoDTO.getHarborRepoConfig().getRepoName(),
+                    harborRepoDTO.getRepoType(),
+                    harborRepoDTO.getHarborRepoConfig().getRepoId(),
+                    imageName,
+                    tagName,
+                    Boolean.TRUE.toString().equals(harborRepoDTO.getHarborRepoConfig().getIsPrivate()),
+                    ciPipelineImageDTO.getImageTag());
+            dockerDeployVO.setImageInfo(prodImageInfoVO);
+            config.setPipelineJobName(null);
+            config.setSourceType(AppSourceType.CURRENT_PROJECT.getValue());
+            config.setDockerDeployVO(dockerDeployVO);
+        }
     }
 
     private boolean checkEnvEnableAutoDeploy(DevopsCdJobRecordDTO devopsCdJobRecordDTO, DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO, StringBuilder log) {
