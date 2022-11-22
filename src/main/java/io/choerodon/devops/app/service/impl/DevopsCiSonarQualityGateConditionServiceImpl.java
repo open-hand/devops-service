@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
@@ -39,16 +40,15 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
     }
 
     @Override
-    public void deleteByGateId(Long gateId) {
-        List<DevopsCiSonarQualityGateConditionDTO> devopsCiSonarQualityGateConditionDTOS = devopsCiSOnarQualityGateConditionMapper.listByGateId(gateId);
-        devopsCiSonarQualityGateConditionDTOS.forEach(devopsCiSonarQualityGateConditionDTO -> {
-            sonarClientOperator.deleteQualityGateCondition(devopsCiSonarQualityGateConditionDTO.getSonarConditionId());
-            devopsCiSOnarQualityGateConditionMapper.deleteByPrimaryKey(devopsCiSonarQualityGateConditionDTO.getId());
-        });
+    public List<DevopsCiSonarQualityGateConditionVO> listByGateId(Long gateId) {
+        return ConvertUtils.convertList(devopsCiSOnarQualityGateConditionMapper.listByGateId(gateId), DevopsCiSonarQualityGateConditionVO.class);
     }
 
     @Override
-    public List<DevopsCiSonarQualityGateConditionVO> listByGateId(Long gateId) {
-        return ConvertUtils.convertList(devopsCiSOnarQualityGateConditionMapper.listByGateId(gateId), DevopsCiSonarQualityGateConditionVO.class);
+    public void deleteBySonarIds(List<String> conditionSonarIdList) {
+        if (CollectionUtils.isEmpty(conditionSonarIdList)) {
+            return;
+        }
+        devopsCiSOnarQualityGateConditionMapper.deleteBySonarIds(conditionSonarIdList);
     }
 }

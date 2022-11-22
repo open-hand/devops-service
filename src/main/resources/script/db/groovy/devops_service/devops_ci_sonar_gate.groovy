@@ -30,4 +30,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_sonar_quality_gate.groovy') {
             column(name: 'config_id')
         }
     }
+    changeSet(author: 'lihao', id: '2022-11-22-add-unique-key') {
+        addUniqueConstraint(tableName: 'devops_ci_sonar_quality_gate',
+                constraintName: 'devops_ci_sonar_quality_gate_u1', columnNames: 'name')
+    }
 }

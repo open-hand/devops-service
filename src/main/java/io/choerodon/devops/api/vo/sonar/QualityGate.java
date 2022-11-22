@@ -1,8 +1,20 @@
 package io.choerodon.devops.api.vo.sonar;
 
+import java.util.List;
+
 public class QualityGate {
     private String id;
     private String name;
+
+    private List<QualityGateCondition> conditions;
+
+    public List<QualityGateCondition> getConditions() {
+        return conditions;
+    }
+
+    public void setConditions(List<QualityGateCondition> conditions) {
+        this.conditions = conditions;
+    }
 
     public String getId() {
         return id;
