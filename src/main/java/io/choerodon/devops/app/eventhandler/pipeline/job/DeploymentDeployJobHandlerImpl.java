@@ -6,11 +6,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.app.service.CiDeployDeployCfgService;
 import io.choerodon.devops.app.service.CiTplDeployDeployCfgService;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiDeployDeployCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
@@ -64,6 +66,9 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciDeployDeployCfg.getAppId());
             ciDeployDeployCfg.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciDeployDeployCfg.setAppName(devopsDeployAppCenterEnvDTO.getName());
+            if (devopsDeployAppCenterEnvDTO.getEnvId().equals(ciDeployDeployCfg.getEnvId())) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
+            }
         }
     }
 
