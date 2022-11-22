@@ -92,4 +92,12 @@ public interface SonarClient {
 
     @GET("api/measures/component")
     Call<ResponseBody> getSonarQualityGateResultDetail(@QueryMap Map<String, String> maps);
+
+    @GET("api/qualitygates/show")
+    Call<ResponseBody> gateShow(@QueryMap Map<String, String> data);
+
+    @FormUrlEncoded
+    @POST("/api/qualitygates/select")
+    Call<ResponseBody> bindQualityGate(@FieldMap Map<String, String> data);
+
 }

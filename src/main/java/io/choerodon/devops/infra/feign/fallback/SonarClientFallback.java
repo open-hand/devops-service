@@ -139,4 +139,14 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> getSonarQualityGateResultDetail(Map<String, String> maps) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> gateShow(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> bindQualityGate(Map<String, String> data) {
+        return null;
+    }
 }
