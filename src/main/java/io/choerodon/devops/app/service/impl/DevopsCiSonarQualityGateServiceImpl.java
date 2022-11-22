@@ -28,8 +28,10 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
     @Override
     public void deleteAll(Long id) {
         DevopsCiSonarQualityGateDTO qualityGateDTO = devopsCiSonarQualityGateMapper.selectByPrimaryKey(id);
-        sonarClientOperator.deleteQualityGate(qualityGateDTO.getSonarGateId());
-        devopsCiSonarQualityGateConditionService.deleteByGateId(qualityGateDTO.getId());
+        if (qualityGateDTO != null) {
+            sonarClientOperator.deleteQualityGate(qualityGateDTO.getSonarGateId());
+            devopsCiSonarQualityGateConditionService.deleteByGateId(qualityGateDTO.getId());
+        }
     }
 
     @Override
