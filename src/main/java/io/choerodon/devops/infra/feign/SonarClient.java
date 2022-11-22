@@ -4,10 +4,7 @@ import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.http.FieldMap;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.QueryMap;
+import retrofit2.http.*;
 
 import io.choerodon.devops.api.vo.sonar.*;
 
@@ -70,21 +67,26 @@ public interface SonarClient {
     @GET("api/measures/search")
     Call<ResponseBody> batchQueryMeasures(@QueryMap Map<String, String> maps);
 
+    @FormUrlEncoded
     @POST("api/qualitygates/create")
     Call<ResponseBody> createQualityGate(@FieldMap Map<String, String> maps);
 
+    @FormUrlEncoded
     @POST("api/qualitygates/create_condition")
     Call<ResponseBody> createQualityGateCondition(@FieldMap Map<String, String> maps);
 
+    @FormUrlEncoded
     @POST("api/qualitygates/delete_condition")
     Call<ResponseBody> deleteQualityGateCondition(@FieldMap Map<String, String> maps);
 
+    @FormUrlEncoded
     @POST("api/qualitygates/destroy")
     Call<ResponseBody> deleteQualityGate(@FieldMap Map<String, String> maps);
 
     @GET("api/projects/search")
     Call<ResponseBody> searchProjects(@QueryMap Map<String, String> data);
 
+    @FormUrlEncoded
     @POST("/api/projects/create")
     Call<ResponseBody> createProject(@FieldMap Map<String, String> data);
 

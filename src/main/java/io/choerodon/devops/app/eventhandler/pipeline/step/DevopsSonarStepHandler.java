@@ -89,7 +89,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
 
         // 判断sonarqube是否创建该应用，没有则创建
-        checkSonarQubeProjectOrCreate(devopsCiStepVO);
+        checkSonarQubeProjectOrCreate(stepId);
 
         // 质量门
         if (sonarConfig.getDevopsCiSonarQualityGateVO() != null) {
@@ -280,8 +280,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         return true;
     }
 
-    private void checkSonarQubeProjectOrCreate(DevopsCiStepVO devopsCiStepVO) {
-        Long appServiceId = devopsCiStepService.queryAppServiceIdByStepId(devopsCiStepVO.getId());
+    private void checkSonarQubeProjectOrCreate(Long stepId) {
+        Long appServiceId = devopsCiStepService.queryAppServiceIdByStepId(stepId);
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
@@ -289,7 +289,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
         String sonarProjectKey = AppServiceServiceImpl.getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
         SonarProjectSearchPageResult sonarProjectSearchPageResult = sonarClientOperator.searchProjects(sonarProjectKey);
-        if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch("sonarProjectKey"::equals)) {
+        if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch(sonarProjectKey::equals)) {
             sonarClientOperator.createProject(appServiceDTO.getCode(), sonarProjectKey);
         }
     }
