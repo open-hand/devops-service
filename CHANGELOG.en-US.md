@@ -413,7 +413,7 @@ All notable changes to devops-service will be documented in this file.
 - Added permission allocation for the environment to support configuring specific operators for each environment
 - Added the ability to delete the environment and support the deletion of the environment in the environment deactivated area.
 - A new development console is added to the development pipeline, which integrates the main functions in the development pipeline to make development operations easier.
-- Add an entry to view code quality in the development pipeline code repository
+- Add an entry to view code qualityGateResult in the development pipeline code repository
 - The Dashboard page adds modules to quickly view branch status, code submissions, application builds and deployments, and provides a quick jump to the appropriate module entry.
 - The deployment section adds a deployments layer and supports multiple deployments in a single chart file.
 - New instance redeployment feature
@@ -485,7 +485,7 @@ All notable changes to devops-service will be documented in this file.
 - Integrated the webhook of push and merge request in `branch management`.
 - Job operation event message in `container`. 
 - Only save delta `values` config in db and support to save additional key in `values`.
-- Code quality checking in CI pipeline.
+- Code qualityGateResult checking in CI pipeline.
 - Sonarqube link in `application management`.
 - Surport smooth upgrade from `0.7.0` to `0.8.0`.
 
@@ -575,8 +575,8 @@ Removed
 
 [0.17.0] - 2019-05-20
 Added
-- Added a code quality page in the development pipeline module to support viewing the inspection results and specific details of the application in SonarQube
-- Added code quality report in DevOps reports to view changes in bugs, security vulnerabilities, code smells, duplication and coverage in application code quality
+- Added a code qualityGateResult page in the development pipeline module to support viewing the inspection results and specific details of the application in SonarQube
+- Added code qualityGateResult report in DevOps reports to view changes in bugs, security vulnerabilities, code smells, duplication and coverage in application code qualityGateResult
 - Added DevOps-notification setting function in the element-setting module to support configuring notification mode (mail, station letter or SMS) and notification object for deletion events in various environments.
 - After the notification is successfully created in the DevOps-notification settings, when deleting resources such as instances in the environment, you need to enter the verification code obtained by the notification to perform secondary confirmation of the deletion operation.
 - Added the entry for the setting project Harbor repository type in the element-setting page in the project-setting module.
@@ -618,7 +618,7 @@ Fixed
 
 
 Changed
-- Optimized the query of code quality page in the development pipeline.
+- Optimized the query of code qualityGateResult page in the development pipeline.
 - Optimized the operation to create branches in the development pipeline.
 - Optimized the authority problem of the pipeline.
 - Optimized the query speed of the instance page.

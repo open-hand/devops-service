@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.QualityGate;
+import io.choerodon.devops.api.vo.sonar.QualityGateResult;
 
 public interface DevopsCiSonarQualityGateService {
     void deleteAll(String sonarProjectKey);
@@ -13,4 +14,6 @@ public interface DevopsCiSonarQualityGateService {
     DevopsCiSonarQualityGateVO queryBySonarConfigId(Long configId);
 
     QualityGate createQualityGateOnSonarQube(String name);
+
+    DevopsCiSonarQualityGateVO buildFromSonarResult( QualityGateResult qualityGateResult );
 }

@@ -12,6 +12,8 @@ public class DevopsCiSonarQualityGateVO {
 
     private String name;
 
+    private String level;
+
     @ApiModelProperty("是否开启质量门")
     private Boolean gatesEnable;
     @ApiModelProperty("质量门失败后是否阻塞后续job")
@@ -19,6 +21,14 @@ public class DevopsCiSonarQualityGateVO {
 
     @ApiModelProperty("质量门条件")
     private List<DevopsCiSonarQualityGateConditionVO> sonarQualityGateConditionVOList;
+
+    public String getLevel() {
+        return level;
+    }
+
+    public void setLevel(String level) {
+        this.level = level;
+    }
 
     public Boolean getGatesEnable() {
         return gatesEnable;

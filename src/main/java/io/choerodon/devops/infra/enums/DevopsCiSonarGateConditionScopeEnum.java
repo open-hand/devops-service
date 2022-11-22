@@ -5,6 +5,7 @@ public enum DevopsCiSonarGateConditionScopeEnum {
      * 所有代码
      */
     ALL("all"),
+
     /**
      * 新增代码
      */
@@ -18,5 +19,13 @@ public enum DevopsCiSonarGateConditionScopeEnum {
 
     public String getScope() {
         return this.scope;
+    }
+
+    public static DevopsCiSonarGateConditionScopeEnum parseScope(String metric) {
+        if (metric.startsWith("new_")) {
+            return NEW;
+        } else {
+            return ALL;
+        }
     }
 }
