@@ -140,8 +140,11 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                 false,
                 true);
         Long commandId = devopsDeployAppCenterEnvVO.getCommandId();
-        devopsCiJobRecordDTO.setCommandId(commandId);
-        devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        if (commandId != null) {
+            devopsCiJobRecordDTO.setCommandId(commandId);
+            devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        }
+
         if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfgVO.getDeployType())) {
             Long appId = devopsDeployAppCenterEnvVO.getId();
             ciDeployDeployCfgService.updateAppIdAndDeployType(ciDeployDeployCfgVO.getId(), appId, DeployTypeEnum.UPDATE.value());
