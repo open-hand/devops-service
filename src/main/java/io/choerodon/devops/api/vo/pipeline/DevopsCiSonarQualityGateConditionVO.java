@@ -16,6 +16,16 @@ public class DevopsCiSonarQualityGateConditionVO {
     @ApiModelProperty("质量门检测范围")
     private String gatesScope;
 
+    private String actualValue;
+
+    public String getActualValue() {
+        return actualValue;
+    }
+
+    public void setActualValue(String actualValue) {
+        this.actualValue = actualValue;
+    }
+
     public Long getId() {
         return id;
     }

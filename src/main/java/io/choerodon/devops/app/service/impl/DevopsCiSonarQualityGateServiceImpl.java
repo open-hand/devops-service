@@ -1,18 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.QualityGate;
 import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
+import io.choerodon.devops.api.vo.sonar.QualityGateResult;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateConditionService;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.DevopsCiSonarQualityGateDTO;
+import io.choerodon.devops.infra.enums.DevopsCiSonarGateConditionScopeEnum;
 import io.choerodon.devops.infra.feign.operator.SonarClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiSonarQualityGateMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -79,5 +83,23 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
     @Override
     public QualityGate createQualityGateOnSonarQube(String name) {
         return sonarClientOperator.createQualityGate(name);
+    }
+
+    @Override
+    public DevopsCiSonarQualityGateVO buildFromSonarResult(QualityGateResult qualityGateResult) {
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = new DevopsCiSonarQualityGateVO();
+        devopsCiSonarQualityGateVO.setLevel(qualityGateResult.getLevel());
+        List<DevopsCiSonarQualityGateConditionVO> devopsCiSonarQualityGateConditionVOS = new ArrayList<>();
+        qualityGateResult.getConditions().forEach(condition -> {
+            DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO = new DevopsCiSonarQualityGateConditionVO();
+            devopsCiSonarQualityGateConditionVO.setGatesMetric(condition.getMetric());
+            devopsCiSonarQualityGateConditionVO.setGatesScope(DevopsCiSonarGateConditionScopeEnum.parseScope(condition.getMetric()).getScope());
+            devopsCiSonarQualityGateConditionVO.setGatesOperator(condition.getOp());
+            devopsCiSonarQualityGateConditionVO.setGatesValue(condition.getError());
+            devopsCiSonarQualityGateConditionVO.setActualValue(condition.getActual());
+            devopsCiSonarQualityGateConditionVOS.add(devopsCiSonarQualityGateConditionVO);
+        });
+        devopsCiSonarQualityGateVO.setSonarQualityGateConditionVOList(devopsCiSonarQualityGateConditionVOS);
+        return devopsCiSonarQualityGateVO;
     }
 }

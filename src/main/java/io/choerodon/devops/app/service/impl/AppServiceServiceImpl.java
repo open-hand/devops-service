@@ -261,6 +261,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsAppServiceHelmRelService devopsAppServiceHelmRelService;
+    @Lazy
+    @Autowired
+    private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -1809,8 +1812,9 @@ public class AppServiceServiceImpl implements AppServiceService {
                         sonarContentVOS.add(nclocLanguage);
                         break;
                     case QUALITY_GATE_DETAILS:
-                        Quality quality = gson.fromJson(measure.getValue(), Quality.class);
-                        sonarContentsVO.setStatus(quality.getLevel());
+                        QualityGateResult qualityGateResult = gson.fromJson(measure.getValue(), QualityGateResult.class);
+                        sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        sonarContentsVO.setStatus(qualityGateResult.getLevel());
                         break;
                     default:
                         break;
