@@ -7,11 +7,9 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class DevopsCiSonarQualityGateVO {
-    @JsonIgnore
     @Encrypt
     private Long id;
 
-    @JsonIgnore
     private String name;
 
     @ApiModelProperty("是否开启质量门")
