@@ -33,7 +33,7 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
             sonarQualityGateConditionDTO.setGatesOperator(devopsCiSonarQualityGateConditionVO.getGatesOperator());
 
             QualityGateCondition qualityGateCondition = sonarClientOperator.createQualityGateCondition(sonarGateId, devopsCiSonarQualityGateConditionVO.getGatesMetric(), devopsCiSonarQualityGateConditionVO.getGatesOperator(), devopsCiSonarQualityGateConditionVO.getGatesValue());
-            sonarQualityGateConditionDTO.setSonarId(qualityGateCondition.getId());
+            sonarQualityGateConditionDTO.setSonarConditionId(qualityGateCondition.getId());
             MapperUtil.resultJudgedInsert(devopsCiSOnarQualityGateConditionMapper, sonarQualityGateConditionDTO, ExceptionConstants.SonarCode.DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE);
         });
     }
@@ -42,7 +42,7 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
     public void deleteByGateId(Long gateId) {
         List<DevopsCiSonarQualityGateConditionDTO> devopsCiSonarQualityGateConditionDTOS = devopsCiSOnarQualityGateConditionMapper.listByGateId(gateId);
         devopsCiSonarQualityGateConditionDTOS.forEach(devopsCiSonarQualityGateConditionDTO -> {
-            sonarClientOperator.deleteQualityGateCondition(devopsCiSonarQualityGateConditionDTO.getSonarId());
+            sonarClientOperator.deleteQualityGateCondition(devopsCiSonarQualityGateConditionDTO.getSonarConditionId());
             devopsCiSOnarQualityGateConditionMapper.deleteByPrimaryKey(devopsCiSonarQualityGateConditionDTO.getId());
         });
     }
