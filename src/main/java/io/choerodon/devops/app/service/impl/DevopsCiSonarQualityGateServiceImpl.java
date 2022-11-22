@@ -1,10 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.QualityGate;
+import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateConditionService;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
@@ -24,12 +28,20 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
     private SonarClientOperator sonarClientOperator;
 
     @Override
-    public void deleteAll(Long id) {
-        DevopsCiSonarQualityGateDTO qualityGateDTO = devopsCiSonarQualityGateMapper.selectByPrimaryKey(id);
-        if (qualityGateDTO != null) {
-            sonarClientOperator.deleteQualityGate(qualityGateDTO.getSonarGateId());
-            devopsCiSonarQualityGateConditionService.deleteByGateId(qualityGateDTO.getId());
+    public void deleteAll(String sonarProjectKey) {
+        QualityGate qualityGate = sonarClientOperator.gateShow(sonarProjectKey);
+        if (qualityGate != null) {
+            sonarClientOperator.deleteQualityGate(sonarProjectKey);
+
+            List<String> conditionSonarIdList = qualityGate.getConditions().stream().map(QualityGateCondition::getId).collect(Collectors.toList());
+            devopsCiSonarQualityGateConditionService.deleteBySonarIds(conditionSonarIdList);
+
+            deleteBySonarId(qualityGate.getId());
         }
+    }
+
+    public void deleteBySonarId(String sonarId) {
+        devopsCiSonarQualityGateMapper.deleteBySonarId(sonarId);
     }
 
     @Override
@@ -66,10 +78,6 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
 
     @Override
     public QualityGate createQualityGateOnSonarQube(String name) {
-        QualityGate qualityGate = sonarClientOperator.gateShow(name);
-        if (qualityGate != null) {
-            sonarClientOperator.deleteQualityGate(name);
-        }
         return sonarClientOperator.createQualityGate(name);
     }
 }

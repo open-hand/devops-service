@@ -6,4 +6,10 @@
     FROM devops_ci_sonar_quality_gate
     WHERE config_id = #{devopsCiSonarConfigId}
   </select>
+
+  <delete id="deleteBySonarId">
+    DELETE
+    FROM devops_ci_sonar_quality_gate
+    WHERE sonar_gate_id = #{sonarId}
+  </delete>
 </mapper>
