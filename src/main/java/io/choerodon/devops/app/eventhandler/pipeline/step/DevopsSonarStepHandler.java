@@ -88,12 +88,20 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         devopsCiSonarConfigDTO.setId(null);
         devopsCiSonarConfigService.baseCreate(devopsCiSonarConfigDTO);
 
+        Long appServiceId = devopsCiStepService.queryAppServiceIdByStepId(stepId);
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
+        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+        String sonarProjectKey = AppServiceServiceImpl.getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
+
         // 判断sonarqube是否创建该应用，没有则创建
-        checkSonarQubeProjectOrCreate(devopsCiStepVO);
+        checkSonarQubeProjectOrCreate(appServiceDTO.getCode(), sonarProjectKey);
 
         // 质量门
         if (sonarConfig.getDevopsCiSonarQualityGateVO() != null) {
-            processQualityGates(devopsCiSonarConfigDTO.getId(), sonarConfig.getDevopsCiSonarQualityGateVO());
+            processQualityGates(sonarProjectKey, devopsCiSonarConfigDTO.getId(), sonarConfig.getDevopsCiSonarQualityGateVO());
         }
     }
 
@@ -122,7 +130,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
         // 添加质量门配置
         DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiSonarQualityGateService.queryBySonarConfigId(devopsCiSonarConfigDTO.getId());
-        if (devopsCiSonarQualityGateVO!=null){
+        if (devopsCiSonarQualityGateVO != null) {
             devopsCiSonarConfigVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateVO);
         }
 
@@ -280,28 +288,22 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         return true;
     }
 
-    private void checkSonarQubeProjectOrCreate(DevopsCiStepVO devopsCiStepVO) {
-        Long appServiceId = devopsCiStepService.queryAppServiceIdByStepId(devopsCiStepVO.getId());
-        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+    private void checkSonarQubeProjectOrCreate(String sonarProjectName, String sonarProjectKey) {
 
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
-        Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
-
-        String sonarProjectKey = AppServiceServiceImpl.getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
         SonarProjectSearchPageResult sonarProjectSearchPageResult = sonarClientOperator.searchProjects(sonarProjectKey);
-        if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch("sonarProjectKey"::equals)) {
-            sonarClientOperator.createProject(appServiceDTO.getCode(), sonarProjectKey);
+        if (ObjectUtils.isEmpty(sonarProjectSearchPageResult.getComponents()) || sonarProjectSearchPageResult.getComponents().stream().map(Component::getKey).noneMatch(sonarProjectKey::equals)) {
+            sonarClientOperator.createProject(sonarProjectName, sonarProjectKey);
         }
     }
 
-    private void processQualityGates(Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO) {
+    private void processQualityGates(String sonarProjectKey, Long configId, DevopsCiSonarQualityGateVO sonarQualityGateVO) {
         // 校验任务配置是否合法
         devopsCiSonarQualityGateService.deleteAll(sonarQualityGateVO.getId());
         // 判断是启用还是停用质量门
         if (Boolean.TRUE.equals(sonarQualityGateVO.getGatesEnable())) {
             // 如果是启用，重新插入数据
             // 创建质量门
-            devopsCiSonarQualityGateService.createGate(configId, sonarQualityGateVO);
+            devopsCiSonarQualityGateService.createGate(sonarProjectKey, configId, sonarQualityGateVO);
         }
     }
 }

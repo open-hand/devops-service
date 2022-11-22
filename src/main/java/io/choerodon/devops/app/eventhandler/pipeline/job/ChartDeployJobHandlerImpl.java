@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
 import io.choerodon.devops.app.service.CiTplChartDeployCfgService;
 import io.choerodon.devops.app.service.DevopsDeployAppCenterService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiChartDeployConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployAppCenterEnvDTO;
@@ -66,6 +67,9 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciChartDeployConfig.getAppId());
             ciChartDeployConfig.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciChartDeployConfig.setAppName(devopsDeployAppCenterEnvDTO.getName());
+            if (devopsDeployAppCenterEnvDTO.getEnvId().equals(ciChartDeployConfig.getEnvId())) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
+            }
         }
         if (ciChartDeployConfig.getValueId() == null) {
             throw new CommonException(DEVOPS_DEPLOY_VALUE_ID_NULL);

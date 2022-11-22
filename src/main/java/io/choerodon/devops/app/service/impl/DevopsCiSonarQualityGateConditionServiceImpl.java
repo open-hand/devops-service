@@ -29,7 +29,7 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
             sonarQualityGateConditionDTO.setGateId(gateId);
             sonarQualityGateConditionDTO.setGatesMetric(devopsCiSonarQualityGateConditionVO.getGatesMetric());
             sonarQualityGateConditionDTO.setGatesValue(devopsCiSonarQualityGateConditionVO.getGatesValue());
-            sonarQualityGateConditionDTO.setGetsScope(devopsCiSonarQualityGateConditionVO.getGatesScope());
+            sonarQualityGateConditionDTO.setGatesScope(devopsCiSonarQualityGateConditionVO.getGatesScope());
             sonarQualityGateConditionDTO.setGatesOperator(devopsCiSonarQualityGateConditionVO.getGatesOperator());
 
             QualityGateCondition qualityGateCondition = sonarClientOperator.createQualityGateCondition(sonarGateId, devopsCiSonarQualityGateConditionVO.getGatesMetric(), devopsCiSonarQualityGateConditionVO.getGatesOperator(), devopsCiSonarQualityGateConditionVO.getGatesValue());
