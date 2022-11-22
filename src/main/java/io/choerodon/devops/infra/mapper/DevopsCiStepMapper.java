@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
