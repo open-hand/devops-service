@@ -141,6 +141,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
                 true);
         Long commandId = devopsDeployAppCenterEnvVO.getCommandId();
         if (commandId != null) {
+            log.append("[warn] Deploy command not found.").append(System.lineSeparator());
             devopsCiJobRecordDTO.setCommandId(commandId);
             devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
         }
