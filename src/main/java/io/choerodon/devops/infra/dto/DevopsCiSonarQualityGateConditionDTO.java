@@ -31,7 +31,7 @@ public class DevopsCiSonarQualityGateConditionDTO {
     private Long id;
 
     @ApiModelProperty("质量门条件在sonar的id")
-    private String sonarId;
+    private String sonarConditionId;
     @ApiModelProperty("关联的gateId")
     private Long gateId;
 
@@ -52,12 +52,12 @@ public class DevopsCiSonarQualityGateConditionDTO {
         this.id = id;
     }
 
-    public String getSonarId() {
-        return sonarId;
+    public String getSonarConditionId() {
+        return sonarConditionId;
     }
 
-    public void setSonarId(String sonarId) {
-        this.sonarId = sonarId;
+    public void setSonarConditionId(String sonarConditionId) {
+        this.sonarConditionId = sonarConditionId;
     }
 
     public Long getGateId() {

@@ -28,7 +28,7 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
     @Override
     public void deleteAll(Long id) {
         DevopsCiSonarQualityGateDTO qualityGateDTO = devopsCiSonarQualityGateMapper.selectByPrimaryKey(id);
-        sonarClientOperator.deleteQualityGate(qualityGateDTO.getSonarId());
+        sonarClientOperator.deleteQualityGate(qualityGateDTO.getSonarGateId());
         devopsCiSonarQualityGateConditionService.deleteByGateId(qualityGateDTO.getId());
     }
 
@@ -37,7 +37,7 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
         String gateName = UUID.randomUUID().toString();
         QualityGate qualityGate = sonarClientOperator.createQualityGate(gateName);
         DevopsCiSonarQualityGateDTO devopsCiSonarQualityGateDTO = new DevopsCiSonarQualityGateDTO();
-        devopsCiSonarQualityGateDTO.setSonarId(qualityGate.getId());
+        devopsCiSonarQualityGateDTO.setSonarGateId(qualityGate.getId());
         devopsCiSonarQualityGateDTO.setName(gateName);
         devopsCiSonarQualityGateDTO.setConfigId(configId);
         devopsCiSonarQualityGateDTO.setGatesEnable(true);
