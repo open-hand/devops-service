@@ -42,7 +42,7 @@ public class DevopsCiSonarQualityGateConditionDTO {
     @ApiModelProperty("质量门值")
     private String gatesValue;
     @ApiModelProperty("质量门检测范围")
-    private Integer getsScope;
+    private String getsScope;
 
     public Long getId() {
         return id;
@@ -92,11 +92,11 @@ public class DevopsCiSonarQualityGateConditionDTO {
         this.gatesValue = gatesValue;
     }
 
-    public Integer getGetsScope() {
+    public String getGetsScope() {
         return getsScope;
     }
 
-    public void setGetsScope(Integer getsScope) {
+    public void setGetsScope(String getsScope) {
         this.getsScope = getsScope;
     }
 }
