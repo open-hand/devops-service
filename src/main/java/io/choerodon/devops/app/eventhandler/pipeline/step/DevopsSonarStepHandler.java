@@ -50,7 +50,6 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String SAVE_SONAR_INFO_FUNCTION = "saveSonarInfo %s";
-    private static final String CHECK_SONAR_QUALITY_GATE_RESULT_FUNCTION = "checkSonarQualityGateScanResult %s";
     private static final String MVN_COMPILE_FUNCTION = "mvnCompile %s";
     private static final String MVN_COMPILE_USE_SETTINGS_FUNCTION = "mvnCompileUseSettings %s";
 
@@ -168,6 +167,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         List<String> scripts = new ArrayList<>();
         DevopsCiSonarConfigDTO devopsCiSonarConfigDTO = devopsCiSonarConfigService.queryByStepId(devopsCiStepDTO.getId());
 
+        // 有可能为null值
+        Boolean blockAfterQualityGateFail = Optional.ofNullable(devopsCiSonarQualityGateService.queryBlock(devopsCiSonarConfigDTO.getId())).orElse(Boolean.FALSE);
+
         if (SonarScannerType.SONAR_SCANNER.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
@@ -179,9 +181,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                     throw new CommonException("devops.sonar.url.is.null");
                 }
                 if (SonarAuthType.USERNAME_PWD.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSources()));
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommand(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getUsername(), devopsCiSonarConfigDTO.getPassword(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
                 } else if (SonarAuthType.TOKEN.value().equals(devopsCiSonarConfigDTO.getAuthType())) {
-                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSources()));
+                    scripts.add(GitlabCiUtil.renderSonarScannerCommandForToken(devopsCiSonarConfigDTO.getSonarUrl(), devopsCiSonarConfigDTO.getToken(), devopsCiSonarConfigDTO.getSources(), blockAfterQualityGateFail));
                 }
             } else {
                 throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
@@ -198,10 +200,10 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                 CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
                 if (hasSettingConfig) {
                     scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
-                    scripts.add("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml");
+                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
                 } else {
                     scripts.add(String.format(MVN_COMPILE_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
-                    scripts.add("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY}");
+                    scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
                 }
 
             } else if (CiSonarConfigType.CUSTOM.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
@@ -221,9 +223,6 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         }
         scripts.add(String.format(SAVE_SONAR_INFO_FUNCTION, devopsCiSonarConfigDTO.getScannerType()));
 
-        // 有可能为null值
-        Boolean blockAfterFail = Optional.ofNullable(devopsCiSonarQualityGateService.queryBlock(devopsCiSonarConfigDTO.getId())).orElse(Boolean.FALSE);
-        scripts.add(String.format(CHECK_SONAR_QUALITY_GATE_RESULT_FUNCTION, blockAfterFail));
         return scripts;
     }
 
