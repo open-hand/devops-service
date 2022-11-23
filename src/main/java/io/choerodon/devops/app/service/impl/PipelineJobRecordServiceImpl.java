@@ -1,9 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.PipelineJobRecordService;
+import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineJobRecordMapper;
 
 /**
@@ -17,5 +20,9 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Autowired
     private PipelineJobRecordMapper pipelineJobRecordMapper;
 
+    @Override
+    public List<PipelineJobRecordDTO> listPendingJobs(int number) {
+        return pipelineJobRecordMapper.listPendingJobs(number);
+    }
 }
 
