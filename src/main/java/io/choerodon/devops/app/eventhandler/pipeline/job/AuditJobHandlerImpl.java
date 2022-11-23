@@ -6,7 +6,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiJobWebHookVO;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
@@ -28,6 +30,10 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 @Service
 public class AuditJobHandlerImpl extends AbstractJobHandler {
 
+    private static final String DEVOPS_AUDIT_CONFIG_EMPTY = "devops.audit.config.empty";
+    private static final String DEVOPS_AUDIT_USER_EMPTY = "devops.audit.user.empty";
+
+
     @Autowired
     private CiAuditConfigService ciAuditConfigService;
     @Autowired
@@ -38,6 +44,17 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     private CiAuditUserService ciAuditUserService;
     @Autowired
     private CiTemplateAuditService ciTemplateAuditService;
+
+    @Override
+    protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+        CiAuditConfigVO ciAuditConfig = devopsCiJobVO.getCiAuditConfig();
+        if (ciAuditConfig == null) {
+            throw new CommonException(DEVOPS_AUDIT_CONFIG_EMPTY);
+        }
+        if (CollectionUtils.isEmpty(ciAuditConfig.getCdAuditUserIds())) {
+            throw new CommonException(DEVOPS_AUDIT_USER_EMPTY);
+        }
+    }
 
     @Override
     public void fillJobAdditionalInfo(DevopsCiJobDTO devopsCiJobDTO, CiJobWebHookVO job) {

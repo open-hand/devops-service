@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.pipeline.AppDeployConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiDeployDeployCfgVO;
 import io.choerodon.devops.app.service.CiDeployDeployCfgService;
 import io.choerodon.devops.app.service.CiTplDeployDeployCfgService;
@@ -54,6 +55,7 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
      */
     @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+        super.checkConfigInfo(projectId, devopsCiJobVO);
         CiDeployDeployCfgVO ciDeployDeployCfg = devopsCiJobVO.getCiDeployDeployCfg();
         if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfg.getDeployType())) {
             // 校验应用编码和应用名称
@@ -70,6 +72,11 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
                 throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
             }
         }
+    }
+
+    @Override
+    protected AppDeployConfigVO getDeployConfig(DevopsCiJobVO devopsCiJobVO) {
+        return devopsCiJobVO.getCiDeployDeployCfg();
     }
 
     @Override

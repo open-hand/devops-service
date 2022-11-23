@@ -47,7 +47,7 @@ public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler
 
     @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
-        AppDeployConfigVO appDeployConfigVO = devopsCiJobVO.getCiDeployDeployCfg();
+        AppDeployConfigVO appDeployConfigVO = getDeployConfig(devopsCiJobVO);
         if (appDeployConfigVO == null) {
             throw new CommonException(DEVOPS_APP_DEPLOY_CONFIG_EMPTY, devopsCiJobVO.getName());
         }
@@ -70,6 +70,8 @@ public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler
             }
         }
     }
+
+    protected abstract AppDeployConfigVO getDeployConfig(DevopsCiJobVO devopsCiJobVO);
 
     @Override
     public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {

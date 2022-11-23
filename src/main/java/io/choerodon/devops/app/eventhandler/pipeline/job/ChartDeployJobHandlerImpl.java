@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.pipeline.AppDeployConfigVO;
 import io.choerodon.devops.api.vo.pipeline.CiChartDeployConfigVO;
 import io.choerodon.devops.app.service.CiChartDeployConfigService;
 import io.choerodon.devops.app.service.CiTplChartDeployCfgService;
@@ -55,6 +56,7 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
      */
     @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
+        super.checkConfigInfo(projectId, devopsCiJobVO);
         CiChartDeployConfigVO ciChartDeployConfig = devopsCiJobVO.getCiChartDeployConfig();
         if (DeployTypeEnum.CREATE.value().equals(ciChartDeployConfig.getDeployType())) {
             // 校验应用编码和应用名称
@@ -74,6 +76,11 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
         if (ciChartDeployConfig.getValueId() == null) {
             throw new CommonException(DEVOPS_DEPLOY_VALUE_ID_NULL);
         }
+    }
+
+    @Override
+    protected AppDeployConfigVO getDeployConfig(DevopsCiJobVO devopsCiJobVO) {
+        return devopsCiJobVO.getCiChartDeployConfig();
     }
 
     @Override
