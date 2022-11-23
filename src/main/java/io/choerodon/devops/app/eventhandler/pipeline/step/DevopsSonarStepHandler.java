@@ -61,6 +61,10 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Autowired
     private CiTemplateSonarService ciTemplateSonarService;
     @Autowired
+    private DevopsCiTplSonarQualityGateConditionService devopsCiTplSonarQualityGateConditionService;
+    @Autowired
+    private DevopsCiTplSonarQualityGateService devopsCiTplSonarQualityGateService;
+    @Autowired
     private DevopsCiMavenBuildConfigService devopsCiMavenBuildConfigService;
     @Autowired
     private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
@@ -114,7 +118,15 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setSonarConfig(ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigVO.class));
+        DevopsCiSonarConfigVO devopsCiSonarConfigVO = ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigVO.class);
+
+        // 添加质量门配置
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiTplSonarQualityGateService.queryBySonarConfigId(ciTemplateSonarDTO.getId());
+        if (devopsCiSonarQualityGateVO != null) {
+            devopsCiSonarConfigVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateVO);
+        }
+
+        devopsCiStepVO.setSonarConfig(devopsCiSonarConfigVO);
     }
 
     @Override
