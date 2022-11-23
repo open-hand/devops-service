@@ -136,7 +136,27 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(devopsCiHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiHostDeployInfoVO.class));
+        DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = ConvertUtils.convertObject(devopsCiHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiHostDeployInfoVO.class);
+
+        if (!ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getDeployJson())) {
+            if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                DevopsCiHostDeployInfoVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.JarDeploy.class);
+                devopsCiHostDeployInfoVO.setDeploySource(jarDeploy.getDeploySource());
+                devopsCiHostDeployInfoVO.setRepositoryId(jarDeploy.getRepositoryId());
+                devopsCiHostDeployInfoVO.setGroupId(jarDeploy.getGroupId());
+                devopsCiHostDeployInfoVO.setArtifactId(jarDeploy.getArtifactId());
+                devopsCiHostDeployInfoVO.setVersionRegular(jarDeploy.getVersionRegular());
+                devopsCiHostDeployInfoVO.setPipelineTask(jarDeploy.getPipelineTask());
+            }
+            if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
+                devopsCiHostDeployInfoVO.setContainerName(imageDeploy.getContainerName());
+                devopsCiHostDeployInfoVO.setPipelineTask(imageDeploy.getPipelineTask());
+                devopsCiHostDeployInfoVO.setDeploySource(imageDeploy.getDeploySource());
+
+            }
+        }
+        devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(, DevopsCiHostDeployInfoVO.class));
     }
 
 
