@@ -25,9 +25,15 @@ public class CiTemplateStageVO {
     @NotNull
     private Long sequence;
 
-    @ApiModelProperty("方便前端在同时在流水线模板与流水线处使用，所以改名")
-    private List<CiTemplateJobVO> jobList;
+    private List<CiTemplateJobVO> ciTemplateJobVOList;
 
+    public List<CiTemplateJobVO> getCiTemplateJobVOList() {
+        return ciTemplateJobVOList;
+    }
+
+    public void setCiTemplateJobVOList(List<CiTemplateJobVO> ciTemplateJobVOList) {
+        this.ciTemplateJobVOList = ciTemplateJobVOList;
+    }
 
     public Long getSequence() {
         return sequence;
@@ -35,14 +41,6 @@ public class CiTemplateStageVO {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
-    }
-
-    public List<CiTemplateJobVO> getJobList() {
-        return jobList;
-    }
-
-    public void setJobList(List<CiTemplateJobVO> jobList) {
-        this.jobList = jobList;
     }
 
     public Long getId() {

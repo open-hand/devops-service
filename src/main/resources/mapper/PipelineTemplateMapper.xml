@@ -16,7 +16,7 @@
             <id column="stage_id" property="id"/>
             <id column="stage_name" property="name"/>
             <id column="pipeline_template_id" property="pipelineTemplateId"/>
-            <collection property="jobList" ofType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+            <collection property="ciTemplateJobVOList" ofType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
                 <id column="job_id" property="id"/>
                 <id column="job_name" property="name"/>
                 <id column="group_id" property="groupId"/>
