@@ -72,11 +72,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
 
     changeSet(author: 'wx', id: '2022-11-18-add-column-visibility') {
         addColumn(tableName: 'devops_ci_template_job') {
-            column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '可见性，1:可见，0:不可见') {
+            column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '可见性，1:可见，0:不可见', afterColumn: 'built_in') {
                 constraints(nullable: false)
             }
-            column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支')
-            column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_refs', defaultValue: 'refs')
+            column(name: 'trigger_value', type: 'VARCHAR(255)', remarks: '触发分支', afterColumn: 'type')
+            column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_value', defaultValue: 'refs')
         }
     }
 }
