@@ -633,7 +633,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                             devopsCiJobRecordVO.setCodeCoverage(v.getValue());
                         }
                     });
-                    devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS));
+                    devopsCiJobRecordVO.setPipelineSonarInfo(new PipelineSonarInfo(devopsCiPipelineSonarDTO.getScannerType(), sonarContentVOS, sonarContentsVO.getDevopsCiSonarQualityGateVO()));
                 }
             } catch (Exception e) {
                 LOGGER.error("Fill sonar info failed", e);

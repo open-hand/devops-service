@@ -19,4 +19,12 @@
             #{jobId}
         </foreach>
     </select>
+
+  <select id="queryAppServiceIdByStepId" resultType="java.lang.Long">
+    SELECT dcp.app_service_id
+    FROM devops_ci_step dcs
+           JOIN devops_ci_job dcj ON dcj.id = dcs.devops_ci_job_id
+           JOIN devops_cicd_pipeline dcp ON dcp.id = dcj.ci_pipeline_id
+    WHERE dcs.id = #{id}
+  </select>
 </mapper>

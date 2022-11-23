@@ -20,4 +20,6 @@ public interface DevopsCiStepMapper extends BaseMapper<DevopsCiStepDTO> {
     List<DevopsCiStepDTO> listByJobIds(@Param("jobIds") List<Long> jobIds);
 
     void batchDeleteByIds(@Param("ids") Set<Long> ids);
+
+    Long queryAppServiceIdByStepId(Long id);
 }

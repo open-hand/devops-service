@@ -75,4 +75,9 @@ public class DevopsCiStepServiceImpl implements DevopsCiStepService {
         devopsCiStepDTO.setDevopsCiJobId(jobId);
         return devopsCiStepMapper.select(devopsCiStepDTO);
     }
+
+    @Override
+    public Long queryAppServiceIdByStepId(Long id) {
+        return devopsCiStepMapper.queryAppServiceIdByStepId(id);
+    }
 }

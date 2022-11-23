@@ -15,6 +15,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_ORGANIZATION_ROLE_ID_GET = "devops.organization.role.id.get";
         public static final String DEVOPS_CONTEXT_SET_ERROR = "devops.context.set.error";
 
+        public static final String DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT = "devops.operating.resource.in.other.project";
+
     }
 
     /**
@@ -83,8 +85,41 @@ public class ExceptionConstants {
         public static final String DEVOPS_UPDATE_IMAGE_RECORD = "devops.update.image.record";
     }
 
+    public static class CiJobCode {
+        public static final String DEVOPS_CI_JOB_DELAY_TIME_INVALID = "error.devops.ci.job.delay.time.invalid";
+
+        public static final String DEVOPS_JOB_CONFIG_ID_IS_NULL = "error.devops.ci.job.config.id.null";
+    }
+
+    public static class SonarCode {
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CREATE = "error.devops.sonar.quality.gate.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_DELETE = "error.devops.sonar.quality.gate.delete";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE = "error.devops.sonar.quality.gate.condition.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_DELETE = "error.devops.sonar.quality.gate.condition.delete";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO = "error.devops.sonar.quality.gate.condition.value.grater.than.zero";
+        public static final String DEVOPS_SONAR_PROJECTS_SEARCH = "error.devops.sonar.projects.search";
+        public static final String DEVOPS_SONAR_PROJECTS_CREATE = "error.devops.sonar.projects.create";
+        public static final String Devops_SONAR_QUALITY_GATE_DETAILS_GET = "error.devops.sonar.quality.gate.details.get";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET= "error.devops.sonar.quality.gate.show.get";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_BIND= "error.devops.sonar.quality.gate.bind";
+
+    }
+
     public static class CdEnvDeployInfoDTOCode {
         public static final String DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST = "devops.env.stop.pipeline.app.deploy.exist";
+    }
+
+    public static class CiHostDeployCode {
+        public static final String DEVOPS_HOST_DEPLOY_INFO_CREATE = "error.devops.ci.host.deploy.info.save";
+        public static final String DEVOPS_SAVE_CD_HOST_DEPLOY_INFO_FAILED = "devops.save.cd.host.deploy.info.failed";
+        public static final String DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO = "devops.update.pipeline.docker.deploy.info";
+        public static final String DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO = "devops.update.pipeline.jar.deploy.info";
+        public static final String DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO = "devops.update.pipeline.custom.deploy.info";
+    }
+
+    public static class CiApiTestCode {
+        public static final String DEVOPS_CI_API_TEST_INFO_SAVE = "error.devops.ci.api.info.save";
+        public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "error.devops.ci.api.info.type.unknown";
     }
 
     public static class EnvCommandCode {
@@ -129,6 +164,7 @@ public class ExceptionConstants {
         public static final String DEVOPS_QUERY_USER_BY_LOGIN_NAME = "devops.query.user.by.login.name";
         public static final String DEVOPS_GITLAB_USER_SYNC_FAILED = "devops.gitlab.user.sync.failed";
         public static final String DEVOPS_USER_GET = "devops.user.get";
+        public static final String DEVOPS_JOB_QUERY = "devops.job.query";
 
 
     }
@@ -145,6 +181,10 @@ public class ExceptionConstants {
         public static final String DEVOPS_WORKFLOW_CREATE = "devops.workflow.create";
         public static final String DEVOPS_WORKFLOW_APPROVE = "devops.workflow.approve";
         public static final String DEVOPS_WORKFLOW_STOP = "devops.workflow.stop";
+    }
+
+    public static class DeployValueCode {
+        public static final String DEVOPS_DEPLOY_VALUE_ID_NULL = "devops.deploy.value.id.null";
     }
 
     public static class CustomResourceCode {

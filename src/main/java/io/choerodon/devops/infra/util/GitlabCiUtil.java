@@ -170,8 +170,8 @@ public class GitlabCiUtil {
     }
 
 
-    public static String renderSonarScannerCommandForToken(String sonarUrl, String token, String sources) {
-        return String.format(SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE, sonarUrl, token, sources);
+    public static String renderSonarScannerCommandForToken(String sonarUrl, String token, String sources, Boolean blockAfterQualityGateFail) {
+        return String.format(SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE, sonarUrl, token, sources, blockAfterQualityGateFail);
     }
 
     /**
@@ -186,8 +186,8 @@ public class GitlabCiUtil {
         return String.format(SONAR_USER_PSW_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, skipTests);
     }
 
-    public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources) {
-        return String.format(SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources);
+    public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources, Boolean blockAfterQualityGateFail) {
+        return String.format(SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources, blockAfterQualityGateFail);
     }
 
     /**

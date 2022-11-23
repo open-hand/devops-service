@@ -87,10 +87,7 @@ import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
-import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -229,6 +226,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -823,7 +823,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
 
-                instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceDeployVO.getReplicasStrategy()).orElse(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.DEPLOYMENT.getStrategy())));
+                instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceDeployVO.getReplicasStrategy()).orElse(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.REPLICAS.getStrategy())));
             }
             devopsDeployRecordService.saveRecord(
                     devopsEnvironmentDTO.getProjectId(),
@@ -1538,7 +1538,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
-        instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.DEPLOYMENT.getStrategy()));
+        instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.REPLICAS.getStrategy()));
 
         //目前重新部署也走gitops逻辑
         producer.apply(
