@@ -156,7 +156,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
 
             }
         }
-        devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(, DevopsCiHostDeployInfoVO.class));
+        devopsCiJobVO.setDevopsCiHostDeployInfoVO(devopsCiHostDeployInfoVO);
     }
 
 
