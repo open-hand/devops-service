@@ -86,22 +86,22 @@ public class ExceptionConstants {
     }
 
     public static class CiJobCode {
-        public static final String DEVOPS_CI_JOB_DELAY_TIME_INVALID = "error.devops.ci.job.delay.time.invalid";
+        public static final String DEVOPS_CI_JOB_DELAY_TIME_INVALID = "devops.ci.job.delay.time.invalid";
 
-        public static final String DEVOPS_JOB_CONFIG_ID_IS_NULL = "error.devops.ci.job.config.id.null";
+        public static final String DEVOPS_JOB_CONFIG_ID_IS_NULL = "devops.ci.job.config.id.null";
     }
 
     public static class SonarCode {
-        public static final String DEVOPS_SONAR_QUALITY_GATE_CREATE = "error.devops.sonar.quality.gate.create";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_DELETE = "error.devops.sonar.quality.gate.delete";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE = "error.devops.sonar.quality.gate.condition.create";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_DELETE = "error.devops.sonar.quality.gate.condition.delete";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO = "error.devops.sonar.quality.gate.condition.value.grater.than.zero";
-        public static final String DEVOPS_SONAR_PROJECTS_SEARCH = "error.devops.sonar.projects.search";
-        public static final String DEVOPS_SONAR_PROJECTS_CREATE = "error.devops.sonar.projects.create";
-        public static final String Devops_SONAR_QUALITY_GATE_DETAILS_GET = "error.devops.sonar.quality.gate.details.get";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET= "error.devops.sonar.quality.gate.show.get";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_BIND= "error.devops.sonar.quality.gate.bind";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CREATE = "devops.sonar.quality.gate.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_DELETE = "devops.sonar.quality.gate.delete";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_CREATE = "devops.sonar.quality.gate.condition.create";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_DELETE = "devops.sonar.quality.gate.condition.delete";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_CONDITION_VALUE_SHOULD_BE_GRATER_THAN_ZERO = "devops.sonar.quality.gate.condition.value.grater.than.zero";
+        public static final String DEVOPS_SONAR_PROJECTS_SEARCH = "devops.sonar.projects.search";
+        public static final String DEVOPS_SONAR_PROJECTS_CREATE = "devops.sonar.projects.create";
+        public static final String Devops_SONAR_QUALITY_GATE_DETAILS_GET = "devops.sonar.quality.gate.details.get";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET= "devops.sonar.quality.gate.show.get";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_BIND= "devops.sonar.quality.gate.bind";
 
     }
 
@@ -110,7 +110,7 @@ public class ExceptionConstants {
     }
 
     public static class CiHostDeployCode {
-        public static final String DEVOPS_HOST_DEPLOY_INFO_CREATE = "error.devops.ci.host.deploy.info.save";
+        public static final String DEVOPS_HOST_DEPLOY_INFO_CREATE = "devops.ci.host.deploy.info.save";
         public static final String DEVOPS_SAVE_CD_HOST_DEPLOY_INFO_FAILED = "devops.save.cd.host.deploy.info.failed";
         public static final String DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO = "devops.update.pipeline.docker.deploy.info";
         public static final String DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO = "devops.update.pipeline.jar.deploy.info";
@@ -118,8 +118,8 @@ public class ExceptionConstants {
     }
 
     public static class CiApiTestCode {
-        public static final String DEVOPS_CI_API_TEST_INFO_SAVE = "error.devops.ci.api.info.save";
-        public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "error.devops.ci.api.info.type.unknown";
+        public static final String DEVOPS_CI_API_TEST_INFO_SAVE = "devops.ci.api.info.save";
+        public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "devops.ci.api.info.type.unknown";
     }
 
     public static class EnvCommandCode {
