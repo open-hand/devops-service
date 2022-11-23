@@ -15,31 +15,36 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * 流水线执行记录(PipelineRecord)实体类
+ * 人工卡点用户审核记录表(PipelineAuditUserRecord)实体类
  *
  * @author
- * @since 2022-11-23 16:43:01
+ * @since 2022-11-23 16:42:19
  */
 
-@ApiModel("流水线执行记录")
+@ApiModel("人工卡点用户审核记录表")
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_pipeline_record")
-public class PipelineRecordDTO extends AuditDomain {
+@Table(name = "devops_pipeline_audit_user_record")
+public class PipelineAuditUserRecordDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_PIPELINE_ID = "pipelineId";
+    public static final String FIELD_AUDIT_RECORD_ID = "auditRecordId";
+    public static final String FIELD_USER_ID = "userId";
     public static final String FIELD_STATUS = "status";
-    private static final long serialVersionUID = 286315842540628499L;
+    private static final long serialVersionUID = 225225704032835819L;
     @Id
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
+    @ApiModelProperty(value = "devops_pipeline_audit_record.id", required = true)
     @NotNull
-    private Long pipelineId;
+    private Long auditRecordId;
 
-    @ApiModelProperty(value = "状态", required = true)
+    @ApiModelProperty(value = "用户Id", required = true)
+    @NotNull
+    private Long userId;
+
+    @ApiModelProperty(value = "人工审核的结果（待审核、拒绝、通过）", required = true)
     @NotBlank
     private String status;
 
@@ -52,12 +57,20 @@ public class PipelineRecordDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getPipelineId() {
-        return pipelineId;
+    public Long getAuditRecordId() {
+        return auditRecordId;
     }
 
-    public void setPipelineId(Long pipelineId) {
-        this.pipelineId = pipelineId;
+    public void setAuditRecordId(Long auditRecordId) {
+        this.auditRecordId = auditRecordId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getStatus() {

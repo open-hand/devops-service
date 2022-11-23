@@ -1,0 +1,13 @@
+package io.choerodon.devops.app.service;
+
+/**
+ * 人工卡点用户审核记录表(PipelineAuditUserRecord)应用服务
+ *
+ * @author
+ * @since 2022-11-23 16:42:20
+ */
+public interface PipelineAuditUserRecordService {
+
+
+}
+

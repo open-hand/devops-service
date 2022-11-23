@@ -15,24 +15,25 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * 流水线阶段记录(PipelineStageRecord)实体类
+ * 流水线任务记录(PipelineJobRecord)实体类
  *
  * @author
- * @since 2022-11-23 16:43:12
+ * @since 2022-11-23 16:42:34
  */
 
-@ApiModel("流水线阶段记录")
+@ApiModel("流水线任务记录")
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_pipeline_stage_record")
-public class PipelineStageRecordDTO extends AuditDomain {
+@Table(name = "devops_pipeline_job_record")
+public class PipelineJobRecordDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
     public static final String FIELD_PIPELINE_ID = "pipelineId";
-    public static final String FIELD_STAGE_ID = "stageId";
-    public static final String FIELD_PIPELINE_RECORD_ID = "pipelineRecordId";
+    public static final String FIELD_JOB_ID = "jobId";
+    public static final String FIELD_STAGE_RECORD_ID = "stageRecordId";
     public static final String FIELD_STATUS = "status";
-    private static final long serialVersionUID = 419144782197891150L;
+    public static final String FIELD_LOG_ID = "logId";
+    private static final long serialVersionUID = 940900444060009476L;
     @Id
     @GeneratedValue
     private Long id;
@@ -41,17 +42,20 @@ public class PipelineStageRecordDTO extends AuditDomain {
     @NotNull
     private Long pipelineId;
 
-    @ApiModelProperty(value = "所属阶段Id,devops_pipeline_stage.id", required = true)
+    @ApiModelProperty(value = "所属任务Id,devops_pipeline_job.id", required = true)
     @NotNull
-    private Long stageId;
+    private Long jobId;
 
-    @ApiModelProperty(value = "关联流水线记录Id,devops_pipeline_record.id", required = true)
+    @ApiModelProperty(value = "关联阶段记录Id,devops_pipeline_stage_record.id", required = true)
     @NotNull
-    private Long pipelineRecordId;
+    private Long stageRecordId;
 
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
     private String status;
+
+    @ApiModelProperty(value = "关联日志记录Id,devops_pipeline_log.id")
+    private Long logId;
 
 
     public Long getId() {
@@ -70,20 +74,20 @@ public class PipelineStageRecordDTO extends AuditDomain {
         this.pipelineId = pipelineId;
     }
 
-    public Long getStageId() {
-        return stageId;
+    public Long getJobId() {
+        return jobId;
     }
 
-    public void setStageId(Long stageId) {
-        this.stageId = stageId;
+    public void setJobId(Long jobId) {
+        this.jobId = jobId;
     }
 
-    public Long getPipelineRecordId() {
-        return pipelineRecordId;
+    public Long getStageRecordId() {
+        return stageRecordId;
     }
 
-    public void setPipelineRecordId(Long pipelineRecordId) {
-        this.pipelineRecordId = pipelineRecordId;
+    public void setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
     }
 
     public String getStatus() {
@@ -92,6 +96,14 @@ public class PipelineStageRecordDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getLogId() {
+        return logId;
+    }
+
+    public void setLogId(Long logId) {
+        this.logId = logId;
     }
 
 }
