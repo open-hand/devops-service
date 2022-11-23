@@ -1549,10 +1549,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         List<Long> updatedClusterList = hostConnectionHandler.getUpdatedHostList();
         log.append("1. 检查主机连接状态...").append(System.lineSeparator());
-//        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
-//            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
-//            throw new CommonException(DEVOPS_DEPLOY_FAILED);
-//        }
+        if (Boolean.FALSE.equals(updatedClusterList.contains(hostId))) {
+            log.append("主机：").append(devopsHostDTO.getName()).append("未连接，请检查主机中agent状态是否正常").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_DEPLOY_FAILED);
+        }
         log.append("主机连接状态检查通过").append(System.lineSeparator());
 
         Long appServiceId = appServiceDTO.getId();
