@@ -102,4 +102,9 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
         devopsCiSonarQualityGateVO.setSonarQualityGateConditionVOList(devopsCiSonarQualityGateConditionVOS);
         return devopsCiSonarQualityGateVO;
     }
+
+    @Override
+    public Boolean qualityGateExistsByName(String name) {
+        return devopsCiSonarQualityGateMapper.qualityGateExistsByName(name);
+    }
 }

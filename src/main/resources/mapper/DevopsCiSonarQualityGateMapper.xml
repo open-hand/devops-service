@@ -12,4 +12,10 @@
     FROM devops_ci_sonar_quality_gate
     WHERE sonar_gate_id = #{sonarId}
   </delete>
+
+  <select id="qualityGateExistsByName" resultType="java.lang.Boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_ci_sonar_quality_gate
+    WHERE name = #{name}
+  </select>
 </mapper>

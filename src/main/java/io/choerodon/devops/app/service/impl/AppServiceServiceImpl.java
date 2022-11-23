@@ -1813,7 +1813,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                         break;
                     case QUALITY_GATE_DETAILS:
                         QualityGateResult qualityGateResult = gson.fromJson(measure.getValue(), QualityGateResult.class);
-                        sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        String sonarProjectKey = getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());
+                        Boolean sonarQualityExists = devopsCiSonarQualityGateService.qualityGateExistsByName(sonarProjectKey);
+                        if (Boolean.TRUE.equals(sonarQualityExists)) {
+                            sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        }
                         sonarContentsVO.setStatus(qualityGateResult.getLevel());
                         break;
                     default:
