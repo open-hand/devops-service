@@ -23,9 +23,9 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiApiTestInfoVO;
 import io.choerodon.devops.app.service.DevopsCiApiTestInfoService;
 import io.choerodon.devops.app.service.DevopsCiTplApiTestInfoCfgService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
+import io.choerodon.devops.infra.dto.CiTplApiTestInfoCfgDTO;
 import io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.CiTplApiTestInfoCfgDTO;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.test.ApiTestTaskType;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -34,8 +34,8 @@ import io.choerodon.devops.infra.util.KeyDecryptHelper;
 @Service
 public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
-    private static final String API_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s %s %s %s";
-    private static final String SUITE_TEST_COMMAND_TEMPLATE = "execute_api_test %s %s %s %s %s %s";
+    private static final String API_TEST_COMMAND_TEMPLATE = "token=${Token} environment=runner block=%s threshold=%s type=%s choerodonUrl=\"%s\" taskId=%s  apiTestInfoConfigId=%s configId=%s execute_api_test";
+    private static final String SUITE_TEST_COMMAND_TEMPLATE = "token=${Token} environment=runner  block=%s threshold=%s type=%s choerodonUrl=\"%s\" suiteId=%s configId=%s execute_api_test";
 
     public static final Integer MAX_DELAY_MINUTE = 7 * 24 * 60;
 
@@ -63,10 +63,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobDTO.getConfigId());
         switch (ApiTestTaskType.valueOf(devopsCiApiTestInfoDTO.getTaskType().toUpperCase())) {
             case TASK:
-                result.add(String.format(API_TEST_COMMAND_TEMPLATE, devopsCiApiTestInfoDTO.getBlockAfterJob(), devopsCiApiTestInfoDTO.getPerformThreshold(), "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiJobDTO.getConfigId(), devopsCiApiTestInfoDTO.getApiTestConfigId()));
+                result.add(String.format(API_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiApiTestInfoDTO.getApiTestConfigId() == null ? "" : devopsCiApiTestInfoDTO.getApiTestConfigId(), devopsCiJobDTO.getConfigId() == null ? "" : devopsCiJobDTO.getConfigId()));
                 break;
             case SUITE:
-                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, devopsCiApiTestInfoDTO.getBlockAfterJob(), devopsCiApiTestInfoDTO.getPerformThreshold(), "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId(), devopsCiJobDTO.getConfigId()));
+                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId(), devopsCiJobDTO.getConfigId() == null ? "" : devopsCiJobDTO.getConfigId()));
                 break;
             default:
                 throw new CommonException(DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN, devopsCiApiTestInfoDTO.getTaskType());

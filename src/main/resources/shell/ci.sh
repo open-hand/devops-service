@@ -876,5 +876,5 @@ function process_audit() {
 
 function execute_api_test(){
   # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
-  block=$1 threshold=$2 environment=runner type=$3 choerodonUrl=$4 taskId=$5 suiteId=$5 apiTestInfoConfigId=$6 configId=$7 token=${Token} java -jar /choerodon/app.jar
+ java -jar /choerodon/app.jar
 }
