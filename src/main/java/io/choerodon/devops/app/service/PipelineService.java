@@ -13,5 +13,7 @@ public interface PipelineService {
     void baseCreate(PipelineDTO pipelineDTO);
 
     PipelineDTO create(Long projectId, PipelineVO pipelineVO);
+
+    void enable(Long projectId, Long id);
 }
 

@@ -305,6 +305,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
         detailVO.setAppCode(detailVO.getCode());
         detailVO.setAppName(detailVO.getName());
+        detailVO.setAppId(detailVO.getId());
 
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());

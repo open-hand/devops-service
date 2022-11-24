@@ -60,7 +60,12 @@ public class PipelineServiceImpl implements PipelineService {
         stageList.forEach(stage -> {
             pipelineStageService.saveStage(pipelineDTO.getId(), pipelineVersionDTO.getId(), stage);
         });
-        return null;
+        return pipelineDTO;
+    }
+
+    @Override
+    public void enable(Long projectId, Long id) {
+
     }
 }
 

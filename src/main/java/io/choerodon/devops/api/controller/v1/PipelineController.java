@@ -5,6 +5,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,18 @@ public class PipelineController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestBody @Valid PipelineVO pipelineVO) {
         return ResponseEntity.ok(pipelineService.create(projectId, pipelineVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "启用自动化部署流水线")
+    @PutMapping("/{id}/enable")
+    public ResponseEntity<Void> enable(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        pipelineService.enable(projectId, id);
+        return ResponseEntity.noContent().build();
     }
 }
 

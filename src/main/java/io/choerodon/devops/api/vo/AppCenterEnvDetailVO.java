@@ -23,6 +23,9 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty("应用编码")
     private String code;
 
+    @Encrypt
+    @ApiModelProperty("应用中心 应用id")
+    private Long appId;
     @ApiModelProperty("应用名称/同name,前端需要")
     private String appName;
     @ApiModelProperty("应用编码/同code,前端需要")
@@ -109,6 +112,15 @@ public class AppCenterEnvDetailVO {
 
     @ApiModelProperty(name = "部署组容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
+
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
 
     public String getAppName() {
         return appName;
