@@ -351,13 +351,15 @@ public class CiController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "更新job 关联的api测试执行记录信息", hidden = true)
     @PostMapping("/update_api_test_task_record_info")
-    public ResponseEntity<Void> updateApiTestTaskRecordInfo(@ApiParam(value = "GitLab Jobid", required = true)
+    public ResponseEntity<Void> updateApiTestTaskRecordInfo(@ApiParam(value = "token", required = true)
+                                                            @RequestParam String token,
+                                                            @ApiParam(value = "GitLab Jobid", required = true)
                                                             @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
                                                             @ApiParam(value = "configId", required = true)
                                                             @RequestParam(value = "config_id") Long configId,
                                                             @ApiParam(value = "测试任务执行记录id")
                                                             @RequestParam(value = "api_test_task_record_id") Long apiTestTaskRecordId) {
-        devopsCiJobRecordService.updateApiTestTaskRecordInfo(gitlabJobId, configId, apiTestTaskRecordId);
+        devopsCiJobRecordService.updateApiTestTaskRecordInfo(token, gitlabJobId, configId, apiTestTaskRecordId);
         return ResponseEntity.ok().build();
     }
 

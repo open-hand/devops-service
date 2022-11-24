@@ -34,8 +34,12 @@ import io.choerodon.devops.infra.util.KeyDecryptHelper;
 @Service
 public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
+    /**
+     * apiTestInfoConfigId 是devops_ci_job关联的DevopsCiApiTestInfo的id (devops_ci_api_test_info)
+     * configId 是任务关联的测试任务配置id (api_test_task_config)
+     */
     private static final String API_TEST_COMMAND_TEMPLATE = "token=${Token} environment=runner block=%s threshold=%s type=%s choerodonUrl=\"%s\" taskId=%s  apiTestInfoConfigId=%s configId=%s execute_api_test";
-    private static final String SUITE_TEST_COMMAND_TEMPLATE = "token=${Token} environment=runner  block=%s threshold=%s type=%s choerodonUrl=\"%s\" suiteId=%s configId=%s execute_api_test";
+    private static final String SUITE_TEST_COMMAND_TEMPLATE = "token=${Token} environment=runner  block=%s threshold=%s type=%s choerodonUrl=\"%s\" suiteId=%s apiTestInfoConfigId=%s execute_api_test";
 
     public static final Integer MAX_DELAY_MINUTE = 7 * 24 * 60;
 
@@ -63,10 +67,10 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobDTO.getConfigId());
         switch (ApiTestTaskType.valueOf(devopsCiApiTestInfoDTO.getTaskType().toUpperCase())) {
             case TASK:
-                result.add(String.format(API_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiApiTestInfoDTO.getApiTestConfigId() == null ? "" : devopsCiApiTestInfoDTO.getApiTestConfigId(), devopsCiJobDTO.getConfigId() == null ? "" : devopsCiJobDTO.getConfigId()));
+                result.add(String.format(API_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "api", apiGateway, devopsCiApiTestInfoDTO.getApiTestTaskId(), devopsCiJobDTO.getConfigId(), devopsCiApiTestInfoDTO.getApiTestConfigId() == null ? "" : devopsCiApiTestInfoDTO.getApiTestConfigId()));
                 break;
             case SUITE:
-                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId(), devopsCiJobDTO.getConfigId() == null ? "" : devopsCiJobDTO.getConfigId()));
+                result.add(String.format(SUITE_TEST_COMMAND_TEMPLATE, Optional.ofNullable(devopsCiApiTestInfoDTO.getBlockAfterJob()).orElse(Boolean.FALSE), Optional.ofNullable(devopsCiApiTestInfoDTO.getPerformThreshold()).orElse(0d), "suite", apiGateway, devopsCiApiTestInfoDTO.getApiTestSuiteId(), devopsCiJobDTO.getConfigId()));
                 break;
             default:
                 throw new CommonException(DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN, devopsCiApiTestInfoDTO.getTaskType());
