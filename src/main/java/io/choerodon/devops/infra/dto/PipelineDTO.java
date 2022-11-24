@@ -1,48 +1,55 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  19:08 2019/4/3
- * Description:
+ * 流水线表(Pipeline)实体类
+ *
+ * @author
+ * @since 2022-11-24 15:50:12
  */
-@ModifyAudit
+
+@ApiModel("流水线表")
 @VersionAudit
+@ModifyAudit
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Table(name = "devops_pipeline")
 public class PipelineDTO extends AuditDomain {
+    private static final long serialVersionUID = 283632600120793678L;
+
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_PROJECT_ID = "projectId";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_EFFECT_VERSION_ID = "effectVersionId";
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
-    private String name;
-    private String triggerType;
-    private Integer isEnabled;
+
+    @ApiModelProperty(value = "项目id", required = true)
+    @NotNull
     private Long projectId;
 
-    @Transient
-    private Boolean execute;
-    @Transient
-    private String envName;
+    @ApiModelProperty(value = "流水线名称", required = true)
+    @NotBlank
+    private String name;
 
-    public String getEnvName() {
-        return envName;
-    }
+    @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", required = true)
+    @NotNull
+    private Long effectVersionId;
 
-    public void setEnvName(String envName) {
-        this.envName = envName;
-    }
-
-    public Boolean getExecute() {
-        return execute;
-    }
-
-    public void setExecute(Boolean execute) {
-        this.execute = execute;
-    }
 
     public Long getId() {
         return id;
@@ -50,6 +57,14 @@ public class PipelineDTO extends AuditDomain {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getName() {
@@ -60,27 +75,13 @@ public class PipelineDTO extends AuditDomain {
         this.name = name;
     }
 
-    public String getTriggerType() {
-        return triggerType;
+    public Long getEffectVersionId() {
+        return effectVersionId;
     }
 
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
+    public void setEffectVersionId(Long effectVersionId) {
+        this.effectVersionId = effectVersionId;
     }
 
-    public Integer getIsEnabled() {
-        return isEnabled;
-    }
-
-    public void setIsEnabled(Integer isEnabled) {
-        this.isEnabled = isEnabled;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
 }
+
