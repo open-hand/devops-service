@@ -50,7 +50,14 @@ public class HostDeployUtil {
         }
 
         // 判断镜像是否存在 存在删除 部署
-        return values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        int lastIndexOfColon = dockerDeployDTO.getImage().lastIndexOf(":");
+        String tag = dockerDeployDTO.getImage().substring(lastIndexOfColon + 1);
+        values = values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+
+        String result = "";
+        result += "export IMAGE_TAG=" + tag + "\n";
+        result += values;
+        return result;
     }
 
     public static String getWorkingDir(Long instanceId) {
@@ -70,7 +77,7 @@ public class HostDeployUtil {
         if (type.equals("jar")) {
             return instruction.contains("${jar}");
         } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
+            return instruction.contains(" -d ");
         }
     }
 
@@ -103,7 +110,13 @@ public class HostDeployUtil {
     }
 
     public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
-        return value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        int lastIndexOfColon = dockerDeployDTO.getImage().lastIndexOf(":");
+        String tag = dockerDeployDTO.getImage().substring(lastIndexOfColon + 1);
+        String values = value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        String result = "";
+        result += "export IMAGE_TAG=" + tag + "\n";
+        result += values;
+        return result;
     }
 
     public static Boolean checkHealthProbExit(String deleteCommand) {
