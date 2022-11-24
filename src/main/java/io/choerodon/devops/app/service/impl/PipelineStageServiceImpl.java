@@ -43,7 +43,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveStage(Long pipelineId, Long versionId, PipelineStageVO stage) {
+    public void saveStage(Long projectId, Long pipelineId, Long versionId, PipelineStageVO stage) {
         PipelineStageDTO pipelineStageDTO = ConvertUtils.convertObject(stage, PipelineStageDTO.class);
         pipelineStageDTO.setPipelineId(pipelineId);
         pipelineStageDTO.setVersionId(versionId);
@@ -56,7 +56,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         jobList.forEach(job -> {
             AbstractCdJobHandler handler = cdJobOperator.getHandler(job.getType());
             if (handler != null) {
-//                handler.saveJobInfo(pipelineId, versionId, pipelineStageDTO.getId(), job);
+                handler.saveJobInfo(projectId, pipelineId, versionId, pipelineStageDTO.getId(), job);
             }
         });
     }

@@ -58,7 +58,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("devops.pipeline.stage.is.empty");
         }
         stageList.forEach(stage -> {
-            pipelineStageService.saveStage(pipelineDTO.getId(), pipelineVersionDTO.getId(), stage);
+            pipelineStageService.saveStage(projectId, pipelineDTO.getId(), pipelineVersionDTO.getId(), stage);
         });
         return pipelineDTO;
     }

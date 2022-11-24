@@ -13,6 +13,6 @@ public interface PipelineStageService {
 
     void baseCreate(PipelineStageDTO pipelineStageDTO);
 
-    void saveStage(Long pipelineId, Long versionId, PipelineStageVO stage);
+    void saveStage(Long projectId, Long pipelineId, Long versionId, PipelineStageVO stage);
 }
 
