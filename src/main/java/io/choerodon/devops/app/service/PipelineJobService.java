@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.cd.PipelineJobVO;
+import io.choerodon.devops.infra.dto.PipelineJobDTO;
+
 /**
  * 流水线任务表(PipelineJob)应用服务
  *
@@ -8,6 +11,8 @@ package io.choerodon.devops.app.service;
  */
 public interface PipelineJobService {
 
+    void saveJob(Long pipelineId, Long versionId, Long stageId, PipelineJobVO job);
 
+    void baseCreate(PipelineJobDTO pipelineJobDTO);
 }
 

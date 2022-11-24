@@ -1,0 +1,106 @@
+package io.choerodon.devops.app.eventhandler.cd;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobVO;
+import io.choerodon.devops.app.service.PipelineJobService;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
+import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.PipelineJobDTO;
+import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
+import io.choerodon.devops.infra.util.ConvertUtils;
+
+/**
+ * 〈功能简述〉
+ * 〈〉
+ *
+ * @author wanghao
+ * @since 2022/11/3 9:03
+ */
+public abstract class AbstractCdJobHandler {
+    @Autowired
+    private PipelineJobService pipelineJobService;
+
+    public abstract CdJobTypeEnum getType();
+
+    /**
+     * 校验任务配置信息
+     *
+     * @param projectId
+     * @param pipelineJobVO
+     */
+    protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineJobDTO saveJobInfo(Long projectId,
+                                      Long pipelineId,
+                                      Long versionId,
+                                      Long stageId,
+                                      PipelineJobVO pipelineJobVO) {
+        PipelineJobDTO pipelineJobDTO = ConvertUtils.convertObject(pipelineJobVO, PipelineJobDTO.class);
+        // 校验任务配置
+        checkConfigInfo(projectId, pipelineJobVO);
+        // 保存任务配置
+        Long configId = saveConfig(pipelineId, pipelineJobVO);
+
+        pipelineJobDTO.setPipelineId(pipelineId);
+        pipelineJobDTO.setVersionId(versionId);
+        pipelineJobDTO.setStageId(stageId);
+        pipelineJobDTO.setConfigId(configId);
+        pipelineJobService.baseCreate(pipelineJobDTO);
+        return pipelineJobDTO;
+    }
+
+
+    /**
+     * 保存任务配置，实现类如果需要存储任务配置则重写
+     *
+     * @param ciPipelineId
+     * @param devopsCiJobVO
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    protected Long saveConfig(Long pipelineId, PipelineJobVO devopsCiJobVO) {
+        // do nothong
+        return null;
+    }
+
+    /**
+     * 查询流水线详情时，给包含任务配置的任务填充信息
+     *
+     * @param pipelineJobVO
+     */
+    public void fillJobConfigInfo(PipelineJobVO pipelineJobVO) {
+        // do nothing
+    }
+
+    /**
+     * 初始化流水线记录时需要额外保存的信息
+     *
+     * @param devopsCiJobRecordDTO
+     * @param gitlabPipelineId
+     * @param existDevopsCiJobDTO
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
+
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long pipelineId) {
+
+    }
+
+    /**
+     * 添加job额外的配置信息，比如部署任务是否可编辑
+     *
+     * @param devopsCiJobVO
+     */
+    public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
+}

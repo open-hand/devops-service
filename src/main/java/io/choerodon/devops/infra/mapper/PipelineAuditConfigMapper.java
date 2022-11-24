@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dto.PipelineAuditConfigDTO;
+import io.choerodon.devops.infra.dto.PipelineAuditCfgDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -9,7 +9,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @author
  * @since 2022-11-24 15:56:37
  */
-public interface PipelineAuditConfigMapper extends BaseMapper<PipelineAuditConfigDTO> {
+public interface PipelineAuditConfigMapper extends BaseMapper<PipelineAuditCfgDTO> {
 
 }
 

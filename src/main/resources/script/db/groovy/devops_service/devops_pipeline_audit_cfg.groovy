@@ -1,8 +1,8 @@
 package script.db.groovy.devops_service
 
-databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_config.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_cfg.groovy') {
     changeSet(author: 'wanghao', id: '2022-11-22-create-table') {
-        createTable(tableName: "devops_pipeline_audit_config", remarks: '人工卡点配置表') {
+        createTable(tableName: "devops_pipeline_audit_cfg", remarks: '人工卡点配置表') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
@@ -20,7 +20,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_config.groovy') {
         }
     }
     changeSet(author: 'wanghao', id: '2022-11-10-add-index') {
-        createIndex(tableName: 'devops_pipeline_audit_config', indexName: 'devops_pipeline_audit_config_n1') {
+        createIndex(tableName: 'devops_pipeline_audit_cfg', indexName: 'devops_pipeline_audit_config_n1') {
             column(name: 'pipeline_id')
         }
     }

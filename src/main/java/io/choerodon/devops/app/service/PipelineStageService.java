@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.cd.PipelineStageVO;
+import io.choerodon.devops.infra.dto.PipelineStageDTO;
+
 /**
  * 流水线阶段表(PipelineStage)应用服务
  *
@@ -8,6 +11,8 @@ package io.choerodon.devops.app.service;
  */
 public interface PipelineStageService {
 
+    void baseCreate(PipelineStageDTO pipelineStageDTO);
 
+    void saveStage(Long pipelineId, Long versionId, PipelineStageVO stage);
 }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.PipelineVersionDTO;
+
 /**
  * 流水线版本表(PipelineVersion)应用服务
  *
@@ -8,6 +10,8 @@ package io.choerodon.devops.app.service;
  */
 public interface PipelineVersionService {
 
+    void baseCreate(PipelineVersionDTO pipelineVersionDTO);
 
+    PipelineVersionDTO createByPipelineId(Long pipelineId);
 }
 

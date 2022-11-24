@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_user.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'audit_config_id', type: 'BIGINT UNSIGNED', remarks: 'devops_pipeline_audit_config.id') {
+            column(name: 'audit_config_id', type: 'BIGINT UNSIGNED', remarks: 'devops_pipeline_audit_cfg.id') {
                 constraints(nullable: false)
             }
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户Id') {

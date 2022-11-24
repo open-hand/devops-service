@@ -50,6 +50,16 @@ public class PipelineStageDTO extends AuditDomain {
     @NotBlank
     private String name;
 
+    @ApiModelProperty(value = "阶段顺序", required = true)
+    private Integer sequence;
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 
     public Long getId() {
         return id;

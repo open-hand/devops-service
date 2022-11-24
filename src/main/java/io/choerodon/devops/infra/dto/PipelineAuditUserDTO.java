@@ -36,7 +36,7 @@ public class PipelineAuditUserDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    @ApiModelProperty(value = "devops_pipeline_audit_config.id", required = true)
+    @ApiModelProperty(value = "devops_pipeline_audit_cfg.id", required = true)
     @NotNull
     private Long auditConfigId;
 

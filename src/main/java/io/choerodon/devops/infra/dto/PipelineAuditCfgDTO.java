@@ -24,8 +24,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_pipeline_audit_config")
-public class PipelineAuditConfigDTO extends AuditDomain {
+@Table(name = "devops_pipeline_audit_cfg")
+public class PipelineAuditCfgDTO extends AuditDomain {
     private static final long serialVersionUID = 838513961051796101L;
 
     public static final String FIELD_ID = "id";
@@ -42,7 +42,7 @@ public class PipelineAuditConfigDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     @NotNull
-    private Object isCountersigned;
+    private Boolean isCountersigned;
 
 
     public Long getId() {
@@ -61,13 +61,12 @@ public class PipelineAuditConfigDTO extends AuditDomain {
         this.pipelineId = pipelineId;
     }
 
-    public Object getIsCountersigned() {
+    public Boolean getCountersigned() {
         return isCountersigned;
     }
 
-    public void setIsCountersigned(Object isCountersigned) {
-        this.isCountersigned = isCountersigned;
+    public void setCountersigned(Boolean countersigned) {
+        isCountersigned = countersigned;
     }
-
 }
 

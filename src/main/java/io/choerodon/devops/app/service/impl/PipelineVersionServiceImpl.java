@@ -2,9 +2,12 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.app.service.PipelineVersionService;
+import io.choerodon.devops.infra.dto.PipelineVersionDTO;
 import io.choerodon.devops.infra.mapper.PipelineVersionMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 流水线版本表(PipelineVersion)应用服务
@@ -14,8 +17,25 @@ import io.choerodon.devops.infra.mapper.PipelineVersionMapper;
  */
 @Service
 public class PipelineVersionServiceImpl implements PipelineVersionService {
+
+    private static final String DEVOPS_SAVE_PIPELINE_VERSION_FAILED = "devops.save.pipeline.version.failed";
     @Autowired
     private PipelineVersionMapper pipelineVersionMapper;
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(PipelineVersionDTO pipelineVersionDTO) {
+        MapperUtil.resultJudgedInsertSelective(pipelineVersionMapper, pipelineVersionDTO, DEVOPS_SAVE_PIPELINE_VERSION_FAILED);
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineVersionDTO createByPipelineId(Long pipelineId) {
+        PipelineVersionDTO pipelineVersionDTO = new PipelineVersionDTO();
+        pipelineVersionDTO.setPipelineId(pipelineId);
+        baseCreate(pipelineVersionDTO);
+        return pipelineVersionDTO;
+    }
 }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.PipelineChartDeployCfgDTO;
+
 /**
  * chart部署任务配置表(PipelineChartDeployCfg)应用服务
  *
@@ -9,5 +11,8 @@ package io.choerodon.devops.app.service;
 public interface PipelineChartDeployCfgService {
 
 
+    void baseCreate(PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO);
+
+    void deleteConfigByPipelineId(Long pipelineId);
 }
 

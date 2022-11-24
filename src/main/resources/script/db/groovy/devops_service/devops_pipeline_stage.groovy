@@ -15,6 +15,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage.groovy') {
             column(name: 'name', type: 'VARCHAR(64)', remarks: '名称') {
                 constraints(nullable: false)
             }
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序', defaultValue: "0") {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.PipelineAuditUserDTO;
+
 /**
  * 人工卡点审核人员表(PipelineAuditUser)应用服务
  *
@@ -9,5 +13,8 @@ package io.choerodon.devops.app.service;
 public interface PipelineAuditUserService {
 
 
+    void batchCreateByConfigIdAndUserIds(Long id, List<Long> auditUserIds);
+
+    List<PipelineAuditUserDTO> listByAuditConfigId(Long auditConfigId);
 }
 
