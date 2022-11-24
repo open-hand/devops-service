@@ -6,7 +6,9 @@ import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JO
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +24,7 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
@@ -175,5 +178,12 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             ciTplHostDeployInfoCfgDTO = new CiTplHostDeployInfoCfgDTO();
         }
         devopsCiJobVO.setDevopsCiHostDeployInfoVO(ConvertUtils.convertObject(ciTplHostDeployInfoCfgDTO, DevopsCiHostDeployInfoVO.class));
+    }
+
+    @Override
+    public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
+        Map<String, String> variables = new HashMap<>();
+        variables.put("GIT_STRATEGY", "none");
+        ciJob.setVariables(variables);
     }
 }
