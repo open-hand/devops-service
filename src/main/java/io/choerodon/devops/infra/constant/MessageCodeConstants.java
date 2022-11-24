@@ -91,6 +91,9 @@ public class MessageCodeConstants {
     public static final String PROJECT_NAME = "projectName";
     public static final String PIPE_LINE_NAME = "pipelineName";
     public static final String STAGE_NAME = "stageName";
+    public static final String ORGANIZATION_ID = "organizationId";
+
+    public static final String PROJECT_ID = "projectId";
     public static final String REL_ID = "pipelineIdRecordId";
     public static final String PIPELINE_ID = "pipelineId";
     public static final String BASE_URL = "%s/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";

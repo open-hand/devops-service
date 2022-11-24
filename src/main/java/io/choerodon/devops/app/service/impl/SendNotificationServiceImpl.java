@@ -1242,6 +1242,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(ciCdPipelineDTO.getProjectId());
 
         HashMap<String, String> params = new HashMap<>();
+        params.put(MessageCodeConstants.PROJECT_ID, projectDTO.getId().toString());
+        params.put(MessageCodeConstants.ORGANIZATION_ID, projectDTO.getOrganizationId().toString());
         params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
         params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
         params.put(MessageCodeConstants.STAGE_NAME, stage);
