@@ -180,10 +180,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     @Lazy
     private DevopsDeployRecordService devopsDeployRecordService;
-
-    @Autowired
-    @Lazy
-    private DevopsHarborUserService devopsHarborUserService;
     @Autowired
     @Lazy
     private SendNotificationService sendNotificationService;
@@ -1976,18 +1972,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Override
     public String baseGetInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
         return appServiceInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
-    }
-
-    @Override
-    public ConfigVO queryDefaultConfig(Long projectId, ConfigVO configVO) {
-        DevopsProjectDTO devopsProjectDTO = devopsProjectMapper.selectByPrimaryKey(projectId);
-        if (devopsProjectDTO.getHarborProjectIsPrivate()) {
-            configVO.setIsPrivate(true);
-            HarborUserDTO harborUserDTO = devopsHarborUserService.queryHarborUserById(devopsProjectDTO.getHarborPullUserId());
-            configVO.setUserName(harborUserDTO.getHarborProjectUserName());
-            configVO.setPassword(harborUserDTO.getHarborProjectUserPassword());
-        }
-        return configVO;
     }
 
     @Override
