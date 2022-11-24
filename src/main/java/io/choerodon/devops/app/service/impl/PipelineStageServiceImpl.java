@@ -10,7 +10,8 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
-import io.choerodon.devops.app.service.PipelineJobService;
+import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
+import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.PipelineStageService;
 import io.choerodon.devops.infra.dto.PipelineStageDTO;
 import io.choerodon.devops.infra.mapper.PipelineStageMapper;
@@ -32,7 +33,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
     @Autowired
     private PipelineStageMapper pipelineStageMapper;
     @Autowired
-    private PipelineJobService pipelineJobService;
+    private CdJobOperator cdJobOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -53,7 +54,10 @@ public class PipelineStageServiceImpl implements PipelineStageService {
             throw new CommonException(DEVOPS_JOB_IS_EMPTY);
         }
         jobList.forEach(job -> {
-            pipelineJobService.saveJob(pipelineId, versionId, pipelineStageDTO.getId(), job);
+            AbstractCdJobHandler handler = cdJobOperator.getHandler(job.getType());
+            if (handler != null) {
+                handler.saveJobInfo((pipelineId, versionId, pipelineStageDTO.getId(), job);
+            }
         });
     }
 }

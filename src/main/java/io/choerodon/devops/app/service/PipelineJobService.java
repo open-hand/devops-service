@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
 
 /**
@@ -10,8 +9,6 @@ import io.choerodon.devops.infra.dto.PipelineJobDTO;
  * @since 2022-11-24 15:55:45
  */
 public interface PipelineJobService {
-
-    void saveJob(Long pipelineId, Long versionId, Long stageId, PipelineJobVO job);
 
     void baseCreate(PipelineJobDTO pipelineJobDTO);
 }

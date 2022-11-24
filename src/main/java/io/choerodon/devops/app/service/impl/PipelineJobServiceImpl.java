@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.PipelineJobService;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
 import io.choerodon.devops.infra.mapper.PipelineJobMapper;
@@ -23,12 +22,6 @@ public class PipelineJobServiceImpl implements PipelineJobService {
 
     @Autowired
     private PipelineJobMapper pipelineJobMapper;
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void saveJob(Long pipelineId, Long versionId, Long stageId, PipelineJobVO job) {
-
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
