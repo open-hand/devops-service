@@ -3498,7 +3498,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO) {
         openAppServiceReqVO.setProjectId(projectId);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(openAppServiceReqVO.getEmail());
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
         userAttrService.checkUserSync(userAttrDTO, iamUserDTO.getId());
 
         ApplicationValidator.checkApplicationService(openAppServiceReqVO.getCode());
@@ -3796,7 +3796,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (StringUtils.isEmpty(privateToken)) {
             String tokenIdKey = String.format(PRIVATE_TOKEN_ID_FORMAT, appServiceDTO.getGitlabProjectId());
             String tokenIdStr = stringRedisTemplate.opsForValue().get(tokenIdKey);
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
             if (!StringUtils.isEmpty(tokenIdStr)) {
                 gitlabServiceClientOperator.revokeImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), TypeUtil.objToInteger(tokenIdStr));
             }

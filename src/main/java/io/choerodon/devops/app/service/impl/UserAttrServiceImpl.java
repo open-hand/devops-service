@@ -102,13 +102,6 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public UserAttrDTO baseQueryByIamUserId(Long iamUserId) {
-        UserAttrDTO userAttrDTO = new UserAttrDTO();
-        userAttrDTO.setIamUserId(iamUserId);
-        return userAttrMapper.selectOne(userAttrDTO);
-    }
-
-    @Override
     public Long baseQueryUserIdByGitlabUserId(Long gitLabUserId) {
         if (gitLabUserId == null) {
             return null;

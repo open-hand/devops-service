@@ -315,9 +315,16 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
+            List<Long> allOwnerIds = baseServiceClientOperator.getAllOwnerIds(projectId);
+            Integer gitlabUserId = null;
+            if (!CollectionUtils.isEmpty(allOwnerIds)) {
+                Long ownerId = allOwnerIds.get(0);
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryById(ownerId);
+                gitlabUserId = userAttrDTO.getGitlabUserId().intValue();
+            }
             gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(gitlabProjectId),
                     TypeUtil.objToInteger(gitlabJobId),
-                    null,
+                    gitlabUserId,
                     null);
         }
 
