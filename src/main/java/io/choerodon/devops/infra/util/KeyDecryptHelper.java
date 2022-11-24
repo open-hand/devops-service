@@ -19,6 +19,7 @@ import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.EncryptType;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -106,18 +107,25 @@ public final class KeyDecryptHelper {
             return null;
         }
 
-        Long[] result = new Long[ids.length];
+        List<Long> result = new ArrayList<>();
+
         if (EncryptContext.isEncrypt()) {
             ensureEncryptService();
             for (int i = 0; i < ids.length; i++) {
-                result[i] = Long.parseLong(ENCRYPTION_SERVICE.decrypt(ids[i], EMPTY));
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(Long.parseLong(ENCRYPTION_SERVICE.decrypt(ids[i], EMPTY)));
+                }
             }
         } else {
             for (int i = 0; i < ids.length; i++) {
-                result[i] = Long.parseLong(ids[i]);
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(Long.parseLong(ids[i]));
+                }
             }
         }
-        return result;
+        return result.toArray(new Long[ids.length]);
     }
 
     /**
