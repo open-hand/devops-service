@@ -8,12 +8,14 @@ import static io.choerodon.devops.infra.constant.ResourceCheckConstant.DEVOPS_PR
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -83,7 +85,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
-        Long[] notifyUserIds = KeyDecryptHelper.decryptIdArray(devopsCiApiTestInfoDTO.getNotifyUserIds().split(","));
+        Long[] notifyUserIds = ObjectUtils.isEmpty(devopsCiApiTestInfoDTO.getNotifyUserIds()) ? new Long[]{} : KeyDecryptHelper.decryptIdArray(devopsCiApiTestInfoDTO.getNotifyUserIds().split(","));
         devopsCiApiTestInfoDTO.setNotifyUserIds(Arrays.stream(notifyUserIds).map(Object::toString).collect(Collectors.joining(",")));
         devopsCiApiTestInfoDTO.setId(null);
         devopsCiApiTestInfoDTO.setCiPipelineId(ciPipelineId);
