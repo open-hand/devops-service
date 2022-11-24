@@ -69,7 +69,7 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciChartDeployConfig.getAppId());
             ciChartDeployConfig.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciChartDeployConfig.setAppName(devopsDeployAppCenterEnvDTO.getName());
-            if (devopsDeployAppCenterEnvDTO.getEnvId().equals(ciChartDeployConfig.getEnvId())) {
+            if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(ciChartDeployConfig.getEnvId())) {
                 throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
             }
         }

@@ -68,7 +68,7 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(ciDeployDeployCfg.getAppId());
             ciDeployDeployCfg.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciDeployDeployCfg.setAppName(devopsDeployAppCenterEnvDTO.getName());
-            if (devopsDeployAppCenterEnvDTO.getEnvId().equals(ciDeployDeployCfg.getEnvId())) {
+            if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(ciDeployDeployCfg.getEnvId())) {
                 throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
             }
         }
