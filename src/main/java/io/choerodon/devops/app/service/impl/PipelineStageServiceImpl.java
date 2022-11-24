@@ -56,7 +56,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         jobList.forEach(job -> {
             AbstractCdJobHandler handler = cdJobOperator.getHandler(job.getType());
             if (handler != null) {
-                handler.saveJobInfo((pipelineId, versionId, pipelineStageDTO.getId(), job));
+//                handler.saveJobInfo(pipelineId, versionId, pipelineStageDTO.getId(), job);
             }
         });
     }
