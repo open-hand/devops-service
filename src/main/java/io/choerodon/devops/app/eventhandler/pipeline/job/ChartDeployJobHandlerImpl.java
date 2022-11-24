@@ -70,7 +70,7 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
             ciChartDeployConfig.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             ciChartDeployConfig.setAppName(devopsDeployAppCenterEnvDTO.getName());
             if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(ciChartDeployConfig.getEnvId())) {
-                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV);
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV, devopsCiJobVO.getName());
             }
         }
         if (ciChartDeployConfig.getValueId() == null) {

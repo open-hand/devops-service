@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
+                constraints(nullable: false)
+            }
             column(name: 'name', type: 'VARCHAR(64)', remarks: '流水线名称') {
                 constraints(nullable: false)
             }
@@ -21,6 +24,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
         }
         createIndex(tableName: 'devops_pipeline', indexName: 'devops_pipeline_n1') {
             column(name: 'name')
+        }
+        createIndex(tableName: 'devops_pipeline', indexName: 'devops_pipeline_n2') {
+            column(name: 'project_id')
         }
     }
 
