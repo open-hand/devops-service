@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,8 +19,10 @@ import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
@@ -107,5 +111,12 @@ public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler
         }
 
         return Boolean.FALSE;
+    }
+
+    @Override
+    public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
+        Map<String, String> variables = new HashMap<>();
+        variables.put("GIT_STRATEGY", "none");
+        ciJob.setVariables(variables);
     }
 }

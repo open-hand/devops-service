@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dto.gitlab.ci;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -47,6 +48,15 @@ public class CiJob {
 
     @ApiModelProperty("job tags")
     private List<String> tags;
+    private Map<String, String> variables;
+
+    public Map<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
 
     public List<String> getTags() {
         return tags;

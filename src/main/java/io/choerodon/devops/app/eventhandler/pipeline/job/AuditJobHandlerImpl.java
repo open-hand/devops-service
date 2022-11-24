@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import io.choerodon.devops.infra.dto.CiAuditConfigDTO;
 import io.choerodon.devops.infra.dto.CiAuditRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -133,6 +136,15 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
         result.add("process_audit");
 
         return result;
+    }
+
+    @Override
+    public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
+        Map<String, String> variables = new HashMap<>();
+        variables.put("GIT_STRATEGY", "none");
+        ciJob.setVariables(variables);
+        ciJob.setWhen("manual");
+        ciJob.setAllowFailure(false);
     }
 
     @Override

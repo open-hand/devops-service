@@ -10,6 +10,7 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
+import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -137,6 +138,10 @@ public abstract class AbstractJobHandler {
      * @param devopsCiJobVO
      */
     public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
+
+    public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
 
     }
 }

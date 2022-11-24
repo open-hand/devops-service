@@ -1822,10 +1822,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                             ciJob.setWhen("delayed");
                         }
                     }
-                    if (CiJobTypeEnum.AUDIT.value().equals(job.getType())) {
-                        ciJob.setWhen("manual");
-                        ciJob.setAllowFailure(false);
-                    }
                     if (StringUtils.isNoneBlank(job.getTags())) {
                         ciJob.setTags(Arrays.asList(job.getTags().split(",")));
                     }
@@ -1833,6 +1829,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     processOnlyAndExcept(job, ciJob);
 
                     AbstractJobHandler handler = jobOperator.getHandler(job.getType());
+                    handler.setCiJobConfig(job, ciJob);
                     ciJob.setScript(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 
                     gitlabCi.addJob(job.getName(), ciJob);
