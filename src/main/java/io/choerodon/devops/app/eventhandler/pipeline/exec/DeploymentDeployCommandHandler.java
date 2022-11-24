@@ -73,7 +73,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
             // 3. 如果是更新应用，先判断应用是否存在。不存在则跳过。
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appDeployConfigVO.getAppId());
             if (devopsDeployAppCenterEnvDTO == null) {
-                log.append("App: ").append(appDeployConfigVO.getAppId()).append(" not found, is deleted? Skip this task.").append(System.lineSeparator());
+                log.append("应用: ").append(appCode).append(" 不存在, 请确认是否删除? 跳过此部署任务.").append(System.lineSeparator());
                 return;
             }
             objectId = devopsDeployAppCenterEnvDTO.getObjectId();
@@ -144,7 +144,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
             devopsCiJobRecordDTO.setCommandId(commandId);
             devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
         } else {
-            log.append("[warn] Deploy command not found.").append(System.lineSeparator());
+            log.append("[warn] 部署命令未找到.").append(System.lineSeparator());
         }
 
         if (DeployTypeEnum.CREATE.value().equals(ciDeployDeployCfgVO.getDeployType())) {
@@ -152,7 +152,7 @@ public class DeploymentDeployCommandHandler extends AbstractAppDeployCommandHand
             ciDeployDeployCfgService.updateAppIdAndDeployType(ciDeployDeployCfgVO.getId(), appId, DeployTypeEnum.UPDATE.value());
         }
 
-        log.append("Deploy app success.").append(System.lineSeparator());
+        log.append("部署成功.").append(System.lineSeparator());
     }
 
     @Override

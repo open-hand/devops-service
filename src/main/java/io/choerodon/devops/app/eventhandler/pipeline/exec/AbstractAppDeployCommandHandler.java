@@ -86,33 +86,33 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
                                       DevopsCiJobRecordDTO devopsCiJobRecordDTO);
 
     protected boolean checkUserPermission(StringBuilder log, Long userId, Long envId, Boolean skipCheckPermission) {
-        log.append("## 2.Check user env permission.").append(System.lineSeparator());
+        log.append("## 2.校验用户环境权限...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(skipCheckPermission)) {
-            log.append("Skip check user permission Flag is false, check user permission.").append(System.lineSeparator());
+            log.append("不允许非环境人员触发此部署任务，校验用户权限").append(System.lineSeparator());
             if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
                     userId))) {
-                log.append("User have no env Permission, skipped.").append(System.lineSeparator());
+                log.append("用户没有环境权限，跳过此部署任务").append(System.lineSeparator());
                 return true;
             } else {
-                log.append("Check user permission Passed.").append(System.lineSeparator());
+                log.append("用户权限校验通过").append(System.lineSeparator());
             }
         } else {
-            log.append("Skip check user permission Flag is true, choose deploy account.").append(System.lineSeparator());
+            log.append("允许非环境人员触发此部署任务，选择部署账户").append(System.lineSeparator());
             if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
                     userId))) {
-                log.append("User have no env Permission, use admin account to deploy.").append(System.lineSeparator());
+                log.append("用户没有环境权限，使用admin账户部署").append(System.lineSeparator());
                 CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
             } else {
-                log.append("User have env Permission, use self account to deploy.").append(System.lineSeparator());
+                log.append("用户拥有环境权限，使用用户账户部署").append(System.lineSeparator());
             }
         }
         return false;
     }
 
     protected boolean checkAutoMaticDeploy(StringBuilder log, Long envId) {
-        log.append("## 1.Check Environment automatic deploy enable.").append(System.lineSeparator());
+        log.append("## 1. 校验环境是否开启自动部署...").append(System.lineSeparator());
         if (Boolean.FALSE.equals(devopsEnvironmentService.queryByIdOrThrowE(envId).getAutoDeploy())) {
-            log.append("Environment automatic deploy has been turned off!").append(System.lineSeparator());
+            log.append("环境自动部署已关闭，跳过此部署任务。").append(System.lineSeparator());
             return true;
         }
         return false;
