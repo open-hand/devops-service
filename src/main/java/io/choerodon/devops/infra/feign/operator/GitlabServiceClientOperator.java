@@ -1039,7 +1039,7 @@ public class GitlabServiceClientOperator {
             }
 
         } catch (Exception e) {
-            throw new CommonException(e);
+            return null;
         }
         return responseEntity.getBody();
     }
