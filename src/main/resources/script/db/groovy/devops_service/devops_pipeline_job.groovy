@@ -21,6 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job.groovy') {
             column(name: 'type', type: 'VARCHAR(64)', remarks: '任务类型') {
                 constraints(nullable: false)
             }
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '关联任务配置Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

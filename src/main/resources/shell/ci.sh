@@ -44,6 +44,10 @@ function export_commit_tag() {
    then
        return
    fi
+   # 没有git目录也不处理
+   if [ ! -d ".git" ]; then
+       return
+   fi
 
     # 获取commit时间
     C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
