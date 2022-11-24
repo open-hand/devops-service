@@ -94,11 +94,9 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         }
         // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = ConvertUtils.convertObject(ciHostDeployInfoVO, DevopsCiHostDeployInfoDTO.class);
-        if (!StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
-                ciHostDeployInfoVO.getArtifactId() != null
-        ) {
+        if (!StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
             DevopsCiHostDeployInfoVO.JarDeploy jarDeployVO = new DevopsCiHostDeployInfoVO.JarDeploy();
-            jarDeployVO.setDeploySource("pipelineDeploy");
+            jarDeployVO.setDeploySource(ciHostDeployInfoVO.getDeploySource());
             jarDeployVO.setRepositoryId(ciHostDeployInfoVO.getRepositoryId());
             jarDeployVO.setGroupId(ciHostDeployInfoVO.getGroupId());
             jarDeployVO.setArtifactId(ciHostDeployInfoVO.getArtifactId());
@@ -112,7 +110,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
                 ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getContainerName())) {
             DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = new DevopsCiHostDeployInfoVO.ImageDeploy();
             imageDeploy.setPipelineTask(ciHostDeployInfoVO.getPipelineTask());
-            imageDeploy.setDeploySource("pipelineDeploy");
+            imageDeploy.setDeploySource(ciHostDeployInfoVO.getDeploySource());
             imageDeploy.setContainerName(ciHostDeployInfoVO.getContainerName());
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
             devopsCiHostDeployInfoDTO.setDockerCommand(ciHostDeployInfoVO.getDockerCommand());
