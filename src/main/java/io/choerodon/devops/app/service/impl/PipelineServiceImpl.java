@@ -57,6 +57,12 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineDTO pipelineDTO) {
+        pipelineMapper.updateByPrimaryKeySelective(pipelineDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void baseDeleteById(Long id) {
         pipelineMapper.deleteByPrimaryKey(id);
     }
@@ -79,8 +85,13 @@ public class PipelineServiceImpl implements PipelineService {
         }
         baseCreate(pipelineDTO);
 
-        PipelineVersionDTO pipelineVersionDTO = pipelineVersionService.createByPipelineId(pipelineDTO.getId());
+        savePipelieVersion(projectId, pipelineVO, pipelineDTO);
+        return pipelineDTO;
+    }
 
+    private void savePipelieVersion(Long projectId, PipelineVO pipelineVO, PipelineDTO pipelineDTO) {
+        PipelineVersionDTO pipelineVersionDTO = pipelineVersionService.createByPipelineId(pipelineDTO.getId());
+        pipelineDTO.setEffectVersionId(pipelineVersionDTO.getId());
         List<PipelineStageVO> stageList = pipelineVO.getStageList();
         if (CollectionUtils.isEmpty(stageList)) {
             throw new CommonException("devops.pipeline.stage.is.empty");
@@ -88,7 +99,7 @@ public class PipelineServiceImpl implements PipelineService {
         stageList.forEach(stage -> {
             pipelineStageService.saveStage(projectId, pipelineDTO.getId(), pipelineVersionDTO.getId(), stage);
         });
-        return pipelineDTO;
+        baseUpdate(pipelineDTO);
     }
 
     @Override
@@ -140,6 +151,15 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineStageRecordService.deleteByPipelineId(id);
         // 删除流水线记录
         pipelineRecordService.deleteByPipelineId(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(Long projectId, Long id, PipelineVO pipelineVO) {
+        //
+        PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
+
+        savePipelieVersion(projectId, pipelineVO, pipelineDTO);
     }
 }
 

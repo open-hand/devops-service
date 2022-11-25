@@ -12,6 +12,8 @@ import io.choerodon.devops.infra.dto.PipelineDTO;
 public interface PipelineService {
     void baseCreate(PipelineDTO pipelineDTO);
 
+    void baseUpdate(PipelineDTO pipelineDTO);
+
     void baseDeleteById(Long id);
 
     PipelineDTO baseQueryById(Long id);
@@ -23,5 +25,8 @@ public interface PipelineService {
     void disable(Long projectId, Long id);
 
     void delete(Long projectId, Long id);
+
+    void update(Long projectId, Long id, PipelineVO pipelineVO);
+
 }
 
