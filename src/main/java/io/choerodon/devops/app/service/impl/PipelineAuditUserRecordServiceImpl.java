@@ -2,8 +2,12 @@ package io.choerodon.devops.app.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.PipelineAuditUserRecordService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineAuditUserRecordMapper;
 
 /**
@@ -17,5 +21,14 @@ public class PipelineAuditUserRecordServiceImpl implements PipelineAuditUserReco
     @Autowired
     private PipelineAuditUserRecordMapper pipelineAuditUserRecordMapper;
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO = new PipelineAuditUserRecordDTO();
+        pipelineAuditUserRecordDTO.setPipelineId(pipelineId);
+        pipelineAuditUserRecordMapper.delete(pipelineAuditUserRecordDTO);
+    }
 }
 

@@ -154,7 +154,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
         jobDTOS.forEach(jobDTO -> {
-            create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
+            create(devopsCiPipelineRecordDTO.getCiPipelineId(), ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
         });
 
     }
@@ -169,10 +169,11 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineRecordDTO.getCiPipelineId());
         Map<String, DevopsCiJobDTO> jobMap = devopsCiJobDTOS.stream().collect(Collectors.toMap(DevopsCiJobDTO::getName, v -> v));
 
-        create(ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
+        create(devopsCiPipelineRecordDTO.getCiPipelineId(), ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
     }
 
-    public void create(Long ciPipelineRecordId,
+    public void create(Long ciPipelineId,
+                       Long ciPipelineRecordId,
                        Long gitlabProjectId,
                        JobDTO jobDTO,
                        Long iamUserId,
@@ -205,7 +206,10 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryById(ciPipelineRecordId);
             AbstractJobHandler handler = jobOperator.getHandler(existDevopsCiJobDTO.getType());
             if (handler != null) {
-                handler.saveAdditionalRecordInfo(recordDTO, devopsCiPipelineRecordDTO.getGitlabPipelineId(), existDevopsCiJobDTO);
+                handler.saveAdditionalRecordInfo(ciPipelineId,
+                        recordDTO,
+                        devopsCiPipelineRecordDTO.getGitlabPipelineId(),
+                        existDevopsCiJobDTO);
             }
         }
 

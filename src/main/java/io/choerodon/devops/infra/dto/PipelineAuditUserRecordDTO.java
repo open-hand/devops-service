@@ -36,6 +36,10 @@ public class PipelineAuditUserRecordDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    @ApiModelProperty(value = "devops_pipeline.id", required = true)
+    @NotNull
+    private Long pipelineId;
+
     @ApiModelProperty(value = "devops_pipeline_audit_record.id", required = true)
     @NotNull
     private Long auditRecordId;
@@ -48,6 +52,13 @@ public class PipelineAuditUserRecordDTO extends AuditDomain {
     @NotBlank
     private String status;
 
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
 
     public Long getId() {
         return id;

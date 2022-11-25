@@ -22,5 +22,7 @@ public interface CiAuditRecordService {
     void sendJobAuditMessage(Long appServiceId, Long ciPipelineId, Long ciPipelineRecordId, Long gitlabPipelineId, String name, String stage);
 
     Boolean queryAuditRecordIsFinish(Long appServiceId, Long gitlabPipelineId, String jobName);
+
+    void deleteByCiPipelineId(Long pipelineId);
 }
 

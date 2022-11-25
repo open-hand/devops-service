@@ -43,17 +43,29 @@ public class PipelineAuditConfigServiceImpl implements PipelineAuditCfgService {
     public void deleteConfigByPipelineId(Long pipelineId) {
         Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
+        List<PipelineAuditCfgDTO> pipelineAuditCfgDTOS = listByPipelineId(pipelineId);
+        List<Long> configIds = pipelineAuditCfgDTOS.stream().map(PipelineAuditCfgDTO::getId).collect(Collectors.toList());
+
+        pipelineAuditUserService.batchDeleteByConfigIds(configIds);
+
         PipelineAuditCfgDTO pipelineAuditCfgDTO = new PipelineAuditCfgDTO();
         pipelineAuditCfgDTO.setPipelineId(pipelineId);
         pipelineAuditConfigMapper.delete(pipelineAuditCfgDTO);
-
-
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(PipelineAuditCfgDTO pipelineAuditCfgDTO) {
         MapperUtil.resultJudgedInsertSelective(pipelineAuditConfigMapper, pipelineAuditCfgDTO, DEVOPS_SAVE_AUDIT_CONFIG_FAILED);
+    }
+
+    @Override
+    public List<PipelineAuditCfgDTO> listByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        PipelineAuditCfgDTO pipelineAuditCfgDTO = new PipelineAuditCfgDTO();
+        pipelineAuditCfgDTO.setPipelineId(pipelineId);
+        return pipelineAuditConfigMapper.select(pipelineAuditCfgDTO);
     }
 
     @Override

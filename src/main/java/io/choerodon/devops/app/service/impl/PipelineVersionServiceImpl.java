@@ -3,8 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.PipelineVersionService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineVersionDTO;
 import io.choerodon.devops.infra.mapper.PipelineVersionMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -36,6 +38,16 @@ public class PipelineVersionServiceImpl implements PipelineVersionService {
         pipelineVersionDTO.setPipelineId(pipelineId);
         baseCreate(pipelineVersionDTO);
         return pipelineVersionDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        PipelineVersionDTO pipelineVersionDTO = new PipelineVersionDTO();
+        pipelineVersionDTO.setPipelineId(pipelineId);
+        pipelineVersionMapper.delete(pipelineVersionDTO);
     }
 }
 

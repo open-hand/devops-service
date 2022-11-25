@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
@@ -13,6 +14,7 @@ import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.PipelineStageService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineStageDTO;
 import io.choerodon.devops.infra.mapper.PipelineStageMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -59,6 +61,16 @@ public class PipelineStageServiceImpl implements PipelineStageService {
                 handler.saveJobInfo(projectId, pipelineId, versionId, pipelineStageDTO.getId(), job);
             }
         });
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
+        pipelineStageDTO.setPipelineId(pipelineId);
+        pipelineStageMapper.delete(pipelineStageDTO);
     }
 }
 

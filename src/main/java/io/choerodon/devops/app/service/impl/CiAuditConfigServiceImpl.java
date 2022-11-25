@@ -1,8 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +70,15 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
     }
 
     @Override
+    public List<CiAuditConfigDTO> listByCiPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiAuditConfigDTO ciAuditConfigDTO = new CiAuditConfigDTO();
+        ciAuditConfigDTO.setCiPipelineId(ciPipelineId);
+        return ciAuditConfigMapper.select(ciAuditConfigDTO);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDeleteByIds(List<Long> ids) {
         ciAuditConfigMapper.batchDeleteByIds(ids);
@@ -82,17 +89,15 @@ public class CiAuditConfigServiceImpl implements CiAuditConfigService {
     public void deleteConfigByPipelineId(Long ciPipelineId) {
         Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
+        List<CiAuditConfigDTO> ciAuditConfigDTOS = listByCiPipelineId(ciPipelineId);
+
+        List<Long> configIds = ciAuditConfigDTOS.stream().map(CiAuditConfigDTO::getId).collect(Collectors.toList());
+
+        ciAuditUserService.batchDeleteByConfigIds(configIds);
+
         CiAuditConfigDTO ciAuditConfigDTO = new CiAuditConfigDTO();
         ciAuditConfigDTO.setCiPipelineId(ciPipelineId);
         ciAuditConfigMapper.delete(ciAuditConfigDTO);
-    }
-
-    @Override
-    public List<CiAuditConfigDTO> listByStepIds(Set<Long> stepIds) {
-        if (CollectionUtils.isEmpty(stepIds)) {
-            return new ArrayList<>();
-        }
-        return ciAuditConfigMapper.listByStepIds(stepIds);
     }
 }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.cd.PipelineAuditCfgVO;
 import io.choerodon.devops.infra.dto.PipelineAuditCfgDTO;
 
@@ -15,6 +17,8 @@ public interface PipelineAuditCfgService {
     void deleteConfigByPipelineId(Long pipelineId);
 
     void baseCreate(PipelineAuditCfgDTO pipelineAuditCfgDTO);
+
+    List<PipelineAuditCfgDTO> listByPipelineId(Long pipelineId);
 
     PipelineAuditCfgVO queryConfigWithUsersById(Long id);
 

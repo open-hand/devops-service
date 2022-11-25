@@ -72,36 +72,37 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
+    public void saveAdditionalRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
         String jobName = ciJobWebHookVO.getName();
         CiAuditConfigVO ciAuditConfigVO = ciJobWebHookVO.getCiAuditConfigVO();
 
-        saveAuditRecordInfo(devopsCiJobRecordDTO, gitlabPipelineId, jobName, ciAuditConfigVO);
+        saveAuditRecordInfo(ciPipelineId, devopsCiJobRecordDTO, gitlabPipelineId, jobName, ciAuditConfigVO);
     }
 
-    private void saveAuditRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, String jobName, CiAuditConfigVO ciAuditConfigVO) {
+    private void saveAuditRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, String jobName, CiAuditConfigVO ciAuditConfigVO) {
         CiAuditRecordDTO ciAuditRecordDTO = ciAuditRecordService.queryByUniqueOption(devopsCiJobRecordDTO.getAppServiceId(),
                 gitlabPipelineId,
                 jobName);
         if (ciAuditRecordDTO == null) {
             // 初始化审核记录
-            ciAuditRecordDTO = new CiAuditRecordDTO(devopsCiJobRecordDTO.getAppServiceId(),
+            ciAuditRecordDTO = new CiAuditRecordDTO(ciPipelineId,
+                    devopsCiJobRecordDTO.getAppServiceId(),
                     devopsCiJobRecordDTO.getId(),
                     gitlabPipelineId,
                     jobName,
                     ciAuditConfigVO.getCountersigned());
             ciAuditRecordService.baseCreate(ciAuditRecordDTO);
             // 初始化用户审核记录
-            ciAuditUserRecordService.initAuditRecord(ciAuditRecordDTO.getId(), ciAuditConfigVO.getCdAuditUserIds());
+            ciAuditUserRecordService.initAuditRecord(ciPipelineId, ciAuditRecordDTO.getId(), ciAuditConfigVO.getCdAuditUserIds());
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
+    public void saveAdditionalRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
         String jobName = existDevopsCiJobDTO.getName();
         CiAuditConfigVO ciAuditConfigVO = ciAuditConfigService.queryConfigWithUsersById(existDevopsCiJobDTO.getConfigId());
-        saveAuditRecordInfo(devopsCiJobRecordDTO, gitlabPipelineId, jobName, ciAuditConfigVO);
+        saveAuditRecordInfo(ciPipelineId, devopsCiJobRecordDTO, gitlabPipelineId, jobName, ciAuditConfigVO);
     }
 
     @Override

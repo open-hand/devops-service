@@ -16,5 +16,7 @@ public interface PipelineAuditUserService {
     void batchCreateByConfigIdAndUserIds(Long id, List<Long> auditUserIds);
 
     List<PipelineAuditUserDTO> listByAuditConfigId(Long auditConfigId);
+
+    void batchDeleteByConfigIds(List<Long> configIds);
 }
 

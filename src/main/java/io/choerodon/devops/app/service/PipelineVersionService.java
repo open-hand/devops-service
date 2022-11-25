@@ -13,5 +13,7 @@ public interface PipelineVersionService {
     void baseCreate(PipelineVersionDTO pipelineVersionDTO);
 
     PipelineVersionDTO createByPipelineId(Long pipelineId);
+
+    void deleteByPipelineId(Long pipelineId);
 }
 

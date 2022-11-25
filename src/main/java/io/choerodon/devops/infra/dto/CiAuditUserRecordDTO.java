@@ -35,7 +35,8 @@ public class CiAuditUserRecordDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
-
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
     @ApiModelProperty(value = "devops_ci_audit_record.id", required = true)
     @NotNull
     private Long auditRecordId;
@@ -51,10 +52,19 @@ public class CiAuditUserRecordDTO extends AuditDomain {
     public CiAuditUserRecordDTO() {
     }
 
-    public CiAuditUserRecordDTO(@NotNull Long auditRecordId, @NotNull Long userId, @NotBlank String status) {
+    public CiAuditUserRecordDTO(Long ciPipelineId, @NotNull Long auditRecordId, @NotNull Long userId, @NotBlank String status) {
+        this.ciPipelineId = ciPipelineId;
         this.auditRecordId = auditRecordId;
         this.userId = userId;
         this.status = status;
+    }
+
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
     }
 
     public Long getId() {

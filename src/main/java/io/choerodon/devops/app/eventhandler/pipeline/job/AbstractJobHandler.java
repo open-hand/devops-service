@@ -111,7 +111,7 @@ public abstract class AbstractJobHandler {
      * @param ciJobWebHookVO
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
+    public void saveAdditionalRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
 
     }
 
@@ -123,7 +123,7 @@ public abstract class AbstractJobHandler {
      * @param existDevopsCiJobDTO
      */
     @Transactional(rollbackFor = Exception.class)
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
+    public void saveAdditionalRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
 
     }
 

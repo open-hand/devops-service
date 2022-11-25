@@ -50,6 +50,28 @@ public class PipelineDTO extends AuditDomain {
     @NotNull
     private Long effectVersionId;
 
+    @ApiModelProperty(value = "令牌", required = false)
+    private String token;
+
+    @ApiModelProperty(value = "是否启用", required = false)
+    private Boolean enable;
+
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getId() {
         return id;

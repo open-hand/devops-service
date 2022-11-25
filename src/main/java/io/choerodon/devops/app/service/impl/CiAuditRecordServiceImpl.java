@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.CiAuditResultVO;
@@ -14,6 +16,7 @@ import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.CiAuditRecordService;
 import io.choerodon.devops.app.service.CiAuditUserRecordService;
 import io.choerodon.devops.app.service.SendNotificationService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.CiAuditRecordDTO;
 import io.choerodon.devops.infra.dto.CiAuditUserRecordDTO;
@@ -134,6 +137,16 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
         } else {
             return auditUserRecordDTOList.stream().anyMatch(v -> !AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByCiPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiAuditRecordDTO ciAuditRecordDTO = new CiAuditRecordDTO();
+        ciAuditRecordDTO.setCiPipelineId(pipelineId);
+        ciAuditRecordMapper.delete(ciAuditRecordDTO);
     }
 }
 

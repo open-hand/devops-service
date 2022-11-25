@@ -14,5 +14,7 @@ public interface PipelineStageService {
     void baseCreate(PipelineStageDTO pipelineStageDTO);
 
     void saveStage(Long projectId, Long pipelineId, Long versionId, PipelineStageVO stage);
+
+    void deleteByPipelineId(Long pipelineId);
 }
 

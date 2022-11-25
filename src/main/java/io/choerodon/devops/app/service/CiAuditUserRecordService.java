@@ -12,11 +12,12 @@ import io.choerodon.devops.infra.dto.CiAuditUserRecordDTO;
  */
 public interface CiAuditUserRecordService {
 
-    void initAuditRecord(Long auditRecordId, List<Long> cdAuditUserIds);
+    void initAuditRecord(Long ciPipelineId, Long auditRecordId, List<Long> cdAuditUserIds);
 
     List<CiAuditUserRecordDTO> listByAuditRecordId(Long auditRecordId);
 
     void baseUpdate(CiAuditUserRecordDTO ciAuditUserRecordDTO);
 
+    void deleteByCiPipelineId(Long pipelineId);
 }
 

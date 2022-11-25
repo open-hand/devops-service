@@ -40,6 +40,9 @@ public class CiAuditRecordDTO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    @ApiModelProperty(value = "关联devops流水线id")
+    private Long ciPipelineId;
+
     @ApiModelProperty(value = "devops_app_service.id", required = true)
     @NotNull
     @Encrypt
@@ -70,12 +73,21 @@ public class CiAuditRecordDTO extends AuditDomain {
         this.jobName = jobName;
     }
 
-    public CiAuditRecordDTO(@NotNull Long appServiceId, @NotNull Long jobRecordId, @NotNull Long gitlabPipelineId, @NotBlank String jobName, Boolean countersigned) {
+    public CiAuditRecordDTO(Long ciPipelineId, @NotNull Long appServiceId, @NotNull Long jobRecordId, @NotNull Long gitlabPipelineId, @NotBlank String jobName, Boolean countersigned) {
+        this.ciPipelineId = ciPipelineId;
         this.appServiceId = appServiceId;
         this.jobRecordId = jobRecordId;
         this.gitlabPipelineId = gitlabPipelineId;
         this.jobName = jobName;
         this.countersigned = countersigned;
+    }
+
+    public Long getCiPipelineId() {
+        return ciPipelineId;
+    }
+
+    public void setCiPipelineId(Long ciPipelineId) {
+        this.ciPipelineId = ciPipelineId;
     }
 
     public Long getId() {

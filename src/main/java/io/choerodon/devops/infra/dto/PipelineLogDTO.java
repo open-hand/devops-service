@@ -4,6 +4,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
@@ -32,11 +33,21 @@ public class PipelineLogDTO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
+    @ApiModelProperty(value = "devops_pipeline.id", required = true)
+    @NotNull
+    private Long pipelineId;
 
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     @NotBlank
     private String log;
 
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
 
     public Long getId() {
         return id;

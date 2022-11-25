@@ -8,6 +8,6 @@ package io.choerodon.devops.app.service;
  */
 public interface PipelineStageRecordService {
 
-
+    void deleteByPipelineId(Long pipelineId);
 }
 

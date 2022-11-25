@@ -1,10 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
+import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
+import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.PipelineJobService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
 import io.choerodon.devops.infra.mapper.PipelineJobMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -22,11 +28,42 @@ public class PipelineJobServiceImpl implements PipelineJobService {
 
     @Autowired
     private PipelineJobMapper pipelineJobMapper;
+    @Autowired
+    private CdJobOperator cdJobOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(PipelineJobDTO pipelineJobDTO) {
         MapperUtil.resultJudgedInsertSelective(pipelineJobMapper, pipelineJobDTO, DEVOPS_SAVE_JOB_FAILED);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        List<PipelineJobDTO> pipelineJobDTOS = listByPipelineId(pipelineId);
+
+        // 删除关联的任务配置
+        pipelineJobDTOS.forEach(job -> {
+            AbstractCdJobHandler handler = cdJobOperator.getHandler(job.getType());
+            if (handler != null) {
+                handler.deleteConfigByPipelineId(pipelineId);
+            }
+        });
+
+        PipelineJobDTO pipelineJobDTO = new PipelineJobDTO();
+        pipelineJobDTO.setPipelineId(pipelineId);
+
+        pipelineJobMapper.delete(pipelineJobDTO);
+    }
+
+    @Override
+    public List<PipelineJobDTO> listByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+        PipelineJobDTO pipelineJobDTO = new PipelineJobDTO();
+        pipelineJobDTO.setPipelineId(pipelineId);
+        return pipelineJobMapper.select(pipelineJobDTO);
     }
 }
 

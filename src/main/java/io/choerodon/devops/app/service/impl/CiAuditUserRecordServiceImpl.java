@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.service.CiAuditUserRecordService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiAuditUserRecordDTO;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.mapper.CiAuditUserRecordMapper;
@@ -30,11 +32,11 @@ public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void initAuditRecord(Long auditRecordId, List<Long> cdAuditUserIds) {
+    public void initAuditRecord(Long ciPipelineId, Long auditRecordId, List<Long> cdAuditUserIds) {
         if (!CollectionUtils.isEmpty(cdAuditUserIds)) {
             List<CiAuditUserRecordDTO> auditUserRecordDTOS = cdAuditUserIds
                     .stream()
-                    .map(v -> new CiAuditUserRecordDTO(auditRecordId, v, AuditStatusEnum.NOT_AUDIT.value())).collect(Collectors.toList());
+                    .map(v -> new CiAuditUserRecordDTO(ciPipelineId, auditRecordId, v, AuditStatusEnum.NOT_AUDIT.value())).collect(Collectors.toList());
             ciAuditUserRecordMapper.insertList(auditUserRecordDTOS);
         }
 
@@ -52,6 +54,16 @@ public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(CiAuditUserRecordDTO ciAuditUserRecordDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(ciAuditUserRecordMapper, ciAuditUserRecordDTO, DEVOPS_AUDIT_USER_RECORD_UPDATE);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByCiPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        CiAuditUserRecordDTO ciAuditUserRecordDTO = new CiAuditUserRecordDTO();
+        ciAuditUserRecordDTO.setCiPipelineId(pipelineId);
+        ciAuditUserRecordMapper.delete(ciAuditUserRecordDTO);
     }
 }
 

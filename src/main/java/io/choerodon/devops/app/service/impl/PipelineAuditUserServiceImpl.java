@@ -46,5 +46,11 @@ public class PipelineAuditUserServiceImpl implements PipelineAuditUserService {
         pipelineAuditUserDTO.setAuditConfigId(auditConfigId);
         return pipelineAuditUserMapper.select(pipelineAuditUserDTO);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteByConfigIds(List<Long> configIds) {
+        pipelineAuditUserMapper.batchDeleteByConfigIds(configIds);
+    }
 }
 

@@ -181,6 +181,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsHostService devopsHostService;
     @Autowired
     private JobOperator jobOperator;
+    @Autowired
+    @Lazy
+    private CiAuditRecordService ciAuditRecordService;
+    @Autowired
+    @Lazy
+    private CiAuditUserRecordService ciAuditUserRecordService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -991,16 +997,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         // 删除stage
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
         devopsCiStageService.deleteByPipelineId(pipelineId);
-        devopsCdStageService.deleteByPipelineId(pipelineId);
+//        devopsCdStageService.deleteByPipelineId(pipelineId);
 
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
-        devopsCdJobService.deleteByPipelineId(pipelineId);
+//        devopsCdJobService.deleteByPipelineId(pipelineId);
 
         //删除任务配置
 
         // 删除 ci job记录
         devopsCiJobRecordService.deleteByAppServiceId(appServiceDTO.getId());
+        // 删除审核记录
+        ciAuditUserRecordService.deleteByCiPipelineId(pipelineId);
+        ciAuditRecordService.deleteByCiPipelineId(pipelineId);
 
         // 删除流水线相关产物
         devopsCiPipelineChartService.deleteByAppServiceId(appServiceDTO.getId());

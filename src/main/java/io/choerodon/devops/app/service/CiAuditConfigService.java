@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Set;
 
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.infra.dto.CiAuditConfigDTO;
@@ -20,7 +19,7 @@ public interface CiAuditConfigService {
 
     CiAuditConfigDTO baseCreate(CiAuditConfigDTO ciAuditConfigDTO);
 
-    List<CiAuditConfigDTO> listByStepIds(Set<Long> stepIds);
+    List<CiAuditConfigDTO> listByCiPipelineId(Long ciPipelineId);
 
     void batchDeleteByIds(List<Long> ids);
 

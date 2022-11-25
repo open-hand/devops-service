@@ -42,9 +42,12 @@ public interface DevopsCiJobRecordService {
     /**
      * 保存一条job记录
      */
-    void create(Long ciPipelineRecordId, Long gitlabProjectId, JobDTO jobDTO, Long iamUserId, Long appServiceId);
-
     void create(Long ciPipelineRecordId,
+                Long gitlabProjectId,
+                JobDTO jobDTO, Long iamUserId, Long appServiceId);
+
+    void create(Long ciPipelineId,
+                Long ciPipelineRecordId,
                 Long gitlabProjectId,
                 JobDTO jobDTO,
                 Long iamUserId,

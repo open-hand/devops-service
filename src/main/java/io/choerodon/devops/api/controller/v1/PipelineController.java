@@ -51,5 +51,29 @@ public class PipelineController extends BaseController {
         pipelineService.enable(projectId, id);
         return ResponseEntity.noContent().build();
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停用自动化部署流水线")
+    @PutMapping("/{id}/disable")
+    public ResponseEntity<Void> disable(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        pipelineService.disable(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "删除自动化部署流水线")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        pipelineService.delete(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
 }
 

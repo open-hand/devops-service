@@ -23,10 +23,19 @@ public class PipelineVO {
     @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", required = true)
     @Encrypt
     private Long effectVersionId;
-
+    @ApiModelProperty(value = "令牌", required = false)
+    private String token;
     @Valid
     @ApiModelProperty(value = "流水线阶段信息", required = true)
     private List<PipelineStageVO> stageList;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public List<PipelineStageVO> getStageList() {
         return stageList;

@@ -15,6 +15,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
             column(name: 'effect_version_id', type: 'BIGINT UNSIGNED', remarks: '当前生效的版本，devops_pipeline_version.id') {
                 constraints(nullable: false)
             }
+            column(name: 'token', type: 'VARCHAR(256)', remarks: '令牌') {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

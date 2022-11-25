@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
 
 /**
@@ -11,5 +13,9 @@ import io.choerodon.devops.infra.dto.PipelineJobDTO;
 public interface PipelineJobService {
 
     void baseCreate(PipelineJobDTO pipelineJobDTO);
+
+    void deleteByPipelineId(Long pipelineId);
+
+    List<PipelineJobDTO> listByPipelineId(Long pipelineId);
 }
 

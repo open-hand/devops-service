@@ -9,5 +9,6 @@ package io.choerodon.devops.app.service;
 public interface PipelineLogService {
 
 
+    void deleteByPipelineId(Long pipelineId);
 }
 
