@@ -15,5 +15,8 @@ public interface PipelineRecordService {
 
     void baseCreate(PipelineRecordDTO pipelineRecordDTO);
 
+    PipelineRecordDTO baseQueryById(Long pipelineRecordId);
+
+    void baseUpdate(PipelineRecordDTO pipelineRecordDTO);
 }
 

@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineRecordServiceImpl implements PipelineRecordService {
 
     private static final String DEVOPS_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
+    private static final String DEVOPS_UPDATE_PIPELINE_RECORD_FAILED = "devops.update.pipeline.record.failed";
 
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
@@ -41,6 +42,19 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
                 pipelineRecordDTO,
                 DEVOPS_SAVE_PIPELINE_RECORD_FAILED);
+    }
+
+    @Override
+    public PipelineRecordDTO baseQueryById(Long pipelineRecordId) {
+        return pipelineRecordMapper.selectByPrimaryKey(pipelineRecordId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineRecordDTO pipelineRecordDTO) {
+        MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
+                pipelineRecordDTO,
+                DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
     }
 }
 

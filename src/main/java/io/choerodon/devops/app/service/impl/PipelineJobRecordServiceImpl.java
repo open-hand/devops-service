@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
+    private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
 
     @Autowired
     private PipelineJobRecordMapper pipelineJobRecordMapper;
@@ -59,6 +60,13 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(PipelineJobRecordDTO pipelineJobRecordDTO) {
         MapperUtil.resultJudgedInsertSelective(pipelineJobRecordMapper, pipelineJobRecordDTO, DEVOPS_SAVE_JOB_RECORD_FAILED);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineJobRecordDTO pipelineJobRecordDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineJobRecordMapper, pipelineJobRecordDTO, DEVOPS_UPDATE_JOB_RECORD_FAILED);
+
     }
 }
 

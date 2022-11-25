@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 
 /**
@@ -13,5 +15,9 @@ public interface PipelineStageRecordService {
     void deleteByPipelineId(Long pipelineId);
 
     void baseCreate(PipelineStageRecordDTO pipelineStageRecordDTO);
+
+    List<PipelineStageRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
+
+    void baseUpdate(PipelineStageRecordDTO firstStageRecordDTO);
 }
 

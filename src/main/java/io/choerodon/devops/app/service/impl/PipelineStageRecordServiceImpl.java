@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineStageRecordServiceImpl implements PipelineStageRecordService {
 
     private static final String DEVOPS_SAVE_STAGE_RECORD_FAILED = "devops.save.stage.record.failed";
+    private static final String DEVOPS_UPDATE_STAGE_RECORD_FAILED = "devops.update.stage.record.failed";
 
     @Autowired
     private PipelineStageRecordMapper pipelineStageRecordMapper;
@@ -39,6 +42,22 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(PipelineStageRecordDTO pipelineStageRecordDTO) {
         MapperUtil.resultJudgedInsertSelective(pipelineStageRecordMapper, pipelineStageRecordDTO, DEVOPS_SAVE_STAGE_RECORD_FAILED);
+
+    }
+
+    @Override
+    public List<PipelineStageRecordDTO> listByPipelineRecordId(Long pipelineRecordId) {
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
+
+        PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO();
+        pipelineStageRecordDTO.setPipelineRecordId(pipelineRecordId);
+        return pipelineStageRecordMapper.select(pipelineStageRecordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
+        MapperUtil.resultJudgedInsertSelective(pipelineStageRecordMapper, pipelineStageRecordDTO, DEVOPS_UPDATE_STAGE_RECORD_FAILED);
 
     }
 }

@@ -54,17 +54,30 @@ public class PipelineJobRecordDTO extends AuditDomain {
     @NotBlank
     private String status;
 
+    @ApiModelProperty(value = "任务类型", required = true)
+    @NotBlank
+    private String type;
+
     @ApiModelProperty(value = "关联日志记录Id,devops_pipeline_log.id")
     private Long logId;
 
     public PipelineJobRecordDTO() {
     }
 
-    public PipelineJobRecordDTO(Long pipelineId, Long jobId, Long stageRecordId, String status) {
+    public PipelineJobRecordDTO(Long pipelineId, Long jobId, Long stageRecordId, String status, String type) {
         this.pipelineId = pipelineId;
         this.jobId = jobId;
         this.stageRecordId = stageRecordId;
         this.status = status;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Long getId() {

@@ -18,5 +18,7 @@ public interface PipelineJobRecordService {
     void deleteByPipelineId(Long pipelineId);
 
     void baseCreate(PipelineJobRecordDTO pipelineJobRecordDTO);
+
+    void baseUpdate(PipelineJobRecordDTO pipelineJobRecordDTO);
 }
 
