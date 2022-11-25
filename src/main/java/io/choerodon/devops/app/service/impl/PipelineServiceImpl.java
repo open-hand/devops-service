@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +13,7 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
@@ -217,6 +220,33 @@ public class PipelineServiceImpl implements PipelineService {
         });
 
         return pipelineRecordDTO;
+    }
+
+    @Override
+    public PipelineVO query(Long projectId, Long id) {
+        PipelineDTO pipelineDTO = baseQueryById(id);
+        PipelineVO pipelineVO = ConvertUtils.convertObject(pipelineDTO, PipelineVO.class);
+        Long versionId = pipelineDTO.getEffectVersionId();
+
+        // 查询阶段信息
+        List<PipelineStageDTO> pipelineStageDTOS = pipelineStageService.listByVersionId(versionId);
+        List<PipelineStageVO> pipelineStageVOS = ConvertUtils.convertList(pipelineStageDTOS, PipelineStageVO.class);
+
+        List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByVersionId(versionId);
+        List<PipelineJobVO> pipelineJobVOS = ConvertUtils.convertList(pipelineJobDTOS, PipelineJobVO.class);
+        Map<Long, List<PipelineJobVO>> jobMap = pipelineJobVOS.stream().collect(Collectors.groupingBy(PipelineJobVO::getStageId));
+
+        pipelineStageVOS.forEach(stage -> {
+            List<PipelineJobVO> jobVOList = jobMap.get(stage.getId());
+            jobVOList.forEach(job -> {
+                AbstractCdJobHandler handler = cdJobOperator.getHandlerOrThrowE(job.getType());
+                handler.fillJobConfigInfo(job);
+            });
+            stage.setJobList(jobVOList);
+        });
+        List<PipelineStageVO> sortedStageList = pipelineStageVOS.stream().sorted(Comparator.comparing(PipelineStageVO::getSequence)).collect(Collectors.toList());
+        pipelineVO.setStageList(sortedStageList);
+        return pipelineVO;
     }
 }
 

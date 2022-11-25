@@ -18,6 +18,8 @@ public interface PipelineJobService {
 
     List<PipelineJobDTO> listByPipelineId(Long pipelineId);
 
+    List<PipelineJobDTO> listByVersionId(Long versionId);
+
     List<PipelineJobDTO> listByStageId(Long stageId);
 }
 

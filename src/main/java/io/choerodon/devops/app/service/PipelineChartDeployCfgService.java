@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.api.vo.cd.PipelineChartDeployCfgVO;
 import io.choerodon.devops.infra.dto.PipelineChartDeployCfgDTO;
 
 /**
@@ -14,5 +15,9 @@ public interface PipelineChartDeployCfgService {
     void baseCreate(PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO);
 
     void deleteConfigByPipelineId(Long pipelineId);
+
+    PipelineChartDeployCfgDTO queryByConfigId(Long configId);
+
+    PipelineChartDeployCfgVO queryVoByConfigId(Long configId);
 }
 

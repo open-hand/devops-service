@@ -46,6 +46,11 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     }
 
     @Override
+    public void fillJobConfigInfo(PipelineJobVO pipelineJobVO) {
+        pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgService.queryVoByConfigId(pipelineJobVO.getConfigId()));
+    }
+
+    @Override
     public CdJobTypeEnum getType() {
         return CdJobTypeEnum.CHART_DEPLOY;
     }

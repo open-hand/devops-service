@@ -56,6 +56,17 @@ public class PipelineController extends BaseController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询自动化部署流水线详情")
+    @GetMapping("/{id}")
+    public ResponseEntity<PipelineVO> query(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(pipelineService.query(projectId, id));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "启用自动化部署流水线")
     @PutMapping("/{id}/enable")
     public ResponseEntity<Void> enable(

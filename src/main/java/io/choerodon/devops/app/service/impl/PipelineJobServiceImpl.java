@@ -67,6 +67,14 @@ public class PipelineJobServiceImpl implements PipelineJobService {
     }
 
     @Override
+    public List<PipelineJobDTO> listByVersionId(Long versionId) {
+        Assert.notNull(versionId, PipelineCheckConstant.DEVOPS_PIPELINE_VERSION_ID_IS_NULL);
+        PipelineJobDTO pipelineJobDTO = new PipelineJobDTO();
+        pipelineJobDTO.setVersionId(versionId);
+        return pipelineJobMapper.select(pipelineJobDTO);
+    }
+
+    @Override
     public List<PipelineJobDTO> listByStageId(Long stageId) {
         Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
         PipelineJobDTO pipelineJobDTO = new PipelineJobDTO();

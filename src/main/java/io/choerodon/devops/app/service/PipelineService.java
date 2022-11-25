@@ -36,5 +36,7 @@ public interface PipelineService {
                               Long id,
                               PipelineTriggerTypeEnum triggerType,
                               Map<String, Object> params);
+
+    PipelineVO query(Long projectId, Long id);
 }
 
