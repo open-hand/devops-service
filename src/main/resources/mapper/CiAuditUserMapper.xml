@@ -4,8 +4,8 @@
 
     <delete id="batchDeleteByConfigIds">
         delete
-        from devops_ci_audit_user dcau
-        where dcau.audit_config_id in
+        from devops_ci_audit_user
+        where audit_config_id in
         <foreach collection="configIds" item="configId" open="(" separator="," close=")">
             #{configId}
         </foreach>
