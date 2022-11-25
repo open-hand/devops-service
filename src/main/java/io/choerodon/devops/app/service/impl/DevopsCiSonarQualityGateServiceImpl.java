@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Service;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
 import io.choerodon.devops.api.vo.sonar.QualityGate;
-import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
 import io.choerodon.devops.api.vo.sonar.QualityGateResult;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateConditionService;
 import io.choerodon.devops.app.service.DevopsCiSonarQualityGateService;
@@ -33,19 +31,27 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
 
     @Override
     public void deleteAll(String sonarProjectKey) {
+        // 删除sonarqube的数据
         QualityGate qualityGate = sonarClientOperator.gateShow(sonarProjectKey);
         if (qualityGate != null) {
             sonarClientOperator.deleteQualityGate(sonarProjectKey);
+        }
 
-            List<String> conditionSonarIdList = qualityGate.getConditions().stream().map(QualityGateCondition::getId).collect(Collectors.toList());
-            devopsCiSonarQualityGateConditionService.deleteBySonarIds(conditionSonarIdList);
-
-            deleteBySonarId(qualityGate.getId());
+        // 删除数据库的数据
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = queryByName(sonarProjectKey);
+        if (devopsCiSonarQualityGateVO != null) {
+            devopsCiSonarQualityGateConditionService.deleteByGateId(devopsCiSonarQualityGateVO.getId());
+            deleteByName(sonarProjectKey);
         }
     }
 
-    public void deleteBySonarId(String sonarId) {
-        devopsCiSonarQualityGateMapper.deleteBySonarId(sonarId);
+    @Override
+    public DevopsCiSonarQualityGateVO queryByName(String name) {
+        return devopsCiSonarQualityGateMapper.queryByName(name);
+    }
+
+    public void deleteByName(String name) {
+        devopsCiSonarQualityGateMapper.deleteByName(name);
     }
 
     @Override
@@ -101,5 +107,10 @@ public class DevopsCiSonarQualityGateServiceImpl implements DevopsCiSonarQuality
         });
         devopsCiSonarQualityGateVO.setSonarQualityGateConditionVOList(devopsCiSonarQualityGateConditionVOS);
         return devopsCiSonarQualityGateVO;
+    }
+
+    @Override
+    public Boolean qualityGateExistsByName(String name) {
+        return devopsCiSonarQualityGateMapper.qualityGateExistsByName(name);
     }
 }
