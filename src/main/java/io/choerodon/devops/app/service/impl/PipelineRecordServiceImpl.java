@@ -9,6 +9,7 @@ import io.choerodon.devops.app.service.PipelineRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 流水线执行记录(PipelineRecord)应用服务
@@ -18,6 +19,9 @@ import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
  */
 @Service
 public class PipelineRecordServiceImpl implements PipelineRecordService {
+
+    private static final String DEVOPS_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
+
     @Autowired
     private PipelineRecordMapper pipelineRecordMapper;
 
@@ -29,6 +33,14 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO();
         pipelineRecordDTO.setPipelineId(pipelineId);
         pipelineRecordMapper.delete(pipelineRecordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(PipelineRecordDTO pipelineRecordDTO) {
+        MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
+                pipelineRecordDTO,
+                DEVOPS_SAVE_PIPELINE_RECORD_FAILED);
     }
 }
 

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +12,13 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
+import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
+import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
-import io.choerodon.devops.infra.dto.PipelineDTO;
-import io.choerodon.devops.infra.dto.PipelineVersionDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
+import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -32,6 +36,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String DEVOPS_SAVE_PIPELINE_FAILED = "devops.save.pipeline.failed";
     private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
     private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
+    private static final String DEVOPS_PIPELINE_STATUS_IS_DISABLE = "devops.pipeline.status.is.disable";
 
     @Autowired
     private PipelineMapper pipelineMapper;
@@ -47,6 +52,8 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineStageRecordService pipelineStageRecordService;
     @Autowired
     private PipelineJobRecordService pipelineJobRecordService;
+    @Autowired
+    private CdJobOperator cdJobOperator;
 
 
     @Override
@@ -160,6 +167,56 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
 
         savePipelieVersion(projectId, pipelineVO, pipelineDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineRecordDTO execute(Long projectId,
+                                     Long id,
+                                     PipelineTriggerTypeEnum triggerType,
+                                     Map<String, Object> params) {
+        PipelineDTO pipelineDTO = baseQueryById(id);
+        if (Boolean.FALSE.equals(pipelineDTO.getEnable())) {
+            throw new CommonException(DEVOPS_PIPELINE_STATUS_IS_DISABLE);
+        }
+        Long effectVersionId = pipelineDTO.getEffectVersionId();
+
+        // 初始化流水线记录
+        PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO();
+        pipelineRecordDTO.setTriggerType(triggerType.value());
+        pipelineRecordDTO.setStatus(PipelineStatusEnum.CREATED.value());
+        pipelineRecordDTO.setPipelineId(id);
+        pipelineRecordService.baseCreate(pipelineRecordDTO);
+
+        Long pipelineRecordId = pipelineRecordDTO.getId();
+
+        //初始化阶段
+        List<PipelineStageDTO> pipelineStageDTOS = pipelineStageService.listByVersionId(effectVersionId);
+        pipelineStageDTOS.forEach(stage -> {
+            Long stageId = stage.getId();
+            PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO(id,
+                    stageId,
+                    pipelineRecordId,
+                    stage.getSequence(),
+                    PipelineStatusEnum.CREATED.value());
+            pipelineStageRecordService.baseCreate(pipelineStageRecordDTO);
+            Long stageRecordId = pipelineStageRecordDTO.getId();
+            // 初始化任务记录
+            List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByStageId(stageId);
+            pipelineJobDTOS.forEach(job -> {
+                Long jobId = job.getId();
+                PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(id,
+                        jobId,
+                        stageRecordId,
+                        PipelineStatusEnum.CREATED.value());
+                pipelineJobRecordService.baseCreate(pipelineJobRecordDTO);
+
+                AbstractCdJobHandler handler = cdJobOperator.getHandlerOrThrowE(job.getType());
+                handler.initAdditionalRecordInfo(id, job, pipelineJobRecordDTO);
+            });
+        });
+
+        return pipelineRecordDTO;
     }
 }
 

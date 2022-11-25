@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
+
 /**
  * 人工卡点用户审核记录表(PipelineAuditUserRecord)应用服务
  *
@@ -9,5 +11,7 @@ package io.choerodon.devops.app.service;
 public interface PipelineAuditUserRecordService {
 
     void deleteByPipelineId(Long pipelineId);
+
+    void baseCreate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO);
 }
 

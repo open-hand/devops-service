@@ -72,5 +72,14 @@ public class PipelineStageServiceImpl implements PipelineStageService {
         pipelineStageDTO.setPipelineId(pipelineId);
         pipelineStageMapper.delete(pipelineStageDTO);
     }
+
+    @Override
+    public List<PipelineStageDTO> listByVersionId(Long versionId) {
+        Assert.notNull(versionId, PipelineCheckConstant.DEVOPS_PIPELINE_VERSION_ID_IS_NULL);
+
+        PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
+        pipelineStageDTO.setVersionId(versionId);
+        return pipelineStageMapper.select(pipelineStageDTO);
+    }
 }
 

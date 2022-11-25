@@ -21,6 +21,7 @@ public class PipelineCheckConstant {
 
     // pipeline
     public static final String DEVOPS_PIPELINE_ID_IS_NULL = "devops.pipeline.id.is.null";
+    public static final String DEVOPS_PIPELINE_VERSION_ID_IS_NULL = "devops.pipeline.version.id.is.null";
     public static final String DEVOPS_PIPELINE_ID_INVALID = "devops.pipeline.id.invalid";
     public static final String DEVOPS_GITLAB_PIPELINE_ID_IS_NULL = "devops.gitlab.pipeline.id.is.null";
     public static final String DEVOPS_PIPELINE_RECORD_ID_IS_NULL = "devops.pipeline.record.id.is.null";

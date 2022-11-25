@@ -6,9 +6,8 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.PipelineJobService;
-import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
-import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
+import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -78,18 +77,6 @@ public abstract class AbstractCdJobHandler {
         // do nothing
     }
 
-    /**
-     * 初始化流水线记录时需要额外保存的信息
-     *
-     * @param devopsCiJobRecordDTO
-     * @param gitlabPipelineId
-     * @param existDevopsCiJobDTO
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public void saveAdditionalRecordInfo(DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, DevopsCiJobDTO existDevopsCiJobDTO) {
-
-    }
-
     @Transactional(rollbackFor = Exception.class)
     public void deleteConfigByPipelineId(Long pipelineId) {
 
@@ -101,6 +88,17 @@ public abstract class AbstractCdJobHandler {
      * @param devopsCiJobVO
      */
     public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
+
+    /**
+     * 初始化流水线记录时，给不同任务类型初始化额外的记录信息
+     *
+     * @param pipelineId
+     * @param job
+     * @param pipelineJobRecordDTO
+     */
+    public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
 
     }
 }

@@ -16,5 +16,7 @@ public interface PipelineJobRecordService {
     List<PipelineJobRecordDTO> listPendingJobs(int number);
 
     void deleteByPipelineId(Long pipelineId);
+
+    void baseCreate(PipelineJobRecordDTO pipelineJobRecordDTO);
 }
 

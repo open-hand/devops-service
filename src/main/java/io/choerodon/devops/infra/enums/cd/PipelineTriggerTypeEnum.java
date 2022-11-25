@@ -7,14 +7,13 @@ package io.choerodon.devops.infra.enums.cd;
  * @author wanghao
  * @since 2020/7/3 15:11
  */
-public enum AuditStatusEnum {
-    NOT_AUDIT("not_audit"),
-    AUDITING("auditing"),
-    REFUSED("refused"),
-    PASSED("passed");
+public enum PipelineTriggerTypeEnum {
+    MANUAL("manual"),
+    SCHEDULE("schedule"),
+    API("api");
     private String value;
 
-    AuditStatusEnum(String value) {
+    PipelineTriggerTypeEnum(String value) {
         this.value = value;
     }
 

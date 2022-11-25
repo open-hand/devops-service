@@ -52,6 +52,16 @@ public class PipelineAuditUserRecordDTO extends AuditDomain {
     @NotBlank
     private String status;
 
+    public PipelineAuditUserRecordDTO() {
+    }
+
+    public PipelineAuditUserRecordDTO(Long pipelineId, Long auditRecordId, Long userId, String status) {
+        this.pipelineId = pipelineId;
+        this.auditRecordId = auditRecordId;
+        this.userId = userId;
+        this.status = status;
+    }
+
     public Long getPipelineId() {
         return pipelineId;
     }

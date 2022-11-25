@@ -9,6 +9,7 @@ import io.choerodon.devops.app.service.PipelineAuditUserRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 import io.choerodon.devops.infra.mapper.PipelineAuditUserRecordMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 人工卡点用户审核记录表(PipelineAuditUserRecord)应用服务
@@ -18,6 +19,9 @@ import io.choerodon.devops.infra.mapper.PipelineAuditUserRecordMapper;
  */
 @Service
 public class PipelineAuditUserRecordServiceImpl implements PipelineAuditUserRecordService {
+
+    private static final String DEVOPS_SAVE_AUDIT_USER_RECORD_FAILED = "devops.save.audit.user.record.failed";
+
     @Autowired
     private PipelineAuditUserRecordMapper pipelineAuditUserRecordMapper;
 
@@ -29,6 +33,12 @@ public class PipelineAuditUserRecordServiceImpl implements PipelineAuditUserReco
         PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO = new PipelineAuditUserRecordDTO();
         pipelineAuditUserRecordDTO.setPipelineId(pipelineId);
         pipelineAuditUserRecordMapper.delete(pipelineAuditUserRecordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO) {
+        MapperUtil.resultJudgedInsertSelective(pipelineAuditUserRecordMapper, pipelineAuditUserRecordDTO, DEVOPS_SAVE_AUDIT_USER_RECORD_FAILED);
     }
 }
 

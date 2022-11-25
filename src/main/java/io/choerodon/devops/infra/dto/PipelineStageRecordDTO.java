@@ -45,6 +45,9 @@ public class PipelineStageRecordDTO extends AuditDomain {
     @NotNull
     private Long stageId;
 
+    @ApiModelProperty(value = "阶段顺序", required = true)
+    private Integer sequence;
+
     @ApiModelProperty(value = "关联流水线记录Id,devops_pipeline_record.id", required = true)
     @NotNull
     private Long pipelineRecordId;
@@ -53,6 +56,24 @@ public class PipelineStageRecordDTO extends AuditDomain {
     @NotBlank
     private String status;
 
+    public PipelineStageRecordDTO() {
+    }
+
+    public PipelineStageRecordDTO(Long pipelineId, Long stageId, Long pipelineRecordId, Integer sequence, String status) {
+        this.pipelineId = pipelineId;
+        this.stageId = stageId;
+        this.sequence = sequence;
+        this.pipelineRecordId = pipelineRecordId;
+        this.status = status;
+    }
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 
     public Long getId() {
         return id;

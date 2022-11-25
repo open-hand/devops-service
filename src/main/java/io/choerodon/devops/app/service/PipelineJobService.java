@@ -17,5 +17,7 @@ public interface PipelineJobService {
     void deleteByPipelineId(Long pipelineId);
 
     List<PipelineJobDTO> listByPipelineId(Long pipelineId);
+
+    List<PipelineJobDTO> listByStageId(Long stageId);
 }
 

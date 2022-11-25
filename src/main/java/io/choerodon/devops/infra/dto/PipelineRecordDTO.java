@@ -42,7 +42,36 @@ public class PipelineRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
     private String status;
+    @ApiModelProperty(value = "触发方式", required = true)
+    private String triggerType;
+    @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
+    private Long appServiceId;
+    @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
+    private Long appServiceVersion;
 
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
+    }
+
+    public Long getAppServiceVersion() {
+        return appServiceVersion;
+    }
+
+    public void setAppServiceVersion(Long appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
+    }
 
     public Long getId() {
         return id;

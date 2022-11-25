@@ -14,6 +14,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
+import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -87,6 +89,20 @@ public class PipelineController extends BaseController {
             @PathVariable(value = "id") Long id) {
         pipelineService.delete(projectId, id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "执行自动化部署流水线")
+    @PostMapping("/{id}/execute")
+    public ResponseEntity<PipelineRecordDTO> execute(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(pipelineService.execute(projectId,
+                id,
+                PipelineTriggerTypeEnum.MANUAL,
+                null));
     }
 }
 

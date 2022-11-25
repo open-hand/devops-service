@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 import io.choerodon.devops.infra.dto.PipelineStageDTO;
 
@@ -16,5 +18,7 @@ public interface PipelineStageService {
     void saveStage(Long projectId, Long pipelineId, Long versionId, PipelineStageVO stage);
 
     void deleteByPipelineId(Long pipelineId);
+
+    List<PipelineStageDTO> listByVersionId(Long versionId);
 }
 

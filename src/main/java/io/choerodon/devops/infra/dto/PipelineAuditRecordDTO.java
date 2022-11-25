@@ -46,6 +46,16 @@ public class PipelineAuditRecordDTO extends AuditDomain {
     @NotNull
     private Boolean countersigned;
 
+
+    public PipelineAuditRecordDTO() {
+    }
+
+    public PipelineAuditRecordDTO(Long pipelineId, Long jobRecordId, Boolean countersigned) {
+        this.pipelineId = pipelineId;
+        this.jobRecordId = jobRecordId;
+        this.countersigned = countersigned;
+    }
+
     public Long getPipelineId() {
         return pipelineId;
     }

@@ -1,7 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Map;
+
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
+import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 
 /**
  * 流水线表(Pipeline)应用服务
@@ -28,5 +32,9 @@ public interface PipelineService {
 
     void update(Long projectId, Long id, PipelineVO pipelineVO);
 
+    PipelineRecordDTO execute(Long projectId,
+                              Long id,
+                              PipelineTriggerTypeEnum triggerType,
+                              Map<String, Object> params);
 }
 

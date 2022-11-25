@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+
 /**
  * 流水线阶段记录(PipelineStageRecord)应用服务
  *
@@ -9,5 +11,7 @@ package io.choerodon.devops.app.service;
 public interface PipelineStageRecordService {
 
     void deleteByPipelineId(Long pipelineId);
+
+    void baseCreate(PipelineStageRecordDTO pipelineStageRecordDTO);
 }
 

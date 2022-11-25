@@ -8,8 +8,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.cd.PipelineAuditCfgVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.PipelineAuditCfgService;
+import io.choerodon.devops.app.service.PipelineAuditRecordService;
 import io.choerodon.devops.app.service.PipelineAuditUserService;
 import io.choerodon.devops.infra.dto.PipelineAuditCfgDTO;
+import io.choerodon.devops.infra.dto.PipelineJobDTO;
+import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
@@ -31,6 +34,8 @@ public class CdAuditJobHandlerImpl extends AbstractCdJobHandler {
     private PipelineAuditCfgService pipelineAuditCfgService;
     @Autowired
     private PipelineAuditUserService pipelineAuditUserService;
+    @Autowired
+    private PipelineAuditRecordService pipelineAuditRecordService;
 
     @Override
     protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
@@ -46,6 +51,11 @@ public class CdAuditJobHandlerImpl extends AbstractCdJobHandler {
     @Override
     public void deleteConfigByPipelineId(Long pipelineId) {
         pipelineAuditCfgService.deleteConfigByPipelineId(pipelineId);
+    }
+
+    @Override
+    public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
+        pipelineAuditRecordService.initAuditRecord(pipelineId, pipelineJobRecordDTO.getId(), job.getConfigId());
     }
 
     @Override
