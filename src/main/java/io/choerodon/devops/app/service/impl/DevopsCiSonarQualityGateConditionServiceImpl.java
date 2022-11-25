@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateConditionVO;
 import io.choerodon.devops.api.vo.sonar.QualityGateCondition;
@@ -45,10 +44,7 @@ public class DevopsCiSonarQualityGateConditionServiceImpl implements DevopsCiSon
     }
 
     @Override
-    public void deleteBySonarIds(List<String> conditionSonarIdList) {
-        if (CollectionUtils.isEmpty(conditionSonarIdList)) {
-            return;
-        }
-        devopsCiSOnarQualityGateConditionMapper.deleteBySonarIds(conditionSonarIdList);
+    public void deleteByGateId(Long gateId) {
+        devopsCiSOnarQualityGateConditionMapper.deleteByGateId(gateId);
     }
 }

@@ -9,7 +9,9 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsCiSonarQualityGateMapper extends BaseMapper<DevopsCiSonarQualityGateDTO> {
     Boolean queryBlockByStepId(Long devopsCiSonarConfigId);
 
-    void deleteBySonarId(@Param("sonarId") String sonarId);
+    void deleteByName(@Param("name") String name);
 
-    Boolean qualityGateExistsByName(String name);
+    Boolean qualityGateExistsByName(@Param("name") String name);
+
+    DevopsCiSonarQualityGateVO queryByName(@Param("name") String name);
 }
