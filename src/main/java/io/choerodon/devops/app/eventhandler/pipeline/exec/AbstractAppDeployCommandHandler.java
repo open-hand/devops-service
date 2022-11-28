@@ -13,14 +13,11 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.pipeline.AppDeployConfigVO;
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
-import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
-import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.PipelineAppDeployUtil;
 
 /**
  * 〈功能简述〉
@@ -32,14 +29,16 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
 @Service
 public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandHandler {
 
-    @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    //    @Autowired
+//    private DevopsEnvironmentService devopsEnvironmentService;
+//    @Autowired
+//    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     DevopsCiJobRecordService devopsCiJobRecordService;
+    @Autowired
+    private PipelineAppDeployUtil pipelineAppDeployUtil;
 
     @Override
     public CiCommandTypeEnum getType() {
@@ -67,9 +66,9 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
 
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
         // 1. 校验环境是否开启一键关闭自动部署
-        if (checkAutoMaticDeploy(log, envId)) return;
+        if (!pipelineAppDeployUtil.checkAutoMaticDeploy(log, envId)) return;
         // 2. 校验用户权限
-        if (checkUserPermission(log, userId, envId, skipCheckPermission)) return;
+        if (!pipelineAppDeployUtil.checkUserPermission(log, userId, envId, skipCheckPermission)) return;
         // 获取部署版本信息
         deployApp(appServiceDTO, log, appDeployConfigVO, projectId, appServiceId, envId, appCode, appName, devopsCiPipelineRecordDTO, devopsCiJobRecordDTO);
     }
@@ -85,38 +84,38 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
                                       DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO,
                                       DevopsCiJobRecordDTO devopsCiJobRecordDTO);
 
-    protected boolean checkUserPermission(StringBuilder log, Long userId, Long envId, Boolean skipCheckPermission) {
-        log.append("## 2.校验用户环境权限...").append(System.lineSeparator());
-        if (Boolean.FALSE.equals(skipCheckPermission)) {
-            log.append("不允许非环境人员触发此部署任务，校验用户权限").append(System.lineSeparator());
-            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
-                    userId))) {
-                log.append("用户没有环境权限，跳过此部署任务").append(System.lineSeparator());
-                return true;
-            } else {
-                log.append("用户权限校验通过").append(System.lineSeparator());
-            }
-        } else {
-            log.append("允许非环境人员触发此部署任务，选择部署账户").append(System.lineSeparator());
-            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
-                    userId))) {
-                log.append("用户没有环境权限，使用admin账户部署").append(System.lineSeparator());
-                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
-            } else {
-                log.append("用户拥有环境权限，使用用户账户部署").append(System.lineSeparator());
-            }
-        }
-        return false;
-    }
-
-    protected boolean checkAutoMaticDeploy(StringBuilder log, Long envId) {
-        log.append("## 1. 校验环境是否开启自动部署...").append(System.lineSeparator());
-        if (Boolean.FALSE.equals(devopsEnvironmentService.queryByIdOrThrowE(envId).getAutoDeploy())) {
-            log.append("环境自动部署已关闭，跳过此部署任务。").append(System.lineSeparator());
-            return true;
-        }
-        return false;
-    }
+//    protected boolean checkUserPermission(StringBuilder log, Long userId, Long envId, Boolean skipCheckPermission) {
+//        log.append("## 2.校验用户环境权限...").append(System.lineSeparator());
+//        if (Boolean.FALSE.equals(skipCheckPermission)) {
+//            log.append("不允许非环境人员触发此部署任务，校验用户权限").append(System.lineSeparator());
+//            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
+//                    userId))) {
+//                log.append("用户没有环境权限，跳过此部署任务").append(System.lineSeparator());
+//                return true;
+//            } else {
+//                log.append("用户权限校验通过").append(System.lineSeparator());
+//            }
+//        } else {
+//            log.append("允许非环境人员触发此部署任务，选择部署账户").append(System.lineSeparator());
+//            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
+//                    userId))) {
+//                log.append("用户没有环境权限，使用admin账户部署").append(System.lineSeparator());
+//                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
+//            } else {
+//                log.append("用户拥有环境权限，使用用户账户部署").append(System.lineSeparator());
+//            }
+//        }
+//        return false;
+//    }
+//
+//    protected boolean checkAutoMaticDeploy(StringBuilder log, Long envId) {
+//        log.append("## 1. 校验环境是否开启自动部署...").append(System.lineSeparator());
+//        if (Boolean.FALSE.equals(devopsEnvironmentService.queryByIdOrThrowE(envId).getAutoDeploy())) {
+//            log.append("环境自动部署已关闭，跳过此部署任务。").append(System.lineSeparator());
+//            return true;
+//        }
+//        return false;
+//    }
 
 
     protected abstract AppDeployConfigVO queryConfigById(Long configId);

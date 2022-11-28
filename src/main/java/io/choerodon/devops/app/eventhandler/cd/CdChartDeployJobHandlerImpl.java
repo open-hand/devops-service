@@ -55,7 +55,29 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void execCommand(Long jobRecordId, StringBuffer log) {
-
+//        log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
+//        AppDeployConfigVO appDeployConfigVO = queryConfigById(configId);
+//        if (appDeployConfigVO == null) {
+//            throw new CommonException("devops.chart.deploy.config.not.found");
+//        }
+//        Long projectId = appServiceDTO.getProjectId();
+//        Long appServiceId = appServiceDTO.getId();
+//        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+//        Long userId = userDetails.getUserId();
+//        Long envId = appDeployConfigVO.getEnvId();
+//        Boolean skipCheckPermission = appDeployConfigVO.getSkipCheckPermission();
+//        String appCode = appDeployConfigVO.getAppCode();
+//        String appName = appDeployConfigVO.getAppName();
+//
+//        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByAppServiceIdAndGitlabPipelineId(appServiceId, gitlabPipelineId);
+//
+//        DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
+//        // 1. 校验环境是否开启一键关闭自动部署
+//        if (!pipelineAppDeployUtil.checkAutoMaticDeploy(log, envId)) return;
+//        // 2. 校验用户权限
+//        if (!pipelineAppDeployUtil.checkUserPermission(log, userId, envId, skipCheckPermission)) return;
+//        // 获取部署版本信息
+//        deployApp(appServiceDTO, log, appDeployConfigVO, projectId, appServiceId, envId, appCode, appName, devopsCiPipelineRecordDTO, devopsCiJobRecordDTO);
 
     }
 
@@ -63,4 +85,5 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     public CdJobTypeEnum getType() {
         return CdJobTypeEnum.CHART_DEPLOY;
     }
+
 }
