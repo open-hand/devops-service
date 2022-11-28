@@ -8,13 +8,14 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.AppServiceService;
+import io.choerodon.devops.app.service.DevopsCiJobRecordService;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 import io.choerodon.devops.infra.util.LogUtil;
 
@@ -33,12 +34,6 @@ public abstract class AbstractCiCommandHandler {
     private DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    @Autowired
-    private GitlabServiceClientOperator gitlabServiceClientOperator;
-    @Autowired
-    private DevopsCiJobService devopsCiJobService;
-    @Autowired
-    private UserAttrService userAttrService;
 
     public abstract CiCommandTypeEnum getType();
 

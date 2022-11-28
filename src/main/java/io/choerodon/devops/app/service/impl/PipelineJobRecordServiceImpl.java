@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import io.choerodon.devops.app.service.PipelineJobRecordService;
 import io.choerodon.devops.app.service.PipelineLogService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
+import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineJobRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -40,6 +42,11 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Override
     public List<PipelineJobRecordDTO> listPendingJobs(int number) {
         return pipelineJobRecordMapper.listPendingJobs(number);
+    }
+
+    @Override
+    public PipelineJobRecordDTO baseQueryById(Long id) {
+        return pipelineJobRecordMapper.selectByPrimaryKey(id);
     }
 
     @Override
@@ -73,6 +80,19 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public int updatePendingJobToRunning(Long id) {
         return pipelineJobRecordMapper.updatePendingJobToRunning(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long id, PipelineStatusEnum status) {
+        PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
+
+        if (PipelineStatusEnum.FAILED.equals(status)
+                || PipelineStatusEnum.SUCCESS.equals(status)) {
+            pipelineJobRecordDTO.setFinishedDate(new Date());
+        }
+
+        pipelineJobRecordMapper.updateByPrimaryKey(pipelineJobRecordDTO);
     }
 }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -53,13 +54,14 @@ public class PipelineJobRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
     private String status;
+    @ApiModelProperty(value = "任务开始时间", required = true)
+    private Date startedDate;
+    @ApiModelProperty(value = "任务结束时间", required = true)
+    private Date finishedDate;
 
     @ApiModelProperty(value = "任务类型", required = true)
     @NotBlank
     private String type;
-
-    @ApiModelProperty(value = "关联日志记录Id,devops_pipeline_log.id")
-    private Long logId;
 
     public PipelineJobRecordDTO() {
     }
@@ -70,6 +72,22 @@ public class PipelineJobRecordDTO extends AuditDomain {
         this.stageRecordId = stageRecordId;
         this.status = status;
         this.type = type;
+    }
+
+    public Date getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
     }
 
     public String getType() {
@@ -118,14 +136,6 @@ public class PipelineJobRecordDTO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Long getLogId() {
-        return logId;
-    }
-
-    public void setLogId(Long logId) {
-        this.logId = logId;
     }
 
 }

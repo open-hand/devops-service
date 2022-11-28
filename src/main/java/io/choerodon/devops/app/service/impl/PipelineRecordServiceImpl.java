@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +57,12 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
                 pipelineRecordDTO,
                 DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatusToFailed(Long pipelineRecordId) {
+        pipelineRecordMapper.updateStatusToFailed(pipelineRecordId, new Date());
     }
 }
 

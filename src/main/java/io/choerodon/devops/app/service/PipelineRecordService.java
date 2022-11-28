@@ -18,5 +18,7 @@ public interface PipelineRecordService {
     PipelineRecordDTO baseQueryById(Long pipelineRecordId);
 
     void baseUpdate(PipelineRecordDTO pipelineRecordDTO);
+
+    void updateStatusToFailed(Long pipelineRecordId);
 }
 

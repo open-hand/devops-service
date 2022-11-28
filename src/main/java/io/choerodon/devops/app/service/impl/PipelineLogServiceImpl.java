@@ -37,9 +37,10 @@ public class PipelineLogServiceImpl implements PipelineLogService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PipelineLogDTO saveLog(Long pipelineId, String log) {
+    public PipelineLogDTO saveLog(Long pipelineId, Long jobRecordId, String log) {
         PipelineLogDTO pipelineLogDTO = new PipelineLogDTO();
         pipelineLogDTO.setPipelineId(pipelineId);
+        pipelineLogDTO.setJobRecordId(jobRecordId);
         pipelineLogDTO.setLog(log);
         return MapperUtil.resultJudgedInsertSelective(pipelineLogMapper, pipelineLogDTO, DEVOPS_SAVE_PIPELINE_LOG_FAILED);
     }

@@ -37,9 +37,21 @@ public class PipelineLogDTO extends AuditDomain {
     @NotNull
     private Long pipelineId;
 
+    @ApiModelProperty(value = "devops_pipeline.id", required = true)
+    @NotNull
+    private Long jobRecordId;
+
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     @NotBlank
     private String log;
+
+    public Long getJobRecordId() {
+        return jobRecordId;
+    }
+
+    public void setJobRecordId(Long jobRecordId) {
+        this.jobRecordId = jobRecordId;
+    }
 
     public Long getPipelineId() {
         return pipelineId;

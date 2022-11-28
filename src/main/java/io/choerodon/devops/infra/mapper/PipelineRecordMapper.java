@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Date;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDTO> {
 
+    void updateStatusToFailed(@Param("pipelineRecordId") Long pipelineRecordId,
+                              @Param("finishDate") Date finishDate);
 }
 

@@ -10,6 +10,7 @@ import org.springframework.util.Assert;
 import io.choerodon.devops.app.service.PipelineStageRecordService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineStageRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -46,6 +47,11 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     }
 
     @Override
+    public PipelineStageRecordDTO baseQueryById(Long id) {
+        return pipelineStageRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
     public List<PipelineStageRecordDTO> listByPipelineRecordId(Long pipelineRecordId) {
         Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
 
@@ -59,6 +65,16 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     public void baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
         MapperUtil.resultJudgedInsertSelective(pipelineStageRecordMapper, pipelineStageRecordDTO, DEVOPS_UPDATE_STAGE_RECORD_FAILED);
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long stageRecordId, PipelineStatusEnum status) {
+        PipelineStageRecordDTO pipelineStageRecordDTO = baseQueryById(stageRecordId);
+
+        pipelineStageRecordDTO.setStatus(status.value());
+
+        pipelineStageRecordMapper.updateByPrimaryKeySelective(pipelineStageRecordDTO);
     }
 }
 

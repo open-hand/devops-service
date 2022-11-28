@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -42,12 +43,32 @@ public class PipelineRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
     private String status;
+    @ApiModelProperty(value = "流水线开始时间", required = true)
+    private Date startedDate;
+    @ApiModelProperty(value = "流水线结束时间", required = true)
+    private Date finishedDate;
     @ApiModelProperty(value = "触发方式", required = true)
     private String triggerType;
     @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
     private Long appServiceId;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
     private Long appServiceVersion;
+
+    public Date getStartedDate() {
+        return startedDate;
+    }
+
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
+
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
+
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
 
     public String getTriggerType() {
         return triggerType;

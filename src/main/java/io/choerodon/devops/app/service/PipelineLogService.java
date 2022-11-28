@@ -13,6 +13,6 @@ public interface PipelineLogService {
 
     void deleteByPipelineId(Long pipelineId);
 
-    PipelineLogDTO saveLog(Long pipelineId, String log);
+    PipelineLogDTO saveLog(Long pipelineId, Long jobRecordId, String log);
 }
 
