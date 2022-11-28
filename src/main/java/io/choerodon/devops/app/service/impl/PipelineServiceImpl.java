@@ -255,7 +255,7 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
         } else {
             firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
         }
         pipelineStageRecordService.baseUpdate(firstStageRecordDTO);
         pipelineRecordService.baseUpdate(pipelineRecordDTO);

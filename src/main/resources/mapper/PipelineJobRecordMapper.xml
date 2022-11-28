@@ -10,4 +10,9 @@
     order by id asc
     limit #{number}
     </select>
+
+<update id="updatePendingJobToRunning">
+    update devops_pipeline_job_record
+    set status = 'running' where id = #{id} and status = 'pending'
+</update>
 </mapper>

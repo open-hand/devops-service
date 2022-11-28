@@ -2,6 +2,8 @@ package io.choerodon.devops.app.eventhandler.cd;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.cd.PipelineChartDeployCfgVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
@@ -48,6 +50,13 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     @Override
     public void fillJobConfigInfo(PipelineJobVO pipelineJobVO) {
         pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgService.queryVoByConfigId(pipelineJobVO.getConfigId()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+    public void execCommand(Long jobRecordId, StringBuffer log) {
+
+
     }
 
     @Override

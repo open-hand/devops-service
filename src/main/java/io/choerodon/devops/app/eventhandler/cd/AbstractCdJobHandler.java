@@ -101,4 +101,8 @@ public abstract class AbstractCdJobHandler {
     public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
 
     }
+
+    public void execCommand(Long jobRecordId, StringBuffer log) {
+
+    }
 }

@@ -17,5 +17,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface PipelineJobRecordMapper extends BaseMapper<PipelineJobRecordDTO> {
 
     List<PipelineJobRecordDTO> listPendingJobs(@Param("number") int number);
+
+    int updatePendingJobToRunning(@Param("id") Long id);
 }
 

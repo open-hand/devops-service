@@ -20,5 +20,7 @@ public interface PipelineJobRecordService {
     void baseCreate(PipelineJobRecordDTO pipelineJobRecordDTO);
 
     void baseUpdate(PipelineJobRecordDTO pipelineJobRecordDTO);
+
+    int updatePendingJobToRunning(Long id);
 }
 

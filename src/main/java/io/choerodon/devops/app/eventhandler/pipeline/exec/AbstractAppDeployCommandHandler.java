@@ -48,7 +48,7 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content) {
+    public void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content) {
         log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
         AppDeployConfigVO appDeployConfigVO = queryConfigById(configId);
         if (appDeployConfigVO == null) {

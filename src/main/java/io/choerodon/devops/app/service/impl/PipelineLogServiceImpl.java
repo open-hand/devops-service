@@ -9,6 +9,7 @@ import io.choerodon.devops.app.service.PipelineLogService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineLogDTO;
 import io.choerodon.devops.infra.mapper.PipelineLogMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * 流水线执行日志(PipelineLog)应用服务
@@ -18,6 +19,9 @@ import io.choerodon.devops.infra.mapper.PipelineLogMapper;
  */
 @Service
 public class PipelineLogServiceImpl implements PipelineLogService {
+
+    private static final String DEVOPS_SAVE_PIPELINE_LOG_FAILED = "devops.save.pipeline.log.failed";
+
     @Autowired
     private PipelineLogMapper pipelineLogMapper;
 
@@ -29,6 +33,15 @@ public class PipelineLogServiceImpl implements PipelineLogService {
         pipelineLogDTO.setPipelineId(pipelineId);
 
         pipelineLogMapper.delete(pipelineLogDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineLogDTO saveLog(Long pipelineId, String log) {
+        PipelineLogDTO pipelineLogDTO = new PipelineLogDTO();
+        pipelineLogDTO.setPipelineId(pipelineId);
+        pipelineLogDTO.setLog(log);
+        return MapperUtil.resultJudgedInsertSelective(pipelineLogMapper, pipelineLogDTO, DEVOPS_SAVE_PIPELINE_LOG_FAILED);
     }
 }
 

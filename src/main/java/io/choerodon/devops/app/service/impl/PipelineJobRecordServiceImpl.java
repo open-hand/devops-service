@@ -68,5 +68,11 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineJobRecordMapper, pipelineJobRecordDTO, DEVOPS_UPDATE_JOB_RECORD_FAILED);
 
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int updatePendingJobToRunning(Long id) {
+        return pipelineJobRecordMapper.updatePendingJobToRunning(id);
+    }
 }
 

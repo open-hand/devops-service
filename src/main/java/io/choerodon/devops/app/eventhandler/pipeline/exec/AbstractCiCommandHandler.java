@@ -42,7 +42,7 @@ public abstract class AbstractCiCommandHandler {
 
     public abstract CiCommandTypeEnum getType();
 
-    CiResponseVO executeCommand(String token, Long gitlabPipelineId, Long gitlabJobId, Long configId) {
+    public CiResponseVO executeCommand(String token, Long gitlabPipelineId, Long gitlabJobId, Long configId) {
         CiResponseVO ciResponseVO = new CiResponseVO();
         StringBuilder log = new StringBuilder();
         Map<String, Object> content = new HashMap<>();
@@ -77,5 +77,5 @@ public abstract class AbstractCiCommandHandler {
         return ciResponseVO;
     }
 
-    protected abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content);
+    public abstract void execute(AppServiceDTO appServiceDTO, Long gitlabPipelineId, Long gitlabJobId, Long configId, StringBuilder log, Map<String, Object> content);
 }
