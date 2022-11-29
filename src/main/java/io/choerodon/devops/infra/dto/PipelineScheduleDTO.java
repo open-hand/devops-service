@@ -68,7 +68,16 @@ public class PipelineScheduleDTO extends AuditDomain {
 
     @ApiModelProperty(value = "执行时间：单次触发时需要,HH:mm")
     private String executeTime;
+    @ApiModelProperty(value = "定时执行时需要根据此token来判断是否可以执行")
+    private String token;
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 
     public Long getId() {
         return id;

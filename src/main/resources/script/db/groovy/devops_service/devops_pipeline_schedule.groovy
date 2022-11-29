@@ -13,6 +13,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_schedule.groovy') {
                 constraints(nullable: false)
             }
 
+            column(name: 'token', type: 'CHAR(36)', remarks: 'TOKEN') {
+                constraints(nullable: false)
+            }
+
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发类型：周期触发，单次触发') {
                 constraints(nullable: false)
             }
@@ -34,6 +38,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_schedule.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
         addUniqueConstraint(tableName: 'devops_pipeline_schedule',
-                constraintName: 'devops_pipeline_schedule_n1', columnNames: 'pipeline_id,name')
+                constraintName: 'devops_pipeline_schedule_u1', columnNames: 'pipeline_id,name')
+        addUniqueConstraint(tableName: 'devops_pipeline_schedule',
+                constraintName: 'devops_pipeline_schedule_u2', columnNames: 'token')
     }
 }

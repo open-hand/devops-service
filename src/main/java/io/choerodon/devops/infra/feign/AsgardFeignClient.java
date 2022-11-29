@@ -1,15 +1,15 @@
 package io.choerodon.devops.infra.feign;
 
 import java.util.List;
+import javax.validation.Valid;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.vo.SagaInstanceDetails;
+import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
+import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.feign.fallback.AsgardFeignClientFallback;
 
 
@@ -19,6 +19,11 @@ import io.choerodon.devops.infra.feign.fallback.AsgardFeignClientFallback;
 @FeignClient(value = "choerodon-asgard",
         fallback = AsgardFeignClientFallback.class)
 public interface AsgardFeignClient {
+
+    @PostMapping("/v1/schedules/tasks/internal")
+    ResponseEntity<QuartzTaskDTO> createByServiceCodeAndMethodCode(@RequestParam("source_level") String sourceLevel,
+                                                                   @RequestParam("source_id") Long sourceId,
+                                                                   @RequestBody @Valid ScheduleTaskDTO dto);
 
     @GetMapping("/v1/sagas/instances/ref/business/instance")
     ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(@RequestParam(value = "refType") String refType,

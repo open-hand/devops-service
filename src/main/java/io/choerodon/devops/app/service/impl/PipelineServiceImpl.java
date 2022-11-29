@@ -1,13 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -21,13 +20,11 @@ import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
-import io.choerodon.devops.infra.util.CommonExAssertUtil;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.GenerateUUID;
-import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.*;
 
 /**
  * 流水线表(Pipeline)应用服务
@@ -37,11 +34,16 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class PipelineServiceImpl implements PipelineService {
+
+    private static final String CRON_TRIGGER = "cron-trigger";
+    private static final String SERIAL = "SERIAL";
     private static final String DEVOPS_SAVE_PIPELINE_FAILED = "devops.save.pipeline.failed";
     private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
     private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
     private static final String DEVOPS_PIPELINE_STATUS_IS_DISABLE = "devops.pipeline.status.is.disable";
 
+    @Value("${spring.application.name}")
+    private String serviceCode;
     @Autowired
     private PipelineMapper pipelineMapper;
     @Autowired
@@ -101,7 +103,25 @@ public class PipelineServiceImpl implements PipelineService {
         // 保存流水线定时执行配置
         if (!CollectionUtils.isEmpty(pipelineVO.getPipelineScheduleList())) {
             pipelineVO.getPipelineScheduleList().forEach(pipelineScheduleVO -> {
-                pipelineScheduleService.create(pipelineDTO.getId(), pipelineScheduleVO);
+                PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(pipelineDTO.getId(), pipelineScheduleVO);
+
+                ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
+                scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineScheduleDTO.getPipelineId() + "-" + pipelineScheduleDTO.getName());
+                scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateCron(pipelineScheduleVO));
+                scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
+                scheduleTaskDTO.setExecuteStrategy(SERIAL);
+
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String dateString = formatter.format(new Date());
+                scheduleTaskDTO.setStartTimeStr(dateString);
+                ScheduleTaskDTO.NotifyUser notifyUser = new ScheduleTaskDTO.NotifyUser();
+                notifyUser.setAdministrator(true);
+                notifyUser.setAssigner(false);
+                notifyUser.setCreator(false);
+                scheduleTaskDTO.setNotifyUser(notifyUser);
+//                scheduleTaskDTO.setParams();
+                scheduleTaskDTO.setMethodCode("pipelineScheduleTrigger");
+                scheduleTaskDTO.setServiceCode(serviceCode);
             });
         }
 

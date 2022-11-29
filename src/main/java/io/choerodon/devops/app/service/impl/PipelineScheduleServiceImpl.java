@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void create(Long pipelineId, PipelineScheduleVO pipelineScheduleVO) {
+    public PipelineScheduleDTO create(Long pipelineId, PipelineScheduleVO pipelineScheduleVO) {
         ScheduleUtil.validate(pipelineScheduleVO);
 
         PipelineScheduleDTO pipelineScheduleDTO = ConvertUtils.convertObject(pipelineScheduleVO, PipelineScheduleDTO.class);
@@ -36,10 +37,18 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
         pipelineScheduleDTO.setPipelineId(pipelineId);
 
         // 保存记录
-        MapperUtil.resultJudgedInsertSelective(pipelineScheduleMapper, pipelineScheduleDTO, DEVOPS_SAVE_SCHEDULE_FAILED);
+        return MapperUtil.resultJudgedInsertSelective(pipelineScheduleMapper, pipelineScheduleDTO, DEVOPS_SAVE_SCHEDULE_FAILED);
 
-        // 创建定时任务
-        String cron = ScheduleUtil.calculateCron(pipelineScheduleVO);
+    }
+
+    @Override
+    public PipelineScheduleDTO queryByToken(String token) {
+        if (StringUtils.isEmpty(token)) {
+            return null;
+        }
+        PipelineScheduleDTO pipelineScheduleDTO = new PipelineScheduleDTO();
+        pipelineScheduleDTO.setToken(token);
+        return pipelineScheduleMapper.selectOne(pipelineScheduleDTO);
     }
 }
 
