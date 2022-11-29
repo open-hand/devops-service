@@ -6,6 +6,7 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 
 /**
@@ -25,9 +26,40 @@ public class PipelineVO {
     private Long effectVersionId;
     @ApiModelProperty(value = "令牌", required = false)
     private String token;
+    @ApiModelProperty(value = "是否启用", required = false)
+    private Boolean enable;
+    @ApiModelProperty(value = "是否开启应用服务版本生成触发", required = false)
+    private Boolean appVersionTriggerEnable;
     @Valid
     @ApiModelProperty(value = "流水线阶段信息", required = true)
     private List<PipelineStageVO> stageList;
+
+    @ApiModelProperty(value = "流水线定时执行配置", required = true)
+    private List<PipelineScheduleVO> pipelineScheduleList;
+
+    public Boolean getAppVersionTriggerEnable() {
+        return appVersionTriggerEnable;
+    }
+
+    public void setAppVersionTriggerEnable(Boolean appVersionTriggerEnable) {
+        this.appVersionTriggerEnable = appVersionTriggerEnable;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
+    }
+
+    public List<PipelineScheduleVO> getPipelineScheduleList() {
+        return pipelineScheduleList;
+    }
+
+    public void setPipelineScheduleList(List<PipelineScheduleVO> pipelineScheduleList) {
+        this.pipelineScheduleList = pipelineScheduleList;
+    }
 
     public String getToken() {
         return token;

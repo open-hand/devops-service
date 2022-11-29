@@ -18,6 +18,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
             column(name: 'token', type: 'VARCHAR(256)', remarks: '令牌') {
                 constraints(nullable: false)
             }
+            column(name: "is_enabled", type: "TINYINT UNSIGNED", defaultValue: "1", remarks: '是否启用')
+            column(name: 'is_app_version_trigger_enable', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '是否启用应用服务版本生成触发')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

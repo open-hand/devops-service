@@ -57,6 +57,8 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private PipelineJobRecordService pipelineJobRecordService;
     @Autowired
+    private PipelineScheduleService pipelineScheduleService;
+    @Autowired
     private CdJobOperator cdJobOperator;
 
 
@@ -95,6 +97,13 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineDTO.setToken(GenerateUUID.generateUUID());
         }
         baseCreate(pipelineDTO);
+
+        // 保存流水线定时执行配置
+        if (!CollectionUtils.isEmpty(pipelineVO.getPipelineScheduleList())) {
+            pipelineVO.getPipelineScheduleList().forEach(pipelineScheduleVO -> {
+                pipelineScheduleService.create(pipelineDTO.getId(), pipelineScheduleVO);
+            });
+        }
 
         savePipelieVersion(projectId, pipelineVO, pipelineDTO);
         return pipelineDTO;

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -54,8 +55,19 @@ public class PipelineDTO extends AuditDomain {
     private String token;
 
     @ApiModelProperty(value = "是否启用", required = false)
+    @Column(name = "is_enabled")
     private Boolean enable;
+    @ApiModelProperty(value = "是否开启应用服务版本生成触发", required = false)
+    @Column(name = "is_app_version_trigger_enable")
+    private Boolean appVersionTriggerEnable;
 
+    public Boolean getAppVersionTriggerEnable() {
+        return appVersionTriggerEnable;
+    }
+
+    public void setAppVersionTriggerEnable(Boolean appVersionTriggerEnable) {
+        this.appVersionTriggerEnable = appVersionTriggerEnable;
+    }
 
     public Boolean getEnable() {
         return enable;

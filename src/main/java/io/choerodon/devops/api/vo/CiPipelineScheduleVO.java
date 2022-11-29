@@ -9,13 +9,12 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
-import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * @author hao.wang08@hand-china.com
  * @since 2022-03-24 17:04:47
  */
-public class CiPipelineScheduleVO extends AuditDomain {
+public class CiPipelineScheduleVO extends CommonScheduleVO {
 
 
     @Encrypt
@@ -51,6 +50,57 @@ public class CiPipelineScheduleVO extends AuditDomain {
     private Date nextRunAt;
     @ApiModelProperty(value = "是否启用")
     private Boolean active;
+
+    @ApiModelProperty(hidden = true)
+    private Date creationDate;
+    @ApiModelProperty(hidden = true)
+    private Long createdBy;
+    @ApiModelProperty(hidden = true)
+    private Date lastUpdateDate;
+    @ApiModelProperty(hidden = true)
+    private Long lastUpdatedBy;
+    @ApiModelProperty(hidden = true)
+    private Long objectVersionNumber;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getLastUpdatedBy() {
+        return lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(Long lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Boolean getActive() {
         return active;
