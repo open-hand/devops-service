@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.config;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +20,8 @@ public class PipelineExecTheadPoolConfig {
         executor.setThreadNamePrefix(GitOpsConstants.PIPELINE_EXEC_EXECUTOR);
         executor.setMaxPoolSize(20);
         executor.setCorePoolSize(5);
+        executor.setQueueCapacity(10000);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
         return executor;
     }
 }
