@@ -94,5 +94,19 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
         pipelineJobRecordMapper.updateByPrimaryKey(pipelineJobRecordDTO);
     }
+
+    @Override
+    public List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(Long stageRecordId) {
+        return pipelineJobRecordMapper.listByStageIdForUpdate(stageRecordId);
+    }
+
+    @Override
+    public List<PipelineJobRecordDTO> listByStageRecordId(Long stageRecordId) {
+        Assert.notNull(stageRecordId, PipelineCheckConstant.DEVOPS_STAGE_RECORD_ID_IS_NULL);
+        PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO();
+        pipelineJobRecordDTO.setStageRecordId(stageRecordId);
+
+        return pipelineJobRecordMapper.select(pipelineJobRecordDTO);
+    }
 }
 

@@ -24,5 +24,12 @@ public interface PipelineStageRecordService {
     void baseUpdate(PipelineStageRecordDTO firstStageRecordDTO);
 
     void updateStatus(Long stageRecordId, PipelineStatusEnum status);
+
+    /**
+     * 阶段中每个任务执行完成后触发，更新当前阶段状态，以及触发后续阶段或更新流水线状态
+     *
+     * @param stageRecordId
+     */
+    void updateStatus(Long stageRecordId);
 }
 

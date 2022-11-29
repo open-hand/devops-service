@@ -617,4 +617,14 @@
           and repo_type is not null
           and image is not null
     </select>
+    <select id="queryLatestByAppServiceIdVersionType"
+            resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT *
+        FROM devops_app_service_version dasv
+        where dasv.app_service_id = #{appServiceId}
+          and dasv.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
+        order by id desc
+        limit 1
+
+    </select>
 </mapper>

@@ -244,4 +244,6 @@ public interface AppServiceVersionService {
     Integer queryCountVersionsWithHelmConfig();
 
     Integer queryCountVersionsWithHarborConfig();
+
+    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
 }

@@ -10,6 +10,7 @@ package io.choerodon.devops.infra.enums.cd;
 public enum PipelineTriggerTypeEnum {
     MANUAL("manual"),
     SCHEDULE("schedule"),
+    APP_VERSION("app_version"),
     API("api");
     private String value;
 

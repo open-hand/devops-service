@@ -19,5 +19,7 @@ public interface PipelineChartDeployCfgService {
     PipelineChartDeployCfgDTO queryByConfigId(Long configId);
 
     PipelineChartDeployCfgVO queryVoByConfigId(Long configId);
+
+    void baseUpdate(PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO);
 }
 

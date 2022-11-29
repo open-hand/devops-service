@@ -21,5 +21,7 @@ public interface PipelineJobService {
     List<PipelineJobDTO> listByVersionId(Long versionId);
 
     List<PipelineJobDTO> listByStageId(Long stageId);
+
+    PipelineJobDTO baseQueryById(Long id);
 }
 

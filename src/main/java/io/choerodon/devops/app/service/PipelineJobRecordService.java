@@ -27,5 +27,9 @@ public interface PipelineJobRecordService {
     int updatePendingJobToRunning(Long id);
 
     void updateStatus(Long jobRecordId, PipelineStatusEnum status);
+
+    List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(Long stageRecordId);
+
+    List<PipelineJobRecordDTO> listByStageRecordId(Long nextStageRecordId);
 }
 

@@ -12,9 +12,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage_record.groovy') {
             column(name: 'stage_id', type: 'BIGINT UNSIGNED', remarks: '所属阶段Id,devops_pipeline_stage.id') {
                 constraints(nullable: false)
             }
+            column(name: 'sequence', type: 'BIGINT UNSIGNED', remarks: '阶段顺序', defaultValue: "0") {
+                constraints(nullable: false)
+            }
             column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '关联流水线记录Id,devops_pipeline_record.id') {
                 constraints(nullable: false)
             }
+            column(name: 'next_stage_record_id', type: 'BIGINT UNSIGNED', remarks: '下一个阶段记录id,devops_pipeline_stage_record.id')
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态') {
                 constraints(nullable: false)
             }

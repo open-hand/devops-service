@@ -3,16 +3,25 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineJobRecordMapper">
 
-<select id="listPendingJobs" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
-    select *
-    from devops_pipeline_job_record dpjr
-    where dpjr.status = 'pending'
-    order by id asc
-    limit #{number}
+    <select id="listPendingJobs" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.status = 'pending'
+        order by id asc
+        limit #{number}
+    </select>
+    <select id="listByStageIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.stage_record_id = #{stageRecordId}
+            for
+        update
     </select>
 
-<update id="updatePendingJobToRunning">
-    update devops_pipeline_job_record
-    set status = 'running' where id = #{id} and status = 'pending'
-</update>
+    <update id="updatePendingJobToRunning">
+        update devops_pipeline_job_record
+        set status = 'running'
+        where id = #{id}
+          and status = 'pending'
+    </update>
 </mapper>

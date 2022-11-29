@@ -63,6 +63,8 @@ public class PipelineJobRecordDTO extends AuditDomain {
     @NotBlank
     private String type;
 
+    private Long commandId;
+
     public PipelineJobRecordDTO() {
     }
 
@@ -72,6 +74,14 @@ public class PipelineJobRecordDTO extends AuditDomain {
         this.stageRecordId = stageRecordId;
         this.status = status;
         this.type = type;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 
     public Date getStartedDate() {

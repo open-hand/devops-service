@@ -5,7 +5,7 @@
 
     <update id="updateStatusToFailed">
         update devops_pipeline_record
-        set status       = 'failed',
+        set status       = #{status},
             finished_date=#{finishDate}
         where id = #{pipelineRecordId}
           and (status = 'running' or status = 'not_audit')

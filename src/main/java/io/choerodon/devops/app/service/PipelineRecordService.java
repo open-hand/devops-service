@@ -1,6 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 
 /**
  * 流水线执行记录(PipelineRecord)应用服务
@@ -19,6 +24,16 @@ public interface PipelineRecordService {
 
     void baseUpdate(PipelineRecordDTO pipelineRecordDTO);
 
-    void updateStatusToFailed(Long pipelineRecordId);
+    /**
+     * 更新流水线状态到终结状态（成功或失败）
+     *
+     * @param pipelineRecordId
+     * @param status
+     */
+    void updateToEndStatus(Long pipelineRecordId, PipelineStatusEnum status);
+
+    void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList);
+
+    void startNextStage(Long nextStageRecordId);
 }
 

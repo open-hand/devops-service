@@ -81,5 +81,10 @@ public class PipelineJobServiceImpl implements PipelineJobService {
         pipelineJobDTO.setStageId(stageId);
         return pipelineJobMapper.select(pipelineJobDTO);
     }
+
+    @Override
+    public PipelineJobDTO baseQueryById(Long id) {
+        return pipelineJobMapper.selectByPrimaryKey(id);
+    }
 }
 

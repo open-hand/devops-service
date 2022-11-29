@@ -21,7 +21,6 @@ import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
@@ -201,19 +200,20 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineStageDTO> pipelineStageDTOS = pipelineStageService.listByVersionId(effectVersionId);
         List<PipelineStageDTO> sortedPipelineStage = pipelineStageDTOS
                 .stream()
-                .sorted(Comparator.comparing(PipelineStageDTO::getSequence)).collect(Collectors.toList());
+                .sorted(Comparator.comparing(PipelineStageDTO::getSequence).reversed()).collect(Collectors.toList());
 
-        for (PipelineStageDTO stage : sortedPipelineStage) {
+        Long nextStageRecordId = null;
+        for (int i = 0; i < sortedPipelineStage.size(); i++) {
+            PipelineStageDTO stage = sortedPipelineStage.get(i);
             Long stageId = stage.getId();
             PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO(id,
                     stageId,
                     pipelineRecordId,
                     stage.getSequence(),
+                    nextStageRecordId,
                     PipelineStatusEnum.CREATED.value());
             pipelineStageRecordService.baseCreate(pipelineStageRecordDTO);
-            if (firstStageRecordDTO == null) {
-                firstStageRecordDTO = pipelineStageRecordDTO;
-            }
+
             Long stageRecordId = pipelineStageRecordDTO.getId();
             // 初始化任务记录
             List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByStageId(stageId);
@@ -225,41 +225,22 @@ public class PipelineServiceImpl implements PipelineService {
                         PipelineStatusEnum.CREATED.value(),
                         job.getType());
                 pipelineJobRecordService.baseCreate(pipelineJobRecordDTO);
-
-                if (stageRecordId.equals(firstStageRecordDTO.getId())) {
+                // 记录流水线的第一个阶段信息
+                if (i == sortedPipelineStage.size() - 1) {
+                    firstStageRecordDTO = pipelineStageRecordDTO;
                     firstJobRecordList.add(pipelineJobRecordDTO);
                 }
+
                 AbstractCdJobHandler handler = cdJobOperator.getHandlerOrThrowE(job.getType());
                 handler.initAdditionalRecordInfo(id, job, pipelineJobRecordDTO);
             }
+            // 用于设置阶段间流转顺序
+            nextStageRecordId = pipelineStageRecordDTO.getId();
         }
         // 启动流水线
-        startPipeline(pipelineRecordDTO, firstStageRecordDTO, firstJobRecordList);
+        pipelineRecordService.startNextStage(pipelineRecordDTO, firstStageRecordDTO, firstJobRecordList);
 
         return pipelineRecordDTO;
-    }
-
-    private void startPipeline(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
-        boolean hasAuditJob = false;
-        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
-            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-                hasAuditJob = true;
-            } else {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            }
-            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-        }
-        if (Boolean.TRUE.equals(hasAuditJob)) {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-        } else {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-        }
-        pipelineStageRecordService.baseUpdate(firstStageRecordDTO);
-        pipelineRecordService.baseUpdate(pipelineRecordDTO);
-
     }
 
     @Override

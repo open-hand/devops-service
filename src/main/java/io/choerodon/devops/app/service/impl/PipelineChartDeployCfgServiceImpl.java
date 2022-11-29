@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineChartDeployCfgServiceImpl implements PipelineChartDeployCfgService {
 
     private static final String DEVOPS_SAVE_CHART_DEPLOY_CONFIG_FAILED = "devops.save.chart.deploy.config.failed";
+    private static final String DEVOPS_UPDATE_CHART_DEPLOY_CONFIG_FAILED = "devops.update.chart.deploy.config.failed";
 
     @Autowired
     private PipelineChartDeployCfgMapper pipelineChartDeployCfgMapper;
@@ -48,6 +49,13 @@ public class PipelineChartDeployCfgServiceImpl implements PipelineChartDeployCfg
     public PipelineChartDeployCfgVO queryVoByConfigId(Long configId) {
         PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO = queryByConfigId(configId);
         return ConvertUtils.convertObject(pipelineChartDeployCfgDTO, PipelineChartDeployCfgVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineChartDeployCfgMapper, pipelineChartDeployCfgDTO, DEVOPS_UPDATE_CHART_DEPLOY_CONFIG_FAILED);
+
     }
 
     @Override

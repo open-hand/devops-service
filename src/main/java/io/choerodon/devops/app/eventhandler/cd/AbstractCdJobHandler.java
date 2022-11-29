@@ -1,11 +1,12 @@
 package io.choerodon.devops.app.eventhandler.cd;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
-import io.choerodon.devops.app.service.PipelineJobService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
@@ -20,7 +21,19 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  */
 public abstract class AbstractCdJobHandler {
     @Autowired
-    private PipelineJobService pipelineJobService;
+    @Lazy
+    protected PipelineService pipelineService;
+    @Autowired
+    @Lazy
+    protected PipelineJobService pipelineJobService;
+    @Autowired
+    @Lazy
+    protected PipelineJobRecordService pipelineJobRecordService;
+    @Autowired
+    protected PipelineStageRecordService pipelineStageRecordService;
+    @Autowired
+    @Lazy
+    protected PipelineRecordService pipelineRecordService;
 
     public abstract CdJobTypeEnum getType();
 
@@ -102,7 +115,7 @@ public abstract class AbstractCdJobHandler {
 
     }
 
-    public void execCommand(Long jobRecordId, StringBuffer log) {
+    public void execCommand(Long jobRecordId, StringBuilder log) {
 
     }
 }

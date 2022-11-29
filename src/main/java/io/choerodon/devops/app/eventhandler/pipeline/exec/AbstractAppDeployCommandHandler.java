@@ -28,17 +28,12 @@ import io.choerodon.devops.infra.util.PipelineAppDeployUtil;
  */
 @Service
 public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandHandler {
-
-    //    @Autowired
-//    private DevopsEnvironmentService devopsEnvironmentService;
-//    @Autowired
-//    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
-    private PipelineAppDeployUtil pipelineAppDeployUtil;
+    protected PipelineAppDeployUtil pipelineAppDeployUtil;
 
     @Override
     public CiCommandTypeEnum getType() {

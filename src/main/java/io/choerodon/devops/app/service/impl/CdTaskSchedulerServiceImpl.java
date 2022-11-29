@@ -71,7 +71,7 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                     // 设置线程上下文
                     Long createdBy = pipelineJobRecordDTO.getCreatedBy();
                     CustomContextUtil.setUserContext(createdBy);
-                    StringBuffer log = new StringBuffer();
+                    StringBuilder log = new StringBuilder();
 
                     try {
                         // 执行job
@@ -84,7 +84,7 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                         // 更新阶段状态为失败
                         pipelineStageRecordService.updateStatus(stageRecordId, PipelineStatusEnum.FAILED);
                         // 更新流水线状态为失败
-                        pipelineRecordService.updateStatusToFailed(pipelineRecordId);
+                        pipelineRecordService.updateToEndStatus(pipelineRecordId, PipelineStatusEnum.FAILED);
                     }
                     // 记录job日志
                     pipelineLogService.saveLog(pipelineId, jobRecordId, log.toString());

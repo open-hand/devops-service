@@ -16,6 +16,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDTO> {
 
     void updateStatusToFailed(@Param("pipelineRecordId") Long pipelineRecordId,
-                              @Param("finishDate") Date finishDate);
+                              @Param("finishDate") Date finishDate,
+                              @Param("status") String status);
 }
 

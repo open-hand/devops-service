@@ -3,8 +3,11 @@ package io.choerodon.devops.infra.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.DevopsEnvUserPermissionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.infra.dto.AppServiceVersionDTO;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 
 /**
@@ -17,10 +20,14 @@ import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 @Component
 public class PipelineAppDeployUtil {
 
+    private static final String DEVOPS_PIPELINE_ARTIFACT_NOT_FOUND = "devops.pipeline.artifact.not.found";
+
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
 
     public boolean checkAutoMaticDeploy(StringBuilder log, Long envId) {
         log.append("#####校验环境是否开启自动部署#####").append(System.lineSeparator());
@@ -53,5 +60,19 @@ public class PipelineAppDeployUtil {
             }
         }
         return true;
+    }
+
+    public AppServiceVersionDTO queryAppVersion(StringBuilder log, Long appServiceId, String commitSha, String gitlabTriggerRef) {
+        log.append("#####查询部署版本#####").append(System.lineSeparator());
+        AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.queryByCommitShaAndRef(appServiceId,
+                commitSha,
+                gitlabTriggerRef);
+        if (appServiceVersionDTO == null) {
+            log.append("流水线上游未生成应用服务版本，跳过此次部署").append(System.lineSeparator());
+            throw new CommonException(DEVOPS_PIPELINE_ARTIFACT_NOT_FOUND);
+        } else {
+            log.append("部署版本为：").append(appServiceVersionDTO.getVersion()).append(System.lineSeparator());
+        }
+        return appServiceVersionDTO;
     }
 }
