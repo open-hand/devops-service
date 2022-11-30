@@ -36,6 +36,9 @@
             <if test="triggerType!=null">
                 and dp.trigger_type = #{triggerType}
             </if>
+            <if test="status!=null">
+                and dpr.status = #{status}
+            </if>
         </where>
     </select>
     <select id="checkName" resultType="java.lang.Boolean">

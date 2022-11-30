@@ -17,6 +17,7 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
 
     Page<PipelineHomeVO> pagingByProjectIdAndOptions(@Param("projectId") Long projectId,
                                                      @Param("enableFlag") Boolean enableFlag,
+                                                     @Param("status") String status,
                                                      @Param("triggerType") String triggerType,
                                                      @Param("param") String param);
 

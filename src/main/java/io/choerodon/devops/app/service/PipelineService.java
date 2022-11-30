@@ -49,7 +49,7 @@ public interface PipelineService {
 
     PipelineVO query(Long projectId, Long id);
 
-    Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enableFlag, String triggerType, String param);
+    Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enableFlag, String status, String triggerType, String param);
 
     Boolean checkName(Long projectId, Long id, String name);
 }
