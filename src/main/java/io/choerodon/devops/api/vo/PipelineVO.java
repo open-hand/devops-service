@@ -21,14 +21,14 @@ public class PipelineVO {
     private Long projectId;
     @ApiModelProperty(value = "流水线名称", required = true)
     private String name;
-    @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", required = true)
+    @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", hidden = true)
     @Encrypt
     private Long effectVersionId;
-    @ApiModelProperty(value = "令牌", required = false)
+    @ApiModelProperty(value = "令牌")
     private String token;
-    @ApiModelProperty(value = "是否启用", required = false)
+    @ApiModelProperty(value = "是否启用")
     private Boolean enable;
-    @ApiModelProperty(value = "是否开启应用服务版本生成触发", required = false)
+    @ApiModelProperty(value = "是否开启应用服务版本生成触发")
     private Boolean appVersionTriggerEnable;
     @Valid
     @ApiModelProperty(value = "流水线阶段信息", required = true)

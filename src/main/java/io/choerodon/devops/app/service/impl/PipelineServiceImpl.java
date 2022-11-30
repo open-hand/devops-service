@@ -114,7 +114,7 @@ public class PipelineServiceImpl implements PipelineService {
     public PipelineDTO create(Long projectId, PipelineVO pipelineVO) {
 
         PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
-
+        pipelineDTO.setProjectId(projectId);
         // 初始化令牌
         if (StringUtils.isEmpty(pipelineVO.getToken())) {
             pipelineDTO.setToken(GenerateUUID.generateUUID());
