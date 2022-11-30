@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -33,11 +34,13 @@ public class PipelineRecordDTO extends AuditDomain {
     public static final String FIELD_STATUS = "status";
     private static final long serialVersionUID = 286315842540628499L;
     @Id
+    @Encrypt
     @GeneratedValue
     private Long id;
 
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     @NotNull
+    @Encrypt
     private Long pipelineId;
 
     @ApiModelProperty(value = "状态", required = true)
@@ -50,6 +53,7 @@ public class PipelineRecordDTO extends AuditDomain {
     @ApiModelProperty(value = "触发方式", required = true)
     private String triggerType;
     @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
+    @Encrypt
     private Long appServiceId;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
     private Long appServiceVersion;

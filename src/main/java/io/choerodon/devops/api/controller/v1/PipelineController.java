@@ -129,5 +129,15 @@ public class PipelineController extends BaseController {
                 PipelineTriggerTypeEnum.MANUAL,
                 null));
     }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "通过令牌执行自动化部署流水线")
+    @PostMapping("/execute_by_token")
+    public ResponseEntity<PipelineRecordDTO> executeByToken(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "token") String token) {
+        return ResponseEntity.ok(pipelineService.executeByToken(projectId, token));
+    }
 }
 

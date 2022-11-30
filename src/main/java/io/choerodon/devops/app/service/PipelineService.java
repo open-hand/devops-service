@@ -24,6 +24,10 @@ public interface PipelineService {
 
     PipelineDTO baseQueryById(Long id);
 
+    PipelineDTO baseQueryByToken(String token);
+
+    PipelineDTO queryByTokenOrThrowE(String token);
+
     PipelineDTO create(Long projectId, PipelineVO pipelineVO);
 
     void enable(Long projectId, Long id);
@@ -38,6 +42,9 @@ public interface PipelineService {
                               Long id,
                               PipelineTriggerTypeEnum triggerType,
                               Map<String, Object> params);
+
+
+    PipelineRecordDTO executeByToken(Long projectId, String token);
 
     PipelineVO query(Long projectId, Long id);
 

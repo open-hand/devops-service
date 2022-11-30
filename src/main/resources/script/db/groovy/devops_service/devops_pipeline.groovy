@@ -33,6 +33,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
         createIndex(tableName: 'devops_pipeline', indexName: 'devops_pipeline_n2') {
             column(name: 'project_id')
         }
+        addUniqueConstraint(tableName: 'devops_pipeline',
+                constraintName: 'devops_pipeline_u1', columnNames: 'token')
     }
 
 }

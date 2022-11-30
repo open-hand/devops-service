@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -55,6 +56,8 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
     private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
     private static final String DEVOPS_PIPELINE_STATUS_IS_DISABLE = "devops.pipeline.status.is.disable";
+    private static final String DEVOPS_PIPELINE_TOKEN_IS_NULL = "devops.pipeline.token.is.null";
+    private static final String DEVOPS_PIPELINE_NOT_FOUND = "devops.pipeline.not.found";
 
     @Value("${spring.application.name}")
     private String serviceCode;
@@ -104,6 +107,24 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public PipelineDTO baseQueryById(Long id) {
         return pipelineMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public PipelineDTO baseQueryByToken(String token) {
+        Assert.notNull(token, DEVOPS_PIPELINE_TOKEN_IS_NULL);
+        PipelineDTO pipelineDTO = new PipelineDTO();
+        pipelineDTO.setToken(token);
+
+        return pipelineMapper.selectOne(pipelineDTO);
+    }
+
+    @Override
+    public PipelineDTO queryByTokenOrThrowE(String token) {
+        PipelineDTO pipelineDTO = baseQueryByToken(token);
+        if (pipelineDTO == null) {
+            throw new CommonException(DEVOPS_PIPELINE_NOT_FOUND);
+        }
+        return pipelineDTO;
     }
 
     @Override
@@ -444,6 +465,15 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordService.startNextStage(pipelineRecordDTO, firstStageRecordDTO, firstJobRecordList);
 
         return pipelineRecordDTO;
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineRecordDTO executeByToken(Long projectId, String token) {
+        PipelineDTO pipelineDTO = queryByTokenOrThrowE(token);
+        CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
+        return execute(projectId, pipelineDTO.getId(), PipelineTriggerTypeEnum.API, null);
     }
 
     @Override
