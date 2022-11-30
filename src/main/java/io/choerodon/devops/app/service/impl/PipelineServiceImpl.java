@@ -512,7 +512,12 @@ public class PipelineServiceImpl implements PipelineService {
             return new Page<>();
         }
         UserDTOFillUtil.fillUserInfo(pipelineVOS.getContent(), "createdBy", "trigger");
-
+        pipelineVOS.getContent().forEach(pipelineHomeVO -> {
+            // 添加阶段信息
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineHomeVO.getId());
+            List<PipelineStageRecordDTO> sortedStageRecord = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
+            pipelineHomeVO.setStageRecordList(sortedStageRecord);
+        });
         return pipelineVOS;
     }
 

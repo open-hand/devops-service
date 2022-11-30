@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -39,10 +40,20 @@ public class PipelineHomeVO {
 
     @ApiModelProperty(hidden = true)
     private Long createdBy;
-
+    @ApiModelProperty("触发者")
     private IamUserDTO trigger;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsPipelineAuditVO> pipelineAuditInfo;
+
+    private List<PipelineStageRecordDTO> stageRecordList;
+
+    public List<PipelineStageRecordDTO> getStageRecordList() {
+        return stageRecordList;
+    }
+
+    public void setStageRecordList(List<PipelineStageRecordDTO> stageRecordList) {
+        this.stageRecordList = stageRecordList;
+    }
 
     public List<DevopsPipelineAuditVO> getPipelineAuditInfo() {
         return pipelineAuditInfo;
