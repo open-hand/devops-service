@@ -447,6 +447,7 @@ public class PipelineServiceImpl implements PipelineService {
                 Long jobId = job.getId();
                 PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(id,
                         jobId,
+                        pipelineRecordId,
                         stageRecordId,
                         PipelineStatusEnum.CREATED.value(),
                         job.getType());
@@ -506,8 +507,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enableFlag, String status, String triggerType, String param) {
-        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enableFlag, status, triggerType, param));
+    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String param) {
+        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enable, status, triggerType, param));
         if (pipelineVOS.isEmpty()) {
             return new Page<>();
         }

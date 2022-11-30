@@ -12,9 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController("pipelineRecordController.v1")
-@RequestMapping("/v1/{organizationId}/pipeline-records")
+@RequestMapping("/v1/projects/{projectId}/pipeline_records")
 public class PipelineRecordController extends BaseController {
-
 
 }
 

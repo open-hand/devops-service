@@ -72,5 +72,13 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
         });
     }
 
+    @Override
+    public PipelineAuditRecordDTO queryByJobRecordId(Long jobRecordId) {
+        Assert.notNull(jobRecordId, PipelineCheckConstant.DEVOPS_JOB_RECORD_ID_IS_NULL);
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = new PipelineAuditRecordDTO();
+        pipelineAuditRecordDTO.setJobRecordId(jobRecordId);
+        return pipelineAuditRecordMapper.selectOne(pipelineAuditRecordDTO);
+    }
+
 }
 

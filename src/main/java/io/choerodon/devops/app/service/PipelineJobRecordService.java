@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.AduitStatusChangeVO;
+import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 
@@ -31,5 +33,9 @@ public interface PipelineJobRecordService {
     List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(Long stageRecordId);
 
     List<PipelineJobRecordDTO> listByStageRecordId(Long nextStageRecordId);
+
+    AuditResultVO auditJob(Long projectId, Long id, String result);
+
+    AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);
 }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 
 /**
@@ -13,5 +15,7 @@ public interface PipelineAuditUserRecordService {
     void deleteByPipelineId(Long pipelineId);
 
     void baseCreate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO);
+
+    List<PipelineAuditUserRecordDTO> listByAuditRecordId(Long auditRecordId);
 }
 

@@ -93,11 +93,11 @@ public class PipelineController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
-            @RequestParam(value = "enable_flag", required = false) Boolean enableFlag,
+            @RequestParam(value = "enable", required = false) Boolean enable,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "trigger_type", required = false) String triggerType,
             @RequestParam(value = "param", required = false) String param) {
-        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enableFlag, status, triggerType, param));
+        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enable, status, triggerType, param));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

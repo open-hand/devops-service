@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
 
     private static final String DEVOPS_AUDIT_USER_RECORD_UPDATE = "devops.audit.user.record.update";
+    private static final String DEVOPS_AUDIT_RECORD_ID_IS_NULL = "devops.audit.record.id.is.null";
 
     @Autowired
     private CiAuditUserRecordMapper ciAuditUserRecordMapper;
@@ -44,6 +45,8 @@ public class CiAuditUserRecordServiceImpl implements CiAuditUserRecordService {
 
     @Override
     public List<CiAuditUserRecordDTO> listByAuditRecordId(Long auditRecordId) {
+        Assert.notNull(auditRecordId, DEVOPS_AUDIT_RECORD_ID_IS_NULL);
+
         CiAuditUserRecordDTO ciAuditUserRecordDTO = new CiAuditUserRecordDTO();
         ciAuditUserRecordDTO.setAuditRecordId(auditRecordId);
 

@@ -12,6 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job_record.groovy') {
             column(name: 'job_id', type: 'BIGINT UNSIGNED', remarks: '所属任务Id,devops_pipeline_job.id') {
                 constraints(nullable: false)
             }
+            column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '关联流水线记录Id,devops_pipeline_record.id') {
+                constraints(nullable: false)
+            }
             column(name: 'stage_record_id', type: 'BIGINT UNSIGNED', remarks: '关联阶段记录Id,devops_pipeline_stage_record.id') {
                 constraints(nullable: false)
             }

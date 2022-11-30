@@ -128,7 +128,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
-            appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersion());
+            appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
             String versionRegex = ".*" + version + ".*";
             Pattern pattern = Pattern.compile(versionRegex);
             if (!pattern.matcher(appServiceVersionDTO.getVersion()).matches()) {
