@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service;
 
 import java.util.Map;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
@@ -38,5 +40,7 @@ public interface PipelineService {
                               Map<String, Object> params);
 
     PipelineVO query(Long projectId, Long id);
+
+    Page<PipelineHomeVO> paging(Long projectId, Boolean enableFlag, Boolean triggerType, String param);
 }
 

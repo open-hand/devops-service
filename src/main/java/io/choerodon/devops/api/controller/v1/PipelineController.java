@@ -10,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
@@ -64,6 +66,18 @@ public class PipelineController extends BaseController {
             @Encrypt
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(pipelineService.query(projectId, id));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "分页查询自动化部署流水线")
+    @GetMapping("/paging")
+    public ResponseEntity<Page<PipelineHomeVO>> paging(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "enable_flag") Boolean enableFlag,
+            @RequestParam(value = "trigger_type") Boolean triggerType,
+            @RequestParam(value = "param") String param) {
+        return ResponseEntity.ok(pipelineService.paging(projectId, enableFlag, triggerType, param));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
