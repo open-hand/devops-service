@@ -464,7 +464,7 @@ public class PipelineServiceImpl implements PipelineService {
             nextStageRecordId = pipelineStageRecordDTO.getId();
         }
         // 启动流水线
-        pipelineRecordService.startNextStage(pipelineRecordDTO, firstStageRecordDTO, firstJobRecordList);
+        pipelineRecordService.startNextStage(firstStageRecordDTO.getId());
 
         return pipelineRecordDTO;
     }
