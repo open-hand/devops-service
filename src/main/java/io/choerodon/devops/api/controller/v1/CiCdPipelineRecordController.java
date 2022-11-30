@@ -52,6 +52,7 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
@@ -59,19 +60,19 @@ public class CiCdPipelineRecordController {
         return Results.success();
     }
 
-    @Deprecated
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "重试cd任务", hidden = true)
-    @GetMapping("/retry_cd_task")
-    public ResponseEntity<Void> retryPipelineCdTask(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId) {
-        ciCdPipelineRecordService.retryCdPipeline(projectId, cdPipelineRecordId, true);
-        return Results.success();
-    }
+//    @Deprecated
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "重试cd任务", hidden = true)
+//    @GetMapping("/retry_cd_task")
+//    public ResponseEntity<Void> retryPipelineCdTask(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt
+//            @ApiParam(value = "cd流水线记录id", required = true)
+//            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId) {
+//        ciCdPipelineRecordService.retryCdPipeline(projectId, cdPipelineRecordId, true);
+//        return Results.success();
+//    }
 
     /**
      * Cancel jobs in a pipeline
@@ -82,6 +83,7 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
@@ -95,8 +97,8 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Page<CiPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
+            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
