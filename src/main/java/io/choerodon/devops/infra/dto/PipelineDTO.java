@@ -58,7 +58,7 @@ public class PipelineDTO extends AuditDomain {
     private String token;
 
     @ApiModelProperty(value = "是否启用", required = false)
-    @Column(name = "is_enabled")
+    @Column(name = "is_enable")
     private Boolean enable;
     @ApiModelProperty(value = "是否开启应用服务版本生成触发", required = false)
     @Column(name = "is_app_version_trigger_enable")

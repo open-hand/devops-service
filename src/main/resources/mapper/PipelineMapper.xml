@@ -21,12 +21,12 @@
         dpr.finished_date,
         dpr.trigger_type,
         dpr.app_service_version_id,
-        dpr.created_by,
+        dpr.created_by
         from devops_pipeline dp
         left join devops_pipeline_record dpr on dpr.id = (select max(id) from devops_pipeline_record where pipeline_id =
         dp.id)
         <where>
-            dp.id = 1
+            dp.project_id = #{projectId}
             <if test="param != null">
                 and dp.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
             </if>
