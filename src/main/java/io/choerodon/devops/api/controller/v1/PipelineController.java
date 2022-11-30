@@ -39,7 +39,7 @@ public class PipelineController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验名称项目下是否存在")
-    @GetMapping
+    @GetMapping("/check_name")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
