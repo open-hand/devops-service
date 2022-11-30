@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 public class CiAuditConfigVO {
 
 
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     private Boolean countersigned;
