@@ -87,9 +87,9 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Page<PipelineHomeVO>> paging(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "enable_flag") Boolean enableFlag,
-            @RequestParam(value = "trigger_type") Boolean triggerType,
-            @RequestParam(value = "param") String param) {
+            @RequestParam(value = "enable_flag", required = false) Boolean enableFlag,
+            @RequestParam(value = "trigger_type", required = false) Boolean triggerType,
+            @RequestParam(value = "param", required = false) String param) {
         return ResponseEntity.ok(pipelineService.paging(projectId, enableFlag, triggerType, param));
     }
 
