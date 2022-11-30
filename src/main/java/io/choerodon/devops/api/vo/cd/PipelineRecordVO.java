@@ -38,7 +38,7 @@ public class PipelineRecordVO extends AuditDomain {
     @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
     private Long appServiceId;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
-    private Long appServiceVersion;
+    private Long appServiceVersionId;
 
     private IamUserDTO trigger;
 
@@ -106,11 +106,11 @@ public class PipelineRecordVO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
-    public Long getAppServiceVersion() {
-        return appServiceVersion;
+    public Long getAppServiceVersionId() {
+        return appServiceVersionId;
     }
 
-    public void setAppServiceVersion(Long appServiceVersion) {
-        this.appServiceVersion = appServiceVersion;
+    public void setAppServiceVersionId(Long appServiceVersionId) {
+        this.appServiceVersionId = appServiceVersionId;
     }
 }

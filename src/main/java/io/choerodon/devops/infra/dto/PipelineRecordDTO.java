@@ -56,7 +56,7 @@ public class PipelineRecordDTO extends AuditDomain {
     @Encrypt
     private Long appServiceId;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
-    private Long appServiceVersion;
+    private Long appServiceVersionId;
 
     public Date getStartedDate() {
         return startedDate;
@@ -90,12 +90,12 @@ public class PipelineRecordDTO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
-    public Long getAppServiceVersion() {
-        return appServiceVersion;
+    public Long getAppServiceVersionId() {
+        return appServiceVersionId;
     }
 
-    public void setAppServiceVersion(Long appServiceVersion) {
-        this.appServiceVersion = appServiceVersion;
+    public void setAppServiceVersionId(Long appServiceVersionId) {
+        this.appServiceVersionId = appServiceVersionId;
     }
 
     public Long getId() {
