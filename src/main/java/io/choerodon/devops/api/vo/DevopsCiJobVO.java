@@ -79,6 +79,7 @@ public class DevopsCiJobVO {
 
     private String stageName;
     @ApiModelProperty("任务配置id")
+    @Encrypt
     private Long configId;
 
     @ApiModelProperty("启动延时,单位默认为分")
