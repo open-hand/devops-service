@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import javax.validation.Valid;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,13 @@ public interface AsgardFeignClient {
     ResponseEntity<QuartzTaskDTO> createByServiceCodeAndMethodCode(@RequestParam("source_level") String sourceLevel,
                                                                    @RequestParam("source_id") Long sourceId,
                                                                    @RequestBody @Valid ScheduleTaskDTO dto);
+
+    @ApiOperation(value = "根据name查询定时任务")
+    @GetMapping("/v1/schedules/tasks/internal")
+    ResponseEntity<QuartzTaskDTO> queryByName(@RequestParam("task_name") String taskName);
+
+    @DeleteMapping("/v1/schedules/tasks/delete/job")
+    ResponseEntity<QuartzTaskDTO> deleteByIds(@RequestBody List<Long> ids);
 
     @GetMapping("/v1/sagas/instances/ref/business/instance")
     ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(@RequestParam(value = "refType") String refType,

@@ -6,9 +6,12 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.kubernetes.client.openapi.JSON;
@@ -30,16 +33,19 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
+import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.UseRecordType;
+import io.choerodon.devops.infra.enums.cd.ScheduleTaskOperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -89,14 +95,6 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
-    private DevopsCdJobRecordService devopsCdJobRecordService;
-    @Autowired
-    private DevopsCdStageRecordService devopsCdStageRecordService;
-    @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
-    @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
     @Autowired
     private DevopsClusterOperationRecordMapper devopsClusterOperationRecordMapper;
@@ -111,13 +109,13 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
-    @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
 
     /**
      * devops创建环境
@@ -739,6 +737,33 @@ public class DevopsSagaHandler {
             appServiceService.setAppErrStatus(data, appServiceTransferVO.getProjectId(), appServiceTransferVO.getAppServiceId());
             throw e;
         }
+
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+            description = "创建、修改、删除流水线定时任务",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void createOrDeleteTimeTask(String data) {
+
+        List<ScheduleTaskDTO> scheduleTaskDTOList = JsonHelper.unmarshalByJackson(data, new TypeReference<List<ScheduleTaskDTO>>() {
+        });
+
+        scheduleTaskDTOList.forEach(scheduleTaskDTO -> {
+            QuartzTaskDTO quartzTaskDTO = asgardServiceClientOperator.queryByName(scheduleTaskDTO.getName());
+            List<Long> delTaskIds = new ArrayList<>();
+            if (quartzTaskDTO != null) {
+                delTaskIds.add(quartzTaskDTO.getId());
+                asgardServiceClientOperator.deleteQuartzTask(delTaskIds);
+            }
+
+            if (ScheduleTaskOperationTypeEnum.CREATE.value().equals(scheduleTaskDTO.getOperationType())
+                    || ScheduleTaskOperationTypeEnum.UPDATE.value().equals(scheduleTaskDTO.getOperationType())) {
+                asgardServiceClientOperator.createByServiceCodeAndMethodCode(scheduleTaskDTO.getProjectId(), scheduleTaskDTO);
+            }
+        });
 
     }
 

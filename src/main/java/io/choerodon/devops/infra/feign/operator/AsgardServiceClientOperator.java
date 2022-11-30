@@ -42,6 +42,24 @@ public class AsgardServiceClientOperator {
         }
     }
 
+
+    public QuartzTaskDTO queryByName(String taskName) {
+        ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.queryByName(taskName);
+        QuartzTaskDTO quartzTaskDTO = quartzTaskDTOResponseEntity.getBody();
+        if (quartzTaskDTOResponseEntity.getStatusCode().is2xxSuccessful() && quartzTaskDTO != null && quartzTaskDTO.getId() != null) {
+            return quartzTaskDTOResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.query.quartz.task");
+        }
+    }
+
+    public void deleteQuartzTask(List<Long> quartzTaskIds) {
+        ResponseEntity<QuartzTaskDTO> roleResponseEntity = asgardFeignClient.deleteByIds(quartzTaskIds);
+        if (!roleResponseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.delete.quartz.task");
+        }
+    }
+
     public void retrySaga(Long projectId, Long instanceId) {
         ResponseEntity<Void> voidResponseEntity;
         try {

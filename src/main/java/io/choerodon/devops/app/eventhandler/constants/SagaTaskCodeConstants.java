@@ -330,6 +330,11 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_HZERO_DEPLOY_FAILED = "devops-hzero-deploy-failed";
 
+    /**
+     * 创建流水线定时执行任务
+     */
+    public static final String DEVOPS_CREATE_PIPELINE_TIME_TASK = "devops-create-pipeline-time-task";
+
 
     private SagaTaskCodeConstants() {
     }

@@ -24,6 +24,16 @@ public class AsgardFeignClientFallback implements AsgardFeignClient {
     }
 
     @Override
+    public ResponseEntity<QuartzTaskDTO> queryByName(String taskName) {
+        throw new CommonException("error.query.quartz.task");
+    }
+
+    @Override
+    public ResponseEntity<QuartzTaskDTO> deleteByIds(List<Long> ids) {
+        throw new CommonException("error.delete.quartz.task");
+    }
+
+    @Override
     public ResponseEntity<List<SagaInstanceDetails>> queryByRefTypeAndRefIds(String refType, List<String> refIds, String sagaCode) {
         throw new CommonException("devops.query.instance.detail");
     }
