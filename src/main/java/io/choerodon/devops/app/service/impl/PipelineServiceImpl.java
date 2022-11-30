@@ -11,12 +11,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
+import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.CommonScheduleVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
@@ -63,6 +69,9 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private CdJobOperator cdJobOperator;
 
+    @Autowired
+    private TransactionalProducer transactionalProducer;
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -89,9 +98,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+            description = "创建流水线定时执行计划",
+            inputSchema = "{}")
     public PipelineDTO create(Long projectId, PipelineVO pipelineVO) {
 
-        //
         PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
 
         // 初始化令牌
@@ -99,37 +110,65 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineDTO.setToken(GenerateUUID.generateUUID());
         }
         baseCreate(pipelineDTO);
+        Long pipelineId = pipelineDTO.getId();
 
         // 保存流水线定时执行配置
+        List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
         if (!CollectionUtils.isEmpty(pipelineVO.getPipelineScheduleList())) {
             pipelineVO.getPipelineScheduleList().forEach(pipelineScheduleVO -> {
-                PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(pipelineDTO.getId(), pipelineScheduleVO);
-
-                ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
-                scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineScheduleDTO.getPipelineId() + "-" + pipelineScheduleDTO.getName());
-                scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateCron(pipelineScheduleVO));
-                scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
-                scheduleTaskDTO.setExecuteStrategy(SERIAL);
-
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                String dateString = formatter.format(new Date());
-                scheduleTaskDTO.setStartTimeStr(dateString);
-                ScheduleTaskDTO.NotifyUser notifyUser = new ScheduleTaskDTO.NotifyUser();
-                notifyUser.setAdministrator(true);
-                notifyUser.setAssigner(false);
-                notifyUser.setCreator(false);
-                scheduleTaskDTO.setNotifyUser(notifyUser);
-//                scheduleTaskDTO.setParams();
-                scheduleTaskDTO.setMethodCode("pipelineScheduleTrigger");
-                scheduleTaskDTO.setServiceCode(serviceCode);
+                PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(pipelineId, pipelineScheduleVO);
+                constructScheduleTaskDTO(projectId, pipelineId, scheduleTaskDTOList, pipelineScheduleVO, pipelineScheduleDTO);
             });
         }
 
-        savePipelieVersion(projectId, pipelineVO, pipelineDTO);
+        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
+
+        // 发送saga创建定时任务
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("devops-pipeline")
+                        .withRefId(pipelineId.toString())
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(scheduleTaskDTOList),
+                builder -> {
+                });
         return pipelineDTO;
     }
 
-    private void savePipelieVersion(Long projectId, PipelineVO pipelineVO, PipelineDTO pipelineDTO) {
+    private void constructScheduleTaskDTO(Long projectId,
+                                          Long pipelineId,
+                                          List<ScheduleTaskDTO> scheduleTaskDTOList,
+                                          CommonScheduleVO pipelineScheduleVO,
+                                          PipelineScheduleDTO pipelineScheduleDTO) {
+        ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
+        scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineId + "-" + pipelineScheduleDTO.getName());
+        scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateCron(pipelineScheduleVO));
+        scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
+        scheduleTaskDTO.setExecuteStrategy(SERIAL);
+
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String dateString = formatter.format(new Date());
+        scheduleTaskDTO.setStartTimeStr(dateString);
+        ScheduleTaskDTO.NotifyUser notifyUser = new ScheduleTaskDTO.NotifyUser();
+        notifyUser.setAdministrator(true);
+        notifyUser.setAssigner(false);
+        notifyUser.setCreator(false);
+        scheduleTaskDTO.setNotifyUser(notifyUser);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put(MiscConstants.PROJECT_ID, projectId);
+        params.put(MiscConstants.PIPELINE_ID, pipelineId);
+        params.put(MiscConstants.SCHEDULE_TOKEN, pipelineScheduleDTO.getToken());
+        params.put(MiscConstants.USER_ID, pipelineScheduleDTO.getCreatedBy());
+        scheduleTaskDTO.setParams(params);
+        scheduleTaskDTO.setMethodCode("pipelineScheduleTrigger");
+        scheduleTaskDTO.setServiceCode(serviceCode);
+        scheduleTaskDTOList.add(scheduleTaskDTO);
+    }
+
+    private void savePipelineVersion(Long projectId, PipelineVO pipelineVO, PipelineDTO pipelineDTO) {
         PipelineVersionDTO pipelineVersionDTO = pipelineVersionService.createByPipelineId(pipelineDTO.getId());
         pipelineDTO.setEffectVersionId(pipelineVersionDTO.getId());
         List<PipelineStageVO> stageList = pipelineVO.getStageList();
@@ -199,7 +238,7 @@ public class PipelineServiceImpl implements PipelineService {
         //
         PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
 
-        savePipelieVersion(projectId, pipelineVO, pipelineDTO);
+        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
     }
 
     @Override
