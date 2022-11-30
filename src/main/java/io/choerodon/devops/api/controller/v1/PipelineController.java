@@ -9,6 +9,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
@@ -18,6 +19,8 @@ import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -84,13 +87,16 @@ public class PipelineController extends BaseController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询自动化部署流水线")
     @GetMapping("/paging")
+    @CustomPageRequest
     public ResponseEntity<Page<PipelineHomeVO>> paging(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
             @RequestParam(value = "enable_flag", required = false) Boolean enableFlag,
             @RequestParam(value = "trigger_type", required = false) Boolean triggerType,
             @RequestParam(value = "param", required = false) String param) {
-        return ResponseEntity.ok(pipelineService.paging(projectId, enableFlag, triggerType, param));
+        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enableFlag, triggerType, param));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

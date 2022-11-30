@@ -40,6 +40,8 @@ import io.choerodon.devops.infra.enums.cd.ScheduleTaskOperationTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 流水线表(Pipeline)应用服务
@@ -504,8 +506,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineHomeVO> paging(Long projectId, Boolean enableFlag, Boolean triggerType, String param) {
-        Page<PipelineHomeVO> pipelineVOS = pipelineMapper.pagingByProjectIdAndOptions(projectId, enableFlag, triggerType, param);
+    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enableFlag, Boolean triggerType, String param) {
+        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enableFlag, triggerType, param));
         if (pipelineVOS.isEmpty()) {
             return new Page<>();
         }

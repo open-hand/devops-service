@@ -8,6 +8,7 @@ import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 流水线表(Pipeline)应用服务
@@ -48,7 +49,7 @@ public interface PipelineService {
 
     PipelineVO query(Long projectId, Long id);
 
-    Page<PipelineHomeVO> paging(Long projectId, Boolean enableFlag, Boolean triggerType, String param);
+    Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enableFlag, Boolean triggerType, String param);
 
     Boolean checkName(Long projectId, Long id, String name);
 }
