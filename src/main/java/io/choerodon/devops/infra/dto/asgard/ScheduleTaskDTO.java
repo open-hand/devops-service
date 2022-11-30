@@ -10,6 +10,11 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 public class ScheduleTaskDTO {
+
+    private Long projectId;
+
+    private String operationType;
+
     @ApiModelProperty(value = "执行任务方法id")
     private Long methodId;
 
@@ -83,6 +88,23 @@ public class ScheduleTaskDTO {
         this.simpleRepeatIntervalUnit = "SECONDS";
         this.endTime = null;
         this.cronExpression = null;
+    }
+
+
+    public String getOperationType() {
+        return operationType;
+    }
+
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getServiceCode() {

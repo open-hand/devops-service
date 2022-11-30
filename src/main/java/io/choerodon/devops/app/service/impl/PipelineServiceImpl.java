@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,9 +17,12 @@ import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CommonScheduleVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
+import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
@@ -29,6 +33,8 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
+import io.choerodon.devops.infra.enums.cd.ScheduleTaskOperationTypeEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineMapper;
 import io.choerodon.devops.infra.util.*;
 
@@ -71,6 +77,8 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Autowired
     private TransactionalProducer transactionalProducer;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
 
 
     @Override
@@ -117,7 +125,12 @@ public class PipelineServiceImpl implements PipelineService {
         if (!CollectionUtils.isEmpty(pipelineVO.getPipelineScheduleList())) {
             pipelineVO.getPipelineScheduleList().forEach(pipelineScheduleVO -> {
                 PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(pipelineId, pipelineScheduleVO);
-                constructScheduleTaskDTO(projectId, pipelineId, scheduleTaskDTOList, pipelineScheduleVO, pipelineScheduleDTO);
+                constructScheduleTaskDTO(projectId,
+                        pipelineId,
+                        scheduleTaskDTOList,
+                        pipelineScheduleVO,
+                        pipelineScheduleDTO,
+                        ScheduleTaskOperationTypeEnum.CREATE.value());
             });
         }
 
@@ -141,11 +154,14 @@ public class PipelineServiceImpl implements PipelineService {
                                           Long pipelineId,
                                           List<ScheduleTaskDTO> scheduleTaskDTOList,
                                           CommonScheduleVO pipelineScheduleVO,
-                                          PipelineScheduleDTO pipelineScheduleDTO) {
+                                          PipelineScheduleDTO pipelineScheduleDTO,
+                                          String operationType) {
         ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
         scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineId + "-" + pipelineScheduleDTO.getName());
         scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateCron(pipelineScheduleVO));
         scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
+        scheduleTaskDTO.setProjectId(projectId);
+        scheduleTaskDTO.setOperationType(operationType);
         scheduleTaskDTO.setExecuteStrategy(SERIAL);
 
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -236,9 +252,126 @@ public class PipelineServiceImpl implements PipelineService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Long projectId, Long id, PipelineVO pipelineVO) {
         //
-        PipelineDTO pipelineDTO = ConvertUtils.convertObject(pipelineVO, PipelineDTO.class);
+        PipelineDTO pipelineDTO = baseQueryById(id);
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        // 更新或创建定时计划
+        List<PipelineScheduleDTO> pipelineScheduleDTOS = pipelineScheduleService.listByPipelineId(id);
+        List<PipelineScheduleVO> pipelineScheduleVOS = pipelineVO.getPipelineScheduleList();
+        Map<String, PipelineScheduleDTO> pipelineScheduleDTOMap = null;
+        if (CollectionUtils.isEmpty(pipelineScheduleDTOS)) {
+            pipelineScheduleDTOMap = new HashMap<>();
+//            if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
+//                List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
+//                pipelineScheduleVOS.forEach(pipelineScheduleVO -> {
+//                    PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(id, pipelineScheduleVO);
+//                    constructScheduleTaskDTO(projectId,
+//                            id,
+//                            scheduleTaskDTOList,
+//                            pipelineScheduleVO,
+//                            pipelineScheduleDTO,
+//                            ScheduleTaskOperationTypeEnum.CREATE.value());
+//                });
+//            }
+        } else {
+            pipelineScheduleDTOMap = pipelineScheduleDTOS
+                    .stream()
+                    .collect(Collectors.toMap(PipelineScheduleDTO::getName, Function.identity()));
+        }
+
+        List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
+        // 项目成员只能新建定时计划，无法更新、删除其他用户的定时计划
+        Boolean scheduleEdit;
+        if (userDetails.getAdmin()) {
+            scheduleEdit = true;
+        } else {
+            scheduleEdit = baseServiceClientOperator.checkIsOrgOrProjectGitlabOwner(userDetails.getUserId(), projectId);
+        }
+        if (scheduleEdit) {
+            Map<String, PipelineScheduleVO> pipelineScheduleVOMap = pipelineScheduleVOS.stream().collect(Collectors.toMap(PipelineScheduleVO::getName, Function.identity()));
+            for (PipelineScheduleVO pipelineScheduleVO : pipelineScheduleVOS) {// 不存在则新建
+                if (pipelineScheduleDTOMap.get(pipelineScheduleVO.getName()) == null) {
+                    PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(id, pipelineScheduleVO);
+                    constructScheduleTaskDTO(projectId,
+                            id,
+                            scheduleTaskDTOList,
+                            pipelineScheduleVO,
+                            pipelineScheduleDTO,
+                            ScheduleTaskOperationTypeEnum.CREATE.value());
+                } else {
+                    // 存在则更新
+                    PipelineScheduleDTO oldPipelineScheduleDTO = pipelineScheduleDTOMap.get(pipelineScheduleVO.getName());
+                    oldPipelineScheduleDTO.setTriggerType(pipelineScheduleVO.getTriggerType());
+                    oldPipelineScheduleDTO.setWeekNumber(pipelineScheduleVO.getWeekNumber());
+                    oldPipelineScheduleDTO.setStartHourOfDay(pipelineScheduleVO.getStartHourOfDay());
+                    oldPipelineScheduleDTO.setEndHourOfDay(pipelineScheduleVO.getEndHourOfDay());
+                    oldPipelineScheduleDTO.setPeriod(pipelineScheduleVO.getPeriod());
+                    oldPipelineScheduleDTO.setExecuteTime(pipelineScheduleVO.getExecuteTime());
+                    oldPipelineScheduleDTO.setToken(GenerateUUID.generateUUID());
+                    pipelineScheduleService.baseUpdate(oldPipelineScheduleDTO);
+
+                    constructScheduleTaskDTO(projectId,
+                            id,
+                            scheduleTaskDTOList,
+                            pipelineScheduleVO,
+                            oldPipelineScheduleDTO,
+                            ScheduleTaskOperationTypeEnum.UPDATE.value());
+                }
+            }
+            // 计算要删除的执行计划
+            pipelineScheduleDTOS.forEach(pipelineScheduleDTO -> {
+                if (pipelineScheduleVOMap.get(pipelineScheduleDTO.getName()) == null) {
+                    ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
+                    scheduleTaskDTO.setProjectId(projectId);
+                    scheduleTaskDTO.setName("DevopsPipelineTrigger-" + id + "-" + pipelineScheduleDTO.getName());
+                    scheduleTaskDTO.setOperationType(ScheduleTaskOperationTypeEnum.DELETE.value());
+
+                    scheduleTaskDTOList.add(scheduleTaskDTO);
+                }
+            });
+//                if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
+//
+//                } else {
+//                    // 删除所有定时计划
+//                    pipelineScheduleDTOS.forEach(pipelineScheduleDTO -> {
+//                        ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
+//                        scheduleTaskDTO.setProjectId(projectId);
+//                        scheduleTaskDTO.setName("DevopsPipelineTrigger-" + id + "-" + pipelineScheduleDTO.getName());
+//                        scheduleTaskDTO.setOperationType(ScheduleTaskOperationTypeEnum.DELETE.value());
+//
+//                        scheduleTaskDTOList.add(scheduleTaskDTO);
+//                    });
+//                }
+        } else {
+            // 没有编辑权限，只能新建定时计划
+            if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
+                for (PipelineScheduleVO pipelineScheduleVO : pipelineScheduleVOS) {
+                    if (pipelineScheduleDTOMap.get(pipelineScheduleVO.getName()) == null) {
+                        PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(id, pipelineScheduleVO);
+                        constructScheduleTaskDTO(projectId,
+                                id,
+                                scheduleTaskDTOList,
+                                pipelineScheduleVO,
+                                pipelineScheduleDTO,
+                                ScheduleTaskOperationTypeEnum.CREATE.value());
+                    }
+                }
+            }
+        }
 
         savePipelineVersion(projectId, pipelineVO, pipelineDTO);
+
+        transactionalProducer.apply(
+                StartSagaBuilder.newBuilder()
+                        .withRefType("devops-pipeline")
+                        .withRefId(id.toString())
+                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
+                        .withLevel(ResourceLevel.PROJECT)
+                        .withSourceId(projectId)
+                        .withPayloadAndSerialize(scheduleTaskDTOList),
+                builder -> {
+                });
     }
 
     @Override

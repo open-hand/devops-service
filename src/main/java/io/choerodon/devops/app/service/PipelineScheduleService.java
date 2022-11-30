@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
 import io.choerodon.devops.infra.dto.PipelineScheduleDTO;
 
@@ -14,5 +16,9 @@ public interface PipelineScheduleService {
     PipelineScheduleDTO create(Long pipelineId, PipelineScheduleVO pipelineScheduleVO);
 
     PipelineScheduleDTO queryByToken(String scheduleToken);
+
+    List<PipelineScheduleDTO> listByPipelineId(Long pipelineId);
+
+    void baseUpdate(PipelineScheduleDTO oldPipelineScheduleDTO);
 }
 
