@@ -513,5 +513,10 @@ public class PipelineServiceImpl implements PipelineService {
 
         return pipelineVOS;
     }
+
+    @Override
+    public Boolean checkName(Long projectId, Long id, String name) {
+        return pipelineMapper.checkName(projectId, id, name);
+    }
 }
 

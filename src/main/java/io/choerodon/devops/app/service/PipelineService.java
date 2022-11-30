@@ -49,5 +49,7 @@ public interface PipelineService {
     PipelineVO query(Long projectId, Long id);
 
     Page<PipelineHomeVO> paging(Long projectId, Boolean enableFlag, Boolean triggerType, String param);
+
+    Boolean checkName(Long projectId, Long id, String name);
 }
 

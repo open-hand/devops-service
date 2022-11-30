@@ -35,6 +35,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_pipeline',
                 constraintName: 'devops_pipeline_u1', columnNames: 'token')
+        addUniqueConstraint(tableName: 'devops_pipeline',
+                constraintName: 'devops_pipeline_u2', columnNames: 'project_id,name')
     }
 
 }

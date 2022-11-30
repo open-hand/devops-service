@@ -35,6 +35,19 @@ public class PipelineController extends BaseController {
     private PipelineService pipelineService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "校验名称项目下是否存在")
+    @GetMapping
+    public ResponseEntity<Boolean> checkName(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "修改时需要传，流水线id", required = true)
+            @RequestParam(value = "id", required = false) Long id,
+            @RequestParam(value = "name") String name) {
+        return ResponseEntity.ok(pipelineService.checkName(projectId, id, name));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "项目下创建自动化部署流水线")
     @PostMapping
     public ResponseEntity<PipelineDTO> create(
