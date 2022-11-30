@@ -81,6 +81,7 @@ public class CiTemplateJobVO {
     private Boolean openParallel;
 
     @ApiModelProperty("关联的任务配置id")
+    @Encrypt
     private Long configId;
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
