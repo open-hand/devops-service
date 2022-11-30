@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import java.util.Date;
+import java.util.List;
 import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
@@ -40,6 +41,16 @@ public class PipelineHomeVO {
     private Long createdBy;
 
     private IamUserDTO trigger;
+    @ApiModelProperty("待审核状态时需要的一些数据")
+    private List<DevopsPipelineAuditVO> pipelineAuditInfo;
+
+    public List<DevopsPipelineAuditVO> getPipelineAuditInfo() {
+        return pipelineAuditInfo;
+    }
+
+    public void setPipelineAuditInfo(List<DevopsPipelineAuditVO> pipelineAuditInfo) {
+        this.pipelineAuditInfo = pipelineAuditInfo;
+    }
 
     public Long getCreatedBy() {
         return createdBy;
