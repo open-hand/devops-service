@@ -32,6 +32,8 @@ public interface PipelineRecordService {
      */
     void updateToEndStatus(Long pipelineRecordId, PipelineStatusEnum status);
 
+    void updateStatus(Long pipelineRecordId, String status);
+
     void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList);
 
     void startNextStage(Long nextStageRecordId);

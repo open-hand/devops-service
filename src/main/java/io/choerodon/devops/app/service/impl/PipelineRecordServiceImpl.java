@@ -81,6 +81,20 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long id, String status) {
+        PipelineRecordDTO pipelineRecordDTO = baseQueryById(id);
+        if (!pipelineRecordDTO.getStatus().equals(status)) {
+            pipelineRecordDTO.setStatus(status);
+            if (PipelineStatusEnum.isFinalStatus(status)) {
+                pipelineRecordDTO.setFinishedDate(new Date());
+            }
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper, pipelineRecordDTO, DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
+        }
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
         boolean hasAuditJob = false;
         for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
