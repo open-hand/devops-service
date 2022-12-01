@@ -1,12 +1,8 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.cd.PipelineRecordVO;
-import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -37,7 +33,7 @@ public interface PipelineRecordService {
 
     void updateStatus(Long pipelineRecordId, String status);
 
-    void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList);
+//    void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList);
 
     void startNextStage(Long nextStageRecordId);
 

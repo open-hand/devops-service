@@ -100,37 +100,68 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
 
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
-        boolean hasAuditJob = false;
-        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
-            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-                hasAuditJob = true;
-            } else {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            }
-            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-        }
-        if (Boolean.TRUE.equals(hasAuditJob)) {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-        } else {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-        }
-        pipelineStageRecordService.baseUpdate(firstStageRecordDTO);
-        baseUpdate(pipelineRecordDTO);
-    }
+//    @Override
+//    @Transactional(rollbackFor = Exception.class)
+//    public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
+//        boolean hasAuditJob = false;
+//        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
+//            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
+//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//                hasAuditJob = true;
+//            } else {
+//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            }
+//            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+//        }
+//        if (Boolean.TRUE.equals(hasAuditJob)) {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//        } else {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
+//        }
+//        pipelineStageRecordService.updateStatus(firstStageRecordDTO.getId());
+//        baseUpdate(pipelineRecordDTO);
+//    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void startNextStage(Long nextStageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
-        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
-        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordId(nextStageRecordId);
-        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
+        Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
+//        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(nextStageRecordId);
+//        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
+//        boolean hasAuditJob = false;
+        for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
+            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//                hasAuditJob = true;
+            } else {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+            }
+            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+        }
+
+        String newStageStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
+        if (!pipelineStageRecordDTO.getStatus().equals(newStageStatus)) {
+            pipelineStageRecordService.updateStatus(nextStageRecordId, newStageStatus);
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineRecordId);
+            String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
+
+            updateStatus(pipelineRecordId, newPipelineStatus);
+        }
+
+
+//        if (Boolean.TRUE.equals(hasAuditJob)) {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//        } else {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
+//        }
+//        pipelineStageRecordService.updateStatus(nextStageRecordId);
+//        baseUpdate(pipelineRecordDTO);
     }
 
     @Override
