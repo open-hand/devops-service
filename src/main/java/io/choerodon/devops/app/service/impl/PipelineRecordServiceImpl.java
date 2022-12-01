@@ -75,7 +75,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(PipelineRecordDTO pipelineRecordDTO) {
-        MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper,
                 pipelineRecordDTO,
                 DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
     }
