@@ -16,4 +16,8 @@ public interface DevopsCiSonarQualityGateService {
     QualityGate createQualityGateOnSonarQube(String name);
 
     DevopsCiSonarQualityGateVO buildFromSonarResult( QualityGateResult qualityGateResult );
+
+    DevopsCiSonarQualityGateVO queryByName(String sonarProjectKey);
+
+    Boolean qualityGateExistsByName(String name);
 }

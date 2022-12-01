@@ -54,4 +54,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
             column(name: "creation_date")
         }
     }
+
+    changeSet(author: 'wanghao', id: '2022-10-30-add-index') {
+        createIndex(indexName: "idx-resource-detail-id", tableName: "devops_env_resource") {
+            column(name: "resource_detail_id")
+        }
+    }
 }

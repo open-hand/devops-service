@@ -78,6 +78,17 @@ public class DevopsFixDataTask {
         }
     }
 
+
+    @JobTask(maxRetryCount = 3, code = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据")
+    @TimedTask(name = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
+    public void fixRemainHelmVersionData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(FIX_HELM_IMAGE_VERSION_OF_NULL_DATA);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
     /**
      * 迁移应用服务版本中镜像版本数据
      *
@@ -88,6 +99,25 @@ public class DevopsFixDataTask {
     public void fixImageVersionData(Map<String, Object> map) {
         try {
             devopsCheckLogService.checkLog(FIX_IMAGE_VERSION_DATA);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
+    /**
+     * 删除devops_env_resource_detail脏数据
+     *
+     * @param map
+     */
+    @JobTask(maxRetryCount = 3, code = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA, description = "删除资源详情脏数据")
+//    @TimedTask(name = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA,
+//            description = "删除资源详情脏数据",
+//            params = {},
+//            triggerType = TriggerTypeEnum.CRON_TRIGGER,
+//            cronExpression = "0 0 1 * * ?")
+    public void deleteDevopsEnvResourceDetailData(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA);
         } catch (Exception e) {
             logger.error("devops.fix.data", e);
         }

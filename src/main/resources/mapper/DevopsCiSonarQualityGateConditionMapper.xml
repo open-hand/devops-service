@@ -38,12 +38,9 @@
     </foreach>
   </select>
 
-  <delete id="deleteBySonarIds">
+  <delete id="deleteByGateId">
     DELETE
     FROM devops_ci_sonar_quality_gate_condition
-    WHERE sonar_condition_id IN
-    <foreach collection="conditionSonarIdList" item="sonarId" open="(" close=")" separator=",">
-      #{sonarId}
-    </foreach>
+    WHERE gate_id = #{gateId}
   </delete>
 </mapper>

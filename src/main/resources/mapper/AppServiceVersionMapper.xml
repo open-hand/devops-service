@@ -2,22 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.AppServiceVersionMapper">
-
     <select id="listByAppServiceId" resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
-        SELECT
-            dav.id,
-            dav.version,
-            dav.creation_date,
-            dashv.value_id,
-            dashv.harbor_config_id,
-            dashv.helm_config_id,
-            dashv.harbor_repo_type as repo_type,
-            dashv.readme_value_id
-        FROM
-        devops_app_service_version dav
-        left join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
-        WHERE
-        dav.app_service_id = #{appServiceId}
+        SELECT dav.id,
+               dav.version,
+               dav.creation_date,
+               dashv.value_id,
+               dashv.harbor_config_id,
+               dashv.helm_config_id,
+               dashv.harbor_repo_type as repo_type,
+               dashv.readme_value_id
+        FROM devops_app_service_version dav
+                 left join devops_app_service_helm_version dashv on dav.id = dashv.app_service_version_id
+        WHERE dav.app_service_id = #{appServiceId}
         <if test="param != null and param != ''">
             and dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
@@ -626,5 +622,30 @@
         order by id desc
         limit 1
 
+    </select>
+
+    <select id="queryCountVersionsWithHelmConfigNullOrImageConfigNull" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM devops_app_service_version
+        WHERE repo_type IS NOT NULL
+          AND ((helm_config_id IS NULL) OR (helm_config_id IS NOT NULL AND harbor_config_id IS NULL))
+    </select>
+
+    <select id="listAllVersionsWithHelmConfigNullOrImageConfigNull"
+            resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
+        SELECT dasv.id,
+               dasv.helm_config_id,
+               dasv.repo_type,
+               dasv.harbor_config_id,
+               dasv.value_id,
+               dasv.readme_value_id,
+               dasv.image,
+               dasv.repository,
+               dasv.app_service_id,
+               das.project_id
+        FROM devops_app_service_version dasv
+                 INNER JOIN devops_app_service das ON das.id = dasv.app_service_id
+        WHERE dasv.repo_type IS NOT NULL
+          AND ((dasv.helm_config_id IS NULL) OR (dasv.helm_config_id IS NOT NULL AND dasv.harbor_config_id IS NULL))
     </select>
 </mapper>

@@ -12,5 +12,5 @@ public interface DevopsCiSonarQualityGateConditionMapper extends BaseMapper<Devo
 
     List<DevopsCiSonarQualityGateConditionDTO> listBySonarIds(@Param("conditionSonarIdList") List<String> conditionSonarIdList);
 
-    void deleteBySonarIds(@Param("conditionSonarIdList") List<String> conditionSonarIdList);
+    void deleteByGateId(@Param("gateId") Long gateId);
 }

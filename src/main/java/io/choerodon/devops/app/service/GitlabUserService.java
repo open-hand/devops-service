@@ -74,4 +74,7 @@ public interface GitlabUserService {
     void assignAdmin(UserAttrDTO user);
 
     void deleteAdmin(Long iamUserId);
+
+    void syncGroupPermission(Long projectId);
+
 }

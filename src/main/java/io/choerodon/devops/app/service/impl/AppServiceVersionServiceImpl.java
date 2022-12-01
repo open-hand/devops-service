@@ -988,6 +988,16 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     }
 
     @Override
+    public Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull() {
+        return appServiceVersionMapper.queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+    }
+
+    @Override
+    public List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull() {
+        return appServiceVersionMapper.listAllVersionsWithHelmConfigNullOrImageConfigNull();
+    }
+
+    @Override
     public AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version) {
         return appServiceVersionMapper.queryLatestByAppServiceIdVersionType(appServiceId, version);
     }

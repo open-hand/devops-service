@@ -83,7 +83,7 @@ public class DevopsCiPipelineSonarServiceImpl implements DevopsCiPipelineSonarSe
 
     @Override
     public Boolean getSonarQualityGateScanResult(Long gitlabPipelineId, String token) {
-        AppServiceDTO appServiceDTO = appServiceService.queryByTokenOrThrowE(token);
+        AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(token);
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
         Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String projectKey = AppServiceServiceImpl.getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());

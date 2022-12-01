@@ -9,5 +9,5 @@ public interface DevopsCiSonarQualityGateConditionService {
 
     List<DevopsCiSonarQualityGateConditionVO> listByGateId(Long id);
 
-    void deleteBySonarIds(List<String> conditionSonarIdList);
+    void deleteByGateId(Long gateId);
 }

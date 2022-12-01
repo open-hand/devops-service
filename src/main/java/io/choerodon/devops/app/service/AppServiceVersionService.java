@@ -245,5 +245,9 @@ public interface AppServiceVersionService {
 
     Integer queryCountVersionsWithHarborConfig();
 
+    Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull();
+
+    List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
+
     AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
 }

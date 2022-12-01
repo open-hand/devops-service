@@ -12,7 +12,7 @@ import io.choerodon.devops.infra.dto.DevopsHostDTO;
  */
 public class CdHostDeployConfigVO {
 
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     @ApiModelProperty("应用id")
     private Long appId;
 
@@ -30,7 +30,7 @@ public class CdHostDeployConfigVO {
     @ApiModelProperty("主机部署类型 jar/other")
     private String hostDeployType;
 
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     @ApiModelProperty("主机ID")
     private Long hostId;
 

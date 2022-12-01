@@ -13,4 +13,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsEnvResourceDetailMapper extends BaseMapper<DevopsEnvResourceDetailDTO> {
     List<DevopsEnvResourceDetailDTO> listByResourceDetailIds(@Param("resourceDetailIds") Set<Long> resourceDetailIds);
+
+    List<Long> selectDirtyDataIdWithLimit();
+
+    void batchDeleteByIdInNewTrans(@Param("ids") List<Long> ids);
 }

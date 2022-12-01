@@ -1319,7 +1319,7 @@ public class AppServiceServiceImpl implements AppServiceService {
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
-        return saveAppService(projectId, appServiceImportVO, null, true);
+        return saveAppService(projectId, appServiceImportVO, null, false);
     }
 
     private AppServiceRepVO saveAppService(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate, Boolean importFromGeneralGit) {
@@ -1813,7 +1813,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                         break;
                     case QUALITY_GATE_DETAILS:
                         QualityGateResult qualityGateResult = gson.fromJson(measure.getValue(), QualityGateResult.class);
-                        sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        String sonarProjectKey = getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());
+                        Boolean sonarQualityExists = devopsCiSonarQualityGateService.qualityGateExistsByName(sonarProjectKey);
+                        if (Boolean.TRUE.equals(sonarQualityExists)) {
+                            sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        }
                         sonarContentsVO.setStatus(qualityGateResult.getLevel());
                         break;
                     default:
