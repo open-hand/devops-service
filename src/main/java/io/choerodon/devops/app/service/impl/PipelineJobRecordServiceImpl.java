@@ -45,6 +45,10 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Autowired
     private PipelineRecordService pipelineRecordService;
     @Autowired
+    private PipelineJobRecordService pipelineJobRecordService;
+    @Autowired
+    private PipelineStageRecordService pipelineStageRecordService;
+    @Autowired
     private PipelineAuditRecordService pipelineAuditRecordService;
     @Autowired
     private PipelineAuditUserRecordService pipelineAuditUserRecordService;
@@ -129,6 +133,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public AuditResultVO auditJob(Long projectId, Long id, String result) {
         PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
+        Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
         PipelineAuditRecordDTO pipelineAuditRecordDTO = pipelineAuditRecordService.queryByJobRecordIdForUpdate(id);
@@ -196,7 +201,23 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
-
+            Boolean auditSuccess = false;
+            if (pipelineAuditRecordDTO.getCountersigned()) {
+                auditSuccess = pipelineAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
+            } else {
+                auditSuccess = pipelineAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
+            }
+            if (auditSuccess) {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
+                pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+                // 更新阶段状态
+                pipelineStageRecordService.updateStatus(stageRecordId);
+            } else {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.STOP.value());
+                pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+                // 更新阶段状态
+                pipelineStageRecordService.updateStatus(stageRecordId);
+            }
         }
 
         return auditResultVO;

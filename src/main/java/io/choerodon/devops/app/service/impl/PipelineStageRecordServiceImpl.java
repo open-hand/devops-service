@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,9 +81,15 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long stageRecordId, PipelineStatusEnum status) {
+        updateStatus(stageRecordId, status.value());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long stageRecordId, String status) {
         PipelineStageRecordDTO pipelineStageRecordDTO = baseQueryById(stageRecordId);
 
-        pipelineStageRecordDTO.setStatus(status.value());
+        pipelineStageRecordDTO.setStatus(status);
 
         pipelineStageRecordMapper.updateByPrimaryKeySelective(pipelineStageRecordDTO);
     }
@@ -92,16 +99,29 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     public void updateStatus(Long stageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = baseQueryById(stageRecordId);
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(stageRecordId);
-        if (pipelineJobRecordDTOS.stream().allMatch(job -> PipelineStatusEnum.SUCCESS.value().equals(job.getStatus()))) {
-            updateStatus(stageRecordId, PipelineStatusEnum.SUCCESS);
-            // 执行下一阶段任务
-            if (pipelineStageRecordDTO.getNextStageRecordId() != null) {
-                pipelineRecordService.startNextStage(pipelineStageRecordDTO.getNextStageRecordId());
-            } else {
-                // 没有下一阶段则说明流水线执行完成，更新流水线状态
-                pipelineRecordService.updateToEndStatus(pipelineStageRecordDTO.getPipelineRecordId(), PipelineStatusEnum.SUCCESS);
+
+        String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
+
+        if (!newStatus.equals(pipelineStageRecordDTO.getStatus())) {
+            updateStatus(stageRecordId, newStatus);
+            pipelineRecordService.updateStatus(pipelineStageRecordDTO.getPipelineRecordId(), newStatus);
+            if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)) {
+                // 执行下一阶段任务
+                if (pipelineStageRecordDTO.getNextStageRecordId() != null) {
+                    pipelineRecordService.startNextStage(pipelineStageRecordDTO.getNextStageRecordId());
+                }
+//                else {
+//                    // 没有下一阶段则说明流水线执行完成，更新流水线状态
+//                    pipelineRecordService.updateToEndStatus(pipelineStageRecordDTO.getPipelineRecordId(), PipelineStatusEnum.SUCCESS);
+//                }
             }
         }
+//
+//
+//        if (pipelineJobRecordDTOS.stream().allMatch(job -> PipelineStatusEnum.SUCCESS.value().equals(job.getStatus()))) {
+//            updateStatus(stageRecordId, PipelineStatusEnum.SUCCESS);
+//
+//        }
     }
 }
 

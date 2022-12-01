@@ -6,6 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job_record.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
+            column(name: 'name', type: 'VARCHAR(64)', remarks: '名称') {
+                constraints(nullable: false)
+            }
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '所属流水线Id,devops_pipeline.id') {
                 constraints(nullable: false)
             }

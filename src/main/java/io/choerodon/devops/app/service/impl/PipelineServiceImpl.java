@@ -433,6 +433,7 @@ public class PipelineServiceImpl implements PipelineService {
             PipelineStageDTO stage = sortedPipelineStage.get(i);
             Long stageId = stage.getId();
             PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO(id,
+                    stage.getName(),
                     stageId,
                     pipelineRecordId,
                     stage.getSequence(),
@@ -447,6 +448,7 @@ public class PipelineServiceImpl implements PipelineService {
                 Long jobId = job.getId();
                 PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(id,
                         jobId,
+                        job.getName(),
                         pipelineRecordId,
                         stageRecordId,
                         PipelineStatusEnum.CREATED.value(),
