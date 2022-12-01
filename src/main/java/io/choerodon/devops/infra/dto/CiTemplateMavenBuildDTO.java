@@ -116,9 +116,12 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
         this.nexusMavenRepoIds = nexusMavenRepoIds;
     }
 
-    @Override
-    public Class<? extends SecurityToken> associateEntityClass() {
-        return null;
+    public List<MavenRepoVO> getRepos() {
+        return repos;
+    }
+
+    public void setRepos(List<MavenRepoVO> repos) {
+        this.repos = repos;
     }
 }
 
