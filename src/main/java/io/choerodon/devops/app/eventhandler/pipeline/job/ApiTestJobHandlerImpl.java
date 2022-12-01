@@ -110,8 +110,8 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
             String[] encryptArray = KeyDecryptHelper.encryptArray(notifyUserIds.split(","));
             notifyUserIds = encryptArray == null ? "" : String.join(",", encryptArray);
         }
-
-        devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiApiTestInfoVO.class));
+        devopsCiApiTestInfoVO.setNotifyUserIds(notifyUserIds);
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(devopsCiApiTestInfoVO);
     }
 
 
