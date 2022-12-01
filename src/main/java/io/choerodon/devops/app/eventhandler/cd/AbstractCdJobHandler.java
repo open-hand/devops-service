@@ -71,13 +71,12 @@ public abstract class AbstractCdJobHandler {
     /**
      * 保存任务配置，实现类如果需要存储任务配置则重写
      *
-     * @param ciPipelineId
+     * @param pipelineId
      * @param devopsCiJobVO
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     protected Long saveConfig(Long pipelineId, PipelineJobVO devopsCiJobVO) {
-        // do nothong
+        // do nothing
         return null;
     }
 

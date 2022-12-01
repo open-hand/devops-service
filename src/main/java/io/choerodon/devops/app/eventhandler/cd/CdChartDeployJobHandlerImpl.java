@@ -60,7 +60,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
-        super.checkConfigInfo(projectId, pipelineJobVO);
+        // todo
     }
 
     @Override

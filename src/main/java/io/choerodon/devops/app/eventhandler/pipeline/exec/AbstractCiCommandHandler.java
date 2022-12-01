@@ -57,8 +57,6 @@ public abstract class AbstractCiCommandHandler {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = devopsCiJobRecordService.queryByAppServiceIdAndGitlabJobId(appServiceId, gitlabJobId);
         if (devopsCiJobRecordDTO == null) {
             devopsCiJobRecordDTO = devopsCiJobRecordService.syncJobRecord(gitlabJobId, appServiceId, ciPipelineRecordId, ciPipelineId, gitlabProjectId);
-
-//            throw new DevopsCiInvalidException(DEVOPS_CI_JOB_RECORD_QUERY);
         }
         CustomContextUtil.setUserContext(devopsCiJobRecordDTO.getTriggerUserId());
         try {

@@ -79,7 +79,6 @@ public abstract class AbstractJobHandler {
      * @param devopsCiJobVO
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         // do nothong
         return null;

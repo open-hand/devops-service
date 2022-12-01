@@ -79,39 +79,6 @@ public abstract class AbstractAppDeployCommandHandler extends AbstractCiCommandH
                                       DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO,
                                       DevopsCiJobRecordDTO devopsCiJobRecordDTO);
 
-//    protected boolean checkUserPermission(StringBuilder log, Long userId, Long envId, Boolean skipCheckPermission) {
-//        log.append("## 2.校验用户环境权限...").append(System.lineSeparator());
-//        if (Boolean.FALSE.equals(skipCheckPermission)) {
-//            log.append("不允许非环境人员触发此部署任务，校验用户权限").append(System.lineSeparator());
-//            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
-//                    userId))) {
-//                log.append("用户没有环境权限，跳过此部署任务").append(System.lineSeparator());
-//                return true;
-//            } else {
-//                log.append("用户权限校验通过").append(System.lineSeparator());
-//            }
-//        } else {
-//            log.append("允许非环境人员触发此部署任务，选择部署账户").append(System.lineSeparator());
-//            if (Boolean.FALSE.equals(devopsEnvUserPermissionService.checkUserEnvPermission(envId,
-//                    userId))) {
-//                log.append("用户没有环境权限，使用admin账户部署").append(System.lineSeparator());
-//                CustomContextUtil.setUserContext(IamAdminIdHolder.getAdminId());
-//            } else {
-//                log.append("用户拥有环境权限，使用用户账户部署").append(System.lineSeparator());
-//            }
-//        }
-//        return false;
-//    }
-//
-//    protected boolean checkAutoMaticDeploy(StringBuilder log, Long envId) {
-//        log.append("## 1. 校验环境是否开启自动部署...").append(System.lineSeparator());
-//        if (Boolean.FALSE.equals(devopsEnvironmentService.queryByIdOrThrowE(envId).getAutoDeploy())) {
-//            log.append("环境自动部署已关闭，跳过此部署任务。").append(System.lineSeparator());
-//            return true;
-//        }
-//        return false;
-//    }
-
 
     protected abstract AppDeployConfigVO queryConfigById(Long configId);
 
