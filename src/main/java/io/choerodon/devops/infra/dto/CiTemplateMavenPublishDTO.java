@@ -48,6 +48,16 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @ApiModelProperty(value = "所属步骤Id", required = true)
     @NotNull
     private Long ciTemplateStepId;
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表 json")
+    private String nexusMavenRepoIdStr;
+
+    @ApiModelProperty("发包的目的仓库信息 json格式")
+    private String targetRepoStr;
+
+    @Encrypt
+    @ApiModelProperty("nexus的maven仓库在制品库的主键id")
+    private Long nexusRepoId;
 
 
     public Long getId() {
@@ -83,5 +93,28 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
+    public String getNexusMavenRepoIdStr() {
+        return nexusMavenRepoIdStr;
+    }
+
+    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
+        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
+    }
+
+    public String getTargetRepoStr() {
+        return targetRepoStr;
+    }
+
+    public void setTargetRepoStr(String targetRepoStr) {
+        this.targetRepoStr = targetRepoStr;
+    }
+
+    public Long getNexusRepoId() {
+        return nexusRepoId;
+    }
+
+    public void setNexusRepoId(Long nexusRepoId) {
+        this.nexusRepoId = nexusRepoId;
+    }
 }
 
