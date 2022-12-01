@@ -49,6 +49,9 @@ public class CiTemplateStageDTO extends AuditDomain {
     @NotNull
     private Long sequence;
 
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+
     public Long getSequence() {
         return sequence;
     }
@@ -81,5 +84,12 @@ public class CiTemplateStageDTO extends AuditDomain {
         this.pipelineTemplateId = pipelineTemplateId;
     }
 
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
+    }
 }
 
