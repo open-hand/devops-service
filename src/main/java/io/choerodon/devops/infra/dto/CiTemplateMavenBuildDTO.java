@@ -48,6 +48,10 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
     @NotNull
     private Long ciTemplateStepId;
 
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表 json")
+    private String nexusMavenRepoIdStr;
+
 
     public Long getId() {
         return id;
@@ -81,5 +85,12 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
+    public String getNexusMavenRepoIdStr() {
+        return nexusMavenRepoIdStr;
+    }
+
+    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
+        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
+    }
 }
 
