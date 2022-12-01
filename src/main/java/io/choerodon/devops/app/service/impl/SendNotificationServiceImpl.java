@@ -1152,7 +1152,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
                     params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
-                    params.put("pipelineIdRecordId", pipelineRecordId.toString());
+                    params.put("pipelineIdRecordId", KeyDecryptHelper.encryptValueWithoutToken(pipelineRecordId));
                     //加上查看详情的url
                     params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
                             projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId), pipelineRecordId.toString()));
@@ -1247,7 +1247,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
         params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
         params.put(MessageCodeConstants.STAGE_NAME, stage);
-        params.put(MessageCodeConstants.REL_ID, ciPipelineRecordId.toString());
+        params.put(MessageCodeConstants.REL_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineRecordId));
         params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
         params.put(MessageCodeConstants.LINK,
                 String.format(MessageCodeConstants.BASE_URL,
