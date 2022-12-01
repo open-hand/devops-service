@@ -14,6 +14,8 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import java.util.Set;
+
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)实体类
  *
@@ -46,11 +48,15 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
 
     @ApiModelProperty(value = "所属步骤Id", required = true)
     @NotNull
+    @Encrypt
     private Long ciTemplateStepId;
 
-    @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表 json")
     private String nexusMavenRepoIdStr;
+
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表")
+    private Set<Long> nexusMavenRepoIds;
 
 
     public Long getId() {
@@ -91,6 +97,14 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
 
     public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
         this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
+    }
+
+    public Set<Long> getNexusMavenRepoIds() {
+        return nexusMavenRepoIds;
+    }
+
+    public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
+        this.nexusMavenRepoIds = nexusMavenRepoIds;
     }
 }
 
