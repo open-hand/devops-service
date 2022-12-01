@@ -1,15 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -22,6 +21,8 @@ import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
+import io.choerodon.devops.infra.enums.PipelineStatus;
+import io.choerodon.devops.infra.enums.cd.CdAuditStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineJobRecordMapper;
@@ -201,7 +202,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         }
         // 审核结束则执行job
         if (auditFinishFlag) {
-            Boolean auditSuccess = false;
+            Boolean auditSuccess;
             if (pipelineAuditRecordDTO.getCountersigned()) {
                 auditSuccess = pipelineAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
             } else {
@@ -209,15 +210,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
             }
             if (auditSuccess) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
-                pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-                // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.STOP.value());
-                pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-                // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
             }
+            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+            // 更新阶段状态
+            pipelineStageRecordService.updateStatus(stageRecordId);
         }
 
         return auditResultVO;
@@ -225,7 +223,58 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     @Override
     public AduitStatusChangeVO checkAuditStatus(Long projectId, Long id) {
-        return null;
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = pipelineAuditRecordService.queryByJobRecordIdForUpdate(id);
+
+        List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
+        AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
+        aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
+        if (!pipelineAuditRecordDTO.getCountersigned()) {
+            List<PipelineAuditUserRecordDTO> passedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            List<PipelineAuditUserRecordDTO> refusedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+            if (!CollectionUtils.isEmpty(passedAuditUserRecordDTOS)) {
+                calculatAuditUserName(passedAuditUserRecordDTOS, aduitStatusChangeVO);
+                aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+            }
+            if (!CollectionUtils.isEmpty(refusedAuditUserRecordDTOS)) {
+                calculatAuditUserName(refusedAuditUserRecordDTOS, aduitStatusChangeVO);
+                aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
+            }
+        } else {
+            List<PipelineAuditUserRecordDTO> notAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())).collect(Collectors.toList());
+            // 没有未审核的则状态改变
+            if (CollectionUtils.isEmpty(notAuditUserRecordDTOS)) {
+                List<PipelineAuditUserRecordDTO> refusedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> AuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
+                // 没人拒绝则审核通过
+                if (CollectionUtils.isEmpty(refusedAuditUserRecordDTOS)) {
+                    calculatAuditUserName(pipelineAuditUserRecordDTOS, aduitStatusChangeVO);
+                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.SUCCESS.toValue());
+                } else {
+                    calculatAuditUserName(pipelineAuditUserRecordDTOS, aduitStatusChangeVO);
+                    aduitStatusChangeVO.setCurrentStatus(PipelineStatus.STOP.toValue());
+                }
+            }
+        }
+
+        return aduitStatusChangeVO;
+    }
+
+    private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
+
+        if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {
+            aduitStatusChangeVO.setAuditStatusChanged(true);
+            List<Long> userIds = ciAuditUserRecordDTOS.stream().map(PipelineAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+            List<String> userNameList = new ArrayList<>();
+            iamUserDTOS.forEach(iamUserDTO -> {
+                if (Boolean.TRUE.equals(iamUserDTO.getLdap())) {
+                    userNameList.add(iamUserDTO.getLoginName());
+                } else {
+                    userNameList.add(iamUserDTO.getEmail());
+                }
+            });
+            aduitStatusChangeVO.setAuditUserName(StringUtils.join(userNameList, ","));
+        }
     }
 }
 
