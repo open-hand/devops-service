@@ -19,9 +19,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_user.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        createIndex(tableName: 'devops_pipeline_audit_user', indexName: 'devops_pipeline_audit_user_n1') {
-            column(name: 'audit_config_id')
-        }
         addUniqueConstraint(tableName: 'devops_pipeline_audit_user',
                 constraintName: 'devops_pipeline_audit_user_u1', columnNames: 'audit_config_id,user_id')
     }
