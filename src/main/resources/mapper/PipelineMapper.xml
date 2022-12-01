@@ -31,10 +31,10 @@
                 and dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             </if>
             <if test="enable!=null">
-                and dp.is_enabled = #{enable}
+                and dp.is_enable = #{enable}
             </if>
             <if test="triggerType!=null">
-                and dp.trigger_type = #{triggerType}
+                and dpr.trigger_type = #{triggerType}
             </if>
             <if test="status!=null">
                 and dpr.status = #{status}
