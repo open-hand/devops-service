@@ -24,4 +24,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_maven_publish.groovy'
         addUniqueConstraint(tableName: 'devops_ci_template_maven_publish', constraintName: 'uk_ci_template_step_id', columnNames: 'ci_template_step_id')
     }
 
+    changeSet(author: 'wx', id: '2022-12-1-add-column') {
+        addColumn(tableName: 'devops_ci_template_maven_publish') {
+            column(name: 'nexus_maven_repo_id_str', type: 'VARCHAR(1024)', remarks: '项目下已有的maven仓库id列表',afterColumn: "repo_str")
+            column(name: 'nexus_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id',afterColumn: "repo_str")
+            column(name: "target_repo_str", type: "TEXT", remarks: '发包的目的仓库信息 json格式', afterColumn: "repo_str")
+        }
+    }
+
 }
