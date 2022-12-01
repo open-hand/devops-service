@@ -55,7 +55,7 @@ public class CdAuditJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
-        pipelineAuditRecordService.initAuditRecord(pipelineId, pipelineJobRecordDTO.getId(), job.getConfigId());
+        pipelineAuditRecordService.initAuditRecord(pipelineId, pipelineJobRecordDTO.getPipelineRecordId(), pipelineJobRecordDTO.getId(), job.getConfigId());
     }
 
     @Override

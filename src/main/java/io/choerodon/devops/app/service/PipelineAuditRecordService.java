@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
 
 /**
@@ -14,9 +16,11 @@ public interface PipelineAuditRecordService {
 
     void baseCreate(PipelineAuditRecordDTO pipelineAuditRecordDTO);
 
-    void initAuditRecord(Long pipelineId, Long jobRecordId, Long configId);
+    void initAuditRecord(Long pipelineId, Long pipelineRecordId, Long jobRecordId, Long configId);
 
     PipelineAuditRecordDTO queryByJobRecordId(Long jobRecordId);
+
+    List<PipelineAuditRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
 
     PipelineAuditRecordDTO queryByJobRecordIdForUpdate(Long jobRecordId);
 }
