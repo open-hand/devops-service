@@ -129,6 +129,40 @@ public final class KeyDecryptHelper {
     }
 
     /**
+     * 解密加密id字符串的数组为Long数组
+     *
+     * @param ids 字符串数组
+     * @return Long数据
+     */
+    @Nullable
+    public static String[] encryptArray(@Nullable String[] ids) {
+        if (ids == null || ids.length == 0) {
+            return null;
+        }
+
+        List<String> result = new ArrayList<>();
+
+        if (EncryptContext.isEncrypt()) {
+            ensureEncryptService();
+            for (int i = 0; i < ids.length; i++) {
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(ENCRYPTION_SERVICE.encrypt(ids[i], EMPTY));
+                }
+            }
+        } else {
+            for (int i = 0; i < ids.length; i++) {
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(ids[i]);
+                }
+            }
+        }
+        return result.toArray(new String[ids.length]);
+    }
+
+
+    /**
      * 解密加密id字符串的列表为Long列表
      *
      * @param ids 字符串数组

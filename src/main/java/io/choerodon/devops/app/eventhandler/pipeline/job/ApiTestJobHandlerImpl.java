@@ -104,6 +104,13 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        DevopsCiApiTestInfoVO devopsCiApiTestInfoVO = ConvertUtils.convertObject(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiApiTestInfoVO.class);
+        String notifyUserIds = devopsCiApiTestInfoVO.getNotifyUserIds();
+        if (!ObjectUtils.isEmpty(notifyUserIds)) {
+            String[] encryptArray = KeyDecryptHelper.encryptArray(notifyUserIds.split(","));
+            notifyUserIds = encryptArray == null ? "" : String.join(",", encryptArray);
+        }
+
         devopsCiJobVO.setDevopsCiApiTestInfoVO(ConvertUtils.convertObject(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiApiTestInfoVO.class));
     }
 
