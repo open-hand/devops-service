@@ -25,6 +25,9 @@ public class CiTemplateStageVO {
     @NotNull
     private Long sequence;
 
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+
     private List<CiTemplateJobVO> ciTemplateJobVOList;
 
     public List<CiTemplateJobVO> getCiTemplateJobVOList() {
@@ -65,5 +68,13 @@ public class CiTemplateStageVO {
 
     public void setPipelineTemplateId(Long pipelineTemplateId) {
         this.pipelineTemplateId = pipelineTemplateId;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
     }
 }
