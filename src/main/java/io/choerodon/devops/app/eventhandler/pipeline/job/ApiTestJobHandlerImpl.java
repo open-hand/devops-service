@@ -90,7 +90,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoDTO devopsCiApiTestInfoDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiApiTestInfoVO(), DevopsCiApiTestInfoDTO.class);
         Long[] notifyUserIds = ObjectUtils.isEmpty(devopsCiApiTestInfoDTO.getNotifyUserIds()) ? new Long[]{} : KeyDecryptHelper.decryptIdArray(devopsCiApiTestInfoDTO.getNotifyUserIds().split(","));
-        devopsCiApiTestInfoDTO.setNotifyUserIds(Arrays.stream(notifyUserIds).map(Object::toString).collect(Collectors.joining(",")));
+        devopsCiApiTestInfoDTO.setNotifyUserIds(notifyUserIds == null ? "" : Arrays.stream(notifyUserIds).map(Object::toString).collect(Collectors.joining(",")));
         devopsCiApiTestInfoDTO.setId(null);
         devopsCiApiTestInfoDTO.setCiPipelineId(ciPipelineId);
         devopsCiApiTestInfoService.insert(devopsCiApiTestInfoDTO);
