@@ -816,6 +816,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public DevopsEnvironmentDTO queryByIdOrThrowE(Long id) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(id);
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("devops.get.environment");
+        }
+        return devopsEnvironmentDTO;
+    }
+
+    @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!isCodePatternValid(code)) {
             throw new CommonException("devops.env.code.notMatch");

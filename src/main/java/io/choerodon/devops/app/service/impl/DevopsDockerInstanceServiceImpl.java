@@ -97,7 +97,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
 
@@ -127,7 +127,7 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
 
         // 如果该应用关联了流水线，同步修改流水线里面的信息
-        devopsCdHostDeployInfoService.updateDockerDeployInfoFromAppCenter(dockerDeployVO);
+        devopsCiHostDeployInfoService.updateDockerDeployInfoFromAppCenter(dockerDeployVO);
 
         //保存命令
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);

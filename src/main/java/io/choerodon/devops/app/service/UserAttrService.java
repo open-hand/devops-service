@@ -58,8 +58,6 @@ public interface UserAttrService {
 
     UserAttrDTO baseQueryById(Long id);
 
-    UserAttrDTO baseQueryByIamUserId(Long iamUserId);
-
     Long baseQueryUserIdByGitlabUserId(Long gitLabUserId);
 
     List<UserAttrDTO> baseListByGitlabUserIds(List<Long> gitlabUserIds);
@@ -69,6 +67,8 @@ public interface UserAttrService {
     void baseUpdate(UserAttrDTO userAttrDTO);
 
     UserAttrDTO baseQueryByGitlabUserName(String gitlabUserName);
+
+    Long getIamUserIdByGitlabUserName(String username);
 
     /**
      * 更改用户 is_gitlab_admin字段的值

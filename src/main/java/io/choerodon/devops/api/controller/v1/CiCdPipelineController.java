@@ -19,10 +19,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
-import io.choerodon.devops.app.service.CiCdPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
@@ -45,10 +46,6 @@ public class CiCdPipelineController {
 
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-    @Autowired
-    private DevopsCdJobService devopsCdJobService;
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线")
@@ -166,7 +163,7 @@ public class CiCdPipelineController {
             @RequestParam(value = "tag", defaultValue = "false") Boolean tag,
             @RequestBody Map<String, String> variables) {
         DevopsCiPipelineAdditionalValidator.additionalCheckVariablesKey(variables);
-        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref, tag, variables);
+        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         return ResponseEntity.noContent().build();
     }
 
@@ -296,6 +293,14 @@ public class CiCdPipelineController {
         return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
+    @ApiOperation("查询测试套件是否关联流水线")
+    @GetMapping("/suite_related_with_pipeline")
+    public ResponseEntity<Boolean> doesApiTestSuiteRelatedWithPipeline(@ApiParam(value = "项目Id", required = true)
+                                                                       @PathVariable(value = "project_id") Long projectId,
+                                                                       @RequestParam(value = "suite_id") Long suiteId) {
+        return Results.success(devopsCiPipelineService.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询流水线下定义的函数")
@@ -309,13 +314,14 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
 
-    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-    @GetMapping("/api_test/list")
-    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Results.success(devopsCdJobService.listCdApiTestConfig());
-    }
+//    @Deprecated
+//    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
+//    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
+//    @GetMapping("/api_test/list")
+//    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
+//            @ApiParam(value = "项目 ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId) {
+//        return Results.success(devopsCdJobService.listCdApiTestConfig());
+//    }
 
 }

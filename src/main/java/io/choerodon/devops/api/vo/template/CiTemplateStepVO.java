@@ -2,13 +2,12 @@ package io.choerodon.devops.api.vo.template;
 
 import java.util.Date;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
-import org.hibernate.validator.constraints.Length;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
 import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
 import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
@@ -67,8 +66,21 @@ public class CiTemplateStepVO {
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
     private CiTemplateMavenBuildDTO mavenBuildConfig;
 
+    @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
+    private CiTemplateAuditConfigVO ciAuditConfig;
+
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+
+    public CiTemplateAuditConfigVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiTemplateAuditConfigVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
 
     public Long getCreatedBy() {
         return createdBy;
@@ -222,5 +234,13 @@ public class CiTemplateStepVO {
 
     public void setMavenBuildConfig(CiTemplateMavenBuildDTO mavenBuildConfig) {
         this.mavenBuildConfig = mavenBuildConfig;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
     }
 }

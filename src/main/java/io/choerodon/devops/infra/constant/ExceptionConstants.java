@@ -191,6 +191,13 @@ public class ExceptionConstants {
         public static final String DEVOPS_LOAD_YAML_CONTENT = "devops.load.yaml.content";
     }
 
+    public static class AppCode {
+        public static final String DEVOPS_APP_CODE_IS_EMPTY = "devops.app.code.is.empty";
+        public static final String DEVOPS_APP_NAME_IS_EMPTY = "devops.app.name.is.empty";
+        public static final String DEVOPS_APP_ID_IS_EMPTY = "devops.app.id.is.empty";
+        public static final String DEVOPS_APP_DEPLOY_TYPE_IS_EMPTY = "devops.app.deployType.is.empty";
+    }
+
 
     /**
      * 外置仓库配置相关

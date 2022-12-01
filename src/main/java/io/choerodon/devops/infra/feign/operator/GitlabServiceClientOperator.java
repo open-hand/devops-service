@@ -1528,7 +1528,7 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public JobDTO playJob(int gitlabProjectId, int jobId, int gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
+    public JobDTO playJob(Integer gitlabProjectId, Integer jobId, Integer gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
         if (appExternalConfigDTO == null) {
             return gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
                     null,
@@ -1546,6 +1546,10 @@ public class GitlabServiceClientOperator {
                     appExternalConfigDTO.getUsername(),
                     appExternalConfigDTO.getPassword()).getBody();
         }
+    }
+
+    public JobDTO queryJob(int gitlabProjectId, int jobId) {
+        return gitlabServiceClient.queryJob(gitlabProjectId, jobId).getBody();
     }
 
     public BranchDTO getBranch(int gitlabProjectId, String ref) {

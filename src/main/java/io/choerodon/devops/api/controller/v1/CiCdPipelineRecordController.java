@@ -13,8 +13,10 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.CiPipelineRecordVO;
+import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.app.service.CiCdPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -27,70 +29,76 @@ public class CiCdPipelineRecordController {
 
     @Autowired
     private CiCdPipelineRecordService ciCdPipelineRecordService;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询指定流水线记录详情")
     @GetMapping("/details")
-    public ResponseEntity<CiCdPipelineRecordVO> queryPipelineRecordDetails(
+    public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "ci与cd记录关系表", required = true)
-            @RequestParam(value = "record_rel_id") Long recordRelId) {
-        return ResponseEntity.ok(ciCdPipelineRecordService.queryPipelineRecordDetails(projectId, recordRelId));
+            @Encrypt(ignoreUserConflict = true)
+            @ApiParam(value = "流水线记录id", required = true)
+            @RequestParam(value = "id") Long id) {
+        return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, id));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "重试整条流水线")
     @GetMapping("/retry")
     public ResponseEntity<Void> retryPipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
+            @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
+            @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.retryPipeline(projectId, pipelineRecordRelId, gitlabProjectId);
+        devopsCiPipelineRecordService.retryPipeline(projectId, id, gitlabProjectId);
         return Results.success();
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "重试cd任务")
-    @GetMapping("/retry_cd_task")
-    public ResponseEntity<Void> retryPipelineCdTask(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId) {
-        ciCdPipelineRecordService.retryCdPipeline(projectId, cdPipelineRecordId, true);
-        return Results.success();
-    }
+//    @Deprecated
+//    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "重试cd任务", hidden = true)
+//    @GetMapping("/retry_cd_task")
+//    public ResponseEntity<Void> retryPipelineCdTask(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt
+//            @ApiParam(value = "cd流水线记录id", required = true)
+//            @RequestParam(value = "cd_pipeline_record_id") Long cdPipelineRecordId) {
+//        ciCdPipelineRecordService.retryCdPipeline(projectId, cdPipelineRecordId, true);
+//        return Results.success();
+//    }
 
     /**
      * Cancel jobs in a pipeline
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "取消流水线")
     @GetMapping(value = "/cancel")
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "cd流水线记录id", required = true)
-            @RequestParam(value = "record_rel_id") Long pipelineRecordRelId,
+            @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
+            @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        ciCdPipelineRecordService.cancel(projectId, pipelineRecordRelId, gitlabProjectId);
+        devopsCiPipelineRecordService.cancelPipeline(projectId, id, gitlabProjectId);
         return ResponseEntity.noContent().build();
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询流水线执行记录")
     @GetMapping("/{pipeline_id}")
-    public ResponseEntity<Page<CiCdPipelineRecordVO>> pagingPipelineRecord(
+    public ResponseEntity<Page<CiPipelineRecordVO>> pagingPipelineRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "流水线Id", required = true)
+            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {

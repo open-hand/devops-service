@@ -44,6 +44,10 @@ function export_commit_tag() {
    then
        return
    fi
+   # 没有git目录也不处理
+   if [ ! -d ".git" ]; then
+       return
+   fi
 
     # 获取commit时间
     C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
@@ -696,7 +700,7 @@ function rewrite_image_info() {
     cat rewrite_image_info.json
     echo "Query repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       cat rewrite_image_info.json
@@ -723,7 +727,7 @@ function rewrite_image_info_for_chart() {
   then
     echo "Query chart repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       echo "Query chart repo info failed,skip rewrite image info"
@@ -735,4 +739,146 @@ function rewrite_image_info_for_chart() {
     fi
   fi
 
+}
+## chart部署
+## $1 部署配置id
+function chart_deploy() {
+  app_deploy "${1}" chart_deploy
+}
+
+## chart部署
+## $1 部署配置id
+function deployment_deploy() {
+  app_deploy "${1}" deployment_deploy
+}
+## $1 部署配置id
+## $2 指令类型
+function app_deploy() {
+  http_status_code=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "gitlab_job_id=${CI_JOB_ID}" \
+    -F "config_id=$1" \
+    -F "command_type=$2" \
+    "${CHOERODON_URL}/devops/ci/exec_command" \
+    -o "result.json" \
+    -s \
+    -w %{http_code})
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Deploy failed."
+    exit 1
+  else
+    is_failed=$(jq -r .failed result.json)
+    message=$(jq -r .message result.json)
+    # 打印后台返回的日志
+    if [ -n "${message}" ]; then
+        echo "${message}"
+    fi
+    # 判断是否成功
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Deploy failed"
+      exit 1
+    fi
+  fi
+}
+
+# 部署主机应用
+## $1 部署配置id
+## $2 指令类型
+function host_deploy(){
+    http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+    if [ "$http_status_code" != "200" ];
+    then
+      echo "Deploy failed."
+      exit 1
+    else
+      is_failed=$(jq -r .failed result.json)
+      message=$(jq -r .message result.json)
+      command_id=$(jq -r .content.commandId result.json)
+      # 打印后台返回的日志
+      if [ -n "${message}" ]; then
+          echo "${message}"
+      fi
+
+      # 判断是否成功
+      if [ "${is_failed}" == "true" ];then
+        echo "Deploy failed"
+        exit 1
+      else
+        host_deploy_status_check ${command_id}
+      fi
+    fi
+}
+
+# 检查主机应用部署命令执行结果
+function host_deploy_status_check() {
+    while :
+    do
+      echo "等待agent执行部署命令..."
+      sleep 5s
+      http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/host_command_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&command_id=$1")
+      if [ "$http_status_code" != "200" ];
+      then
+        echo "Failed to check deploy status.HttpStatusCode is ${http_status_code}.Response is:\n"
+        cat result.json
+        exit 1
+      else
+        is_failed=$(jq -r .failed result.json)
+        status=$(jq -r .content.status result.json)
+        error_msg=$(jq -r .content.errorMsg result.json)
+        if [ "${is_failed}" == "true" ];then
+          echo "部署失败"
+          cat result.json
+          exit 1
+        else
+          if [ "${status}" == "success" ]; then
+              echo "部署成功"
+              exit 0
+          fi
+        fi
+      fi
+    done
+}
+
+## 执行人工审核任务
+function process_audit() {
+   http_status_code=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    "${CHOERODON_URL}/devops/ci/audit_status" \
+    -o "result.json" \
+    -s \
+    -w %{http_code})
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "audit failed."
+    exit 1
+  else
+    if [ "$(jq -r .countersigned result.json)" == "true" ];
+      then
+        echo "审核模式为：会签"
+      else
+        echo "审核模式为：或签"
+    fi
+    echo "审核通过人员：$(jq -r '.passedUserNameList | join(",")' result.json)"
+    echo "审核拒绝人员：$(jq -r '.refusedUserNameList | join(",")' result.json)"
+    echo "未审核人员：$(jq -r '.notAuditUserNameList | join(",")' result.json)"
+    if [ "$(jq -r .success result.json)" == "true" ];
+    then
+        echo "审核结果：通过"
+    else
+        echo "审核结果：终止"
+        exit 1
+    fi
+  fi
+}
+
+function execute_api_test(){
+  # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
+ java -jar /choerodon/app.jar
 }

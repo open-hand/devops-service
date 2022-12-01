@@ -19,13 +19,23 @@ import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.pipeline.*;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
+import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.enums.JobTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.mapper.DevopsCdAuditMapper;
+import io.choerodon.devops.infra.mapper.DevopsCdStageMapper;
 import io.choerodon.devops.infra.mapper.AppServiceHelmVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsCheckLogMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.mapper.DevopsEnvResourceDetailMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -41,6 +51,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     public static final String FIX_HELM_REPO_DATA = "fixHelmRepoData";
     public static final String FIX_HELM_VERSION_DATA = "fixHelmVersionData";
     public static final String FIX_IMAGE_VERSION_DATA = "fixImageVersionData";
+    public static final String MIGRATION_CD_PIPELINE_DATE = "migrationCdPipelineDate";
+
+    private static Map<String, String> jobTypeMapping = new HashMap<>();
     public static final String DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA = "deleteDevopsEnvResourceDetailData";
 
     public static final String HARBOR_CONFIG_ID_CACHE_KEY_TEMPLATE = "%s-%s";
@@ -66,6 +79,36 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private AppServiceHelmVersionMapper appServiceHelmVersionMapper;
     @Autowired
     private AppServiceHelmRelService appServiceHelmRelService;
+    @Autowired
+    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    @Autowired
+    private DevopsCdApiTestInfoService devopsCdApiTestInfoService;
+
+
+    static {
+        jobTypeMapping.put(JobTypeEnum.CD_AUDIT.value(), CiJobTypeEnum.AUDIT.value());
+        jobTypeMapping.put(JobTypeEnum.CD_DEPLOY.value(), CiJobTypeEnum.CHART_DEPLOY.value());
+        jobTypeMapping.put(JobTypeEnum.CD_DEPLOYMENT.value(), CiJobTypeEnum.DEPLOYMENT_DEPLOY.value());
+        jobTypeMapping.put(JobTypeEnum.CD_API_TEST.value(), CiJobTypeEnum.API_TEST.value());
+        jobTypeMapping.put(JobTypeEnum.CD_HOST.value(), CiJobTypeEnum.HOST_DEPLOY.value());
+    }
+
+    @Autowired
+    private DevopsCdStageService devopsCdStageService;
+    @Autowired
+    private DevopsCdStageMapper devopsCdStageMapper;
+    @Autowired
+    private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
+    @Autowired
+    private DevopsCiStageService devopsCiStageService;
+    @Autowired
+    private DevopsCdJobService devopsCdJobService;
+    @Autowired
+    private DevopsCdAuditMapper devopsCdAuditMapper;
+    @Autowired
+    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    @Autowired
+    private JobOperator jobOperator;
 
     @Autowired
     private HarborService harborService;
@@ -101,6 +144,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case FIX_HELM_IMAGE_VERSION_OF_NULL_DATA:
                 fixIHelmImageVersionOfNullData();
+            case MIGRATION_CD_PIPELINE_DATE:
+                migrationCdPipelineDate();
+                break;
             default:
                 LOGGER.info("version not matched");
                 return;
@@ -108,6 +154,135 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogDTO.setLog(task);
         devopsCheckLogDTO.setEndCheckDate(new Date());
         devopsCheckLogMapper.insert(devopsCheckLogDTO);
+    }
+
+    /**
+     * 迁移cd流水线数据
+     * 1. 包含ci阶段的cd数据迁移到到ci
+     * 2. 不包含ci阶段的cd数据迁移到新的部署流水线
+     */
+    private void migrationCdPipelineDate() {
+        // 查询所有的cd阶段
+        List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.selectAll();
+        if (!CollectionUtils.isEmpty(devopsCdStageDTOS)) {
+            // 按流水线id分组
+            Map<Long, List<DevopsCdStageDTO>> stageMap = devopsCdStageDTOS.stream().collect(Collectors.groupingBy(DevopsCdStageDTO::getPipelineId));
+            stageMap.forEach((pipelineId, cdStageDTOS) -> {
+                //
+                CiCdPipelineDTO ciCdPipelineDTO = devopsCiCdPipelineMapper.selectByPrimaryKey(pipelineId);
+                if (ciCdPipelineDTO != null) {
+                    Long projectId = ciCdPipelineDTO.getProjectId();
+                    List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
+                    if (!CollectionUtils.isEmpty(devopsCiStageDTOS)) {
+                        // 查询最大的阶段sequence
+                        Long maxSequence = devopsCiStageDTOS.stream().max(Comparator.comparing(DevopsCiStageDTO::getSequence)).map(DevopsCiStageDTO::getSequence).get();
+                        // 将cd的每个任务都渲染为一个单独的阶段
+                        for (DevopsCdStageDTO cdStageDTO : cdStageDTOS) {
+                            // 查询阶段下的任务
+                            List<DevopsCdJobDTO> devopsCdJobDTOS = devopsCdJobService.listByStageId(cdStageDTO.getId());
+                            if (!CollectionUtils.isEmpty(devopsCdJobDTOS)) {
+                                // 升序排序
+                                List<DevopsCdJobDTO> cdJobDTOS = devopsCdJobDTOS
+                                        .stream()
+                                        .sorted(Comparator.comparing(DevopsCdJobDTO::getSequence))
+                                        .collect(Collectors.toList());
+                                for (DevopsCdJobDTO cdJobDTO : cdJobDTOS) {
+                                    // 新建ci阶段
+                                    maxSequence = maxSequence + 1L;
+                                    DevopsCiStageDTO devopsCiStageDTO = new DevopsCiStageDTO();
+                                    devopsCiStageDTO.setCiPipelineId(pipelineId);
+                                    devopsCiStageDTO.setName(cdJobDTO.getName());
+                                    devopsCiStageDTO.setSequence(maxSequence);
+                                    devopsCiStageService.create(devopsCiStageDTO);
+                                    // 保存cd任务到新的ci阶段
+                                    // 1. 填充基础数据
+                                    DevopsCiJobVO devopsCiJobVO = new DevopsCiJobVO();
+                                    devopsCiJobVO.setName(cdJobDTO.getName());
+                                    devopsCiJobVO.setTriggerType(cdJobDTO.getTriggerType());
+                                    devopsCiJobVO.setTriggerValue(cdJobDTO.getTriggerValue());
+                                    // 2. 按类型填充任务数据
+                                    if (JobTypeEnum.CD_AUDIT.value().equals(cdJobDTO.getType())) {
+                                        CiAuditConfigVO ciAuditConfigVO = new CiAuditConfigVO();
+                                        ciAuditConfigVO.setCountersigned(cdJobDTO.getCountersigned() == 1);
+
+                                        DevopsCdAuditDTO devopsCdAuditDTO = new DevopsCdAuditDTO();
+                                        devopsCdAuditDTO.setCdJobId(cdJobDTO.getId());
+                                        List<DevopsCdAuditDTO> auditDTOList = devopsCdAuditMapper.select(devopsCdAuditDTO);
+                                        // 保存任务配置
+                                        if (!CollectionUtils.isEmpty(auditDTOList)) {
+                                            Set<Long> uids = auditDTOList.stream().map(DevopsCdAuditDTO::getUserId).collect(Collectors.toSet());
+                                            ciAuditConfigVO.setCdAuditUserIds(new ArrayList<>(uids));
+                                        }
+                                        devopsCiJobVO.setTags("cd");
+                                        devopsCiJobVO.setCiAuditConfig(ciAuditConfigVO);
+                                        devopsCiJobVO.setType(CiJobTypeEnum.AUDIT.value());
+
+                                        AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.AUDIT.value());
+                                        handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+
+                                    }
+                                    if (JobTypeEnum.CD_DEPLOY.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdEnvDeployInfoDTO != null) {
+                                            CiChartDeployConfigVO ciChartDeployConfigVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, CiChartDeployConfigVO.class);
+
+                                            devopsCiJobVO.setTags("cd");
+                                            devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigVO);
+                                            devopsCiJobVO.setType(CiJobTypeEnum.CHART_DEPLOY.value());
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.CHART_DEPLOY.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
+                                    }
+                                    if (JobTypeEnum.CD_DEPLOYMENT.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdEnvDeployInfoDTO != null) {
+                                            CiDeployDeployCfgVO ciDeployDeployCfgVO = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, CiDeployDeployCfgVO.class);
+
+                                            devopsCiJobVO.setTags("cd");
+                                            devopsCiJobVO.setCiDeployDeployCfg(ciDeployDeployCfgVO);
+                                            devopsCiJobVO.setType(CiJobTypeEnum.DEPLOYMENT_DEPLOY.value());
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.DEPLOYMENT_DEPLOY.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
+                                    }
+                                    if (JobTypeEnum.CD_HOST.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdHostDeployInfoDTO devopsCdHostDeployInfoDTO = devopsCdHostDeployInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdHostDeployInfoDTO != null) {
+                                            DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = ConvertUtils.convertObject(devopsCdHostDeployInfoDTO, DevopsCiHostDeployInfoVO.class);
+
+                                            devopsCiJobVO.setTags("cd");
+                                            devopsCiJobVO.setType(CiJobTypeEnum.HOST_DEPLOY.value());
+                                            devopsCiJobVO.setDevopsCiHostDeployInfoVO(devopsCiHostDeployInfoVO);
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.HOST_DEPLOY.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
+                                    }
+                                    if (JobTypeEnum.CD_API_TEST.value().equals(cdJobDTO.getType())) {
+                                        DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO = devopsCdApiTestInfoService.queryById(cdJobDTO.getDeployInfoId());
+                                        if (devopsCdApiTestInfoDTO != null) {
+                                            DevopsCiApiTestInfoVO devopsCiApiTestInfoVO = ConvertUtils.convertObject(devopsCdApiTestInfoDTO, DevopsCiApiTestInfoVO.class);
+
+                                            devopsCiJobVO.setType(CiJobTypeEnum.API_TEST.value());
+                                            devopsCiJobVO.setDevopsCiApiTestInfoVO(devopsCiApiTestInfoVO);
+
+                                            AbstractJobHandler handler = jobOperator.getHandler(CiJobTypeEnum.API_TEST.value());
+                                            handler.saveJobInfo(projectId, pipelineId, devopsCiStageDTO.getId(), devopsCiJobVO);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    } else {
+                        // todo 迁移到部署流水线
+                    }
+                }
+            });
+
+        }
     }
 
     private void fixIHelmImageVersionOfNullData() {

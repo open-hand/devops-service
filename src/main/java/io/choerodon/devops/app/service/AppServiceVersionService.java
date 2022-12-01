@@ -248,4 +248,6 @@ public interface AppServiceVersionService {
     Integer queryCountVersionsWithHelmConfigNullOrImageConfigNull();
 
     List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull();
+
+    AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
 }

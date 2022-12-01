@@ -1,31 +1,65 @@
 package io.choerodon.devops.infra.dto;
 
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  19:11 2019/4/3
- * Description:
+ * 流水线阶段表(PipelineStage)实体类
+ *
+ * @author
+ * @since 2022-11-24 15:52:48
  */
-@ModifyAudit
+
+@ApiModel("流水线阶段表")
 @VersionAudit
+@ModifyAudit
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Table(name = "devops_pipeline_stage")
 public class PipelineStageDTO extends AuditDomain {
+    private static final long serialVersionUID = 392058232343265274L;
+
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_PIPELINE_ID = "pipelineId";
+    public static final String FIELD_VERSION_ID = "versionId";
+    public static final String FIELD_NAME = "name";
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue
     private Long id;
-    private String stageName;
-    private String triggerType;
-    private Integer isParallel;
-    private Long projectId;
+
+    @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
+    @NotNull
     private Long pipelineId;
+
+    @ApiModelProperty(value = "所属版本Id,devops_pipeline_version.id", required = true)
+    @NotNull
+    private Long versionId;
+
+    @ApiModelProperty(value = "名称", required = true)
+    @NotBlank
+    private String name;
+
+    @ApiModelProperty(value = "阶段顺序", required = true)
+    private Integer sequence;
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 
     public Long getId() {
         return id;
@@ -35,38 +69,6 @@ public class PipelineStageDTO extends AuditDomain {
         this.id = id;
     }
 
-    public String getStageName() {
-        return stageName;
-    }
-
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
-    }
-
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
-    }
-
-    public Integer getIsParallel() {
-        return isParallel;
-    }
-
-    public void setIsParallel(Integer isParallel) {
-        this.isParallel = isParallel;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
     public Long getPipelineId() {
         return pipelineId;
     }
@@ -74,4 +76,22 @@ public class PipelineStageDTO extends AuditDomain {
     public void setPipelineId(Long pipelineId) {
         this.pipelineId = pipelineId;
     }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
 }
+

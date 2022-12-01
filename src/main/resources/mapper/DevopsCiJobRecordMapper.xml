@@ -34,7 +34,22 @@
     </foreach>
 
 
-
-
     </insert>
+    <select id="queryLatestedPipelineRecord"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select *
+        from devops_ci_pipeline_record dcpr
+        where ci_pipeline_id = #{pipelineId}
+        order by id desc
+        limit 1;
+    </select>
+
+  <update id="updateApiTestTaskRecordInfo">
+    UPDATE devops_ci_job_record dcjr
+      JOIN devops_app_service das ON das.id = dcjr.app_service_id
+    SET dcjr.config_id=#{configId},
+        dcjr.api_test_task_record_id=#{apiTestTaskRecordId}
+    WHERE dcjr.gitlab_job_id = #{gitlabJobId}
+      AND das.token = #{token}
+  </update>
 </mapper>

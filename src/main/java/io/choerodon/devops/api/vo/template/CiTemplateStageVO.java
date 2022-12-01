@@ -27,6 +27,13 @@ public class CiTemplateStageVO {
 
     private List<CiTemplateJobVO> ciTemplateJobVOList;
 
+    public List<CiTemplateJobVO> getCiTemplateJobVOList() {
+        return ciTemplateJobVOList;
+    }
+
+    public void setCiTemplateJobVOList(List<CiTemplateJobVO> ciTemplateJobVOList) {
+        this.ciTemplateJobVOList = ciTemplateJobVOList;
+    }
 
     public Long getSequence() {
         return sequence;
@@ -34,14 +41,6 @@ public class CiTemplateStageVO {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
-    }
-
-    public List<CiTemplateJobVO> getCiTemplateJobVOList() {
-        return ciTemplateJobVOList;
-    }
-
-    public void setCiTemplateJobVOList(List<CiTemplateJobVO> ciTemplateJobVOList) {
-        this.ciTemplateJobVOList = ciTemplateJobVOList;
     }
 
     public Long getId() {

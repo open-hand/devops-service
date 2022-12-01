@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import javax.annotation.Nullable;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DockerComposeDeployVO;
 import io.choerodon.devops.api.vo.host.DevopsDockerInstanceVO;
@@ -17,10 +19,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DockerComposeService {
 
     DevopsHostCommandDTO deployDockerComposeApp(Long projectId, DockerComposeDeployVO dockerComposeDeployVO);
-
     DevopsHostCommandDTO updateDockerComposeApp(Long projectId,
-                                                Long id,
-                                                Long cdJobRecordId,
+                                                Long appId,
+                                                @Nullable Long cdJobRecordId,
+                                                @Nullable Long pipelineRecordId,
                                                 DockerComposeDeployVO dockerComposeDeployVO,
                                                 Boolean fromPipeline);
 

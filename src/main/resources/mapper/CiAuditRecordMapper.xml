@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.CiAuditRecordMapper">
+
+    <select id="queryByUniqueOptionForUpdate" resultType="io.choerodon.devops.infra.dto.CiAuditRecordDTO">
+        SELECT *
+        FROM devops_ci_audit_record
+        WHERE app_service_id = #{appServiceId}
+          and gitlab_pipeline_id = #{gitlabPipelineId}
+          AND job_name = #{name}
+            FOR
+        UPDATE
+    </select>
+</mapper>
+

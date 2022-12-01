@@ -2,8 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
 
@@ -56,9 +59,50 @@ public interface DevopsCiPipelineRecordService {
      */
     DevopsCiPipelineRecordDTO queryById(Long ciPipelineRecordId);
 
+    DevopsCiPipelineRecordDTO queryByIdWithPipelineName(Long ciPipelineRecordId);
+
     DevopsCiPipelineRecordDTO queryByGitlabPipelineId(Long devopsPipelineId, Long gitlabPipelineId);
 
     List<DevopsCiPipelineRecordDTO> queryNotSynchronizedRecord(Long statusUpdatePeriodMilliSeconds);
 
     DevopsCiPipelineRecordVO queryByCiPipelineRecordId(Long ciPipelineRecordId);
+
+    DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(Long appServiceId, Long gitlabPipelineId);
+
+    List<CiPipelineRecordVO> listByPipelineId(Long pipelineId);
+
+    /**
+     * 为流水线记录添加阶段，任务等信息
+     *
+     * @param recordVO
+     */
+    void fillAdditionalInfo(CiPipelineRecordVO recordVO);
+
+    DevopsCiPipelineRecordDTO queryLatestedPipelineRecord(Long pipelineId);
+
+    /**
+     * 重试流水线
+     *
+     * @param projectId
+     * @param id
+     * @param gitlabProjectId
+     */
+    void retryPipeline(Long projectId, Long id, Long gitlabProjectId);
+
+    /**
+     * 取消流水线
+     *
+     * @param projectId
+     * @param id
+     * @param gitlabProjectId
+     */
+    void cancelPipeline(Long projectId, Long id, Long gitlabProjectId);
+
+    Long ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    Long ciPipelineDeployJar(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    Long ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 }

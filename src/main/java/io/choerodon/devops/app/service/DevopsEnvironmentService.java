@@ -372,4 +372,6 @@ public interface DevopsEnvironmentService {
     DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId);
 
     Boolean checkEnableCreateEnv(Long projectId);
+
+    DevopsEnvironmentDTO queryByIdOrThrowE(Long id);
 }

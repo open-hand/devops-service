@@ -15,15 +15,13 @@
         SELECT
         dcp.id,dcp.`name`,dcp.is_enabled AS enabled, dcp.app_service_id,dcp.project_id,
         das.`name` AS app_service_name, das.gitlab_project_id, dcp.image,dcp.last_update_date,
-        dcp.last_updated_by,dcp.creation_date
+        dcp.last_updated_by,dcp.creation_date,
+        dcpr.status as latest_execute_status, dcpr.creation_date as latest_execute_date, dcpr.id is not null as
+        has_records
         FROM devops_cicd_pipeline dcp
         INNER JOIN devops_app_service das ON dcp.app_service_id = das.id
-        <if test="status != null">
-            LEFT JOIN devops_pipeline_record_rel ldprr ON ldprr.id = (SELECT max(id) FROM devops_pipeline_record_rel
-            WHERE pipeline_id = dcp.id)
-            left join devops_ci_pipeline_record dcpr on dcpr.id = ldprr.ci_pipeline_record_id
-            left join devops_cd_pipeline_record dcpr2 on dcpr2.id = ldprr.cd_pipeline_record_id
-        </if>
+        left join devops_ci_pipeline_record dcpr on dcpr.id = (SELECT max(id) FROM devops_ci_pipeline_record WHERE
+        ci_pipeline_id = dcp.id)
         <where>
             dcp.project_id = #{projectId}
             <if test="searchParam != null">
@@ -43,29 +41,7 @@
                 and dcp.is_enabled = #{enableFlag}
             </if>
             <if test="status != null">
-                <choose>
-                    <when test="status != null and status == 'not_audit'">
-                        and dcpr2.status = 'not_audit'
-                    </when>
-                    <when test="status != null and status == 'success'">
-                        and (
-                        dcpr2.status = 'success'
-                        or (dcpr2.status is null and dcpr.status = 'success')
-                        )
-                    </when>
-                    <when test="status != null and status == 'skipped'">
-                        and (dcpr2.status = 'skipped'
-                        or dcpr.status = 'skipped'
-                        or (dcpr2.status is null and dcpr.status is null)
-                        )
-                    </when>
-                    <when test="status != null and status == 'failed'">
-                        and (dcpr2.status = 'failed' or dcpr.status = 'failed' )
-                    </when>
-                    <otherwise>
-                        and (dcpr2.status = #{status} or dcpr.status = #{status} )
-                    </otherwise>
-                </choose>
+                and dcpr.status = #{status}
             </if>
         </where>
         ORDER BY dcp.id DESC
@@ -74,8 +50,8 @@
     <select id="listPipelineNameByTaskConfigId" resultType="java.lang.String">
         SELECT dp.name
         FROM devops_cicd_pipeline dp
-                     JOIN devops_cd_job dcj ON dp.id = dcj.pipeline_id
-                     JOIN devops_cd_api_test_info dcati ON dcati.id = dcj.deploy_info_id
+                     JOIN devops_ci_job dcj ON dp.id = dcj.ci_pipeline_id
+                     JOIN devops_ci_api_test_info dcati ON dcati.id = dcj.config_id
         WHERE dcati.api_test_config_id = #{taskConfigId}
     </select>
 </mapper>

@@ -17,7 +17,6 @@ import io.choerodon.devops.api.vo.ExternalTenantVO;
 import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
-import io.choerodon.devops.api.vo.iam.AppDownloadDevopsReqVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
 
@@ -97,10 +96,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<Page<ProjectDTO>> pageProjectsByOrgId(Long organizationId, Map<String, Object> pageable, String name, String code, Boolean enabled, String params) {
         throw new CommonException("devops.page.projects.byOrgId");
-    }
-
-    public ResponseEntity<String> completeDownloadApplication(Long publishAppVersionId, Long appVersionId, Long organizationId, List<AppDownloadDevopsReqVO> appDownloadDevopsReqVOS) {
-        throw new CommonException("devops.application.download.complete");
     }
 
     @Override

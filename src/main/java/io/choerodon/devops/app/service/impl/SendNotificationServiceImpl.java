@@ -66,9 +66,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private static final String APP_SERVICE_ID = "appServiceId";
     private static final String CURRENT_STATUS = "currentStatus";
     private static final String CLUSTER_ID = "clusterId";
-    private static final String PIPE_LINE_NAME = "pipelineName";
+
     private static final String ORGANIZATION_ID = "organizationId";
-    private static final String PROJECT_NAME = "projectName";
+
     private static final String PROJECT_ID = "projectId";
     private static final String APP_SERVICE_NAME = "appServiceName";
     private static final String LINK = "link";
@@ -122,6 +122,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCiPipelineRecordService ciPipelineRecordService;
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
+    @Autowired
+    @Lazy
+    private DevopsCiPipelineService devopsCiPipelineService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -198,7 +201,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         return StringMapBuilder.newBuilder()
                 .put(ORGANIZATION_ID, organizationId)
                 .put(PROJECT_ID, projectId)
-                .put(PROJECT_NAME, projectName)
+                .put(MessageCodeConstants.PROJECT_NAME, projectName)
                 .put("projectCategory", projectCategory)
                 .put(APP_SERVICE_NAME, appServiceDTO.getName())
                 .put("appServerId", appServiceDTO.getId())
@@ -311,7 +314,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             .put("gitlabUrl", gitlabUrl)
                             .put("organizationCode", organizationDTO.getTenantNum())
                             .put("projectCode", projectDTO.getCode())
-                            .put(PROJECT_NAME, projectDTO.getName())
+                            .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                             .put("appServiceCode", appServiceDTO.getCode())
                             .put(APP_SERVICE_NAME, appServiceDTO.getName())
                             .put("gitlabPipelineId", gitlabPipelineId)
@@ -350,7 +353,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
             Map<String, String> params = StringMapBuilder.newBuilder()
                     .put(PROJECT_ID, projectDTO.getId())
-                    .put(PROJECT_NAME, projectDTO.getName())
+                    .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                     .put(APP_SERVICE_ID, appServiceDTO.getId())
                     .put(APP_SERVICE_NAME, appServiceDTO.getName())
                     .put("status", "success")
@@ -366,7 +369,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         doWithTryCatchAndLog(() -> {
                     Map<String, String> params = StringMapBuilder.newBuilder()
                             .put("projectid", projectDTO.getId())
-                            .put(PROJECT_NAME, projectDTO.getName())
+                            .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                             .put(APP_SERVICE_ID, appServiceDTO.getId())
                             .put(APP_SERVICE_NAME, appServiceDTO.getName())
                             .put("appServiceVersionId", appServiceVersionDTO.getId())
@@ -407,7 +410,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("gitlabUrl", gitlabUrl)
                 .put("organizationCode", organizationCode)
                 .put("projectCode", projectCode)
-                .put(PROJECT_NAME, projectName)
+                .put(MessageCodeConstants.PROJECT_NAME, projectName)
                 .put("appServiceCode", appServiceCode)
                 .put(APP_SERVICE_NAME, appServiceName)
                 .put("realName", realName)
@@ -604,7 +607,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             String finalResourceName = StringUtils.isEmpty(resourceName) ? devopsEnvironmentDTO.getName() : resourceName;
 
             Map<String, String> params = StringMapBuilder.newBuilder()
-                    .put(PROJECT_NAME, Objects.requireNonNull(projectDTO.getName()))
+                    .put(MessageCodeConstants.PROJECT_NAME, Objects.requireNonNull(projectDTO.getName()))
                     .put(ENV_NAME, Objects.requireNonNull(devopsEnvironmentDTO.getName()))
                     .put("resourceName", Objects.requireNonNull(finalResourceName))
                     .putAll(webHookParams)
@@ -845,9 +848,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     protected Map<String, String> constructCdParamsForPipeline(DevopsCdPipelineRecordDTO recordDTO, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put(PIPE_LINE_NAME, recordDTO.getPipelineName())
+                .put(MessageCodeConstants.PIPE_LINE_NAME, recordDTO.getPipelineName())
                 .put(PROJECT_ID, recordDTO.getProjectId())
-                .put(PROJECT_NAME, projectDTO.getName())
+                .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                 .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
                 .put(STAGE_ID, stageId)
                 .put("triggerType", recordDTO.getTriggerType())
@@ -858,9 +861,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
     protected Map<String, String> constructCiParamsForPipeline(String pipelineName, ProjectDTO projectDTO, @Nullable Map<?, ?> params, Long stageId, String stageName) {
         return StringMapBuilder.newBuilder()
-                .put(PIPE_LINE_NAME, pipelineName)
+                .put(MessageCodeConstants.PIPE_LINE_NAME, pipelineName)
                 .put(PROJECT_ID, projectDTO.getId())
-                .put(PROJECT_NAME, projectDTO.getName())
+                .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                 .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
                 .put(STAGE_ID, stageId)
                 .put(STAGE_NAME, stageName)
@@ -1051,7 +1054,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .put("resourceName", resourceName)
                 .put("k8sKind", k8sKind)
                 .put(PROJECT_ID, projectId)
-                .put(PROJECT_NAME, projectName)
+                .put(MessageCodeConstants.PROJECT_NAME, projectName)
                 .put("envId", envId)
                 .put(ENV_NAME, envName)
                 .build();
@@ -1133,22 +1136,42 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendPipelineAuditMassage(String type, List<Long> userIds, Long pipelineRecordId, String stageName, Long stageId, Long userId) {
-        LOGGER.debug("Send pipeline audit message..., the type is {}, auditUser is {}, stageName is {}, stageId is {}", type, userIds, stageName, stageId);
+    public void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
         doWithTryCatchAndLog(
                 () -> {
-                    List<Receiver> userList = new ArrayList<>();
                     List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
+                    CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.baseQueryById(ciPipelineId);
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+
+                    List<Receiver> userList = new ArrayList<>();
                     users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+
                     Map<String, String> params = new HashMap<>();
                     params.put(STAGE_NAME, stageName);
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
-                    sendCdPipelineMessage(pipelineRecordId, type, userList, params, stageId, stageName);
+                    params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
+                    params.put("pipelineIdRecordId", pipelineRecordId.toString());
+                    //加上查看详情的url
+                    params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+                            projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId), pipelineRecordId.toString()));
+                    addSpecifierList(type, projectDTO.getId(), userList);
+                    sendNotices(type, userList, constructParamsForPipeline(ciCdPipelineDTO, projectDTO, params, stageName), projectDTO.getId());
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
         );
+    }
+
+    private Map<String, String> constructParamsForPipeline(CiCdPipelineDTO ciCdPipelineDTO, ProjectDTO projectDTO, Map<String, String> params, String stageName) {
+        return StringMapBuilder.newBuilder()
+                .put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName())
+                .put(PROJECT_ID, projectDTO.getId())
+                .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
+                .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                .put(STAGE_NAME, stageName)
+                .putAll(params)
+                .build();
     }
 
     @Override
@@ -1198,6 +1221,47 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
+    public void sendPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds) {
+        List<Receiver> userList = new ArrayList<>();
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        userIds.forEach(id -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(id);
+            if (iamUserDTO != null) {
+                Receiver user = new Receiver();
+                user.setEmail(iamUserDTO.getEmail());
+                user.setUserId(iamUserDTO.getId());
+                user.setPhone(iamUserDTO.getPhone());
+                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
+                userList.add(user);
+            }
+        });
+
+        CiCdPipelineDTO ciCdPipelineDTO = devopsCiPipelineService.baseQueryById(ciPipelineId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(ciCdPipelineDTO.getProjectId());
+
+        HashMap<String, String> params = new HashMap<>();
+        params.put(MessageCodeConstants.PROJECT_ID, projectDTO.getId().toString());
+        params.put(MessageCodeConstants.ORGANIZATION_ID, projectDTO.getOrganizationId().toString());
+        params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
+        params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
+        params.put(MessageCodeConstants.STAGE_NAME, stage);
+        params.put(MessageCodeConstants.REL_ID, ciPipelineRecordId.toString());
+        params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
+        params.put(MessageCodeConstants.LINK,
+                String.format(MessageCodeConstants.BASE_URL,
+                        frontUrl,
+                        projectDTO.getId(),
+                        projectDTO.getName(),
+                        projectDTO.getOrganizationId(),
+                        KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId),
+                        ciPipelineRecordId.toString()));
+
+        sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
+    }
+
+    @Override
     public void sendInstanceStatusUpdate(AppServiceInstanceDTO appServiceInstanceDTO, DevopsEnvCommandDTO devopsEnvCommandDTO, String currentStatus) {
         doWithTryCatchAndLog(
                 () -> {
@@ -1207,7 +1271,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     List<Receiver> receivers = new ArrayList<>();
                     Map<String, String> webHookParams = StringMapBuilder.newBuilder()
                             .put("createdAt", LocalDateTime.now())
-                            .put(PROJECT_NAME, projectDTO.getName())
+                            .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
                             .put(ENV_NAME, devopsEnvironmentDTO.getName())
                             .put("instanceId", appServiceInstanceDTO.getId())
                             .put("instanceName", appServiceInstanceDTO.getCode())
@@ -1283,7 +1347,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 },
                 ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
     }
-
 
     private Receiver constructReceiver(Long userId) {
         IamUserDTO user = baseServiceClientOperator.queryUserByUserId(userId);

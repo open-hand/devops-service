@@ -218,6 +218,13 @@ public class GitOpsConstants {
     public static final String PIPELINE_EXECUTOR = "ci-p-executor";
 
     /**
+     * 流水线异步数据更新的执行器的名称
+     * 不用完整单词作为名称的原因是, 长了在日志中会被截取后半部分显示, 反而会更不完整
+     */
+    public static final String PIPELINE_EXEC_EXECUTOR = "pipeline-exec-executor";
+
+
+    /**
      * DevOps的流水线的redis的key的模板, 用于控制后台刷新gitlab流水线数据的频率
      * 变量是 gitlabPipelineId
      */
