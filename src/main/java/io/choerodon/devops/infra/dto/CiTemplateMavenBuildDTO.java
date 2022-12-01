@@ -53,11 +53,11 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
     private Long ciTemplateStepId;
 
     @ApiModelProperty("项目下已有的maven仓库id列表 json")
-    @Transient
     private String nexusMavenRepoIdStr;
 
     @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表")
+    @Transient
     private Set<Long> nexusMavenRepoIds;
 
 
