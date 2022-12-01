@@ -33,6 +33,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_stage.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_pipeline_stage',
                 constraintName: 'devops_pipeline_stage_u1', columnNames: 'version_id,name')
+        addUniqueConstraint(tableName: 'devops_pipeline_stage',
+                constraintName: 'devops_pipeline_stage_u2', columnNames: 'pipeline_id,sequence')
     }
 
 }
