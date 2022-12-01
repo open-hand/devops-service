@@ -230,7 +230,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         if (Boolean.FALSE.equals(pipelineDTO.getEnable())) {
             pipelineDTO.setEnable(true);
-            MapperUtil.resultJudgedInsertSelective(pipelineMapper, pipelineDTO, DEVOPS_ENABLE_PIPELINE_FAILED);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineMapper, pipelineDTO, DEVOPS_ENABLE_PIPELINE_FAILED);
         }
     }
 
@@ -242,7 +242,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         if (Boolean.TRUE.equals(pipelineDTO.getEnable())) {
             pipelineDTO.setEnable(false);
-            MapperUtil.resultJudgedInsertSelective(pipelineMapper, pipelineDTO, DEVOPS_DISABLE_PIPELINE_FAILED);
+            MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineMapper, pipelineDTO, DEVOPS_DISABLE_PIPELINE_FAILED);
         }
     }
 
