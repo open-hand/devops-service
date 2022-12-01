@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +14,8 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import java.util.Set;
 
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)实体类
@@ -46,7 +49,16 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
 
     @ApiModelProperty(value = "所属步骤Id", required = true)
     @NotNull
+    @Encrypt
     private Long ciTemplateStepId;
+
+    @ApiModelProperty("项目下已有的maven仓库id列表 json")
+    private String nexusMavenRepoIdStr;
+
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表")
+    @Transient
+    private Set<Long> nexusMavenRepoIds;
 
 
     public Long getId() {
@@ -81,5 +93,20 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
+    public String getNexusMavenRepoIdStr() {
+        return nexusMavenRepoIdStr;
+    }
+
+    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
+        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
+    }
+
+    public Set<Long> getNexusMavenRepoIds() {
+        return nexusMavenRepoIds;
+    }
+
+    public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
+        this.nexusMavenRepoIds = nexusMavenRepoIds;
+    }
 }
 
