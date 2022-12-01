@@ -61,7 +61,7 @@ public class CdTaskScheduler {
         CustomContextUtil.setUserContext(userId);
         PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.queryByToken(scheduleToken);
         if (pipelineScheduleDTO == null) {
-
+            // todo 删除对应timetask?
         } else {
             pipelineService.execute(projectId,
                     pipelineId,
