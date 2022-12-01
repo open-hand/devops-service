@@ -7,14 +7,17 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.mybatis.domian.SecurityToken;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -59,6 +62,10 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
     @ApiModelProperty("项目下已有的maven仓库id列表")
     @Transient
     private Set<Long> nexusMavenRepoIds;
+
+    @ApiModelProperty("表单填写的Maven的依赖仓库")
+    @Transient
+    private List<MavenRepoVO> repos;
 
 
     public Long getId() {
@@ -107,6 +114,11 @@ public class CiTemplateMavenBuildDTO extends AuditDomain {
 
     public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
         this.nexusMavenRepoIds = nexusMavenRepoIds;
+    }
+
+    @Override
+    public Class<? extends SecurityToken> associateEntityClass() {
+        return null;
     }
 }
 
