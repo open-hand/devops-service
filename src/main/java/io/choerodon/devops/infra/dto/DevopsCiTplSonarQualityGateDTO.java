@@ -1,10 +1,7 @@
 
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
@@ -12,6 +9,8 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+
+import java.util.List;
 
 /**
  * sonar质量门
@@ -35,6 +34,10 @@ public class DevopsCiTplSonarQualityGateDTO {
     private Boolean gatesEnable;
     @ApiModelProperty("质量门失败后是否阻塞后续job")
     private Boolean gatesBlockAfterFail;
+
+    @ApiModelProperty("sonar质量门禁条件")
+    @Transient
+    private List<DevopsCiTplSonarQualityGateConditionDTO> sonarQualityGateConditionVOList;
 
     public Boolean getGatesEnable() {
         return gatesEnable;
@@ -66,5 +69,13 @@ public class DevopsCiTplSonarQualityGateDTO {
 
     public void setConfigId(Long configId) {
         this.configId = configId;
+    }
+
+    public List<DevopsCiTplSonarQualityGateConditionDTO> getSonarQualityGateConditionVOList() {
+        return sonarQualityGateConditionVOList;
+    }
+
+    public void setSonarQualityGateConditionVOList(List<DevopsCiTplSonarQualityGateConditionDTO> sonarQualityGateConditionVOList) {
+        this.sonarQualityGateConditionVOList = sonarQualityGateConditionVOList;
     }
 }
