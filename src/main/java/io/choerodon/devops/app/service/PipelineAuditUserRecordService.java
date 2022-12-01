@@ -17,5 +17,7 @@ public interface PipelineAuditUserRecordService {
     void baseCreate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO);
 
     List<PipelineAuditUserRecordDTO> listByAuditRecordId(Long auditRecordId);
+
+    void baseUpdate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO);
 }
 

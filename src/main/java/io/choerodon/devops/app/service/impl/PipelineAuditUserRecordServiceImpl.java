@@ -23,6 +23,7 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineAuditUserRecordServiceImpl implements PipelineAuditUserRecordService {
 
     private static final String DEVOPS_SAVE_AUDIT_USER_RECORD_FAILED = "devops.save.audit.user.record.failed";
+    private static final String DEVOPS_UPDATE_AUDIT_USER_RECORD_FAILED = "devops.update.audit.user.record.failed";
     private static final String DEVOPS_AUDIT_RECORD_ID_IS_NULL = "devops.audit.record.id.is.null";
 
     @Autowired
@@ -52,6 +53,13 @@ public class PipelineAuditUserRecordServiceImpl implements PipelineAuditUserReco
         pipelineAuditUserRecordDTO.setAuditRecordId(auditRecordId);
 
         return pipelineAuditUserRecordMapper.select(pipelineAuditUserRecordDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseUpdate(PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO) {
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineAuditUserRecordMapper, pipelineAuditUserRecordDTO, DEVOPS_UPDATE_AUDIT_USER_RECORD_FAILED);
+
     }
 }
 

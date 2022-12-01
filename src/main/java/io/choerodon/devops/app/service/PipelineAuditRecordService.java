@@ -16,6 +16,8 @@ public interface PipelineAuditRecordService {
 
     void initAuditRecord(Long pipelineId, Long jobRecordId, Long configId);
 
-    PipelineAuditRecordDTO queryByJobRecordId(Long id);
+    PipelineAuditRecordDTO queryByJobRecordId(Long jobRecordId);
+
+    PipelineAuditRecordDTO queryByJobRecordIdForUpdate(Long jobRecordId);
 }
 

@@ -80,5 +80,11 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
         return pipelineAuditRecordMapper.selectOne(pipelineAuditRecordDTO);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PipelineAuditRecordDTO queryByJobRecordIdForUpdate(Long jobRecordId) {
+        return pipelineAuditRecordMapper.queryByJobRecordIdForUpdate(jobRecordId);
+    }
+
 }
 

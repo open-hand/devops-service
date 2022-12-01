@@ -2,13 +2,16 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
@@ -17,8 +20,10 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineJobRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -33,6 +38,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
     private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
+    private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
 
     @Autowired
     private PipelineJobRecordMapper pipelineJobRecordMapper;
@@ -44,6 +50,10 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     private PipelineAuditUserRecordService pipelineAuditUserRecordService;
     @Autowired
     private PipelineLogService pipelineLogService;
+    @Autowired
+    private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Override
     public List<PipelineJobRecordDTO> listPendingJobs(int number) {
@@ -120,60 +130,52 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     public AuditResultVO auditJob(Long projectId, Long id, String result) {
         PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
         Long userId = DetailsHelper.getUserDetails().getUserId();
-        Long pipelineRecordId = pipelineJobRecordDTO.getPipelineRecordId();
 
-        PipelineAuditRecordDTO pipelineAuditRecordDTO = pipelineAuditRecordService.queryByJobRecordId(id);
-//        String name = devopsCiJobRecordDTO.getName();
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = pipelineAuditRecordService.queryByJobRecordIdForUpdate(id);
 
-//        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = .queryById(ciPipelineRecordId);
-//        Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
-
-
-//        CiAuditRecordDTO ciAuditRecordDTO = pipelineAuditRecordService.queryByUniqueOptionForUpdate(appServiceId, gitlabPipelineId, name);
         List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
-//        List<CiAuditUserRecordDTO> ciAuditUserRecordDTOS = ciAuditUserRecordService.listByAuditRecordId(ciAuditRecordDTO.getId());
         Optional<PipelineAuditUserRecordDTO> auditUserRecord = pipelineAuditUserRecordDTOS
                 .stream()
                 .filter(v -> v.getUserId().equals(userId)
                         && AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()))
                 .findFirst();
-//        if (!auditUserRecord.isPresent()) {
-//            throw new CommonException(DEVOPS_AUDIT_RECORD_NOT_EXIST);
-//        }
-//        // 更新审核记录
-//        CiAuditUserRecordDTO ciAuditUserRecordDTO = auditUserRecord.get();
-//        ciAuditUserRecordDTO.setStatus(result);
-//        ciAuditUserRecordService.baseUpdate(ciAuditUserRecordDTO);
-//
-//        // 计算审核结果
-//        AuditResultVO auditResultVO = new AuditResultVO();
-//        boolean auditFinishFlag;
-//        List<Long> userIds = ciAuditUserRecordDTOS.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
-//        if (ciAuditRecordDTO.getCountersigned()) {
-//            auditResultVO.setCountersigned(1);
-//            auditFinishFlag = ciAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
-//            // 添加审核人员信息
-//            Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
-//            ciAuditUserRecordDTOS.forEach(v -> {
-//                if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
-//                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
-//                    if (iamUserDTO != null) {
-//                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getRealName());
-//                    }
-//                } else if (AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())) {
-//                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
-//                    if (iamUserDTO != null) {
-//                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getRealName());
-//                    }
-//                }
-//            });
-//
-//        } else {
-//            auditResultVO.setCountersigned(0);
-//            auditFinishFlag = !ciAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
-//
-//            // 审核通过只有或签才发送通知
-//            if (AuditStatusEnum.PASSED.value().equals(result)) {
+        if (!auditUserRecord.isPresent()) {
+            throw new CommonException(DEVOPS_AUDIT_RECORD_NOT_EXIST);
+        }
+        // 更新审核记录
+        PipelineAuditUserRecordDTO pipelineAuditUserRecordDTO = auditUserRecord.get();
+        pipelineAuditUserRecordDTO.setStatus(result);
+        pipelineAuditUserRecordService.baseUpdate(pipelineAuditUserRecordDTO);
+
+        // 计算审核结果
+        AuditResultVO auditResultVO = new AuditResultVO();
+        boolean auditFinishFlag;
+        List<Long> userIds = pipelineAuditUserRecordDTOS.stream().map(PipelineAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+        if (pipelineAuditRecordDTO.getCountersigned()) {
+            auditResultVO.setCountersigned(1);
+            auditFinishFlag = pipelineAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+            // 添加审核人员信息
+            Map<Long, IamUserDTO> userDTOMap = baseServiceClientOperator.queryUsersByUserIds(userIds).stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+            pipelineAuditUserRecordDTOS.forEach(v -> {
+                if (AuditStatusEnum.PASSED.value().equals(v.getStatus())) {
+                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                    if (iamUserDTO != null) {
+                        auditResultVO.getAuditedUserNameList().add(iamUserDTO.getRealName());
+                    }
+                } else if (AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus())) {
+                    IamUserDTO iamUserDTO = userDTOMap.get(v.getUserId());
+                    if (iamUserDTO != null) {
+                        auditResultVO.getNotAuditUserNameList().add(iamUserDTO.getRealName());
+                    }
+                }
+            });
+
+        } else {
+            auditResultVO.setCountersigned(0);
+            auditFinishFlag = !pipelineAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
+
+            // 审核通过只有或签才发送通知
+            if (AuditStatusEnum.PASSED.value().equals(result)) {
 //                sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
 //                        devopsCiPipelineRecordDTO.getCiPipelineId(),
 //                        userIds,
@@ -181,9 +183,9 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 //                        devopsCiJobRecordDTO.getStage(),
 //                        userId,
 //                        projectId);
-//            }
-//        }
-//        if (AuditStatusEnum.REFUSED.value().equals(result)) {
+            }
+        }
+        if (AuditStatusEnum.REFUSED.value().equals(result)) {
 //            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_STOP,
 //                    devopsCiPipelineRecordDTO.getCiPipelineId(),
 //                    userIds,
@@ -191,17 +193,13 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 //                    devopsCiJobRecordDTO.getStage(),
 //                    userId,
 //                    projectId);
-//        }
-//        // 审核结束则执行job
-//        if (auditFinishFlag) {
-//            gitlabServiceClientOperator.playJob(TypeUtil.objToInteger(gitlabProjectId),
-//                    TypeUtil.objToInteger(gitlabJobId),
-//                    null,
-//                    null);
-//        }
+        }
+        // 审核结束则执行job
+        if (auditFinishFlag) {
 
-//        return auditResultVO;
-        return null;
+        }
+
+        return auditResultVO;
     }
 
     @Override

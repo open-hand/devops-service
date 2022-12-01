@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +13,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineAuditRecordMapper extends BaseMapper<PipelineAuditRecordDTO> {
 
+    PipelineAuditRecordDTO queryByJobRecordIdForUpdate(@Param("jobRecordId") Long jobRecordId);
 }
 
