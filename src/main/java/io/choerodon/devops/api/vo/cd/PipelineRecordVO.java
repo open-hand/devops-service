@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.cd;
 
 import java.util.Date;
+import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.domain.AuditDomain;
 
@@ -41,6 +43,16 @@ public class PipelineRecordVO extends AuditDomain {
     private Long appServiceVersionId;
 
     private IamUserDTO trigger;
+
+    private List<PipelineStageRecordDTO> stageRecordList;
+
+    public List<PipelineStageRecordDTO> getStageRecordList() {
+        return stageRecordList;
+    }
+
+    public void setStageRecordList(List<PipelineStageRecordDTO> stageRecordList) {
+        this.stageRecordList = stageRecordList;
+    }
 
     public IamUserDTO getTrigger() {
         return trigger;

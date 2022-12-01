@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.cd.PipelineRecordVO;
 import io.choerodon.devops.app.service.PipelineJobRecordService;
 import io.choerodon.devops.app.service.PipelineRecordService;
 import io.choerodon.devops.app.service.PipelineStageRecordService;
@@ -20,6 +24,9 @@ import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 流水线执行记录(PipelineRecord)应用服务
@@ -125,5 +132,24 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordId(nextStageRecordId);
         startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
     }
+
+    @Override
+    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable) {
+        Page<PipelineRecordVO> pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        if (pipelineRecordVOPage.isEmpty()) {
+            return new Page<>();
+        }
+        pipelineRecordVOPage.getContent().forEach(pipelineRecordVO -> {
+            Long pipelineRecordId = pipelineRecordVO.getId();
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineRecordId);
+            List<PipelineStageRecordDTO> sortedStageRecords = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
+            pipelineRecordVO.setStageRecordList(sortedStageRecords);
+        });
+
+        UserDTOFillUtil.fillUserInfo(pipelineRecordVOPage.getContent(), "createdBy", "trigger");
+
+        return pipelineRecordVOPage;
+    }
+
 }
 
