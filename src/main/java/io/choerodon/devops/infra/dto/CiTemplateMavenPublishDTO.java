@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -57,6 +58,7 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
 
     @Encrypt
     @ApiModelProperty("项目下已有的maven仓库id列表")
+    @Transient
     private Set<Long> nexusMavenRepoIds;
 
     @ApiModelProperty("发包的目的仓库信息 json格式")
