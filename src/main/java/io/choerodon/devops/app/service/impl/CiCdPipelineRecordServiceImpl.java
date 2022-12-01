@@ -411,7 +411,7 @@ public class CiCdPipelineRecordServiceImpl implements CiCdPipelineRecordService 
 //            return new Page<>();
 //        }
         Page<CiPipelineRecordVO> recordPage = PageHelper.doPage(pageable, () -> devopsCiPipelineRecordService.listByPipelineId(pipelineId));
-        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
+//        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
 //        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
         recordPage.forEach(recordVO -> {
             devopsCiPipelineRecordService.fillAdditionalInfo(recordVO);

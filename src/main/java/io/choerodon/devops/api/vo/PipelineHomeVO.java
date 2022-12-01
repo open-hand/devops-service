@@ -42,8 +42,6 @@ public class PipelineHomeVO {
     private Long createdBy;
     @ApiModelProperty("触发者")
     private IamUserDTO trigger;
-    @ApiModelProperty("待审核状态时需要的一些数据")
-    private List<DevopsPipelineAuditVO> pipelineAuditInfo;
 
     private List<PipelineStageRecordDTO> stageRecordList;
 
@@ -53,14 +51,6 @@ public class PipelineHomeVO {
 
     public void setStageRecordList(List<PipelineStageRecordDTO> stageRecordList) {
         this.stageRecordList = stageRecordList;
-    }
-
-    public List<DevopsPipelineAuditVO> getPipelineAuditInfo() {
-        return pipelineAuditInfo;
-    }
-
-    public void setPipelineAuditInfo(List<DevopsPipelineAuditVO> pipelineAuditInfo) {
-        this.pipelineAuditInfo = pipelineAuditInfo;
     }
 
     public Long getCreatedBy() {

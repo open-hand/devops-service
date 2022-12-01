@@ -10,4 +10,10 @@
         where id = #{pipelineRecordId}
           and (status = 'running' or status = 'not_audit')
     </update>
+    <select id="listByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
+        select dpr.*
+        from devops_pipeline_record dpr
+        where dpr.pipeline_id = #{pipelineId}
+        order by id desc
+    </select>
 </mapper>

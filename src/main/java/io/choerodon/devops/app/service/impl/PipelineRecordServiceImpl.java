@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.vo.cd.PipelineRecordVO;
 import io.choerodon.devops.app.service.PipelineJobRecordService;
 import io.choerodon.devops.app.service.PipelineRecordService;
 import io.choerodon.devops.app.service.PipelineStageRecordService;
@@ -20,6 +24,9 @@ import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 流水线执行记录(PipelineRecord)应用服务
@@ -68,7 +75,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(PipelineRecordDTO pipelineRecordDTO) {
-        MapperUtil.resultJudgedInsertSelective(pipelineRecordMapper,
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper,
                 pipelineRecordDTO,
                 DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
     }
@@ -93,37 +100,87 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
 
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
-        boolean hasAuditJob = false;
-        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
-            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-                hasAuditJob = true;
-            } else {
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            }
-            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-        }
-        if (Boolean.TRUE.equals(hasAuditJob)) {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-        } else {
-            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-        }
-        pipelineStageRecordService.baseUpdate(firstStageRecordDTO);
-        baseUpdate(pipelineRecordDTO);
-    }
+//    @Override
+//    @Transactional(rollbackFor = Exception.class)
+//    public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
+//        boolean hasAuditJob = false;
+//        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
+//            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
+//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//                hasAuditJob = true;
+//            } else {
+//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            }
+//            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+//        }
+//        if (Boolean.TRUE.equals(hasAuditJob)) {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//        } else {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
+//        }
+//        pipelineStageRecordService.updateStatus(firstStageRecordDTO.getId());
+//        baseUpdate(pipelineRecordDTO);
+//    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void startNextStage(Long nextStageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
-        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
-        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordId(nextStageRecordId);
-        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
+        Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
+//        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(nextStageRecordId);
+//        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
+//        boolean hasAuditJob = false;
+        for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
+            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//                hasAuditJob = true;
+            } else {
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+            }
+            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+        }
+
+        String newStageStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
+        if (!pipelineStageRecordDTO.getStatus().equals(newStageStatus)) {
+            pipelineStageRecordService.updateStatus(nextStageRecordId, newStageStatus);
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineRecordId);
+            String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
+
+            updateStatus(pipelineRecordId, newPipelineStatus);
+        }
+
+
+//        if (Boolean.TRUE.equals(hasAuditJob)) {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
+//        } else {
+//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
+//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
+//        }
+//        pipelineStageRecordService.updateStatus(nextStageRecordId);
+//        baseUpdate(pipelineRecordDTO);
     }
+
+    @Override
+    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable) {
+        Page<PipelineRecordVO> pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        if (pipelineRecordVOPage.isEmpty()) {
+            return new Page<>();
+        }
+        pipelineRecordVOPage.getContent().forEach(pipelineRecordVO -> {
+            Long pipelineRecordId = pipelineRecordVO.getId();
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineRecordId);
+            List<PipelineStageRecordDTO> sortedStageRecords = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
+            pipelineRecordVO.setStageRecordList(sortedStageRecords);
+        });
+
+        UserDTOFillUtil.fillUserInfo(pipelineRecordVOPage.getContent(), "createdBy", "trigger");
+
+        return pipelineRecordVOPage;
+    }
+
 }
 
