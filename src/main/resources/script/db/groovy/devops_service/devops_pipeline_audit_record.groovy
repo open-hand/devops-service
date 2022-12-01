@@ -9,6 +9,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_record.groovy') {
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
                 constraints(nullable: false)
             }
+            column(name: 'pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '关联流水线记录Id,devops_pipeline_record.id') {
+                constraints(nullable: false)
+            }
             column(name: "job_record_id", type: "BIGINT UNSIGNED", remarks: "devops_pipeline_job_record.id") {
                 constraints(nullable: false)
             }
@@ -27,6 +30,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_audit_record.groovy') {
     changeSet(author: 'wanghao', id: '2022-11-25-add-index') {
         createIndex(tableName: 'devops_pipeline_audit_record', indexName: 'devops_pipeline_audit_record_n1') {
             column(name: 'pipeline_id')
+        }
+        createIndex(tableName: 'devops_pipeline_audit_record', indexName: 'devops_pipeline_audit_record_n2') {
+            column(name: 'pipeline_record_id')
         }
     }
 

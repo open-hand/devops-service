@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,16 +9,17 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.oauth.DetailsHelper;
+import io.choerodon.devops.api.vo.DevopsPipelineAuditVO;
 import io.choerodon.devops.api.vo.cd.PipelineRecordVO;
-import io.choerodon.devops.app.service.PipelineJobRecordService;
-import io.choerodon.devops.app.service.PipelineRecordService;
-import io.choerodon.devops.app.service.PipelineStageRecordService;
+import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
-import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
@@ -48,6 +48,13 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Autowired
     @Lazy
     private PipelineJobRecordService pipelineJobRecordService;
+    @Autowired
+    private CdJobOperator cdJobOperator;
+
+    @Autowired
+    private PipelineAuditRecordService pipelineAuditRecordService;
+    @Autowired
+    private PipelineAuditUserRecordService pipelineAuditUserRecordService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -166,15 +173,42 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
 
     @Override
     public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable) {
+
+        Long userId = DetailsHelper.getUserDetails().getUserId();
         Page<PipelineRecordVO> pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
         if (pipelineRecordVOPage.isEmpty()) {
             return new Page<>();
         }
+
+        List<DevopsPipelineAuditVO> pipelineAuditInfo = new ArrayList<>();
+
         pipelineRecordVOPage.getContent().forEach(pipelineRecordVO -> {
             Long pipelineRecordId = pipelineRecordVO.getId();
             List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineRecordId);
             List<PipelineStageRecordDTO> sortedStageRecords = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
             pipelineRecordVO.setStageRecordList(sortedStageRecords);
+            if (PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineRecordVO.getStatus())) {
+                List<PipelineAuditRecordDTO> pipelineAuditRecordDTOS = pipelineAuditRecordService.listByPipelineRecordId(pipelineRecordId);
+                if (!CollectionUtils.isEmpty(pipelineAuditRecordDTOS)) {
+
+                    List<Long> jobRecordIds = pipelineAuditRecordDTOS.stream().map(PipelineAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
+                    List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByIds(jobRecordIds);
+                    Map<Long, PipelineJobRecordDTO> jobRecordDTOMap = pipelineJobRecordDTOS.stream().collect(Collectors.toMap(PipelineJobRecordDTO::getId, Function.identity()));
+
+                    pipelineAuditRecordDTOS.forEach(pipelineAuditRecordDTO -> {
+                        PipelineJobRecordDTO pipelineJobRecordDTO = jobRecordDTOMap.get(pipelineAuditRecordDTO.getJobRecordId());
+                        List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
+                        if (!CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)) {
+                            if (pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
+                                DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
+                                pipelineAuditInfo.add(devopsCiPipelineAuditVO);
+                            }
+                        }
+                    });
+                }
+                pipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
+            }
+
         });
 
         UserDTOFillUtil.fillUserInfo(pipelineRecordVOPage.getContent(), "createdBy", "trigger");

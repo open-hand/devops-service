@@ -3,7 +3,9 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -256,6 +258,11 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         }
 
         return aduitStatusChangeVO;
+    }
+
+    @Override
+    public List<PipelineJobRecordDTO> listByIds(List<Long> ids) {
+        return pipelineJobRecordMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(ids));
     }
 
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

@@ -38,6 +38,10 @@ public class PipelineAuditRecordDTO extends AuditDomain {
     @NotNull
     private Long pipelineId;
 
+    @ApiModelProperty(value = "devops_pipeline_record.id", required = true)
+    @NotNull
+    private Long pipelineRecordId;
+
     @ApiModelProperty(value = "devops_pipeline_job_record.id", required = true)
     @NotNull
     private Long jobRecordId;
@@ -50,10 +54,19 @@ public class PipelineAuditRecordDTO extends AuditDomain {
     public PipelineAuditRecordDTO() {
     }
 
-    public PipelineAuditRecordDTO(Long pipelineId, Long jobRecordId, Boolean countersigned) {
+    public PipelineAuditRecordDTO(Long pipelineId, Long pipelineRecordId, Long jobRecordId, Boolean countersigned) {
         this.pipelineId = pipelineId;
+        this.pipelineRecordId = pipelineRecordId;
         this.jobRecordId = jobRecordId;
         this.countersigned = countersigned;
+    }
+
+    public Long getPipelineRecordId() {
+        return pipelineRecordId;
+    }
+
+    public void setPipelineRecordId(Long pipelineRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
     }
 
     public Long getPipelineId() {

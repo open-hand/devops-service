@@ -37,5 +37,7 @@ public interface PipelineJobRecordService {
     AuditResultVO auditJob(Long projectId, Long id, String result);
 
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);
+
+    List<PipelineJobRecordDTO> listByIds(List<Long> jobRecordIds);
 }
 

@@ -55,9 +55,9 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void initAuditRecord(Long pipelineId, Long jobRecordId, Long configId) {
+    public void initAuditRecord(Long pipelineId, Long pipelineRecordId, Long jobRecordId, Long configId) {
         PipelineAuditCfgVO pipelineAuditCfgVO = pipelineAuditCfgService.queryConfigWithUsersById(configId);
-        PipelineAuditRecordDTO pipelineAuditRecordDTO = new PipelineAuditRecordDTO(pipelineId, jobRecordId, pipelineAuditCfgVO.getCountersigned());
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = new PipelineAuditRecordDTO(pipelineId, pipelineRecordId, jobRecordId, pipelineAuditCfgVO.getCountersigned());
         baseCreate(pipelineAuditRecordDTO);
 
         Long auditRecordId = pipelineAuditRecordDTO.getId();
@@ -78,6 +78,14 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
         PipelineAuditRecordDTO pipelineAuditRecordDTO = new PipelineAuditRecordDTO();
         pipelineAuditRecordDTO.setJobRecordId(jobRecordId);
         return pipelineAuditRecordMapper.selectOne(pipelineAuditRecordDTO);
+    }
+
+    @Override
+    public List<PipelineAuditRecordDTO> listByPipelineRecordId(Long pipelineRecordId) {
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = new PipelineAuditRecordDTO();
+        pipelineAuditRecordDTO.setPipelineRecordId(pipelineRecordId);
+        return pipelineAuditRecordMapper.select(pipelineAuditRecordDTO);
     }
 
     @Override
