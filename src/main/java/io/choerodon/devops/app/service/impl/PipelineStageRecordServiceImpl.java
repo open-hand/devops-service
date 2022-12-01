@@ -74,7 +74,7 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(PipelineStageRecordDTO pipelineStageRecordDTO) {
-        MapperUtil.resultJudgedInsertSelective(pipelineStageRecordMapper, pipelineStageRecordDTO, DEVOPS_UPDATE_STAGE_RECORD_FAILED);
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineStageRecordMapper, pipelineStageRecordDTO, DEVOPS_UPDATE_STAGE_RECORD_FAILED);
 
     }
 
