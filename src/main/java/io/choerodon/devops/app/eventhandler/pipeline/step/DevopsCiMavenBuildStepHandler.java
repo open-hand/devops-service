@@ -36,6 +36,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Autowired
     private CiTemplateMavenBuildService ciTemplateMavenBuildService;
 
+
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
@@ -53,7 +54,10 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId()));
+        CiTemplateMavenBuildDTO templateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
+        if (templateMavenBuildDTO != null) {
+            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.voToDto(templateMavenBuildDTO));
+        }
     }
 
     @Override
