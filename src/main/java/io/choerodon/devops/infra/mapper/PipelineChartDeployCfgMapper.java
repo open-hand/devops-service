@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
+import io.choerodon.devops.api.vo.cd.PipelineChartDeployCfgVO;
 import io.choerodon.devops.infra.dto.PipelineChartDeployCfgDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +14,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineChartDeployCfgMapper extends BaseMapper<PipelineChartDeployCfgDTO> {
 
+    PipelineChartDeployCfgVO queryVoByConfigId(@Param("configId") Long configId);
 }
 
