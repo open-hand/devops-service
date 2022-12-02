@@ -288,6 +288,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
+        if (devopsCiStepVO.getSonarConfig() == null) {
+            return false;
+        }
         DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiStepVO.getSonarConfig().getDevopsCiSonarQualityGateVO();
         if (devopsCiSonarQualityGateVO != null && Boolean.TRUE.equals(devopsCiSonarQualityGateVO.getGatesEnable())) {
             for (DevopsCiSonarQualityGateConditionVO devopsCiSonarQualityGateConditionVO : devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList()) {
