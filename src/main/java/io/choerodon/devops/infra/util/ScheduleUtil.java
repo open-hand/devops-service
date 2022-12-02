@@ -39,7 +39,7 @@ public class ScheduleUtil {
     }
 
     /**
-     * 计算cron表达式
+     * 计算gitlab-ci cron表达式(gitlab-ci的cron没有秒只有5位)
      *
      * @param commonScheduleVO
      * @return
@@ -67,5 +67,10 @@ public class ScheduleUtil {
 
         String week = commonScheduleVO.getWeekNumber();
         return String.format(cronTemplate, minute, hour, week);
+    }
+
+    public static String calculateNormalCron(CommonScheduleVO commonScheduleVO) {
+        String cronTemplate = "0 %s";
+        return String.format(cronTemplate, calculateCron(commonScheduleVO));
     }
 }

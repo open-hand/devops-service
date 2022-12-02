@@ -18,7 +18,6 @@ import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
-import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -144,10 +143,7 @@ public class PipelineController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok(pipelineService.execute(projectId,
-                id,
-                PipelineTriggerTypeEnum.MANUAL,
-                null));
+        return ResponseEntity.ok(pipelineService.executeByManual(projectId, id));
     }
 
     @Permission(permissionPublic = true)

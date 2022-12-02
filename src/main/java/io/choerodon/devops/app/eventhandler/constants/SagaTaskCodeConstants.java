@@ -335,6 +335,8 @@ public class SagaTaskCodeConstants {
      */
     public static final String DEVOPS_CREATE_PIPELINE_TIME_TASK = "devops-create-pipeline-time-task";
 
+    public static final String DEVOPS_APP_VERSION_TRIGGER_PIPELINE = "devops-app-version-trigger-pipeline";
+
 
     private SagaTaskCodeConstants() {
     }

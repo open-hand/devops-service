@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -116,6 +117,8 @@ public class DevopsSagaHandler {
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private PipelineService pipelineService;
 
     /**
      * devops创建环境
@@ -765,6 +768,17 @@ public class DevopsSagaHandler {
             }
         });
 
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE,
+            description = "应用服务版本生成触发流水线",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void triggerByAppVersion(String data) {
+        AppVersionTriggerVO appVersionTriggerVO = JsonHelper.unmarshalByJackson(data, AppVersionTriggerVO.class);
+        pipelineService.triggerByAppVersion(appVersionTriggerVO.getAppServiceId(), appVersionTriggerVO.getAppVersionId());
     }
 
 }

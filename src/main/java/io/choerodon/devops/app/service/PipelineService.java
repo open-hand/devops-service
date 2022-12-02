@@ -39,8 +39,9 @@ public interface PipelineService {
 
     void update(Long projectId, Long id, PipelineVO pipelineVO);
 
-    PipelineRecordDTO execute(Long projectId,
-                              Long id,
+    PipelineRecordDTO executeByManual(Long projectId, Long id);
+
+    PipelineRecordDTO execute(Long id,
                               PipelineTriggerTypeEnum triggerType,
                               Map<String, Object> params);
 
