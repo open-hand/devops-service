@@ -45,12 +45,7 @@ public class AsgardServiceClientOperator {
 
     public QuartzTaskDTO queryByName(String taskName) {
         ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.queryByName(taskName);
-        QuartzTaskDTO quartzTaskDTO = quartzTaskDTOResponseEntity.getBody();
-        if (quartzTaskDTOResponseEntity.getStatusCode().is2xxSuccessful() && quartzTaskDTO != null && quartzTaskDTO.getId() != null) {
-            return quartzTaskDTOResponseEntity.getBody();
-        } else {
-            throw new CommonException("error.query.quartz.task");
-        }
+        return quartzTaskDTOResponseEntity.getBody();
     }
 
     public void deleteQuartzTask(List<Long> quartzTaskIds) {
