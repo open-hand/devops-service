@@ -1,15 +1,14 @@
 package io.choerodon.devops.api.vo;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.util.Date;
-import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by wangxiang on 2021/3/4
  */
 public class DevopsPipelineRecordVO {
 
-    @Encrypt
     private Long id;
 
     @ApiModelProperty("流水线状态")

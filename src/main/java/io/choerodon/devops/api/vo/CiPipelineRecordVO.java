@@ -19,10 +19,8 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CiPipelineRecordVO extends BaseDomain {
 
-    @Encrypt
     @ApiModelProperty("ci 执行记录的id")
     private Long id;
-    @Encrypt
     @ApiModelProperty("ci 执行记录的id")
     private Long ciRecordId;
     @ApiModelProperty("gitlab的流水线id")
