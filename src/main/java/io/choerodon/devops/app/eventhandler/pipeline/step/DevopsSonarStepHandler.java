@@ -117,6 +117,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
+        if (ciTemplateSonarDTO == null) {
+            return;
+        }
         DevopsCiSonarConfigVO devopsCiSonarConfigVO = ConvertUtils.convertObject(ciTemplateSonarDTO, DevopsCiSonarConfigVO.class);
 
         // 添加质量门配置
