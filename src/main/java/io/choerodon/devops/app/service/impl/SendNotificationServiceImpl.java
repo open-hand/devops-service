@@ -1247,16 +1247,16 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
         params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
         params.put(MessageCodeConstants.STAGE_NAME, stage);
-        params.put(MessageCodeConstants.REL_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineRecordId));
-        params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
+        params.put(MessageCodeConstants.REL_ID, KeyDecryptHelper.encryptValue(ciPipelineRecordId));
+        params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValue(ciPipelineId));
         params.put(MessageCodeConstants.LINK,
                 String.format(MessageCodeConstants.BASE_URL,
                         frontUrl,
                         projectDTO.getId(),
                         projectDTO.getName(),
                         projectDTO.getOrganizationId(),
-                        KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId),
-                        ciPipelineRecordId.toString()));
+                        KeyDecryptHelper.encryptValue(ciPipelineId),
+                        KeyDecryptHelper.encryptValue(ciPipelineRecordId.toString())));
 
         sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }
