@@ -80,10 +80,10 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                             // 更新任务状态为失败
                             pipelineJobRecordService.updateStatus(jobRecordId, PipelineStatusEnum.FAILED);
                             // todo 更新流水线后续阶段状态为skipped
-                            // 更新阶段状态为失败
-                            pipelineStageRecordService.updateStatus(stageRecordId, PipelineStatusEnum.FAILED);
+                            // 更新阶段状态
+                            pipelineStageRecordService.updateStatus(stageRecordId);
                             // 更新流水线状态为失败
-                            pipelineRecordService.updateToEndStatus(pipelineRecordId, PipelineStatusEnum.FAILED);
+//                            pipelineRecordService.updateToEndStatus(pipelineRecordId, PipelineStatusEnum.FAILED);
                         }
                         // 记录job日志
                         pipelineLogService.saveLog(pipelineId, jobRecordId, log.toString());

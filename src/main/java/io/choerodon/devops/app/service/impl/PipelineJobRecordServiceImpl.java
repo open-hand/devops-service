@@ -64,6 +64,8 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private PipelineLogService pipelineLogService;
 
     @Override
     public List<PipelineJobRecordDTO> listPendingJobs(int number) {
@@ -315,6 +317,11 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
             throw new CommonException(DEVOPS_STATUS_IS_EMPTY);
         }
         return pipelineJobRecordMapper.listByStatusForUpdate(pipelineRecordId, statusList);
+    }
+
+    @Override
+    public String queryLog(Long projectId, Long id) {
+        return pipelineLogService.queryLastedByJobRecordId(id);
     }
 
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

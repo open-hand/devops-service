@@ -253,8 +253,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                     pipelineJobRecordDTO.setCommandId(commandId);
                     pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
                     pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-                    pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
-                    pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
                     // 更新阶段状态
                     pipelineStageRecordService.updateStatus(stageRecordId);
                     return;

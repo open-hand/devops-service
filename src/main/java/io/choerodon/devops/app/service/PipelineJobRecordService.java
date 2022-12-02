@@ -55,5 +55,7 @@ public interface PipelineJobRecordService {
     List<PipelineJobRecordDTO> listCreatedAndPendingJobsForUpdate(Long pipelineRecordId);
 
     List<PipelineJobRecordDTO> listByStatusForUpdate(Long pipelineRecordId, Set<String> statusList);
+
+    String queryLog(Long projectId, Long id);
 }
 

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.PipelineLogDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -11,5 +13,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineLogMapper extends BaseMapper<PipelineLogDTO> {
 
+    String queryLastedByJobRecordId(@Param("jobRecordId") Long jobRecordId);
 }
 
