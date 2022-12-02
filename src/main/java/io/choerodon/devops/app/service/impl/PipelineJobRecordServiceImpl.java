@@ -265,6 +265,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         return pipelineJobRecordMapper.selectByIds(Joiner.on(BaseConstants.Symbol.COMMA).join(ids));
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelPipelineJobs(Long pipelineRecordId) {
+        pipelineJobRecordMapper.cancelPipelineJobs(pipelineRecordId);
+    }
+
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
 
         if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {

@@ -13,14 +13,15 @@ public enum PipelineStatusEnum {
      * 成功
      */
     SUCCESS("success", 40, true),
-    /**
-     * 已取消
-     */
-    CANCELED("canceled", 50, true),
+
     /**
      * 失败
      */
-    FAILED("failed", 60, true),
+    FAILED("failed", 50, true),
+    /**
+     * 已取消
+     */
+    CANCELED("canceled", 60, true),
     /**
      * 已终止
      */

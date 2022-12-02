@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Comparator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
  */
 @Service
 public class PipelineStageRecordServiceImpl implements PipelineStageRecordService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineStageRecordServiceImpl.class);
 
     private static final String DEVOPS_SAVE_STAGE_RECORD_FAILED = "devops.save.stage.record.failed";
     private static final String DEVOPS_UPDATE_STAGE_RECORD_FAILED = "devops.update.stage.record.failed";
@@ -60,6 +64,11 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Override
     public PipelineStageRecordDTO baseQueryById(Long id) {
         return pipelineStageRecordMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public PipelineStageRecordDTO queryByIdForUpdate(Long id) {
+        return pipelineStageRecordMapper.queryByIdForUpdate(id);
     }
 
     @Override
@@ -97,7 +106,12 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long stageRecordId) {
-        PipelineStageRecordDTO pipelineStageRecordDTO = baseQueryById(stageRecordId);
+        PipelineStageRecordDTO pipelineStageRecordDTO = queryByIdForUpdate(stageRecordId);
+        if (PipelineStatusEnum.CANCELED.value().equals(pipelineStageRecordDTO.getStatus())) {
+            LOGGER.info("Pipeline stage:{} status is canceled, skip update it.", stageRecordId);
+            return;
+        }
+
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(stageRecordId);
 
         String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
@@ -124,6 +138,12 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
 //            updateStatus(stageRecordId, PipelineStatusEnum.SUCCESS);
 //
 //        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancelPipelineStages(Long pipelineRecordId) {
+        pipelineStageRecordMapper.cancelPipelineStages(pipelineRecordId);
     }
 }
 

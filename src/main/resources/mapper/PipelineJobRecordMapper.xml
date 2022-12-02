@@ -2,6 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineJobRecordMapper">
+    <delete id="cancelPipelineJobs">
+        update
+            devops_pipeline_job_record
+        set status = 'canceled'
+        where pipeline_record_id = #{pipelineRecordId}
+          and (status = 'created' or status = 'pending')
+    </delete>
 
     <select id="listPendingJobs" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
         select *

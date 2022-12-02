@@ -216,5 +216,16 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         return pipelineRecordVOPage;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cancel(Long projectId, Long id) {
+        // 更新所有created、pending状态的任务状态为canceled
+        pipelineJobRecordService.cancelPipelineJobs(id);
+        // 更新所有created、pending、running状态的阶段状态为canceled
+        pipelineStageRecordService.cancelPipelineStages(id);
+        // 更新流水线状态为canceled
+        updateStatus(id, PipelineStatusEnum.CANCELED.value());
+    }
+
 }
 
