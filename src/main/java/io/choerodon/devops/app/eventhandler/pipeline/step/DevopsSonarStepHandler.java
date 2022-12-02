@@ -73,6 +73,8 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SonarClientOperator sonarClientOperator;
+    @Autowired
+    private CiTemplateMavenBuildService ciTemplateMavenBuildService;
 
     @Override
     @Transactional
@@ -114,7 +116,20 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         // 步骤模板没有mvn配置,所以只填充maven信息
-        ciTemplateStepVO.setSonarConfig(ciTemplateSonarService.queryByStepId(ciTemplateStepVO.getId()));
+        CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(ciTemplateStepVO.getId());
+        if (ciTemplateSonarDTO == null) {
+            return;
+        }
+        DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiTplSonarQualityGateService.queryBySonarConfigId(ciTemplateSonarDTO.getId());
+        ciTemplateSonarDTO.setDevopsCiSonarQualityGateVO(ConvertUtils.convertObject(devopsCiSonarQualityGateVO, DevopsCiTplSonarQualityGateDTO.class));
+        ciTemplateStepVO.setSonarConfig(ciTemplateSonarDTO);
+
+        //maven
+        CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
+        if (ciTemplateMavenBuildDTO != null) {
+            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(ciTemplateMavenBuildDTO));
+        }
+
     }
 
     @Override
