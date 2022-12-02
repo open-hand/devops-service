@@ -53,7 +53,6 @@ public class CdTaskScheduler {
             @JobParam(name = MiscConstants.USER_ID, defaultValue = "0", description = "流水线id")
     })
     public void pipelineScheduleTrigger(Map<String, Object> map) {
-        Long projectId = (Long) map.get(MiscConstants.PROJECT_ID);
         Long pipelineId = (Long) map.get(MiscConstants.PIPELINE_ID);
         String scheduleToken = map.get(MiscConstants.SCHEDULE_TOKEN).toString();
         Long userId = (Long) map.get(MiscConstants.USER_ID);
@@ -63,8 +62,7 @@ public class CdTaskScheduler {
         if (pipelineScheduleDTO == null) {
             // todo 删除对应timetask?
         } else {
-            pipelineService.execute(projectId,
-                    pipelineId,
+            pipelineService.execute(pipelineId,
                     PipelineTriggerTypeEnum.SCHEDULE,
                     null);
         }
