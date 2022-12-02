@@ -46,5 +46,7 @@ public interface PipelineJobRecordService {
     List<PipelineJobRecordDTO> listByIds(List<Long> jobRecordIds);
 
     void cancelPipelineJobs(Long pipelineRecordId);
+
+    void retryPipelineJobs(Long pipelineRecordId);
 }
 

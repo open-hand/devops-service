@@ -37,7 +37,7 @@ public class PipelineDTO extends AuditDomain {
     public static final String FIELD_EFFECT_VERSION_ID = "effectVersionId";
 
     @Id
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     @GeneratedValue
     private Long id;
 

@@ -158,5 +158,11 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     public void cancelPipelineStages(Long pipelineRecordId) {
         pipelineStageRecordMapper.cancelPipelineStages(pipelineRecordId);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void retryPipelineStages(Long pipelineRecordId) {
+        pipelineStageRecordMapper.retryPipelineStages(pipelineRecordId);
+    }
 }
 

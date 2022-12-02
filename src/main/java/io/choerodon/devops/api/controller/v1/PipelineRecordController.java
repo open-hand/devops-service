@@ -42,6 +42,7 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
+            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
@@ -54,6 +55,7 @@ public class PipelineRecordController extends BaseController {
     public ResponseEntity<PipelineRecordVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "id") Long id) {
         return ResponseEntity.ok(pipelineRecordService.query(projectId, id));
@@ -69,6 +71,18 @@ public class PipelineRecordController extends BaseController {
             @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineRecordService.cancel(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重试流水线")
+    @PutMapping(value = "/{id}/retry")
+    public ResponseEntity<Void> retry(
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
+            @PathVariable(value = "id") Long id) {
+        pipelineRecordService.retry(projectId, id);
         return ResponseEntity.noContent().build();
     }
 }

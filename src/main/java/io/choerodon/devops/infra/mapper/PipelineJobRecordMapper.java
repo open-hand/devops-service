@@ -23,5 +23,8 @@ public interface PipelineJobRecordMapper extends BaseMapper<PipelineJobRecordDTO
     List<PipelineJobRecordDTO> listByStageIdForUpdate(@Param("stageRecordId") Long stageRecordId);
 
     void cancelPipelineJobs(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    void retryPipelineJobs(@Param("pipelineRecordId") Long pipelineRecordId);
+
 }
 

@@ -31,4 +31,10 @@
         where id = #{id}
           and status = 'pending'
     </update>
+    <update id="retryPipelineJobs">
+        update devops_pipeline_job_record
+        set status = 'created'
+        where id = #{id}
+          and status = 'canceled'
+    </update>
 </mapper>

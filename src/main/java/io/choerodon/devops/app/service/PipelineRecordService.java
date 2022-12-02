@@ -42,5 +42,7 @@ public interface PipelineRecordService {
     void cancel(Long projectId, Long id);
 
     PipelineRecordVO query(Long projectId, Long id);
+
+    void retry(Long projectId, Long id);
 }
 

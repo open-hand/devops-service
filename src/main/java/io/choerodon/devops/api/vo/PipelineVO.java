@@ -15,7 +15,7 @@ import io.choerodon.devops.api.vo.cd.PipelineStageVO;
  */
 public class PipelineVO {
 
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     private Long id;
     @ApiModelProperty(value = "项目id", required = true)
     private Long projectId;
