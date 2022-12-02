@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
@@ -33,6 +34,8 @@ public interface PipelineJobRecordService {
 
     List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(Long stageRecordId);
 
+    List<PipelineJobRecordDTO> listCreatedByStageRecordIdForUpdate(Long stageRecordId);
+
     List<PipelineJobRecordDTO> listByStageRecordId(Long nextStageRecordId);
 
     List<PipelineJobRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
@@ -48,5 +51,9 @@ public interface PipelineJobRecordService {
     void cancelPipelineJobs(Long pipelineRecordId);
 
     void retryPipelineJobs(Long pipelineRecordId);
+
+    List<PipelineJobRecordDTO> listCreatedAndPendingJobsForUpdate(Long pipelineRecordId);
+
+    List<PipelineJobRecordDTO> listByStatusForUpdate(Long pipelineRecordId, Set<String> statusList);
 }
 

@@ -145,7 +145,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
         Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
 //        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
-        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(nextStageRecordId);
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listCreatedByStageRecordIdForUpdate(nextStageRecordId);
 //        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
 //        boolean hasAuditJob = false;
         for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
@@ -231,9 +231,14 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void cancel(Long projectId, Long id) {
         // 更新所有created、pending状态的任务状态为canceled
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listCreatedAndPendingJobsForUpdate(id);
+        if (CollectionUtils.isEmpty(pipelineJobRecordDTOS)) {
+            return;
+        }
         pipelineJobRecordService.cancelPipelineJobs(id);
         // 更新所有created、pending、running状态的阶段状态为canceled
-        pipelineStageRecordService.cancelPipelineStages(id);
+        Set<Long> stageRecordIds = pipelineJobRecordDTOS.stream().map(PipelineJobRecordDTO::getStageRecordId).collect(Collectors.toSet());
+        pipelineStageRecordService.cancelPipelineStagesByIds(stageRecordIds);
         // 更新流水线状态为canceled
         updateStatus(id, PipelineStatusEnum.CANCELED.value());
     }
@@ -272,10 +277,17 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void retry(Long projectId, Long id) {
-        // 更新所有canceled状态的任务状态为created
+        // 更新所有canceled、failed状态的任务状态为created
+        Set<String> statusList = new HashSet<>();
+        statusList.add(PipelineStatusEnum.CANCELED.value());
+        statusList.add(PipelineStatusEnum.FAILED.value());
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStatusForUpdate(id, statusList);
+        if (CollectionUtils.isEmpty(pipelineJobRecordDTOS)) {
+            return;
+        }
         pipelineJobRecordService.retryPipelineJobs(id);
         // 更新所有canceled状态的阶段状态为created
-        pipelineStageRecordService.retryPipelineStages(id);
+        pipelineStageRecordService.updateCanceledAndFailedStatusToCreated(id);
         // 更新流水线状态为created
         updateStatus(id, PipelineStatusEnum.CREATED.value());
         List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(id);
@@ -288,7 +300,6 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
             }
         }
         startNextStage(nextStageId);
-
     }
 
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,8 +162,14 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void retryPipelineStages(Long pipelineRecordId) {
-        pipelineStageRecordMapper.retryPipelineStages(pipelineRecordId);
+    public void cancelPipelineStagesByIds(Set<Long> stageRecordIds) {
+        pipelineStageRecordMapper.cancelPipelineStagesByIds(stageRecordIds);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateCanceledAndFailedStatusToCreated(Long pipelineRecordId) {
+        pipelineStageRecordMapper.updateCanceledAndFailedStatusToCreated(pipelineRecordId);
     }
 }
 

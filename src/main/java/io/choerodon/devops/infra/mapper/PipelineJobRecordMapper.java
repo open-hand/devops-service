@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -20,11 +21,17 @@ public interface PipelineJobRecordMapper extends BaseMapper<PipelineJobRecordDTO
 
     int updatePendingJobToRunning(@Param("id") Long id);
 
-    List<PipelineJobRecordDTO> listByStageIdForUpdate(@Param("stageRecordId") Long stageRecordId);
+    List<PipelineJobRecordDTO> listCreatedByStageIdForUpdate(@Param("stageRecordId") Long stageRecordId);
 
     void cancelPipelineJobs(@Param("pipelineRecordId") Long pipelineRecordId);
 
     void retryPipelineJobs(@Param("pipelineRecordId") Long pipelineRecordId);
 
+    List<PipelineJobRecordDTO> listCreatedAndPendingJobsForUpdate(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(@Param("stageRecordId") Long stageRecordId);
+
+    List<PipelineJobRecordDTO> listByStatusForUpdate(@Param("pipelineRecordId") Long pipelineRecordId,
+                                                     @Param("statusList") Set<String> statusList);
 }
 
