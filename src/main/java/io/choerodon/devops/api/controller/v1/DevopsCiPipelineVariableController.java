@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +33,6 @@ public class DevopsCiPipelineVariableController {
     public ResponseEntity<List<DevopsCiPipelineVariableDTO>> listByPipelineId(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineVariableService.listByPipelineId(pipelineId));
