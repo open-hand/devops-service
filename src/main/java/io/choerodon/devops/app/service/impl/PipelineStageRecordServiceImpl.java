@@ -120,15 +120,15 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long stageRecordId) {
+
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(stageRecordId);
+        String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
+
         PipelineStageRecordDTO pipelineStageRecordDTO = queryByIdForUpdate(stageRecordId);
         if (PipelineStatusEnum.CANCELED.value().equals(pipelineStageRecordDTO.getStatus())) {
             LOGGER.info("Pipeline stage:{} status is canceled, skip update it.", stageRecordId);
             return;
         }
-
-        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listByStageRecordIdForUpdate(stageRecordId);
-
-        String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
 
         if (!newStatus.equals(pipelineStageRecordDTO.getStatus())) {
             updateStatus(stageRecordId, newStatus);

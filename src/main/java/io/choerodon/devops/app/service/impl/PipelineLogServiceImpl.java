@@ -44,5 +44,10 @@ public class PipelineLogServiceImpl implements PipelineLogService {
         pipelineLogDTO.setLog(log);
         return MapperUtil.resultJudgedInsertSelective(pipelineLogMapper, pipelineLogDTO, DEVOPS_SAVE_PIPELINE_LOG_FAILED);
     }
+
+    @Override
+    public String queryLastedByJobRecordId(Long jobRecordId) {
+        return pipelineLogMapper.queryLastedByJobRecordId(jobRecordId);
+    }
 }
 

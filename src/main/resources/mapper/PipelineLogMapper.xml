@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineLogMapper">
+
+    <select id="queryLastedByJobRecordId" resultType="java.lang.String">
+        select log
+        from devops_pipeline_log
+        where job_record_id = #{jobRecordId}
+        order by id desc
+        limit 1
+    </select>
+</mapper>

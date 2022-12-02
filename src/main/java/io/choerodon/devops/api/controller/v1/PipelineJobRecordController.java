@@ -55,9 +55,21 @@ public class PipelineJobRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
-            @ApiParam(value = "流水线记录Id", required = true)
+            @ApiParam(value = "任务记录Id", required = true)
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(pipelineJobRecordService.checkAuditStatus(projectId, id));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看任务日志")
+    @PostMapping("/{id}/log")
+    public ResponseEntity<String> queryLog(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @ApiParam(value = "任务记录Id", required = true)
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(pipelineJobRecordService.queryLog(projectId, id));
     }
 }
 
