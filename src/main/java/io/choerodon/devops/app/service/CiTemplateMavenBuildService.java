@@ -14,7 +14,7 @@ public interface CiTemplateMavenBuildService {
 
     void baseCreate(Long id, CiTemplateMavenBuildDTO mavenBuildConfig);
 
-    CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
+    CiTemplateMavenBuildDTO dtoToVo(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
 
 
 }
