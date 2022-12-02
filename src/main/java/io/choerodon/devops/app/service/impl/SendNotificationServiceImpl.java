@@ -1151,11 +1151,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
-                    params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId));
-                    params.put("pipelineIdRecordId", KeyDecryptHelper.encryptValueWithoutToken(pipelineRecordId));
+                    params.put("pipelineId", ciPipelineId.toString());
+                    params.put("pipelineIdRecordId", pipelineRecordId.toString());
                     //加上查看详情的url
                     params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
-                            projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(ciPipelineId), pipelineRecordId.toString()));
+                            projectDTO.getOrganizationId(), ciPipelineId.toString(), pipelineRecordId.toString()));
                     addSpecifierList(type, projectDTO.getId(), userList);
                     sendNotices(type, userList, constructParamsForPipeline(ciCdPipelineDTO, projectDTO, params, stageName), projectDTO.getId());
                 },
@@ -1247,16 +1247,16 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
         params.put(MessageCodeConstants.PIPE_LINE_NAME, ciCdPipelineDTO.getName());
         params.put(MessageCodeConstants.STAGE_NAME, stage);
-        params.put(MessageCodeConstants.REL_ID, KeyDecryptHelper.encryptValue(ciPipelineRecordId));
-        params.put(MessageCodeConstants.PIPELINE_ID, KeyDecryptHelper.encryptValue(ciPipelineId));
+        params.put(MessageCodeConstants.REL_ID, ciPipelineRecordId.toString());
+        params.put(MessageCodeConstants.PIPELINE_ID, ciPipelineId.toString());
         params.put(MessageCodeConstants.LINK,
                 String.format(MessageCodeConstants.BASE_URL,
                         frontUrl,
                         projectDTO.getId(),
                         projectDTO.getName(),
                         projectDTO.getOrganizationId(),
-                        KeyDecryptHelper.encryptValue(ciPipelineId),
-                        KeyDecryptHelper.encryptValue(ciPipelineRecordId.toString())));
+                        ciPipelineId.toString(),
+                        ciPipelineRecordId.toString()));
 
         sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }

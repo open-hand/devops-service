@@ -4,7 +4,6 @@ package io.choerodon.devops.api.controller.v1;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +38,6 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<DevopsCiPipelineRecordVO> queryPipelineRecordDetails(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线记录id", required = true)
             @RequestParam(value = "id") Long id) {
         return ResponseEntity.ok(devopsCiPipelineRecordService.queryPipelineRecordDetails(projectId, id));
@@ -52,7 +50,6 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
@@ -83,7 +80,6 @@ public class CiCdPipelineRecordController {
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "id") Long id,
             @ApiParam(value = "流水线ID", required = true)
             @RequestParam("gitlab_project_id") Long gitlabProjectId) {
@@ -98,7 +94,6 @@ public class CiCdPipelineRecordController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {

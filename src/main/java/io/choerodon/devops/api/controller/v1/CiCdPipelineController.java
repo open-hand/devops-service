@@ -65,7 +65,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
@@ -79,7 +78,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
@@ -91,7 +89,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineVO> queryBasicInfoById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.queryById(pipelineId));
@@ -121,7 +118,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> disablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, pipelineId));
     }
@@ -132,7 +128,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> enablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, pipelineId));
     }
@@ -143,7 +138,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Void> deletePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         devopsCiPipelineService.deletePipeline(projectId, pipelineId);
         return ResponseEntity.noContent().build();
@@ -153,7 +147,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "全新执行GitLab流水线")
     @PostMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -193,7 +186,6 @@ public class CiCdPipelineController {
     public ResponseEntity<PipelineFrequencyVO> listPipelineTrigger(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_id")
             @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
             @ApiParam(value = "start_time")
@@ -213,7 +205,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Page<CiCdPipelineRecordVO>> pagePipelineTrigger(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_id")
             @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
             @ApiParam(value = "start_time")
@@ -231,7 +222,6 @@ public class CiCdPipelineController {
     public ResponseEntity<ExecuteTimeVO> pipelineExecuteTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_ids")
             @RequestBody(required = true) List<Long> pipelineIds,
             @ApiParam(value = "start_time")
@@ -249,7 +239,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Page<CiCdPipelineRecordVO>> pagePipelineExecuteTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_ids")
             @RequestBody(required = true) List<Long> pipelineIds,
             @ApiParam(value = "start_time")
@@ -308,7 +297,6 @@ public class CiCdPipelineController {
     public ResponseEntity<List<DevopsCiPipelineFunctionDTO>> listFunctionsByDevopsPipelineId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true, ignoreValue = {"0"})
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));

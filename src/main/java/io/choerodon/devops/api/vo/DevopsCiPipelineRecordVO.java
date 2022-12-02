@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -22,7 +21,6 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     @ApiModelProperty("gitlab流水线记录id")
     private Long gitlabPipelineId;
 
-    @Encrypt
     @ApiModelProperty("流水线id")
     private Long ciPipelineId;
     @ApiModelProperty("触发用户")
