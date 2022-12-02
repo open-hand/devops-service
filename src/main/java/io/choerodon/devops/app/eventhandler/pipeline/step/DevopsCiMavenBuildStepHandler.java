@@ -56,7 +56,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         CiTemplateMavenBuildDTO templateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
         if (templateMavenBuildDTO != null) {
-            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.voToDto(templateMavenBuildDTO));
+            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(templateMavenBuildDTO));
         }
     }
 
