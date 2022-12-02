@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -10,7 +11,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.cd.PipelineStageRecordVO;
 import io.choerodon.devops.app.service.PipelineJobRecordService;
 import io.choerodon.devops.app.service.PipelineRecordService;
 import io.choerodon.devops.app.service.PipelineStageRecordService;
@@ -19,6 +22,7 @@ import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.mapper.PipelineStageRecordMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -78,6 +82,15 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         PipelineStageRecordDTO pipelineStageRecordDTO = new PipelineStageRecordDTO();
         pipelineStageRecordDTO.setPipelineRecordId(pipelineRecordId);
         return pipelineStageRecordMapper.select(pipelineStageRecordDTO);
+    }
+
+    @Override
+    public List<PipelineStageRecordVO> listVOByPipelineRecordId(Long pipelineRecordId) {
+        List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineRecordId);
+        if (CollectionUtils.isEmpty(pipelineStageRecordDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(pipelineStageRecordDTOS, PipelineStageRecordVO.class);
     }
 
     @Override

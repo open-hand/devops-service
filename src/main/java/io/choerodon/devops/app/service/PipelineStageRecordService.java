@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.cd.PipelineStageRecordVO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 
@@ -22,6 +23,8 @@ public interface PipelineStageRecordService {
     PipelineStageRecordDTO queryByIdForUpdate(Long id);
 
     List<PipelineStageRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
+
+    List<PipelineStageRecordVO> listVOByPipelineRecordId(Long pipelineRecordId);
 
     void baseUpdate(PipelineStageRecordDTO firstStageRecordDTO);
 

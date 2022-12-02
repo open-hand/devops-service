@@ -92,7 +92,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCiPipelineRecordServiceImpl.class);
 
     private static final String DOWNLOAD_JAR_URL = "%s%s/%s/repository/";
-    protected static final String ENV = "env";
+
     protected static final String HOST = "host";
 
     private final DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper;
@@ -770,7 +770,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
                         deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
                         deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
-                        deployInfo.setDeployType(ENV);
+                        deployInfo.setDeployType(MiscConstants.ENV);
                         deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
                         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
                             DevopsDeploymentDTO deploymentDTO = devopsDeploymentService.selectByPrimaryKey(devopsDeployAppCenterEnvDTO.getObjectId());
@@ -806,7 +806,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
                         deployInfo.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
                         deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
-                        deployInfo.setDeployType(ENV);
+                        deployInfo.setDeployType(MiscConstants.ENV);
                         deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
                         if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
                             AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId(), devopsDeployAppCenterEnvDTO.getObjectId());

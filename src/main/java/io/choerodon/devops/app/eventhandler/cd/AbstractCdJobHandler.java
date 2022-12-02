@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
@@ -113,6 +114,13 @@ public abstract class AbstractCdJobHandler {
     public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
 
     }
+
+    /**
+     * 查询流水线记录详情时按任务类型填充特殊数据
+     *
+     * @param pipelineJobRecordVO
+     */
+    public abstract void fillAdditionalRecordInfo(PipelineJobRecordVO pipelineJobRecordVO);
 
     public void execCommand(Long jobRecordId, StringBuilder log) {
 

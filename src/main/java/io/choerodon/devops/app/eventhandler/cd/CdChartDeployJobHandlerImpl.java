@@ -8,16 +8,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.AppServiceDeployVO;
-import io.choerodon.devops.api.vo.AppServiceInstanceVO;
-import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.cd.PipelineChartDeployCfgVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
+import io.choerodon.devops.api.vo.pipeline.DeployInfo;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CommandType;
@@ -25,6 +27,7 @@ import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
+import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.PipelineAppDeployUtil;
@@ -57,6 +60,8 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private AppServiceService appServiceService;
+    @Autowired
+    protected DevopsDeployRecordService devopsDeployRecordService;
 
     @Override
     protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
@@ -66,6 +71,41 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     @Override
     public void deleteConfigByPipelineId(Long pipelineId) {
         pipelineChartDeployCfgService.deleteConfigByPipelineId(pipelineId);
+    }
+
+    @Override
+    public void fillAdditionalRecordInfo(PipelineJobRecordVO pipelineJobRecordVO) {
+        if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.SUCCESS.toValue().equals(pipelineJobRecordVO.getStatus())) {
+            Long commandId = pipelineJobRecordVO.getCommandId();
+            if (commandId != null) {
+                DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
+                if (deployRecordVO != null) {
+                    DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(deployRecordVO.getAppId());
+                    DeployInfo deployInfo = new DeployInfo();
+                    deployInfo.setAppServiceName(deployRecordVO.getDeployObjectName());
+                    deployInfo.setAppServiceVersion(deployRecordVO.getDeployObjectVersion());
+                    deployInfo.setEnvId(deployRecordVO.getEnvId());
+                    deployInfo.setEnvName(deployRecordVO.getDeployPayloadName());
+                    deployInfo.setAppId(deployRecordVO.getAppId());
+                    deployInfo.setAppName(deployRecordVO.getAppName());
+                    if (!ObjectUtils.isEmpty(devopsDeployAppCenterEnvDTO)) {
+                        deployInfo.setRdupmType(devopsDeployAppCenterEnvDTO.getRdupmType());
+                        deployInfo.setChartSource(devopsDeployAppCenterEnvDTO.getChartSource());
+                        deployInfo.setOperationType(devopsDeployAppCenterEnvDTO.getOperationType());
+                        deployInfo.setDeployType(MiscConstants.ENV);
+                        deployInfo.setDeployTypeId(devopsDeployAppCenterEnvDTO.getEnvId());
+                        if (RdupmTypeEnum.CHART.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+                            AppServiceInstanceInfoVO appServiceInstanceInfoVO = appServiceInstanceService.queryInfoById(devopsDeployAppCenterEnvDTO.getProjectId(), devopsDeployAppCenterEnvDTO.getObjectId());
+                            if (!ObjectUtils.isEmpty(appServiceInstanceInfoVO)) {
+                                deployInfo.setAppServiceId(appServiceInstanceInfoVO.getAppServiceId());
+                                deployInfo.setStatus(appServiceInstanceInfoVO.getStatus());
+                            }
+                        }
+                    }
+                    pipelineJobRecordVO.setDeployInfo(deployInfo);
+                }
+            }
+        }
     }
 
 

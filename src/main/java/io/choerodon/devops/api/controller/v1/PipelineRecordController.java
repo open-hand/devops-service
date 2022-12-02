@@ -42,12 +42,23 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
         return ResponseEntity.ok(pipelineRecordService.paging(projectId, pipelineId, pageable));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询流水线执行记录详情")
+    @GetMapping("/{id}")
+    public ResponseEntity<PipelineRecordVO> query(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "id") Long id) {
+        return ResponseEntity.ok(pipelineRecordService.query(projectId, id));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "取消流水线")

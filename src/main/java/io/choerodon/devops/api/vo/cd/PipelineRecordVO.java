@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.vo.DevopsPipelineAuditVO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.mybatis.domain.AuditDomain;
 
@@ -45,7 +44,7 @@ public class PipelineRecordVO extends AuditDomain {
 
     private IamUserDTO trigger;
 
-    private List<PipelineStageRecordDTO> stageRecordList;
+    private List<PipelineStageRecordVO> stageRecordList;
 
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsPipelineAuditVO> pipelineAuditInfo;
@@ -58,11 +57,11 @@ public class PipelineRecordVO extends AuditDomain {
         this.pipelineAuditInfo = pipelineAuditInfo;
     }
 
-    public List<PipelineStageRecordDTO> getStageRecordList() {
+    public List<PipelineStageRecordVO> getStageRecordList() {
         return stageRecordList;
     }
 
-    public void setStageRecordList(List<PipelineStageRecordDTO> stageRecordList) {
+    public void setStageRecordList(List<PipelineStageRecordVO> stageRecordList) {
         this.stageRecordList = stageRecordList;
     }
 

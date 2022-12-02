@@ -40,5 +40,7 @@ public interface PipelineRecordService {
     Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable);
 
     void cancel(Long projectId, Long id);
+
+    PipelineRecordVO query(Long projectId, Long id);
 }
 
