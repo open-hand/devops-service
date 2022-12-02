@@ -31,6 +31,27 @@ public class PipelineChartDeployCfgVO {
     @ApiModelProperty(value = "应用编码,devops_deploy_app_center_env.code")
     private String appCode;
 
+    @ApiModelProperty(value = "应用名称")
+    private String appServiceName;
+
+    @ApiModelProperty(value = "环境名称")
+    private String envName;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
 
     public Long getId() {
         return id;

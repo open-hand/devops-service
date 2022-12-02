@@ -10,7 +10,6 @@ import io.choerodon.devops.app.service.PipelineChartDeployCfgService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineChartDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.PipelineChartDeployCfgMapper;
-import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -47,8 +46,7 @@ public class PipelineChartDeployCfgServiceImpl implements PipelineChartDeployCfg
 
     @Override
     public PipelineChartDeployCfgVO queryVoByConfigId(Long configId) {
-        PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO = queryByConfigId(configId);
-        return ConvertUtils.convertObject(pipelineChartDeployCfgDTO, PipelineChartDeployCfgVO.class);
+        return pipelineChartDeployCfgMapper.queryVoByConfigId(configId);
     }
 
     @Override
