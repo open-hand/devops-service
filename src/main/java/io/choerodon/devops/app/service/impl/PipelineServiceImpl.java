@@ -400,9 +400,16 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    public PipelineRecordDTO executeByManual(Long projectId, Long id) {
+        PipelineDTO pipelineDTO = baseQueryById(id);
+        CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        return execute(id, PipelineTriggerTypeEnum.MANUAL, null);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public PipelineRecordDTO execute(Long projectId,
-                                     Long id,
+    public PipelineRecordDTO execute(Long id,
                                      PipelineTriggerTypeEnum triggerType,
                                      Map<String, Object> params) {
         PipelineDTO pipelineDTO = baseQueryById(id);
@@ -483,7 +490,7 @@ public class PipelineServiceImpl implements PipelineService {
     public PipelineRecordDTO executeByToken(Long projectId, String token) {
         PipelineDTO pipelineDTO = queryByTokenOrThrowE(token);
         CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
-        return execute(projectId, pipelineDTO.getId(), PipelineTriggerTypeEnum.API, null);
+        return execute(pipelineDTO.getId(), PipelineTriggerTypeEnum.API, null);
     }
 
     @Override
@@ -537,15 +544,15 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void triggerByAppVersion(Long appServiceId, Long appVersionId) {
-        List<PipelineDTO> pipelineDTOS = pipelineMapper.listAppAssociatedPipeline(appServiceId);
+        Set<Long> pipelineDTOS = pipelineMapper.listAppAssociatedPipeline(appServiceId);
         if (CollectionUtils.isEmpty(pipelineDTOS)) {
             return;
         }
         Map<String, Object> params = new HashMap<>();
         params.put(MiscConstants.APP_SERVICE_ID, appServiceId);
         params.put(MiscConstants.APP_VERSION_ID, appVersionId);
-        pipelineDTOS.forEach(pipelineDTO -> {
-            execute(pipelineDTO.getProjectId(), pipelineDTO.getId(), PipelineTriggerTypeEnum.API, params);
+        pipelineDTOS.forEach(pipelindId -> {
+            execute(pipelindId, PipelineTriggerTypeEnum.API, params);
         });
 
     }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_ID_NULL;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_NOT_EXIST;
 import static java.util.Comparator.comparing;
@@ -45,6 +46,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
+import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
@@ -132,8 +134,6 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private RestTemplate restTemplate;
     @Autowired
     private TransactionalProducer producer;
-    @Autowired
-    private PipelineService pipelineService;
 
     private static final Gson GSON = new Gson();
 
@@ -142,6 +142,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
+    @Saga(code = DEVOPS_APP_VERSION_TRIGGER_PIPELINE, description = "应用服务版本生成触发流水线", inputSchemaClass = AppVersionTriggerVO.class)
     public void create(String image,
                        String harborConfigId,
                        String repoType,
@@ -225,7 +226,15 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 }
             }
             // 触发流水线自动部署任务
-            pipelineService.triggerByAppVersion(appServiceDTO.getId(), appServiceVersionDTO.getId());
+            producer.apply(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(appServiceDTO.getProjectId())
+                            .withRefType("appVersion")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE),
+                    builder -> {
+                    });
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());

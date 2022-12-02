@@ -51,8 +51,8 @@
             </if>
         </where>
     </select>
-    <select id="listAppAssociatedPipeline" resultType="io.choerodon.devops.infra.dto.PipelineDTO">
-        select *
+    <select id="listAppAssociatedPipeline" resultType="java.lang.Long">
+        select dp.id
         from devops_pipeline_chart_deploy_cfg dpcdc
                  inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
                  inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
