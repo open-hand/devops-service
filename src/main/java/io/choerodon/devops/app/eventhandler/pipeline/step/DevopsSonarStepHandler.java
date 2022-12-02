@@ -78,6 +78,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         DevopsCiSonarConfigVO sonarConfig = devopsCiStepVO.getSonarConfig();
+        if (sonarConfig == null) {
+            return;
+        }
         // 报错mvn配置
         DevopsCiMavenBuildConfigVO mavenBuildConfig = sonarConfig.getMavenBuildConfig();
         if (mavenBuildConfig != null
