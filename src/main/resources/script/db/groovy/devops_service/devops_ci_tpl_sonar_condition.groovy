@@ -7,9 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_sonar_quality_gate_conditi
                 constraints(primaryKey: true)
             }
 
-            column(name: 'sonar_condition_id',type: 'VARCHAR(128)',remarks: '在sonar的id'){
-                constraints(nullable: false)
-            }
+            column(name: 'sonar_condition_id',type: 'VARCHAR(128)',remarks: '在sonar的id')
             column(name: 'gate_id', type: 'BIGINT UNSIGNED', remarks: '关联的质量门id') {
                 constraints(nullable: false)
             }
