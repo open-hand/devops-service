@@ -132,6 +132,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private RestTemplate restTemplate;
     @Autowired
     private TransactionalProducer producer;
+    @Autowired
+    private PipelineService pipelineService;
 
     private static final Gson GSON = new Gson();
 
@@ -222,6 +224,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             appServiceVersionDTO.getId()));
                 }
             }
+            // 触发流水线自动部署任务
+            pipelineService.triggerByAppVersion(appServiceDTO.getId(), appServiceVersionDTO.getId());
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());

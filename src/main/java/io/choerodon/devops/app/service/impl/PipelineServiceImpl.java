@@ -417,6 +417,10 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordDTO.setStatus(PipelineStatusEnum.CREATED.value());
         pipelineRecordDTO.setPipelineId(id);
         pipelineRecordDTO.setStartedDate(new Date());
+        if (PipelineTriggerTypeEnum.API.equals(triggerType)) {
+            pipelineRecordDTO.setAppServiceId((Long) params.get(MiscConstants.APP_SERVICE_ID));
+            pipelineRecordDTO.setAppServiceVersionId((Long) params.get(MiscConstants.APP_VERSION_ID));
+        }
         pipelineRecordService.baseCreate(pipelineRecordDTO);
 
         Long pipelineRecordId = pipelineRecordDTO.getId();
@@ -528,6 +532,22 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public Boolean checkName(Long projectId, Long id, String name) {
         return pipelineMapper.checkName(projectId, id, name);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void triggerByAppVersion(Long appServiceId, Long appVersionId) {
+        List<PipelineDTO> pipelineDTOS = pipelineMapper.listAppAssociatedPipeline(appServiceId);
+        if (CollectionUtils.isEmpty(pipelineDTOS)) {
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put(MiscConstants.APP_SERVICE_ID, appServiceId);
+        params.put(MiscConstants.APP_VERSION_ID, appVersionId);
+        pipelineDTOS.forEach(pipelineDTO -> {
+            execute(pipelineDTO.getProjectId(), pipelineDTO.getId(), PipelineTriggerTypeEnum.API, params);
+        });
+
     }
 }
 
