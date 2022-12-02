@@ -121,15 +121,17 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
             return;
         }
         DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO = devopsCiTplSonarQualityGateService.queryBySonarConfigId(ciTemplateSonarDTO.getId());
-        ciTemplateSonarDTO.setDevopsCiSonarQualityGateVO(ConvertUtils.convertObject(devopsCiSonarQualityGateVO, DevopsCiTplSonarQualityGateDTO.class));
+        if (devopsCiSonarQualityGateVO != null) {
+            DevopsCiTplSonarQualityGateDTO devopsCiTplSonarQualityGateDTO = ConvertUtils.convertObject(devopsCiSonarQualityGateVO, DevopsCiTplSonarQualityGateDTO.class);
+            devopsCiTplSonarQualityGateDTO.setSonarQualityGateConditionVOList(ConvertUtils.convertList(devopsCiSonarQualityGateVO.getSonarQualityGateConditionVOList(), DevopsCiTplSonarQualityGateConditionDTO.class));
+            ciTemplateSonarDTO.setDevopsCiSonarQualityGateVO(devopsCiTplSonarQualityGateDTO);
+        }
         ciTemplateStepVO.setSonarConfig(ciTemplateSonarDTO);
-
         //maven
         CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
         if (ciTemplateMavenBuildDTO != null) {
             ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(ciTemplateMavenBuildDTO));
         }
-
     }
 
     @Override
