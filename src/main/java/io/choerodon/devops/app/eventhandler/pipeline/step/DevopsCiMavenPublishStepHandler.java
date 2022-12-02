@@ -74,6 +74,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         ciTemplateStepVO.setMavenPublishConfig(ciTemplateMavenPublishService.queryByStepId(ciTemplateStepVO.getId()));
+
+
     }
 
     @Override
