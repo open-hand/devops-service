@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 
 /**
@@ -15,6 +14,6 @@ public interface CiTemplateMavenPublishService {
 
     void baseCreate(Long id, CiTemplateMavenPublishDTO mavenBuildConfig);
 
-    CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO);
+    CiTemplateMavenPublishDTO dtoToVo(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO);
 }
 

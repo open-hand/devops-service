@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.util.JsonHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,19 +39,19 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(Long id, CiTemplateMavenPublishDTO mavenBuildConfig) {
-        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = voToDto(mavenBuildConfig);
+        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = dtoToVo(mavenBuildConfig);
         ciTemplateMavenPublishDTO.setId(null);
         ciTemplateMavenPublishDTO.setCiTemplateStepId(id);
         ciTemplateMavenPublishMapper.insertSelective(ciTemplateMavenPublishDTO);
     }
 
     @Override
-    public CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) {
-        if (!CollectionUtils.isEmpty(ciTemplateMavenPublishDTO.getNexusMavenRepoIds())) {
+    public CiTemplateMavenPublishDTO dtoToVo(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) {
+        if (!StringUtils.isEmpty(ciTemplateMavenPublishDTO.getNexusMavenRepoIdStr())) {
             ciTemplateMavenPublishDTO.setNexusMavenRepoIds(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
             }));
         }
-        if (!CollectionUtils.isEmpty(ciTemplateMavenPublishDTO.getRepos())) {
+        if (!StringUtils.isEmpty(ciTemplateMavenPublishDTO.getRepoStr())) {
             ciTemplateMavenPublishDTO.setRepos(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
             }));
         }
