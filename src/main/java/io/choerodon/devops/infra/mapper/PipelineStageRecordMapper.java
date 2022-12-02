@@ -17,5 +17,7 @@ public interface PipelineStageRecordMapper extends BaseMapper<PipelineStageRecor
     void cancelPipelineStages(@Param("pipelineRecordId") Long pipelineRecordId);
 
     PipelineStageRecordDTO queryByIdForUpdate(@Param("id") Long id);
+
+    void retryPipelineStages(@Param("pipelineRecordId") Long pipelineRecordId);
 }
 

@@ -40,5 +40,7 @@ public interface PipelineStageRecordService {
     void updateStatus(Long stageRecordId);
 
     void cancelPipelineStages(Long pipelineRecordId);
+
+    void retryPipelineStages(Long pipelineRecordId);
 }
 

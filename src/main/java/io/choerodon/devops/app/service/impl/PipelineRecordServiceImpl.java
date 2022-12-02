@@ -269,5 +269,27 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         return pipelineRecordVO;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void retry(Long projectId, Long id) {
+        // 更新所有canceled状态的任务状态为created
+        pipelineJobRecordService.retryPipelineJobs(id);
+        // 更新所有canceled状态的阶段状态为created
+        pipelineStageRecordService.retryPipelineStages(id);
+        // 更新流水线状态为created
+        updateStatus(id, PipelineStatusEnum.CREATED.value());
+        List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(id);
+        List<PipelineStageRecordDTO> sortedRecordStages = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
+        Long nextStageId = null;
+        for (PipelineStageRecordDTO stageRecordDTO : sortedRecordStages) {
+            if (PipelineStatusEnum.CANCELED.value().equals(stageRecordDTO.getStatus())) {
+                nextStageId = stageRecordDTO.getId();
+                break;
+            }
+        }
+        startNextStage(nextStageId);
+
+    }
+
 }
 

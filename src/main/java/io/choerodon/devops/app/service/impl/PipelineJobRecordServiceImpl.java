@@ -291,6 +291,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         pipelineJobRecordMapper.cancelPipelineJobs(pipelineRecordId);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void retryPipelineJobs(Long pipelineRecordId) {
+        pipelineJobRecordMapper.retryPipelineJobs(pipelineRecordId);
+    }
+
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
 
         if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {

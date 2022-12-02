@@ -16,7 +16,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class PipelineHomeVO {
 
-    @Encrypt
+    @Encrypt(ignoreUserConflict = true)
     private Long id;
     @ApiModelProperty(value = "项目id", required = true)
     private Long projectId;

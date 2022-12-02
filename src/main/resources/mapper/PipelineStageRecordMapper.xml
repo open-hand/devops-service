@@ -10,6 +10,12 @@
         where pipeline_record_id = #{pipelineRecordId}
           and (status = 'created' or status = 'pending' or status = 'running')
     </update>
+    <update id="retryPipelineStages">
+        update devops_pipeline_stage_record
+        set status = 'created'
+        where pipeline_record_id = #{pipelineRecordId}
+          and status = 'canceled'
+    </update>
     <select id="queryByIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineStageRecordDTO">
         select *
         from devops_pipeline_stage_record
