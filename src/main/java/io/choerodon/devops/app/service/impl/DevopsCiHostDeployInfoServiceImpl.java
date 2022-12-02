@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.deploy.CustomDeployVO;
@@ -13,6 +15,7 @@ import io.choerodon.devops.api.vo.deploy.DockerDeployVO;
 import io.choerodon.devops.api.vo.deploy.JarDeployVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.DevopsCiHostDeployInfoService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiHostDeployInfoMapper;
 import io.choerodon.devops.infra.util.JsonHelper;
@@ -90,5 +93,15 @@ public class DevopsCiHostDeployInfoServiceImpl implements DevopsCiHostDeployInfo
 
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO);
         });
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteConfigByPipelineId(Long ciPipelineId) {
+        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+
+        DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = new DevopsCiHostDeployInfoDTO();
+        devopsCiHostDeployInfoDTO.setCiPipelineId(ciPipelineId);
+        devopsCiHostDeployInfoMapper.delete(devopsCiHostDeployInfoDTO);
     }
 }

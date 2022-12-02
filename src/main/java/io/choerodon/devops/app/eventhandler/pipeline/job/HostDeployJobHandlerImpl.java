@@ -22,7 +22,6 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
@@ -126,14 +125,6 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         return devopsCiHostDeployInfoDTO.getId();
     }
 
-    @Override
-    public void deleteConfigByPipelineId(Long ciPipelineId) {
-        Assert.notNull(ciPipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
-
-        DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = new DevopsCiHostDeployInfoDTO();
-        devopsCiHostDeployInfoDTO.setCiPipelineId(ciPipelineId);
-        devopsCiHostDeployInfoMapper.delete(devopsCiHostDeployInfoDTO);
-    }
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {

@@ -66,11 +66,6 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
-    public void deleteConfigByPipelineId(Long ciPipelineId) {
-        ciAuditConfigService.deleteConfigByPipelineId(ciPipelineId);
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveAdditionalRecordInfo(Long ciPipelineId, DevopsCiJobRecordDTO devopsCiJobRecordDTO, Long gitlabPipelineId, CiJobWebHookVO ciJobWebHookVO) {
         String jobName = ciJobWebHookVO.getName();
