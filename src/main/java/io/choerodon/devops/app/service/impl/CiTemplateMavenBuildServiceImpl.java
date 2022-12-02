@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
+import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +13,9 @@ import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateMavenBuildMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)应用服务
@@ -43,10 +50,12 @@ public class CiTemplateMavenBuildServiceImpl implements CiTemplateMavenBuildServ
     @Override
     public CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO) {
         if (!CollectionUtils.isEmpty(ciTemplateMavenBuildDTO.getNexusMavenRepoIds())) {
-            ciTemplateMavenBuildDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(ciTemplateMavenBuildDTO.getNexusMavenRepoIds()));
+            ciTemplateMavenBuildDTO.setNexusMavenRepoIds(JsonHelper.unmarshalByJackson(ciTemplateMavenBuildDTO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
+            }));
         }
         if (!CollectionUtils.isEmpty(ciTemplateMavenBuildDTO.getRepos())) {
-            ciTemplateMavenBuildDTO.setRepoStr(JsonHelper.marshalByJackson(ciTemplateMavenBuildDTO.getRepos()));
+            ciTemplateMavenBuildDTO.setRepos(JsonHelper.unmarshalByJackson(ciTemplateMavenBuildDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
+            }));
         }
         return ciTemplateMavenBuildDTO;
     }
