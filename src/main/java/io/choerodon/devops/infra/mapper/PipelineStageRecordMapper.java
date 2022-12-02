@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -12,5 +14,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface PipelineStageRecordMapper extends BaseMapper<PipelineStageRecordDTO> {
 
+    void cancelPipelineStages(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    PipelineStageRecordDTO queryByIdForUpdate(@Param("id") Long id);
 }
 

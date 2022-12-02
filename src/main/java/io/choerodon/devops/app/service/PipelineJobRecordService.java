@@ -39,5 +39,7 @@ public interface PipelineJobRecordService {
     AduitStatusChangeVO checkAuditStatus(Long projectId, Long id);
 
     List<PipelineJobRecordDTO> listByIds(List<Long> jobRecordIds);
+
+    void cancelPipelineJobs(Long pipelineRecordId);
 }
 

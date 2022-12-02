@@ -49,19 +49,16 @@ public class PipelineRecordController extends BaseController {
         return ResponseEntity.ok(pipelineRecordService.paging(projectId, pipelineId, pageable));
     }
 
-    /**
-     //     * Cancel jobs in a pipeline
-     //     */
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "取消流水线")
-//    @PutMapping(value = "/{id}/cancel")
-//    public ResponseEntity<Void> cancel(
-//            @PathVariable(value = "project_id") Long projectId,
-//            @ApiParam(value = "流水线记录id", required = true)
-//            @Encrypt(ignoreUserConflict = true)
-//            @PathVariable(value = "id") Long id) {
-//        devopsCiPipelineRecordService.cancelPipeline(projectId, id, gitlabProjectId);
-//        return ResponseEntity.noContent().build();
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "取消流水线")
+    @PutMapping(value = "/{id}/cancel")
+    public ResponseEntity<Void> cancel(
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线记录id", required = true)
+            @Encrypt(ignoreUserConflict = true)
+            @PathVariable(value = "id") Long id) {
+        pipelineRecordService.cancel(projectId, id);
+        return ResponseEntity.noContent().build();
+    }
 }
 

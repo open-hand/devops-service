@@ -19,6 +19,8 @@ public interface PipelineStageRecordService {
 
     PipelineStageRecordDTO baseQueryById(Long id);
 
+    PipelineStageRecordDTO queryByIdForUpdate(Long id);
+
     List<PipelineStageRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
 
     void baseUpdate(PipelineStageRecordDTO firstStageRecordDTO);
@@ -33,5 +35,7 @@ public interface PipelineStageRecordService {
      * @param stageRecordId
      */
     void updateStatus(Long stageRecordId);
+
+    void cancelPipelineStages(Long pipelineRecordId);
 }
 
