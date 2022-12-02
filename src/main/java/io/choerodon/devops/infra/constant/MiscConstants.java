@@ -85,5 +85,7 @@ public final class MiscConstants {
     public static final String SCHEDULE_TOKEN = "scheduleToken";
     public static final String USER_ID = "userId";
 
+    public static final String ENV = "env";
+
 
 }

@@ -16,6 +16,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.enums.cd.CdAuditStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineJobRecordMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -130,6 +132,24 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         pipelineJobRecordDTO.setStageRecordId(stageRecordId);
 
         return pipelineJobRecordMapper.select(pipelineJobRecordDTO);
+    }
+
+    @Override
+    public List<PipelineJobRecordDTO> listByPipelineRecordId(Long pipelineRecordId) {
+        Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
+        PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO();
+        pipelineJobRecordDTO.setPipelineRecordId(pipelineRecordId);
+
+        return pipelineJobRecordMapper.select(pipelineJobRecordDTO);
+    }
+
+    @Override
+    public List<PipelineJobRecordVO> listVOByPipelineRecordId(Long pipelineRecordId) {
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = listByPipelineRecordId(pipelineRecordId);
+        if (CollectionUtils.isEmpty(pipelineJobRecordDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(pipelineJobRecordDTOS, PipelineJobRecordVO.class);
     }
 
     @Override
