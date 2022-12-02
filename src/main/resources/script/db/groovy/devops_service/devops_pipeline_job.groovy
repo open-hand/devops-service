@@ -35,6 +35,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job.groovy') {
         createIndex(tableName: 'devops_pipeline_job', indexName: 'devops_pipeline_job_n2') {
             column(name: 'version_id')
         }
+        createIndex(tableName: 'devops_pipeline_job', indexName: 'devops_pipeline_job_n3') {
+            column(name: 'config_id')
+        }
         addUniqueConstraint(tableName: 'devops_pipeline_job',
                 constraintName: 'devops_pipeline_job_u1', columnNames: 'stage_id,name')
     }

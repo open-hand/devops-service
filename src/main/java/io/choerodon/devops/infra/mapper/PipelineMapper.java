@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.core.domain.Page;
@@ -24,5 +26,7 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
     Boolean checkName(@Param("projectId") Long projectId,
                       @Param("id") Long id,
                       @Param("name") String name);
+
+    List<PipelineDTO> listAppAssociatedPipeline(@Param("appServiceId") Long appServiceId);
 }
 

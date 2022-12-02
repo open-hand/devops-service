@@ -52,5 +52,7 @@ public interface PipelineService {
     Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String param);
 
     Boolean checkName(Long projectId, Long id, String name);
+
+    void triggerByAppVersion(Long appServiceId, Long appVersionId);
 }
 

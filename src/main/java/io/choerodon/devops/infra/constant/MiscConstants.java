@@ -84,6 +84,8 @@ public final class MiscConstants {
     public static final String PIPELINE_ID = "pipelineId";
     public static final String SCHEDULE_TOKEN = "scheduleToken";
     public static final String USER_ID = "userId";
+    public static final String APP_SERVICE_ID = "appServiceId";
+    public static final String APP_VERSION_ID = "appVersionId";
 
     public static final String ENV = "env";
 
