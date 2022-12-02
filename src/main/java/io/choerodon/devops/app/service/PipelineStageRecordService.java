@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
 import io.choerodon.devops.api.vo.cd.PipelineStageRecordVO;
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
@@ -41,6 +42,8 @@ public interface PipelineStageRecordService {
 
     void cancelPipelineStages(Long pipelineRecordId);
 
-    void retryPipelineStages(Long pipelineRecordId);
+    void cancelPipelineStagesByIds(Set<Long> ids);
+
+    void updateCanceledAndFailedStatusToCreated(Long pipelineRecordId);
 }
 

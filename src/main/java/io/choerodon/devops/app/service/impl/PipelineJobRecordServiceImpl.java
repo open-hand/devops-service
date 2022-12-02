@@ -44,6 +44,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
     private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
+    private static final String DEVOPS_STATUS_IS_EMPTY = "devops.status.is.empty";
 
     @Autowired
     private PipelineJobRecordMapper pipelineJobRecordMapper;
@@ -122,7 +123,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     @Override
     public List<PipelineJobRecordDTO> listByStageRecordIdForUpdate(Long stageRecordId) {
-        return pipelineJobRecordMapper.listByStageIdForUpdate(stageRecordId);
+        return pipelineJobRecordMapper.listByStageRecordIdForUpdate(stageRecordId);
+    }
+
+    @Override
+    public List<PipelineJobRecordDTO> listCreatedByStageRecordIdForUpdate(Long stageRecordId) {
+        return pipelineJobRecordMapper.listCreatedByStageIdForUpdate(stageRecordId);
     }
 
     @Override
@@ -295,6 +301,20 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void retryPipelineJobs(Long pipelineRecordId) {
         pipelineJobRecordMapper.retryPipelineJobs(pipelineRecordId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<PipelineJobRecordDTO> listCreatedAndPendingJobsForUpdate(Long pipelineRecordId) {
+        return pipelineJobRecordMapper.listCreatedAndPendingJobsForUpdate(pipelineRecordId);
+    }
+
+    @Override
+    public List<PipelineJobRecordDTO> listByStatusForUpdate(Long pipelineRecordId, Set<String> statusList) {
+        if (CollectionUtils.isEmpty(statusList)) {
+            throw new CommonException(DEVOPS_STATUS_IS_EMPTY);
+        }
+        return pipelineJobRecordMapper.listByStatusForUpdate(pipelineRecordId, statusList);
     }
 
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {

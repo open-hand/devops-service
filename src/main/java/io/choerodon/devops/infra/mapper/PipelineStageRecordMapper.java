@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Set;
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
@@ -18,6 +20,8 @@ public interface PipelineStageRecordMapper extends BaseMapper<PipelineStageRecor
 
     PipelineStageRecordDTO queryByIdForUpdate(@Param("id") Long id);
 
-    void retryPipelineStages(@Param("pipelineRecordId") Long pipelineRecordId);
+    void updateCanceledAndFailedStatusToCreated(@Param("pipelineRecordId") Long pipelineRecordId);
+
+    void cancelPipelineStagesByIds(@Param("stageRecordIds") Set<Long> stageRecordIds);
 }
 
