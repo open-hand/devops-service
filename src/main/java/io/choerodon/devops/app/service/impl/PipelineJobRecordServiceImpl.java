@@ -64,8 +64,6 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
     private SendNotificationService sendNotificationService;
-    @Autowired
-    private PipelineLogService pipelineLogService;
 
     @Override
     public List<PipelineJobRecordDTO> listPendingJobs(int number) {

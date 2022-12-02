@@ -187,6 +187,20 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     @Lazy
     private CiAuditUserRecordService ciAuditUserRecordService;
+    @Autowired
+    @Lazy
+    private CiAuditConfigService ciAuditConfigService;
+    @Autowired
+    @Lazy
+    private DevopsCiApiTestInfoService devopsCiApiTestInfoService;
+    @Autowired
+    @Lazy
+    private CiChartDeployConfigService ciChartDeployConfigService;
+    @Autowired
+    @Lazy
+    private CiDeployDeployCfgService ciDeployDeployCfgService;
+    @Autowired
+    private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -1001,6 +1015,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 
         // 删除job
         devopsCiJobService.deleteByPipelineId(pipelineId);
+        // 删除任务配置
+        ciAuditConfigService.deleteConfigByPipelineId(pipelineId);
+        devopsCiApiTestInfoService.deleteConfigByPipelineId(pipelineId);
+        ciChartDeployConfigService.deleteConfigByPipelineId(pipelineId);
+        ciDeployDeployCfgService.deleteConfigByPipelineId(pipelineId);
+        devopsCiHostDeployInfoService.deleteConfigByPipelineId(pipelineId);
+
 //        devopsCdJobService.deleteByPipelineId(pipelineId);
 
         //删除任务配置

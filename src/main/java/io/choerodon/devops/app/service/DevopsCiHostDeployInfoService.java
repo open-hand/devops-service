@@ -15,4 +15,6 @@ public interface DevopsCiHostDeployInfoService {
     void updateJarDeployInfoFromAppCenter(JarDeployVO jarDeployVO);
 
     void updateCustomDeployInfoFromAppCenter(CustomDeployVO customDeployVO);
+
+    void deleteConfigByPipelineId(Long ciPipelineId);
 }

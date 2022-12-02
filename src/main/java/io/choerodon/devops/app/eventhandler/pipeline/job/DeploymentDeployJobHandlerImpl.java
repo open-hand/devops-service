@@ -97,11 +97,6 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
     }
 
     @Override
-    public void deleteConfigByPipelineId(Long ciPipelineId) {
-        ciDeployDeployCfgService.deleteConfigByPipelineId(ciPipelineId);
-    }
-
-    @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         devopsCiJobVO.setCiDeployDeployCfg(ciDeployDeployCfgService.queryConfigVoById(devopsCiJobVO.getConfigId()));
     }

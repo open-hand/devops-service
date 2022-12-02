@@ -22,7 +22,6 @@ import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
@@ -275,14 +274,6 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         // 删除maven settings
         deleteMavenSettingsRecordByJobIds(jobIds);
-
-        // 删除任务配置，删除流水线时才删除
-        devopsCiJobDTOS.forEach(job -> {
-            AbstractJobHandler handler = jobOperator.getHandler(job.getType());
-            if (handler != null) {
-                handler.deleteConfigByPipelineId(ciPipelineId);
-            }
-        });
 
         // 删除步骤
         devopsCiStepService.deleteByJobIds(jobIds);

@@ -95,11 +95,6 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
     }
 
     @Override
-    public void deleteConfigByPipelineId(Long ciPipelineId) {
-        ciChartDeployConfigService.deleteConfigByPipelineId(ciPipelineId);
-    }
-
-    @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigService.queryConfigVoById(devopsCiJobVO.getConfigId()));
     }
