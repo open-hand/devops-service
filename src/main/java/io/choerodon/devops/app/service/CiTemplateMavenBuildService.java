@@ -12,6 +12,10 @@ public interface CiTemplateMavenBuildService {
 
     CiTemplateMavenBuildDTO baseQueryById(Long stepId);
 
+    void baseCreate(Long id, CiTemplateMavenBuildDTO mavenBuildConfig);
+
+    CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
+
 
 }
 
