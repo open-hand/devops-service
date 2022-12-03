@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.sql.Date;
 import java.util.List;
 
 import io.choerodon.devops.api.vo.CiPipelineRecordVO;
@@ -105,4 +106,6 @@ public interface DevopsCiPipelineRecordService {
     Long ciPipelineDeployDockerCompose(Long projectId, AppServiceDTO appServiceDTO, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 
     Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
+
+    List<DevopsCiPipelineRecordDTO> listByPipelineId(Long pipelineId, Date startTime, Date endTime);
 }

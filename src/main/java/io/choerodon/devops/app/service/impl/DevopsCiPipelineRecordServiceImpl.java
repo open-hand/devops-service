@@ -1957,6 +1957,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         return devopsHostCommandDTO.getId();
     }
 
+    @Override
+    public List<DevopsCiPipelineRecordDTO> listByPipelineId(Long pipelineId, java.sql.Date startTime, java.sql.Date endTime) {
+        return devopsCiPipelineRecordMapper.listByPipelineId(pipelineId, startTime, endTime);
+    }
+
     private String replaceValue(String code, String imageTag, String value) {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
