@@ -29,11 +29,9 @@ public class ApprovalVO {
     @ApiModelProperty("合并请求gitlab项目地址")
     private String mergeRequestUrl;
 
-    @Encrypt
     @ApiModelProperty("pipeline id")
     private Long pipelineId;
 
-    @Encrypt
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
 
