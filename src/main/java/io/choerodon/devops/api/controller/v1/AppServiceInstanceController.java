@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
@@ -53,8 +52,8 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
 

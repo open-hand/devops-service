@@ -116,9 +116,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    @Lazy
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
@@ -129,6 +129,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DockerComposeValueService dockerComposeValueService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsCiJobService devopsCiJobService;
 
     @Override
     @Transactional
@@ -595,7 +597,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceHostApp(projectId, appId);
+        return devopsCiJobService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {

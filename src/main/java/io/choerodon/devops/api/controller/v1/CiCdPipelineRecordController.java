@@ -14,7 +14,6 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
-import io.choerodon.devops.app.service.CiCdPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -26,10 +25,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines_record")
 public class CiCdPipelineRecordController {
 
-    @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-    @Autowired
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+//    @Autowired
+//    private CiCdPipelineRecordService ciCdPipelineRecordService;
+@Autowired
+private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -97,6 +96,6 @@ public class CiCdPipelineRecordController {
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
-        return ResponseEntity.ok(ciCdPipelineRecordService.pagingPipelineRecord(projectId, pipelineId, pageable));
+        return ResponseEntity.ok(devopsCiPipelineRecordService.pagingPipelineRecord(projectId, pipelineId, pageable));
     }
 }

@@ -24,8 +24,6 @@ import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.UserAttrService;
 import io.choerodon.devops.app.service.WorkBenchService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.DevopsCdAuditRecordDTO;
-import io.choerodon.devops.infra.dto.DevopsCdJobRecordDTO;
 import io.choerodon.devops.infra.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -57,10 +55,12 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     private UserAttrService userAttrService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    //    @Autowired
+//    private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
+//    @Autowired
+//    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
     @Autowired
-    private DevopsCdAuditRecordMapper devopsCdAuditRecordMapper;
-    @Autowired
-    private DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+    private CiAuditRecordMapper ciAuditRecordMapper;
     @Autowired
     private DevopsGitlabCommitService devopsGitlabCommitService;
     @Autowired
@@ -183,30 +183,36 @@ public class WorkBenchServiceImpl implements WorkBenchService {
     }
 
     private List<ApprovalVO> listPipelineApproval(Map<Long, ProjectDTO> projectNameMap, List<Long> projectIds) {
-        List<ApprovalVO> approvalVOList = new ArrayList<>();
+//        List<ApprovalVO> approvalVOList = new ArrayList<>();
 
         Long userId = DetailsHelper.getUserDetails().getUserId() == null ? 0 : DetailsHelper.getUserDetails().getUserId();
         CommonExAssertUtil.assertNotNull(userId, DEVOPS_USER_GET);
 
         // 查处该用户待审批的流水线阶段(新流水线)
-        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
-
-        List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
-        if (!CollectionUtils.isEmpty(jobRecordIds)) {
-            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
-            //筛选一下删除了流水线的
-            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()))).collect(Collectors.toList());
-            devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
-                ApprovalVO approvalVO = new ApprovalVO()
-                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
-                        .setProjectId(devopsCdJobRecordDTO.getProjectId())
-                        .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
-                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
-                        .setDevopsPipelineRecordRelId(devopsCdJobRecordDTO.getDevopsPipelineRecordRelId())
-                        .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
-                        .setTaskRecordId(devopsCdJobRecordDTO.getId());
-                approvalVOList.add(approvalVO);
+//        List<DevopsCdAuditRecordDTO> devopsCdAuditRecordDTOS = devopsCdAuditRecordMapper.listByProjectIdsAndUserId(userId, projectIds);
+        List<ApprovalVO> approvalVOList = ciAuditRecordMapper.listApprovalInfoByProjectIdsAndUserId(userId, projectIds);
+        if (!CollectionUtils.isEmpty(approvalVOList)) {
+            approvalVOList.forEach(approvalVO -> {
+                approvalVO.setType(ApprovalTypeEnum.CI_PIPELINE.getType());
+                approvalVO.setProjectName(projectNameMap.get(approvalVO.getProjectId()).getName());
+                approvalVO.setContent(String.format(PIPELINE_CONTENT_FORMAT, approvalVO.getPipelineName(), approvalVO.getStageName()));
             });
+//        List<Long> jobRecordIds = devopsCdAuditRecordDTOS.stream().filter(dto -> dto.getJobRecordId() != null).map(DevopsCdAuditRecordDTO::getJobRecordId).collect(Collectors.toList());
+//        if (!CollectionUtils.isEmpty(jobRecordIds)) {
+//            List<DevopsCdJobRecordDTO> devopsCdJobRecordDTOS = devopsCdJobRecordMapper.listByIds(jobRecordIds);
+//            //筛选一下删除了流水线的
+//            devopsCdJobRecordDTOS = devopsCdJobRecordDTOS.stream().filter(devopsCdJobRecordDTO -> !Objects.isNull(ciCdPipelineMapper.selectByPrimaryKey(devopsCdJobRecordDTO.getPipelineId()))).collect(Collectors.toList());
+//            devopsCdJobRecordDTOS.forEach(devopsCdJobRecordDTO -> {
+//                ApprovalVO approvalVO = new ApprovalVO()
+//                        .setType(ApprovalTypeEnum.CI_PIPELINE.getType())
+//                        .setProjectId(devopsCdJobRecordDTO.getProjectId())
+//                        .setProjectName(projectNameMap.get(devopsCdJobRecordDTO.getProjectId()).getName())
+//                        .setContent(String.format(PIPELINE_CONTENT_FORMAT, devopsCdJobRecordDTO.getPipelineName(), devopsCdJobRecordDTO.getStageName()))
+//                        .setDevopsPipelineRecordRelId(devopsCdJobRecordDTO.getDevopsPipelineRecordRelId())
+//                        .setPipelineId(devopsCdJobRecordDTO.getPipelineId())
+//                        .setTaskRecordId(devopsCdJobRecordDTO.getId());
+//                approvalVOList.add(approvalVO);
+//            });
         }
         return approvalVOList;
     }

@@ -126,4 +126,6 @@ public interface DevopsCiJobService {
     PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
 
     PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
 }
