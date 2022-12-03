@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service;
 import javax.annotation.Nullable;
 
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 
 public interface DevopsCdPipelineService {
@@ -88,32 +87,32 @@ public interface DevopsCdPipelineService {
      */
     String getDeployStatus(Long pipelineRecordId, String deployJobName);
 
-    /**
-     * 执行外部卡点任务
-     *
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     */
-    void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
-
-    /**
-     * 外部卡点任务回调接口，用于接收审批结果
-     *
-     * @param pipelineRecordId
-     * @param stageRecordId
-     * @param jobRecordId
-     * @param callbackToken    回调时用于认证的token
-     * @param status           审批结果 true,false
-     */
-    void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
-
-    /**
-     * 查询外部卡点任务回调接口地址
-     *
-     * @return
-     */
-    String queryCallbackUrl();
+//    /**
+//     * 执行外部卡点任务
+//     *
+//     * @param pipelineRecordId
+//     * @param stageRecordId
+//     * @param jobRecordId
+//     */
+//    void executeExternalApprovalTask(Long pipelineRecordId, Long stageRecordId, Long jobRecordId);
+//
+//    /**
+//     * 外部卡点任务回调接口，用于接收审批结果
+//     *
+//     * @param pipelineRecordId
+//     * @param stageRecordId
+//     * @param jobRecordId
+//     * @param callbackToken    回调时用于认证的token
+//     * @param status           审批结果 true,false
+//     */
+//    void externalApprovalTaskCallback(Long pipelineRecordId, Long stageRecordId, Long jobRecordId, String callbackToken, Boolean status);
+//
+//    /**
+//     * 查询外部卡点任务回调接口地址
+//     *
+//     * @return
+//     */
+//    String queryCallbackUrl();
 
     /**
      * 查询引用了实例作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
