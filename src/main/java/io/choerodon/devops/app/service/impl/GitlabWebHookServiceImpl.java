@@ -32,7 +32,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     private DevopsCiJobRecordService devopsCiJobRecordService;
     private BaseServiceClientOperator baseServiceClientOperator;
-    private DevopsCdPipelineService devopsCdPipelineService;
+//    private DevopsCdPipelineService devopsCdPipelineService;
 
     public GitlabWebHookServiceImpl(DevopsMergeRequestService devopsMergeRequestService,
                                     DevopsGitService devopsGitService,
@@ -40,8 +40,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                                     DevopsGitlabPipelineService devopsGitlabPipelineService,
                                     DevopsCiPipelineRecordService devopsCiPipelineRecordService,
                                     DevopsCiJobRecordService devopsCiJobRecordService,
-                                    BaseServiceClientOperator baseServiceClientOperator,
-                                    DevopsCdPipelineService devopsCdPipelineService) {
+                                    BaseServiceClientOperator baseServiceClientOperator) {
         this.devopsMergeRequestService = devopsMergeRequestService;
         this.devopsGitService = devopsGitService;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
@@ -49,7 +48,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
         this.devopsCiJobRecordService = devopsCiJobRecordService;
         this.baseServiceClientOperator = baseServiceClientOperator;
-        this.devopsCdPipelineService = devopsCdPipelineService;
+//        this.devopsCdPipelineService = devopsCdPipelineService;
     }
 
     @Override

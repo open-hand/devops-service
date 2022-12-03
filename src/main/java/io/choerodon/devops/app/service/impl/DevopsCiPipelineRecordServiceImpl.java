@@ -36,6 +36,7 @@ import org.yaml.snakeyaml.Yaml;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -72,6 +73,8 @@ import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -110,9 +113,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     private final CiPipelineSyncHandler ciPipelineSyncHandler;
     private final CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private final AppServiceMapper appServiceMapper;
-    private DevopsCdPipelineService devopsCdPipelineService;
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
+    //    private DevopsCdPipelineService devopsCdPipelineService;
+//    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+//    private DevopsPipelineRecordRelService devopsPipelineRecordRelService;
     private SendNotificationService sendNotificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -168,23 +171,23 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     protected DevopsDeploymentService devopsDeploymentService;
 
 
-    @Autowired
-    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
+//    @Autowired
+//    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
 
-    @Autowired
-    protected DevopsCdJobRecordService devopsCdJobRecordService;
+//    @Autowired
+//    protected DevopsCdJobRecordService devopsCdJobRecordService;
 
-    @Autowired
-    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
+//    @Autowired
+//    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
+//
+//    @Autowired
+//    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
 
-    @Autowired
-    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
+//    @Autowired
+//    protected DevopsCdStageRecordService devopsCdStageRecordService;
 
-    @Autowired
-    protected DevopsCdStageRecordService devopsCdStageRecordService;
-
-    @Autowired
-    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
+//    @Autowired
+//    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
 
     @Autowired
     protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
@@ -255,9 +258,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                                              GitlabServiceClientOperator gitlabServiceClientOperator,
                                              @Lazy CiPipelineSyncHandler ciPipelineSyncHandler,
                                              DevopsGitlabCommitService devopsGitlabCommitService,
-                                             @Lazy DevopsCdPipelineService devopsCdPipelineService,
-                                             @Lazy DevopsCdPipelineRecordService devopsCdPipelineRecordService,
-                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
+//                                             @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService,
                                              SendNotificationService sendNotificationService
     ) {
         this.devopsCiPipelineRecordMapper = devopsCiPipelineRecordMapper;
@@ -275,9 +276,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         this.ciPipelineSyncHandler = ciPipelineSyncHandler;
         this.checkGitlabAccessLevelService = checkGitlabAccessLevelService;
         this.appServiceMapper = appServiceMapper;
-        this.devopsCdPipelineService = devopsCdPipelineService;
-        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
-        this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
+//        this.devopsCdPipelineRecordService = devopsCdPipelineRecordService;
+//        this.devopsPipelineRecordRelService = devopsPipelineRecordRelService;
         this.sendNotificationService = sendNotificationService;
     }
 
@@ -381,11 +381,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     applicationDTO.getId());
 
             // 保存流水线记录关系
-            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
-            devopsPipelineRecordRelDTO.setCiPipelineRecordId(pipelineRecordId);
-            devopsPipelineRecordRelDTO.setPipelineId(devopsCiPipelineDTO.getId());
-            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
-            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
+//            DevopsPipelineRecordRelDTO devopsPipelineRecordRelDTO = new DevopsPipelineRecordRelDTO();
+//            devopsPipelineRecordRelDTO.setCiPipelineRecordId(pipelineRecordId);
+//            devopsPipelineRecordRelDTO.setPipelineId(devopsCiPipelineDTO.getId());
+//            devopsPipelineRecordRelDTO.setCdPipelineRecordId(PipelineConstants.DEFAULT_CI_CD_PIPELINE_RECORD_ID);
+//            devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
 
         } else {
             LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
@@ -540,12 +540,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 如果流水线状态更新为成功，则执行cd流水线触发逻辑
-        if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
-            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getGitlabPipelineId());
-            if (devopsCdPipelineRecordDTO != null) {
-                devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
-            }
-        }
+//        if (PipelineStatus.SUCCESS.toValue().equals(gitlabPipelineDTO.getStatus().toValue())) {
+//            DevopsCdPipelineRecordDTO devopsCdPipelineRecordDTO = devopsCdPipelineRecordService.queryByGitlabPipelineId(devopsCiPipelineDTO.getId(), devopsCiPipelineRecordDTO.getGitlabPipelineId());
+//            if (devopsCdPipelineRecordDTO != null) {
+//                devopsCdPipelineService.executeCdPipeline(devopsCdPipelineRecordDTO.getId());
+//            }
+//        }
 
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(devopsCiPipelineDTO.getId());
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(devopsCiPipelineDTO.getId());
@@ -1960,6 +1960,22 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Override
     public List<DevopsCiPipelineRecordDTO> listByPipelineId(Long pipelineId, java.sql.Date startTime, java.sql.Date endTime) {
         return devopsCiPipelineRecordMapper.listByPipelineId(pipelineId, startTime, endTime);
+    }
+
+    @Override
+    public Page<CiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable) {
+        Page<CiPipelineRecordVO> recordPage = PageHelper.doPage(pageable, () -> devopsCiPipelineRecordMapper.listByCiPipelineId(pipelineId));
+//        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
+//        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
+        recordPage.forEach(recordVO -> {
+            fillAdditionalInfo(recordVO);
+            recordVO.setViewId(CiCdPipelineUtils.handleId(recordVO.getId()));
+
+            // 填充前端需要的字段
+            recordVO.setCiRecordId(recordVO.getId());
+            recordVO.setPipelineId(recordVO.getCiPipelineId());
+        });
+        return recordPage;
     }
 
     private String replaceValue(String code, String imageTag, String value) {

@@ -40,7 +40,6 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HzeroMessageClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.CiCdPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -110,11 +109,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsClusterService devopsClusterService;
     @Autowired
     private MessageClient messageClient;
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    //    @Autowired
+//    @Lazy
+//    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
+//    @Autowired
+//    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
     @Autowired
     private HzeroMessageClientOperator messageClientOperator;
     @Autowired
@@ -791,22 +790,22 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
 
-    private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
-        DevopsCdPipelineRecordDTO recordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(recordDTO.getProjectId());
-        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", recordDTO);
-        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()));
-        //pipelineRecordId是relID
-        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
-        recordRelDTO.setCdPipelineRecordId(recordDTO.getId());
-        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
-        params.put("pipelineIdRecordId", relDTO.getId().toString());
-        //加上查看详情的url
-        params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
-                projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()), relDTO.getId().toString()));
-        addSpecifierList(type, projectDTO.getId(), users);
-        sendNotices(type, users, constructCdParamsForPipeline(recordDTO, projectDTO, params, stageId, stageName), projectDTO.getId());
-    }
+//    private void sendCdPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
+//        DevopsCdPipelineRecordDTO recordDTO = devopsCdPipelineRecordService.queryById(pipelineRecordId);
+//        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(recordDTO.getProjectId());
+//        LOGGER.info(">>>>>>>>>>>>>>>> sendCdPipelineMessage >>>>>>>>>>>>>>>>>>>>, DevopsCdPipelineRecordDTO is {}", recordDTO);
+//        params.put("pipelineId", KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()));
+//        //pipelineRecordId是relID
+//        DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
+//        recordRelDTO.setCdPipelineRecordId(recordDTO.getId());
+//        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+//        params.put("pipelineIdRecordId", relDTO.getId().toString());
+//        //加上查看详情的url
+//        params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+//                projectDTO.getOrganizationId(), KeyDecryptHelper.encryptValueWithoutToken(recordDTO.getPipelineId()), relDTO.getId().toString()));
+//        addSpecifierList(type, projectDTO.getId(), users);
+//        sendNotices(type, users, constructCdParamsForPipeline(recordDTO, projectDTO, params, stageId, stageName), projectDTO.getId());
+//    }
 
     private void sendCiPipelineMessage(Long pipelineRecordId, String type, List<Receiver> users, Map<String, String> params, Long stageId, String stageName) {
         DevopsCiPipelineRecordDTO recordDTO = ciPipelineRecordService.queryById(pipelineRecordId);
@@ -817,11 +816,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         //pipelineRecordId是relID
         DevopsPipelineRecordRelDTO recordRelDTO = new DevopsPipelineRecordRelDTO();
         recordRelDTO.setCiPipelineRecordId(recordDTO.getId());
-        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
-        params.put("pipelineIdRecordId", relDTO.getId().toString());
+//        DevopsPipelineRecordRelDTO relDTO = devopsPipelineRecordRelMapper.selectOne(recordRelDTO);
+        params.put("pipelineIdRecordId", recordDTO.getId().toString());
         addSpecifierList(type, projectDTO.getId(), users);
         params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
-                projectDTO.getOrganizationId(), relDTO.getPipelineId(), relDTO.getId().toString()));
+                projectDTO.getOrganizationId(), recordDTO.getCiPipelineId(), recordDTO.getId().toString()));
         sendNotices(type, users, constructCiParamsForPipeline(ciCdPipelineDTO.getName(), projectDTO, params, stageId, stageName), projectDTO.getId());
     }
 
@@ -1174,24 +1173,24 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 .build();
     }
 
-    @Override
-    public void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
-        doWithTryCatchAndLog(
-                () -> {
-                    String actualEmail = email;
-                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
-                    if (iamUserDTO == null) {
-                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
-                        return;
-                    }
-                    if (actualEmail == null) {
-                        actualEmail = iamUserDTO.getEmail();
-
-                    }
-                    sendCdPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
-                },
-                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
-    }
+//    @Override
+//    public void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
+//        doWithTryCatchAndLog(
+//                () -> {
+//                    String actualEmail = email;
+//                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+//                    if (iamUserDTO == null) {
+//                        LogUtil.loggerInfoObjectNullWithId("User", userId, LOGGER);
+//                        return;
+//                    }
+//                    if (actualEmail == null) {
+//                        actualEmail = iamUserDTO.getEmail();
+//
+//                    }
+//                    sendCdPipelineMessage(pipelineRecordId, type, ArrayUtil.singleAsList(constructReceiver(userId, actualEmail, iamUserDTO.getPhone(), iamUserDTO.getOrganizationId())), params, null, null);
+//                },
+//                ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
+//    }
 
     @Override
     public void sendCiPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params) {
@@ -1212,13 +1211,13 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                 ex -> LOGGER.info("Failed to sendPipelineNotice  with email", ex));
     }
 
-    @Override
-    public void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
-        doWithTryCatchAndLog(
-                () -> sendCdPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
-                ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
-        );
-    }
+//    @Override
+//    public void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params) {
+//        doWithTryCatchAndLog(
+//                () -> sendCdPipelineMessage(pipelineRecordId, type, receivers, params, null, null),
+//                ex -> LOGGER.info("Failed to sendPipelineNotice ", ex)
+//        );
+//    }
 
     @Override
     public void sendPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds) {

@@ -409,6 +409,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         return devopsCiJobMapper.queryChartPipelineReference(projectId, appId);
     }
 
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCiJobMapper.queryPipelineReferenceHostApp(appId);
+    }
+
     private SonarInfoVO getCiSonar(Long appServiceId) {
         SonarInfoVO sonarInfoVO = new SonarInfoVO();
         CiCdPipelineDTO devopsCiPipelineDTO = new CiCdPipelineDTO();

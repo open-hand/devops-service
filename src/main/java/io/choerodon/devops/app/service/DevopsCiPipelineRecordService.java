@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.sql.Date;
 import java.util.List;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO;
 import io.choerodon.devops.api.vo.PipelineWebHookVO;
@@ -10,6 +11,7 @@ import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.Pipeline;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 〈功能简述〉
@@ -108,4 +110,6 @@ public interface DevopsCiPipelineRecordService {
     Long ciPipelineCustomDeploy(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 
     List<DevopsCiPipelineRecordDTO> listByPipelineId(Long pipelineId, Date startTime, Date endTime);
+
+    Page<CiPipelineRecordVO> pagingPipelineRecord(Long projectId, Long pipelineId, PageRequest pageable);
 }

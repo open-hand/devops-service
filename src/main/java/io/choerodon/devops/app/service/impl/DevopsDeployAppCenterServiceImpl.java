@@ -90,9 +90,9 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private PermissionHelper permissionHelper;
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    @Lazy
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
     @Autowired
@@ -488,7 +488,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsDeployAppCenterEnvDTO == null) {
             return;
         }
-        if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+        if (devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }

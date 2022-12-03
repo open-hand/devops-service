@@ -48,6 +48,26 @@ public class ApprovalVO {
     @ApiModelProperty("pipeline task id")
     private Long taskRecordId;
 
+    private String stageName;
+
+    private String pipelineName;
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
+
     public String getProjectName() {
         return projectName;
     }
