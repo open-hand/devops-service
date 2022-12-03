@@ -1328,7 +1328,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             pipelineRecordRelDTOS.forEach(devopsPipelineRecordRelDTO -> {
                 ExecuteDetailVO executeDetailVO = new ExecuteDetailVO();
                 executeDetailVO.setExecuteDate(devopsPipelineRecordRelDTO.getCreationDate());
-                executeDetailVO.setExecuteTime(secondsToMinute(devopsPipelineRecordRelDTO.getDurationSeconds()));
+                if (devopsPipelineRecordRelDTO.getDurationSeconds() != null) {
+                    executeDetailVO.setExecuteTime(secondsToMinute(devopsPipelineRecordRelDTO.getDurationSeconds()));
+                }
                 executeDetailVOS.add(executeDetailVO);
             });
             pipelineExecuteVO.setExecuteDetailVOS(executeDetailVOS);
