@@ -23,7 +23,7 @@ public class CiPipelineAsyncTheadPoolConfig {
 
     @Bean
     @Qualifier(GitOpsConstants.PIPELINE_EXECUTOR)
-    public AsyncTaskExecutor syncPipeline(@Value("${devops.ci.pipeline.sync.executor.corePoolSize:5}") Integer corePoolSize,
+    public AsyncTaskExecutor syncPipeline(@Value("${devops.ci.pipeline.sync.executor.corePoolSize:1}") Integer corePoolSize,
                                           @Value("${devops.ci.pipeline.sync.executor.maxPoolSize:8}") Integer maxPoolSize) {
         LOGGER.info("Create AsyncTaskExecutor for ci-pipeline. The coreSize is {} and the maxSize is {}", corePoolSize, maxPoolSize);
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();

@@ -10,7 +10,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.BaseDomain;
 import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
@@ -77,15 +76,6 @@ public class CiCdPipelineUtils {
         }
     }
 
-    public static void fillViewId(List<CiCdPipelineRecordVO> ciCdPipelineRecordVOS) {
-        if (CollectionUtils.isEmpty(ciCdPipelineRecordVOS)) {
-            return;
-        }
-        ciCdPipelineRecordVOS.forEach(ciCdPipelineRecordVO -> {
-            String handleId = handleId(ciCdPipelineRecordVO.getDevopsPipelineRecordRelId());
-            ciCdPipelineRecordVO.setViewId(handleId);
-        });
-    }
 
     public static String handleId(Long id) {
         String relId = String.valueOf(id);

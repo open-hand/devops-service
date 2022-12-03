@@ -3,13 +3,12 @@ package io.choerodon.devops.app.service;
 import java.util.Map;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
 import io.choerodon.devops.api.vo.CiPipelineRecordVO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface CiCdPipelineRecordService {
 
-    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId);
+//    CiCdPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long recordRelId);
 
     @Deprecated
     void retryPipeline(Long projectId, Long id, Long gitlabProjectId);

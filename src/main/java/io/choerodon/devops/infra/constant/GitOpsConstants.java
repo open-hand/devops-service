@@ -257,11 +257,6 @@ public class GitOpsConstants {
     public static final Pattern IP_REG_PATTERN = Pattern.compile(IP_PATTERN);
 
     /**
-     * 主机状态校准的线程池名称
-     */
-    public static final String HOST_STATUS_EXECUTOR = "host-status-executor";
-
-    /**
      * 同步用户的的线程池名称
      */
     public static final String USER_SYNC_EXECUTOR = "user-executor";
