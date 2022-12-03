@@ -10,6 +10,10 @@ public enum PipelineStatusEnum {
      */
     PENDING("pending", 20, false),
     /**
+     * 已跳过
+     */
+    SKIPPED("skipped", 30, true),
+    /**
      * 成功
      */
     SUCCESS("success", 40, true),
@@ -36,10 +40,6 @@ public enum PipelineStatusEnum {
      * 待审核
      */
     NOT_AUDIT("not_audit", 100, false);
-//    /**
-//     * 已跳过
-//     */
-//    SKIPPED("skipped");
 
     private final String value;
     private final Integer priority;
