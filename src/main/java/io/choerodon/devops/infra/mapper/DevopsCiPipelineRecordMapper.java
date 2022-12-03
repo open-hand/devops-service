@@ -53,4 +53,12 @@ public interface DevopsCiPipelineRecordMapper extends BaseMapper<DevopsCiPipelin
     DevopsCiPipelineRecordDTO queryByAppServiceIdAndGitlabPipelineId(@Param("appServiceId") Long appServiceId, @Param("gitlabPipelineId") Long gitlabPipelineId);
 
     DevopsCiPipelineRecordDTO queryByIdWithPipelineName(@Param("ciPipelineRecordId") Long ciPipelineRecordId);
+
+    List<DevopsCiPipelineRecordDTO> listByPipelineId(@Param("pipelineId") Long pipelineId,
+                                                     @Param("startTime") java.sql.Date startTime,
+                                                     @Param("endTime") java.sql.Date endTime);
+
+    List<DevopsCiPipelineRecordDTO> listByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds,
+                                                      @Param("startTime") java.sql.Date startTime,
+                                                      @Param("endTime") java.sql.Date endTime);
 }

@@ -68,4 +68,38 @@
            JOIN devops_cicd_pipeline dcp ON dcp.id = dcpr.ci_pipeline_id
     WHERE dcpr.id = #{ciPipelineRecordId}
   </select>
+
+    <select id="listByPipelineId" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select
+        dcpr.*
+        from devops_ci_pipeline_record dcpr
+        where dcpr.ci_pipeline_id = #{pipelineId}
+        <if test="startTime != null">
+            AND dcpr.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND dcpr.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        order by dcpr.creation_date DESC
+    </select>
+
+    <select id="listByPipelineIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select
+        dcpr.*
+        from devops_ci_pipeline_record dcpr
+        where 1=1
+        <if test="pipelineIds != null">
+            AND dcpr.ci_pipeline_id in
+            <foreach collection="pipelineIds" item="pipelineId" open="(" close=")" separator=",">
+                #{pipelineId}
+            </foreach>
+        </if>
+        <if test="startTime != null">
+            AND dcpr.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND dcpr.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        order by dcpr.creation_date DESC
+    </select>
 </mapper>
