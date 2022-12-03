@@ -1284,16 +1284,16 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return cdPipelineRecordVOS;
     }
 
-    private List<StageRecordVO> getStageRecordVOS(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
-        List<StageRecordVO> stageRecordVOS = new ArrayList<>();
-        if (!Objects.isNull(devopsCiPipelineRecordVO)) {
-            stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOS());
-        }
-        if (!Objects.isNull(devopsCdPipelineRecordVO)) {
-            stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
-        }
-        return stageRecordVOS;
-    }
+//    private List<StageRecordVO> getStageRecordVOS(DevopsCiPipelineRecordVO devopsCiPipelineRecordVO, DevopsCdPipelineRecordVO devopsCdPipelineRecordVO) {
+//        List<StageRecordVO> stageRecordVOS = new ArrayList<>();
+//        if (!Objects.isNull(devopsCiPipelineRecordVO)) {
+//            stageRecordVOS.addAll(devopsCiPipelineRecordVO.getStageRecordVOS());
+//        }
+//        if (!Objects.isNull(devopsCdPipelineRecordVO)) {
+//            stageRecordVOS.addAll(devopsCdPipelineRecordVO.getDevopsCdStageRecordVOS());
+//        }
+//        return stageRecordVOS;
+//    }
 
 
     @Override
