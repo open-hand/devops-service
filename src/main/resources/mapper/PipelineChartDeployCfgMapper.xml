@@ -10,5 +10,6 @@
         from devops_pipeline_chart_deploy_cfg dpcdc
                  left join devops_app_service das on dpcdc.app_service_id = das.id
                  left join devops_env de on dpcdc.env_id = de.id
+        where dpcdc.id = #{configId}
     </select>
 </mapper>
