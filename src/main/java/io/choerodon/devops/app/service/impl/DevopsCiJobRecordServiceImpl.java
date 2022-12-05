@@ -299,7 +299,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
             // 审核通过只有或签才发送通知
             if (AuditStatusEnum.PASSED.value().equals(result)) {
-                sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
+                sendNotificationService.sendCiPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
                         devopsCiPipelineRecordDTO.getCiPipelineId(),
                         userIds,
                         ciPipelineRecordId,
@@ -309,7 +309,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
             }
         }
         if (AuditStatusEnum.REFUSED.value().equals(result)) {
-            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_STOP,
+            sendNotificationService.sendCiPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_STOP,
                     devopsCiPipelineRecordDTO.getCiPipelineId(),
                     userIds,
                     ciPipelineRecordId,

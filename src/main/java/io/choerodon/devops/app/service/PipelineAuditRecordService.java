@@ -23,5 +23,7 @@ public interface PipelineAuditRecordService {
     List<PipelineAuditRecordDTO> listByPipelineRecordId(Long pipelineRecordId);
 
     PipelineAuditRecordDTO queryByJobRecordIdForUpdate(Long jobRecordId);
+
+    void sendJobAuditMessage(Long pipelineId, Long pipelineRecordId, String stageName, Long jobRecordId);
 }
 

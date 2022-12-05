@@ -145,14 +145,18 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     public void startNextStage(Long nextStageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
         Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
+        Long pipelineId = pipelineStageRecordDTO.getPipelineId();
+        String stageName = pipelineStageRecordDTO.getName();
 //        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listCreatedByStageRecordIdForUpdate(nextStageRecordId);
 //        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
 //        boolean hasAuditJob = false;
+        List<PipelineJobRecordDTO> auditJobList = new ArrayList<>();
         for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
             if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
 //                hasAuditJob = true;
+                auditJobList.add(pipelineJobRecordDTO);
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
             }
@@ -166,6 +170,12 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
             String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
 
             updateStatus(pipelineRecordId, newPipelineStatus);
+        }
+        // 人工卡点任务发送审核通知
+        if (!CollectionUtils.isEmpty(auditJobList)) {
+            auditJobList.forEach(auditJob -> {
+                pipelineAuditRecordService.sendJobAuditMessage(pipelineId, pipelineRecordId, stageName, auditJob.getId());
+            });
         }
 
 

@@ -119,7 +119,7 @@ public class CiAuditRecordServiceImpl implements CiAuditRecordService {
         // 发送审核通知
         List<Long> userIds = auditUserRecordDTOList.stream().map(CiAuditUserRecordDTO::getUserId).collect(Collectors.toList());
 
-        sendNotificationService.sendPipelineAuditMessage(ciPipelineId, ciPipelineRecordId, stage, userIds);
+        sendNotificationService.sendCiPipelineAuditMessage(ciPipelineId, ciPipelineRecordId, stage, userIds);
     }
 
     @Override

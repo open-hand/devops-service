@@ -1,16 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.cd.PipelineAuditCfgVO;
 import io.choerodon.devops.app.service.PipelineAuditCfgService;
 import io.choerodon.devops.app.service.PipelineAuditRecordService;
 import io.choerodon.devops.app.service.PipelineAuditUserRecordService;
+import io.choerodon.devops.app.service.SendNotificationService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
@@ -35,6 +38,8 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
     private PipelineAuditCfgService pipelineAuditCfgService;
     @Autowired
     private PipelineAuditUserRecordService pipelineAuditUserRecordService;
+    @Autowired
+    private SendNotificationService sendNotificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -92,6 +97,20 @@ public class PipelineAuditRecordServiceImpl implements PipelineAuditRecordServic
     @Transactional(rollbackFor = Exception.class)
     public PipelineAuditRecordDTO queryByJobRecordIdForUpdate(Long jobRecordId) {
         return pipelineAuditRecordMapper.queryByJobRecordIdForUpdate(jobRecordId);
+    }
+
+    @Override
+    public void sendJobAuditMessage(Long pipelineId, Long pipelineRecordId, String stageName, Long jobRecordId) {
+        PipelineAuditRecordDTO pipelineAuditRecordDTO = queryByJobRecordId(jobRecordId);
+        if (pipelineAuditRecordDTO == null) {
+            return;
+        }
+        List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
+        if (CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)) {
+            return;
+        }
+        List<Long> userIds = pipelineAuditUserRecordDTOS.stream().map(PipelineAuditUserRecordDTO::getUserId).collect(Collectors.toList());
+        sendNotificationService.sendPipelineAuditMessage(pipelineId, pipelineRecordId, stageName, userIds);
     }
 
 }
