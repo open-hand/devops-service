@@ -124,6 +124,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    @Lazy
+    private PipelineService pipelineService;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -1135,7 +1138,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
+    public void sendCiPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
         doWithTryCatchAndLog(
                 () -> {
                     List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
@@ -1157,6 +1160,44 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                             projectDTO.getOrganizationId(), ciPipelineId.toString(), pipelineRecordId.toString()));
                     addSpecifierList(type, projectDTO.getId(), userList);
                     sendNotices(type, userList, constructParamsForPipeline(ciCdPipelineDTO, projectDTO, params, stageName), projectDTO.getId());
+                },
+                ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
+        );
+    }
+
+    @Override
+    public void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
+        doWithTryCatchAndLog(
+                () -> {
+                    List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
+                    PipelineDTO pipelineDTO = pipelineService.baseQueryById(ciPipelineId);
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+
+                    List<Receiver> userList = new ArrayList<>();
+                    users.forEach(t -> userList.add(constructReceiver(t.getId(), t.getEmail(), t.getPhone(), t.getOrganizationId())));
+
+                    Map<String, String> params = new HashMap<>();
+                    params.put(STAGE_NAME, stageName);
+                    IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
+                    params.put("auditName", iamUserDTO.getLoginName());
+                    params.put("realName", iamUserDTO.getRealName());
+                    params.put("pipelineId", ciPipelineId.toString());
+                    params.put("pipelineIdRecordId", pipelineRecordId.toString());
+                    //加上查看详情的url
+                    params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+                            projectDTO.getOrganizationId(), ciPipelineId.toString(), pipelineRecordId.toString()));
+                    addSpecifierList(type, projectDTO.getId(), userList);
+
+                    Map<String, String> newParams = StringMapBuilder.newBuilder()
+                            .put(MessageCodeConstants.PIPE_LINE_NAME, pipelineDTO.getName())
+                            .put(PROJECT_ID, projectDTO.getId())
+                            .put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName())
+                            .put(ORGANIZATION_ID, projectDTO.getOrganizationId())
+                            .put(STAGE_NAME, stageName)
+                            .putAll(params)
+                            .build();
+
+                    sendNotices(type, userList, newParams, projectDTO.getId());
                 },
                 ex -> LOGGER.info("Failed to sendPipelineAuditMassage.", ex)
         );
@@ -1220,7 +1261,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 //    }
 
     @Override
-    public void sendPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds) {
+    public void sendCiPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds) {
         List<Receiver> userList = new ArrayList<>();
         List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
         Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
@@ -1258,6 +1299,47 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                         ciPipelineRecordId.toString()));
 
         sendNotices(MessageCodeConstants.PIPELINE_AUDIT, userList, params, projectDTO.getId());
+    }
+
+    @Override
+    public void sendPipelineAuditMessage(Long pipelineId, Long pipelineRecordId, String stage, List<Long> userIds) {
+        List<Receiver> userList = new ArrayList<>();
+        List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.queryUsersByUserIds(userIds);
+        Map<Long, IamUserDTO> userDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, v -> v));
+
+        userIds.forEach(id -> {
+            IamUserDTO iamUserDTO = userDTOMap.get(id);
+            if (iamUserDTO != null) {
+                Receiver user = new Receiver();
+                user.setEmail(iamUserDTO.getEmail());
+                user.setUserId(iamUserDTO.getId());
+                user.setPhone(iamUserDTO.getPhone());
+                user.setTargetUserTenantId(iamUserDTO.getOrganizationId());
+                userList.add(user);
+            }
+        });
+
+        PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineId);
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(pipelineDTO.getProjectId());
+
+        HashMap<String, String> params = new HashMap<>();
+        params.put(MessageCodeConstants.PROJECT_ID, projectDTO.getId().toString());
+        params.put(MessageCodeConstants.ORGANIZATION_ID, projectDTO.getOrganizationId().toString());
+        params.put(MessageCodeConstants.PROJECT_NAME, projectDTO.getName());
+        params.put(MessageCodeConstants.PIPE_LINE_NAME, pipelineDTO.getName());
+        params.put(MessageCodeConstants.STAGE_NAME, stage);
+        params.put(MessageCodeConstants.REL_ID, pipelineRecordId.toString());
+        params.put(MessageCodeConstants.PIPELINE_ID, pipelineId.toString());
+        params.put(MessageCodeConstants.LINK,
+                String.format(MessageCodeConstants.BASE_URL,
+                        frontUrl,
+                        projectDTO.getId(),
+                        projectDTO.getName(),
+                        projectDTO.getOrganizationId(),
+                        pipelineId.toString(),
+                        pipelineRecordId.toString()));
+
+        sendNotices(MessageCodeConstants.CD_PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }
 
     @Override

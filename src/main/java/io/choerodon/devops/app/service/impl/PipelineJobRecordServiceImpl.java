@@ -18,10 +18,12 @@ import io.choerodon.devops.api.vo.AduitStatusChangeVO;
 import io.choerodon.devops.api.vo.AuditResultVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineAuditRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineAuditUserRecordDTO;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
+import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AuditStatusEnum;
 import io.choerodon.devops.infra.enums.PipelineStatus;
@@ -181,6 +183,10 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     public AuditResultVO auditJob(Long projectId, Long id, String result) {
         PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
         Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
+        Long pipelineRecordId = pipelineJobRecordDTO.getPipelineRecordId();
+        Long pipelineId = pipelineJobRecordDTO.getPipelineId();
+        PipelineStageRecordDTO stageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
+        String stageName = stageRecordDTO.getName();
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
         PipelineAuditRecordDTO pipelineAuditRecordDTO = pipelineAuditRecordService.queryByJobRecordIdForUpdate(id);
@@ -228,23 +234,23 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
             // 审核通过只有或签才发送通知
             if (AuditStatusEnum.PASSED.value().equals(result)) {
-//                sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_PASS,
-//                        devopsCiPipelineRecordDTO.getCiPipelineId(),
-//                        userIds,
-//                        ciPipelineRecordId,
-//                        devopsCiJobRecordDTO.getStage(),
-//                        userId,
-//                        projectId);
+                sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.CD_PIPELINE_PASS,
+                        pipelineId,
+                        userIds,
+                        pipelineRecordId,
+                        stageName,
+                        userId,
+                        projectId);
             }
         }
         if (AuditStatusEnum.REFUSED.value().equals(result)) {
-//            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.PIPELINE_STOP,
-//                    devopsCiPipelineRecordDTO.getCiPipelineId(),
-//                    userIds,
-//                    ciPipelineRecordId,
-//                    devopsCiJobRecordDTO.getStage(),
-//                    userId,
-//                    projectId);
+            sendNotificationService.sendPipelineAuditResultMassage(MessageCodeConstants.CD_PIPELINE_STOP,
+                    pipelineId,
+                    userIds,
+                    pipelineRecordId,
+                    stageName,
+                    userId,
+                    projectId);
         }
         // 审核结束则执行job
         if (auditFinishFlag) {

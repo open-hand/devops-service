@@ -67,13 +67,17 @@ public class MessageCodeConstants {
      * 流水线审核通知
      */
     public static final String PIPELINE_AUDIT = "PIPELINEAUDIT";
+
+    public static final String CD_PIPELINE_AUDIT = "CD_PIPELINE_AUDIT";
     /**
      * 流水线被终止通知
      */
     public static final String PIPELINE_STOP = "PIPELINESTOP";
+    public static final String CD_PIPELINE_STOP = "CD_PIPELINE_STOP";
     /**
      * 流水线或签任务通过通知
      */
+    public static final String CD_PIPELINE_PASS = "CD_PIPELINE_PASS";
     public static final String PIPELINE_PASS = "PIPELINEPASS";
     public static final String CREATE_INSTANCE_SUCCESS = "CREATEINSTANCESUCCESS";
     /**
