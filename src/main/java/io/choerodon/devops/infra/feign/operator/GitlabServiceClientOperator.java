@@ -9,6 +9,7 @@ import static io.choerodon.devops.infra.util.GitUserNameUtil.getAdminId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Functions;
 import feign.RetryableException;
 import org.hzero.core.util.ResponseUtils;
@@ -569,6 +570,42 @@ public class GitlabServiceClientOperator {
         } catch (Exception e) {
             throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
 
+        }
+    }
+
+    public List<ProjectHookDTO> listExternalWebHook(Integer projectId, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            String response = gitlabServiceClient.listExternalHooks(projectId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+            return JsonHelper.unmarshalByJackson(response, new TypeReference<List<ProjectHookDTO>>() {
+            });
+        } catch (Exception e) {
+            throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
+        }
+    }
+
+    public void deleteExternalWebHook(Integer projectId, Integer hookId, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            gitlabServiceClient.deleteExternalHook(projectId,
+                    hookId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+        } catch (Exception e) {
+            throw new CommonException(DEVOPS_PROJECTHOOK_CREATE, e);
         }
     }
 

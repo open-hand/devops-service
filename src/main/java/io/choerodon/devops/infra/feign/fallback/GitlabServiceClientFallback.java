@@ -408,6 +408,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> listExternalHooks(Integer projectId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.listHooks.error");
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteExternalHook(Integer projectId, Integer hookId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.deleteHook.error");
+    }
+
+    @Override
     public ResponseEntity createProjectMember(Integer projectId, MemberDTO memberDTO) {
         return null;
     }

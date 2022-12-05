@@ -38,6 +38,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.hzero.boot.file.FileClient;
 import org.hzero.core.base.BaseConstants;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -525,6 +526,19 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             }
         } else {
+            // 删除webhook
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listExternalWebHook(appServiceDTO.getGitlabProjectId(), appExternalConfigDTO);
+            if (!CollectionUtils.isEmpty(projectHookDTOS)) {
+                projectHookDTOS.forEach(projectHookDTO -> {
+                    if (getWebhookUrl().equals(projectHookDTO.getUrl())) {
+                        gitlabServiceClientOperator.deleteExternalWebHook(appServiceDTO.getGitlabProjectId(),
+                                projectHookDTO.getId(),
+                                appExternalConfigDTO);
+                    }
+                });
+            }
+
             // 外部仓库还需要删除认证配置
             appExternalConfigService.baseDelete(appServiceDTO.getExternalConfigId());
         }
@@ -974,13 +988,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook";
+        String uri = getWebhookUrl();
         projectHookDTO.setUrl(uri);
 
         appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createExternalWebHook(
                 projectId, appExternalConfigDTO, projectHookDTO)
                 .getId()));
+    }
+
+    @NotNull
+    private String getWebhookUrl() {
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        return uri;
     }
 
 
@@ -3332,8 +3352,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook";
+        String uri = getWebhookUrl();
         projectHookDTO.setUrl(uri);
         List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(projectId, userId);
         String finalUri = uri;

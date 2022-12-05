@@ -528,6 +528,29 @@ public interface GitlabServiceClient {
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId);
 
+    @GetMapping("/v1/external_projects/hooks")
+    ResponseEntity<String> listExternalHooks(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @DeleteMapping("/v1/external_projects/hooks/{hookId}")
+    ResponseEntity<Void> deleteExternalHook(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @ApiParam(value = "hookId", required = true)
+            @PathVariable Integer hookId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+
     @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
                                @RequestParam("userId") Integer userId,
