@@ -28,6 +28,7 @@ import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
+import io.choerodon.devops.infra.util.CiCdPipelineUtils;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
@@ -193,7 +194,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
             List<PipelineStageRecordVO> sortedStageRecords = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordVO::getSequence)).collect(Collectors.toList());
             pipelineRecordVO.setStageRecordList(sortedStageRecords);
             addAuditInfo(pipelineRecordVO);
-
+            pipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(pipelineRecordVO.getId()));
         });
 
         UserDTOFillUtil.fillUserInfo(pipelineRecordVOPage.getContent(), "createdBy", "trigger");

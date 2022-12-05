@@ -24,6 +24,9 @@ public class PipelineRecordVO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
+    @ApiModelProperty("界面展示id")
+    private String viewId;
+
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     @NotNull
     private Long pipelineId;
@@ -135,5 +138,13 @@ public class PipelineRecordVO extends AuditDomain {
 
     public void setAppServiceVersionId(Long appServiceVersionId) {
         this.appServiceVersionId = appServiceVersionId;
+    }
+
+    public String getViewId() {
+        return viewId;
+    }
+
+    public void setViewId(String viewId) {
+        this.viewId = viewId;
     }
 }
