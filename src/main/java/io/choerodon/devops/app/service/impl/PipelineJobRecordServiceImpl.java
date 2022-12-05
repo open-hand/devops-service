@@ -167,7 +167,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         if (CollectionUtils.isEmpty(pipelineJobRecordDTOS)) {
             return new ArrayList<>();
         }
-        return ConvertUtils.convertList(pipelineJobRecordDTOS, PipelineJobRecordVO.class);
+        return pipelineJobRecordDTOS.stream().map(pipelineJobRecordDTO -> {
+            PipelineJobRecordVO pipelineJobRecordVO = ConvertUtils.convertObject(pipelineJobRecordDTO, PipelineJobRecordVO.class);
+            pipelineJobRecordVO.setStartedDate(pipelineJobRecordDTO.getStartedDate());
+            pipelineJobRecordVO.setFinishedDate(pipelineJobRecordDTO.getFinishedDate());
+            return pipelineJobRecordVO;
+        }).collect(Collectors.toList());
     }
 
     @Override
