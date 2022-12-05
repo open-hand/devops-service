@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppDeploy.DEVOPS_APP_DEPLOY_CONFIG_EMPTY;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +38,6 @@ import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
  * @since 2022/11/4 14:47
  */
 public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler {
-
-    private static final String DEVOPS_APP_DEPLOY_CONFIG_EMPTY = "devops.app.deploy.config.empty";
 
     @Autowired
     protected DevopsEnvironmentService devopsEnvironmentService;
