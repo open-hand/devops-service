@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.cd;
 
+import javax.validation.constraints.NotEmpty;
+
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.api.vo.CommonScheduleVO;
@@ -15,6 +17,7 @@ public class PipelineScheduleVO extends CommonScheduleVO {
     @ApiModelProperty(value = "所属流水线id，devops_pipeline.id", required = true)
     private Long pipelineId;
     @ApiModelProperty(value = "定时任务名称", required = true)
+    @NotEmpty(message = "{devops.pipeline.schedule.name.cannot.be.null}")
     private String name;
 
     public Long getId() {

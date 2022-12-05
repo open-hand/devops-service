@@ -2,6 +2,9 @@ package io.choerodon.devops.api.vo.cd;
 
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -21,8 +24,11 @@ public class PipelineStageVO {
     @Encrypt
     private Long versionId;
     @ApiModelProperty(value = "名称", required = true)
+    @NotEmpty(message = "{devops.stage.name.cannot.be.null}")
+    @Size(min = 1, max = 30, message = "{devops.stage.name.max.size.is.30}")
     private String name;
     @ApiModelProperty(value = "阶段顺序", required = true)
+    @NotNull(message = "{devops.stage.sequence.cannot.be.null}")
     private Integer sequence;
     @ApiModelProperty(value = "阶段下任务信息", required = true)
     @Valid

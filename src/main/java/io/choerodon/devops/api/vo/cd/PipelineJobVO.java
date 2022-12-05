@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.vo.cd;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -21,8 +24,11 @@ public class PipelineJobVO {
     @Encrypt
     private Long stageId;
     @ApiModelProperty(value = "名称", required = true)
+    @NotEmpty(message = "{devops.job.name.cannot.be.null}")
+    @Size(min = 1, max = 30, message = "{devops.stage.job.max.size.is.30}")
     private String name;
     @ApiModelProperty(value = "任务类型", required = true)
+    @NotEmpty(message = "{devops.job.type.cannot.be.null}")
     private String type;
     @ApiModelProperty(value = "关联任务配置Id")
     @Encrypt
