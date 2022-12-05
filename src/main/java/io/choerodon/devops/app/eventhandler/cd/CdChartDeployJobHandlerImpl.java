@@ -1,9 +1,13 @@
 package io.choerodon.devops.app.eventhandler.cd;
 
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppDeploy.DEVOPS_APP_DEPLOY_CONFIG_EMPTY;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppDeploy.DEVOPS_APP_SERVICE_ID_EMPTY;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueCode.DEVOPS_DEPLOY_VALUE_ID_NULL;
 import static io.choerodon.devops.infra.constant.PipelineConstants.GITLAB_ADMIN_ID;
 
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,7 +23,9 @@ import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.pipeline.DeployInfo;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.ExceptionConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CommandType;
@@ -65,7 +71,49 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
-        // todo
+        PipelineChartDeployCfgVO appDeployConfigVO = pipelineJobVO.getChartDeployCfg();
+        if (appDeployConfigVO == null) {
+            throw new CommonException(DEVOPS_APP_DEPLOY_CONFIG_EMPTY, pipelineJobVO.getName());
+        }
+        if (appDeployConfigVO.getEnvId() == null) {
+            throw new CommonException(DEVOPS_APP_DEPLOY_CONFIG_EMPTY, pipelineJobVO.getName());
+        }
+        if (appDeployConfigVO.getAppServiceId() == null) {
+            throw new CommonException(DEVOPS_APP_SERVICE_ID_EMPTY, pipelineJobVO.getName());
+        }
+        if (StringUtils.isEmpty(appDeployConfigVO.getDeployType())) {
+            throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_DEPLOY_TYPE_IS_EMPTY);
+        }
+        if (DeployTypeEnum.CREATE.value().equals(appDeployConfigVO.getDeployType())) {
+            if (StringUtils.isEmpty(appDeployConfigVO.getAppName())) {
+                throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_NAME_IS_EMPTY);
+            }
+            if (StringUtils.isEmpty(appDeployConfigVO.getAppCode())) {
+                throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_CODE_IS_EMPTY);
+            }
+        } else {
+            if (appDeployConfigVO.getAppId() == null) {
+                throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_ID_IS_EMPTY);
+            }
+        }
+        if (DeployTypeEnum.CREATE.value().equals(appDeployConfigVO.getDeployType())) {
+            // 校验应用编码和应用名称
+            devopsDeployAppCenterService.checkNameAndCodeUniqueAndThrow(appDeployConfigVO.getEnvId(),
+                    RdupmTypeEnum.CHART.value(),
+                    null,
+                    appDeployConfigVO.getAppName(),
+                    appDeployConfigVO.getAppCode());
+        } else {
+            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appDeployConfigVO.getAppId());
+            appDeployConfigVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
+            appDeployConfigVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
+            if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(appDeployConfigVO.getEnvId())) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_EXIST_IN_OTHER_ENV, pipelineJobVO.getName());
+            }
+        }
+        if (appDeployConfigVO.getValueId() == null) {
+            throw new CommonException(DEVOPS_DEPLOY_VALUE_ID_NULL);
+        }
     }
 
     @Override

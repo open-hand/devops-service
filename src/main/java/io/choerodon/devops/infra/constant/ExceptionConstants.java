@@ -198,6 +198,11 @@ public class ExceptionConstants {
         public static final String DEVOPS_APP_DEPLOY_TYPE_IS_EMPTY = "devops.app.deployType.is.empty";
     }
 
+    public static class AppDeploy {
+        public static final String DEVOPS_APP_DEPLOY_CONFIG_EMPTY = "devops.app.deploy.config.empty";
+        public static final String DEVOPS_APP_SERVICE_ID_EMPTY = "devops.app.service.id.empty";
+    }
+
 
     /**
      * 外置仓库配置相关
