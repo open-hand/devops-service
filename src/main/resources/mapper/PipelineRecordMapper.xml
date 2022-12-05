@@ -22,5 +22,6 @@
         select dpr.*
         from devops_pipeline_record dpr
         where dpr.pipeline_id = #{pipelineId}
+        order by dpr.id desc
     </select>
 </mapper>
