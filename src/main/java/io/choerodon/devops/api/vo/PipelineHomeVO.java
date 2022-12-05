@@ -5,7 +5,6 @@ import java.util.List;
 import javax.validation.constraints.NotBlank;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -16,7 +15,6 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  */
 public class PipelineHomeVO {
 
-    @Encrypt(ignoreUserConflict = true)
     private Long id;
     @ApiModelProperty(value = "项目id", required = true)
     private Long projectId;

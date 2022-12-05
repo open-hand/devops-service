@@ -5,7 +5,6 @@ import javax.validation.Valid;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +44,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "修改时需要传，流水线id", required = true)
             @RequestParam(value = "id", required = false) Long id,
             @RequestParam(value = "name") String name) {
@@ -68,7 +66,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Void> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id,
             @RequestBody @Valid PipelineVO pipelineVO) {
         pipelineService.update(projectId, id, pipelineVO);
@@ -81,7 +78,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<PipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(pipelineService.query(projectId, id));
     }
@@ -108,7 +104,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Void> enable(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineService.enable(projectId, id);
         return ResponseEntity.noContent().build();
@@ -120,7 +115,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Void> disable(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineService.disable(projectId, id);
         return ResponseEntity.noContent().build();
@@ -132,7 +126,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<Void> delete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineService.delete(projectId, id);
         return ResponseEntity.noContent().build();
@@ -144,7 +137,6 @@ public class PipelineController extends BaseController {
     public ResponseEntity<PipelineRecordDTO> execute(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(pipelineService.executeByManual(projectId, id));
     }
