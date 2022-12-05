@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
