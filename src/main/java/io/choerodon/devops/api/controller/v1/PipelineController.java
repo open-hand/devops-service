@@ -15,6 +15,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.app.service.PipelinePersonalTokenService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
@@ -35,6 +36,8 @@ public class PipelineController extends BaseController {
 
     @Autowired
     private PipelineService pipelineService;
+    @Autowired
+    private PipelinePersonalTokenService pipelinePersonalTokenService;
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "校验名称项目下是否存在")
@@ -154,6 +157,24 @@ public class PipelineController extends BaseController {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam(value = "token") String token) {
         return ResponseEntity.ok(pipelineService.executeByToken(projectId, token));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询个人令牌")
+    @GetMapping("/personal_token")
+    public ResponseEntity<String> queryOrCreatePersonalToken(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(pipelinePersonalTokenService.queryOrCreatePersonalToken(projectId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重置个人令牌")
+    @PutMapping("/personal_token/reset")
+    public ResponseEntity<String> resetPersonalToken(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(pipelinePersonalTokenService.resetPersonalToken(projectId));
     }
 }
 
