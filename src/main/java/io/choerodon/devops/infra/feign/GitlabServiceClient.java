@@ -841,6 +841,28 @@ public interface GitlabServiceClient {
             @ApiParam(value = "variable keys", required = true)
             @RequestBody List<String> key);
 
+    @GetMapping(value = "/{projectId}/variable")
+    ResponseEntity<List<Variable>> listExternalProjectVariable(
+            @ApiParam(value = "用户", required = true)
+            @PathVariable Integer projectId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @DeleteMapping(value = "/{projectId}/variables")
+    ResponseEntity<Void> deleteExternalVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable Integer projectId,
+            @ApiParam(value = "variable key", required = true)
+            @RequestParam String key,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
     /**
      * 更新项目
      *

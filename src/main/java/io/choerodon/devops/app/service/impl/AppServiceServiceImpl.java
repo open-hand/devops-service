@@ -526,15 +526,25 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             }
         } else {
+            Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
             // 删除webhook
             AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
-            List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listExternalWebHook(appServiceDTO.getGitlabProjectId(), appExternalConfigDTO);
+            List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listExternalWebHook(gitlabProjectId, appExternalConfigDTO);
             if (!CollectionUtils.isEmpty(projectHookDTOS)) {
                 projectHookDTOS.forEach(projectHookDTO -> {
                     if (getWebhookUrl().equals(projectHookDTO.getUrl())) {
-                        gitlabServiceClientOperator.deleteExternalWebHook(appServiceDTO.getGitlabProjectId(),
+                        gitlabServiceClientOperator.deleteExternalWebHook(gitlabProjectId,
                                 projectHookDTO.getId(),
                                 appExternalConfigDTO);
+                    }
+                });
+            }
+            // 删除token
+            List<Variable> variables = gitlabServiceClientOperator.listExternalProjectVariable(gitlabProjectId, appExternalConfigDTO);
+            if (!CollectionUtils.isEmpty(variables)) {
+                variables.forEach(variable -> {
+                    if (GITLAB_VARIABLE_TOKEN.equalsIgnoreCase(variable.getKey())) {
+                        gitlabServiceClientOperator.deleteExternalProjectVariable(gitlabProjectId, variable.getKey(), appExternalConfigDTO);
                     }
                 });
             }

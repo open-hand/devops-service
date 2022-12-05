@@ -553,6 +553,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<Variable>> listExternalProjectVariable(Integer projectId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.listExternalProjectVariable.error");
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteExternalVariable(Integer projectId, String key, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.deleteExternalVariable.error");
+    }
+
+    @Override
     public ResponseEntity<List<Long>> listIds(Integer projectId) {
         throw new CommonException("devops.gitlab.mergeRequest.ids.list");
     }

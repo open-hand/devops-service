@@ -248,6 +248,39 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public void deleteExternalProjectVariable(Integer gitlabProjectId, String key, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            gitlabServiceClient.deleteExternalVariable(gitlabProjectId,
+                    key,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
+    public List<Variable> listExternalProjectVariable(Integer gitlabProjectId, AppExternalConfigDTO appExternalConfigDTO) {
+        try {
+            AppExternalConfigVO appExternalConfigVO = ConvertUtils.convertObject(appExternalConfigDTO, AppExternalConfigVO.class);
+            GitlabRepositoryInfo repositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigVO.getRepositoryUrl());
+            appExternalConfigVO.setGitlabUrl(repositoryInfo.getGitlabUrl());
+            return gitlabServiceClient.listExternalProjectVariable(gitlabProjectId,
+                    appExternalConfigVO.getGitlabUrl(),
+                    appExternalConfigVO.getAuthType(),
+                    appExternalConfigVO.getAccessToken(),
+                    appExternalConfigVO.getUsername(),
+                    appExternalConfigVO.getPassword()).getBody();
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public String createProjectToken(Integer gitlabProjectId, Integer userId, String name) {
         ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
