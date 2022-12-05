@@ -54,7 +54,7 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录Id", required = true)
-            @RequestParam(value = "id") Long id) {
+            @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(pipelineRecordService.query(projectId, id));
     }
 
