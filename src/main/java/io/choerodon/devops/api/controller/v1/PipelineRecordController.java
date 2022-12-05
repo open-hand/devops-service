@@ -12,7 +12,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.cd.PipelineRecordVO;
 import io.choerodon.devops.app.service.PipelineRecordService;
-import io.choerodon.devops.infra.dto.DevopsPipelineRecordRelDTO;
+import io.choerodon.devops.infra.dto.PipelineRecordDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -43,7 +43,7 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "流水线Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
-            @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
+            @SortDefault(value = PipelineRecordDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
         return ResponseEntity.ok(pipelineRecordService.paging(projectId, pipelineId, pageable));
     }
 
