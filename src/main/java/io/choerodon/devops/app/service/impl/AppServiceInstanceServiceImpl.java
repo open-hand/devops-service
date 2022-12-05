@@ -2275,7 +2275,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
         customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
 
-        DetailsHelper.setCustomUserDetails(customUserDetails);
+        CustomContextUtil.setUserContext(customUserDetails);
         AppServiceInstanceVO instanceVO;
         Long commandId = null;
         if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
