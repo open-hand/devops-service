@@ -75,7 +75,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     public void fillAdditionalRecordInfo(PipelineJobRecordVO pipelineJobRecordVO) {
-        if (io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.SUCCESS.toValue().equals(pipelineJobRecordVO.getStatus())) {
+        if (PipelineStatusEnum.SUCCESS.value().equals(pipelineJobRecordVO.getStatus())) {
             Long commandId = pipelineJobRecordVO.getCommandId();
             if (commandId != null) {
                 DeployRecordVO deployRecordVO = devopsDeployRecordService.queryEnvDeployRecordByCommandId(commandId);
