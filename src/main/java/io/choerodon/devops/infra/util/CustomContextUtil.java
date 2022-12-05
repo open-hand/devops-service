@@ -97,7 +97,6 @@ public class CustomContextUtil {
             oAuth2AuthenticationDetails.setDecodedDetails(context);
             authentication.setDetails(oAuth2AuthenticationDetails);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
         } catch (Exception e) {
             throw new CommonException(DEVOPS_CONTEXT_SET_ERROR, e);
         }

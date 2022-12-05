@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
@@ -2276,6 +2277,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
 
         CustomContextUtil.setUserContext(customUserDetails);
+        ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
         AppServiceInstanceVO instanceVO;
         Long commandId = null;
         if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
