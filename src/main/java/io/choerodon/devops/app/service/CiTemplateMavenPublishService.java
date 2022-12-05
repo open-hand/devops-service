@@ -15,5 +15,7 @@ public interface CiTemplateMavenPublishService {
     void baseCreate(Long id, CiTemplateMavenPublishDTO mavenBuildConfig);
 
     CiTemplateMavenPublishDTO dtoToVo(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO);
+
+    CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) ;
 }
 

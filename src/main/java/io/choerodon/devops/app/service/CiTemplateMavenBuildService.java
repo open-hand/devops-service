@@ -16,6 +16,7 @@ public interface CiTemplateMavenBuildService {
 
     CiTemplateMavenBuildDTO dtoToVo(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
 
+    CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
 
 }
 
