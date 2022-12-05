@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +41,6 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
             @SortDefault(value = DevopsPipelineRecordRelDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
@@ -55,7 +53,6 @@ public class PipelineRecordController extends BaseController {
     public ResponseEntity<PipelineRecordVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "id") Long id) {
         return ResponseEntity.ok(pipelineRecordService.query(projectId, id));
@@ -68,7 +65,6 @@ public class PipelineRecordController extends BaseController {
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineRecordService.cancel(projectId, id);
         return ResponseEntity.noContent().build();
@@ -80,7 +76,6 @@ public class PipelineRecordController extends BaseController {
     public ResponseEntity<Void> retry(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "id") Long id) {
         pipelineRecordService.retry(projectId, id);
         return ResponseEntity.noContent().build();

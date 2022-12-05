@@ -551,9 +551,7 @@ public class PipelineServiceImpl implements PipelineService {
         Map<String, Object> params = new HashMap<>();
         params.put(MiscConstants.APP_SERVICE_ID, appServiceId);
         params.put(MiscConstants.APP_VERSION_ID, appVersionId);
-        pipelineDTOS.forEach(pipelindId -> {
-            execute(pipelindId, PipelineTriggerTypeEnum.API, params);
-        });
+        pipelineDTOS.forEach(pipelindId -> execute(pipelindId, PipelineTriggerTypeEnum.API, params));
 
     }
 }
