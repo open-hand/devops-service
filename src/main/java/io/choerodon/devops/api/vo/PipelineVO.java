@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -19,6 +21,8 @@ public class PipelineVO {
     @ApiModelProperty(value = "项目id", required = true)
     private Long projectId;
     @ApiModelProperty(value = "流水线名称", required = true)
+    @NotEmpty(message = "{devops.pipeline.name.cannot.be.null}")
+    @Size(min = 1, max = 30, message = "{devops.pipeline.name.max.size.is.30}")
     private String name;
     @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", hidden = true)
     @Encrypt
