@@ -12,9 +12,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: 'status', type: 'VARCHAR(20)', remarks: '状态') {
                 constraints(nullable: false)
             }
-            column(name: "started_date", type: "DATETIME", remarks: 'job开始执行时间')
+            column(name: "started_date", type: "DATETIME", remarks: '流水线开始执行时间')
 
-            column(name: "finished_date", type: "DATETIME", remarks: 'job结束时间')
+            column(name: "finished_date", type: "DATETIME", remarks: '流水线结束时间')
             column(name: 'trigger_type', type: 'VARCHAR(20)', remarks: '触发方式') {
                 constraints(nullable: false)
             }

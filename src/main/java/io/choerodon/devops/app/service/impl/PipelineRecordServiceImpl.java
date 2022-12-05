@@ -156,7 +156,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
             }
-            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+            pipelineJobRecordService.update(pipelineJobRecordDTO);
         }
 
         String newStageStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
@@ -290,7 +290,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         // 更新所有canceled状态的阶段状态为created
         pipelineStageRecordService.updateCanceledAndFailedStatusToCreated(id);
         // 更新流水线状态为created
-        updateStatus(id, PipelineStatusEnum.CREATED.value());
+        pipelineRecordMapper.retryPipeline(id, new Date());
         List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(id);
         List<PipelineStageRecordDTO> sortedRecordStages = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
         Long nextStageId = null;
