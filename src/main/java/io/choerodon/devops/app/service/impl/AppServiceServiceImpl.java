@@ -3346,15 +3346,19 @@ public class AppServiceServiceImpl implements AppServiceService {
             //添加跳过证书扫描的变量
             gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TRIVY_INSECURE, "true", false, userId);
         } else {
-            variables.forEach(variable -> {
-                if (GITLAB_VARIABLE_TOKEN.equalsIgnoreCase(variable.getKey())) {
-                    variable.setValue(token);
-                }
-                if (GITLAB_VARIABLE_TRIVY_INSECURE.equalsIgnoreCase(variable.getKey())) {
-                    variable.setValue("true");
-                }
-            });
-            gitlabServiceClientOperator.batchSaveGroupVariable(projectId, userId, variables);
+            List<CiVariableVO> variableList = new ArrayList<>();
+            CiVariableVO ciVariableVO = new CiVariableVO();
+            ciVariableVO.setKey(GITLAB_VARIABLE_TOKEN);
+            ciVariableVO.setValue(token);
+
+            CiVariableVO ciVariableVO2 = new CiVariableVO();
+            ciVariableVO2.setKey(GITLAB_VARIABLE_TRIVY_INSECURE);
+            ciVariableVO.setValue("true");
+
+            variableList.add(ciVariableVO);
+            variableList.add(ciVariableVO2);
+
+            gitlabServiceClientOperator.batchSaveProjectVariable(projectId, userId, variableList);
         }
     }
 
