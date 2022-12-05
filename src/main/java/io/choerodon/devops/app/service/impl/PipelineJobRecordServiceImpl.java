@@ -105,7 +105,8 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(PipelineJobRecordDTO pipelineJobRecordDTO) {
-        if (PipelineStatusEnum.PENDING.value().equals(pipelineJobRecordDTO.getStatus())) {
+        if (PipelineStatusEnum.PENDING.value().equals(pipelineJobRecordDTO.getStatus())
+                || PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())) {
             pipelineJobRecordDTO.setStartedDate(new Date());
         }
         if (PipelineStatusEnum.isFinalStatus(pipelineJobRecordDTO.getStatus())) {
