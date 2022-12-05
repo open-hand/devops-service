@@ -942,8 +942,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             checkGitlabProjectIdNotUsedBefore(gitlabProjectId);
         }
         devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
-
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
         appServiceDTO.setGitlabProjectId(gitlabProjectDO.getId());
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
@@ -1197,7 +1197,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         try {
             // 设置application的属性
-            String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
+            String applicationServiceToken = appServiceDTO.getToken();
+            getApplicationToken(applicationServiceToken, gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
             appServiceDTO.setGitlabProjectId(TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGitlabProjectId()));
             appServiceDTO.setSynchro(true);
             appServiceDTO.setFailed(false);
@@ -2225,7 +2226,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -2561,7 +2563,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -3336,15 +3339,22 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param userId    gitlab user id
      * @return the application token that is stored in gitlab variables
      */
-    private String getApplicationToken(String token, Integer projectId, Integer userId) {
+    private void getApplicationToken(String token, Integer projectId, Integer userId) {
         List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
-        if (variables.isEmpty()) {
+        if (CollectionUtils.isEmpty(variables)) {
             gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TOKEN, token, false, userId);
             //添加跳过证书扫描的变量
             gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TRIVY_INSECURE, "true", false, userId);
-            return token;
         } else {
-            return variables.get(0).getValue();
+            variables.forEach(variable -> {
+                if (GITLAB_VARIABLE_TOKEN.equalsIgnoreCase(variable.getKey())) {
+                    variable.setValue(token);
+                }
+                if (GITLAB_VARIABLE_TRIVY_INSECURE.equalsIgnoreCase(variable.getKey())) {
+                    variable.setValue("true");
+                }
+            });
+            gitlabServiceClientOperator.batchSaveGroupVariable(projectId, userId, variables);
         }
     }
 
