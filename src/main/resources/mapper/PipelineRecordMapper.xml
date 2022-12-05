@@ -10,6 +10,14 @@
         where id = #{pipelineRecordId}
           and (status = 'running' or status = 'not_audit')
     </update>
+    <update id="retryPipeline">
+        update devops_pipeline_record
+        set status        = 'created',
+            started_date=#{startDate},
+            finished_date = null
+        where id = #{pipelineRecordId}
+          and (status = 'failed' or status = 'canceled')
+    </update>
     <select id="listByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
         select dpr.*
         from devops_pipeline_record dpr

@@ -22,5 +22,8 @@ public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDTO> {
                               @Param("status") String status);
 
     List<PipelineRecordVO> listByPipelineId(@Param("pipelineId") Long pipelineId);
+
+    void retryPipeline(@Param("id") Long id,
+                       @Param("startDate") Date startDate);
 }
 

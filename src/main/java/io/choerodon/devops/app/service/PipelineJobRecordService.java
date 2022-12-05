@@ -28,6 +28,8 @@ public interface PipelineJobRecordService {
 
     void baseUpdate(PipelineJobRecordDTO pipelineJobRecordDTO);
 
+    void update(PipelineJobRecordDTO pipelineJobRecordDTO);
+
     int updatePendingJobToRunning(Long id);
 
     void updateStatus(Long jobRecordId, PipelineStatusEnum status);
