@@ -41,7 +41,7 @@ public class HostDeployUtil {
         for (String s : strings) {
             s = trim(s);
             if (!s.startsWith("#")) {
-                values.append(s);
+                values.append(s).append("\n");
             }
         }
         if (ObjectUtils.isEmpty(values.toString()) || Boolean.FALSE.equals(checkInstruction("image", values.toString()))) {
