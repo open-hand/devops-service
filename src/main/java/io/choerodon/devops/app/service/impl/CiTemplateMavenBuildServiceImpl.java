@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,7 @@ public class CiTemplateMavenBuildServiceImpl implements CiTemplateMavenBuildServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(Long templateStepId, CiTemplateMavenBuildDTO mavenBuildConfig) {
-        CiTemplateMavenBuildDTO devopsCiMavenBuildConfigDTO = dtoToVo(mavenBuildConfig);
+        CiTemplateMavenBuildDTO devopsCiMavenBuildConfigDTO = voToDto(mavenBuildConfig);
         devopsCiMavenBuildConfigDTO.setId(null);
         devopsCiMavenBuildConfigDTO.setCiTemplateStepId(templateStepId);
         ciTemplateMavenBuildMapper.insertSelective(devopsCiMavenBuildConfigDTO);
@@ -57,6 +58,17 @@ public class CiTemplateMavenBuildServiceImpl implements CiTemplateMavenBuildServ
         if (!StringUtils.isEmpty(ciTemplateMavenBuildDTO.getRepoStr())) {
             ciTemplateMavenBuildDTO.setRepos(JsonHelper.unmarshalByJackson(ciTemplateMavenBuildDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
             }));
+        }
+        return ciTemplateMavenBuildDTO;
+    }
+
+    @Override
+    public CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO) {
+        if (!CollectionUtils.isEmpty(ciTemplateMavenBuildDTO.getNexusMavenRepoIds())) {
+            ciTemplateMavenBuildDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(ciTemplateMavenBuildDTO.getNexusMavenRepoIds()));
+        }
+        if (!CollectionUtils.isEmpty(ciTemplateMavenBuildDTO.getRepos())) {
+            ciTemplateMavenBuildDTO.setRepoStr(JsonHelper.marshalByJackson(ciTemplateMavenBuildDTO.getRepos()));
         }
         return ciTemplateMavenBuildDTO;
     }

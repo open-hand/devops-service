@@ -1,8 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
+import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +42,7 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseCreate(Long id, CiTemplateMavenPublishDTO mavenBuildConfig) {
-        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = dtoToVo(mavenBuildConfig);
+        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = voToDto(mavenBuildConfig);
         ciTemplateMavenPublishDTO.setId(null);
         ciTemplateMavenPublishDTO.setCiTemplateStepId(id);
         ciTemplateMavenPublishMapper.insertSelective(ciTemplateMavenPublishDTO);
@@ -57,5 +60,17 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
         }
         return ciTemplateMavenPublishDTO;
     }
+
+    @Override
+    public CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) {
+        if (!CollectionUtils.isEmpty(ciTemplateMavenPublishDTO.getNexusMavenRepoIds())) {
+            ciTemplateMavenPublishDTO.setNexusMavenRepoIdStr(JsonHelper.marshalByJackson(ciTemplateMavenPublishDTO.getNexusMavenRepoIds()));
+        }
+        if (!CollectionUtils.isEmpty(ciTemplateMavenPublishDTO.getRepos())) {
+            ciTemplateMavenPublishDTO.setRepoStr(JsonHelper.marshalByJackson(ciTemplateMavenPublishDTO.getRepos()));
+        }
+        return ciTemplateMavenPublishDTO;
+    }
+
 }
 
