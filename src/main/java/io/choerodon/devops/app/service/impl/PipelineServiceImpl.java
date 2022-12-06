@@ -86,6 +86,8 @@ public class PipelineServiceImpl implements PipelineService {
     private TransactionalProducer transactionalProducer;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private PipelinePersonalTokenService pipelinePersonalTokenService;
 
 
     @Override
@@ -487,9 +489,11 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PipelineRecordDTO executeByToken(Long projectId, String token) {
+    public PipelineRecordDTO executeByToken(Long projectId, String token, String personalToken) {
         PipelineDTO pipelineDTO = queryByTokenOrThrowE(token);
-        CustomContextUtil.setUserContext(pipelineDTO.getCreatedBy());
+        // 设置上下文
+        PipelinePersonalTokenDTO pipelinePersonalTokenDTO = pipelinePersonalTokenService.queryByToken(personalToken);
+        CustomContextUtil.setUserContext(pipelinePersonalTokenDTO.getUserId());
         return execute(pipelineDTO.getId(), PipelineTriggerTypeEnum.API, null);
     }
 

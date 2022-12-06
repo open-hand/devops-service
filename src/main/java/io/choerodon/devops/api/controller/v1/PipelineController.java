@@ -147,8 +147,9 @@ public class PipelineController extends BaseController {
     public ResponseEntity<PipelineRecordDTO> executeByToken(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "token") String token) {
-        return ResponseEntity.ok(pipelineService.executeByToken(projectId, token));
+            @RequestParam(value = "token") String token,
+            @RequestParam(value = "personal_token") String personalToken) {
+        return ResponseEntity.ok(pipelineService.executeByToken(projectId, token, personalToken));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -61,5 +61,12 @@ public class PipelinePersonalTokenServiceImpl implements PipelinePersonalTokenSe
         return pipelinePersonalTokenDTO1.getToken();
     }
 
+    @Override
+    public PipelinePersonalTokenDTO queryByToken(String token) {
+        PipelinePersonalTokenDTO pipelinePersonalTokenDTO = new PipelinePersonalTokenDTO();
+        pipelinePersonalTokenDTO.setToken(token);
+        return pipelinePersonalTokenMapper.selectOne(pipelinePersonalTokenDTO);
+    }
+
 }
 
