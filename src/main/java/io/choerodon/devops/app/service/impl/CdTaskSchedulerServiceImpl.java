@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
@@ -38,6 +40,8 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
     private PipelineStageRecordService pipelineStageRecordService;
     @Autowired
     private PipelineRecordService pipelineRecordService;
+    @Autowired
+    private PipelineLogService pipelineLogService;
 
     @Autowired
     PlatformTransactionManager transactionManager;
@@ -98,6 +102,23 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
 
         });
 
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void cleanTimeoutTask(Long timeoutDuration) {
+        Date date = new Date(System.currentTimeMillis() - timeoutDuration);
+        List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listRunningTaskBeforeDate(date);
+        if (!CollectionUtils.isEmpty(pipelineJobRecordDTOS)) {
+            pipelineJobRecordDTOS.forEach(pipelineJobRecordDTO -> {
+                // 更新任务状态为失败
+                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.FAILED.value());
+                pipelineJobRecordService.update(pipelineJobRecordDTO);
+                // 保存执行日志
+                pipelineLogService.saveLog(pipelineJobRecordDTO.getPipelineId(), pipelineJobRecordDTO.getId(), "Execute this task timeout!");
+                pipelineStageRecordService.updateStatus(pipelineJobRecordDTO.getStageRecordId());
+            });
+        }
     }
 
     protected TransactionStatus createTransactionStatus(final PlatformTransactionManager transactionManager) {
