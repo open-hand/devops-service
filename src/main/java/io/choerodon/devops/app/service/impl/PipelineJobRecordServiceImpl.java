@@ -265,7 +265,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.STOP.value());
             }
-            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+            pipelineJobRecordService.update(pipelineJobRecordDTO);
             // 更新阶段状态
             pipelineStageRecordService.updateStatus(stageRecordId);
         }
