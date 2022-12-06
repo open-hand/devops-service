@@ -419,7 +419,7 @@ public class DevopsCdPipelineServiceImpl implements DevopsCdPipelineService {
             devopsPipelineRecordRelService.save(devopsPipelineRecordRelDTO);
             // 创建cd阶段记录
             DevopsCdPipelineRecordDTO finalDevopsCdPipelineRecordDTO = devopsCdPipelineRecordDTO;
-            devopsCdStageDTOList.forEach(stage -> {
+            executeStageList.forEach(stage -> {
                 DevopsCdStageRecordDTO devopsCdStageRecordDTO = initStageRecord(finalDevopsCdPipelineRecordDTO.getId(), stage);
 
                 // 保存job执行记录
