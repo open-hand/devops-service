@@ -239,7 +239,10 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 return;
             }
             appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
-            if (Arrays.stream(version.split(",")).noneMatch(v -> {
+            // 没有填写版本类型则任意版本都会触发,填写了之后则至少要匹配一个
+            // version格式：master | master,release
+            if (StringUtils.isNotBlank(version)
+                    && Arrays.stream(version.split(",")).noneMatch(v -> {
                 String versionRegex = ".*" + version + ".*";
                 Pattern pattern = Pattern.compile(versionRegex);
                 return pattern.matcher(appServiceVersionDTO.getVersion()).matches();
