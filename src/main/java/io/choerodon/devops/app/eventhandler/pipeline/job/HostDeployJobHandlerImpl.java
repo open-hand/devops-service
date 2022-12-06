@@ -29,6 +29,7 @@ import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.mapper.DevopsCiHostDeployInfoMapper;
+import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
@@ -102,6 +103,12 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             jarDeployVO.setVersionRegular(ciHostDeployInfoVO.getVersionRegular());
             jarDeployVO.setPipelineTask(ciHostDeployInfoVO.getPipelineTask());
 
+            devopsCiHostDeployInfoDTO.setPreCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPreCommand()));
+            devopsCiHostDeployInfoDTO.setPostCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPostCommand()));
+            devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getRunCommand()));
+            devopsCiHostDeployInfoDTO.setKillCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getKillCommand()));
+            devopsCiHostDeployInfoDTO.setHealthProb(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getHealthProb()));
+
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(jarDeployVO));
         }
         if (StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
@@ -112,7 +119,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             imageDeploy.setDeploySource(ciHostDeployInfoVO.getDeploySource());
             imageDeploy.setContainerName(ciHostDeployInfoVO.getContainerName());
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
-            devopsCiHostDeployInfoDTO.setDockerCommand(ciHostDeployInfoVO.getDockerCommand());
+            devopsCiHostDeployInfoDTO.setDockerCommand(Base64Util.getBase64EncodedString(ciHostDeployInfoVO.getDockerCommand()));
             devopsCiHostDeployInfoDTO.setKillCommand(null);
             devopsCiHostDeployInfoDTO.setPreCommand(null);
             devopsCiHostDeployInfoDTO.setRunCommand(null);

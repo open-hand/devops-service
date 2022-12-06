@@ -1501,7 +1501,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         dockerDeployDTO.setImage(image);
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
-        dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, devopsCiHostDeployInfoDTO.getDockerCommand()));
+        dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getDockerCommand())));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
 
         // 3. 保存部署记录
@@ -1587,7 +1587,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         dockerComposeValueDTO.setValue(value);
 
         DockerComposeDeployVO dockerComposeDeployVO = new DockerComposeDeployVO();
-        dockerComposeDeployVO.setRunCommand(devopsCiHostDeployInfoDTO.getRunCommand());
+        dockerComposeDeployVO.setRunCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getRunCommand()));
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
         dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
 
@@ -1777,11 +1777,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                         password,
                         downloadUrl,
                         appFile),
-                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getPreCommand()),
-                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getRunCommand()),
-                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getPostCommand()),
-                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getKillCommand()),
-                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getHealthProb()),
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(jarDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(jarDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(jarDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(jarDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(jarDeployVO.getHealthProb())),
                 jarDeployVO.getOperation());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -1905,11 +1905,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiHostDeployInfoDTO.getAppCode(),
                 devopsHostAppInstanceDTO.getId().toString(),
                 null,
-                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, devopsCiHostDeployInfoDTO.getPreCommand()),
-                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, devopsCiHostDeployInfoDTO.getRunCommand()),
-                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, devopsCiHostDeployInfoDTO.getPostCommand()),
-                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, devopsCiHostDeployInfoDTO.getKillCommand()),
-                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, devopsCiHostDeployInfoDTO.getHealthProb()),
+                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPreCommand())),
+                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getRunCommand())),
+                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPostCommand())),
+                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getKillCommand())),
+                ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getHealthProb())),
                 devopsCiHostDeployInfoDTO.getDeployType());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
