@@ -128,7 +128,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
 //        boolean hasAuditJob = false;
         List<PipelineJobRecordDTO> auditJobList = new ArrayList<>();
         for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
-            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
+            if (CdJobTypeEnum.CD_AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
 //                hasAuditJob = true;
                 auditJobList.add(pipelineJobRecordDTO);
