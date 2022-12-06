@@ -434,14 +434,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
-                LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
+//                LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
                 statusChangedFlag = !devopsCiJobRecordDTO.getStatus().equals(ciJobWebHookVO.getStatus());
-                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
-                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
-                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
-                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
-                devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
+//                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
+//                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
+//                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+//                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
+//                devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
+//                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
             }
             AbstractJobHandler handler = jobOperator.getHandler(ciJobWebHookVO.getType());
             if (handler != null) {
