@@ -112,6 +112,6 @@ public class CdAuditJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     public CdJobTypeEnum getType() {
-        return CdJobTypeEnum.AUDIT;
+        return CdJobTypeEnum.CD_AUDIT;
     }
 }

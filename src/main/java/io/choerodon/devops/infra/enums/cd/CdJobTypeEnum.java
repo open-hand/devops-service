@@ -12,11 +12,11 @@ public enum CdJobTypeEnum {
     /**
      * 人工卡点类型
      */
-    AUDIT("audit"),
+    CD_AUDIT("cd_audit"),
     /**
      * chart部署类型
      */
-    CHART_DEPLOY("chart_deploy");
+    CD_CHART_DEPLOY("cd_chart_deploy");
 
     private final String value;
 

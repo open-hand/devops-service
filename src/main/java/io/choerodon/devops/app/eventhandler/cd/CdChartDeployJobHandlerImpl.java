@@ -355,7 +355,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     public CdJobTypeEnum getType() {
-        return CdJobTypeEnum.CHART_DEPLOY;
+        return CdJobTypeEnum.CD_CHART_DEPLOY;
     }
 
 }

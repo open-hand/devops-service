@@ -325,7 +325,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         }
                                         pipelineJobVO.setAuditConfig(auditConfig);
 
-                                        pipelineJobVO.setType(CdJobTypeEnum.AUDIT.value());
+                                        pipelineJobVO.setType(CdJobTypeEnum.CD_AUDIT.value());
                                     }
                                     if (JobTypeEnum.CD_DEPLOY.value().equals(devopsCdJobDTO.getType())) {
                                         DevopsCdEnvDeployInfoDTO devopsCdEnvDeployInfoDTO = devopsCdEnvDeployInfoService.queryById(devopsCdJobDTO.getDeployInfoId());
@@ -333,7 +333,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             PipelineChartDeployCfgVO chartDeployCfg = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, PipelineChartDeployCfgVO.class);
                                             chartDeployCfg.setAppServiceId(appServiceDTO.getId());
                                             pipelineJobVO.setChartDeployCfg(chartDeployCfg);
-                                            pipelineJobVO.setType(CdJobTypeEnum.CHART_DEPLOY.value());
+                                            pipelineJobVO.setType(CdJobTypeEnum.CD_CHART_DEPLOY.value());
                                         }
                                     }
                                     sequence = sequence + 1;
