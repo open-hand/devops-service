@@ -83,6 +83,7 @@ public class DevopsHostAppVO {
     public void decodeCommand() {
         this.preCommand = Base64Util.decodeBuffer(this.preCommand);
         this.runCommand = Base64Util.decodeBuffer(this.runCommand);
+        this.postCommand = Base64Util.decodeBuffer(this.postCommand);
         this.healthProb = Base64Util.decodeBuffer(this.healthProb);
         this.killCommand = Base64Util.decodeBuffer(this.killCommand);
     }
