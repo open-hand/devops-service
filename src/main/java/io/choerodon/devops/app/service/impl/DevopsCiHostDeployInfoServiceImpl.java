@@ -18,6 +18,7 @@ import io.choerodon.devops.app.service.DevopsCiHostDeployInfoService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsCiHostDeployInfoDTO;
 import io.choerodon.devops.infra.mapper.DevopsCiHostDeployInfoMapper;
+import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
 
@@ -66,11 +67,11 @@ public class DevopsCiHostDeployInfoServiceImpl implements DevopsCiHostDeployInfo
         }
         devopsCiHostDeployInfoDTOList.forEach(devopsCiHostDeployInfoDTO -> {
             devopsCiHostDeployInfoDTO.setAppName(jarDeployVO.getAppName());
-            devopsCiHostDeployInfoDTO.setPreCommand(jarDeployVO.getPreCommand());
-            devopsCiHostDeployInfoDTO.setRunCommand(jarDeployVO.getRunCommand());
-            devopsCiHostDeployInfoDTO.setPostCommand(jarDeployVO.getPostCommand());
-            devopsCiHostDeployInfoDTO.setKillCommand(jarDeployVO.getKillCommand());
-            devopsCiHostDeployInfoDTO.setHealthProb(jarDeployVO.getHealthProb());
+            devopsCiHostDeployInfoDTO.setPreCommand(Base64Util.getBase64EncodedString(jarDeployVO.getPreCommand()));
+            devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(jarDeployVO.getRunCommand()));
+            devopsCiHostDeployInfoDTO.setPostCommand(Base64Util.getBase64EncodedString(jarDeployVO.getPostCommand()));
+            devopsCiHostDeployInfoDTO.setKillCommand(Base64Util.getBase64EncodedString(jarDeployVO.getKillCommand()));
+            devopsCiHostDeployInfoDTO.setHealthProb(Base64Util.getBase64EncodedString(jarDeployVO.getHealthProb()));
 
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO);
 
@@ -85,11 +86,11 @@ public class DevopsCiHostDeployInfoServiceImpl implements DevopsCiHostDeployInfo
         }
         devopsCiHostDeployInfoDTOList.forEach(devopsCiHostDeployInfoDTO -> {
             devopsCiHostDeployInfoDTO.setAppName(customDeployVO.getAppName());
-            devopsCiHostDeployInfoDTO.setPreCommand(customDeployVO.getPreCommand());
-            devopsCiHostDeployInfoDTO.setRunCommand(customDeployVO.getRunCommand());
-            devopsCiHostDeployInfoDTO.setPostCommand(customDeployVO.getPostCommand());
-            devopsCiHostDeployInfoDTO.setKillCommand(customDeployVO.getKillCommand());
-            devopsCiHostDeployInfoDTO.setHealthProb(customDeployVO.getHealthProb());
+            devopsCiHostDeployInfoDTO.setPreCommand(Base64Util.getBase64EncodedString(customDeployVO.getPreCommand()));
+            devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(customDeployVO.getRunCommand()));
+            devopsCiHostDeployInfoDTO.setPostCommand(Base64Util.getBase64EncodedString(customDeployVO.getPostCommand()));
+            devopsCiHostDeployInfoDTO.setKillCommand(Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()));
+            devopsCiHostDeployInfoDTO.setHealthProb(Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
 
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiHostDeployInfoMapper, devopsCiHostDeployInfoDTO, DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO);
         });
