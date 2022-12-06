@@ -20,8 +20,6 @@ import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
-import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 
 /**
  * 〈功能简述〉
@@ -34,10 +32,6 @@ public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler
 
     @Autowired
     protected DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     @Lazy
     private DevopsCiPipelineService devopsCiPipelineService;
