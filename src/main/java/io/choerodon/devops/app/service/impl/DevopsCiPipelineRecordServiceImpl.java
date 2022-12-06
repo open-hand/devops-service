@@ -540,7 +540,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", gitlabPipelineId);
         devopsCiPipelineRecordDTO.setGitlabPipelineId(gitlabPipelineId);
         devopsCiPipelineRecordDTO.setDurationSeconds(TypeUtil.objToLong(gitlabPipelineDTO.getDuration()));
-        devopsCiPipelineRecordDTO.setStatus(gitlabPipelineDTO.getStatus().toValue());
+        devopsCiPipelineRecordDTO.setStatus(gitlabPipelineDTO.getStatus());
         devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
 
 
