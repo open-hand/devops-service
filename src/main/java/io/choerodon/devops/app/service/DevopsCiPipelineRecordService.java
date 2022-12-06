@@ -33,6 +33,8 @@ public interface DevopsCiPipelineRecordService {
      */
     void asyncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId);
 
+    void syncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId);
+
     DevopsCiPipelineRecordVO queryPipelineRecordDetails(Long projectId, Long ciPipelineRecordId);
 
     /**
