@@ -233,8 +233,9 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             .withSourceId(appServiceDTO.getProjectId())
                             .withRefType("appVersion")
                             .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE),
-                    builder -> {
-                    });
+                    builder -> builder
+                            .withJson(GSON.toJson(new AppVersionTriggerVO(appServiceDTO.getId(), appServiceVersionDTO.getId())))
+                            .withRefId(appServiceDTO.getId().toString()));
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
