@@ -434,14 +434,14 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 //                fillMavenSettingId(devopsCiJobRecordDTO, ciJobWebHookVO, ciPipelineId);
                 devopsCiJobRecordMapper.insertSelective(devopsCiJobRecordDTO);
             } else {
-//                LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
+                LOGGER.debug("Start to update job with gitlab job id {}...", ciJobWebHookVO.getId());
                 statusChangedFlag = !devopsCiJobRecordDTO.getStatus().equals(ciJobWebHookVO.getStatus());
-//                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
-//                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
-//                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
-//                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
-//                devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
-//                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
+                devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
+                devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
+                devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+                devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
+                devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
+                MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
             }
             AbstractJobHandler handler = jobOperator.getHandler(ciJobWebHookVO.getType());
             if (handler != null) {
@@ -504,6 +504,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Async(GitOpsConstants.PIPELINE_EXECUTOR)
     @Override
     public void asyncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId) {
+        syncPipelineUpdate(pipelineRecordId, gitlabPipelineId);
+    }
+
+    @Override
+    public void syncPipelineUpdate(Long pipelineRecordId, Integer gitlabPipelineId) {
         LOGGER.info("Start to update pipeline asynchronously...record id {}, gitlab pipeline id {}", pipelineRecordId, gitlabPipelineId);
         Assert.notNull(pipelineRecordId, PipelineCheckConstant.DEVOPS_PIPELINE_RECORD_ID_IS_NULL);
 
@@ -635,8 +640,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             return new DevopsCiPipelineRecordVO();
         }
         Long devopsPipelineId = devopsCiPipelineRecordDTO.getCiPipelineId();
+        Long pipelineRecordDTOId = devopsCiPipelineRecordDTO.getId();
         Long gitlabPipelineId = devopsCiPipelineRecordDTO.getGitlabPipelineId();
         Long userId = DetailsHelper.getUserDetails().getUserId();
+
+
+        // 如果流水线状态为running则尝试同步记录状态
+        syncPipelineUpdate(pipelineRecordDTOId, TypeUtil.objToInteger(gitlabPipelineId));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -655,7 +665,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         // 查询流水线记录下的job记录
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
-        recordDTO.setCiPipelineRecordId(devopsCiPipelineRecordDTO.getId());
+        recordDTO.setCiPipelineRecordId(pipelineRecordDTOId);
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
 
         Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));

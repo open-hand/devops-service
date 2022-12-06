@@ -79,7 +79,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
             case "build":
                 JobWebHookVO jobWebHookVO = JSONArray.parseObject(body, JobWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
                 devopsGitlabPipelineService.updateStages(jobWebHookVO, token);
-                devopsCiJobRecordService.update(jobWebHookVO, token);
+//                devopsCiJobRecordService.update(jobWebHookVO, token);
                 break;
             case "tag_push":
                 PushWebHookVO tagPushWebHookVO = JSONArray.parseObject(body, PushWebHookVO.class, FastjsonParserConfigProvider.getParserConfig());
