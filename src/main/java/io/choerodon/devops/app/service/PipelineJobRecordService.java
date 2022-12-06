@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -59,5 +60,7 @@ public interface PipelineJobRecordService {
     List<PipelineJobRecordDTO> listByStatusForUpdate(Long pipelineRecordId, Set<String> statusList);
 
     String queryLog(Long projectId, Long id);
+
+    List<PipelineJobRecordDTO> listRunningTaskBeforeDate(Date date);
 }
 

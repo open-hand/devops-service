@@ -346,6 +346,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         return pipelineLogService.queryLastedByJobRecordId(id);
     }
 
+    @Override
+    public List<PipelineJobRecordDTO> listRunningTaskBeforeDate(Date date) {
+        return pipelineJobRecordMapper.listRunningTaskBeforeDate(date);
+    }
+
+
     private void calculatAuditUserName(List<PipelineAuditUserRecordDTO> ciAuditUserRecordDTOS, AduitStatusChangeVO aduitStatusChangeVO) {
 
         if (!CollectionUtils.isEmpty(ciAuditUserRecordDTOS)) {

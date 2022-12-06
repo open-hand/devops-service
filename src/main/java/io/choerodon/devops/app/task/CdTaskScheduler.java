@@ -3,6 +3,8 @@ package io.choerodon.devops.app.task;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +26,13 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
  * @since 2022/11/23 17:22
  */
 @Component
+@EnableScheduling
 public class CdTaskScheduler {
 
     private static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
 
+    @Value("${devops.pipeline.task.timeout.duration:600000}")
+    private Long timeoutDuration;
     @Autowired
     private CdTaskSchedulerService cdTaskSchedulerService;
     @Autowired
@@ -42,6 +47,14 @@ public class CdTaskScheduler {
     @Scheduled(cron = "0/5 * * * * ?")
     public void addTasks() {
         cdTaskSchedulerService.schedulePeriodically();
+    }
+
+    /**
+     * 10分钟执行一次，将running状态超时的任务改为failed
+     */
+    @Scheduled(fixedRate = 1000 * 60 * 10)
+    public void cleanTimeoutTask() {
+        cdTaskSchedulerService.cleanTimeoutTask(timeoutDuration);
     }
 
     @JobTask(maxRetryCount = 3,

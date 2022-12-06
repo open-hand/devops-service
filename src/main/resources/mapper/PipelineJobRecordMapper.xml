@@ -52,6 +52,12 @@
         </foreach>
         for update
     </select>
+    <select id="listRunningTaskBeforeDate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where status = 'running'
+          and started_date <![CDATA[<]]> #{date};
+    </select>
 
     <update id="updatePendingJobToRunning">
         update devops_pipeline_job_record

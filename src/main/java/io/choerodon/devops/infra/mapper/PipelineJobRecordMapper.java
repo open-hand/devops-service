@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -33,5 +34,7 @@ public interface PipelineJobRecordMapper extends BaseMapper<PipelineJobRecordDTO
 
     List<PipelineJobRecordDTO> listByStatusForUpdate(@Param("pipelineRecordId") Long pipelineRecordId,
                                                      @Param("statusList") Set<String> statusList);
+
+    List<PipelineJobRecordDTO> listRunningTaskBeforeDate(@Param("date") Date date);
 }
 

@@ -10,4 +10,6 @@ package io.choerodon.devops.app.service;
 public interface CdTaskSchedulerService {
     void schedulePeriodically();
 
+    void cleanTimeoutTask(Long timeoutDuration);
+
 }
