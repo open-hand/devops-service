@@ -35,6 +35,7 @@ public class PipelinePersonalTokenServiceImpl implements PipelinePersonalTokenSe
         PipelinePersonalTokenDTO pipelinePersonalTokenDTO1 = pipelinePersonalTokenMapper.selectOne(pipelinePersonalTokenDTO);
         if (pipelinePersonalTokenDTO1 == null) {
             pipelinePersonalTokenDTO1 = new PipelinePersonalTokenDTO();
+            pipelinePersonalTokenDTO1.setUserId(userId);
             pipelinePersonalTokenDTO1.setToken(GenerateUUID.generateUUID());
             MapperUtil.resultJudgedInsertSelective(pipelinePersonalTokenMapper, pipelinePersonalTokenDTO1, DEVOPS_SAVE_PERSONAL_TOKEN_FAILED);
         }
@@ -51,6 +52,7 @@ public class PipelinePersonalTokenServiceImpl implements PipelinePersonalTokenSe
         PipelinePersonalTokenDTO pipelinePersonalTokenDTO1 = pipelinePersonalTokenMapper.selectOne(pipelinePersonalTokenDTO);
         if (pipelinePersonalTokenDTO1 == null) {
             pipelinePersonalTokenDTO1 = new PipelinePersonalTokenDTO();
+            pipelinePersonalTokenDTO1.setUserId(userId);
             pipelinePersonalTokenDTO1.setToken(GenerateUUID.generateUUID());
             MapperUtil.resultJudgedInsertSelective(pipelinePersonalTokenMapper, pipelinePersonalTokenDTO1, DEVOPS_SAVE_PERSONAL_TOKEN_FAILED);
         } else {
