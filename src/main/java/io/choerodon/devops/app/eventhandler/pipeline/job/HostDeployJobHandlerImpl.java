@@ -124,6 +124,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             devopsCiHostDeployInfoDTO.setPreCommand(null);
             devopsCiHostDeployInfoDTO.setRunCommand(null);
             devopsCiHostDeployInfoDTO.setPostCommand(null);
+            devopsCiHostDeployInfoDTO.setHealthProb(null);
         }
 
         devopsCiHostDeployInfoDTO.setId(null);
