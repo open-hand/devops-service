@@ -49,8 +49,6 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
     @Qualifier(value = GitOpsConstants.PIPELINE_EXEC_EXECUTOR)
     private AsyncTaskExecutor taskExecutor;
     @Autowired
-    private PipelineLogService pipelineLogService;
-    @Autowired
     private CdJobOperator cdJobOperator;
 
     @Override
