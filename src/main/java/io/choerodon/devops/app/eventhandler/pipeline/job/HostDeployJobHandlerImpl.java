@@ -146,12 +146,19 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
                 devopsCiHostDeployInfoVO.setArtifactId(jarDeploy.getArtifactId());
                 devopsCiHostDeployInfoVO.setVersionRegular(jarDeploy.getVersionRegular());
                 devopsCiHostDeployInfoVO.setPipelineTask(jarDeploy.getPipelineTask());
+                devopsCiHostDeployInfoVO.setPreCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPreCommand()));
+                devopsCiHostDeployInfoVO.setRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
+                devopsCiHostDeployInfoVO.setPostCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPostCommand()));
+                devopsCiHostDeployInfoVO.setKillCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getKillCommand()));
+                devopsCiHostDeployInfoVO.setHealthProb(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getHealthProb()));
             }
             if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
                 DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
                 devopsCiHostDeployInfoVO.setContainerName(imageDeploy.getContainerName());
                 devopsCiHostDeployInfoVO.setPipelineTask(imageDeploy.getPipelineTask());
                 devopsCiHostDeployInfoVO.setDeploySource(imageDeploy.getDeploySource());
+
+                devopsCiHostDeployInfoVO.setDockerCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getDockerCommand()));
 
             }
         }
