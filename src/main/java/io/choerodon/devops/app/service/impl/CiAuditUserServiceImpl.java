@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.devops.app.service.CiAuditUserService;
 import io.choerodon.devops.infra.dto.CiAuditUserDTO;
@@ -45,7 +46,9 @@ public class CiAuditUserServiceImpl implements CiAuditUserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDeleteByConfigIds(List<Long> configIds) {
-        ciAuditUserMapper.batchDeleteByConfigIds(configIds);
+        if (!ObjectUtils.isEmpty(configIds)) {
+            ciAuditUserMapper.batchDeleteByConfigIds(configIds);
+        }
     }
 }
 
