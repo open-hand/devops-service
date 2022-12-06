@@ -68,6 +68,8 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     private AppServiceService appServiceService;
     @Autowired
     protected DevopsDeployRecordService devopsDeployRecordService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     protected void checkConfigInfo(Long projectId, PipelineJobVO pipelineJobVO) {
@@ -166,6 +168,13 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
         pipelineChartDeployCfgService.baseCreate(pipelineChartDeployCfgDTO);
         return pipelineChartDeployCfgDTO.getId();
+    }
+
+    @Override
+    public void fillJobAdditionalInfo(PipelineJobVO pipelineJobVO) {
+        PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineJobVO.getPipelineId());
+        PipelineChartDeployCfgDTO pipelineChartDeployCfgDTO = pipelineChartDeployCfgService.queryByConfigId(pipelineJobVO.getConfigId());
+        pipelineJobVO.setEdit(devopsEnvironmentService.hasEnvironmentPermission(pipelineChartDeployCfgDTO.getEnvId(), pipelineDTO.getProjectId()));
     }
 
     @Override

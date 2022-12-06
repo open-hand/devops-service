@@ -520,6 +520,7 @@ public class PipelineServiceImpl implements PipelineService {
             jobVOList.forEach(job -> {
                 AbstractCdJobHandler handler = cdJobOperator.getHandlerOrThrowE(job.getType());
                 handler.fillJobConfigInfo(job);
+                handler.fillJobAdditionalInfo(job);
             });
             stage.setJobList(jobVOList);
         });
