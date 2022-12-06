@@ -1837,7 +1837,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
-        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.MINUTES);
     }
 
     public String getTimestampTimeV17(String str) {
