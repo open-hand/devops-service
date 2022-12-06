@@ -31,7 +31,7 @@ public class CdTaskScheduler {
 
     private static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
 
-    @Value("${devops.pipeline.task.timeout.duration:600000}")
+    @Value("${devops.pipeline.task.timeoutDuration:600000}")
     private Long timeoutDuration;
     @Autowired
     private CdTaskSchedulerService cdTaskSchedulerService;

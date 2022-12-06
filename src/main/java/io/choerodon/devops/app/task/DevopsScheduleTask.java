@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.AppExceptionRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
+import io.choerodon.devops.app.service.DevopsClusterNodeService;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO;
 
 /**
@@ -42,6 +43,8 @@ public class DevopsScheduleTask {
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
+    @Autowired
+    private DevopsClusterNodeService devopsClusterNodeService;
 
     /**
      * 流水线记录状态同步定时任务，10分钟执行一次数据修复
@@ -69,5 +72,13 @@ public class DevopsScheduleTask {
         appExceptionRecordService.clearRecordsBeforeDate(Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
         LOGGER.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Finish clear app exception records <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+    }
+
+    /**
+     * 定时更新集群安装状态
+     */
+    @Scheduled(cron = "0 0/3 * * * ?")
+    public void updateCluster() {
+        devopsClusterNodeService.update();
     }
 }
