@@ -152,7 +152,7 @@ public class PipelineController extends BaseController {
         return ResponseEntity.ok(pipelineService.executeByToken(projectId, token, personalToken));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "查询个人令牌")
     @GetMapping("/personal_token")
     public ResponseEntity<String> queryOrCreatePersonalToken(
@@ -161,7 +161,7 @@ public class PipelineController extends BaseController {
         return ResponseEntity.ok(pipelinePersonalTokenService.queryOrCreatePersonalToken(projectId));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
+    @Permission(permissionLogin = true)
     @ApiOperation(value = "重置个人令牌")
     @PutMapping("/personal_token/reset")
     public ResponseEntity<String> resetPersonalToken(

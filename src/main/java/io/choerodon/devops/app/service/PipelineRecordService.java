@@ -33,8 +33,6 @@ public interface PipelineRecordService {
 
     void updateStatus(Long pipelineRecordId, String status);
 
-//    void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList);
-
     void startNextStage(Long nextStageRecordId);
 
     Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable);
