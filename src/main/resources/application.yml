@@ -241,6 +241,12 @@ devops:
   batch:
     deployment:
       maxSize: 20
+  pipeline:
+    task:
+      timeoutDuration: ${DEVOPS_PIPELINE_TASK_TIMEOUT_DURATION:600000} # 持续集成流水线任务执行超时时间
+      executor:
+        corePoolSize: ${DEVOPS_PIPELINE_TASK_EXECUTOR_COREPOOLSIZE:5} # 持续集成流水线任务执行核心线程数
+        maxPoolSize: ${DEVOPS_PIPELINE_TASK_EXECUTOR_MAXPOOLSIZE:20} # 持续集成流水线任务执行最大线程数
   #下载jar的代理地址
   proxy:
     # 过滤器拦截的uri前缀

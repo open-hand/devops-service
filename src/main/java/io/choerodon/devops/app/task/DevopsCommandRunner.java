@@ -5,7 +5,6 @@ import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAM
 import java.io.IOException;
 import java.util.*;
 
-import com.google.gson.Gson;
 import okhttp3.ResponseBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.sonar.UserToken;
 import io.choerodon.devops.api.vo.sonar.UserTokens;
-import io.choerodon.devops.app.service.AppServiceVersionService;
 import io.choerodon.devops.app.service.DevopsConfigService;
 import io.choerodon.devops.app.service.DevopsHelmConfigService;
 import io.choerodon.devops.infra.dto.DevopsConfigDTO;
@@ -28,7 +26,6 @@ import io.choerodon.devops.infra.dto.DevopsHelmConfigDTO;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.feign.SonarClient;
 import io.choerodon.devops.infra.handler.RetrofitHandler;
-import io.choerodon.devops.infra.mapper.DevopsConfigMapper;
 import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 
 /**
@@ -41,15 +38,8 @@ import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
     public static final String SONAR = "sonar";
-
-    private final Gson gson = new Gson();
-
     @Autowired
     private DevopsConfigService devopsConfigService;
-    @Autowired
-    private AppServiceVersionService appServiceVersionService;
-    @Autowired
-    private DevopsConfigMapper devopsConfigMapper;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
 
