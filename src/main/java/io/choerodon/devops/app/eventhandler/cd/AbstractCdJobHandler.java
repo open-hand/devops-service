@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.*;
@@ -98,9 +97,9 @@ public abstract class AbstractCdJobHandler {
     /**
      * 添加job额外的配置信息，比如部署任务是否可编辑
      *
-     * @param devopsCiJobVO
+     * @param pipelineJobVO
      */
-    public void fillJobAdditionalInfo(DevopsCiJobVO devopsCiJobVO) {
+    public void fillJobAdditionalInfo(PipelineJobVO pipelineJobVO) {
 
     }
 

@@ -34,6 +34,16 @@ public class PipelineJobVO {
     @Encrypt
     private Long configId;
 
+    private Boolean edit;
+
+    public Boolean getEdit() {
+        return edit;
+    }
+
+    public void setEdit(Boolean edit) {
+        this.edit = edit;
+    }
+
     private PipelineChartDeployCfgVO chartDeployCfg;
 
     private PipelineAuditCfgVO auditConfig;
