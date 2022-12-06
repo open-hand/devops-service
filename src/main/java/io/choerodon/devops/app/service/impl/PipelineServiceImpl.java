@@ -162,7 +162,7 @@ public class PipelineServiceImpl implements PipelineService {
             });
         }
 
-//        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
+        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
 
         // 发送saga创建定时任务
         transactionalProducer.apply(
@@ -391,7 +391,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
 
-//        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
+        savePipelineVersion(projectId, pipelineVO, pipelineDTO);
 
         transactionalProducer.apply(
                 StartSagaBuilder.newBuilder()
