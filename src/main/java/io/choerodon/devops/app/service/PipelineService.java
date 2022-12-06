@@ -46,7 +46,7 @@ public interface PipelineService {
                               Map<String, Object> params);
 
 
-    PipelineRecordDTO executeByToken(Long projectId, String token);
+    PipelineRecordDTO executeByToken(Long projectId, String token, String personalToken);
 
     PipelineVO query(Long projectId, Long id);
 
