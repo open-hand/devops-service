@@ -11,6 +11,14 @@ public class AppVersionTriggerVO {
     private Long appServiceId;
     private Long appVersionId;
 
+    public AppVersionTriggerVO() {
+    }
+
+    public AppVersionTriggerVO(Long appServiceId, Long appVersionId) {
+        this.appServiceId = appServiceId;
+        this.appVersionId = appVersionId;
+    }
+
     public Long getAppServiceId() {
         return appServiceId;
     }
