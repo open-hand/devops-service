@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 
 @RestController
-@RequestMapping("/v1/projects/{projectId}/pipeline_job_records")
+@RequestMapping("/v1/projects/{project_id}/pipeline_job_records")
 public class PipelineJobRecordController {
 
 
