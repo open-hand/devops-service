@@ -49,7 +49,6 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
@@ -88,8 +87,6 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     private DevopsHostService devopsHostService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
-    @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
