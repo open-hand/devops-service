@@ -30,7 +30,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job_record.groovy') {
             column(name: 'type', type: 'VARCHAR(64)', remarks: '任务类型') {
                 constraints(nullable: false)
             }
-            column(name: 'log_id', type: 'BIGINT UNSIGNED', remarks: '关联日志记录Id,devops_pipeline_log.id')
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '部署操作commandId')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
