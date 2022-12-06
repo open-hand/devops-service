@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.AppDeploy.DE
 import static io.choerodon.devops.infra.constant.ExceptionConstants.DeployValueCode.DEVOPS_DEPLOY_VALUE_ID_NULL;
 import static io.choerodon.devops.infra.constant.PipelineConstants.GITLAB_ADMIN_ID;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -238,9 +239,14 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 return;
             }
             appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
-            String versionRegex = ".*" + version + ".*";
-            Pattern pattern = Pattern.compile(versionRegex);
-            if (!pattern.matcher(appServiceVersionDTO.getVersion()).matches()) {
+            // 没有填写版本类型则任意版本都会触发,填写了之后则至少要匹配一个
+            // version格式：master | master,release
+            if (StringUtils.isNotBlank(version)
+                    && Arrays.stream(version.split(",")).noneMatch(v -> {
+                String versionRegex = ".*" + version + ".*";
+                Pattern pattern = Pattern.compile(versionRegex);
+                return pattern.matcher(appServiceVersionDTO.getVersion()).matches();
+            })) {
                 log.append("当前任务不满足触发条件'应用服务版本匹配'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
