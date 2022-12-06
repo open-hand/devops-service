@@ -115,31 +115,6 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         }
 
     }
-
-//    @Override
-//    @Transactional(rollbackFor = Exception.class)
-//    public void startNextStage(PipelineRecordDTO pipelineRecordDTO, PipelineStageRecordDTO firstStageRecordDTO, List<PipelineJobRecordDTO> firstJobRecordList) {
-//        boolean hasAuditJob = false;
-//        for (PipelineJobRecordDTO pipelineJobRecordDTO : firstJobRecordList) {
-//            if (CdJobTypeEnum.AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
-//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//                hasAuditJob = true;
-//            } else {
-//                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-//            }
-//            pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-//        }
-//        if (Boolean.TRUE.equals(hasAuditJob)) {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//        } else {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-//        }
-//        pipelineStageRecordService.updateStatus(firstStageRecordDTO.getId());
-//        baseUpdate(pipelineRecordDTO);
-//    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void startNextStage(Long nextStageRecordId) {

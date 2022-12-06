@@ -57,6 +57,7 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String DEVOPS_SAVE_PIPELINE_FAILED = "devops.save.pipeline.failed";
     private static final String DEVOPS_ENABLE_PIPELINE_FAILED = "devops.enable.pipeline.failed";
     private static final String DEVOPS_DISABLE_PIPELINE_FAILED = "devops.disable.pipeline.failed";
+    private static final String DEVOPS_PIPELINE_NOT_DISABLE = "devops.pipeline.not.disable";
     private static final String DEVOPS_PIPELINE_STATUS_IS_DISABLE = "devops.pipeline.status.is.disable";
     private static final String DEVOPS_PIPELINE_TOKEN_IS_NULL = "devops.pipeline.token.is.null";
     private static final String DEVOPS_PIPELINE_NOT_FOUND = "devops.pipeline.not.found";
@@ -254,6 +255,9 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineDTO pipelineDTO = baseQueryById(id);
         if (pipelineDTO == null) {
             return;
+        }
+        if (Boolean.FALSE.equals(pipelineDTO.getEnable())) {
+            throw new CommonException(DEVOPS_PIPELINE_NOT_DISABLE);
         }
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         // 1. 删除流水线定义
