@@ -3353,7 +3353,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
             CiVariableVO ciVariableVO2 = new CiVariableVO();
             ciVariableVO2.setKey(GITLAB_VARIABLE_TRIVY_INSECURE);
-            ciVariableVO.setValue("true");
+            ciVariableVO2.setValue("true");
 
             variableList.add(ciVariableVO);
             variableList.add(ciVariableVO2);
