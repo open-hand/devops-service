@@ -646,8 +646,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 如果流水线状态为running则尝试同步记录状态
-        if (PipelineStatus.RUNNING.toValue().equals(devopsCiPipelineRecordDTO.getStatus())
-                || PipelineStatus.MANUAL.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+        if (PipelineStatus.RUNNING.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
             syncPipelineUpdate(pipelineRecordDTOId, TypeUtil.objToInteger(gitlabPipelineId));
         }
 
