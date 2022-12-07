@@ -15,7 +15,6 @@ public class PipelineJobVO {
     @Encrypt
     private Long id;
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
-    @Encrypt
     private Long pipelineId;
     @ApiModelProperty(value = "所属版本Id,devops_pipeline_version.id", required = true)
     @Encrypt
@@ -36,6 +35,11 @@ public class PipelineJobVO {
 
     private Boolean edit;
 
+
+    private PipelineChartDeployCfgVO chartDeployCfg;
+
+    private PipelineAuditCfgVO auditConfig;
+
     public Boolean getEdit() {
         return edit;
     }
@@ -43,10 +47,6 @@ public class PipelineJobVO {
     public void setEdit(Boolean edit) {
         this.edit = edit;
     }
-
-    private PipelineChartDeployCfgVO chartDeployCfg;
-
-    private PipelineAuditCfgVO auditConfig;
 
     public PipelineChartDeployCfgVO getChartDeployCfg() {
         return chartDeployCfg;
