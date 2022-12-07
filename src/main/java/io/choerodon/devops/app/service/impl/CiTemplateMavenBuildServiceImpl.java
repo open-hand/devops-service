@@ -1,23 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.Set;
+
 import com.fasterxml.jackson.core.type.TypeReference;
-import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
-import io.choerodon.devops.api.vo.MavenRepoVO;
-import io.choerodon.devops.infra.dto.DevopsCiMavenBuildConfigDTO;
-import io.choerodon.devops.infra.util.ConvertUtils;
-import io.choerodon.devops.infra.util.JsonHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
-import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
-import io.choerodon.devops.infra.mapper.CiTemplateMavenBuildMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
-import java.util.Set;
+import io.choerodon.devops.api.vo.MavenRepoVO;
+import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
+import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
+import io.choerodon.devops.infra.mapper.CiTemplateMavenBuildMapper;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)应用服务

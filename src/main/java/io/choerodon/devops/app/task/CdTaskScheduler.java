@@ -2,6 +2,8 @@ package io.choerodon.devops.app.task;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -30,6 +32,8 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
 public class CdTaskScheduler {
 
     private static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdTaskScheduler.class);
 
     @Value("${devops.pipeline.task.timeoutDuration:600000}")
     private Long timeoutDuration;
@@ -73,7 +77,7 @@ public class CdTaskScheduler {
         CustomContextUtil.setUserContext(userId);
         PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.queryByToken(scheduleToken);
         if (pipelineScheduleDTO == null) {
-            // todo 删除对应timetask?
+            LOGGER.error("[pipelineScheduleTrigger] pipeline schedule not found for token：{}", scheduleToken);
         } else {
             pipelineService.execute(pipelineId,
                     PipelineTriggerTypeEnum.SCHEDULE,

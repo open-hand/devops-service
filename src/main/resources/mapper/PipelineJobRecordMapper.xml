@@ -70,7 +70,7 @@
         set status       = 'created',
             started_date = null,
             finished_date= null
-        where id = #{id}
+        where id = #{pipelineRecordId}
           and (status = 'canceled' or status = 'failed')
     </update>
 </mapper>

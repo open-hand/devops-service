@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.handler;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.DevopsCiJobRecordService;
 import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
@@ -74,7 +74,7 @@ public class CiPipelineSyncHandler {
      */
     public void syncPipeline(String pipelineStatus, Date lastUpdateDate,
                              Long pipelineRecordId, Integer gitlabPipelineId) {
-        AssertUtils.notNull(pipelineStatus, "Pipeline status can't be null.");
+        Assert.notNull(pipelineStatus, "Pipeline status can't be null.");
         LOGGER.debug("Sync pipeline... status: {}, date: {}, pipelineRecordId: {}, gitlabPipelineId: {}", pipelineStatus, lastUpdateDate, pipelineRecordId, gitlabPipelineId);
 
         if (PipelineStatus.RUNNING.toValue().equals(pipelineStatus)) {
