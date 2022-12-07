@@ -47,6 +47,7 @@ public class PipelineStageServiceImpl implements PipelineStageService {
     @Transactional(rollbackFor = Exception.class)
     public void saveStage(Long projectId, Long pipelineId, Long versionId, PipelineStageVO stage) {
         PipelineStageDTO pipelineStageDTO = ConvertUtils.convertObject(stage, PipelineStageDTO.class);
+        pipelineStageDTO.setId(null);
         pipelineStageDTO.setPipelineId(pipelineId);
         pipelineStageDTO.setVersionId(versionId);
         baseCreate(pipelineStageDTO);
