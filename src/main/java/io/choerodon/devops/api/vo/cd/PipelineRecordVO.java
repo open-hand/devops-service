@@ -30,6 +30,9 @@ public class PipelineRecordVO extends AuditDomain {
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     @NotNull
     private Long pipelineId;
+    @ApiModelProperty(value = "流水线名称", required = true)
+    @NotBlank
+    private String name;
 
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
@@ -66,6 +69,14 @@ public class PipelineRecordVO extends AuditDomain {
 
     public void setStageRecordList(List<PipelineStageRecordVO> stageRecordList) {
         this.stageRecordList = stageRecordList;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public IamUserDTO getTrigger() {

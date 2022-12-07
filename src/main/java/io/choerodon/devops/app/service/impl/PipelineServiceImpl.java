@@ -430,6 +430,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordDTO.setStatus(PipelineStatusEnum.CREATED.value());
         pipelineRecordDTO.setPipelineId(id);
         pipelineRecordDTO.setStartedDate(new Date());
+        pipelineRecordDTO.setName(pipelineDTO.getName());
         if (PipelineTriggerTypeEnum.APP_VERSION.equals(triggerType)) {
             pipelineRecordDTO.setAppServiceId((Long) params.get(MiscConstants.APP_SERVICE_ID));
             pipelineRecordDTO.setAppServiceVersionId((Long) params.get(MiscConstants.APP_VERSION_ID));

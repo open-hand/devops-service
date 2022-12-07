@@ -43,6 +43,10 @@ public class PipelineRecordDTO extends AuditDomain {
     @Encrypt
     private Long pipelineId;
 
+    @ApiModelProperty(value = "流水线名称", required = true)
+    @NotBlank
+    private String name;
+
     @ApiModelProperty(value = "状态", required = true)
     @NotBlank
     private String status;
@@ -57,6 +61,14 @@ public class PipelineRecordDTO extends AuditDomain {
     private Long appServiceId;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
     private Long appServiceVersionId;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Date getStartedDate() {
         return startedDate;
