@@ -21,6 +21,8 @@ public interface PipelineService {
 
     void baseUpdate(PipelineDTO pipelineDTO);
 
+    void updateEffectVersionId(Long id, Long effectVersionId);
+
     void baseDeleteById(Long id);
 
     PipelineDTO baseQueryById(Long id);
