@@ -23,7 +23,7 @@ import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
  * Created by younger on 2018/3/29.
  */
 
-@FeignClient(value = "choerodon-iam", fallback = BaseServiceClientFallback.class)
+@FeignClient(value = "choerodon-base", fallback = BaseServiceClientFallback.class)
 public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/immutable")
     @ApiOperation(value = "按照项目Id查询项目的不可变信息")
