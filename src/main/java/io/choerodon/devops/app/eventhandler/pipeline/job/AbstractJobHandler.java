@@ -138,4 +138,8 @@ public abstract class AbstractJobHandler {
     public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
 
     }
+
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
 }

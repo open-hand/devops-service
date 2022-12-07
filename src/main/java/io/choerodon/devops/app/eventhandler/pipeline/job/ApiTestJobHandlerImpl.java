@@ -95,6 +95,11 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+        devopsCiJobVO.setDevopsCiApiTestInfoVO(null);
+    }
+
+    @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiApiTestInfoVO devopsCiApiTestInfoVO = ConvertUtils.convertObject(devopsCiApiTestInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiApiTestInfoVO.class);
         String notifyUserIds = devopsCiApiTestInfoVO.getNotifyUserIds();

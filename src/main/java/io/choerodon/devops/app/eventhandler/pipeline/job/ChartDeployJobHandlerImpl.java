@@ -79,6 +79,17 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
     }
 
     @Override
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+        CiChartDeployConfigVO ciChartDeployConfig = devopsCiJobVO.getCiChartDeployConfig();
+        if (ciChartDeployConfig != null) {
+            CiChartDeployConfigVO ciChartDeployConfigVO = new CiChartDeployConfigVO();
+            ciChartDeployConfigVO.setSkipCheckPermission(ciChartDeployConfig.getSkipCheckPermission());
+            devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigVO);
+        }
+
+    }
+
+    @Override
     protected AppDeployConfigVO getDeployConfig(DevopsCiJobVO devopsCiJobVO) {
         return devopsCiJobVO.getCiChartDeployConfig();
     }
