@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 
+import java.util.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -8,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * 〈功能简述〉
@@ -17,7 +19,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
  * @Date 2020/4/7 22:18
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CiPipelineRecordVO extends BaseDomain {
+public class CiPipelineRecordVO extends AuditDomain {
 
     @ApiModelProperty("ci 执行记录的id")
     private Long id;
@@ -45,9 +47,8 @@ public class CiPipelineRecordVO extends BaseDomain {
     @Encrypt
     @ApiModelProperty("关联流水线id")
     private Long pipelineId;
-    @ApiModelProperty("创建者id")
-    private Long createdBy;
-
+    @ApiModelProperty("cicd 执行记录创建时间")
+    private Date createdDate;
     @ApiModelProperty("创建者信息")
     private IamUserDTO iamUserDTO;
     @ApiModelProperty("流水线提交信息")
@@ -58,6 +59,14 @@ public class CiPipelineRecordVO extends BaseDomain {
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 
     public Long getId() {
         return id;
@@ -98,15 +107,6 @@ public class CiPipelineRecordVO extends BaseDomain {
     public void setIamUserDTO(IamUserDTO iamUserDTO) {
         this.iamUserDTO = iamUserDTO;
     }
-
-    public Long getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(Long createdBy) {
-        this.createdBy = createdBy;
-    }
-
 
     public String getAppServiceName() {
         return appServiceName;

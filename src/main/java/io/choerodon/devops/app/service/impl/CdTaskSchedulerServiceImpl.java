@@ -20,7 +20,6 @@ import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.util.CustomContextUtil;
 
@@ -61,9 +60,6 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
             Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
             Long pipelineId = pipelineJobRecordDTO.getPipelineId();
 
-            PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-            Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
-
             // 将待执行的任务状态置为running，并且加入线程池队列
             if (pipelineJobRecordService.updatePendingJobToRunning(jobRecordId) == 1) {
                 taskExecutor.submit(() -> {
@@ -81,11 +77,8 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                         } catch (Exception e) {
                             // 更新任务状态为失败
                             pipelineJobRecordService.updateStatus(jobRecordId, PipelineStatusEnum.FAILED);
-                            // todo 更新流水线后续阶段状态为skipped
                             // 更新阶段状态
                             pipelineStageRecordService.updateStatus(stageRecordId);
-                            // 更新流水线状态为失败
-//                            pipelineRecordService.updateToEndStatus(pipelineRecordId, PipelineStatusEnum.FAILED);
                         }
                         // 记录job日志
                         pipelineLogService.saveLog(pipelineId, jobRecordId, log.toString());

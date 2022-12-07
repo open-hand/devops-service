@@ -1982,6 +1982,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         recordPage.forEach(recordVO -> {
             fillAdditionalInfo(recordVO);
             recordVO.setViewId(CiCdPipelineUtils.handleId(recordVO.getId()));
+            ciPipelineSyncHandler.syncPipeline(recordVO.getStatus(), recordVO.getLastUpdateDate(), recordVO.getId(), TypeUtil.objToInteger(recordVO.getGitlabPipelineId()));
 
             // 填充前端需要的字段
             recordVO.setCiRecordId(recordVO.getId());

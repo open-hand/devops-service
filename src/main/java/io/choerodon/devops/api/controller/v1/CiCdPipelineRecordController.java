@@ -24,9 +24,6 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping("/v1/projects/{project_id}/cicd_pipelines_record")
 public class CiCdPipelineRecordController {
-
-//    @Autowired
-//    private CiCdPipelineRecordService ciCdPipelineRecordService;
 @Autowired
 private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
