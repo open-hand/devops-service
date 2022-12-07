@@ -44,8 +44,12 @@ public class ScheduleUtil {
      * @param commonScheduleVO
      * @return
      */
-    public static String calculateCron(CommonScheduleVO commonScheduleVO) {
+    public static String calculateGitlabCiCron(CommonScheduleVO commonScheduleVO) {
         String cronTemplate = "%s %s * * %s";
+        return calculateCron(cronTemplate, commonScheduleVO);
+    }
+
+    public static String calculateCron(String cronTemplate, CommonScheduleVO commonScheduleVO) {
         String minute = "";
         String hour = "";
         if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(commonScheduleVO.getTriggerType())) {
@@ -70,7 +74,7 @@ public class ScheduleUtil {
     }
 
     public static String calculateNormalCron(CommonScheduleVO commonScheduleVO) {
-        String cronTemplate = "0 %s";
-        return String.format(cronTemplate, calculateCron(commonScheduleVO));
+        String cronTemplate = "0 %s %s ? * %s";
+        return calculateCron(cronTemplate, commonScheduleVO);
     }
 }
