@@ -18,7 +18,6 @@ public class PipelineStageVO {
     @Encrypt
     private Long id;
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
-    @Encrypt
     private Long pipelineId;
     @ApiModelProperty(value = "所属版本Id,devops_pipeline_version.id", required = true)
     @Encrypt

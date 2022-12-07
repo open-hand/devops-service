@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.cd;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author
@@ -8,23 +9,27 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class PipelineChartDeployCfgVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "流水线id", required = true)
     private Long pipelineId;
     @ApiModelProperty(value = "环境Id,devops_env.id", required = true)
+    @Encrypt
     private Long envId;
     @ApiModelProperty(value = "应用服务Id,devops_app_service.id", required = true)
+    @Encrypt
     private Long appServiceId;
     @ApiModelProperty(value = "部署版本类型")
     private String version;
     @ApiModelProperty(value = "valueId,devops_deploy_value.id", required = true)
+    @Encrypt
     private Long valueId;
     @ApiModelProperty(value = "部署类型：create 新建实例， update 替换实例", required = true)
     private String deployType;
     @ApiModelProperty(value = "是否校验环境权限", required = true)
     private Boolean skipCheckPermission;
     @ApiModelProperty(value = "应用id,devops_deploy_app_center_env.id")
+    @Encrypt
     private Long appId;
     @ApiModelProperty(value = "应用名称,devops_deploy_app_center_env.name")
     private String appName;
