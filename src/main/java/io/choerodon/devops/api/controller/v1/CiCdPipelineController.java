@@ -79,8 +79,9 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "pipeline_id") Long pipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId,
+            @RequestParam(value = "delete_cd_info", defaultValue = "false") Boolean deleteCdInfo) {
+        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId, deleteCdInfo));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

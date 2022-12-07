@@ -72,6 +72,17 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+        DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = devopsCiJobVO.getDevopsCiHostDeployInfoVO();
+        devopsCiHostDeployInfoVO.setHostId(null);
+        devopsCiHostDeployInfoVO.setDeployType(null);
+        devopsCiHostDeployInfoVO.setAppId(null);
+        devopsCiHostDeployInfoVO.setAppName(null);
+        devopsCiHostDeployInfoVO.setAppCode(null);
+
+    }
+
+    @Override
     public List<String> buildScript(Long organizationId, Long projectId, DevopsCiJobDTO devopsCiJobDTO) {
         Assert.notNull(devopsCiJobDTO, "Job can't be null");
         Assert.notNull(organizationId, DEVOPS_ORGANIZATION_ID_IS_NULL);

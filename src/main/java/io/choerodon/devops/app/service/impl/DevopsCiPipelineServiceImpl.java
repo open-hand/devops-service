@@ -633,7 +633,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
-    public CiCdPipelineVO query(Long projectId, Long pipelineId) {
+    public CiCdPipelineVO query(Long projectId, Long pipelineId, Boolean deleteCdInfo) {
         // 根据pipeline_id查询数据
         CiCdPipelineVO ciCdPipelineVO = getCiCdPipelineVO(pipelineId);
 
@@ -642,7 +642,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         //当前用户是否能修改流水线权限
         fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
-        List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId);
+        List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId, deleteCdInfo);
 //        //查询CD相关的阶段以及JOB
 //        List<DevopsCdStageVO> devopsCdStageVOS = handleCdStage(pipelineId);
         //封装流水线
@@ -790,13 +790,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return Boolean.FALSE;
     }
 
-    private List<DevopsCiStageVO> handleCiStage(Long pipelineId) {
+    private List<DevopsCiStageVO> handleCiStage(Long pipelineId, Boolean deleteCdInfo) {
         List<DevopsCiStageDTO> devopsCiStageDTOList = devopsCiStageService.listByPipelineId(pipelineId);
         if (CollectionUtils.isEmpty(devopsCiStageDTOList)) {
             return new ArrayList<>();
         }
         //处理ci流水线Job
-        Map<Long, List<DevopsCiJobVO>> ciJobMap = handleCiJob(pipelineId);
+        Map<Long, List<DevopsCiJobVO>> ciJobMap = handleCiJob(pipelineId, deleteCdInfo);
         //处理CI流水线stage
         List<DevopsCiStageVO> devopsCiStageVOS = getDevopsCiStageVOS(devopsCiStageDTOList, ciJobMap);
         //ci stage排序
@@ -822,7 +822,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         return devopsCiStageVOS;
     }
 
-    private Map<Long, List<DevopsCiJobVO>> handleCiJob(Long pipelineId) {
+    private Map<Long, List<DevopsCiJobVO>> handleCiJob(Long pipelineId, Boolean deleteCdInfo) {
         List<DevopsCiJobDTO> devopsCiJobDTOS = devopsCiJobService.listByPipelineId(pipelineId);
         if (CollectionUtils.isEmpty(devopsCiJobDTOS)) {
             return new HashMap<>();
@@ -837,6 +837,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AbstractJobHandler jobHandler = jobOperator.getHandler(devopsCiJobVO.getType());
             jobHandler.fillJobConfigInfo(devopsCiJobVO);
             jobHandler.fillJobAdditionalInfo(devopsCiJobVO);
+            if (Boolean.TRUE.equals(deleteCdInfo)) {
+                jobHandler.deleteCdInfo(devopsCiJobVO);
+            }
 
             List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
             if (!CollectionUtils.isEmpty(ciStepDTOS)) {
