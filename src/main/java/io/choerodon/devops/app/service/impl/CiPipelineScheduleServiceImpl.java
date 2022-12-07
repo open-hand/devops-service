@@ -58,7 +58,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
 
-        String cron = ScheduleUtil.calculateCron(ciPipelineScheduleVO);
+        String cron = ScheduleUtil.calculateGitlabCiCron(ciPipelineScheduleVO);
 
         PipelineSchedule pipelineSchedule = new PipelineSchedule();
         pipelineSchedule.setCron(cron);
@@ -245,7 +245,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
 
-        String cron = ScheduleUtil.calculateCron(ciPipelineScheduleVO);
+        String cron = ScheduleUtil.calculateGitlabCiCron(ciPipelineScheduleVO);
 
 
         PipelineSchedule pipelineSchedules = null;
