@@ -19,6 +19,8 @@ public enum PipelineStatus {
     CANCELED,
     SKIPPED,
     MANUAL,
+
+    STOP,
     SCHEDULED;
 
     private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(8);
