@@ -173,16 +173,18 @@ public class PipelineServiceImpl implements PipelineService {
         savePipelineVersion(projectId, pipelineVO, pipelineDTO);
 
         // 发送saga创建定时任务
-        transactionalProducer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withRefType("devops-pipeline")
-                        .withRefId(pipelineId.toString())
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(projectId)
-                        .withPayloadAndSerialize(scheduleTaskDTOList),
-                builder -> {
-                });
+        if (!CollectionUtils.isEmpty(scheduleTaskDTOList)) {
+            transactionalProducer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withRefType("devops-pipeline")
+                            .withRefId(pipelineId.toString())
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(projectId)
+                            .withPayloadAndSerialize(scheduleTaskDTOList),
+                    builder -> {
+                    });
+        }
         return pipelineDTO;
     }
 
@@ -400,17 +402,18 @@ public class PipelineServiceImpl implements PipelineService {
         }
 
         savePipelineVersion(projectId, pipelineVO, pipelineDTO);
-
-        transactionalProducer.apply(
-                StartSagaBuilder.newBuilder()
-                        .withRefType("devops-pipeline")
-                        .withRefId(id.toString())
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(projectId)
-                        .withPayloadAndSerialize(scheduleTaskDTOList),
-                builder -> {
-                });
+        if (!CollectionUtils.isEmpty(scheduleTaskDTOList)) {
+            transactionalProducer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withRefType("devops-pipeline")
+                            .withRefId(id.toString())
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(projectId)
+                            .withPayloadAndSerialize(scheduleTaskDTOList),
+                    builder -> {
+                    });
+        }
     }
 
     @Override
