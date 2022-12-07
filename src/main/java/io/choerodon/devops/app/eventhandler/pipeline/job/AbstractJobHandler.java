@@ -139,6 +139,11 @@ public abstract class AbstractJobHandler {
 
     }
 
+    /**
+     * 复制流水线时，cd的部分数据需要删除
+     *
+     * @param devopsCiJobVO
+     */
     public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
 
     }

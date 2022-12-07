@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.cd;
 import java.util.Date;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.Audit;
 import io.choerodon.devops.api.vo.pipeline.DeployInfo;
@@ -13,17 +14,19 @@ import io.choerodon.devops.api.vo.pipeline.DeployInfo;
  */
 public class PipelineJobRecordVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "名称", required = true)
     private String name;
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     private Long pipelineId;
     @ApiModelProperty(value = "所属任务Id,devops_pipeline_job.id", required = true)
+    @Encrypt
     private Long jobId;
     @ApiModelProperty(value = "关联流水线记录Id,devops_pipeline_record.id", required = true)
     private Long pipelineRecordId;
     @ApiModelProperty(value = "关联阶段记录Id,devops_pipeline_stage_record.id", required = true)
+    @Encrypt
     private Long stageRecordId;
     @ApiModelProperty(value = "状态", required = true)
     private String status;
@@ -33,7 +36,7 @@ public class PipelineJobRecordVO {
     private Date finishedDate;
     @ApiModelProperty(value = "任务类型", required = true)
     private String type;
-
+    @Encrypt
     private Long commandId;
 
     @ApiModelProperty("人工卡点任务信息")
