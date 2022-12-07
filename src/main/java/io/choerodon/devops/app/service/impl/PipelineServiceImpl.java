@@ -266,7 +266,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (pipelineDTO == null) {
             return;
         }
-        if (Boolean.FALSE.equals(pipelineDTO.getEnable())) {
+        if (Boolean.TRUE.equals(pipelineDTO.getEnable())) {
             throw new CommonException(DEVOPS_PIPELINE_NOT_DISABLE);
         }
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
