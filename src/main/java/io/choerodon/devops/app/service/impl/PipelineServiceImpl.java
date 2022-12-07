@@ -105,6 +105,14 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void updateEffectVersionId(Long id, Long effectVersionId) {
+        PipelineDTO pipelineDTO = baseQueryById(id);
+        pipelineDTO.setEffectVersionId(effectVersionId);
+        baseUpdate(pipelineDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void baseDeleteById(Long id) {
         pipelineMapper.deleteByPrimaryKey(id);
     }
@@ -214,15 +222,15 @@ public class PipelineServiceImpl implements PipelineService {
 
     private void savePipelineVersion(Long projectId, PipelineVO pipelineVO, PipelineDTO pipelineDTO) {
         PipelineVersionDTO pipelineVersionDTO = pipelineVersionService.createByPipelineId(pipelineDTO.getId());
-        pipelineDTO.setEffectVersionId(pipelineVersionDTO.getId());
+        Long versionId = pipelineVersionDTO.getId();
         List<PipelineStageVO> stageList = pipelineVO.getStageList();
         if (CollectionUtils.isEmpty(stageList)) {
             throw new CommonException("devops.pipeline.stage.is.empty");
         }
         stageList.forEach(stage -> {
-            pipelineStageService.saveStage(projectId, pipelineDTO.getId(), pipelineVersionDTO.getId(), stage);
+            pipelineStageService.saveStage(projectId, pipelineDTO.getId(), versionId, stage);
         });
-        baseUpdate(pipelineDTO);
+        updateEffectVersionId(pipelineDTO.getId(), versionId);
     }
 
     @Override
