@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.cd;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang@zknow.com
@@ -12,22 +13,24 @@ public class PipelineStageRecordVO {
 
 
     List<PipelineJobRecordVO> jobRecordList;
-    private Long id;
     @ApiModelProperty(value = "名称", required = true)
     private String name;
     @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
     private Long pipelineId;
-    @ApiModelProperty(value = "所属阶段Id,devops_pipeline_stage.id", required = true)
-    private Long stageId;
+    @Encrypt
+    private Long id;
     @ApiModelProperty(value = "阶段顺序", required = true)
     private Integer sequence;
-    @ApiModelProperty(value = "下一阶段id", required = true)
-    private Long nextStageRecordId;
+    @ApiModelProperty(value = "所属阶段Id,devops_pipeline_stage.id", required = true)
+    @Encrypt
+    private Long stageId;
     @ApiModelProperty(value = "关联流水线记录Id,devops_pipeline_record.id", required = true)
     private Long pipelineRecordId;
     @ApiModelProperty(value = "状态", required = true)
     private String status;
-
+    @ApiModelProperty(value = "下一阶段id", required = true)
+    @Encrypt
+    private Long nextStageRecordId;
     public List<PipelineJobRecordVO> getJobRecordList() {
         return jobRecordList;
     }
