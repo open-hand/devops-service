@@ -59,6 +59,7 @@ public abstract class AbstractCdJobHandler {
         // 保存任务配置
         Long configId = saveConfig(pipelineId, pipelineJobVO);
 
+        pipelineJobDTO.setId(null);
         pipelineJobDTO.setPipelineId(pipelineId);
         pipelineJobDTO.setVersionId(versionId);
         pipelineJobDTO.setStageId(stageId);
