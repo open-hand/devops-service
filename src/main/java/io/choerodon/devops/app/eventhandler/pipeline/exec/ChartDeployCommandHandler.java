@@ -121,18 +121,21 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("重新部署成功.").append(System.lineSeparator());
             } else {
-                // 要部署版本的commit
-                CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
-                // 已经部署版本的commit
-                CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
-                if (deploydCommit != null
-                        && currentCommit != null
-                        && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                    // 计算commitDate
-                    // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                    // 如果现在部署的版本落后于已经部署的版本则跳过
-                    log.append("此次部署的版本落后于应用当前版本，跳过此次部署").append(System.lineSeparator());
-                    return;
+                // 外置仓库不校验
+                if (appServiceDTO.getExternalConfigId() == null) {
+                    // 要部署版本的commit
+                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
+                    // 已经部署版本的commit
+                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
+                    if (deploydCommit != null
+                            && currentCommit != null
+                            && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
+                        // 计算commitDate
+                        // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
+                        // 如果现在部署的版本落后于已经部署的版本则跳过
+                        log.append("此次部署的版本落后于应用当前版本，跳过此次部署").append(System.lineSeparator());
+                        return;
+                    }
                 }
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
