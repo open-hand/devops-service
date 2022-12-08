@@ -617,8 +617,12 @@
             resultType="io.choerodon.devops.infra.dto.AppServiceVersionDTO">
         SELECT *
         FROM devops_app_service_version dasv
-        where dasv.app_service_id = #{appServiceId}
-          and dasv.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
+        <where>
+            dasv.app_service_id = #{appServiceId}
+            <if test="version!=null">
+                and dasv.version LIKE CONCAT(CONCAT('%', #{version}, '%'))
+            </if>
+        </where>
         order by id desc
         limit 1
 
