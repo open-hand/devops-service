@@ -146,12 +146,6 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
 //                }
             }
         }
-//
-//
-//        if (pipelineJobRecordDTOS.stream().allMatch(job -> PipelineStatusEnum.SUCCESS.value().equals(job.getStatus()))) {
-//            updateStatus(stageRecordId, PipelineStatusEnum.SUCCESS);
-//
-//        }
     }
 
     @Override

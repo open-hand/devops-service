@@ -111,7 +111,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
                 || PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())) {
             pipelineJobRecordDTO.setStartedDate(new Date());
         }
-        if (PipelineStatusEnum.isFinalStatus(pipelineJobRecordDTO.getStatus())) {
+        if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(pipelineJobRecordDTO.getStatus()))) {
             pipelineJobRecordDTO.setFinishedDate(new Date());
         }
         baseUpdate(pipelineJobRecordDTO);
@@ -209,7 +209,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         AuditResultVO auditResultVO = new AuditResultVO();
         boolean auditFinishFlag;
         List<Long> userIds = pipelineAuditUserRecordDTOS.stream().map(PipelineAuditUserRecordDTO::getUserId).collect(Collectors.toList());
-        if (pipelineAuditRecordDTO.getCountersigned()) {
+        if (Boolean.TRUE.equals(pipelineAuditRecordDTO.getCountersigned())) {
             auditResultVO.setCountersigned(1);
             auditFinishFlag = pipelineAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
             // 添加审核人员信息
@@ -255,12 +255,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         // 审核结束则执行job
         if (auditFinishFlag) {
             Boolean auditSuccess;
-            if (pipelineAuditRecordDTO.getCountersigned()) {
+            if (Boolean.TRUE.equals(pipelineAuditRecordDTO.getCountersigned())) {
                 auditSuccess = pipelineAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
             } else {
                 auditSuccess = pipelineAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
             }
-            if (auditSuccess) {
+            if (Boolean.TRUE.equals(auditSuccess)) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.STOP.value());
@@ -280,7 +280,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
         AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
         aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
-        if (!pipelineAuditRecordDTO.getCountersigned()) {
+        if (Boolean.FALSE.equals(pipelineAuditRecordDTO.getCountersigned())) {
             List<PipelineAuditUserRecordDTO> passedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
             List<PipelineAuditUserRecordDTO> refusedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(passedAuditUserRecordDTOS)) {

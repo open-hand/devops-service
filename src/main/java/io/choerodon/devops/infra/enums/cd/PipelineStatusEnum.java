@@ -62,8 +62,8 @@ public enum PipelineStatusEnum {
         return priority;
     }
 
-    public static Boolean isFinalStatus(String value) {
-        Boolean finalStatus = false;
+    public static boolean isFinalStatus(String value) {
+        boolean finalStatus = false;
         for (PipelineStatusEnum pipelineStatusEnum : PipelineStatusEnum.values()) {
             if (pipelineStatusEnum.value.equals(value)) {
                 finalStatus = pipelineStatusEnum.finalStatus;
