@@ -278,14 +278,14 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         pipelineRecordMapper.retryPipeline(id, new Date());
         List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(id);
         List<PipelineStageRecordDTO> sortedRecordStages = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
-        Long nextStageId = null;
+        Long nextStageRecordId = null;
         for (PipelineStageRecordDTO stageRecordDTO : sortedRecordStages) {
-            if (PipelineStatusEnum.CANCELED.value().equals(stageRecordDTO.getStatus())) {
-                nextStageId = stageRecordDTO.getId();
+            if (PipelineStatusEnum.CREATED.value().equals(stageRecordDTO.getStatus())) {
+                nextStageRecordId = stageRecordDTO.getId();
                 break;
             }
         }
-        startNextStage(nextStageId);
+        startNextStage(nextStageRecordId);
     }
 
 }
