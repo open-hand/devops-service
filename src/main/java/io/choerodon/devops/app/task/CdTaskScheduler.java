@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.CdTaskSchedulerService;
 import io.choerodon.devops.app.service.PipelineScheduleService;
 import io.choerodon.devops.app.service.PipelineService;
@@ -61,6 +62,7 @@ public class CdTaskScheduler {
 
     @JobTask(maxRetryCount = 3,
             code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
+            level = ResourceLevel.PROJECT,
             description = "流水线定时触发任务", params = {
             @JobParam(name = MiscConstants.PROJECT_ID, defaultValue = "0", description = "项目id"),
             @JobParam(name = MiscConstants.PIPELINE_ID, defaultValue = "0", description = "流水线id"),
