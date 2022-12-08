@@ -227,6 +227,9 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    @Lazy
+    private DevopsCiJobService devopsCiJobService;
 
     @Autowired
     private DevopsProjectMapper devopsProjectMapper;
@@ -2752,6 +2755,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         instanceValueVO.setYaml(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue());
         return instanceValueVO;
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
+
+        return devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
     }
 
     private String[] parseMarketRepo(String harborRepo) {
