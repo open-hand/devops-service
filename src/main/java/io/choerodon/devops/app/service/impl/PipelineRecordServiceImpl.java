@@ -185,7 +185,8 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
                 pipelineAuditRecordDTOS.forEach(pipelineAuditRecordDTO -> {
                     PipelineJobRecordDTO pipelineJobRecordDTO = jobRecordDTOMap.get(pipelineAuditRecordDTO.getJobRecordId());
                     List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
-                    if (!CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)
+                    if (PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())
+                            && !CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)
                             && pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
                         DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
                         pipelineAuditInfo.add(devopsCiPipelineAuditVO);
