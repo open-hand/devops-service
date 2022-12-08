@@ -2,21 +2,24 @@ package io.choerodon.devops.infra.enums.cd;
 
 public enum PipelineStatusEnum {
     /**
-     * 已创建
-     */
-    CREATED("created", 10, false),
-    /**
-     * 待执行
-     */
-    PENDING("pending", 20, false),
-    /**
      * 已跳过
      */
-    SKIPPED("skipped", 30, true),
+    SKIPPED("skipped", 10, true),
     /**
      * 成功
      */
-    SUCCESS("success", 40, true),
+    SUCCESS("success", 20, true),
+
+
+    /**
+     * 已创建
+     */
+    CREATED("created", 30, false),
+    /**
+     * 待执行
+     */
+    PENDING("pending", 40, false),
+
 
     /**
      * 失败
