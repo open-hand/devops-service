@@ -22,7 +22,7 @@
         dpr.finished_date,
         dpr.trigger_type,
         dpr.app_service_version_id,
-        dpr.created_by
+        dpr.created_by as latest_pipeline_trigger_id
         from devops_pipeline dp
         left join devops_pipeline_record dpr on dpr.id = (select max(id) from devops_pipeline_record where pipeline_id =
         dp.id)
