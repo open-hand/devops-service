@@ -119,6 +119,10 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void startNextStage(Long nextStageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
+        if (!PipelineStatusEnum.CREATED.value().equals(pipelineStageRecordDTO.getStatus())) {
+            return;
+        }
+
         Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
         Long pipelineId = pipelineStageRecordDTO.getPipelineId();
         String stageName = pipelineStageRecordDTO.getName();
