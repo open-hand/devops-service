@@ -135,7 +135,8 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
             List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineStageRecordDTO.getPipelineRecordId());
             String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
             pipelineRecordService.updateStatus(pipelineStageRecordDTO.getPipelineRecordId(), newPipelineStatus);
-            if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)) {
+            if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)
+                    || PipelineStatusEnum.SKIPPED.value().equals(newStatus)) {
                 // 执行下一阶段任务
                 if (pipelineStageRecordDTO.getNextStageRecordId() != null) {
                     pipelineRecordService.startNextStage(pipelineStageRecordDTO.getNextStageRecordId());
