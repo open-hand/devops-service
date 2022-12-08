@@ -52,6 +52,8 @@ import io.choerodon.devops.infra.util.TypeUtil;
 public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
 
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
+
+    private static final String DEVOPS_AUDIT_RECORD_STATUS_INVALID = "devops.audit.record.status.invalid";
     private static final String DEVOPS_JOB_RECORD_CREATE = "devops.job.record.create";
     private static final String DEVOPS_JOB_RECORD_UPDATE = "devops.job.record.update";
     private static final String PIPELINE_LINK_URL_TEMPLATE = "/#/devops/pipeline-manage?type=project&id=%s&name=%s&organizationId=%s&pipelineId=%s&pipelineIdRecordId=%s";
@@ -244,6 +246,9 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public AuditResultVO auditJob(Long projectId, Long jobRecordId, String result) {
         DevopsCiJobRecordDTO devopsCiJobRecordDTO = baseQueryById(jobRecordId);
+        if (!PipelineStatus.MANUAL.toValue().equals(devopsCiJobRecordDTO.getStatus())) {
+            throw new CommonException(DEVOPS_AUDIT_RECORD_STATUS_INVALID);
+        }
         Long userId = DetailsHelper.getUserDetails().getUserId();
         Long ciPipelineRecordId = devopsCiJobRecordDTO.getCiPipelineRecordId();
         Long gitlabProjectId = devopsCiJobRecordDTO.getGitlabProjectId();

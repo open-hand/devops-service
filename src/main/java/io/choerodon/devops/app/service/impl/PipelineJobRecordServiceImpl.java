@@ -44,6 +44,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
+
+    private static final String DEVOPS_JOB_RECORD_STATUS_INVALID = "devops.job.record.status.invalid";
     private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
     private static final String DEVOPS_STATUS_IS_EMPTY = "devops.status.is.empty";
@@ -182,6 +184,9 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public AuditResultVO auditJob(Long projectId, Long id, String result) {
         PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
+        if (!PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())) {
+            throw new CommonException(DEVOPS_JOB_RECORD_STATUS_INVALID);
+        }
         Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
         Long pipelineRecordId = pipelineJobRecordDTO.getPipelineRecordId();
         Long pipelineId = pipelineJobRecordDTO.getPipelineId();
