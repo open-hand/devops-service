@@ -31,8 +31,6 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
 @EnableScheduling
 public class CdTaskScheduler {
 
-    private static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(CdTaskScheduler.class);
 
     @Value("${devops.pipeline.task.timeoutDuration:600000}")
@@ -62,7 +60,7 @@ public class CdTaskScheduler {
     }
 
     @JobTask(maxRetryCount = 3,
-            code = PIPELINE_SCHEDULE_TRIGGER,
+            code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
             description = "流水线定时触发任务", params = {
             @JobParam(name = MiscConstants.PROJECT_ID, defaultValue = "0", description = "项目id"),
             @JobParam(name = MiscConstants.PIPELINE_ID, defaultValue = "0", description = "流水线id"),
