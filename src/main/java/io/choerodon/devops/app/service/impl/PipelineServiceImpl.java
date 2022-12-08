@@ -504,7 +504,7 @@ public class PipelineServiceImpl implements PipelineService {
     public PipelineRecordDTO executeByToken(Long projectId, String token, String personalToken) {
         PipelineDTO pipelineDTO = queryByTokenOrThrowE(token);
         // 设置上下文
-        PipelinePersonalTokenDTO pipelinePersonalTokenDTO = pipelinePersonalTokenService.queryByToken(personalToken);
+        PipelinePersonalTokenDTO pipelinePersonalTokenDTO = pipelinePersonalTokenService.queryByTokenOrThrowE(personalToken);
         CustomContextUtil.setUserContext(pipelinePersonalTokenDTO.getUserId());
         return execute(pipelineDTO.getId(), PipelineTriggerTypeEnum.API, null);
     }
