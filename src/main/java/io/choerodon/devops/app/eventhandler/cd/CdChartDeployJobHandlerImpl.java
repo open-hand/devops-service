@@ -318,24 +318,28 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("重新部署成功.").append(System.lineSeparator());
             } else {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
-                // 要部署版本的commit
-                CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
-                // 已经部署版本的commit
-                CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
-                if (deploydCommit != null
-                        && currentCommit != null
-                        && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
-                    // 计算commitDate
-                    // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
-                    // 如果现在部署的版本落后于已经部署的版本则跳过
-                    log.append("此次部署的版本落后于应用当前版本，跳过此次部署").append(System.lineSeparator());
-                    pipelineJobRecordDTO.setCommandId(commandId);
-                    pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
-                    pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
-                    // 更新阶段状态
-                    pipelineStageRecordService.updateStatus(stageRecordId);
-                    return;
+                // 外置仓库不校验
+                if (appServiceDTO.getExternalConfigId() == null) {
+                    // 要部署版本的commit
+                    CommitDTO currentCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), appServiceVersionDTO.getCommit(), GITLAB_ADMIN_ID);
+                    // 已经部署版本的commit
+                    CommitDTO deploydCommit = gitlabServiceClientOperator.queryCommit(appServiceDTO.getGitlabProjectId(), deploydAppServiceVersion.getCommit(), GITLAB_ADMIN_ID);
+                    if (deploydCommit != null
+                            && currentCommit != null
+                            && currentCommit.getCommittedDate().before(deploydCommit.getCommittedDate())) {
+                        // 计算commitDate
+                        // 如果要部署的版本的commitDate落后于环境中已经部署的版本，则跳过
+                        // 如果现在部署的版本落后于已经部署的版本则跳过
+                        log.append("此次部署的版本落后于应用当前版本，跳过此次部署").append(System.lineSeparator());
+                        pipelineJobRecordDTO.setCommandId(commandId);
+                        pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
+                        pipelineJobRecordService.baseUpdate(pipelineJobRecordDTO);
+                        // 更新阶段状态
+                        pipelineStageRecordService.updateStatus(stageRecordId);
+                        return;
+                    }
                 }
+
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
                         envId,
