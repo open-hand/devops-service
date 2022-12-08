@@ -538,6 +538,8 @@ public class PipelineServiceImpl implements PipelineService {
         });
         List<PipelineStageVO> sortedStageList = pipelineStageVOS.stream().sorted(Comparator.comparing(PipelineStageVO::getSequence)).collect(Collectors.toList());
         pipelineVO.setStageList(sortedStageList);
+
+        pipelineVO.setPipelineScheduleList(pipelineScheduleService.listVOByPipelineId(id));
         return pipelineVO;
     }
 

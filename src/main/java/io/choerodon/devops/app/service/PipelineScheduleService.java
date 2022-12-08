@@ -19,6 +19,8 @@ public interface PipelineScheduleService {
 
     List<PipelineScheduleDTO> listByPipelineId(Long pipelineId);
 
+    List<PipelineScheduleVO> listVOByPipelineId(Long pipelineId);
+
     void baseUpdate(PipelineScheduleDTO oldPipelineScheduleDTO);
 }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
 import io.choerodon.devops.app.service.PipelineScheduleService;
@@ -65,6 +67,15 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
         PipelineScheduleDTO pipelineScheduleDTO = new PipelineScheduleDTO();
         pipelineScheduleDTO.setPipelineId(pipelineId);
         return pipelineScheduleMapper.select(pipelineScheduleDTO);
+    }
+
+    @Override
+    public List<PipelineScheduleVO> listVOByPipelineId(Long pipelineId) {
+        List<PipelineScheduleDTO> pipelineScheduleDTOS = listByPipelineId(pipelineId);
+        if (CollectionUtils.isEmpty(pipelineScheduleDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(pipelineScheduleDTOS, PipelineScheduleVO.class);
     }
 
     @Override
