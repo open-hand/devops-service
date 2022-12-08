@@ -23,8 +23,7 @@
         from devops_pipeline_job_record dpjr
         where dpjr.stage_record_id = #{stageRecordId}
           and dpjr.status = 'created'
-            for
-        update
+            for update
     </select>
     <select id="listCreatedAndPendingJobsForUpdate"
             resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
@@ -70,7 +69,7 @@
         set status       = 'created',
             started_date = null,
             finished_date= null
-        where id = #{pipelineRecordId}
+        where pipeline_record_id = #{pipelineRecordId}
           and (status = 'canceled' or status = 'failed')
     </update>
 </mapper>
