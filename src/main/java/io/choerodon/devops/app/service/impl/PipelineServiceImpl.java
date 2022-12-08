@@ -229,9 +229,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (CollectionUtils.isEmpty(stageList)) {
             throw new CommonException("devops.pipeline.stage.is.empty");
         }
-        stageList.forEach(stage -> {
-            pipelineStageService.saveStage(projectId, pipelineDTO.getId(), versionId, stage);
-        });
+        stageList.forEach(stage -> pipelineStageService.saveStage(projectId, pipelineDTO.getId(), versionId, stage));
         updateEffectVersionId(pipelineDTO.getId(), versionId);
     }
 
@@ -292,7 +290,6 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void update(Long projectId, Long id, PipelineVO pipelineVO) {
-        //
         PipelineDTO pipelineDTO = baseQueryById(id);
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
@@ -324,12 +321,12 @@ public class PipelineServiceImpl implements PipelineService {
         List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
         // 项目成员只能新建定时计划，无法更新、删除其他用户的定时计划
         Boolean scheduleEdit;
-        if (userDetails.getAdmin()) {
+        if (Boolean.TRUE.equals(userDetails.getAdmin())) {
             scheduleEdit = true;
         } else {
             scheduleEdit = baseServiceClientOperator.checkIsOrgOrProjectGitlabOwner(userDetails.getUserId(), projectId);
         }
-        if (scheduleEdit) {
+        if (Boolean.TRUE.equals(scheduleEdit)) {
             Map<String, PipelineScheduleVO> pipelineScheduleVOMap = pipelineScheduleVOS.stream().collect(Collectors.toMap(PipelineScheduleVO::getName, Function.identity()));
             for (PipelineScheduleVO pipelineScheduleVO : pipelineScheduleVOS) {// 不存在则新建
                 if (pipelineScheduleDTOMap.get(pipelineScheduleVO.getName()) == null) {
@@ -417,6 +414,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public PipelineRecordDTO executeByManual(Long projectId, Long id) {
         PipelineDTO pipelineDTO = baseQueryById(id);
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
@@ -451,8 +449,7 @@ public class PipelineServiceImpl implements PipelineService {
         Long pipelineRecordId = pipelineRecordDTO.getId();
 
         //初始化阶段
-        PipelineStageRecordDTO firstStageRecordDTO = null;
-        List<PipelineJobRecordDTO> firstJobRecordList = new ArrayList<>();
+        Long firstStageRecordId = null;
         List<PipelineStageDTO> pipelineStageDTOS = pipelineStageService.listByVersionId(effectVersionId);
         List<PipelineStageDTO> sortedPipelineStage = pipelineStageDTOS
                 .stream()
@@ -486,8 +483,7 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineJobRecordService.baseCreate(pipelineJobRecordDTO);
                 // 记录流水线的第一个阶段信息
                 if (i == sortedPipelineStage.size() - 1) {
-                    firstStageRecordDTO = pipelineStageRecordDTO;
-                    firstJobRecordList.add(pipelineJobRecordDTO);
+                    firstStageRecordId = stageRecordId;
                 }
 
                 AbstractCdJobHandler handler = cdJobOperator.getHandlerOrThrowE(job.getType());
@@ -497,7 +493,7 @@ public class PipelineServiceImpl implements PipelineService {
             nextStageRecordId = pipelineStageRecordDTO.getId();
         }
         // 启动流水线
-        pipelineRecordService.startNextStage(firstStageRecordDTO.getId());
+        pipelineRecordService.startNextStage(firstStageRecordId);
 
         return pipelineRecordDTO;
     }

@@ -108,7 +108,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         PipelineRecordDTO pipelineRecordDTO = baseQueryById(id);
         if (!pipelineRecordDTO.getStatus().equals(status)) {
             pipelineRecordDTO.setStatus(status);
-            if (PipelineStatusEnum.isFinalStatus(status)) {
+            if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(status))) {
                 pipelineRecordDTO.setFinishedDate(new Date());
             }
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper, pipelineRecordDTO, DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
@@ -122,15 +122,12 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
         Long pipelineId = pipelineStageRecordDTO.getPipelineId();
         String stageName = pipelineStageRecordDTO.getName();
-//        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
+
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listCreatedByStageRecordIdForUpdate(nextStageRecordId);
-//        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
-//        boolean hasAuditJob = false;
         List<PipelineJobRecordDTO> auditJobList = new ArrayList<>();
         for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
             if (CdJobTypeEnum.CD_AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//                hasAuditJob = true;
                 auditJobList.add(pipelineJobRecordDTO);
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
@@ -148,21 +145,8 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         }
         // 人工卡点任务发送审核通知
         if (!CollectionUtils.isEmpty(auditJobList)) {
-            auditJobList.forEach(auditJob -> {
-                pipelineAuditRecordService.sendJobAuditMessage(pipelineId, pipelineRecordId, stageName, auditJob.getId());
-            });
+            auditJobList.forEach(auditJob -> pipelineAuditRecordService.sendJobAuditMessage(pipelineId, pipelineRecordId, stageName, auditJob.getId()));
         }
-
-
-//        if (Boolean.TRUE.equals(hasAuditJob)) {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//        } else {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-//        }
-//        pipelineStageRecordService.updateStatus(nextStageRecordId);
-//        baseUpdate(pipelineRecordDTO);
     }
 
     @Override
@@ -201,11 +185,10 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
                 pipelineAuditRecordDTOS.forEach(pipelineAuditRecordDTO -> {
                     PipelineJobRecordDTO pipelineJobRecordDTO = jobRecordDTOMap.get(pipelineAuditRecordDTO.getJobRecordId());
                     List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
-                    if (!CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)) {
-                        if (pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
-                            DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
-                            pipelineAuditInfo.add(devopsCiPipelineAuditVO);
-                        }
+                    if (!CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)
+                            && pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
+                        DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
+                        pipelineAuditInfo.add(devopsCiPipelineAuditVO);
                     }
                 });
             }
