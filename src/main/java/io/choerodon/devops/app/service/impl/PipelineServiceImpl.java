@@ -217,7 +217,7 @@ public class PipelineServiceImpl implements PipelineService {
         params.put(MiscConstants.SCHEDULE_TOKEN, pipelineScheduleDTO.getToken());
         params.put(MiscConstants.USER_ID, pipelineScheduleDTO.getCreatedBy());
         scheduleTaskDTO.setParams(params);
-        scheduleTaskDTO.setMethodCode("pipelineScheduleTrigger");
+        scheduleTaskDTO.setMethodCode(MiscConstants.PIPELINE_SCHEDULE_TRIGGER);
         scheduleTaskDTO.setServiceCode(serviceCode);
         scheduleTaskDTOList.add(scheduleTaskDTO);
     }

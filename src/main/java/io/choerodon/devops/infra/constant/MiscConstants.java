@@ -90,4 +90,6 @@ public final class MiscConstants {
     public static final String ENV = "env";
 
 
+    public static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
+
 }
