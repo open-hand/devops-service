@@ -15,7 +15,7 @@
         set status        = 'created',
             started_date=#{startDate},
             finished_date = null
-        where id = #{pipelineRecordId}
+        where id = #{id}
           and (status = 'failed' or status = 'canceled')
     </update>
     <select id="listByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
