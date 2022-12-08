@@ -548,12 +548,15 @@ public class PipelineServiceImpl implements PipelineService {
         if (pipelineVOS.isEmpty()) {
             return new Page<>();
         }
-        UserDTOFillUtil.fillUserInfo(pipelineVOS.getContent(), "createdBy", "trigger");
+        UserDTOFillUtil.fillUserInfo(pipelineVOS.getContent(), "latestPipelineRecordId", "trigger");
         pipelineVOS.getContent().forEach(pipelineHomeVO -> {
             // 添加阶段信息
-            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineHomeVO.getLatestPipelineRecordId());
-            List<PipelineStageRecordDTO> sortedStageRecord = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
-            pipelineHomeVO.setStageRecordList(sortedStageRecord);
+            if (pipelineHomeVO.getLatestPipelineRecordId() != null) {
+                List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(pipelineHomeVO.getLatestPipelineRecordId());
+                List<PipelineStageRecordDTO> sortedStageRecord = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
+                pipelineHomeVO.setStageRecordList(sortedStageRecord);
+            }
+
         });
         return pipelineVOS;
     }

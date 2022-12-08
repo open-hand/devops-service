@@ -41,9 +41,19 @@ public class PipelineHomeVO {
 
     private Long latestPipelineRecordId;
 
+    private Long latestPipelineTriggerId;
+
 
     @ApiModelProperty("触发者")
     private IamUserDTO trigger;
+
+    public Long getLatestPipelineTriggerId() {
+        return latestPipelineTriggerId;
+    }
+
+    public void setLatestPipelineTriggerId(Long latestPipelineTriggerId) {
+        this.latestPipelineTriggerId = latestPipelineTriggerId;
+    }
 
     public Long getLatestPipelineRecordId() {
         return latestPipelineRecordId;
