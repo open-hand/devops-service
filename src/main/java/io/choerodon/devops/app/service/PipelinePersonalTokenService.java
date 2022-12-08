@@ -15,5 +15,7 @@ public interface PipelinePersonalTokenService {
     String resetPersonalToken(Long projectId);
 
     PipelinePersonalTokenDTO queryByToken(String token);
+
+    PipelinePersonalTokenDTO queryByTokenOrThrowE(String token);
 }
 

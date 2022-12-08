@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.app.service.PipelinePersonalTokenService;
 import io.choerodon.devops.infra.dto.PipelinePersonalTokenDTO;
@@ -22,6 +23,7 @@ public class PipelinePersonalTokenServiceImpl implements PipelinePersonalTokenSe
 
 
     private static final String DEVOPS_SAVE_PERSONAL_TOKEN_FAILED = "devops.save.personal.token.failed";
+    private static final String DEVOPS_PERSONAL_TOKEN_INVALID = "devops.personal.token.invalid";
 
     @Autowired
     private PipelinePersonalTokenMapper pipelinePersonalTokenMapper;
@@ -68,6 +70,15 @@ public class PipelinePersonalTokenServiceImpl implements PipelinePersonalTokenSe
         PipelinePersonalTokenDTO pipelinePersonalTokenDTO = new PipelinePersonalTokenDTO();
         pipelinePersonalTokenDTO.setToken(token);
         return pipelinePersonalTokenMapper.selectOne(pipelinePersonalTokenDTO);
+    }
+
+    @Override
+    public PipelinePersonalTokenDTO queryByTokenOrThrowE(String token) {
+        PipelinePersonalTokenDTO pipelinePersonalTokenDTO = queryByToken(token);
+        if (pipelinePersonalTokenDTO == null) {
+            throw new CommonException(DEVOPS_PERSONAL_TOKEN_INVALID);
+        }
+        return pipelinePersonalTokenDTO;
     }
 
 }
