@@ -16,6 +16,7 @@
         dp.creation_date,
         dp.last_updated_by,
         dp.last_update_date,
+        dpr.id as latest_pipeline_record_id,
         dpr.status,
         dpr.started_date,
         dpr.finished_date,
