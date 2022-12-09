@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 
 /**
  * 〈功能简述〉
@@ -75,6 +76,7 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                             AbstractCdJobHandler handler = cdJobOperator.getHandler(pipelineJobRecordDTO.getType());
                             handler.execCommand(jobRecordId, log);
                         } catch (Exception e) {
+                            log.append(LogUtil.readContentOfThrowable(e));
                             // 更新任务状态为失败
                             pipelineJobRecordService.updateStatus(jobRecordId, PipelineStatusEnum.FAILED);
                             // 更新阶段状态
