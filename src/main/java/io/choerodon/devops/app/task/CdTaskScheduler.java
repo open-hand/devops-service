@@ -64,10 +64,10 @@ public class CdTaskScheduler {
             code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
             level = ResourceLevel.PROJECT,
             description = "流水线定时触发任务", params = {
-            @JobParam(name = MiscConstants.PROJECT_ID, defaultValue = "0", description = "项目id"),
-            @JobParam(name = MiscConstants.PIPELINE_ID, defaultValue = "0", description = "流水线id"),
+            @JobParam(name = MiscConstants.PROJECT_ID, type = Long.class, defaultValue = "0", description = "项目id"),
+            @JobParam(name = MiscConstants.PIPELINE_ID, type = Long.class, defaultValue = "0", description = "流水线id"),
             @JobParam(name = MiscConstants.SCHEDULE_TOKEN, description = "流水线id"),
-            @JobParam(name = MiscConstants.USER_ID, defaultValue = "0", description = "流水线id")
+            @JobParam(name = MiscConstants.USER_ID, type = Long.class, defaultValue = "0", description = "流水线id")
     })
     public void pipelineScheduleTrigger(Map<String, Object> map) {
         Long pipelineId = (Long) map.get(MiscConstants.PIPELINE_ID);
