@@ -128,6 +128,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private CiPipelineAppVersionService ciPipelineAppVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
 
     @Autowired
     @Qualifier(value = "restTemplateForIp")
@@ -156,7 +158,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         try {
 
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
-
+            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByAppServiceIdAndGitlabPipelineId(appServiceDTO.getId(), gitlabPipelineId);
+            if (devopsCiPipelineRecordDTO != null && devopsCiPipelineRecordDTO.getTriggerUserId() != null) {
+                CustomContextUtil.setUserContext(devopsCiPipelineRecordDTO.getTriggerUserId());
+            }
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
 
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
