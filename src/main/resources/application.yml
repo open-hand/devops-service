@@ -101,7 +101,7 @@ hzero:
     oauth-url: ${OAUTH_USER_URL:http://choerodon-oauth/oauth/api/user}
 choerodon:
   saga:
-    service: choerodon-asgard
+    service: zknow-asgard
     consumer:
       core-thread-num: 20
       max-thread-num: 20 # 消费线程数
