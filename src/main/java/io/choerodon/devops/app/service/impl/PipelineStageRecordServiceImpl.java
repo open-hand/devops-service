@@ -131,7 +131,9 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         }
         LOGGER.info("Pipeline stage:{} current status is :{} ,newStatus is {}.", stageRecordId, pipelineStageRecordDTO.getStatus(), newStatus);
         if (!newStatus.equals(pipelineStageRecordDTO.getStatus())) {
-            updateStatus(stageRecordId, newStatus);
+//            updateStatus(stageRecordId, newStatus);
+            pipelineStageRecordDTO.setStatus(newStatus);
+            baseUpdate(pipelineStageRecordDTO);
             List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineStageRecordDTO.getPipelineRecordId());
             String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
             pipelineRecordService.updateStatus(pipelineStageRecordDTO.getPipelineRecordId(), newPipelineStatus);
