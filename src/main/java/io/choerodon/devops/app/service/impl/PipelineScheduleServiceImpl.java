@@ -84,5 +84,16 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
     public void baseUpdate(PipelineScheduleDTO pipelineScheduleDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineScheduleMapper, pipelineScheduleDTO, DEVOPS_UPDATE_SCHEDULE_FAILED);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByPipelineId(Long pipelineId) {
+        Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
+        PipelineScheduleDTO pipelineScheduleDTO = new PipelineScheduleDTO();
+        pipelineScheduleDTO.setPipelineId(pipelineId);
+
+        pipelineScheduleMapper.delete(pipelineScheduleDTO);
+
+    }
 }
 
