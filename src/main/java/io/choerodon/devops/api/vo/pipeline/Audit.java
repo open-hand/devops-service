@@ -13,6 +13,9 @@ public class Audit {
     @ApiModelProperty(value = "是否会签 1是会签,0 是或签", required = true)
     private Boolean countersigned;
 
+    @ApiModelProperty(value = "当前用户是否拥有审核权限")
+    private Boolean canAuditFlag;
+
     public Audit() {
     }
 
@@ -22,6 +25,14 @@ public class Audit {
         this.reviewedUsers = reviewedUsers;
         this.status = status;
         this.countersigned = countersigned;
+    }
+
+    public Boolean getCanAuditFlag() {
+        return canAuditFlag;
+    }
+
+    public void setCanAuditFlag(Boolean canAuditFlag) {
+        this.canAuditFlag = canAuditFlag;
     }
 
     public Boolean getCountersigned() {

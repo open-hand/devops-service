@@ -1166,11 +1166,11 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     }
 
     @Override
-    public void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
+    public void sendPipelineAuditResultMassage(String type, Long pipelineId, List<Long> userIds, Long pipelineRecordId, String stageName, Long userId, Long projectId) {
         doWithTryCatchAndLog(
                 () -> {
                     List<IamUserDTO> users = baseServiceClientOperator.queryUsersByUserIds(userIds);
-                    PipelineDTO pipelineDTO = pipelineService.baseQueryById(ciPipelineId);
+                    PipelineDTO pipelineDTO = pipelineService.baseQueryById(pipelineId);
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
                     List<Receiver> userList = new ArrayList<>();
@@ -1181,11 +1181,18 @@ public class SendNotificationServiceImpl implements SendNotificationService {
                     IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(userId);
                     params.put("auditName", iamUserDTO.getLoginName());
                     params.put("realName", iamUserDTO.getRealName());
-                    params.put("pipelineId", ciPipelineId.toString());
+                    params.put("pipelineId", pipelineId.toString());
                     params.put("pipelineIdRecordId", pipelineRecordId.toString());
+                    params.put(MessageCodeConstants.LINK,
+                            String.format(MessageCodeConstants.BASE_URL,
+                                    frontUrl,
+                                    pipelineId,
+                                    projectDTO.getId(),
+                                    projectDTO.getName(),
+                                    projectDTO.getOrganizationId()));
                     //加上查看详情的url
-                    params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
-                            projectDTO.getOrganizationId(), ciPipelineId.toString(), pipelineRecordId.toString()));
+//                    params.put(LINK, String.format(BASE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(),
+//                            projectDTO.getOrganizationId(), ciPipelineId.toString(), pipelineRecordId.toString()));
                     addSpecifierList(type, projectDTO.getId(), userList);
 
                     Map<String, String> newParams = StringMapBuilder.newBuilder()
@@ -1333,11 +1340,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.LINK,
                 String.format(MessageCodeConstants.BASE_URL,
                         frontUrl,
+                        pipelineId,
                         projectDTO.getId(),
                         projectDTO.getName(),
-                        projectDTO.getOrganizationId(),
-                        pipelineId.toString(),
-                        pipelineRecordId.toString()));
+                        projectDTO.getOrganizationId()));
 
         sendNotices(MessageCodeConstants.CD_PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }

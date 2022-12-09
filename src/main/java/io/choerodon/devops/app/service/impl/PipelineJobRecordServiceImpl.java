@@ -44,6 +44,8 @@ import io.choerodon.devops.infra.util.MapperUtil;
 public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
 
     private static final String DEVOPS_SAVE_JOB_RECORD_FAILED = "devops.save.job.record.failed";
+
+    private static final String DEVOPS_JOB_RECORD_STATUS_INVALID = "devops.job.record.status.invalid";
     private static final String DEVOPS_UPDATE_JOB_RECORD_FAILED = "devops.update.job.record.failed";
     private static final String DEVOPS_AUDIT_RECORD_NOT_EXIST = "devops.audit.record.not.exist";
     private static final String DEVOPS_STATUS_IS_EMPTY = "devops.status.is.empty";
@@ -111,7 +113,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
                 || PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())) {
             pipelineJobRecordDTO.setStartedDate(new Date());
         }
-        if (PipelineStatusEnum.isFinalStatus(pipelineJobRecordDTO.getStatus())) {
+        if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(pipelineJobRecordDTO.getStatus()))) {
             pipelineJobRecordDTO.setFinishedDate(new Date());
         }
         baseUpdate(pipelineJobRecordDTO);
@@ -132,7 +134,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
                 || PipelineStatusEnum.SUCCESS.equals(status)) {
             pipelineJobRecordDTO.setFinishedDate(new Date());
         }
-
+        pipelineJobRecordDTO.setStatus(status.value());
         pipelineJobRecordMapper.updateByPrimaryKey(pipelineJobRecordDTO);
     }
 
@@ -182,6 +184,9 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
     @Transactional(rollbackFor = Exception.class)
     public AuditResultVO auditJob(Long projectId, Long id, String result) {
         PipelineJobRecordDTO pipelineJobRecordDTO = baseQueryById(id);
+        if (!PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())) {
+            throw new CommonException(DEVOPS_JOB_RECORD_STATUS_INVALID);
+        }
         Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
         Long pipelineRecordId = pipelineJobRecordDTO.getPipelineRecordId();
         Long pipelineId = pipelineJobRecordDTO.getPipelineId();
@@ -209,7 +214,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         AuditResultVO auditResultVO = new AuditResultVO();
         boolean auditFinishFlag;
         List<Long> userIds = pipelineAuditUserRecordDTOS.stream().map(PipelineAuditUserRecordDTO::getUserId).collect(Collectors.toList());
-        if (pipelineAuditRecordDTO.getCountersigned()) {
+        if (Boolean.TRUE.equals(pipelineAuditRecordDTO.getCountersigned())) {
             auditResultVO.setCountersigned(1);
             auditFinishFlag = pipelineAuditUserRecordDTOS.stream().noneMatch(v -> AuditStatusEnum.NOT_AUDIT.value().equals(v.getStatus()));
             // 添加审核人员信息
@@ -255,12 +260,12 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         // 审核结束则执行job
         if (auditFinishFlag) {
             Boolean auditSuccess;
-            if (pipelineAuditRecordDTO.getCountersigned()) {
+            if (Boolean.TRUE.equals(pipelineAuditRecordDTO.getCountersigned())) {
                 auditSuccess = pipelineAuditUserRecordDTOS.stream().allMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
             } else {
                 auditSuccess = pipelineAuditUserRecordDTOS.stream().anyMatch(v -> AuditStatusEnum.PASSED.value().equals(v.getStatus()));
             }
-            if (auditSuccess) {
+            if (Boolean.TRUE.equals(auditSuccess)) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.STOP.value());
@@ -280,7 +285,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
         List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
         AduitStatusChangeVO aduitStatusChangeVO = new AduitStatusChangeVO();
         aduitStatusChangeVO.setAuditStatusChanged(false); // 遗留代码，暂时不知道作用
-        if (!pipelineAuditRecordDTO.getCountersigned()) {
+        if (Boolean.FALSE.equals(pipelineAuditRecordDTO.getCountersigned())) {
             List<PipelineAuditUserRecordDTO> passedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.PASSED.value().equals(v.getStatus())).collect(Collectors.toList());
             List<PipelineAuditUserRecordDTO> refusedAuditUserRecordDTOS = pipelineAuditUserRecordDTOS.stream().filter(v -> CdAuditStatusEnum.REFUSED.value().equals(v.getStatus())).collect(Collectors.toList());
             if (!CollectionUtils.isEmpty(passedAuditUserRecordDTOS)) {

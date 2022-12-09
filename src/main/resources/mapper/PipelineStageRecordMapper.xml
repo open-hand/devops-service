@@ -18,7 +18,7 @@
     </update>
     <delete id="cancelPipelineStagesByIds">
         update devops_pipeline_stage_record
-        set status = 'created'
+        set status = 'canceled'
         where id in
         <foreach collection="stageRecordIds" item="id" open="(" separator="," close=")">
             #{id}

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.List;
+import java.util.Set;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -7,18 +9,14 @@ import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.mybatis.domian.SecurityToken;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * devops_ci_template_maven_build(CiTemplateMavenBuild)实体类

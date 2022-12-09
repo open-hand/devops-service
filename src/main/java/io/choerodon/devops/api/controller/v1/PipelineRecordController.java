@@ -43,8 +43,9 @@ public class PipelineRecordController extends BaseController {
             @ApiParam(value = "流水线Id", required = true)
             @RequestParam(value = "pipeline_id") Long pipelineId,
             @ApiIgnore
-            @SortDefault(value = PipelineRecordDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable) {
-        return ResponseEntity.ok(pipelineRecordService.paging(projectId, pipelineId, pageable));
+            @SortDefault(value = PipelineRecordDTO.FIELD_ID, direction = Sort.Direction.DESC) PageRequest pageable,
+            @RequestParam(value = "audit_flag", defaultValue = "false") Boolean auditFlag) {
+        return ResponseEntity.ok(pipelineRecordService.paging(projectId, pipelineId, auditFlag, pageable));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

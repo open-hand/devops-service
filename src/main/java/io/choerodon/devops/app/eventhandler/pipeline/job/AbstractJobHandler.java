@@ -138,4 +138,13 @@ public abstract class AbstractJobHandler {
     public void setCiJobConfig(DevopsCiJobDTO job, CiJob ciJob) {
 
     }
+
+    /**
+     * 复制流水线时，cd的部分数据需要删除
+     *
+     * @param devopsCiJobVO
+     */
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+
+    }
 }

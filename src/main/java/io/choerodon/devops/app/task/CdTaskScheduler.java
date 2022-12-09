@@ -2,6 +2,8 @@ package io.choerodon.devops.app.task;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.CdTaskSchedulerService;
 import io.choerodon.devops.app.service.PipelineScheduleService;
 import io.choerodon.devops.app.service.PipelineService;
@@ -29,7 +32,7 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
 @EnableScheduling
 public class CdTaskScheduler {
 
-    private static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdTaskScheduler.class);
 
     @Value("${devops.pipeline.task.timeoutDuration:600000}")
     private Long timeoutDuration;
@@ -58,7 +61,8 @@ public class CdTaskScheduler {
     }
 
     @JobTask(maxRetryCount = 3,
-            code = PIPELINE_SCHEDULE_TRIGGER,
+            code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
+            level = ResourceLevel.PROJECT,
             description = "流水线定时触发任务", params = {
             @JobParam(name = MiscConstants.PROJECT_ID, defaultValue = "0", description = "项目id"),
             @JobParam(name = MiscConstants.PIPELINE_ID, defaultValue = "0", description = "流水线id"),
@@ -73,7 +77,7 @@ public class CdTaskScheduler {
         CustomContextUtil.setUserContext(userId);
         PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.queryByToken(scheduleToken);
         if (pipelineScheduleDTO == null) {
-            // todo 删除对应timetask?
+            LOGGER.error("[pipelineScheduleTrigger] pipeline schedule not found for token：{}", scheduleToken);
         } else {
             pipelineService.execute(pipelineId,
                     PipelineTriggerTypeEnum.SCHEDULE,

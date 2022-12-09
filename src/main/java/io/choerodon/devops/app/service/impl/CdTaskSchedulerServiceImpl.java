@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.AsyncTaskExecutor;
@@ -17,12 +19,15 @@ import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.CdTaskSchedulerService;
+import io.choerodon.devops.app.service.PipelineJobRecordService;
+import io.choerodon.devops.app.service.PipelineLogService;
+import io.choerodon.devops.app.service.PipelineStageRecordService;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
-import io.choerodon.devops.infra.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.LogUtil;
 
 /**
  * 〈功能简述〉
@@ -34,12 +39,11 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
 @Service
 public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdTaskSchedulerServiceImpl.class);
     @Autowired
     private PipelineJobRecordService pipelineJobRecordService;
     @Autowired
     private PipelineStageRecordService pipelineStageRecordService;
-    @Autowired
-    private PipelineRecordService pipelineRecordService;
     @Autowired
     private PipelineLogService pipelineLogService;
 
@@ -61,9 +65,6 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
             Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
             Long pipelineId = pipelineJobRecordDTO.getPipelineId();
 
-            PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);
-            Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
-
             // 将待执行的任务状态置为running，并且加入线程池队列
             if (pipelineJobRecordService.updatePendingJobToRunning(jobRecordId) == 1) {
                 taskExecutor.submit(() -> {
@@ -79,13 +80,12 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                             AbstractCdJobHandler handler = cdJobOperator.getHandler(pipelineJobRecordDTO.getType());
                             handler.execCommand(jobRecordId, log);
                         } catch (Exception e) {
+                            LOGGER.error("Execute job failed.", e);
+                            log.append(LogUtil.readContentOfThrowable(e));
                             // 更新任务状态为失败
                             pipelineJobRecordService.updateStatus(jobRecordId, PipelineStatusEnum.FAILED);
-                            // todo 更新流水线后续阶段状态为skipped
                             // 更新阶段状态
                             pipelineStageRecordService.updateStatus(stageRecordId);
-                            // 更新流水线状态为失败
-//                            pipelineRecordService.updateToEndStatus(pipelineRecordId, PipelineStatusEnum.FAILED);
                         }
                         // 记录job日志
                         pipelineLogService.saveLog(pipelineId, jobRecordId, log.toString());

@@ -16,12 +16,13 @@
         dp.creation_date,
         dp.last_updated_by,
         dp.last_update_date,
+        dpr.id as latest_pipeline_record_id,
         dpr.status,
         dpr.started_date,
         dpr.finished_date,
         dpr.trigger_type,
         dpr.app_service_version_id,
-        dpr.created_by
+        dpr.created_by as latest_pipeline_trigger_id
         from devops_pipeline dp
         left join devops_pipeline_record dpr on dpr.id = (select max(id) from devops_pipeline_record where pipeline_id =
         dp.id)
@@ -40,6 +41,7 @@
                 and dpr.status = #{status}
             </if>
         </where>
+        order by dp.id desc
     </select>
     <select id="checkName" resultType="java.lang.Boolean">
         select count(1) = 0

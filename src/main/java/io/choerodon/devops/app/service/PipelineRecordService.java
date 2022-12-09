@@ -19,7 +19,9 @@ public interface PipelineRecordService {
 
     void baseCreate(PipelineRecordDTO pipelineRecordDTO);
 
-    PipelineRecordDTO baseQueryById(Long pipelineRecordId);
+    PipelineRecordDTO baseQueryById(Long id);
+
+    PipelineRecordDTO queryByIdForUpdate(Long id);
 
     void baseUpdate(PipelineRecordDTO pipelineRecordDTO);
 
@@ -35,7 +37,7 @@ public interface PipelineRecordService {
 
     void startNextStage(Long nextStageRecordId);
 
-    Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable);
+    Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, Boolean auditFlag, PageRequest pageable);
 
     void cancel(Long projectId, Long id);
 

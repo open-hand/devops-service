@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class PipelineRecordServiceImpl implements PipelineRecordService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineRecordServiceImpl.class);
 
     private static final String DEVOPS_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
     private static final String DEVOPS_UPDATE_PIPELINE_RECORD_FAILED = "devops.update.pipeline.record.failed";
@@ -89,6 +93,11 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     }
 
     @Override
+    public PipelineRecordDTO queryByIdForUpdate(Long id) {
+        return pipelineRecordMapper.queryByIdForUpdate(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(PipelineRecordDTO pipelineRecordDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper,
@@ -105,10 +114,11 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, String status) {
-        PipelineRecordDTO pipelineRecordDTO = baseQueryById(id);
+        PipelineRecordDTO pipelineRecordDTO = queryByIdForUpdate(id);
+        LOGGER.info("Pipeline:{} current status is :{} ,newStatus is {}.", id, pipelineRecordDTO.getStatus(), status);
         if (!pipelineRecordDTO.getStatus().equals(status)) {
             pipelineRecordDTO.setStatus(status);
-            if (PipelineStatusEnum.isFinalStatus(status)) {
+            if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(status))) {
                 pipelineRecordDTO.setFinishedDate(new Date());
             }
             MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper, pipelineRecordDTO, DEVOPS_UPDATE_PIPELINE_RECORD_FAILED);
@@ -119,18 +129,19 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Transactional(rollbackFor = Exception.class)
     public void startNextStage(Long nextStageRecordId) {
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(nextStageRecordId);
+        if (!PipelineStatusEnum.CREATED.value().equals(pipelineStageRecordDTO.getStatus())) {
+            return;
+        }
+
         Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
         Long pipelineId = pipelineStageRecordDTO.getPipelineId();
         String stageName = pipelineStageRecordDTO.getName();
-//        PipelineRecordDTO pipelineRecordDTO = baseQueryById(pipelineStageRecordDTO.getPipelineRecordId());
+
         List<PipelineJobRecordDTO> pipelineJobRecordDTOS = pipelineJobRecordService.listCreatedByStageRecordIdForUpdate(nextStageRecordId);
-//        startNextStage(pipelineRecordDTO, pipelineStageRecordDTO, pipelineJobRecordDTOS);
-//        boolean hasAuditJob = false;
         List<PipelineJobRecordDTO> auditJobList = new ArrayList<>();
         for (PipelineJobRecordDTO pipelineJobRecordDTO : pipelineJobRecordDTOS) {
             if (CdJobTypeEnum.CD_AUDIT.value().equals(pipelineJobRecordDTO.getType())) {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//                hasAuditJob = true;
                 auditJobList.add(pipelineJobRecordDTO);
             } else {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
@@ -148,27 +159,21 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         }
         // 人工卡点任务发送审核通知
         if (!CollectionUtils.isEmpty(auditJobList)) {
-            auditJobList.forEach(auditJob -> {
-                pipelineAuditRecordService.sendJobAuditMessage(pipelineId, pipelineRecordId, stageName, auditJob.getId());
-            });
+            auditJobList.forEach(auditJob -> pipelineAuditRecordService.sendJobAuditMessage(pipelineId, pipelineRecordId, stageName, auditJob.getId()));
         }
-
-
-//        if (Boolean.TRUE.equals(hasAuditJob)) {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.NOT_AUDIT.value());
-//        } else {
-//            firstStageRecordDTO.setStatus(PipelineStatusEnum.PENDING.value());
-//            pipelineRecordDTO.setStatus(PipelineStatusEnum.RUNNING.value());
-//        }
-//        pipelineStageRecordService.updateStatus(nextStageRecordId);
-//        baseUpdate(pipelineRecordDTO);
     }
 
     @Override
-    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable) {
+    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, Boolean auditFlag, PageRequest pageable) {
 
-        Page<PipelineRecordVO> pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        Page<PipelineRecordVO> pipelineRecordVOPage;
+        if (Boolean.TRUE.equals(auditFlag)) {
+            Long userId = DetailsHelper.getUserDetails().getUserId();
+            pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listUserAuditRecordsByPipelineId(pipelineId, userId));
+        } else {
+            pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        }
+
         if (pipelineRecordVOPage.isEmpty()) {
             return new Page<>();
         }
@@ -201,11 +206,11 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
                 pipelineAuditRecordDTOS.forEach(pipelineAuditRecordDTO -> {
                     PipelineJobRecordDTO pipelineJobRecordDTO = jobRecordDTOMap.get(pipelineAuditRecordDTO.getJobRecordId());
                     List<PipelineAuditUserRecordDTO> pipelineAuditUserRecordDTOS = pipelineAuditUserRecordService.listByAuditRecordId(pipelineAuditRecordDTO.getId());
-                    if (!CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)) {
-                        if (pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
-                            DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
-                            pipelineAuditInfo.add(devopsCiPipelineAuditVO);
-                        }
+                    if (PipelineStatusEnum.NOT_AUDIT.value().equals(pipelineJobRecordDTO.getStatus())
+                            && !CollectionUtils.isEmpty(pipelineAuditUserRecordDTOS)
+                            && pipelineAuditUserRecordDTOS.stream().anyMatch(r -> r.getUserId().equals(userId) && AuditStatusEnum.NOT_AUDIT.value().equals(r.getStatus()))) {
+                        DevopsPipelineAuditVO devopsCiPipelineAuditVO = new DevopsPipelineAuditVO(pipelineJobRecordDTO.getName(), pipelineJobRecordDTO.getId());
+                        pipelineAuditInfo.add(devopsCiPipelineAuditVO);
                     }
                 });
             }
@@ -278,14 +283,14 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         pipelineRecordMapper.retryPipeline(id, new Date());
         List<PipelineStageRecordDTO> pipelineStageRecordDTOS = pipelineStageRecordService.listByPipelineRecordId(id);
         List<PipelineStageRecordDTO> sortedRecordStages = pipelineStageRecordDTOS.stream().sorted(Comparator.comparing(PipelineStageRecordDTO::getSequence)).collect(Collectors.toList());
-        Long nextStageId = null;
+        Long nextStageRecordId = null;
         for (PipelineStageRecordDTO stageRecordDTO : sortedRecordStages) {
-            if (PipelineStatusEnum.CANCELED.value().equals(stageRecordDTO.getStatus())) {
-                nextStageId = stageRecordDTO.getId();
+            if (PipelineStatusEnum.CREATED.value().equals(stageRecordDTO.getStatus())) {
+                nextStageRecordId = stageRecordDTO.getId();
                 break;
             }
         }
-        startNextStage(nextStageId);
+        startNextStage(nextStageRecordId);
     }
 
 }

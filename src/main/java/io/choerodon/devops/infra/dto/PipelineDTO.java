@@ -71,6 +71,7 @@ public class PipelineDTO extends AuditDomain {
         this.appVersionTriggerEnable = appVersionTriggerEnable;
     }
 
+
     public Boolean getEnable() {
         return enable;
     }

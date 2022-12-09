@@ -125,17 +125,21 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
 
         PipelineStageRecordDTO pipelineStageRecordDTO = queryByIdForUpdate(stageRecordId);
+        Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
         if (PipelineStatusEnum.CANCELED.value().equals(pipelineStageRecordDTO.getStatus())) {
             LOGGER.info("Pipeline stage:{} status is canceled, skip update it.", stageRecordId);
             return;
         }
-
+        LOGGER.info("Pipeline stage:{} current status is :{} ,newStatus is {}.", stageRecordId, pipelineStageRecordDTO.getStatus(), newStatus);
         if (!newStatus.equals(pipelineStageRecordDTO.getStatus())) {
-            updateStatus(stageRecordId, newStatus);
-            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineStageRecordDTO.getPipelineRecordId());
+//            updateStatus(stageRecordId, newStatus);
+            pipelineStageRecordDTO.setStatus(newStatus);
+            baseUpdate(pipelineStageRecordDTO);
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineRecordId);
             String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
-            pipelineRecordService.updateStatus(pipelineStageRecordDTO.getPipelineRecordId(), newPipelineStatus);
-            if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)) {
+            pipelineRecordService.updateStatus(pipelineRecordId, newPipelineStatus);
+            if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)
+                    || PipelineStatusEnum.SKIPPED.value().equals(newStatus)) {
                 // 执行下一阶段任务
                 if (pipelineStageRecordDTO.getNextStageRecordId() != null) {
                     pipelineRecordService.startNextStage(pipelineStageRecordDTO.getNextStageRecordId());
@@ -146,12 +150,6 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
 //                }
             }
         }
-//
-//
-//        if (pipelineJobRecordDTOS.stream().allMatch(job -> PipelineStatusEnum.SUCCESS.value().equals(job.getStatus()))) {
-//            updateStatus(stageRecordId, PipelineStatusEnum.SUCCESS);
-//
-//        }
     }
 
     @Override

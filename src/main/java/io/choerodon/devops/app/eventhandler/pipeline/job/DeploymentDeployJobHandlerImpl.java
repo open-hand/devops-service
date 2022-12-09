@@ -75,6 +75,16 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
     }
 
     @Override
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+        CiDeployDeployCfgVO ciDeployDeployCfg = devopsCiJobVO.getCiDeployDeployCfg();
+        if (ciDeployDeployCfg != null) {
+            CiDeployDeployCfgVO ciChartDeployConfigVO = new CiDeployDeployCfgVO();
+            ciChartDeployConfigVO.setSkipCheckPermission(ciDeployDeployCfg.getSkipCheckPermission());
+            devopsCiJobVO.setCiDeployDeployCfg(ciChartDeployConfigVO);
+        }
+    }
+
+    @Override
     protected AppDeployConfigVO getDeployConfig(DevopsCiJobVO devopsCiJobVO) {
         return devopsCiJobVO.getCiDeployDeployCfg();
     }

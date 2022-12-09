@@ -79,8 +79,9 @@ public class CiCdPipelineController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "pipeline_id") Long pipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId,
+            @RequestParam(value = "delete_cd_info", defaultValue = "false") Boolean deleteCdInfo) {
+        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId, deleteCdInfo));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -159,17 +160,6 @@ public class CiCdPipelineController {
         devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         return ResponseEntity.noContent().build();
     }
-
-
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "测试主机连接")
-//    @PostMapping(value = "/test_connection")
-//    public ResponseEntity<Boolean> testConnection(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @RequestBody HostConnectionVO hostConnectionVO) {
-//        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
-//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表，查询项目下流水线名称")
@@ -301,15 +291,5 @@ public class CiCdPipelineController {
             @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
     }
-
-//    @Deprecated
-//    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
-//    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-//    @GetMapping("/api_test/list")
-//    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
-//            @ApiParam(value = "项目 ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId) {
-//        return Results.success(devopsCdJobService.listCdApiTestConfig());
-//    }
 
 }

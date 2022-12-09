@@ -62,7 +62,7 @@ public class PipelineJobRecordController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查看任务日志")
-    @PostMapping("/{id}/log")
+    @GetMapping("/{id}/log")
     public ResponseEntity<String> queryLog(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,

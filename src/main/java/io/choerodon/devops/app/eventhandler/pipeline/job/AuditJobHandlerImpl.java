@@ -60,6 +60,11 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     }
 
     @Override
+    public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
+        devopsCiJobVO.setCiAuditConfig(null);
+    }
+
+    @Override
     public void fillJobAdditionalInfo(DevopsCiJobDTO devopsCiJobDTO, CiJobWebHookVO job) {
         CiAuditConfigVO ciAuditConfigVO = ciAuditConfigService.queryConfigWithUsersById(devopsCiJobDTO.getConfigId());
         job.setCiAuditConfigVO(ciAuditConfigVO);

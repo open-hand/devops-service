@@ -3,6 +3,7 @@ package io.choerodon.devops.api.vo.cd;
 import javax.validation.constraints.NotEmpty;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.CommonScheduleVO;
 
@@ -12,7 +13,7 @@ import io.choerodon.devops.api.vo.CommonScheduleVO;
  */
 public class PipelineScheduleVO extends CommonScheduleVO {
 
-
+    @Encrypt
     private Long id;
     @ApiModelProperty(value = "所属流水线id，devops_pipeline.id", required = true)
     private Long pipelineId;
