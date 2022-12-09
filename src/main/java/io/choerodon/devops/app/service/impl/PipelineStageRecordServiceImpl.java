@@ -129,7 +129,7 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
             LOGGER.info("Pipeline stage:{} status is canceled, skip update it.", stageRecordId);
             return;
         }
-
+        LOGGER.info("Pipeline stage:{} current status is :{} ,newStatus is {}.", stageRecordId, pipelineStageRecordDTO.getStatus(), newStatus);
         if (!newStatus.equals(pipelineStageRecordDTO.getStatus())) {
             updateStatus(stageRecordId, newStatus);
             List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineStageRecordDTO.getPipelineRecordId());
