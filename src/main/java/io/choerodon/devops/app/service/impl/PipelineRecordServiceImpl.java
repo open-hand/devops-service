@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -43,6 +45,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class PipelineRecordServiceImpl implements PipelineRecordService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineRecordServiceImpl.class);
 
     private static final String DEVOPS_SAVE_PIPELINE_RECORD_FAILED = "devops.save.pipeline.record.failed";
     private static final String DEVOPS_UPDATE_PIPELINE_RECORD_FAILED = "devops.update.pipeline.record.failed";
@@ -107,6 +111,7 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     public void updateStatus(Long id, String status) {
         PipelineRecordDTO pipelineRecordDTO = baseQueryById(id);
         if (!pipelineRecordDTO.getStatus().equals(status)) {
+            LOGGER.info("Pipeline:{} current status is :{} ,newStatus is {}.", id, pipelineRecordDTO.getStatus(), status);
             pipelineRecordDTO.setStatus(status);
             if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(status))) {
                 pipelineRecordDTO.setFinishedDate(new Date());
