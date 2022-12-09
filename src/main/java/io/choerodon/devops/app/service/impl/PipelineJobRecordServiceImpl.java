@@ -134,7 +134,7 @@ public class PipelineJobRecordServiceImpl implements PipelineJobRecordService {
                 || PipelineStatusEnum.SUCCESS.equals(status)) {
             pipelineJobRecordDTO.setFinishedDate(new Date());
         }
-
+        pipelineJobRecordDTO.setStatus(status.value());
         pipelineJobRecordMapper.updateByPrimaryKey(pipelineJobRecordDTO);
     }
 
