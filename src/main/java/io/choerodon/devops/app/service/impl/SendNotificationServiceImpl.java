@@ -1333,11 +1333,10 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         params.put(MessageCodeConstants.LINK,
                 String.format(MessageCodeConstants.BASE_URL,
                         frontUrl,
+                        pipelineId,
                         projectDTO.getId(),
                         projectDTO.getName(),
-                        projectDTO.getOrganizationId(),
-                        pipelineId.toString(),
-                        pipelineRecordId.toString()));
+                        projectDTO.getOrganizationId()));
 
         sendNotices(MessageCodeConstants.CD_PIPELINE_AUDIT, userList, params, projectDTO.getId());
     }
