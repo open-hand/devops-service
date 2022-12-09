@@ -24,4 +24,11 @@
         where dpr.pipeline_id = #{pipelineId}
         order by dpr.id desc
     </select>
+    <select id="queryByIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
+        select *
+        from devops_pipeline_record
+        where id = #{id}
+            for
+        update;
+    </select>
 </mapper>

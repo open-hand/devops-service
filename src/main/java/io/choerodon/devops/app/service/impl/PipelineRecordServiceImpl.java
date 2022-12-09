@@ -93,6 +93,11 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     }
 
     @Override
+    public PipelineRecordDTO queryByIdForUpdate(Long id) {
+        return pipelineRecordMapper.queryByIdForUpdate(id);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseUpdate(PipelineRecordDTO pipelineRecordDTO) {
         MapperUtil.resultJudgedUpdateByPrimaryKeySelective(pipelineRecordMapper,
@@ -109,9 +114,9 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, String status) {
-        PipelineRecordDTO pipelineRecordDTO = baseQueryById(id);
+        PipelineRecordDTO pipelineRecordDTO = queryByIdForUpdate(id);
+        LOGGER.info("Pipeline:{} current status is :{} ,newStatus is {}.", id, pipelineRecordDTO.getStatus(), status);
         if (!pipelineRecordDTO.getStatus().equals(status)) {
-            LOGGER.info("Pipeline:{} current status is :{} ,newStatus is {}.", id, pipelineRecordDTO.getStatus(), status);
             pipelineRecordDTO.setStatus(status);
             if (Boolean.TRUE.equals(PipelineStatusEnum.isFinalStatus(status))) {
                 pipelineRecordDTO.setFinishedDate(new Date());

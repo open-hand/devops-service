@@ -125,6 +125,7 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
         String newStatus = pipelineJobRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineJobRecordDTO::getStatus).get();
 
         PipelineStageRecordDTO pipelineStageRecordDTO = queryByIdForUpdate(stageRecordId);
+        Long pipelineRecordId = pipelineStageRecordDTO.getPipelineRecordId();
         if (PipelineStatusEnum.CANCELED.value().equals(pipelineStageRecordDTO.getStatus())) {
             LOGGER.info("Pipeline stage:{} status is canceled, skip update it.", stageRecordId);
             return;
@@ -134,9 +135,9 @@ public class PipelineStageRecordServiceImpl implements PipelineStageRecordServic
 //            updateStatus(stageRecordId, newStatus);
             pipelineStageRecordDTO.setStatus(newStatus);
             baseUpdate(pipelineStageRecordDTO);
-            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineStageRecordDTO.getPipelineRecordId());
+            List<PipelineStageRecordDTO> pipelineStageRecordDTOS = listByPipelineRecordId(pipelineRecordId);
             String newPipelineStatus = pipelineStageRecordDTOS.stream().max(Comparator.comparing(job -> PipelineStatusEnum.getPriorityByValue(job.getStatus()))).map(PipelineStageRecordDTO::getStatus).get();
-            pipelineRecordService.updateStatus(pipelineStageRecordDTO.getPipelineRecordId(), newPipelineStatus);
+            pipelineRecordService.updateStatus(pipelineRecordId, newPipelineStatus);
             if (PipelineStatusEnum.SUCCESS.value().equals(newStatus)
                     || PipelineStatusEnum.SKIPPED.value().equals(newStatus)) {
                 // 执行下一阶段任务
