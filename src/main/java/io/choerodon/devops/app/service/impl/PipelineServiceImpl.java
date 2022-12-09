@@ -275,6 +275,22 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineStageService.deleteByPipelineId(id);
         //删除版本
         pipelineVersionService.deleteByPipelineId(id);
+        // 删除定时设置
+        List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
+        List<PipelineScheduleDTO> pipelineScheduleDTOS = pipelineScheduleService.listByPipelineId(id);
+        if (!CollectionUtils.isEmpty(pipelineScheduleDTOS)) {
+            pipelineScheduleDTOS.forEach(pipelineScheduleDTO -> {
+                CommonScheduleVO commonScheduleVO = ConvertUtils.convertObject(pipelineScheduleDTO, CommonScheduleVO.class);
+                constructScheduleTaskDTO(projectId,
+                        id,
+                        scheduleTaskDTOList,
+                        commonScheduleVO,
+                        pipelineScheduleDTO,
+                        ScheduleTaskOperationTypeEnum.CREATE.value());
+            });
+        }
+        pipelineScheduleService.deleteByPipelineId(id);
+
         // 删除流水线
         baseDeleteById(id);
 
@@ -285,6 +301,19 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineStageRecordService.deleteByPipelineId(id);
         // 删除流水线记录
         pipelineRecordService.deleteByPipelineId(id);
+
+        if (!CollectionUtils.isEmpty(scheduleTaskDTOList)) {
+            transactionalProducer.apply(
+                    StartSagaBuilder.newBuilder()
+                            .withRefType("devops-pipeline")
+                            .withRefId(id.toString())
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK)
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(projectId)
+                            .withPayloadAndSerialize(scheduleTaskDTOList),
+                    builder -> {
+                    });
+        }
     }
 
     @Override
