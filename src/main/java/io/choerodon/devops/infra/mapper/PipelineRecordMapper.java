@@ -27,5 +27,7 @@ public interface PipelineRecordMapper extends BaseMapper<PipelineRecordDTO> {
                        @Param("startDate") Date startDate);
 
     PipelineRecordDTO queryByIdForUpdate(@Param("id") Long id);
+
+    List<PipelineRecordVO> listUserAuditRecordsByPipelineId(@Param("pipelineId") Long pipelineId, @Param("userId") Long userId);
 }
 

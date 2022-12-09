@@ -37,7 +37,7 @@ public interface PipelineRecordService {
 
     void startNextStage(Long nextStageRecordId);
 
-    Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable);
+    Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, Boolean auditFlag, PageRequest pageable);
 
     void cancel(Long projectId, Long id);
 
