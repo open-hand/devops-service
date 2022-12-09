@@ -164,9 +164,16 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     }
 
     @Override
-    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, PageRequest pageable) {
+    public Page<PipelineRecordVO> paging(Long projectId, Long pipelineId, Boolean auditFlag, PageRequest pageable) {
 
-        Page<PipelineRecordVO> pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        Page<PipelineRecordVO> pipelineRecordVOPage;
+        if (Boolean.TRUE.equals(auditFlag)) {
+            Long userId = DetailsHelper.getUserDetails().getUserId();
+            pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listUserAuditRecordsByPipelineId(pipelineId, userId));
+        } else {
+            pipelineRecordVOPage = PageHelper.doPage(pageable, () -> pipelineRecordMapper.listByPipelineId(pipelineId));
+        }
+
         if (pipelineRecordVOPage.isEmpty()) {
             return new Page<>();
         }
