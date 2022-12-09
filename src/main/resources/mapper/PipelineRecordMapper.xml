@@ -39,6 +39,7 @@
         where dpr.pipeline_id = #{pipelineId}
           and dpaur.user_id = #{userId}
           and dpaur.status = 'not_audit'
+          and dpr.status = 'not_audit'
         group by dpr.id
         order by dpr.id desc
     </select>
