@@ -46,7 +46,8 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
         pipelineScheduleDTO.setToken(GenerateUUID.generateUUID());
 
         // 保存记录
-        return MapperUtil.resultJudgedInsertSelective(pipelineScheduleMapper, pipelineScheduleDTO, DEVOPS_SAVE_SCHEDULE_FAILED);
+        MapperUtil.resultJudgedInsertSelective(pipelineScheduleMapper, pipelineScheduleDTO, DEVOPS_SAVE_SCHEDULE_FAILED);
+        return pipelineScheduleMapper.selectByPrimaryKey(pipelineScheduleDTO.getId());
 
     }
 
