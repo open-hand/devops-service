@@ -3,6 +3,8 @@ package io.choerodon.devops.api.vo.cd;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+
 /**
  * @author
  * @since 2022-11-24 16:55:35
@@ -41,6 +43,17 @@ public class PipelineChartDeployCfgVO {
 
     @ApiModelProperty(value = "环境名称")
     private String envName;
+
+
+    private AppServiceDTO appServiceDTO;
+
+    public AppServiceDTO getAppServiceDTO() {
+        return appServiceDTO;
+    }
+
+    public void setAppServiceDTO(AppServiceDTO appServiceDTO) {
+        this.appServiceDTO = appServiceDTO;
+    }
 
     public String getEnvName() {
         return envName;
