@@ -78,7 +78,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         // 查询组织层helm仓库
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Long organizationId = projectDTO.getOrganizationId();
-        String code = projectDTO.getCode();
+        String code = projectDTO.getDevopsComponentCode();
         DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
         helmConfigSearchDTOOnOrganization.setResourceId(organizationId);
         helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
