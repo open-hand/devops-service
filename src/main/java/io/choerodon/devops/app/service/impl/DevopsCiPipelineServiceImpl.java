@@ -1741,7 +1741,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
                         DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), devopsCiStageVO.getId(), devopsCiJobVO);
 
-                        batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
+                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
             } else {
@@ -1761,7 +1761,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
                         DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
-                        batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
+                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
                     });
                 }
             }
