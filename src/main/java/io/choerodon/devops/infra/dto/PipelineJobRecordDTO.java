@@ -46,6 +46,10 @@ public class PipelineJobRecordDTO extends AuditDomain {
     @NotNull
     private Long pipelineId;
 
+    @ApiModelProperty(value = "所属项目Id", required = true)
+    @NotNull
+    private Long projectId;
+
     @ApiModelProperty(value = "所属任务Id,devops_pipeline_job.id", required = true)
     @NotNull
     private Long jobId;
@@ -75,7 +79,8 @@ public class PipelineJobRecordDTO extends AuditDomain {
     public PipelineJobRecordDTO() {
     }
 
-    public PipelineJobRecordDTO(Long pipelineId, Long jobId, String name, Long pipelineRecordId, Long stageRecordId, String status, String type) {
+    public PipelineJobRecordDTO(Long projectId, Long pipelineId, Long jobId, String name, Long pipelineRecordId, Long stageRecordId, String status, String type) {
+        this.projectId = projectId;
         this.pipelineId = pipelineId;
         this.name = name;
         this.jobId = jobId;
@@ -83,6 +88,14 @@ public class PipelineJobRecordDTO extends AuditDomain {
         this.stageRecordId = stageRecordId;
         this.status = status;
         this.type = type;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getName() {

@@ -9,6 +9,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_job_record.groovy') {
             column(name: 'name', type: 'VARCHAR(64)', remarks: '名称') {
                 constraints(nullable: false)
             }
+            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目id') {
+                constraints(nullable: false)
+            }
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '所属流水线Id,devops_pipeline.id') {
                 constraints(nullable: false)
             }
