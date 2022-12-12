@@ -221,7 +221,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
             // 更新阶段状态
-            pipelineStageRecordService.updateStatus(stageRecordId);
+//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 2. 校验用户权限
@@ -229,7 +229,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
             // 更新阶段状态
-            pipelineStageRecordService.updateStatus(stageRecordId);
+//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 获取部署版本信息
@@ -242,7 +242,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
+//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
@@ -258,7 +258,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
+//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         } else {
@@ -268,7 +268,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
+//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         }
@@ -305,7 +305,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 // 更新阶段状态
-                pipelineStageRecordService.updateStatus(stageRecordId);
+//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             // 存在则更新
@@ -342,7 +342,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                         pipelineJobRecordService.update(pipelineJobRecordDTO);
                         // 更新阶段状态
-                        pipelineStageRecordService.updateStatus(stageRecordId);
+//                        pipelineStageRecordService.updateStatus(stageRecordId);
                         return;
                     }
                 }
@@ -366,7 +366,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
         pipelineJobRecordService.update(pipelineJobRecordDTO);
         // 更新阶段状态
-        pipelineStageRecordService.updateStatus(stageRecordId);
+//        pipelineStageRecordService.updateStatus(stageRecordId);
 
     }
 
