@@ -11,6 +11,9 @@ public class PipelineJobFinishVO {
     private Long stageRecordId;
     private Long jobRecordId;
 
+    public PipelineJobFinishVO() {
+    }
+
     public PipelineJobFinishVO(Long stageRecordId, Long jobRecordId) {
         this.stageRecordId = stageRecordId;
         this.jobRecordId = jobRecordId;
