@@ -81,6 +81,13 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
         if (devopsCiJobVO.getStartIn() != null && (devopsCiJobVO.getStartIn() < 1 || devopsCiJobVO.getStartIn() > MAX_DELAY_MINUTE)) {
             throw new CommonException(ExceptionConstants.CiJobCode.DEVOPS_CI_JOB_DELAY_TIME_INVALID);
         }
+        DevopsCiApiTestInfoVO devopsCiApiTestInfoVO = devopsCiJobVO.getDevopsCiApiTestInfoVO();
+        if (devopsCiApiTestInfoVO == null ){
+            throw new CommonException(ExceptionConstants.CiApiTestCode.DEVOPS_CI_API_TEST_INFO_NULL);
+        }
+        if (devopsCiApiTestInfoVO.getApiTestTaskId() == null&&devopsCiApiTestInfoVO.getApiTestSuiteId() == null) {
+            throw new CommonException(ExceptionConstants.CiApiTestCode.DEVOPS_CI_API_TEST_INFO_BOTH_TAK_ID_SUITE_ID_NULL);
+        }
     }
 
     @Override
