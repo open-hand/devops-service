@@ -106,7 +106,7 @@ public class DevopsCiPipelineAdditionalValidator {
         if (CiJobTypeEnum.NORMAL.value().equals(job.getType())) {
             List<DevopsCiStepVO> devopsCiStepVOList = job.getDevopsCiStepVOList();
             if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
-                throw new CommonException("devops.job.step.is.empty");
+                throw new CommonException("devops.job.step.is.empty", job.getName());
             }
         }
     }
