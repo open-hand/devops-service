@@ -100,8 +100,8 @@ public class ExceptionConstants {
         public static final String DEVOPS_SONAR_PROJECTS_SEARCH = "error.devops.sonar.projects.search";
         public static final String DEVOPS_SONAR_PROJECTS_CREATE = "error.devops.sonar.projects.create";
         public static final String Devops_SONAR_QUALITY_GATE_DETAILS_GET = "error.devops.sonar.quality.gate.details.get";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET= "error.devops.sonar.quality.gate.show.get";
-        public static final String DEVOPS_SONAR_QUALITY_GATE_BIND= "error.devops.sonar.quality.gate.bind";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_SHOW_GET = "error.devops.sonar.quality.gate.show.get";
+        public static final String DEVOPS_SONAR_QUALITY_GATE_BIND = "error.devops.sonar.quality.gate.bind";
 
     }
 
@@ -120,6 +120,9 @@ public class ExceptionConstants {
     public static class CiApiTestCode {
         public static final String DEVOPS_CI_API_TEST_INFO_SAVE = "error.devops.ci.api.info.save";
         public static final String DEVOPS_CI_API_TEST_INFO_TYPE_UNKNOWN = "error.devops.ci.api.info.type.unknown";
+        public static final String DEVOPS_CI_API_TEST_INFO_NULL = "error.devops.ci.api.info.null";
+        public static final String DEVOPS_CI_API_TEST_INFO_BOTH_TAK_ID_SUITE_ID_NULL = "error.devops.ci.api.info.both.task.id.suite.id.null";
+
     }
 
     public static class EnvCommandCode {
