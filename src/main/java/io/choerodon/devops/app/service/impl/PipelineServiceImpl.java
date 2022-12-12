@@ -461,6 +461,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException(DEVOPS_PIPELINE_STATUS_IS_DISABLE);
         }
         Long effectVersionId = pipelineDTO.getEffectVersionId();
+        Long projectId = pipelineDTO.getProjectId();
 
         // 初始化流水线记录
         PipelineRecordDTO pipelineRecordDTO = new PipelineRecordDTO();
@@ -502,7 +503,8 @@ public class PipelineServiceImpl implements PipelineService {
             List<PipelineJobDTO> pipelineJobDTOS = pipelineJobService.listByStageId(stageId);
             for (PipelineJobDTO job : pipelineJobDTOS) {
                 Long jobId = job.getId();
-                PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(id,
+                PipelineJobRecordDTO pipelineJobRecordDTO = new PipelineJobRecordDTO(projectId,
+                        id,
                         jobId,
                         job.getName(),
                         pipelineRecordId,
