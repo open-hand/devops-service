@@ -393,7 +393,7 @@ public class PipelineServiceImpl implements PipelineService {
                     scheduleTaskDTO.setProjectId(projectId);
                     scheduleTaskDTO.setName("DevopsPipelineTrigger-" + id + "-" + pipelineScheduleDTO.getName());
                     scheduleTaskDTO.setOperationType(ScheduleTaskOperationTypeEnum.DELETE.value());
-
+                    pipelineScheduleService.deleteById(pipelineScheduleDTO.getId());
                     scheduleTaskDTOList.add(scheduleTaskDTO);
                 }
             });

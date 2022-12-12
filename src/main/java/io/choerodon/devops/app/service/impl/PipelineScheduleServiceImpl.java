@@ -95,5 +95,11 @@ public class PipelineScheduleServiceImpl implements PipelineScheduleService {
         pipelineScheduleMapper.delete(pipelineScheduleDTO);
 
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteById(Long id) {
+        pipelineScheduleMapper.deleteByPrimaryKey(id);
+    }
 }
 
