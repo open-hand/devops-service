@@ -24,5 +24,7 @@ public interface PipelineScheduleService {
     void baseUpdate(PipelineScheduleDTO oldPipelineScheduleDTO);
 
     void deleteByPipelineId(Long pipelineId);
+
+    void deleteById(Long id);
 }
 
