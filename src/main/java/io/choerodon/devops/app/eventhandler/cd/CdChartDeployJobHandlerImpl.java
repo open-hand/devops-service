@@ -180,7 +180,11 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
     @Override
     public void fillJobConfigInfo(PipelineJobVO pipelineJobVO) {
-        pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgService.queryVoByConfigId(pipelineJobVO.getConfigId()));
+        PipelineChartDeployCfgVO pipelineChartDeployCfgVO = pipelineChartDeployCfgService.queryVoByConfigId(pipelineJobVO.getConfigId());
+        if (pipelineChartDeployCfgVO.getAppServiceId() != null) {
+            pipelineChartDeployCfgVO.setAppServiceDTO(appServiceService.baseQuery(pipelineChartDeployCfgVO.getAppServiceId()));
+        }
+        pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgVO);
     }
 
     @Override
