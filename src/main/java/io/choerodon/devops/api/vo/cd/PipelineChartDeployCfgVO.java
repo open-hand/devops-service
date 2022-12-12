@@ -3,7 +3,7 @@ package io.choerodon.devops.api.vo.cd;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.api.vo.AppServiceRepVO;
 
 /**
  * @author
@@ -45,13 +45,13 @@ public class PipelineChartDeployCfgVO {
     private String envName;
 
 
-    private AppServiceDTO appServiceDTO;
+    private AppServiceRepVO appServiceDTO;
 
-    public AppServiceDTO getAppServiceDTO() {
+    public AppServiceRepVO getAppServiceDTO() {
         return appServiceDTO;
     }
 
-    public void setAppServiceDTO(AppServiceDTO appServiceDTO) {
+    public void setAppServiceDTO(AppServiceRepVO appServiceDTO) {
         this.appServiceDTO = appServiceDTO;
     }
 
