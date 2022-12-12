@@ -604,7 +604,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                         DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
                         // 保存任务中的步骤信息
-                        batchSaveStep(projectId, devopsCiJobDTO.getId(), devopsCiJobVO.getDevopsCiStepVOList());
+                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
 
                     });
                 }
@@ -616,19 +616,19 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
      * 保存步骤的配置信息
      *
      * @param projectId
-     * @param jobId
+     * @param devopsCiJobDTO
      * @param devopsCiStepVOList
      */
-    private void batchSaveStep(Long projectId, Long jobId, List<DevopsCiStepVO> devopsCiStepVOList) {
+    private void batchSaveStep(Long projectId, DevopsCiJobDTO devopsCiJobDTO, List<DevopsCiStepVO> devopsCiStepVOList) {
         if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
             return;
         }
         devopsCiStepVOList.forEach(devopsCiStepVO -> {
             AbstractDevopsCiStepHandler devopsCiStepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
             if (Boolean.FALSE.equals(devopsCiStepHandler.isComplete(devopsCiStepVO))) {
-                throw new CommonException(DEVOPS_STEP_NOT_COMPLETE, devopsCiStepVO.getName());
+                throw new CommonException(DEVOPS_STEP_NOT_COMPLETE, devopsCiJobDTO.getName(), devopsCiStepVO.getName());
             }
-            devopsCiStepHandler.save(projectId, jobId, devopsCiStepVO);
+            devopsCiStepHandler.save(projectId, devopsCiJobDTO.getId(), devopsCiStepVO);
         });
     }
 
