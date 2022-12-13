@@ -34,6 +34,9 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     @ApiModelProperty("界面展示id")
     private String viewId;
 
+
+    @ApiModelProperty("gitlab 记录地址")
+    private String gitlabPipelineUrl;
     @ApiModelProperty("ci阶段记录的集合")
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("关联流水线信息")
@@ -56,6 +59,14 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
 
+
+    public String getGitlabPipelineUrl() {
+        return gitlabPipelineUrl;
+    }
+
+    public void setGitlabPipelineUrl(String gitlabPipelineUrl) {
+        this.gitlabPipelineUrl = gitlabPipelineUrl;
+    }
 
     public String getSource() {
         return source;

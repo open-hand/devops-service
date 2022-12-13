@@ -299,11 +299,13 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             DevopsCiJobDTO devopsCiJobDTO = CiCdPipelineUtils.judgeAndGetJob(job.getName(), jobMap);
             if (devopsCiJobDTO == null) {
                 LOGGER.debug("Job Mismatch {} Skip the pipeline webhook...", job.getName());
+                saveOrUpdateRecord(pipelineWebHookVO, appServiceDTO, devopsCiPipelineDTO);
                 return;
             }
             DevopsCiStageDTO devopsCiStageDTO = stageMap.get(devopsCiJobDTO.getCiStageId());
             if (devopsCiStageDTO == null || !devopsCiStageDTO.getName().equals(job.getStage())) {
                 LOGGER.debug("the stage name of the job {} mismatch...", job.getStage());
+                saveOrUpdateRecord(pipelineWebHookVO, appServiceDTO, devopsCiPipelineDTO);
                 return;
             } else {
                 job.setType(devopsCiJobDTO.getType());
@@ -312,7 +314,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 if (handler != null) {
                     handler.fillJobAdditionalInfo(devopsCiJobDTO, job);
                 }
-
             }
 //            if (devopsCiJobDTO != null) {
 //                job.setType(devopsCiJobDTO.getType());
@@ -335,6 +336,48 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     });
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    private void saveOrUpdateRecord(PipelineWebHookVO pipelineWebHookVO, AppServiceDTO appServiceDTO, CiCdPipelineDTO devopsCiPipelineDTO) {
+        DevopsCiPipelineRecordDTO recordDTO = new DevopsCiPipelineRecordDTO();
+        recordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+        recordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
+        DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordMapper.selectOne(recordDTO);
+        Long iamUserId;
+        if (appServiceDTO.getExternalConfigId() == null) {
+            iamUserId = userAttrService.getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
+        } else {
+            // 外置仓库默认使用admin账户执行
+            iamUserId = IamAdminIdHolder.getAdminId();
+        }
+        //pipeline不存在则创建,存在则更新状态和阶段信息
+        if (devopsCiPipelineRecordDTO == null) {
+            LOGGER.debug("Start to create pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
+            devopsCiPipelineRecordDTO = new DevopsCiPipelineRecordDTO();
+            devopsCiPipelineRecordDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
+            devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+            devopsCiPipelineRecordDTO.setTriggerUserId(iamUserId);
+            devopsCiPipelineRecordDTO.setCommitSha(pipelineWebHookVO.getObjectAttributes().getSha());
+            devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
+            devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
+            devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
+            devopsCiPipelineRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
+            devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
+            devopsCiPipelineRecordDTO.setGitlabTriggerRef(pipelineWebHookVO.getObjectAttributes().getRef());
+            devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
+        } else {
+            LOGGER.debug("Start to update pipeline with gitlab pipeline id {}...", pipelineWebHookVO.getObjectAttributes().getId());
+            devopsCiPipelineRecordDTO.setGitlabPipelineId(pipelineWebHookVO.getObjectAttributes().getId());
+            devopsCiPipelineRecordDTO.setTriggerUserId(iamUserId);
+            devopsCiPipelineRecordDTO.setCommitSha(pipelineWebHookVO.getObjectAttributes().getSha());
+            devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
+            devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
+            devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
+            devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
+            devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
         }
     }
 
@@ -671,6 +714,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         DevopsCiJobRecordDTO recordDTO = new DevopsCiJobRecordDTO();
         recordDTO.setCiPipelineRecordId(pipelineRecordDTOId);
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
+
+        if (CollectionUtils.isEmpty(devopsCiJobRecordDTOS)) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+            GitlabPipelineDTO pipelineDTO = gitlabServiceClientOperator.queryPipeline(TypeUtil.objToInteger(appServiceDTO.getGitlabProjectId()),
+                    TypeUtil.objToInteger(gitlabPipelineId),
+                    null,
+                    appServiceDTO.getAppExternalConfigDTO());
+            devopsCiPipelineRecordVO.setGitlabPipelineUrl(pipelineDTO.getWebUrl());
+        }
 
         Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
 
