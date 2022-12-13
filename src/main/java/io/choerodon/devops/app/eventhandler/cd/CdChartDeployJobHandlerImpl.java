@@ -193,7 +193,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public void execCommand(Long jobRecordId, StringBuilder log) {
-        log.append("Start pipeline auto deploy task.").append(System.lineSeparator());
+        log.append("#####开始执行Chart包自动部署任务#####").append(System.lineSeparator());
         PipelineJobRecordDTO pipelineJobRecordDTO = pipelineJobRecordService.baseQueryById(jobRecordId);
         Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
         PipelineStageRecordDTO pipelineStageRecordDTO = pipelineStageRecordService.baseQueryById(stageRecordId);

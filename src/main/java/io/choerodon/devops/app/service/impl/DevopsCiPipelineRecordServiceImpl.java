@@ -779,7 +779,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         devopsCiPipelineRecordVO.setStageRecordVOS(devopsCiStageRecordVOS);
-        devopsCiPipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
+        if (!CollectionUtils.isEmpty(pipelineAuditInfo)) {
+            devopsCiPipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo.stream().sorted(Comparator.comparing(DevopsCiPipelineAuditVO::getJobRecordId)).collect(Collectors.toList()));
+        }
         devopsCiPipelineRecordVO.setViewId(CiCdPipelineUtils.handleId(devopsCiPipelineRecordVO.getId()));
         return devopsCiPipelineRecordVO;
     }
@@ -1433,7 +1435,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 }
             }
         });
-        recordVO.setPipelineAuditInfo(pipelineAuditInfo);
+        if (!CollectionUtils.isEmpty(pipelineAuditInfo)) {
+            recordVO.setPipelineAuditInfo(pipelineAuditInfo.stream().sorted(Comparator.comparing(DevopsCiPipelineAuditVO::getJobRecordId)).collect(Collectors.toList()));
+        }
         // stage排序
         devopsCiStageRecordVOS = devopsCiStageRecordVOS.stream().sorted(Comparator.comparing(DevopsCiStageRecordVO::getSequence)).filter(v -> v.getStatus() != null).collect(Collectors.toList());
         recordVO.setStageRecordVOS(devopsCiStageRecordVOS);
