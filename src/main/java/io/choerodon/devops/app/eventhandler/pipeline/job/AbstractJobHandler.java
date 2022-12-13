@@ -2,6 +2,7 @@ package io.choerodon.devops.app.eventhandler.pipeline.job;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.StageType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,6 @@ public abstract class AbstractJobHandler {
     }
 
     protected Boolean isConfigComplete(DevopsCiJobVO devopsCiJobVO) {
-        return devopsCiJobVO.getType().equals(StageType.CD) ? Boolean.FALSE : Boolean.TRUE;
+        return CiCommandTypeEnum.fromTypeName(devopsCiJobVO.getType()) == null ? Boolean.TRUE : Boolean.FALSE;
     }
 }

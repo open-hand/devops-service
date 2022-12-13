@@ -36,4 +36,15 @@ public enum CiCommandTypeEnum {
         return value;
     }
 
+    public static CiCommandTypeEnum fromTypeName(String typeName) {
+        for (CiCommandTypeEnum type : CiCommandTypeEnum.values()) {
+            if (type.value.equals(typeName)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+
+
 }
