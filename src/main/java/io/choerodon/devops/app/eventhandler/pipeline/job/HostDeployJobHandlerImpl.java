@@ -1,6 +1,6 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.DEVOPS_HOST_DEPLOY_INFO_CREATE;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
 import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
@@ -59,6 +59,20 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = devopsCiJobVO.getDevopsCiHostDeployInfoVO();
+        if (devopsCiHostDeployInfoVO == null) {
+            throw new CommonException(DEVOPS_HOST_DEPLOY_INFO_NULL, devopsCiJobVO.getName());
+        }
+
+        // 应用名称、应用编码不能为空
+        if (ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getAppName()) || ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getAppCode())) {
+            throw new CommonException(DEVOPS_HOST_DEPLOY_INFO_APP_NAME_OR_CODE_IS_NULL, devopsCiJobVO.getName());
+        }
+
+        // 主机id不能为空
+        if (devopsCiHostDeployInfoVO.getHostId() == null) {
+            throw new CommonException(DEVOPS_HOST_ID_IS_NULL);
+        }
+
         if (DeployTypeEnum.CREATE.value().equals(devopsCiHostDeployInfoVO.getDeployType())) {
             // 校验应用编码和应用名称
             devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCiHostDeployInfoVO.getAppName(), devopsCiHostDeployInfoVO.getAppCode());
@@ -68,6 +82,11 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
                 DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoVO.getAppId());
                 devopsCiHostDeployInfoVO.setHostId(devopsHostAppDTO.getHostId());
             }
+        }
+
+        // 除了其它制品类型，都要关联一个构建任务
+        if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.OTHER.value()) && ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getPipelineTask())) {
+            throw new CommonException(DEVOPS_HOST_DEPLOY_INFO_PIPELINE_TASK_NULL, devopsCiJobVO.getName());
         }
     }
 
@@ -99,10 +118,6 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         // 使用能够解密主键加密的json工具解密
         DevopsCiHostDeployInfoVO ciHostDeployInfoVO = devopsCiJobVO.getDevopsCiHostDeployInfoVO();
-        // 创建主机应用，必须输入主机id
-        if (DeployTypeEnum.CREATE.value().equals(ciHostDeployInfoVO.getDeployType()) && ciHostDeployInfoVO.getHostId() == null) {
-            throw new CommonException(DEVOPS_HOST_ID_IS_NULL);
-        }
         // 使用不进行主键加密的json工具再将json写入类, 用于在数据库存非加密数据
         DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO = ConvertUtils.convertObject(ciHostDeployInfoVO, DevopsCiHostDeployInfoDTO.class);
         if (!StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
