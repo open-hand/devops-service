@@ -727,7 +727,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordVO.setGitlabPipelineUrl(pipelineDTO.getWebUrl());
         }
 
-        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream().collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
+        Map<String, List<DevopsCiJobRecordDTO>> jobRecordMap = devopsCiJobRecordDTOS.stream()
+                .sorted(Comparator.comparing(DevopsCiJobRecordDTO::getId))
+                .collect(Collectors.groupingBy(DevopsCiJobRecordDTO::getStage));
 
         List<DevopsCiStageRecordVO> devopsCiStageRecordVOS = new ArrayList<>();
         List<DevopsCiPipelineAuditVO> pipelineAuditInfo = new ArrayList<>();
