@@ -772,8 +772,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
             });
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
-            // 按照gitlab job id正序排序
-            latestedsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getGitlabJobId));
+            // 按照 id正序排序
+            latestedsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getId));
             devopsCiStageRecordVO.setJobRecordVOList(latestedsCiJobRecordVOS);
 
             devopsCiStageRecordVOS.add(devopsCiStageRecordVO);
