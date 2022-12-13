@@ -371,6 +371,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsCiPipelineRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
+            devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
             devopsCiPipelineRecordDTO.setGitlabTriggerRef(pipelineWebHookVO.getObjectAttributes().getRef());
             devopsCiPipelineRecordMapper.insertSelective(devopsCiPipelineRecordDTO);
             // 保存job执行记录
@@ -396,6 +397,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
+            devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
             devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
             // 更新job状态
             // 保存job执行记录

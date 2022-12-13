@@ -49,6 +49,8 @@ public class CiPipelineRecordVO extends AuditDomain {
     private Long pipelineId;
     @ApiModelProperty("cicd 执行记录创建时间")
     private Date createdDate;
+    @ApiModelProperty("gitlab source")
+    private String source;
     @ApiModelProperty("创建者信息")
     private IamUserDTO iamUserDTO;
     @ApiModelProperty("流水线提交信息")
@@ -59,6 +61,14 @@ public class CiPipelineRecordVO extends AuditDomain {
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public Date getCreatedDate() {
         return createdDate;
