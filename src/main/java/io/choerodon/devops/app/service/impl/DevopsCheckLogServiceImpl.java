@@ -341,6 +341,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             }
                         }
                         pipelineService.create(ciCdPipelineDTO.getProjectId(), pipelineVO);
+
+                        // 纯cd流水线需要删除之前的记录
+                        devopsCiCdPipelineMapper.deleteByPrimaryKey(ciCdPipelineDTO.getId());
                     }
                 }
             });
