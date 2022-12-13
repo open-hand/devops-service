@@ -214,7 +214,9 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
                     }
                 });
             }
-            pipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo);
+            if (!CollectionUtils.isEmpty(pipelineAuditInfo)) {
+                pipelineRecordVO.setPipelineAuditInfo(pipelineAuditInfo.stream().sorted(Comparator.comparing(DevopsPipelineAuditVO::getJobRecordId)).collect(Collectors.toList()));
+            }
         }
     }
 
