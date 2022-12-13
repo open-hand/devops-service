@@ -715,12 +715,15 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         recordDTO.setCiPipelineRecordId(pipelineRecordDTOId);
         List<DevopsCiJobRecordDTO> devopsCiJobRecordDTOS = devopsCiJobRecordMapper.select(recordDTO);
 
-        if (CollectionUtils.isEmpty(devopsCiJobRecordDTOS)) {
+        if (CollectionUtils.isEmpty(devopsCiJobRecordDTOS)
+                && !PipelineStatus.SKIPPED.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+
             AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
             GitlabPipelineDTO pipelineDTO = gitlabServiceClientOperator.queryPipeline(TypeUtil.objToInteger(appServiceDTO.getGitlabProjectId()),
                     TypeUtil.objToInteger(gitlabPipelineId),
                     null,
                     appServiceDTO.getAppExternalConfigDTO());
+            devopsCiPipelineRecordVO.setUnrelatedFlag(true);
             devopsCiPipelineRecordVO.setGitlabPipelineUrl(pipelineDTO.getWebUrl());
         }
 
@@ -1157,6 +1160,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         pipelineRecordDTO.setStatus(pipeline.getStatus());
         pipelineRecordDTO.setTriggerUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineRecordDTO.setGitlabTriggerRef(pipeline.getRef());
+        pipelineRecordDTO.setSource("api");
         pipelineRecordDTO.setCommitSha(pipeline.getSha());
         devopsCiPipelineRecordMapper.insertSelective(pipelineRecordDTO);
         return devopsCiPipelineRecordMapper.selectByPrimaryKey(pipelineRecordDTO.getId());
