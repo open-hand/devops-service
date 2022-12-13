@@ -111,7 +111,10 @@ public class ExceptionConstants {
 
     public static class CiHostDeployCode {
         public static final String DEVOPS_HOST_DEPLOY_INFO_CREATE = "error.devops.ci.host.deploy.info.save";
-        public static final String DEVOPS_SAVE_CD_HOST_DEPLOY_INFO_FAILED = "devops.save.cd.host.deploy.info.failed";
+        public static final String DEVOPS_HOST_DEPLOY_INFO_NULL = "error.devops.ci.host.deploy.info.null";
+        public static final String DEVOPS_HOST_DEPLOY_INFO_APP_NAME_OR_CODE_IS_NULL = "error.devops.ci.host.deploy.info.app.name.or.code.is.null";
+        public static final String DEVOPS_HOST_DEPLOY_INFO_HOST_NULL = "error.devops.ci.host.deploy.info.host.is.null";
+        public static final String DEVOPS_HOST_DEPLOY_INFO_PIPELINE_TASK_NULL = "error.devops.ci.host.deploy.info.pipeline.task.null";
         public static final String DEVOPS_UPDATE_PIPELINE_DOCKER_DEPLOY_INFO = "devops.update.pipeline.docker.deploy.info";
         public static final String DEVOPS_UPDATE_PIPELINE_JAR_DEPLOY_INFO = "devops.update.pipeline.jar.deploy.info";
         public static final String DEVOPS_UPDATE_PIPELINE_CUSTOM_DEPLOY_INFO = "devops.update.pipeline.custom.deploy.info";
