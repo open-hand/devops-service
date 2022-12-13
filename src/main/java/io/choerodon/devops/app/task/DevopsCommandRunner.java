@@ -38,6 +38,8 @@ import io.choerodon.devops.infra.util.RetrofitCallExceptionParse;
 @Component
 public class DevopsCommandRunner implements CommandLineRunner {
     public static final String SONAR = "sonar";
+
+    public static final String C7N_ANALYSES_USER = "c7n-analyses-user";
     @Autowired
     private DevopsConfigService devopsConfigService;
     @Autowired
@@ -102,6 +104,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
     private void createSonarToken() {
         DevopsConfigDTO oldConfigDTO = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
+
+        // 扫描用户如果不存在则新建
+//        queryOrCreateUser(sonarClient);
+
+
         Map<String, String> map = new HashMap<>();
         map.put("name", "ci-token");
         map.put("login", userName);
@@ -130,4 +137,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
             devopsConfigService.baseUpdate(oldConfigDTO);
         }
     }
+
+//    private void queryOrCreateUser(SonarClient sonarClient) {
+//        Map<String, String> map = new HashMap<>();
+//        map.put("q", C7N_ANALYSES_USER);
+//        Call<ResponseBody> responseBodyCall = sonarClient.getUser(map);
+//        userToken = RetrofitCallExceptionParse.executeCall(responseBodyCall, "devops.query.user", UserToken.class);
+//    }
 }

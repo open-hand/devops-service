@@ -100,4 +100,7 @@ public interface SonarClient {
     @POST("/api/qualitygates/select")
     Call<ResponseBody> bindQualityGate(@FieldMap Map<String, String> data);
 
+    @GET("api/users/search")
+    Call<ResponseBody> getUser(@QueryMap Map<String, String> data);
+
 }

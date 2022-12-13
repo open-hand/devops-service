@@ -149,4 +149,9 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> bindQualityGate(Map<String, String> data) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> getUser(Map<String, String> data) {
+        return null;
+    }
 }

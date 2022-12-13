@@ -49,6 +49,11 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     private CiTemplateAuditService ciTemplateAuditService;
 
     @Override
+    protected Boolean isConfigComplete(DevopsCiJobVO devopsCiJobVO) {
+        return true;
+    }
+
+    @Override
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
         CiAuditConfigVO ciAuditConfig = devopsCiJobVO.getCiAuditConfig();
         if (ciAuditConfig == null) {
