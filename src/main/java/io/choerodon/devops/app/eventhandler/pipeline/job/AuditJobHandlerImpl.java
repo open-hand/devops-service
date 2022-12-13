@@ -52,10 +52,10 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     protected void checkConfigInfo(Long projectId, DevopsCiJobVO devopsCiJobVO) {
         CiAuditConfigVO ciAuditConfig = devopsCiJobVO.getCiAuditConfig();
         if (ciAuditConfig == null) {
-            throw new CommonException(DEVOPS_AUDIT_CONFIG_EMPTY);
+            throw new CommonException(DEVOPS_AUDIT_CONFIG_EMPTY, devopsCiJobVO.getName());
         }
         if (CollectionUtils.isEmpty(ciAuditConfig.getCdAuditUserIds())) {
-            throw new CommonException(DEVOPS_AUDIT_USER_EMPTY);
+            throw new CommonException(DEVOPS_AUDIT_USER_EMPTY, devopsCiJobVO.getName());
         }
     }
 
