@@ -212,16 +212,14 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
                 throw new CommonException("devops.sonar.config.type.not.supported", devopsCiSonarConfigDTO.getConfigType());
             }
         } else if (SonarScannerType.SONAR_MAVEN.value().equals(devopsCiSonarConfigDTO.getScannerType())) {
-            DevopsCiMavenBuildConfigDTO devopsCiMavenBuildConfigDTO = devopsCiMavenBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
-            boolean hasSettingConfig = devopsCiMavenBuildConfigDTO != null;
-            if (hasSettingConfig) {
+            if (devopsCiMavenBuildConfigVO != null) {
                 scripts.add(0, GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
             }
             if (CiSonarConfigType.DEFAULT.value().equals(devopsCiSonarConfigDTO.getConfigType())) {
                 // 查询默认的sonarqube配置
                 DevopsConfigDTO sonarConfig = devopsConfigService.baseQueryByName(null, DEFAULT_SONAR_NAME);
                 CommonExAssertUtil.assertTrue(sonarConfig != null, "devops.default.sonar.not.exist");
-                if (hasSettingConfig) {
+                if (devopsCiMavenBuildConfigVO != null) {
                     scripts.add(String.format(MVN_COMPILE_USE_SETTINGS_FUNCTION, devopsCiSonarConfigDTO.getSkipTests()));
                     scripts.add(String.format("mvn sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -s settings.xml -Dsonar.qualitygate.wait=%s", blockAfterQualityGateFail));
                 } else {

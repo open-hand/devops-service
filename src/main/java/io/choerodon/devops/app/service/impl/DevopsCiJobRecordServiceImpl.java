@@ -147,6 +147,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void create(Long ciPipelineRecordId,
                        Long gitlabProjectId,
                        List<JobDTO> jobDTOS,
@@ -162,6 +163,7 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void create(Long ciPipelineRecordId,
                        Long gitlabProjectId,
                        JobDTO jobDTO,
@@ -174,6 +176,8 @@ public class DevopsCiJobRecordServiceImpl implements DevopsCiJobRecordService {
         create(devopsCiPipelineRecordDTO.getCiPipelineId(), ciPipelineRecordId, gitlabProjectId, jobDTO, iamUserId, appServiceId, jobMap);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void create(Long ciPipelineId,
                        Long ciPipelineRecordId,
                        Long gitlabProjectId,
