@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -53,7 +54,6 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     private DevopsCiStepOperator devopsCiStepOperator;
     @Autowired
     private JobOperator jobOperator;
-
 
     @Override
     public PipelineTemplateCompositeVO listTemplateWithLanguage(Long projectId) {
@@ -135,6 +135,10 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                             devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
                             devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO == null ? null : ciTemplateJobGroupDTO.getType());
                             devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+
+                            //填充job状态
+                            AbstractJobHandler jobHandler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
+                            devopsCiJobVO.setCompleted(jobHandler.isComplete(devopsCiJobVO));
 
                             // 组装步骤信息
                             List<CiTemplateStepVO> ciTemplateStepVOS = finalJobStepMap.get(stageTemplateJobVO.getId());

@@ -158,6 +158,6 @@ public abstract class AbstractJobHandler {
     }
 
     protected Boolean isConfigComplete(DevopsCiJobVO devopsCiJobVO) {
-        return true;
+        return false;
     }
 }
