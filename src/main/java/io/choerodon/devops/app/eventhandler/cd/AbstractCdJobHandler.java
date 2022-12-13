@@ -1,13 +1,9 @@
 package io.choerodon.devops.app.eventhandler.cd;
 
-import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobRecordVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.app.service.*;
@@ -24,7 +20,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  * @since 2022/11/3 9:03
  */
 
-@Saga(code = DEVOPS_APP_VERSION_TRIGGER_PIPELINE, description = "流水线任务执行结束", inputSchemaClass = PipelineJobFinishVO.class)
 public abstract class AbstractCdJobHandler {
     @Autowired
     @Lazy
