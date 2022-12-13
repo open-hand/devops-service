@@ -50,8 +50,20 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Long gitlabProjectId;
     @ApiModelProperty("gitlab commit sha")
     private String commitSha;
+
+    @ApiModelProperty("gitlab source")
+    private String source;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
+
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public List<DevopsCiPipelineAuditVO> getPipelineAuditInfo() {
         return pipelineAuditInfo;
