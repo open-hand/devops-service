@@ -35,6 +35,7 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private String viewId;
 
 
+    private Boolean unrelatedFlag = false;
     @ApiModelProperty("gitlab 记录地址")
     private String gitlabPipelineUrl;
     @ApiModelProperty("ci阶段记录的集合")
@@ -59,6 +60,13 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
 
+    public Boolean getUnrelatedFlag() {
+        return unrelatedFlag;
+    }
+
+    public void setUnrelatedFlag(Boolean unrelatedFlag) {
+        this.unrelatedFlag = unrelatedFlag;
+    }
 
     public String getGitlabPipelineUrl() {
         return gitlabPipelineUrl;
