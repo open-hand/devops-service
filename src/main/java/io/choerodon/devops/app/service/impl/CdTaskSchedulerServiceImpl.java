@@ -68,7 +68,6 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
             Long jobRecordId = pipelineJobRecordDTO.getId();
             Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
             Long pipelineId = pipelineJobRecordDTO.getPipelineId();
-            Long projectId = pipelineJobRecordDTO.getProjectId();
 
             // 将待执行的任务状态置为running，并且加入线程池队列
             if (pipelineJobRecordService.updatePendingJobToRunning(jobRecordId) == 1) {
