@@ -2,6 +2,7 @@ package io.choerodon.devops.app.eventhandler.pipeline.job;
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -146,5 +147,17 @@ public abstract class AbstractJobHandler {
      */
     public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
 
+    }
+
+    public boolean isComplete(DevopsCiJobVO devopsCiJobVO) {
+        if (StringUtils.isBlank(devopsCiJobVO.getTriggerType())) {
+            return false;
+        }
+
+        return isConfigComplete(devopsCiJobVO);
+    }
+
+    protected Boolean isConfigComplete(DevopsCiJobVO devopsCiJobVO) {
+        return true;
     }
 }
