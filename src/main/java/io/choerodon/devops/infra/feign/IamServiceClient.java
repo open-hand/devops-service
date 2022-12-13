@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.feign;
 
 import java.util.List;
 import java.util.Set;
-
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -18,13 +17,13 @@ import io.choerodon.devops.infra.dto.iam.ClientVO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.dto.iam.UserCountVO;
-import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
+import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
 
 /**
  * Created by younger on 2018/3/29.
  */
 
-@FeignClient(value =  HZeroService.Iam.NAME, fallback = BaseServiceClientFallback.class)
+@FeignClient(value =  HZeroService.Iam.NAME, fallback = IamServiceClientFallback.class)
 public interface IamServiceClient {
     /**
      * @param organizationId 组织id
