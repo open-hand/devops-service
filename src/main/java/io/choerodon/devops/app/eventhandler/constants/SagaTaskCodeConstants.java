@@ -337,9 +337,6 @@ public class SagaTaskCodeConstants {
 
     public static final String DEVOPS_APP_VERSION_TRIGGER_PIPELINE = "devops-app-version-trigger-pipeline";
 
-    public static final String DEVOPS_PIPELINE_JOB_FINISH = "devops-pipeline-job-finish";
-
-
     private SagaTaskCodeConstants() {
     }
 }

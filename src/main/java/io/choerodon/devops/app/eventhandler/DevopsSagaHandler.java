@@ -26,7 +26,6 @@ import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
-import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
@@ -783,17 +782,6 @@ public class DevopsSagaHandler {
     public void triggerByAppVersion(String data) {
         AppVersionTriggerVO appVersionTriggerVO = JsonHelper.unmarshalByJackson(data, AppVersionTriggerVO.class);
         pipelineService.triggerByAppVersion(appVersionTriggerVO.getAppServiceId(), appVersionTriggerVO.getAppVersionId());
-    }
-
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_JOB_FINISH,
-            description = "流水线任务执行结束-更新流水线记录状态",
-            sagaCode = SagaTopicCodeConstants.DEVOPS_PIPELINE_JOB_FINISH,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void pipelineJobFinish(String data) {
-        PipelineJobFinishVO pipelineJobFinishVO = JsonHelper.unmarshalByJackson(data, PipelineJobFinishVO.class);
-        pipelineStageRecordService.updateStatus(pipelineJobFinishVO.getStageRecordId());
     }
 
 }
