@@ -37,5 +37,13 @@ public class CiTemplateDockerServiceImpl implements CiTemplateDockerService {
         MapperUtil.resultJudgedInsertSelective(ciTemplateDockermapper,
                 dockerBuildConfig, DEVOPS_SAVE_DOCKER_BUILD_CONFIG_FAILED);
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByTemplateId(Long templateStepId) {
+        CiTemplateDockerDTO ciTemplateDockerDTO = new CiTemplateDockerDTO();
+        ciTemplateDockerDTO.setCiTemplateStepId(templateStepId);
+        ciTemplateDockermapper.delete(ciTemplateDockerDTO);
+    }
 }
 

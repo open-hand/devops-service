@@ -61,6 +61,12 @@ public abstract class DevopsCiImageBuildStepHandler extends AbstractDevopsCiStep
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateDockerService.deleteByTemplateId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateDockerDTO ciTemplateDockerDTO = ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setDockerBuildConfig(ConvertUtils.convertObject(ciTemplateDockerDTO, DevopsCiDockerBuildConfigDTO.class));

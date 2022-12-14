@@ -68,5 +68,12 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
         return ciTemplateMavenPublishDTO;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByTemplateId(Long templateStepId) {
+        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = new CiTemplateMavenPublishDTO();
+        ciTemplateMavenPublishDTO.setCiTemplateStepId(templateStepId);
+        ciTemplateMavenPublishMapper.delete(ciTemplateMavenPublishDTO);
+    }
 }
 

@@ -70,6 +70,12 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateMavenBuildService.deleteByTemplateStepId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(devopsCiStepVO.getId());
         if (ciTemplateMavenBuildDTO != null) {

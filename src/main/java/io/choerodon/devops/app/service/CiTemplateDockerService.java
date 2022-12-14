@@ -13,5 +13,7 @@ public interface CiTemplateDockerService {
     CiTemplateDockerDTO queryByStepId(Long stepId);
 
     void baseCreate(CiTemplateDockerDTO dockerBuildConfig);
+
+    void deleteByTemplateId(Long templateStepId);
 }
 
