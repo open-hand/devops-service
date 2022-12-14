@@ -76,6 +76,7 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     @Autowired
     private CiTemplateMavenBuildService ciTemplateMavenBuildService;
 
+
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
@@ -132,6 +133,16 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         if (ciTemplateMavenBuildDTO != null) {
             ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(ciTemplateMavenBuildDTO));
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateStepVO.getSonarConfig();
+        if (ciTemplateSonarDTO == null) {
+            return;
+        }
+        ciTemplateSonarService.baseCreate(ciTemplateStepVO.getId(), ciTemplateSonarDTO);
     }
 
     @Override
