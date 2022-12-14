@@ -12,11 +12,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import retrofit2.Call;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.sonar.User;
+import io.choerodon.devops.api.vo.sonar.UserPageObject;
 import io.choerodon.devops.api.vo.sonar.UserToken;
 import io.choerodon.devops.api.vo.sonar.UserTokens;
 import io.choerodon.devops.app.service.DevopsConfigService;
@@ -106,12 +109,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
 
         // 扫描用户如果不存在则新建
-//        queryOrCreateUser(sonarClient);
-
+        queryOrCreateUser(sonarClient);
 
         Map<String, String> map = new HashMap<>();
-        map.put("name", "ci-token");
-        map.put("login", userName);
+        map.put("name", "ci-new-token");
+        map.put("login", C7N_ANALYSES_USER);
         Call<ResponseBody> responseCall = sonarClient.listToken();
         UserTokens userTokens = RetrofitCallExceptionParse.executeCall(responseCall, "devops.sonar.token.get", UserTokens.class);
         Optional<UserToken> userTokenOptional = userTokens.getUserTokens().stream().filter(userToken -> "ci-token".equals(userToken.getName())).findFirst();
@@ -138,10 +140,38 @@ public class DevopsCommandRunner implements CommandLineRunner {
         }
     }
 
-//    private void queryOrCreateUser(SonarClient sonarClient) {
-//        Map<String, String> map = new HashMap<>();
-//        map.put("q", C7N_ANALYSES_USER);
-//        Call<ResponseBody> responseBodyCall = sonarClient.getUser(map);
-//        userToken = RetrofitCallExceptionParse.executeCall(responseBodyCall, "devops.query.user", UserToken.class);
-//    }
+    private void queryOrCreateUser(SonarClient sonarClient) {
+        Map<String, String> map = new HashMap<>();
+        map.put("q", C7N_ANALYSES_USER);
+        Call<ResponseBody> responseBodyCall = sonarClient.getUser(map);
+        UserPageObject userPageObject = RetrofitCallExceptionParse.executeCall(responseBodyCall, "devops.query.user", UserPageObject.class);
+        List<User> users = userPageObject.getUsers();
+
+        // 1. 用户不存在则先创建用户
+        if (CollectionUtils.isEmpty(users)) {
+            creatUser(sonarClient);
+        }
+        // 2. 给用户分配权限
+        addUserPermission(sonarClient);
+
+
+    }
+
+    private void addUserPermission(SonarClient sonarClient) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("login", C7N_ANALYSES_USER);
+        map.put("permission", "scan");
+        Call<ResponseBody> user = sonarClient.addUserPermission(map);
+        RetrofitCallExceptionParse.executeCall(user, "devops.add.userPermission", Void.class);
+    }
+
+    private void creatUser(SonarClient sonarClient) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("login", C7N_ANALYSES_USER);
+        map.put("name", C7N_ANALYSES_USER);
+        map.put("local", true);
+        Call<ResponseBody> user = sonarClient.createUser(map);
+        RetrofitCallExceptionParse.executeCall(user, "devops.create.user", String.class);
+
+    }
 }
