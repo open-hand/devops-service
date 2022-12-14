@@ -77,5 +77,33 @@ public class CiTemplateSonarServiceImpl implements CiTemplateSonarService {
             ciTemplateMavenBuildService.baseCreate(templateStepId, mavenBuildConfig);
         }
     }
+
+    @Override
+    public void deleteByTemplateStepId(Long templateStepId) {
+        CiTemplateSonarDTO ciTemplateSonarDTO = new CiTemplateSonarDTO();
+        ciTemplateSonarDTO.setCiTemplateStepId(templateStepId);
+        List<CiTemplateSonarDTO> ciTemplateSonarDTOS = ciTemplateSonarmapper.select(ciTemplateSonarDTO);
+        if (!CollectionUtils.isEmpty(ciTemplateSonarDTOS)) {
+            ciTemplateSonarDTOS.forEach(ciTemplateSonarDTO1 -> {
+                DevopsCiTplSonarQualityGateDTO devopsCiTplSonarQualityGateDTO = new DevopsCiTplSonarQualityGateDTO();
+                devopsCiTplSonarQualityGateDTO.setConfigId(ciTemplateSonarDTO1.getId());
+                List<DevopsCiTplSonarQualityGateDTO> devopsCiTplSonarQualityGateDTOS = devopsCiTplSonarQualityGateMapper.select(devopsCiTplSonarQualityGateDTO);
+                if (CollectionUtils.isEmpty(devopsCiTplSonarQualityGateDTOS)) {
+                    return;
+                }
+                devopsCiTplSonarQualityGateDTOS.forEach(devopsCiTplSonarQualityGateDTO1 -> {
+                    DevopsCiTplSonarQualityGateConditionDTO devopsCiTplSonarQualityGateConditionDTO = new DevopsCiTplSonarQualityGateConditionDTO();
+                    devopsCiTplSonarQualityGateConditionDTO.setGateId(devopsCiTplSonarQualityGateDTO1.getId());
+                    devopsCiTplSonarQualityGateConditionMapper.delete(devopsCiTplSonarQualityGateConditionDTO);
+                });
+                devopsCiTplSonarQualityGateMapper.delete(devopsCiTplSonarQualityGateDTO);
+
+            });
+        }
+        ciTemplateSonarmapper.delete(ciTemplateSonarDTO);
+
+        // 删除mvn配置
+        ciTemplateMavenBuildService.deleteByTemplateStepId(templateStepId);
+    }
 }
 

@@ -44,6 +44,10 @@ public abstract class AbstractDevopsCiStepHandler {
 
     }
 
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+
+    }
+
     /**
      * 添加模板步骤的配置信息，含有配置的子类自行重写
      *

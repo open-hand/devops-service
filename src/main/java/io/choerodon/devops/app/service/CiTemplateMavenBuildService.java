@@ -18,5 +18,7 @@ public interface CiTemplateMavenBuildService {
 
     CiTemplateMavenBuildDTO voToDto(CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO);
 
+    void deleteByTemplateStepId(Long templateStepId);
+
 }
 

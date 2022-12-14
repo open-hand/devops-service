@@ -146,6 +146,11 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
     }
 
     @Override
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateSonarService.deleteByTemplateStepId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateSonarDTO ciTemplateSonarDTO = ciTemplateSonarService.queryByStepId(devopsCiStepVO.getId());
         if (ciTemplateSonarDTO == null) {

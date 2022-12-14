@@ -86,6 +86,11 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateMavenPublishService.deleteByTemplateId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
         if (ciTemplateMavenPublishDTO != null) {

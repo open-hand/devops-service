@@ -69,5 +69,13 @@ public class CiTemplateMavenBuildServiceImpl implements CiTemplateMavenBuildServ
         }
         return ciTemplateMavenBuildDTO;
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByTemplateStepId(Long templateStepId) {
+        CiTemplateMavenBuildDTO templateMavenBuildDTO = new CiTemplateMavenBuildDTO();
+        templateMavenBuildDTO.setCiTemplateStepId(templateStepId);
+        ciTemplateMavenBuildMapper.delete(templateMavenBuildDTO);
+    }
 }
 

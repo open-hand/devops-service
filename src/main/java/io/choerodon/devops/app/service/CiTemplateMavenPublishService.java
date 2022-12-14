@@ -17,5 +17,7 @@ public interface CiTemplateMavenPublishService {
     CiTemplateMavenPublishDTO dtoToVo(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO);
 
     CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) ;
+
+    void deleteByTemplateId(Long templateStepId);
 }
 
