@@ -51,6 +51,8 @@ public class CiPipelineRecordVO extends AuditDomain {
     private Date createdDate;
     @ApiModelProperty("gitlab source")
     private String source;
+    @ApiModelProperty("触发用户")
+    private Long triggerUserId;
     @ApiModelProperty("创建者信息")
     private IamUserDTO iamUserDTO;
     @ApiModelProperty("流水线提交信息")
@@ -61,6 +63,14 @@ public class CiPipelineRecordVO extends AuditDomain {
     private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
+
+    public Long getTriggerUserId() {
+        return triggerUserId;
+    }
+
+    public void setTriggerUserId(Long triggerUserId) {
+        this.triggerUserId = triggerUserId;
+    }
 
     public String getSource() {
         return source;

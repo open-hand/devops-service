@@ -60,6 +60,16 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
 
+    private IamUserDTO trigger;
+
+    public IamUserDTO getTrigger() {
+        return trigger;
+    }
+
+    public void setTrigger(IamUserDTO trigger) {
+        this.trigger = trigger;
+    }
+
     public Boolean getUnrelatedFlag() {
         return unrelatedFlag;
     }
