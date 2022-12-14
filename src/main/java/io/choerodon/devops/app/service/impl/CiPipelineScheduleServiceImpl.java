@@ -133,9 +133,14 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
 
-        List<PipelineSchedule> pipelineSchedules = gitlabServiceClientOperator.listPipelineSchedules(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
-                null,
-                appExternalConfigDTO);
+        List<PipelineSchedule> pipelineSchedules = null;
+        try {
+            pipelineSchedules = gitlabServiceClientOperator.listPipelineSchedules(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                    null,
+                    appExternalConfigDTO);
+        } catch (Exception e) {
+            pipelineSchedules = new ArrayList<>();
+        }
 
         Map<Integer, PipelineSchedule> pipelineScheduleMap = pipelineSchedules.stream().collect(Collectors.toMap(PipelineSchedule::getId, Function.identity()));
         ciPipelineScheduleVOS.forEach(v -> {
