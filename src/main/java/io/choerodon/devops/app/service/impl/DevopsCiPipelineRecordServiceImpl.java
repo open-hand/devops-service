@@ -2043,7 +2043,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Page<CiPipelineRecordVO> recordPage = PageHelper.doPage(pageable, () -> devopsCiPipelineRecordMapper.listByCiPipelineId(pipelineId));
 //        CiCdPipelineVO ciCdPipelineVO = devopsCiPipelineService.queryById(pipelineId);
 //        Page<CiCdPipelineRecordVO> cdPipelineRecordVOS = ConvertUtils.convertPage(devopsPipelineRecordRelDTOS, this::dtoToVo);
-        recordPage.forEach(recordVO -> {
+        List<CiPipelineRecordVO> content = recordPage.getContent();
+        content.forEach(recordVO -> {
             fillAdditionalInfo(recordVO);
             recordVO.setViewId(CiCdPipelineUtils.handleId(recordVO.getId()));
             ciPipelineSyncHandler.syncPipeline(recordVO.getStatus(), recordVO.getLastUpdateDate(), recordVO.getId(), TypeUtil.objToInteger(recordVO.getGitlabPipelineId()));
@@ -2052,6 +2053,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             recordVO.setCiRecordId(recordVO.getId());
             recordVO.setPipelineId(recordVO.getCiPipelineId());
         });
+        // 填充用户信息
+        UserDTOFillUtil.fillUserInfo(content, "triggerUserId", "iamUserDTO");
         return recordPage;
     }
 
