@@ -169,9 +169,9 @@ public class DevopsCommandRunner implements CommandLineRunner {
         Map<String, Object> map = new HashMap<>();
         map.put("login", C7N_ANALYSES_USER);
         map.put("name", C7N_ANALYSES_USER);
-        map.put("local", true);
+        map.put("local", false);
         Call<ResponseBody> user = sonarClient.createUser(map);
-        RetrofitCallExceptionParse.executeCall(user, "devops.create.user", String.class);
+        RetrofitCallExceptionParse.executeCall(user, "devops.create.user", Void.class);
 
     }
 }
