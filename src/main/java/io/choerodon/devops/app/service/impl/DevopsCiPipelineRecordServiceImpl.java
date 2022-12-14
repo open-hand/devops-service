@@ -744,9 +744,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             List<DevopsCiJobRecordDTO> latestedsCiJobRecordDTOS = filterJobs(value);
             calculateStageStatus(devopsCiStageRecordVO, latestedsCiJobRecordDTOS);
             List<DevopsCiJobRecordVO> latestedsCiJobRecordVOS = ConvertUtils.convertList(latestedsCiJobRecordDTOS, DevopsCiJobRecordVO.class);
-            latestedsCiJobRecordVOS.forEach(devopsCiJobRecordVO -> {
-
-                // 添加chart版本信息
+            for (DevopsCiJobRecordVO devopsCiJobRecordVO : latestedsCiJobRecordVOS) {// 添加chart版本信息
                 fillChartInfo(appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
                 // 添加Sonar扫描信息
                 fillSonarInfo(projectId, appServiceId, gitlabPipelineId, devopsCiJobRecordVO);
@@ -770,7 +768,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 // 添加api测试执行信息
                 addApiTestInfo(devopsCiJobRecordVO);
 
-            });
+            }
             devopsCiStageRecordVO.setDurationSeconds(calculateStageDuration(latestedsCiJobRecordVOS));
             // 按照 id正序排序
             latestedsCiJobRecordVOS.sort(Comparator.comparingLong(DevopsCiJobRecordVO::getId));
