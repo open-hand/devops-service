@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -13,6 +13,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.PipelineTemplateCompositeVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.*;
@@ -134,7 +135,9 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                             CiTemplateJobGroupDTO ciTemplateJobGroupDTO = finalGroupMap.get(stageTemplateJobVO.getGroupId());
                             devopsCiJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
                             devopsCiJobVO.setGroupType(ciTemplateJobGroupDTO == null ? null : ciTemplateJobGroupDTO.getType());
-                            devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+                            if (StringUtils.isEmpty(devopsCiJobVO.getTriggerType())) {
+                                devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+                            }
 
                             //填充job状态
                             AbstractJobHandler jobHandler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
