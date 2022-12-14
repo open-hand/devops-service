@@ -103,4 +103,10 @@ public interface SonarClient {
     @GET("api/users/search")
     Call<ResponseBody> getUser(@QueryMap Map<String, String> data);
 
+    @POST("api/users/create")
+    Call<ResponseBody> createUser(@QueryMap Map<String, Object> data);
+
+    @POST("api/permissions/add_user")
+    Call<ResponseBody> addUserPermission(@QueryMap Map<String, Object> data);
+
 }

@@ -154,4 +154,14 @@ public class SonarClientFallback implements SonarClient {
     public Call<ResponseBody> getUser(Map<String, String> data) {
         return null;
     }
+
+    @Override
+    public Call<ResponseBody> createUser(Map<String, Object> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> addUserPermission(Map<String, Object> data) {
+        return null;
+    }
 }
