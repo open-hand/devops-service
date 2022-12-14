@@ -21,6 +21,11 @@ public enum CiCommandTypeEnum {
      * 部署组部署
      */
     DEPLOYMENT_DEPLOY("deployment_deploy"),
+
+    /**
+     * API test
+     */
+    API_TEST("api_test"),
     /**
      * 主机部署
      */
