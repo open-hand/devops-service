@@ -63,11 +63,6 @@ public class CdAuditJobHandlerImpl extends AbstractCdJobHandler {
     }
 
     @Override
-    public void deleteConfigByPipelineId(Long pipelineId) {
-        pipelineAuditCfgService.deleteConfigByPipelineId(pipelineId);
-    }
-
-    @Override
     public void initAdditionalRecordInfo(Long pipelineId, PipelineJobDTO job, PipelineJobRecordDTO pipelineJobRecordDTO) {
         pipelineAuditRecordService.initAuditRecord(pipelineId, pipelineJobRecordDTO.getPipelineRecordId(), pipelineJobRecordDTO.getId(), job.getConfigId());
     }
