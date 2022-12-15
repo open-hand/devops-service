@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import groovy.lang.Lazy;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,6 +73,12 @@ public class PipelineServiceImpl implements PipelineService {
     private PipelineVersionService pipelineVersionService;
     @Autowired
     private PipelineJobService pipelineJobService;
+    @Autowired
+    @Lazy
+    private PipelineAuditCfgService pipelineAuditCfgService;
+    @Autowired
+    @Lazy
+    private PipelineChartDeployCfgService pipelineChartDeployCfgService;
     @Autowired
     private PipelineRecordService pipelineRecordService;
     @Autowired
@@ -271,6 +278,8 @@ public class PipelineServiceImpl implements PipelineService {
         // 1. 删除流水线定义
         // 删除任务、任务配置
         pipelineJobService.deleteByPipelineId(id);
+        pipelineAuditCfgService.deleteConfigByPipelineId(id);
+        pipelineChartDeployCfgService.deleteConfigByPipelineId(id);
         // 删除阶段
         pipelineStageService.deleteByPipelineId(id);
         //删除版本

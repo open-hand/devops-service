@@ -120,11 +120,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     }
 
     @Override
-    public void deleteConfigByPipelineId(Long pipelineId) {
-        pipelineChartDeployCfgService.deleteConfigByPipelineId(pipelineId);
-    }
-
-    @Override
     public void fillAdditionalRecordInfo(PipelineJobRecordVO pipelineJobRecordVO) {
         if (PipelineStatusEnum.SUCCESS.value().equals(pipelineJobRecordVO.getStatus())) {
             Long commandId = pipelineJobRecordVO.getCommandId();

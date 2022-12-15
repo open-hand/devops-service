@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
-import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
 import io.choerodon.devops.app.service.PipelineJobService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.PipelineJobDTO;
@@ -28,8 +26,6 @@ public class PipelineJobServiceImpl implements PipelineJobService {
 
     @Autowired
     private PipelineJobMapper pipelineJobMapper;
-    @Autowired
-    private CdJobOperator cdJobOperator;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -42,19 +38,8 @@ public class PipelineJobServiceImpl implements PipelineJobService {
     public void deleteByPipelineId(Long pipelineId) {
         Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
-        List<PipelineJobDTO> pipelineJobDTOS = listByPipelineId(pipelineId);
-
-        // 删除关联的任务配置
-        pipelineJobDTOS.forEach(job -> {
-            AbstractCdJobHandler handler = cdJobOperator.getHandler(job.getType());
-            if (handler != null) {
-                handler.deleteConfigByPipelineId(pipelineId);
-            }
-        });
-
         PipelineJobDTO pipelineJobDTO = new PipelineJobDTO();
         pipelineJobDTO.setPipelineId(pipelineId);
-
         pipelineJobMapper.delete(pipelineJobDTO);
     }
 
