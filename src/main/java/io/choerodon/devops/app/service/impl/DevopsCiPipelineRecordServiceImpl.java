@@ -565,13 +565,18 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 TypeUtil.objToInteger(gitlabPipelineId),
                 null,
                 appExternalConfigDTO);
-        List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId,
-                gitlabPipelineId,
-                null,
-                appExternalConfigDTO);
+        if (pipelineDTO != null) {
+            List<JobDTO> jobDTOList = gitlabServiceClientOperator.listJobs(gitlabProjectId,
+                    gitlabPipelineId,
+                    null,
+                    appExternalConfigDTO);
 
-        Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
-        handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
+            Long gitlabPipelineIdLong = TypeUtil.objToLong(gitlabPipelineId);
+            handUpdate(appServiceDTO, pipelineRecordId, gitlabPipelineIdLong, pipelineDTO, jobDTOList);
+        } else {
+            devopsCiPipelineRecordMapper.updateStatusByGitlabPipelineId(pipelineRecordId, io.choerodon.devops.infra.dto.gitlab.ci.PipelineStatus.CANCELED.toValue());
+        }
+
     }
 
     private void handUpdate(AppServiceDTO appServiceDTO, Long pipelineRecordId, Long gitlabPipelineId, GitlabPipelineDTO gitlabPipelineDTO, List<JobDTO> jobs) {

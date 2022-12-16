@@ -38,6 +38,7 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.hzero.boot.file.FileClient;
 import org.hzero.core.base.BaseConstants;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -528,6 +529,29 @@ public class AppServiceServiceImpl implements AppServiceService {
                 }
             }
         } else {
+            Integer gitlabProjectId = appServiceDTO.getGitlabProjectId();
+            // 删除webhook
+            AppExternalConfigDTO appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
+            List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listExternalWebHook(gitlabProjectId, appExternalConfigDTO);
+            if (!CollectionUtils.isEmpty(projectHookDTOS)) {
+                projectHookDTOS.forEach(projectHookDTO -> {
+                    if (getWebhookUrl().equals(projectHookDTO.getUrl())) {
+                        gitlabServiceClientOperator.deleteExternalWebHook(gitlabProjectId,
+                                projectHookDTO.getId(),
+                                appExternalConfigDTO);
+                    }
+                });
+            }
+            // 删除token
+            List<Variable> variables = gitlabServiceClientOperator.listExternalProjectVariable(gitlabProjectId, appExternalConfigDTO);
+            if (!CollectionUtils.isEmpty(variables)) {
+                variables.forEach(variable -> {
+                    if (GITLAB_VARIABLE_TOKEN.equalsIgnoreCase(variable.getKey())) {
+                        gitlabServiceClientOperator.deleteExternalProjectVariable(gitlabProjectId, variable.getKey(), appExternalConfigDTO);
+                    }
+                });
+            }
+
             // 外部仓库还需要删除认证配置
             appExternalConfigService.baseDelete(appServiceDTO.getExternalConfigId());
         }
@@ -921,8 +945,8 @@ public class AppServiceServiceImpl implements AppServiceService {
             checkGitlabProjectIdNotUsedBefore(gitlabProjectId);
         }
         devOpsAppServicePayload.setGitlabProjectId(gitlabProjectDO.getId());
-
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, devOpsAppServicePayload.getGitlabProjectId(), devOpsAppServicePayload.getUserId());
         appServiceDTO.setGitlabProjectId(gitlabProjectDO.getId());
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
@@ -977,13 +1001,19 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook";
+        String uri = getWebhookUrl();
         projectHookDTO.setUrl(uri);
 
         appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createExternalWebHook(
                         projectId, appExternalConfigDTO, projectHookDTO)
                 .getId()));
+    }
+
+    @NotNull
+    private String getWebhookUrl() {
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        return uri;
     }
 
 
@@ -1170,7 +1200,8 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         try {
             // 设置application的属性
-            String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
+            String applicationServiceToken = appServiceDTO.getToken();
+            getApplicationToken(applicationServiceToken, gitlabProjectDO.getId(), devOpsAppServiceImportPayload.getUserId());
             appServiceDTO.setGitlabProjectId(TypeUtil.objToInteger(devOpsAppServiceImportPayload.getGitlabProjectId()));
             appServiceDTO.setSynchro(true);
             appServiceDTO.setFailed(false);
@@ -2203,7 +2234,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -2539,7 +2571,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
 
         appServiceDTO.setGitlabProjectId(gitlabProjectDTO.getId());
-        String applicationServiceToken = getApplicationToken(appServiceDTO.getToken(), appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        String applicationServiceToken = appServiceDTO.getToken();
+        getApplicationToken(applicationServiceToken, appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         appServiceDTO.setSynchro(true);
         appServiceDTO.setFailed(false);
         setProjectHook(appServiceDTO, appServiceDTO.getGitlabProjectId(), applicationServiceToken, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
@@ -3323,15 +3356,26 @@ public class AppServiceServiceImpl implements AppServiceService {
      * @param userId    gitlab user id
      * @return the application token that is stored in gitlab variables
      */
-    private String getApplicationToken(String token, Integer projectId, Integer userId) {
+    private void getApplicationToken(String token, Integer projectId, Integer userId) {
         List<CiVariableVO> variables = gitlabServiceClientOperator.listAppServiceVariable(projectId, userId);
-        if (variables.isEmpty()) {
+        if (CollectionUtils.isEmpty(variables)) {
             gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TOKEN, token, false, userId);
             //添加跳过证书扫描的变量
             gitlabServiceClientOperator.createProjectVariable(projectId, GITLAB_VARIABLE_TRIVY_INSECURE, "true", false, userId);
-            return token;
         } else {
-            return variables.get(0).getValue();
+            List<CiVariableVO> variableList = new ArrayList<>();
+            CiVariableVO ciVariableVO = new CiVariableVO();
+            ciVariableVO.setKey(GITLAB_VARIABLE_TOKEN);
+            ciVariableVO.setValue(token);
+
+            CiVariableVO ciVariableVO2 = new CiVariableVO();
+            ciVariableVO2.setKey(GITLAB_VARIABLE_TRIVY_INSECURE);
+            ciVariableVO2.setValue("true");
+
+            variableList.add(ciVariableVO);
+            variableList.add(ciVariableVO2);
+
+            gitlabServiceClientOperator.batchSaveProjectVariable(projectId, userId, variableList);
         }
     }
 
@@ -3349,8 +3393,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setEnableSslVerification(true);
         projectHookDTO.setProjectId(projectId);
         projectHookDTO.setToken(token);
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook";
+        String uri = getWebhookUrl();
         projectHookDTO.setUrl(uri);
         List<ProjectHookDTO> projectHookDTOS = gitlabServiceClientOperator.listProjectHook(projectId, userId);
         String finalUri = uri;

@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.impl.DevopsClusterServiceImpl;
@@ -38,19 +37,26 @@ public class HostDeployUtil {
 
     public static String getDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
         String[] strings = value.split("\n");
-        String values = "";
+        StringBuilder values = new StringBuilder();
         for (String s : strings) {
             s = trim(s);
-            if (s.length() > 0 && !s.startsWith("#") && s.contains("docker")) {
-                values = s;
+            if (!s.startsWith("#")) {
+                values.append(s).append("\n");
             }
         }
-        if (StringUtils.isEmpty(values) || Boolean.FALSE.equals(checkInstruction("image", values))) {
+        if (ObjectUtils.isEmpty(values.toString()) || Boolean.FALSE.equals(checkInstruction("image", values.toString()))) {
             throw new CommonException("devops.instruction");
         }
 
         // 判断镜像是否存在 存在删除 部署
-        return values.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        int lastIndexOfColon = dockerDeployDTO.getImage().lastIndexOf(":");
+        String tag = dockerDeployDTO.getImage().substring(lastIndexOfColon + 1);
+        values = new StringBuilder(values.toString().replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage()));
+
+        String result = "";
+        result += "export IMAGE_TAG=" + tag + "\n";
+        result += values;
+        return result;
     }
 
     public static String getWorkingDir(Long instanceId) {
@@ -70,7 +76,7 @@ public class HostDeployUtil {
         if (type.equals("jar")) {
             return instruction.contains("${jar}");
         } else {
-            return instruction.contains("${containerName}") && instruction.contains("${imageName}") && instruction.contains(" -d ");
+            return instruction.contains(" -d ");
         }
     }
 
@@ -103,7 +109,13 @@ public class HostDeployUtil {
     }
 
     public static String genDockerRunCmd(DockerDeployDTO dockerDeployDTO, String value) {
-        return value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        int lastIndexOfColon = dockerDeployDTO.getImage().lastIndexOf(":");
+        String tag = dockerDeployDTO.getImage().substring(lastIndexOfColon + 1);
+        String values = value.replace("${containerName}", dockerDeployDTO.getContainerName()).replace("${imageName}", dockerDeployDTO.getImage());
+        String result = "";
+        result += "export IMAGE_TAG=" + tag + "\n";
+        result += values;
+        return result;
     }
 
     public static Boolean checkHealthProbExit(String deleteCommand) {

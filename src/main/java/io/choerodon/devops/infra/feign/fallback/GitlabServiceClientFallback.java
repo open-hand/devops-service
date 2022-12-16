@@ -408,6 +408,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> listExternalHooks(Integer projectId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.listHooks.error");
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteExternalHook(Integer projectId, Integer hookId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.deleteHook.error");
+    }
+
+    @Override
     public ResponseEntity createProjectMember(Integer projectId, MemberDTO memberDTO) {
         return null;
     }
@@ -545,6 +555,16 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<Void> batchProjectDeleteVariable(Integer projectId, Integer userId, List<String> key) {
         throw new CommonException("devops.gitlab.batch.delete.project.variable");
+    }
+
+    @Override
+    public ResponseEntity<List<Variable>> listExternalProjectVariable(Integer projectId, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.listExternalProjectVariable.error");
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteExternalVariable(Integer projectId, String key, String gitlabUrl, String authType, String accessToken, String username, String password) {
+        throw new CommonException("devops.deleteExternalVariable.error");
     }
 
     @Override

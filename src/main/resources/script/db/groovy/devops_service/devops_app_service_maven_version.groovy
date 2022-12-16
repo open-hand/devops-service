@@ -32,4 +32,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_service_maven_version.groovy'
         addUniqueConstraint(tableName: 'devops_app_service_maven_version',
                 constraintName: 'devops_app_service_maven_version_u1', columnNames: 'app_service_version_id')
     }
+    changeSet(author: 'wanghao', id: '2022-12-15-updateDataType') {
+        modifyDataType(tableName: 'devops_app_service_maven_version', columnName: 'version', newDataType: 'VARCHAR(256)')
+    }
 }

@@ -528,6 +528,29 @@ public interface GitlabServiceClient {
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId);
 
+    @GetMapping("/v1/external_projects/hooks")
+    ResponseEntity<String> listExternalHooks(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @DeleteMapping("/v1/external_projects/hooks/{hookId}")
+    ResponseEntity<Void> deleteExternalHook(
+            @ApiParam(value = "项目ID", required = true)
+            @RequestParam Integer projectId,
+            @ApiParam(value = "hookId", required = true)
+            @PathVariable Integer hookId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+
     @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
                                @RequestParam("userId") Integer userId,
@@ -825,6 +848,28 @@ public interface GitlabServiceClient {
             @RequestParam(value = "userId") Integer userId,
             @ApiParam(value = "variable keys", required = true)
             @RequestBody List<String> key);
+
+    @GetMapping(value = "/v1/external_projects/{projectId}/variable")
+    ResponseEntity<List<Variable>> listExternalProjectVariable(
+            @ApiParam(value = "用户", required = true)
+            @PathVariable("projectId") Integer projectId,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
+
+    @DeleteMapping(value = "/v1/external_projects/{projectId}/variables")
+    ResponseEntity<Void> deleteExternalVariable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable("projectId") Integer projectId,
+            @ApiParam(value = "variable key", required = true)
+            @RequestParam String key,
+            @RequestParam(value = "gitlabUrl") String gitlabUrl,
+            @RequestParam(value = "authType") String authType,
+            @RequestParam(value = "accessToken") String accessToken,
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "password") String password);
 
     /**
      * 更新项目
