@@ -17,9 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.app.eventhandler.cd.AbstractCdJobHandler;
 import io.choerodon.devops.app.eventhandler.cd.CdJobOperator;
+import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.CdTaskSchedulerService;
 import io.choerodon.devops.app.service.PipelineJobRecordService;
 import io.choerodon.devops.app.service.PipelineLogService;
@@ -28,6 +32,7 @@ import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.PipelineJobRecordDTO;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.util.CustomContextUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
 
 /**
@@ -68,6 +73,7 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
             Long jobRecordId = pipelineJobRecordDTO.getId();
             Long stageRecordId = pipelineJobRecordDTO.getStageRecordId();
             Long pipelineId = pipelineJobRecordDTO.getPipelineId();
+            Long projectId = pipelineJobRecordDTO.getProjectId();
 
             // 将待执行的任务状态置为running，并且加入线程池队列
             if (pipelineJobRecordService.updatePendingJobToRunning(jobRecordId) == 1) {
@@ -93,7 +99,16 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                         // 记录job日志
                         pipelineLogService.saveLog(pipelineId, jobRecordId, log.toString());
                         // 更新阶段状态
-                        pipelineStageRecordService.updateStatus(stageRecordId);
+                        producer.apply(
+                                StartSagaBuilder
+                                        .newBuilder()
+                                        .withLevel(ResourceLevel.PROJECT)
+                                        .withSourceId(projectId)
+                                        .withRefType("jobRecord")
+                                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_PIPELINE_JOB_FINISH),
+                                builder -> builder
+                                        .withJson(JsonHelper.marshalByJackson(new PipelineJobFinishVO(stageRecordId, jobRecordId)))
+                                        .withRefId(jobRecordId.toString()));
                         transactionManager.commit(transactionStatus);
                     } catch (Exception e) {
                         LOGGER.error("Update job status failed.", e);
