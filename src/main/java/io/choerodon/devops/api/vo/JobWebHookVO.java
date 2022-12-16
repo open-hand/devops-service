@@ -13,8 +13,17 @@ public class JobWebHookVO {
     private Date buildStartedAt;
     private Date buildFinishedAt;
     private Long buildDuration;
+    private Long pipelineId;
 
     private JobCommitVO commit;
+
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
 
     public String getSha() {
         return sha;

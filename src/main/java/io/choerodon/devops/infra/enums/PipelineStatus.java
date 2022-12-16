@@ -10,14 +10,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum PipelineStatus {
     CREATED,
-    RUNNING,
+    WAITING_FOR_RESOURCE,
+    PREPARING,
     PENDING,
+    RUNNING,
     SUCCESS,
     FAILED,
-    STOP,
     CANCELED,
-    NOT_AUDIT,
-    SKIPPED;
+    SKIPPED,
+    MANUAL,
+
+    STOP,
+    SCHEDULED;
 
     private static final HashMap<String, PipelineStatus> valuesMap = new HashMap<>(8);
 

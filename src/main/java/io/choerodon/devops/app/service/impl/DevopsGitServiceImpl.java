@@ -1200,26 +1200,28 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa) {
-        File file = new File(path);
-        if (!file.exists()) {
-            return gitUtil.cloneBySsh(path, url, envIdRsa);
-        } else {
-            if (file.isDirectory() && file.listFiles().length > 0) {
-                try {
-                    String localPath = String.format("%s%s", path, GIT_SUFFIX);
-                    return gitUtil.pullBySsh(localPath, envIdRsa);
-                } catch (Exception e) {
-                    // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
-                    if (e instanceof CheckoutConflictException) {
-                        // 删除本地gitops文件，然后重新clone
-                        FileUtil.deleteDirectory(file);
-                        return gitUtil.cloneBySsh(path, url, envIdRsa);
-                    } else {
-                        throw new CommonException("devops.git.pull", e);
-                    }
-                }
-            } else {
+        synchronized (path.intern()) {
+            File file = new File(path);
+            if (!file.exists()) {
                 return gitUtil.cloneBySsh(path, url, envIdRsa);
+            } else {
+                if (file.isDirectory() && file.listFiles().length > 0) {
+                    try {
+                        String localPath = String.format("%s%s", path, GIT_SUFFIX);
+                        return gitUtil.pullBySsh(localPath, envIdRsa);
+                    } catch (Exception e) {
+                        // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
+                        if (e instanceof CheckoutConflictException) {
+                            // 删除本地gitops文件，然后重新clone
+                            FileUtil.deleteDirectory(file);
+                            return gitUtil.cloneBySsh(path, url, envIdRsa);
+                        } else {
+                            throw new CommonException("devops.git.pull", e);
+                        }
+                    }
+                } else {
+                    return gitUtil.cloneBySsh(path, url, envIdRsa);
+                }
             }
         }
     }

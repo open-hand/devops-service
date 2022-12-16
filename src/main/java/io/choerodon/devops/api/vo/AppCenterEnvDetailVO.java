@@ -24,6 +24,14 @@ public class AppCenterEnvDetailVO {
     private String code;
 
     @Encrypt
+    @ApiModelProperty("应用中心 应用id")
+    private Long appId;
+    @ApiModelProperty("应用名称/同name,前端需要")
+    private String appName;
+    @ApiModelProperty("应用编码/同code,前端需要")
+    private String appCode;
+
+    @Encrypt
     @ApiModelProperty("实例Id")
     private Long instanceId;
     @Encrypt
@@ -105,6 +113,30 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty(name = "部署组容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
 
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
 
     public Boolean getMetricDeployStatus() {
         return metricDeployStatus;

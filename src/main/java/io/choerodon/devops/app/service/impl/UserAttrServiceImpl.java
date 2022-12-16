@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.enums.AccessLevel;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -101,13 +102,6 @@ public class UserAttrServiceImpl implements UserAttrService {
     }
 
     @Override
-    public UserAttrDTO baseQueryByIamUserId(Long iamUserId) {
-        UserAttrDTO userAttrDTO = new UserAttrDTO();
-        userAttrDTO.setIamUserId(iamUserId);
-        return userAttrMapper.selectOne(userAttrDTO);
-    }
-
-    @Override
     public Long baseQueryUserIdByGitlabUserId(Long gitLabUserId) {
         if (gitLabUserId == null) {
             return null;
@@ -156,6 +150,15 @@ public class UserAttrServiceImpl implements UserAttrService {
         UserAttrDTO userAttrDTO = new UserAttrDTO();
         userAttrDTO.setGitlabUserName(gitlabUserName);
         return userAttrMapper.selectOne(userAttrDTO);
+    }
+
+    @Override
+    public Long getIamUserIdByGitlabUserName(String username) {
+        if ("admin1".equals(username) || "root".equals(username)) {
+            return IamAdminIdHolder.getAdminId();
+        }
+        UserAttrDTO userAttrE = baseQueryByGitlabUserName(username);
+        return userAttrE != null ? userAttrE.getIamUserId() : 0L;
     }
 
     @Override

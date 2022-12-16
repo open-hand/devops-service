@@ -36,8 +36,6 @@ public class CommandResultHandler implements HostMsgHandler {
     @Autowired
     private DevopsHostAppService devopsHostAppService;
     @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
-    @Autowired
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
@@ -153,9 +151,6 @@ public class CommandResultHandler implements HostMsgHandler {
             devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
         }
         devopsHostCommandService.baseUpdate(devopsHostCommandDTO);
-        if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-            devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), commandResultVO.getSuccess(), commandResultVO.getErrorMsg());
-        }
     }
 
     @Override

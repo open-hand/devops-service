@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiTplSonarQualityGateConditionMapper">
+
+<select id="listByGateId" resultType="io.choerodon.devops.infra.dto.DevopsCiTplSonarQualityGateConditionDTO">
+    SELECT id,
+    sonar_condition_id,
+    gate_id,
+    gates_metric,
+    gates_operator,
+    gates_value,
+    gates_scope,
+    object_version_number,
+    created_by,
+    creation_date,
+    last_updated_by,
+    last_update_date
+    FROM devops_ci_tpl_sonar_quality_gate_condition dctsqgc
+    WHERE dctsqgc.gate_id = #{gateId}
+  </select>
+</mapper>

@@ -41,6 +41,32 @@ public abstract class DevopsCiImageBuildStepHandler extends AbstractDevopsCiStep
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        // 保存任务配置
+        CiTemplateDockerDTO dockerBuildConfig = ciTemplateStepVO.getDockerBuildConfig();
+        dockerBuildConfig.setId(null);
+        dockerBuildConfig.setCiTemplateStepId(ciTemplateStepVO.getId());
+        // 没有开启镜像扫描，安全控制也不应该开启
+        if (!Boolean.TRUE.equals(dockerBuildConfig.getImageScan())) {
+            dockerBuildConfig.setSecurityControl(false);
+        }
+        // 没有开启安全控制， 配置应该是空的
+        if (!Boolean.TRUE.equals(dockerBuildConfig.getSecurityControl())) {
+            dockerBuildConfig.setSeverity(null);
+            dockerBuildConfig.setSecurityControlConditions(null);
+            dockerBuildConfig.setVulnerabilityCount(null);
+        }
+        ciTemplateDockerService.baseCreate(dockerBuildConfig);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateDockerService.deleteByTemplateId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateDockerDTO ciTemplateDockerDTO = ciTemplateDockerService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setDockerBuildConfig(ConvertUtils.convertObject(ciTemplateDockerDTO, DevopsCiDockerBuildConfigDTO.class));

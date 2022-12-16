@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.dto.gitlab.ci;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import io.choerodon.devops.infra.annotation.YamlProperty;
@@ -33,6 +34,45 @@ public class CiJob {
     private OnlyExceptPolicy except;
     @ApiModelProperty("缓存配置")
     private Cache cache;
+
+    @ApiModelProperty("运行该job的时间")
+    private String when;
+
+    @ApiModelProperty("任务时候后是否影响后续流程")
+    @YamlProperty(value = "allow_failure")
+    private Boolean allowFailure;
+
+    @ApiModelProperty("当when的值为delayed时，设置该字段，表示延时时间")
+    @YamlProperty(value = "start_in")
+    private String startIn;
+
+    @ApiModelProperty("job tags")
+    private List<String> tags;
+    private Map<String, String> variables;
+
+    public Map<String, String> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, String> variables) {
+        this.variables = variables;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public Boolean getAllowFailure() {
+        return allowFailure;
+    }
+
+    public void setAllowFailure(Boolean allowFailure) {
+        this.allowFailure = allowFailure;
+    }
 
     public Integer getParallel() {
         return parallel;
@@ -104,5 +144,21 @@ public class CiJob {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getWhen() {
+        return when;
+    }
+
+    public void setWhen(String when) {
+        this.when = when;
+    }
+
+    public String getStartIn() {
+        return startIn;
+    }
+
+    public void setStartIn(String startIn) {
+        this.startIn = startIn;
     }
 }

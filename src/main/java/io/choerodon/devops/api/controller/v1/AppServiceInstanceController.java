@@ -22,7 +22,6 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
@@ -53,8 +52,8 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
 
@@ -917,7 +916,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        return ResponseEntity.ok().body(devopsCdPipelineService.queryPipelineReference(projectId, instanceId));
+        return ResponseEntity.ok().body(appServiceInstanceService.queryInstancePipelineReference(projectId, instanceId));
     }
 
     @ApiOperation("查询服务下在环境下的实例列表")

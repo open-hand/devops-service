@@ -1,113 +1,113 @@
 package io.choerodon.devops.infra.dto;
 
+import java.util.Date;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
-import javax.persistence.*;
-
 /**
- * Creator: ChangpingShi0213@gmail.com
- * Date:  19:23 2019/4/3
- * Description:
+ * 流水线执行记录(PipelineRecord)实体类
+ *
+ * @author
+ * @since 2022-11-23 16:43:01
  */
-@ModifyAudit
+
+@ApiModel("流水线执行记录")
 @VersionAudit
+@ModifyAudit
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
 @Table(name = "devops_pipeline_record")
 public class PipelineRecordDTO extends AuditDomain {
+    public static final String FIELD_ID = "id";
+    public static final String FIELD_PIPELINE_ID = "pipelineId";
+    public static final String FIELD_STATUS = "status";
+    private static final long serialVersionUID = 286315842540628499L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Encrypt
+    @GeneratedValue
     private Long id;
+
+    @ApiModelProperty(value = "所属流水线Id,devops_pipeline.id", required = true)
+    @NotNull
+    @Encrypt
     private Long pipelineId;
+
+    @ApiModelProperty(value = "流水线名称", required = true)
+    @NotBlank
+    private String name;
+
+    @ApiModelProperty(value = "状态", required = true)
+    @NotBlank
     private String status;
+    @ApiModelProperty(value = "流水线开始时间", required = true)
+    private Date startedDate;
+    @ApiModelProperty(value = "流水线结束时间", required = true)
+    private Date finishedDate;
+    @ApiModelProperty(value = "触发方式", required = true)
     private String triggerType;
-    private String bpmDefinition;
-    private Long projectId;
-    private String pipelineName;
-    private String businessKey;
-    private Boolean edited;
-    private String auditUser;
-    private String errorInfo;
+    @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
+    @Encrypt
+    private Long appServiceId;
+    @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
+    private Long appServiceVersionId;
 
-    @Transient
-    private String stageName;
+    public String getName() {
+        return name;
+    }
 
-    @Transient
-    private Long stageRecordId;
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    @Transient
-    private Long taskRecordId;
+    public Date getStartedDate() {
+        return startedDate;
+    }
 
-    @Transient
-    private String env;
+    public void setStartedDate(Date startedDate) {
+        this.startedDate = startedDate;
+    }
 
-    @Transient
-    private String recordAudit;
+    public Date getFinishedDate() {
+        return finishedDate;
+    }
 
-    @Transient
-    private String stageAudit;
+    public void setFinishedDate(Date finishedDate) {
+        this.finishedDate = finishedDate;
+    }
 
-    @Transient
-    private String taskAudit;
+    public String getTriggerType() {
+        return triggerType;
+    }
 
-    public PipelineRecordDTO(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
-        this.pipelineId = pipelineId;
+    public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-        this.projectId = projectId;
-        this.status = status;
-        this.pipelineName = pipelineName;
     }
 
-    public PipelineRecordDTO() {
+    public Long getAppServiceId() {
+        return appServiceId;
     }
 
-
-    public String getErrorInfo() {
-        return errorInfo;
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 
-    public void setErrorInfo(String errorInfo) {
-        this.errorInfo = errorInfo;
+    public Long getAppServiceVersionId() {
+        return appServiceVersionId;
     }
 
-    public String getAuditUser() {
-        return auditUser;
-    }
-
-    public void setAuditUser(String auditUser) {
-        this.auditUser = auditUser;
-    }
-
-    public Boolean getEdited() {
-        return edited;
-    }
-
-    public void setEdited(Boolean edited) {
-        this.edited = edited;
-    }
-
-    public String getBusinessKey() {
-        return businessKey;
-    }
-
-    public void setBusinessKey(String businessKey) {
-        this.businessKey = businessKey;
-    }
-
-    public String getPipelineName() {
-        return pipelineName;
-    }
-
-    public void setPipelineName(String pipelineName) {
-        this.pipelineName = pipelineName;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
+    public void setAppServiceVersionId(Long appServiceVersionId) {
+        this.appServiceVersionId = appServiceVersionId;
     }
 
     public Long getId() {
@@ -134,77 +134,5 @@ public class PipelineRecordDTO extends AuditDomain {
         this.status = status;
     }
 
-    public String getTriggerType() {
-        return triggerType;
-    }
-
-    public void setTriggerType(String triggerType) {
-        this.triggerType = triggerType;
-    }
-
-    public String getBpmDefinition() {
-        return bpmDefinition;
-    }
-
-    public void setBpmDefinition(String bpmDefinition) {
-        this.bpmDefinition = bpmDefinition;
-    }
-
-    public String getEnv() {
-        return env;
-    }
-
-    public void setEnv(String env) {
-        this.env = env;
-    }
-
-    public String getStageName() {
-        return stageName;
-    }
-
-    public PipelineRecordDTO setStageName(String stageName) {
-        this.stageName = stageName;
-        return this;
-    }
-
-    public Long getStageRecordId() {
-        return stageRecordId;
-    }
-
-    public void setStageRecordId(Long stageRecordId) {
-        this.stageRecordId = stageRecordId;
-    }
-
-    public Long getTaskRecordId() {
-        return taskRecordId;
-    }
-
-    public void setTaskRecordId(Long taskRecordId) {
-        this.taskRecordId = taskRecordId;
-    }
-
-    public String getRecordAudit() {
-        return recordAudit;
-    }
-
-    public void setRecordAudit(String recordAudit) {
-        this.recordAudit = recordAudit;
-    }
-
-    public String getStageAudit() {
-        return stageAudit;
-    }
-
-    public void setStageAudit(String stageAudit) {
-        this.stageAudit = stageAudit;
-    }
-
-    public String getTaskAudit() {
-        return taskAudit;
-    }
-
-    public void setTaskAudit(String taskAudit) {
-        this.taskAudit = taskAudit;
-    }
-
 }
+

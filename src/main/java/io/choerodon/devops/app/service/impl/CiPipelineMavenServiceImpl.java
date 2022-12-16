@@ -98,6 +98,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateJarInfo(Long nexusRepoId, Long mvnSettingsId, Long sequence, Long gitlabPipelineId, String jobName, String token, MultipartFile file, String mavenRepoUrl, String username, String password, String version) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
@@ -316,7 +317,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             // 另外这里不用nexus的list API是因为这个API返回的是乱序的
             //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
             NexusClient nexusClient2 = RetrofitHandler.getScalarNexusClient(nexusUrl, userName, password);
-            Response<String> metadataXml = nexusClient2.componentMetadata(repositoryName, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion()).execute();
+            Response<String> metadataXml = nexusClient2.componentMetadata(repositoryName, ciPipelineMavenDTO.getGroupId().replace("\\.", BaseConstants.Symbol.SLASH) + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion()).execute();
             // 如果请求返回404，maven-metadata.xml不存在，说明没有多个版本
             if (metadataXml.code() == HttpStatus.NOT_FOUND.value()) {
                 return ciPipelineMavenDTO.getVersion();
@@ -344,7 +345,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             String basicInfo = userName + ":" + password;
             String token = "Basic " + Base64.getEncoder().encodeToString(basicInfo.getBytes());
 
-            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH));
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replace("\\.", BaseConstants.Symbol.SLASH));
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getArtifactId());
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml");
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);

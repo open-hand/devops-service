@@ -29,11 +29,9 @@ public class ApprovalVO {
     @ApiModelProperty("合并请求gitlab项目地址")
     private String mergeRequestUrl;
 
-    @Encrypt
     @ApiModelProperty("pipeline id")
     private Long pipelineId;
 
-    @Encrypt
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
 
@@ -47,6 +45,26 @@ public class ApprovalVO {
     @Encrypt
     @ApiModelProperty("pipeline task id")
     private Long taskRecordId;
+
+    private String stageName;
+
+    private String pipelineName;
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public String getProjectName() {
         return projectName;

@@ -134,7 +134,7 @@ public class GitOpsConstants {
     /**
      * 使用Token认证的sonar命令
      */
-    public static final String SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
+    public static final String SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
 
     /**
      * 使用用户名密码认证的sonar命令
@@ -149,7 +149,7 @@ public class GitOpsConstants {
      * SonarUsername sonar的用户名
      * SonarPassword
      */
-    public static final String SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
+    public static final String SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
 
     public static final String COMMA = ",";
 
@@ -218,6 +218,13 @@ public class GitOpsConstants {
     public static final String PIPELINE_EXECUTOR = "ci-p-executor";
 
     /**
+     * 流水线异步数据更新的执行器的名称
+     * 不用完整单词作为名称的原因是, 长了在日志中会被截取后半部分显示, 反而会更不完整
+     */
+    public static final String PIPELINE_EXEC_EXECUTOR = "pipeline-exec-executor";
+
+
+    /**
      * DevOps的流水线的redis的key的模板, 用于控制后台刷新gitlab流水线数据的频率
      * 变量是 gitlabPipelineId
      */
@@ -248,11 +255,6 @@ public class GitOpsConstants {
     public static final String IP_PATTERN = "^((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})(\\.((2(5[0-5]|[0-4]\\d))|[0-1]?\\d{1,2})){3}$";
 
     public static final Pattern IP_REG_PATTERN = Pattern.compile(IP_PATTERN);
-
-    /**
-     * 主机状态校准的线程池名称
-     */
-    public static final String HOST_STATUS_EXECUTOR = "host-status-executor";
 
     /**
      * 同步用户的的线程池名称

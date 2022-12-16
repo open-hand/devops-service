@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiSonarQualityGateMapper">
+  <select id="queryBlockByStepId" resultType="java.lang.Boolean">
+    SELECT gates_block_after_fail
+    FROM devops_ci_sonar_quality_gate
+    WHERE config_id = #{devopsCiSonarConfigId}
+  </select>
+
+  <delete id="deleteByName">
+    DELETE
+    FROM devops_ci_sonar_quality_gate
+    WHERE name = #{name}
+  </delete>
+
+  <select id="qualityGateExistsByName" resultType="java.lang.Boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_ci_sonar_quality_gate
+    WHERE name = #{name}
+  </select>
+
+  <select id="queryByName" resultType="io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO">
+    SELECT id,
+           sonar_gate_id,
+           config_id,
+           gates_enable,
+           gates_block_after_fail,
+           name,
+           object_version_number,
+           created_by,
+           creation_date,
+           last_updated_by,
+           last_update_date
+    FROM devops_ci_sonar_quality_gate
+    WHERE name = #{name}
+  </select>
+</mapper>

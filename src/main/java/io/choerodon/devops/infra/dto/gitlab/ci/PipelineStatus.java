@@ -12,9 +12,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum PipelineStatus {
 
-    RUNNING, PENDING, SUCCESS, FAILED, CANCELED, SKIPPED;
+    RUNNING, PENDING, SUCCESS, MANUAL, FAILED, CANCELED, SKIPPED;
 
-    private static Map<String, PipelineStatus> valuesMap = new HashMap<>(6);
+    private static Map<String, PipelineStatus> valuesMap = new HashMap<>(7);
+
     static {
         for (PipelineStatus status : PipelineStatus.values())
             valuesMap.put(status.toValue(), status);

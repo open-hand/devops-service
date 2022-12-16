@@ -22,7 +22,6 @@ import io.choerodon.devops.infra.dto.DevopsCiPipelineVariableDTO;
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 @ApiModel(value = "cicd流水线定义VO")
 public class CiCdPipelineVO {
-    @Encrypt(ignoreUserConflict = true)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -75,9 +74,6 @@ public class CiCdPipelineVO {
     @ApiModelProperty(name = "ci阶段信息")
     @Valid
     private List<DevopsCiStageVO> devopsCiStageVOS;
-    @ApiModelProperty(name = "cd阶段信息")
-    @Valid
-    private List<DevopsCdStageVO> devopsCdStageVOS;
     @ApiModelProperty(name = "流水线变量")
     private List<DevopsCiPipelineVariableDTO> devopsCiPipelineVariableDTOList;
     @ApiModelProperty(name = "cicd 流水线下的执行记录")
@@ -264,15 +260,6 @@ public class CiCdPipelineVO {
     public void setDevopsCiStageVOS(List<DevopsCiStageVO> devopsCiStageVOS) {
         this.devopsCiStageVOS = devopsCiStageVOS;
     }
-
-    public List<DevopsCdStageVO> getDevopsCdStageVOS() {
-        return devopsCdStageVOS;
-    }
-
-    public void setDevopsCdStageVOS(List<DevopsCdStageVO> devopsCdStageVOS) {
-        this.devopsCdStageVOS = devopsCdStageVOS;
-    }
-
     public Boolean getHasRecords() {
         return hasRecords;
     }

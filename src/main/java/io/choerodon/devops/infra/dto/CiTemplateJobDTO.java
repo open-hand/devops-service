@@ -82,6 +82,48 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     @ApiModelProperty("job的并发数")
     private Integer parallel;
+    @ApiModelProperty("关联的任务配置id")
+    private Long configId;
+    @ApiModelProperty("延迟配置")
+    private Integer startIn;
+
+    @ApiModelProperty("任务标签")
+    private String tags;
+
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public Integer getStartIn() {
+        return startIn;
+    }
+
+    public void setStartIn(Integer startIn) {
+        this.startIn = startIn;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
 
     public Integer getParallel() {
         return parallel;
@@ -182,6 +224,30 @@ public class CiTemplateJobDTO extends AuditDomain {
 
     public void setToDownload(Boolean toDownload) {
         this.toDownload = toDownload;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
+    }
+
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 }
 

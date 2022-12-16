@@ -262,6 +262,9 @@ public class AppServiceServiceImpl implements AppServiceService {
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsAppServiceHelmRelService devopsAppServiceHelmRelService;
+    @Lazy
+    @Autowired
+    private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -1002,7 +1005,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         projectHookDTO.setUrl(uri);
 
         appServiceDTO.setHookId(TypeUtil.objToLong(gitlabServiceClientOperator.createExternalWebHook(
-                projectId, appExternalConfigDTO, projectHookDTO)
+                        projectId, appExternalConfigDTO, projectHookDTO)
                 .getId()));
     }
 
@@ -1553,7 +1556,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
         //初始化sonarClient
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = getSonarKey(appServiceDTO, projectDTO, organization);
+        String key = getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
 
         //校验sonarqube地址是否正确
@@ -1840,8 +1843,13 @@ public class AppServiceServiceImpl implements AppServiceService {
                         sonarContentVOS.add(nclocLanguage);
                         break;
                     case QUALITY_GATE_DETAILS:
-                        Quality quality = gson.fromJson(measure.getValue(), Quality.class);
-                        sonarContentsVO.setStatus(quality.getLevel());
+                        QualityGateResult qualityGateResult = gson.fromJson(measure.getValue(), QualityGateResult.class);
+                        String sonarProjectKey = getSonarKey(appServiceDTO.getCode(), projectDTO.getDevopsComponentCode(), organization.getTenantNum());
+                        Boolean sonarQualityExists = devopsCiSonarQualityGateService.qualityGateExistsByName(sonarProjectKey);
+                        if (Boolean.TRUE.equals(sonarQualityExists)) {
+                            sonarContentsVO.setDevopsCiSonarQualityGateVO(devopsCiSonarQualityGateService.buildFromSonarResult(qualityGateResult));
+                        }
+                        sonarContentsVO.setStatus(qualityGateResult.getLevel());
                         break;
                     default:
                         break;
@@ -1855,12 +1863,12 @@ public class AppServiceServiceImpl implements AppServiceService {
         return sonarContentsVO;
     }
 
-    protected String getSonarKey(AppServiceDTO appServiceDTO, ProjectDTO projectDTO, Tenant organization) {
-        return String.format(SONAR_KEY, organization.getTenantNum(), projectDTO.getDevopsComponentCode(), appServiceDTO.getCode());
+    public static String getSonarKey(String appServiceCode, String projectDevopsComponentCode, String organiztionCode) {
+        return String.format(SONAR_KEY, organiztionCode, projectDevopsComponentCode, appServiceCode);
     }
 
     private void cacheSonarContents(Long projectId, Long appServiceId, SonarContentsVO sonarContentsVO) {
-        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.HOURS);
+        redisTemplate.opsForValue().set(SONAR + ":" + projectId + ":" + appServiceId, JsonHelper.marshalByJackson(sonarContentsVO), 1, TimeUnit.MINUTES);
     }
 
     public String getTimestampTimeV17(String str) {
@@ -1902,7 +1910,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         SonarClient sonarClient = RetrofitHandler.getSonarClient(sonarqubeUrl, SONAR, userName, password);
-        String key = getSonarKey(applicationDTO, projectDTO, organizationDTO);
+        String key = getSonarKey(applicationDTO.getCode(), projectDTO.getDevopsComponentCode(), organizationDTO.getTenantNum());
         sonarqubeUrl = sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/";
         Map<String, String> queryMap = new HashMap<>();
         queryMap.put("component", key);
@@ -2713,6 +2721,15 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
+    public AppServiceDTO queryByTokenOrThrowE(String token) {
+        AppServiceDTO appServiceDTO = baseQueryByToken(token);
+        if (appServiceDTO == null) {
+            throw new DevopsCiInvalidException(DEVOPS_TOKEN_INVALID);
+        }
+        return appServiceDTO;
+    }
+
+    @Override
     public void baseDelete(Long appServiceId) {
         appServiceMapper.deleteByPrimaryKey(appServiceId);
     }
@@ -3079,8 +3096,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceVO> listAppByProjectId(Long projectId, Boolean doPage, PageRequest pageable, String params) {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         List<AppServiceDTO> appServiceDTOList = appServiceMapper.pageServiceByProjectId(projectId,
-                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
+                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS))).stream()
                 .filter(appServiceDTO -> (appServiceDTO.getActive() != null && appServiceDTO.getActive()) && (appServiceDTO.getSynchro() != null && appServiceDTO.getSynchro()) && (appServiceDTO.getFailed() == null || !appServiceDTO.getFailed()))
                 .collect(toList());
         List<AppServiceVO> list = ConvertUtils.convertList(appServiceDTOList, AppServiceVO.class);
@@ -3528,7 +3545,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     public OpenAppServiceReqVO openCreateAppService(Long projectId, OpenAppServiceReqVO openAppServiceReqVO) {
         openAppServiceReqVO.setProjectId(projectId);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByLoginName(openAppServiceReqVO.getEmail());
-        UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+        UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
         userAttrService.checkUserSync(userAttrDTO, iamUserDTO.getId());
 
         ApplicationValidator.checkApplicationService(openAppServiceReqVO.getCode());
@@ -3826,7 +3843,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         if (StringUtils.isEmpty(privateToken)) {
             String tokenIdKey = String.format(PRIVATE_TOKEN_ID_FORMAT, appServiceDTO.getGitlabProjectId());
             String tokenIdStr = stringRedisTemplate.opsForValue().get(tokenIdKey);
-            UserAttrDTO userAttrDTO = userAttrService.baseQueryByIamUserId(iamUserDTO.getId());
+            UserAttrDTO userAttrDTO = userAttrService.baseQueryById(iamUserDTO.getId());
             if (!StringUtils.isEmpty(tokenIdStr)) {
                 gitlabServiceClientOperator.revokeImpersonationToken(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), TypeUtil.objToInteger(tokenIdStr));
             }

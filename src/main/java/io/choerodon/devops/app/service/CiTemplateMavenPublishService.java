@@ -11,5 +11,13 @@ import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
 public interface CiTemplateMavenPublishService {
 
     CiTemplateMavenPublishDTO queryByStepId(Long stepId);
+
+    void baseCreate(Long id, CiTemplateMavenPublishDTO mavenBuildConfig);
+
+    CiTemplateMavenPublishDTO dtoToVo(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO);
+
+    CiTemplateMavenPublishDTO voToDto(CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO) ;
+
+    void deleteByTemplateId(Long templateStepId);
 }
 

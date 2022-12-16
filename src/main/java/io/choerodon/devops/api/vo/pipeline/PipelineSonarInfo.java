@@ -17,10 +17,20 @@ public class PipelineSonarInfo {
     private String scannerType;
     @ApiModelProperty("ci中返回sonar")
     private List<SonarContentVO> sonarContentVOS;
+    private DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO;
 
-    public PipelineSonarInfo(String scannerType, List<SonarContentVO> sonarContentVOS) {
+    public PipelineSonarInfo(String scannerType, List<SonarContentVO> sonarContentVOS, DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO) {
         this.scannerType = scannerType;
         this.sonarContentVOS = sonarContentVOS;
+        this.devopsCiSonarQualityGateVO = devopsCiSonarQualityGateVO;
+    }
+
+    public DevopsCiSonarQualityGateVO getDevopsCiSonarQualityGateVO() {
+        return devopsCiSonarQualityGateVO;
+    }
+
+    public void setDevopsCiSonarQualityGateVO(DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO) {
+        this.devopsCiSonarQualityGateVO = devopsCiSonarQualityGateVO;
     }
 
     public String getScannerType() {

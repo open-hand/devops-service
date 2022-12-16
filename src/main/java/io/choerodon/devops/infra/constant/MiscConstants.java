@@ -80,5 +80,16 @@ public final class MiscConstants {
     public static final Long WORKFLOW_ADMIN_ID = 1L;
     public static final Long WORKFLOW_ADMIN_ORG_ID = 0L;
 
+    public static final String PROJECT_ID = "projectId";
+    public static final String PIPELINE_ID = "pipelineId";
+    public static final String SCHEDULE_TOKEN = "scheduleToken";
+    public static final String USER_ID = "userId";
+    public static final String APP_SERVICE_ID = "appServiceId";
+    public static final String APP_VERSION_ID = "appVersionId";
+
+    public static final String ENV = "env";
+
+
+    public static final String PIPELINE_SCHEDULE_TRIGGER = "pipeline_schedule_trigger";
 
 }

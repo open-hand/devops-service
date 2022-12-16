@@ -36,6 +36,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
@@ -813,6 +814,48 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return num < resourceLimitVO.getEnvMaxNumber();
         }
         return true;
+    }
+
+    @Override
+    public DevopsEnvironmentDTO queryByIdOrThrowE(Long id) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(id);
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("devops.get.environment");
+        }
+        return devopsEnvironmentDTO;
+    }
+
+    @Override
+    public Boolean hasEnvironmentPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, Long projectId) {
+        if (Objects.isNull(devopsEnvironmentDTO)) {
+            return Boolean.FALSE;
+        }
+        if (devopsEnvironmentDTO.getSkipCheckPermission()) {
+            return Boolean.TRUE;
+        }
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), projectId)) {
+            return Boolean.TRUE;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        if (baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) || userDetails.getAdmin()) {
+            return Boolean.TRUE;
+        }
+        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+        devopsEnvUserPermissionDTO.setEnvId(devopsEnvironmentDTO.getId());
+        devopsEnvUserPermissionDTO.setIamUserId(userDetails.getUserId());
+        List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvUserPermissionDTOS)) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean hasEnvironmentPermission(Long envId, Long projectId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        return hasEnvironmentPermission(devopsEnvironmentDTO, projectId);
     }
 
     @Override

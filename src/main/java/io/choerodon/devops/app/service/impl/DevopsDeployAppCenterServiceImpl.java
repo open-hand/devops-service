@@ -90,11 +90,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private PermissionHelper permissionHelper;
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    @Lazy
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
+    @Autowired
+    private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
 
@@ -301,6 +303,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         detailVO.setEnvActive(environmentDTO.getActive());
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
 
+        detailVO.setAppCode(detailVO.getCode());
+        detailVO.setAppName(detailVO.getName());
+        detailVO.setAppId(detailVO.getId());
+
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
         return detailVO;
@@ -467,7 +473,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
 
     @Override
     public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
+        if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+            return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+        } else {
+            return devopsCiJobService.queryChartPipelineReference(projectId, appId);
+        }
+
     }
 
     @Override
@@ -476,7 +488,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsDeployAppCenterEnvDTO == null) {
             return;
         }
-        if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+        if (devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.vo.SagaInstanceDetails;
+import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
+import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.feign.AsgardFeignClient;
 
 @Component
@@ -28,6 +30,29 @@ public class AsgardServiceClientOperator {
             throw new CommonException("devops.query.saga");
         }
         return listResponseEntity.getBody();
+    }
+
+    public QuartzTaskDTO createByServiceCodeAndMethodCode(Long projectId, ScheduleTaskDTO scheduleTaskDTO) {
+        ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.createByServiceCodeAndMethodCode("project", projectId, scheduleTaskDTO);
+        QuartzTaskDTO quartzTaskDTO = quartzTaskDTOResponseEntity.getBody();
+        if (quartzTaskDTOResponseEntity.getStatusCode().is2xxSuccessful() && quartzTaskDTO != null && quartzTaskDTO.getId() != null) {
+            return quartzTaskDTOResponseEntity.getBody();
+        } else {
+            throw new CommonException("error.create.quartz.task");
+        }
+    }
+
+
+    public QuartzTaskDTO queryByName(String taskName) {
+        ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.queryByName(taskName);
+        return quartzTaskDTOResponseEntity.getBody();
+    }
+
+    public void deleteQuartzTask(List<Long> quartzTaskIds) {
+        ResponseEntity<QuartzTaskDTO> roleResponseEntity = asgardFeignClient.deleteByIds(quartzTaskIds);
+        if (!roleResponseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.delete.quartz.task");
+        }
     }
 
     public void retrySaga(Long projectId, Long instanceId) {

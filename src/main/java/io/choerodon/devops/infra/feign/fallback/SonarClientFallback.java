@@ -105,5 +105,63 @@ public class SonarClientFallback implements SonarClient {
         return null;
     }
 
+    @Override
+    public Call<ResponseBody> createQualityGate(Map<String, String> maps) {
+        return null;
+    }
 
+    @Override
+    public Call<ResponseBody> createQualityGateCondition(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> deleteQualityGateCondition(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> deleteQualityGate(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> searchProjects(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> createProject(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> getSonarQualityGateResultDetail(Map<String, String> maps) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> gateShow(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> bindQualityGate(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> getUser(Map<String, String> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> createUser(Map<String, Object> data) {
+        return null;
+    }
+
+    @Override
+    public Call<ResponseBody> addUserPermission(Map<String, Object> data) {
+        return null;
+    }
 }

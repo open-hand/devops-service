@@ -77,6 +77,20 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        if (ciTemplateStepVO.getMavenPublishConfig() != null) {
+            CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.voToDto(ciTemplateStepVO.getMavenPublishConfig());
+            ciTemplateMavenPublishService.baseCreate(ciTemplateStepVO.getId(), ciTemplateMavenPublishDTO);
+        }
+    }
+
+    @Override
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateMavenPublishService.deleteByTemplateId(ciTemplateStepVO.getId());
+    }
+
+    @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.queryByStepId(devopsCiStepVO.getId());
         if (ciTemplateMavenPublishDTO != null) {

@@ -19,6 +19,7 @@ import org.hzero.starter.keyencrypt.core.EncryptContext;
 import org.hzero.starter.keyencrypt.core.EncryptType;
 import org.hzero.starter.keyencrypt.core.IEncryptionService;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
@@ -106,19 +107,60 @@ public final class KeyDecryptHelper {
             return null;
         }
 
-        Long[] result = new Long[ids.length];
+        List<Long> result = new ArrayList<>();
+
         if (EncryptContext.isEncrypt()) {
             ensureEncryptService();
             for (int i = 0; i < ids.length; i++) {
-                result[i] = Long.parseLong(ENCRYPTION_SERVICE.decrypt(ids[i], EMPTY));
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(Long.parseLong(ENCRYPTION_SERVICE.decrypt(ids[i], EMPTY)));
+                }
             }
         } else {
             for (int i = 0; i < ids.length; i++) {
-                result[i] = Long.parseLong(ids[i]);
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(Long.parseLong(ids[i]));
+                }
             }
         }
-        return result;
+        return result.toArray(new Long[ids.length]);
     }
+
+    /**
+     * 解密加密id字符串的数组为Long数组
+     *
+     * @param ids 字符串数组
+     * @return Long数据
+     */
+    @Nullable
+    public static String[] encryptArray(@Nullable String[] ids) {
+        if (ids == null || ids.length == 0) {
+            return null;
+        }
+
+        List<String> result = new ArrayList<>();
+
+        if (EncryptContext.isEncrypt()) {
+            ensureEncryptService();
+            for (int i = 0; i < ids.length; i++) {
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(ENCRYPTION_SERVICE.encrypt(ids[i], EMPTY));
+                }
+            }
+        } else {
+            for (int i = 0; i < ids.length; i++) {
+                String currentValue = ids[i];
+                if (!ObjectUtils.isEmpty(currentValue)) {
+                    result.add(ids[i]);
+                }
+            }
+        }
+        return result.toArray(new String[ids.length]);
+    }
+
 
     /**
      * 解密加密id字符串的列表为Long列表

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
+
+    <update id="updateStatusToFailed">
+        update devops_pipeline_record
+        set status       = #{status},
+            finished_date=#{finishDate}
+        where id = #{pipelineRecordId}
+          and (status = 'running' or status = 'not_audit')
+    </update>
+    <update id="retryPipeline">
+        update devops_pipeline_record
+        set status        = 'created',
+            started_date=#{startDate},
+            finished_date = null
+        where id = #{id}
+          and (status = 'failed' or status = 'canceled')
+    </update>
+    <select id="listByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
+        select dpr.*
+        from devops_pipeline_record dpr
+        where dpr.pipeline_id = #{pipelineId}
+        order by dpr.id desc
+    </select>
+    <select id="queryByIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineRecordDTO">
+        select *
+        from devops_pipeline_record
+        where id = #{id}
+            for
+        update;
+    </select>
+    <select id="listUserAuditRecordsByPipelineId" resultType="io.choerodon.devops.api.vo.cd.PipelineRecordVO">
+        select dpr.*
+        from devops_pipeline_record dpr
+                 inner join devops_pipeline_audit_record dpar on dpar.pipeline_id = dpr.pipeline_id
+                 inner join devops_pipeline_audit_user_record dpaur on dpar.id = dpaur.audit_record_id
+        where dpr.pipeline_id = #{pipelineId}
+          and dpaur.user_id = #{userId}
+          and dpaur.status = 'not_audit'
+          and dpr.status = 'not_audit'
+        group by dpr.id
+        order by dpr.id desc
+    </select>
+</mapper>

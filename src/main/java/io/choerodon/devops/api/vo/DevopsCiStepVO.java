@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 
@@ -39,6 +40,9 @@ public class DevopsCiStepVO {
     @ApiModelProperty("步骤所属任务id")
     private Long devopsCiJobId;
 
+    @ApiModelProperty("关联的应用服务id")
+    private Long appServiceId;
+
     @ApiModelProperty("步骤为代码扫描时需要，保存代码扫描相关信息")
     private DevopsCiSonarConfigVO sonarConfig;
 
@@ -50,6 +54,16 @@ public class DevopsCiStepVO {
 
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
     private DevopsCiMavenBuildConfigVO mavenBuildConfig;
+    @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
+    private CiAuditConfigVO ciAuditConfig;
+
+    public CiAuditConfigVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiAuditConfigVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
 
     public DevopsCiMavenPublishConfigVO getMavenPublishConfig() {
         return mavenPublishConfig;
@@ -129,5 +143,13 @@ public class DevopsCiStepVO {
 
     public void setDevopsCiJobId(Long devopsCiJobId) {
         this.devopsCiJobId = devopsCiJobId;
+    }
+
+    public Long getAppServiceId() {
+        return appServiceId;
+    }
+
+    public void setAppServiceId(Long appServiceId) {
+        this.appServiceId = appServiceId;
     }
 }

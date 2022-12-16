@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiSonarQualityGateConditionMapper">
+  <select id="listByGateId" resultType="io.choerodon.devops.infra.dto.DevopsCiSonarQualityGateConditionDTO">
+    SELECT id,
+           sonar_condition_id,
+           gate_id,
+           gates_metric,
+           gates_operator,
+           gates_value,
+           gates_scope,
+           object_version_number,
+           created_by,
+           creation_date,
+           last_updated_by,
+           last_update_date
+    FROM devops_ci_sonar_quality_gate_condition dcsqgc
+    WHERE dcsqgc.gate_id = #{gateId}
+  </select>
+
+  <select id="listBySonarIds" resultType="io.choerodon.devops.infra.dto.DevopsCiSonarQualityGateConditionDTO">
+    SELECT id,
+           sonar_condition_id,
+           gate_id,
+           gates_metric,
+           gates_operator,
+           gates_value,
+           gates_scope,
+           object_version_number,
+           created_by,
+           creation_date,
+           last_updated_by,
+           last_update_date
+    FROM devops_ci_sonar_quality_gate_condition dcsqgc
+    WHERE sonar_condition_id IN
+    <foreach collection="conditionSonarIdList" item="sonarId" open="(" close=")" separator=",">
+      #{sonarId}
+    </foreach>
+  </select>
+
+  <delete id="deleteByGateId">
+    DELETE
+    FROM devops_ci_sonar_quality_gate_condition
+    WHERE gate_id = #{gateId}
+  </delete>
+</mapper>

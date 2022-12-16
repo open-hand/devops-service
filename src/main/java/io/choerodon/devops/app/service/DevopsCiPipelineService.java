@@ -43,7 +43,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询流水线详情（包含阶段和job信息）
      */
-    CiCdPipelineVO query(Long projectId, Long pipelineId);
+    CiCdPipelineVO query(Long projectId, Long pipelineId, Boolean deleteCdInfo);
 
     /**
      * 根据应用服务id查询流水线
@@ -54,7 +54,7 @@ public interface DevopsCiPipelineService {
     CiCdPipelineDTO queryByAppSvcId(Long appServiceId);
 
     /**
-     * 查询项目下流水线列表（包含5条执行记录）
+     * 查询项目下流水线列表
      */
     Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status);
 
@@ -62,6 +62,8 @@ public interface DevopsCiPipelineService {
      * 查询流水线信息
      */
     CiCdPipelineVO queryById(Long ciPipelineId);
+
+    CiCdPipelineDTO baseQueryById(Long id);
 
     /**
      * 停用流水线
@@ -117,4 +119,6 @@ public interface DevopsCiPipelineService {
     List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
 
     List<String> listPipelineNameReferenceByConfigId(Long projectId, Long configId);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
 }

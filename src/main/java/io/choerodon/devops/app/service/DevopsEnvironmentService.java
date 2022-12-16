@@ -372,4 +372,10 @@ public interface DevopsEnvironmentService {
     DevopsEnvironmentDTO getProjectEnvironment(Long projectId, Long envId);
 
     Boolean checkEnableCreateEnv(Long projectId);
+
+    DevopsEnvironmentDTO queryByIdOrThrowE(Long id);
+
+    Boolean hasEnvironmentPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, Long projectId);
+
+    Boolean hasEnvironmentPermission(Long envId, Long projectId);
 }

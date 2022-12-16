@@ -4,14 +4,13 @@ import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotEmpty;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.*;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 
 /**
@@ -60,13 +59,6 @@ public class DevopsCiJobVO {
     @ApiModelProperty("触发类型")
     private String triggerType;
 
-    /**
-     * {@link CiConfigVO}
-     */
-    @ApiModelProperty("详细信息 / 如果是自定义任务, 这个字段是base64加密过的")
-    @NotEmpty(message = "{devops.job.metadata.cannot.be.null}")
-    private String metadata;
-
     @ApiModelProperty("是否上传共享目录的内容 / 默认为false")
     private Boolean toUpload;
 
@@ -86,6 +78,78 @@ public class DevopsCiJobVO {
     private Boolean completed = true;
 
     private String stageName;
+    @ApiModelProperty("任务配置id")
+    @Encrypt
+    private Long configId;
+
+    @ApiModelProperty("启动延时,单位默认为分")
+    private Integer startIn;
+
+    private String tags;
+
+    @ApiModelProperty("是否有权限修改cd的job,默认有")
+    private boolean edit = true;
+
+    @ApiModelProperty("任务为人工卡点时需要，保存人工卡点相关配置信息")
+    private CiAuditConfigVO ciAuditConfig;
+    @ApiModelProperty("任务为chart部署时需要，保存chart部署相关配置信息")
+    private CiChartDeployConfigVO ciChartDeployConfig;
+    @ApiModelProperty("任务为deploment部署时需要，保存deployment部署相关配置信息")
+    private CiDeployDeployCfgVO ciDeployDeployCfg;
+
+    @ApiModelProperty("任务为api_test类型，保存api测试相关配置信息")
+    private DevopsCiApiTestInfoVO devopsCiApiTestInfoVO;
+
+    @ApiModelProperty("任务为主机部署类型，保存主机部署相关配置信息")
+    private DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO;
+
+    public boolean isEdit() {
+        return edit;
+    }
+
+    public void setEdit(boolean edit) {
+        this.edit = edit;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public CiDeployDeployCfgVO getCiDeployDeployCfg() {
+        return ciDeployDeployCfg;
+    }
+
+    public void setCiDeployDeployCfg(CiDeployDeployCfgVO ciDeployDeployCfg) {
+        this.ciDeployDeployCfg = ciDeployDeployCfg;
+    }
+
+    public CiChartDeployConfigVO getCiChartDeployConfig() {
+        return ciChartDeployConfig;
+    }
+
+    public void setCiChartDeployConfig(CiChartDeployConfigVO ciChartDeployConfig) {
+        this.ciChartDeployConfig = ciChartDeployConfig;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
+    public CiAuditConfigVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiAuditConfigVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
 
     public String getStageName() {
         return stageName;
@@ -146,11 +210,6 @@ public class DevopsCiJobVO {
     }
 
     private Long objectVersionNumber;
-
-    @JsonIgnore
-    @Transient
-    @ApiModelProperty("类型为build的job的metadata转为json后的对象")
-    private CiConfigVO configVO;
 
     public Integer getParallel() {
         return parallel;
@@ -216,14 +275,6 @@ public class DevopsCiJobVO {
         this.triggerType = triggerType;
     }
 
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
-
     public Long getObjectVersionNumber() {
         return objectVersionNumber;
     }
@@ -256,11 +307,27 @@ public class DevopsCiJobVO {
         this.toDownload = toDownload;
     }
 
-    public CiConfigVO getConfigVO() {
-        return configVO;
+    public DevopsCiHostDeployInfoVO getDevopsCiHostDeployInfoVO() {
+        return devopsCiHostDeployInfoVO;
     }
 
-    public void setConfigVO(CiConfigVO configVO) {
-        this.configVO = configVO;
+    public void setDevopsCiHostDeployInfoVO(DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO) {
+        this.devopsCiHostDeployInfoVO = devopsCiHostDeployInfoVO;
+    }
+
+    public DevopsCiApiTestInfoVO getDevopsCiApiTestInfoVO() {
+        return devopsCiApiTestInfoVO;
+    }
+
+    public void setDevopsCiApiTestInfoVO(DevopsCiApiTestInfoVO devopsCiApiTestInfoVO) {
+        this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
+    }
+
+    public Integer getStartIn() {
+        return startIn;
+    }
+
+    public void setStartIn(Integer startIn) {
+        this.startIn = startIn;
     }
 }

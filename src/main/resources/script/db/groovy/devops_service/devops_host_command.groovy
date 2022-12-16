@@ -37,6 +37,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_command.groovy') {
         modifyDataType(tableName: 'devops_host_command', columnName: 'error', newDataType: 'TEXT')
     }
 
+    changeSet(author: 'lihao', id: '2022-11-10-add-column') {
+        addColumn(tableName: 'devops_host_command') {
+            column(name: 'ci_pipeline_record_id', type: 'BIGINT UNSIGNED', remarks: '流水线记录id')
+        }
+    }
+
 
 
 }

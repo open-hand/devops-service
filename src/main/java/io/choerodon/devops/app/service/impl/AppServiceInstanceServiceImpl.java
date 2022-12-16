@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import static io.choerodon.devops.app.service.impl.AgentMsgHandlerServiceImpl.CHOERODON_IO_REPLICAS_STRATEGY;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceInstanceCode.*;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceVersionCode.DEVOPS_VERSION_ID_NOT_EXIST;
@@ -22,6 +23,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
@@ -44,6 +46,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -221,11 +224,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsPrometheusMapper devopsPrometheusMapper;
     @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
-    @Autowired
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    @Lazy
+    private DevopsCiJobService devopsCiJobService;
+
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -312,7 +319,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         Map<String, Object> maps = TypeUtil.castMapParams(params);
         List<Long> updatedEnv = clusterConnectionHandler.getUpdatedClusterList();
         Page<AppServiceInstanceInfoVO> pageInfo = ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.getMappedPage(pageable, orderByFieldMap), () -> appServiceInstanceMapper.listInstanceInfoByEnvAndOptions(
-                envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
+                        envId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAMS)))),
                 AppServiceInstanceInfoVO.class);
         Set<Long> marketInstanceCommandVersionIds = new HashSet<>();
         Set<Long> appServiceIds = new HashSet<>();
@@ -819,6 +826,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByEnvIdAndCode(appServiceDeployVO.getEnvironmentId(), code);
                 devopsDeployAppCenterEnvDTO.setName(appServiceDeployVO.getAppName());
                 devopsDeployAppCenterService.baseUpdate(devopsDeployAppCenterEnvDTO);
+
+                instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceDeployVO.getReplicasStrategy()).orElse(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.REPLICAS.getStrategy())));
             }
             devopsDeployRecordService.saveRecord(
                     devopsEnvironmentDTO.getProjectId(),
@@ -1182,6 +1191,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getValues(),
                     instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
                     instanceSagaPayload.getSecretCode(),
+                    instanceSagaPayload.getReplicasStrategy(),
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             resourceConvertToYamlHandler.operationEnvGitlabFile(
@@ -1532,6 +1542,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         instanceSagaPayload.setAppServiceVersionDTO(appServiceVersionDTO);
         instanceSagaPayload.setAppServiceDeployVO(appServiceDeployVO);
         instanceSagaPayload.setDevopsEnvironmentDTO(devopsEnvironmentDTO);
+        instanceSagaPayload.setReplicasStrategy(Optional.ofNullable(appServiceInstanceDTO.getReplicasStrategy()).orElse(ReplicasStrategyEnum.REPLICAS.getStrategy()));
 
         //目前重新部署也走gitops逻辑
         producer.apply(
@@ -2157,6 +2168,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                     instanceSagaPayload.getAppServiceDeployVO().getValues(),
                     instanceSagaPayload.getAppServiceDeployVO().getAppServiceVersionId(),
                     instanceSagaPayload.getSecretCode(),
+                    null,
                     instanceSagaPayload.getDevopsEnvironmentDTO()));
 
             String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
@@ -2267,7 +2279,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
         customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
 
-        DetailsHelper.setCustomUserDetails(customUserDetails);
+        CustomContextUtil.setUserContext(customUserDetails);
+        ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
         AppServiceInstanceVO instanceVO;
         Long commandId = null;
         if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
@@ -2434,9 +2447,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
     private C7nHelmRelease getC7NHelmRelease(String code, String repository,
                                              Long appServiceId,
-                                             Long commandId, String appServiceCode,
-                                             String version, String deployValue,
-                                             Long deployVersionId, String secretName,
+                                             Long commandId,
+                                             String appServiceCode,
+                                             String version,
+                                             String deployValue,
+                                             Long deployVersionId,
+                                             String secretName,
+                                             String replicasStrategy,
                                              DevopsEnvironmentDTO devopsEnvironmentDTO) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
@@ -2453,6 +2470,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         if (secretName != null) {
             c7nHelmRelease.getSpec().setImagePullSecrets(ArrayUtil.singleAsList(new ImagePullSecret(secretName)));
+        }
+
+        if (!ObjectUtils.isEmpty(replicasStrategy)) {
+            Metadata metadata = c7nHelmRelease.getMetadata();
+            Map<String, String> annotations = new HashMap<>();
+            annotations.put(CHOERODON_IO_REPLICAS_STRATEGY, replicasStrategy);
+            metadata.setAnnotations(annotations);
         }
 
         // 如果是组件的实例进行部署
@@ -2731,6 +2755,13 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         InstanceValueVO instanceValueVO = new InstanceValueVO();
         instanceValueVO.setYaml(marketServiceClientOperator.queryValues(projectId, marketDeployObjectId).getValue());
         return instanceValueVO;
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
+
+        return devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
     }
 
     private String[] parseMarketRepo(String harborRepo) {
