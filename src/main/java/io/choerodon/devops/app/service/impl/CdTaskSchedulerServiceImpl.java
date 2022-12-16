@@ -96,6 +96,7 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                         pipelineStageRecordService.updateStatus(stageRecordId);
                         transactionManager.commit(transactionStatus);
                     } catch (Exception e) {
+                        LOGGER.error("Update job status failed.", e);
                         transactionManager.rollback(transactionStatus);
                     } finally {
                         SecurityContextHolder.clearContext();
