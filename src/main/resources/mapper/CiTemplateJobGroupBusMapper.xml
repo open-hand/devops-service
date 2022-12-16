@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateJobGroupBusMapper">
+
+
+    <select id="queryTemplateJobGroupByParams" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobGroupVO">
+        SELECT
+        dctjg.*,
+        ifnull( ( SELECT count( * ) FROM devops_ci_template_job dctj WHERE dctj.group_id = dctjg.id AND dctj.source_id= #{sourceId,jdbcType=BIGINT}),0) AS template_number
+        FROM
+           devops_ci_template_job_group dctjg
+        <where>
+            <if test="searchParam != null and searchParam != ''">
+                AND dctjg.name LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}), '%')
+            </if>
+        </where>
+    
+
+    </select>
+
+
+    <select id="checkTemplateJobGroupName" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_ci_template_job_group dctjg
+        WHERE dctjg.name = #{name}
+
+        <if test="templateJobId != null">
+            AND dctjg.id != #{templateJobId}
+        </if>
+        LIMIT 1
+    </select>
+
+</mapper>
