@@ -104,7 +104,8 @@ public class CdTaskSchedulerServiceImpl implements CdTaskSchedulerService {
                                         .newBuilder()
                                         .withLevel(ResourceLevel.PROJECT)
                                         .withSourceId(projectId)
-                                        .withRefType("jobRecord")
+                                        .withRefType("update-stage-status")
+                                        .withRefId(stageRecordId.toString())
                                         .withSagaCode(SagaTopicCodeConstants.DEVOPS_PIPELINE_JOB_FINISH),
                                 builder -> builder
                                         .withJson(JsonHelper.marshalByJackson(new PipelineJobFinishVO(stageRecordId, jobRecordId)))
