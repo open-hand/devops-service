@@ -66,12 +66,15 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @ApiModelProperty("发包的目的仓库信息 json格式")
     private String targetRepoStr;
 
+
     @Encrypt
     @ApiModelProperty("nexus的maven仓库在制品库的主键id")
     private Long nexusRepoId;
     @ApiModelProperty("表单填写的Maven的依赖仓库")
     @Transient
     private List<MavenRepoVO> repos;
+    @ApiModelProperty("发包的目的仓库信息")
+    private MavenRepoVO targetRepo;
 
 
     public Long getId() {
@@ -145,6 +148,14 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
 
     public void setRepos(List<MavenRepoVO> repos) {
         this.repos = repos;
+    }
+
+    public MavenRepoVO getTargetRepo() {
+        return targetRepo;
+    }
+
+    public void setTargetRepo(MavenRepoVO targetRepo) {
+        this.targetRepo = targetRepo;
     }
 }
 
