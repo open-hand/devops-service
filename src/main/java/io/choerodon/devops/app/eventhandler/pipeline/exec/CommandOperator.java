@@ -84,6 +84,7 @@ public class CommandOperator {
                     break;
                 case SUCCESS:
                     ciResponseVO.setFailed(false);
+                    result.put("errorMsg", devopsHostCommandDTO.getError());
                     break;
             }
         } else {
