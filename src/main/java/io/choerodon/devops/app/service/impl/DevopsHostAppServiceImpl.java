@@ -85,7 +85,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
 
-    private static final String APP_FILE_SAVE_PATH_ON_HOST_TEMPLATE = "%s%s"
+    private static final String APP_FILE_SAVE_PATH_ON_HOST_TEMPLATE = "%s%s";
 
     @Lazy
     @Autowired
