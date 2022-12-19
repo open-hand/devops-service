@@ -696,7 +696,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 如果流水线状态为running则尝试同步记录状态
-        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
+        if (PipelineStatus.RUNNING.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+            if (!ciPipelineSyncHandler.inFetchPeriod(gitlabPipelineId.intValue())) {
+                syncPipelineUpdate(devopsCiPipelineRecordDTO.getId(), gitlabPipelineId.intValue());
+            }
+        }
+//        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
