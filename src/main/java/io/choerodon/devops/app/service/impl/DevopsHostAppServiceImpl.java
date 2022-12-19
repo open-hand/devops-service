@@ -85,6 +85,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
 
+    private static final String APP_FILE_SAVE_PATH_ON_HOST_TEMPLATE = "%s%s"
+
     @Lazy
     @Autowired
     private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
@@ -856,7 +858,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName();
-            appFile = workDir + SLASH + appFileName;
+            appFile = workDir + SLASH + appFileName + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(null,
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
@@ -865,14 +867,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             String downloadUrl = jarDeployVO.getJarPullInfoDTO().getDownloadUrl();
 
             appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
-            appFile = workDir + SLASH + appFileName;
+            appFile = workDir + SLASH + appFileName + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(jarDeployVO.getJarPullInfoDTO().getPullUserId(),
                     jarDeployVO.getJarPullInfoDTO().getPullUserPassword(),
                     downloadUrl,
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
-            appFile = workDir + SLASH + appFileName;
+            appFile = workDir + SLASH + appFileName + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
