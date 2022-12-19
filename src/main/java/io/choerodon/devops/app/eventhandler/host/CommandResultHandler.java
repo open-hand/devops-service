@@ -141,6 +141,7 @@ public class CommandResultHandler implements HostMsgHandler {
         if (Boolean.TRUE.equals(commandResultVO.getSuccess())) {
             // 操作成功处理逻辑
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.SUCCESS.value());
+            devopsHostCommandDTO.setError(commandResultVO.getErrorMsg());
             // 使用函数式接口 + 策略模式
             BiConsumer<String, String> consumer = resultHandlerMap.get(devopsHostCommandDTO.getCommandType());
             if (consumer != null) {

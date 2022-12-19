@@ -747,11 +747,12 @@ function host_deploy_status_check() {
         error_msg=$(jq -r .content.errorMsg result.json)
         if [ "${is_failed}" == "true" ];then
           echo "部署失败"
-          cat result.json
+          cat error_msg
           exit 1
         else
           if [ "${status}" == "success" ]; then
               echo "部署成功"
+              cat error_msg
               exit 0
           fi
         fi
