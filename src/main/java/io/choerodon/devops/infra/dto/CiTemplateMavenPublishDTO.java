@@ -74,6 +74,7 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
     @Transient
     private List<MavenRepoVO> repos;
     @ApiModelProperty("发包的目的仓库信息")
+    @Transient
     private MavenRepoVO targetRepo;
 
 
