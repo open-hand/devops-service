@@ -54,6 +54,9 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
             ciTemplateMavenPublishDTO.setRepos(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
             }));
         }
+        if (org.springframework.util.StringUtils.hasText(ciTemplateMavenPublishDTO.getTargetRepoStr())) {
+            ciTemplateMavenPublishDTO.setTargetRepo(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getTargetRepoStr(), MavenRepoVO.class));
+        }
         return ciTemplateMavenPublishDTO;
     }
 
@@ -64,6 +67,9 @@ public class CiTemplateMavenPublishServiceImpl implements CiTemplateMavenPublish
         }
         if (!CollectionUtils.isEmpty(ciTemplateMavenPublishDTO.getRepos())) {
             ciTemplateMavenPublishDTO.setRepoStr(JsonHelper.marshalByJackson(ciTemplateMavenPublishDTO.getRepos()));
+        }
+        if (ciTemplateMavenPublishDTO.getTargetRepo() != null) {
+            ciTemplateMavenPublishDTO.setTargetRepoStr(JsonHelper.marshalByJackson(ciTemplateMavenPublishDTO.getTargetRepo()));
         }
         return ciTemplateMavenPublishDTO;
     }
