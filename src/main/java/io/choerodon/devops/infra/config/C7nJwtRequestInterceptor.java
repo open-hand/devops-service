@@ -23,11 +23,13 @@ import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.jwt.crypto.sign.MacSigner;
 import org.springframework.security.jwt.crypto.sign.Signer;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 
 @Primary
+@Component
 public class C7nJwtRequestInterceptor extends JwtRequestInterceptor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtRequestInterceptor.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
