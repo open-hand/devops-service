@@ -29,12 +29,15 @@ public class ProductSourceRequestInterceptor implements FeignRequestInterceptor 
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
 
         try {
-            if (userDetails != null) {
-                userDetails.getAdditionInfo().putIfAbsent("request-source", ZKnowDetailsHelper.VALUE_CHOERODON);
+            if (userDetails == null) {
+                userDetails = DetailsHelper.getAnonymousDetails();
+                DetailsHelper.setCustomUserDetails(userDetails);
+            }
+
+            if (userDetails.getAdditionInfo() == null) {
+                ZKnowDetailsHelper.setRequestSource(userDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
             } else {
-                CustomUserDetails anonymousDetails = DetailsHelper.getAnonymousDetails();
-                anonymousDetails.getAdditionInfo().putIfAbsent("request-source", ZKnowDetailsHelper.VALUE_CHOERODON);
-                DetailsHelper.setCustomUserDetails(anonymousDetails);
+                userDetails.getAdditionInfo().putIfAbsent("request-source", ZKnowDetailsHelper.VALUE_CHOERODON);
             }
         } catch (Exception e) {
             LOGGER.error("============================Add product source failed=============================", e);
