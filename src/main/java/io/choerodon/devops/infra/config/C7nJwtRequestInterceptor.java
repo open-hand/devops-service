@@ -16,6 +16,7 @@ import org.hzero.core.variable.RequestVariableHolder;
 import org.hzero.feign.interceptor.JwtRequestInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -35,6 +36,7 @@ public class C7nJwtRequestInterceptor extends JwtRequestInterceptor {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String OAUTH_TOKEN_PREFIX = "Bearer ";
     private Signer signer;
+    @Autowired
     private CoreProperties coreProperties;
 
     public C7nJwtRequestInterceptor(CoreProperties coreProperties) {
@@ -72,7 +74,7 @@ public class C7nJwtRequestInterceptor extends JwtRequestInterceptor {
             if (token == null) {
                 LOGGER.debug("Feign request set Header Jwt_Token, no member token found, use AnonymousUser default.");
                 CustomUserDetails anonymousDetails = DetailsHelper.getAnonymousDetails();
-                ZKnowDetailsHelper.setRequestSource(anonymousDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
+                anonymousDetails.getAdditionInfo().putIfAbsent("request-source", ZKnowDetailsHelper.VALUE_CHOERODON);
                 token = "Bearer " + JwtHelper.encode(OBJECT_MAPPER.writeValueAsString(anonymousDetails), this.signer).getEncoded();
             }
         } catch (Exception var5) {
