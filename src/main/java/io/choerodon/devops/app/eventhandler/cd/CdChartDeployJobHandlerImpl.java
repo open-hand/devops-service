@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
@@ -286,7 +287,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                     appCode);
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
                     appServiceDeployVO,
-                    true);
+                    DeployType.AUTO);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
             pipelineChartDeployCfgDTO.setAppId(appId);
@@ -353,7 +354,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.AUTO);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
