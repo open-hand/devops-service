@@ -49,7 +49,6 @@ public class PipelineDTO extends AuditDomain {
     private String name;
 
     @ApiModelProperty(value = "当前生效的版本，devops_pipeline_version.id", required = true)
-    @NotNull
     @Encrypt
     private Long effectVersionId;
 
