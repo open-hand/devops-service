@@ -109,6 +109,9 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                     appDeployConfigVO.getAppCode());
         } else {
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appDeployConfigVO.getAppId());
+            if (devopsDeployAppCenterEnvDTO == null) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_NOT_EXIST);
+            }
             appDeployConfigVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             appDeployConfigVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
             if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(appDeployConfigVO.getEnvId())) {
