@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -92,7 +93,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                     appCode);
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
                     appServiceDeployVO,
-                    true);
+                    DeployType.CD);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
             ciChartDeployConfigDTO.setAppId(appId);
@@ -148,7 +149,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.CD);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }

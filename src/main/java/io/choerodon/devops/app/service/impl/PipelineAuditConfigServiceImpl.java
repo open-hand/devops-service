@@ -44,13 +44,16 @@ public class PipelineAuditConfigServiceImpl implements PipelineAuditCfgService {
         Assert.notNull(pipelineId, PipelineCheckConstant.DEVOPS_PIPELINE_ID_IS_NULL);
 
         List<PipelineAuditCfgDTO> pipelineAuditCfgDTOS = listByPipelineId(pipelineId);
-        List<Long> configIds = pipelineAuditCfgDTOS.stream().map(PipelineAuditCfgDTO::getId).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(pipelineAuditCfgDTOS)) {
+            List<Long> configIds = pipelineAuditCfgDTOS.stream().map(PipelineAuditCfgDTO::getId).collect(Collectors.toList());
 
-        pipelineAuditUserService.batchDeleteByConfigIds(configIds);
+            pipelineAuditUserService.batchDeleteByConfigIds(configIds);
 
-        PipelineAuditCfgDTO pipelineAuditCfgDTO = new PipelineAuditCfgDTO();
-        pipelineAuditCfgDTO.setPipelineId(pipelineId);
-        pipelineAuditConfigMapper.delete(pipelineAuditCfgDTO);
+            PipelineAuditCfgDTO pipelineAuditCfgDTO = new PipelineAuditCfgDTO();
+            pipelineAuditCfgDTO.setPipelineId(pipelineId);
+            pipelineAuditConfigMapper.delete(pipelineAuditCfgDTO);
+        }
+
     }
 
     @Override

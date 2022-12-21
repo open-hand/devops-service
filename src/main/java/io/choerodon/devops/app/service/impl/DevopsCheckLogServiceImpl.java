@@ -284,7 +284,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
 
                     } else {
-                        // todo 迁移到部署流水线
                         PipelineVO pipelineVO = new PipelineVO();
                         pipelineVO.setName(appServiceDTO.getName());
                         pipelineVO.setName(appServiceDTO.getName());

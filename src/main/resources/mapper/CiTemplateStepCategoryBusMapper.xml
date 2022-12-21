@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStepCategoryBusMapper">
+
+
+    <select id="queryTemplateStepCategoryByParams" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO">
+        SELECT
+        dctsc.*,
+        ifnull( ( SELECT count( * ) FROM devops_ci_template_step dcts  WHERE dcts.category_id = dctsc.id AND dcts.source_id=#{sourceId,jdbcType=BIGINT} ),0) as template_number
+        FROM
+        devops_ci_template_step_category dctsc
+        where 1=1
+        <if test="searchParam != null and searchParam != ''">
+            AND dctsc.`name` LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}),'%')
+        </if>
+
+
+    </select>
+
+    <select id="checkTemplateStepCategoryName" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_ci_template_step_category dctsc
+        WHERE dctsc.name = #{name}
+        <if test="ciTemplateCategoryId != null">
+            AND dctsc.id != #{ciTemplateCategoryId}
+        </if>
+        LIMIT 1
+    </select>
+</mapper>

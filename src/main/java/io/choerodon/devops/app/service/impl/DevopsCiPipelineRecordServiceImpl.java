@@ -696,7 +696,12 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
 
         // 如果流水线状态为running则尝试同步记录状态
-        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
+        if (PipelineStatus.RUNNING.toValue().equals(devopsCiPipelineRecordDTO.getStatus())) {
+            if (!ciPipelineSyncHandler.inFetchPeriod(gitlabPipelineId.intValue())) {
+                syncPipelineUpdate(devopsCiPipelineRecordDTO.getId(), gitlabPipelineId.intValue());
+            }
+        }
+//        ciPipelineSyncHandler.syncPipeline(devopsCiPipelineRecordDTO.getStatus(), devopsCiPipelineRecordDTO.getLastUpdateDate(), devopsCiPipelineRecordDTO.getId(), TypeUtil.objToInteger(devopsCiPipelineRecordDTO.getGitlabPipelineId()));
 
         DevopsCiPipelineRecordVO devopsCiPipelineRecordVO = ConvertUtils.convertObject(devopsCiPipelineRecordDTO, DevopsCiPipelineRecordVO.class);
         IamUserDTO iamUserDTO = baseServiceClientOperator.queryUserByUserId(devopsCiPipelineRecordDTO.getTriggerUserId());
@@ -1846,7 +1851,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
-        String appFile = workDir + SLASH + artifactId;
+        String appFile = workDir + SLASH + artifactId + ".jar";
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", artifactId);
         params.put("{{ APP_FILE }}", appFile);

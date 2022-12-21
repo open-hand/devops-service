@@ -14,6 +14,7 @@ import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -75,10 +76,12 @@ public interface AppServiceInstanceService {
      *
      * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
-     * @param isFromPipeline     是否是从流水线发起的部署
+     * @param deployType         是否是从流水线发起的部署
      * @return ApplicationInstanceVO
      */
-    AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
+    AppServiceInstanceVO createOrUpdate(@Nullable Long projectId,
+                                        AppServiceDeployVO appServiceDeployVO,
+                                        DeployType deployType);
 
     /**
      * 创建或者更新应用市场实例

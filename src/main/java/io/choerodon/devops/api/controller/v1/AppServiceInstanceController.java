@@ -27,6 +27,7 @@ import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -475,7 +476,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "部署信息", required = true)
             @RequestBody @Valid AppServiceDeployVO appServiceDeployVO) {
         appServiceDeployVO.setType("create");
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.MANUAL));
     }
 
     /**
@@ -496,7 +497,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "更新信息", required = true)
             @RequestBody @Valid AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
         appServiceDeployUpdateVO.setType("update");
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), DeployType.MANUAL));
     }
 
     /**

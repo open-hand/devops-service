@@ -111,21 +111,21 @@ DevOps Service integrated several open source tools to automate the process of `
   hzero:
     service:
       platform:
-        name: choerodon-platform
+        name: zknow-platform
       oauth:
-        name: choerodon-oauth
+        name: zknow-oauth
       iam:
-        name: choerodon-iam
+        name: zknow-iam
       file:
-        name: choerodon-file
+        name: zknow-file
       message:
-        name: choerodon-message
+        name: zknow-message
       admin:
-        name: choerodon-admin
+        name: zknow-admin
       swagger:
-        name: choerodon-swagger
+        name: zknow-swagger
       gateway:
-        name: choerodon-gateway
+        name: zknow-gateway
       monitor:
         name: choerodon-monitor
     websocket:

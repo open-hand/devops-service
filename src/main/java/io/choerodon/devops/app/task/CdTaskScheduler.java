@@ -53,9 +53,9 @@ public class CdTaskScheduler {
     }
 
     /**
-     * 10分钟执行一次，将running状态超时的任务改为failed
+     * 5分钟执行一次，将running状态超时的任务改为failed
      */
-    @Scheduled(fixedRate = 1000 * 60 * 10)
+    @Scheduled(fixedRate = 1000 * 60 * 5)
     public void cleanTimeoutTask() {
         cdTaskSchedulerService.cleanTimeoutTask(timeoutDuration);
     }

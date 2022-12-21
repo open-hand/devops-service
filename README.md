@@ -111,23 +111,23 @@ DevOps Service通过自主整合的DevOps工具链，集成相关的开源工具
   hzero:
     service:
       platform:
-        name: choerodon-platform
+        name: zknow-platform
       oauth:
-        name: choerodon-oauth
+        name: zknow-oauth
       iam:
-        name: choerodon-iam
+        name: zknow-iam
       file:
-        name: choerodon-file
+        name: zknow-file
       message:
-        name: choerodon-message
+        name: zknow-message
       admin:
-        name: choerodon-admin
+        name: zknow-admin
       swagger:
-        name: choerodon-swagger
+        name: zknow-swagger
       gateway:
-        name: choerodon-gateway
+        name: zknow-gateway
       monitor:
-        name: choerodon-monitor
+        name: zknow-monitor
     websocket:
       # 用于连接websocket的路径
       websocket: /websocket
