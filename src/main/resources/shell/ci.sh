@@ -752,7 +752,7 @@ function host_deploy_status_check() {
         else
           if [ "${status}" == "success" ]; then
               echo "部署成功"
-              cat echo "$error_msg"
+              echo "$error_msg"
               exit 0
           fi
         fi
