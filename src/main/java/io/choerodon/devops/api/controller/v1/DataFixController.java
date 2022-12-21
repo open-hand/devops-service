@@ -14,7 +14,7 @@ import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
-@RequestMapping("/data_fix")
+@RequestMapping("/v1/data_fix")
 public class DataFixController {
 
     @Autowired
