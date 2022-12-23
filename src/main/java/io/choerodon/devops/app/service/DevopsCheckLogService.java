@@ -9,4 +9,7 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
+
+    void migrationCdPipelineDate();
+
 }

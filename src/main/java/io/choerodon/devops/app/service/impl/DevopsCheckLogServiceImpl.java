@@ -159,7 +159,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
      * 1. 包含ci阶段的cd数据迁移到到ci
      * 2. 不包含ci阶段的cd数据迁移到新的部署流水线
      */
-    private void migrationCdPipelineDate() {
+    @Transactional(rollbackFor = Exception.class)
+    public void migrationCdPipelineDate() {
         // 查询所有的cd阶段
         List<DevopsCdStageDTO> devopsCdStageDTOS = devopsCdStageMapper.selectAll();
         if (!CollectionUtils.isEmpty(devopsCdStageDTOS)) {
