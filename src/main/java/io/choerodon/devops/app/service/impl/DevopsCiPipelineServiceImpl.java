@@ -1646,8 +1646,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                     if (DeployTypeEnum.UPDATE.value().equals(devopsCdEnvDeployInfoDTO.getDeployType()) && devopsCdEnvDeployInfoDTO.getAppId() == null) {
                                         continue;
                                     }
+                                    if (!CiTriggerType.REFS.value().equals(devopsCdJobDTO.getTriggerType())) {
+                                        continue;
+                                    }
                                     PipelineChartDeployCfgVO chartDeployCfg = ConvertUtils.convertObject(devopsCdEnvDeployInfoDTO, PipelineChartDeployCfgVO.class);
                                     chartDeployCfg.setAppServiceId(appServiceDTO.getId());
+                                    chartDeployCfg.setVersion(devopsCdJobDTO.getTriggerValue());
                                     pipelineJobVO.setChartDeployCfg(chartDeployCfg);
                                     pipelineJobVO.setType(CdJobTypeEnum.CD_CHART_DEPLOY.value());
                                 }
