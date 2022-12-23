@@ -325,7 +325,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             String basicInfo = userName + ":" + password;
             String token = "Basic " + Base64.getEncoder().encodeToString(basicInfo.getBytes());
 
-            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replace("\\.", BaseConstants.Symbol.SLASH));
+            mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH));
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getArtifactId());
             mavenRepoUrl = appendWithSlash(mavenRepoUrl, ciPipelineMavenDTO.getVersion() + "/maven-metadata.xml");
             logger.info(">>>>>>>>>>>>>>>>>>>>>>. maven-metadata.xml url is {}", mavenRepoUrl);
