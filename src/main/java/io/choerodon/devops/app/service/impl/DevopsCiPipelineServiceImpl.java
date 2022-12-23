@@ -913,7 +913,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         boolean projectOwner = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
         Set<Long> appServiceIds;
         if (projectOwner) {
-            appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+//            appServiceIds = appServiceMapper.listByActive(projectId, null).stream().map(AppServiceDTO::getId).collect(Collectors.toSet());
+            appServiceIds = new HashSet<>();
         } else {
             //如果是项目成员，需要developer及以上的权限
             ImmutableProjectInfoVO projectDTO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);

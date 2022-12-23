@@ -47,4 +47,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_record.groovy') {
             column(name: "source", type: "VARCHAR(255)", remarks: 'gitlab source', afterColumn: "gitlab_trigger_ref")
         }
     }
+    changeSet(author: 'wanghao', id: '2022-12-19-add-index') {
+        createIndex(tableName: 'devops_ci_pipeline_record', indexName: 'devops_ci_pipeline_record_n2') {
+            column(name: 'ci_pipeline_id')
+        }
+
+    }
 }
