@@ -642,22 +642,22 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     customDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
                     customDeployVO.getSourceType(),
                     AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null,
-                    Base64Util.getBase64EncodedString(customDeployVO.getPreCommand()),
-                    Base64Util.getBase64EncodedString(customDeployVO.getRunCommand()),
-                    Base64Util.getBase64EncodedString(customDeployVO.getPostCommand()),
-                    Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()),
-                    Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
+                    customDeployVO.getPreCommand(),
+                    customDeployVO.getRunCommand(),
+                    customDeployVO.getPostCommand(),
+                    customDeployVO.getKillCommand(),
+                    customDeployVO.getHealthProb());
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO.setName(customDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
-            devopsHostAppInstanceDTO.setPreCommand(Base64Util.getBase64EncodedString(customDeployVO.getPreCommand()));
-            devopsHostAppInstanceDTO.setRunCommand(Base64Util.getBase64EncodedString(customDeployVO.getRunCommand()));
-            devopsHostAppInstanceDTO.setPostCommand(Base64Util.getBase64EncodedString(customDeployVO.getPostCommand()));
-            devopsHostAppInstanceDTO.setKillCommand(Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()));
-            devopsHostAppInstanceDTO.setHealthProb(Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
+            devopsHostAppInstanceDTO.setPreCommand(customDeployVO.getPreCommand());
+            devopsHostAppInstanceDTO.setRunCommand(customDeployVO.getRunCommand());
+            devopsHostAppInstanceDTO.setPostCommand(customDeployVO.getPostCommand());
+            devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
+            devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
             devopsHostAppInstanceDTO.setSourceType(customDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null);
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
@@ -686,11 +686,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 customDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                ObjectUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getPreCommand()),
-                ObjectUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getRunCommand()),
-                ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getPostCommand()),
-                ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getKillCommand()),
-                ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getHealthProb()),
+                ObjectUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : Base64Util.decodeBuffer(HostDeployUtil.getCommand(params, customDeployVO.getPreCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : Base64Util.decodeBuffer(HostDeployUtil.getCommand(params, customDeployVO.getRunCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : Base64Util.decodeBuffer(HostDeployUtil.getCommand(params, customDeployVO.getPostCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : Base64Util.decodeBuffer(HostDeployUtil.getCommand(params, customDeployVO.getKillCommand())),
+                ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : Base64Util.decodeBuffer(HostDeployUtil.getCommand(params, customDeployVO.getHealthProb())),
                 customDeployVO.getOperation());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
