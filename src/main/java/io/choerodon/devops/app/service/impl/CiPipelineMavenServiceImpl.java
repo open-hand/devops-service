@@ -329,8 +329,8 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
         } catch (Exception ex) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
-                logger.debug("The ex is:", ex);
+                logger.info("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
+                logger.info("The ex is:", ex);
             }
             return ciPipelineMavenDTO.getVersion();
         }
