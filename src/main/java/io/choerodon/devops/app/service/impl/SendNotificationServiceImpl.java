@@ -141,7 +141,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param sendSettingCode 消息code
      * @param targetSupplier  转换目标用户
      */
-    private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<Receiver>> targetSupplier) {
+    private void sendNoticeAboutAppService(Long appServiceId,
+                                           String sendSettingCode,
+                                           Function<AppServiceDTO, List<Receiver>> targetSupplier) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
@@ -269,7 +271,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
 
         doWithTryCatchAndLog(
-                () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_DISABLE, app -> getAppReceivers(appServiceDTO)),
+                () -> sendNoticeAboutAppService(appServiceId,
+                        MessageCodeConstants.APP_SERVICE_DISABLE,
+                        app -> getAppReceivers(appServiceDTO)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is ", ex));
     }
 
@@ -280,7 +284,12 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         if (!CollectionUtils.isEmpty(memberDTOS)) {
             Set<Long> guids = memberDTOS.stream().map(m -> m.getId().longValue()).collect(Collectors.toSet());
             List<UserAttrVO> userAttrVOS = userAttrService.listUsersByGitlabUserIds(guids);
-            targetUsers = userAttrVOS.stream().map(u -> constructReceiver(u.getIamUserId())).collect(Collectors.toList());
+            List<Long> iamUserIds = userAttrVOS.stream()
+                    .map(UserAttrVO::getIamUserId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+            targetUsers = iamUserDTOS.stream().map(user -> constructReceiver(user.getId(), user.getEmail(), user.getPhone(), user.getOrganizationId())).collect(Collectors.toList());
         }
         return targetUsers;
     }
