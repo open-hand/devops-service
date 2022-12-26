@@ -443,11 +443,8 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setIamProjectId(projectId);
         //删除应用服务后需要发送消息，这里将消息的内容封近paylod, 外部应用不需要
         if (appServiceDTO.getExternalConfigId() == null) {
-            List<DevopsUserPermissionVO> list = pagePermissionUsers(appServiceDTO.getProjectId(), appServiceDTO.getId(), new PageRequest(0, 0), null).getContent();
-            if (!CollectionUtils.isEmpty(list)) {
-                list.forEach(devopsUserPermissionVO -> devopsUserPermissionVO.setCreationDate(null));
-            }
-            devOpsAppServicePayload.setDevopsUserPermissionVOS(list);
+            List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), null);
+            devOpsAppServicePayload.setMemberDTOS(memberDTOS);
         }
 
         devOpsAppServicePayload.setAppServiceDTO(appServiceDTO);

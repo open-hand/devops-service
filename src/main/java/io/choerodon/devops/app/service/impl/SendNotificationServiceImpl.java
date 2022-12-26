@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -11,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
@@ -25,24 +26,25 @@ import io.choerodon.core.enums.ServiceNotifyType;
 import io.choerodon.core.enums.TargetUserType;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HzeroMessageClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.CiCdPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsPipelineRecordRelMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -122,6 +124,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     private DevopsCiPipelineRecordService ciPipelineRecordService;
     @Autowired
     private CiCdPipelineMapper ciCdPipelineMapper;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -130,7 +134,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param sendSettingCode 消息code
      * @param targetSupplier  转换目标用户
      */
-    private void sendNoticeAboutAppService(Long appServiceId, String sendSettingCode, Function<AppServiceDTO, List<Receiver>> targetSupplier) {
+    private void sendNoticeAboutAppService(Long appServiceId,
+                                           String sendSettingCode,
+                                           List<Receiver> targetUsers) {
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, appServiceId, LOGGER);
@@ -147,7 +153,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
-        List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
         Map<String, String> makeAppServiceParams = makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO);
         makeAppServiceParams.put(LINK, String.format(APP_SERVICE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
@@ -161,7 +166,9 @@ public class SendNotificationServiceImpl implements SendNotificationService {
      * @param sendSettingCode 发送的消息code
      * @param targetSupplier  提供接收者的方法
      */
-    private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO, String sendSettingCode, Function<AppServiceDTO, List<Receiver>> targetSupplier) {
+    private void sendNoticeAboutAppService(AppServiceDTO appServiceDTO,
+                                           String sendSettingCode,
+                                           List<Receiver> targetUsers) {
         if (appServiceDTO == null) {
             LogUtil.loggerInfoObjectNullWithId(APP_SERVICE, null, LOGGER);
             return;
@@ -177,7 +184,6 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
-        List<Receiver> targetUsers = targetSupplier.apply(appServiceDTO);
         LOGGER.debug("AppService notice {}. Target users size: {}", sendSettingCode, targetUsers.size());
         Map<String, String> stringStringMap = makeAppServiceParams(organizationDTO.getTenantId(), projectDTO.getId(), projectDTO.getName(), projectDTO.getCategory(), appServiceDTO);
         stringStringMap.put(LINK, String.format(APP_SERVICE_URL, frontUrl, projectDTO.getId(), projectDTO.getName(), projectDTO.getOrganizationId()));
@@ -214,7 +220,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     public void sendWhenAppServiceCreate(AppServiceDTO appServiceDTO) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceDTO, SendSettingEnum.CREATE_APPSERVICE.value(),
-                        app -> ArrayUtil.singleAsList(constructReceiver(app.getCreatedBy()))),
+                        ArrayUtil.singleAsList(constructReceiver(appServiceDTO.getCreatedBy()))),
                 ex -> LOGGER.info("Error occurred when sending message about of app-service-create. The exception is ", ex));
     }
 
@@ -227,7 +233,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_CREATION_FAILED,
-                        app -> ArrayUtil.singleAsList(constructReceiver(app.getCreatedBy()))),
+                        ArrayUtil.singleAsList(constructReceiver(appServiceDTO.getCreatedBy()))),
                 ex -> LOGGER.info("Error occurred when sending message about failure of app-service. The exception is", ex));
     }
 
@@ -244,12 +250,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
         }
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_ENABLED,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
-                                .getContent())
-                                .stream()
-                                .map(p -> constructReceiver(p.getIamUserId()))
-                                .collect(Collectors.toList())
-                ),
+                        getAppReceivers(appServiceDTO)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is ", ex));
     }
 
@@ -264,25 +265,43 @@ public class SendNotificationServiceImpl implements SendNotificationService {
 
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_DISABLE,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
-                                .getContent())
-                                .stream()
-                                .map(p -> constructReceiver(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                        getAppReceivers(appServiceDTO)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is ", ex));
+    }
+
+    @NotNull
+    private List<Receiver> getAppReceivers(AppServiceDTO appServiceDTO) {
+        List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), null);
+        return getReceivers(memberDTOS);
+    }
+
+    private List<Receiver> getReceivers(List<MemberDTO> memberDTOS) {
+        List<Receiver> targetUsers = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(memberDTOS)) {
+            Set<Long> guids = memberDTOS.stream().map(m -> m.getId().longValue()).collect(Collectors.toSet());
+            List<UserAttrVO> userAttrVOS = userAttrService.listUsersByGitlabUserIds(guids);
+            List<Long> iamUserIds = userAttrVOS.stream()
+                    .map(UserAttrVO::getIamUserId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            List<IamUserDTO> iamUserDTOS = baseServiceClientOperator.listUsersByIds(iamUserIds);
+            targetUsers = iamUserDTOS.stream().map(user -> constructReceiver(user.getId(),
+                            user.getEmail(),
+                            user.getPhone(),
+                            user.getOrganizationId()))
+                    .collect(Collectors.toList());
+        }
+        return targetUsers;
     }
 
     /**
      * 删除数据消息发送同步执行
      */
     @Override
-    public void sendWhenAppServiceDelete(List<DevopsUserPermissionVO> devopsUserPermissionVOS, AppServiceDTO appServiceDTO) {
+    public void sendWhenAppServiceDelete(List<MemberDTO> memberDTOS, AppServiceDTO appServiceDTO) {
         doWithTryCatchAndLog(
                 () -> sendNoticeAboutAppService(appServiceDTO, MessageCodeConstants.DELETE_APP_SERVICE,
-                        app -> mapNullListToEmpty(devopsUserPermissionVOS)
-                                .stream()
-                                .map(p -> constructReceiver(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                        getReceivers(memberDTOS)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-delete. The exception is ", ex));
     }
 

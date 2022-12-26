@@ -8,9 +8,9 @@ import javax.annotation.Nullable;
 
 import org.hzero.boot.message.entity.Receiver;
 
-import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 
 /**
@@ -59,7 +59,7 @@ public interface SendNotificationService {
     /**
      * 删除应用服务通知
      */
-    void sendWhenAppServiceDelete(List<DevopsUserPermissionVO> devopsUserPermissionVOS, AppServiceDTO appServiceDTO);
+    void sendWhenAppServiceDelete(List<MemberDTO> memberDTOS, AppServiceDTO appServiceDTO);
 
 
     /**
