@@ -550,7 +550,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
                 ciTemplateStageJobRelDTO.setCiTemplateStageId(ciTemplateStageDTO.getId());
                 ciTemplateStageJobRelDTO.setSequence(jobSequence.get());
                 ciTemplateStageJobRelDTO.setId(null);
-                sequence.getAndSet(sequence.get() + 1);
+                jobSequence.getAndSet(jobSequence.get() + 1);
                 ciTemplateStageJobRelMapper.insertSelective(ciTemplateStageJobRelDTO);
 
                 List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateJobVO.getDevopsCiStepVOList();
