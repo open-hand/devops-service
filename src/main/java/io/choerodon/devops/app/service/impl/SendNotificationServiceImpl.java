@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import org.hzero.boot.message.MessageClient;
 import org.hzero.boot.message.entity.MessageSender;
 import org.hzero.boot.message.entity.Receiver;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import io.choerodon.core.enums.MessageAdditionalType;
@@ -26,22 +28,24 @@ import io.choerodon.core.enums.TargetUserType;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
+import io.choerodon.devops.api.vo.UserAttrVO;
 import io.choerodon.devops.api.vo.notify.MessageSettingVO;
 import io.choerodon.devops.api.vo.notify.TargetUserDTO;
 import io.choerodon.devops.app.eventhandler.payload.DevopsEnvUserPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MessageCodeConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.HzeroMessageClientOperator;
 import io.choerodon.devops.infra.mapper.AppServiceMapper;
 import io.choerodon.devops.infra.mapper.CiCdPipelineMapper;
 import io.choerodon.devops.infra.util.*;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * 发送DevOps相关通知的实现类
@@ -127,6 +131,8 @@ public class SendNotificationServiceImpl implements SendNotificationService {
     @Autowired
     @Lazy
     private PipelineService pipelineService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     /**
      * 发送和应用服务失败、启用和停用的消息(调用此方法时注意在外层捕获异常，此方法不保证无异常抛出)
@@ -248,13 +254,7 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
         doWithTryCatchAndLog(
-                () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_ENABLED,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
-                                .getContent())
-                                .stream()
-                                .map(p -> constructReceiver(p.getIamUserId()))
-                                .collect(Collectors.toList())
-                ),
+                () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_ENABLED, app -> getAppReceivers(appServiceDTO)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-enable. The exception is ", ex));
     }
 
@@ -267,14 +267,22 @@ public class SendNotificationServiceImpl implements SendNotificationService {
             return;
         }
 
+
         doWithTryCatchAndLog(
-                () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_DISABLE,
-                        app -> mapNullListToEmpty(appServiceService.pagePermissionUsers(app.getProjectId(), app.getId(), new PageRequest(0, 0), null)
-                                .getContent())
-                                .stream()
-                                .map(p -> constructReceiver(p.getIamUserId()))
-                                .collect(Collectors.toList())),
+                () -> sendNoticeAboutAppService(appServiceId, MessageCodeConstants.APP_SERVICE_DISABLE, app -> getAppReceivers(appServiceDTO)),
                 ex -> LOGGER.info("Error occurred when sending message about app-service-disable. The exception is ", ex));
+    }
+
+    @NotNull
+    private List<Receiver> getAppReceivers(AppServiceDTO appServiceDTO) {
+        List<Receiver> targetUsers = new ArrayList<>();
+        List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), null);
+        if (!CollectionUtils.isEmpty(memberDTOS)) {
+            Set<Long> guids = memberDTOS.stream().map(m -> m.getId().longValue()).collect(Collectors.toSet());
+            List<UserAttrVO> userAttrVOS = userAttrService.listUsersByGitlabUserIds(guids);
+            targetUsers = userAttrVOS.stream().map(u -> constructReceiver(u.getIamUserId())).collect(Collectors.toList());
+        }
+        return targetUsers;
     }
 
     /**
