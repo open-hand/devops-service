@@ -93,7 +93,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                     appCode);
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
                     appServiceDeployVO,
-                    DeployType.CD);
+                    DeployType.AUTO);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
             ciChartDeployConfigDTO.setAppId(appId);
