@@ -99,7 +99,7 @@ hzero:
     # 后端长连通信密钥
     secretKey: devops_ws
     # oauth服务用于查询用户信息的接口
-    oauth-url: ${OAUTH_USER_URL:http://choerodon-oauth/oauth/api/user}
+    oauth-url: ${OAUTH_USER_URL:http://zknow-oauth/oauth/api/user}
 choerodon:
   saga:
     service: zknow-asgard
