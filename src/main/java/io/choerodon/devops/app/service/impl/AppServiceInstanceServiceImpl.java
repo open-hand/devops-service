@@ -23,7 +23,6 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
@@ -40,7 +39,6 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,11 +49,9 @@ import org.springframework.util.ObjectUtils;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.AppServiceInstanceValidator;
 import io.choerodon.devops.api.vo.*;
@@ -75,8 +71,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployConfigDTO;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.*;
@@ -1472,18 +1466,18 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
 
     @Override
-    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean
+    public DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, DeployType deployType, Boolean
             saveRecord) {
         AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(instanceId);
         if (AppSourceType.NORMAL.getValue().equals(appServiceInstanceDTO.getSource())) {
-            return doRestartNormalInstance(projectId, appServiceInstanceDTO, isFromPipeline);
+            return doRestartNormalInstance(projectId, appServiceInstanceDTO, deployType);
         } else {
             return doRestartMarketInstance(projectId, appServiceInstanceDTO, saveRecord);
         }
     }
 
     private DevopsEnvCommandDTO doRestartNormalInstance(Long projectId, AppServiceInstanceDTO appServiceInstanceDTO,
-                                                        boolean isFromPipeline) {
+                                                        DeployType deployType) {
         Long instanceId = appServiceInstanceDTO.getId();
 
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
@@ -1518,7 +1512,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(devopsEnvironmentDTO.getProjectId());
         devopsDeployRecordService.saveRecord(
                 devopsEnvironmentDTO.getProjectId(),
-                isFromPipeline ? DeployType.AUTO : DeployType.MANUAL,
+                deployType,
                 devopsEnvCommandDTO.getId(),
                 DeployModeEnum.ENV,
                 devopsEnvironmentDTO.getId(),
@@ -2239,114 +2233,114 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return applicationInstanceInfoVOS;
     }
 
-    @Override
-    @Async
-    @Transactional(rollbackFor = Exception.class)
-    public void hzeroDeploy(Long detailsRecordId) {
-        LOGGER.info(">>>>>>> Start deploy hzero app, detailsRecordId : {} <<<<<<<", detailsRecordId);
-        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryById(detailsRecordId);
-        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+//    @Override
+//    @Async
+//    @Transactional(rollbackFor = Exception.class)
+//    public void hzeroDeploy(Long detailsRecordId) {
+//        LOGGER.info(">>>>>>> Start deploy hzero app, detailsRecordId : {} <<<<<<<", detailsRecordId);
+//        DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryById(detailsRecordId);
+//        DevopsDeployRecordDTO devopsDeployRecordDTO = devopsDeployRecordService.baseQueryById(devopsHzeroDeployDetailsDTO.getDeployRecordId());
+//
+//        if (!HzeroDeployDetailsStatusEnum.CREATED.value().equals(devopsHzeroDeployDetailsDTO.getStatus())) {
+//            LOGGER.info(">>>>>>> detailsRecord status not create, skip : {} <<<<<<<", detailsRecordId);
+//            return;
+//        }
+//        devopsHzeroDeployDetailsDTO.setStartTime(new Date());
+//        try {
+//            ApplicationContextHelper
+//                    .getContext()
+//                    .getBean(AppServiceInstanceService.class)
+//                    .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
+//        } catch (Exception e) {
+//            LOGGER.info(">>>>>>> Deploy hzero app failed ! <<<<<<<", e);
+//            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
+//            devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.FAILED.value());
+//            workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
+//            devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
+//            devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
+//        }
+//
+//    }
 
-        if (!HzeroDeployDetailsStatusEnum.CREATED.value().equals(devopsHzeroDeployDetailsDTO.getStatus())) {
-            LOGGER.info(">>>>>>> detailsRecord status not create, skip : {} <<<<<<<", detailsRecordId);
-            return;
-        }
-        devopsHzeroDeployDetailsDTO.setStartTime(new Date());
-        try {
-            ApplicationContextHelper
-                    .getContext()
-                    .getBean(AppServiceInstanceService.class)
-                    .pipelineDeployHzeroApp(devopsDeployRecordDTO.getProjectId(), devopsHzeroDeployDetailsDTO);
-        } catch (Exception e) {
-            LOGGER.info(">>>>>>> Deploy hzero app failed ! <<<<<<<", e);
-            devopsHzeroDeployDetailsDTO.setEndTime(new Date());
-            devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.FAILED.value());
-            workFlowServiceOperator.stopInstance(devopsDeployRecordDTO.getProjectId(), devopsDeployRecordDTO.getBusinessKey());
-            devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
-            devopsDeployRecordService.updateResultById(devopsHzeroDeployDetailsDTO.getDeployRecordId(), DeployResultEnum.FAILED);
-        }
-
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
-
-        DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
-
-        // 设置用户上下文
-        CustomUserDetails customUserDetails = new CustomUserDetails("default", "default");
-        customUserDetails.setUserId(devopsHzeroDeployDetailsDTO.getCreatedBy());
-        customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
-        customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
-
-        CustomContextUtil.setUserContext(customUserDetails);
-        ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
-        AppServiceInstanceVO instanceVO;
-        Long commandId = null;
-        if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
-            // 新建实例
-            MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
-                    null,
-                    devopsHzeroDeployDetailsDTO.getMktServiceId(),
-                    devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
-                    devopsHzeroDeployConfigDTO.getValue(),
-                    devopsHzeroDeployDetailsDTO.getAppName(),
-                    devopsHzeroDeployDetailsDTO.getAppCode(),
-                    CommandType.CREATE.getType(),
-                    devopsHzeroDeployDetailsDTO.getEnvId(),
-                    devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
-                    devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
-                    AppSourceType.MARKET.getValue(),
-                    AppSourceType.HZERO.getValue(),
-                    OperationTypeEnum.HZERO.value());
-            marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
-            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
-            commandId = instanceVO.getCommandId();
-            devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
-        } else {
-            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsHzeroDeployDetailsDTO.getAppId());
-            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
-            // 更新实例
-            if (devopsHzeroDeployDetailsDTO.getMktDeployObjectId().equals(appServiceInstanceDTO.getAppServiceVersionId())
-                    && baseQueryValueByInstanceId(appServiceInstanceDTO.getId()).equals(devopsHzeroDeployConfigDTO.getValue())) {
-                // 版本和配置相同则走重新部署的逻辑
-                DevopsEnvCommandDTO devopsEnvCommandDTO = restartInstance(projectId,
-                        appServiceInstanceDTO.getId(),
-                        false,
-                        false);
-                commandId = devopsEnvCommandDTO.getId();
-            } else {
-                MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
-                        appServiceInstanceDTO.getId(),
-                        devopsHzeroDeployDetailsDTO.getMktServiceId(),
-                        devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
-                        devopsHzeroDeployConfigDTO.getValue(),
-                        devopsHzeroDeployDetailsDTO.getAppName(),
-                        devopsHzeroDeployDetailsDTO.getAppCode(),
-                        CommandType.UPDATE.getType(),
-                        devopsHzeroDeployDetailsDTO.getEnvId(),
-                        devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
-                        devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
-                        AppSourceType.MARKET.getValue(),
-                        AppSourceType.HZERO.getValue(),
-                        OperationTypeEnum.HZERO.value());
-                marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
-                marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
-                instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
-                commandId = instanceVO.getCommandId();
-                devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
-            }
-
-        }
-        // 更新状态以及操作记录
-        devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
-        devopsHzeroDeployDetailsDTO.setCommandId(commandId);
-        devopsHzeroDeployDetailsDTO.setStartTime(new Date());
-        devopsHzeroDeployDetailsDTO.setEndTime(null);
-
-        devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
-    }
+//    @Override
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    public void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO) {
+//
+//        DevopsHzeroDeployConfigDTO devopsHzeroDeployConfigDTO = devopsHzeroDeployConfigService.baseQueryById(devopsHzeroDeployDetailsDTO.getValueId());
+//
+//        // 设置用户上下文
+//        CustomUserDetails customUserDetails = new CustomUserDetails("default", "default");
+//        customUserDetails.setUserId(devopsHzeroDeployDetailsDTO.getCreatedBy());
+//        customUserDetails.setOrganizationId(BaseConstants.DEFAULT_TENANT_ID);
+//        customUserDetails.setLanguage(BaseConstants.DEFAULT_LOCALE_STR);
+//
+//        CustomContextUtil.setUserContext(customUserDetails);
+//        ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
+//        AppServiceInstanceVO instanceVO;
+//        Long commandId = null;
+//        if (devopsHzeroDeployDetailsDTO.getAppId() == null) {
+//            // 新建实例
+//            MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
+//                    null,
+//                    devopsHzeroDeployDetailsDTO.getMktServiceId(),
+//                    devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
+//                    devopsHzeroDeployConfigDTO.getValue(),
+//                    devopsHzeroDeployDetailsDTO.getAppName(),
+//                    devopsHzeroDeployDetailsDTO.getAppCode(),
+//                    CommandType.CREATE.getType(),
+//                    devopsHzeroDeployDetailsDTO.getEnvId(),
+//                    devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+//                    devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+//                    AppSourceType.MARKET.getValue(),
+//                    AppSourceType.HZERO.getValue(),
+//                    OperationTypeEnum.HZERO.value());
+//            marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
+//            instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
+//            commandId = instanceVO.getCommandId();
+//            devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
+//        } else {
+//            DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(devopsHzeroDeployDetailsDTO.getAppId());
+//            AppServiceInstanceDTO appServiceInstanceDTO = baseQuery(devopsDeployAppCenterEnvDTO.getObjectId());
+//            // 更新实例
+//            if (devopsHzeroDeployDetailsDTO.getMktDeployObjectId().equals(appServiceInstanceDTO.getAppServiceVersionId())
+//                    && baseQueryValueByInstanceId(appServiceInstanceDTO.getId()).equals(devopsHzeroDeployConfigDTO.getValue())) {
+//                // 版本和配置相同则走重新部署的逻辑
+//                DevopsEnvCommandDTO devopsEnvCommandDTO = restartInstance(projectId,
+//                        appServiceInstanceDTO.getId(),
+//                        DeployType.MANUAL,
+//                        false);
+//                commandId = devopsEnvCommandDTO.getId();
+//            } else {
+//                MarketInstanceCreationRequestVO marketInstanceCreationRequestVO = new MarketInstanceCreationRequestVO(
+//                        appServiceInstanceDTO.getId(),
+//                        devopsHzeroDeployDetailsDTO.getMktServiceId(),
+//                        devopsHzeroDeployDetailsDTO.getMktDeployObjectId(),
+//                        devopsHzeroDeployConfigDTO.getValue(),
+//                        devopsHzeroDeployDetailsDTO.getAppName(),
+//                        devopsHzeroDeployDetailsDTO.getAppCode(),
+//                        CommandType.UPDATE.getType(),
+//                        devopsHzeroDeployDetailsDTO.getEnvId(),
+//                        devopsHzeroDeployConfigDTO.getService() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getService(), DevopsServiceReqVO.class),
+//                        devopsHzeroDeployConfigDTO.getIngress() == null ? null : JsonHelper.unmarshalByJackson(devopsHzeroDeployConfigDTO.getIngress(), DevopsIngressVO.class),
+//                        AppSourceType.MARKET.getValue(),
+//                        AppSourceType.HZERO.getValue(),
+//                        OperationTypeEnum.HZERO.value());
+//                marketInstanceCreationRequestVO.setInstanceName(devopsHzeroDeployDetailsDTO.getAppCode());
+//                marketInstanceCreationRequestVO.setInstanceId(appServiceInstanceDTO.getId());
+//                instanceVO = createOrUpdateMarketInstance(projectId, marketInstanceCreationRequestVO, false);
+//                commandId = instanceVO.getCommandId();
+//                devopsHzeroDeployDetailsDTO.setAppId(instanceVO.getAppId());
+//            }
+//
+//        }
+//        // 更新状态以及操作记录
+//        devopsHzeroDeployDetailsDTO.setStatus(HzeroDeployDetailsStatusEnum.DEPLOYING.value());
+//        devopsHzeroDeployDetailsDTO.setCommandId(commandId);
+//        devopsHzeroDeployDetailsDTO.setStartTime(new Date());
+//        devopsHzeroDeployDetailsDTO.setEndTime(null);
+//
+//        devopsHzeroDeployDetailsService.baseUpdate(devopsHzeroDeployDetailsDTO);
+//    }
 
     @Override
     public List<AppServiceInstanceDTO> listInstanceByDeployDetailsCode(List<String> codes, Long envId) {

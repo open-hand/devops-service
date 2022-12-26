@@ -318,7 +318,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(projectId,
                         preInstance.getId(),
-                        true,
+                        DeployType.CD,
                         true);
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("重新部署成功.").append(System.lineSeparator());
@@ -357,7 +357,9 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.AUTO);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
+                        appServiceDeployVO,
+                        DeployType.CD);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }

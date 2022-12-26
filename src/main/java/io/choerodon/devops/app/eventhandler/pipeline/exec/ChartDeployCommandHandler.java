@@ -117,7 +117,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(projectId,
                         preInstance.getId(),
-                        true,
+                        DeployType.AUTO,
                         true);
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("重新部署成功.").append(System.lineSeparator());
@@ -149,7 +149,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.CD);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.AUTO);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
