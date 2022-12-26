@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
@@ -13,4 +14,5 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface CiTemplateStageJobRelBusMapper extends BaseMapper<CiTemplateStageJobRelDTO> {
     void deleteByIds(@Param("stageJobRelIds") Set<Long> stageJobRelIds);
 
+    List<CiTemplateStageJobRelDTO> listByStageId(@Param("stageId") Long stageId);
 }

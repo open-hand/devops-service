@@ -108,6 +108,17 @@ public class CiTemplateJobVO {
     @ApiModelProperty("审核信息")
     private CiTplAuditVO ciAuditConfig;
 
+    @ApiModelProperty("顺序")
+    private Integer sequence;
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
+
     public String getTags() {
         return tags;
     }

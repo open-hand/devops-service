@@ -1,17 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import org.hzero.core.util.AssertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -21,7 +9,6 @@ import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.app.service.impl.DevopsCiStepOperator;
 import io.choerodon.devops.infra.constant.Constant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.mapper.*;
@@ -30,6 +17,18 @@ import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.hzero.core.util.AssertUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by wangxiang on 2021/12/3
@@ -191,7 +190,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     public CiTemplatePipelineVO updatePipelineTemplate(Long sourceId, String sourceType,
                                                        CiTemplatePipelineVO devopsPipelineTemplateVO) {
         AssertUtils.isTrue(checkPipelineTemplateName(sourceId, devopsPipelineTemplateVO.getName(),
-                devopsPipelineTemplateVO.getId()),
+                        devopsPipelineTemplateVO.getId()),
                 "error.pipeline.template.name.exist");
         checkPipelineCategory(devopsPipelineTemplateVO);
         checkStageName(devopsPipelineTemplateVO);
@@ -360,12 +359,18 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
 
     private List<CiTemplateJobVO> queryBaseCiTemplateJob(CiTemplateStageVO ciTemplateStageVO) {
         //通过阶段id 查找JOB
-        List<CiTemplateJobDTO> ciTemplateJobDTOS = ciTemplateJobBusMapper.queryJobByStageId(ciTemplateStageVO.getId());
+        List<CiTemplateStageJobRelDTO> ciTemplateStageJobRelDTOS = ciTemplateStageJobRelBusMapper.listByStageId(ciTemplateStageVO.getId());
+        if (CollectionUtils.isEmpty(ciTemplateStageJobRelDTOS)) {
+            return Collections.emptyList();
+        }
+        Set<Long> jobIds = ciTemplateStageJobRelDTOS.stream().map(CiTemplateStageJobRelDTO::getCiTemplateJobId).collect(Collectors.toSet());
+        List<CiTemplateJobVO> ciTemplateJobDTOS = ciTemplateJobBusMapper.listByIds(jobIds);
         if (CollectionUtils.isEmpty(ciTemplateJobDTOS)) {
             return Collections.emptyList();
         }
-        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOS, CiTemplateJobVO.class);
-        return ciTemplateJobVOS;
+
+        Map<Long, CiTemplateJobVO> ciTemplateJobDTOSMappedById = ciTemplateJobDTOS.stream().collect(Collectors.toMap(CiTemplateJobVO::getId, Function.identity()));
+        return ciTemplateStageJobRelDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getSequence)).map(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId())).collect(Collectors.toList());
     }
 
     private List<CiTemplateStageVO> queryBaseCiTemplateStage(Long ciPipelineTemplateId) {
@@ -391,7 +396,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private void handStage(CiTemplateStageVO ciTemplateStageVO) {
         //查询阶段下的job
         List<CiTemplateJobVO> ciTemplateJobVOS = queryBaseCiTemplateJob(ciTemplateStageVO);
-        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
+        ciTemplateJobVOS.stream().sorted(Comparator.comparing(CiTemplateJobVO::getSequence)).forEach(ciTemplateJobVO -> {
             //根据job step
             List<CiTemplateStepVO> ciTemplateStepVOS = queryBaseCiTemplateStep(ciTemplateJobVO);
             //根据步骤模板的类型填充配置信息
@@ -537,12 +542,15 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             if (CollectionUtils.isEmpty(ciTemplateJobVOList)) {
                 return;
             }
+            AtomicReference<Integer> jobSequence = new AtomicReference<>(0);
             ciTemplateJobVOList.forEach(ciTemplateJobVO -> {
                 //插入阶段与job的关联关系
                 CiTemplateStageJobRelDTO ciTemplateStageJobRelDTO = new CiTemplateStageJobRelDTO();
                 ciTemplateStageJobRelDTO.setCiTemplateJobId(ciTemplateJobVO.getId());
                 ciTemplateStageJobRelDTO.setCiTemplateStageId(ciTemplateStageDTO.getId());
+                ciTemplateStageJobRelDTO.setSequence(jobSequence.get());
                 ciTemplateStageJobRelDTO.setId(null);
+                sequence.getAndSet(sequence.get() + 1);
                 ciTemplateStageJobRelMapper.insertSelective(ciTemplateStageJobRelDTO);
 
                 List<CiTemplateStepVO> ciTemplateStepVOS = ciTemplateJobVO.getDevopsCiStepVOList();
@@ -552,7 +560,6 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             });
         });
     }
-
 
 
     private void handNonVisibilityStage(Long sourceId, CiTemplateStageVO ciTemplateStageVO) {

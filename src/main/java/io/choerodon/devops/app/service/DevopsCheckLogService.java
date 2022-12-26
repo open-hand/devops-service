@@ -12,4 +12,5 @@ public interface DevopsCheckLogService {
 
     void migrationCdPipelineDate();
 
+    void fixCiTemplateStageJobRelSequence();
 }

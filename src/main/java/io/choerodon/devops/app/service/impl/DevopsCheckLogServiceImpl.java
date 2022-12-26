@@ -1,22 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
-
-import java.net.URL;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import jdk.nashorn.internal.runtime.regexp.joni.encoding.IntHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
@@ -31,6 +15,21 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import jdk.nashorn.internal.runtime.regexp.joni.encoding.IntHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
+import java.net.URL;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_CHART_NAME;
 
 
 @Service
@@ -116,6 +115,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
 
+    @Autowired
+    private CiTemplateStageBusMapper ciTemplateStageBusMapper;
+
+    @Autowired
+    private CiTemplateStageJobRelBusMapper ciTemplateStageJobRelBusMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void checkLog(String task) {
@@ -184,6 +189,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
     }
 
+    @Override
+    public void fixCiTemplateStageJobRelSequence() {
+        List<CiTemplateStageDTO> ciTemplateStageDTOS = ciTemplateStageBusMapper.selectAll();
+        if (!CollectionUtils.isEmpty(ciTemplateStageDTOS)) {
+            ciTemplateStageDTOS.forEach(ciTemplateStageDTO -> {
+                List<CiTemplateStageJobRelDTO> relDTOS = ciTemplateStageJobRelBusMapper.listByStageId(ciTemplateStageDTO.getId());
+                relDTOS = relDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getId)).collect(Collectors.toList());
+                int sequence = 0;
+                for (CiTemplateStageJobRelDTO relDTO : relDTOS) {
+                    relDTO.setSequence(sequence);
+                    ciTemplateStageJobRelBusMapper.updateByPrimaryKeySelective(relDTO);
+                    sequence++;
+                }
+            });
+        }
+    }
 
     private void fixIHelmImageVersionOfNullData() {
         // 应用服务版本与helm仓库关联关系

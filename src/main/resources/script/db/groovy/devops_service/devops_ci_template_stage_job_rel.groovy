@@ -31,4 +31,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_stage_job_rel.groovy'
         }
 
     }
+
+
+    changeSet(author: 'lihao', id: '2022-12-26-modify-UniqueConstraint') {
+        addColumn(tableName: 'devops_ci_template_stage_job_rel') {
+            column(name: 'sequence', type: 'INT(2)', defaultValue: "0", remarks: '顺序') {
+                constraints(nullable: false)
+            }
+        }
+
+        dropUniqueConstraint(constraintName: "uk_stage_job_id",tableName: "devops_ci_template_stage_job_rel")
+        addUniqueConstraint(tableName: 'devops_ci_template_stage_job_rel',
+                constraintName: 'uk_stage_job_id', columnNames: 'ci_template_stage_id,ci_template_job_id,sequence')
+    }
 }

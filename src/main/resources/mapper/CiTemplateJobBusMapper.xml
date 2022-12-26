@@ -14,34 +14,34 @@
 
     <select id="pageUnderOrgLevel" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
         SELECT
-          dctj.id,
-          dctj.NAME,
-          dctj.created_by,
-          dctj.last_updated_by,
-          dctj.last_update_date,
-          dctj.source_type,
-          dctj.built_in,
-          dctj.creation_date,
-          dctjg.NAME AS group_name,
-          (select
-             count(dcts.id)
-           FROM devops_ci_template_step dcts
-           JOIN devops_ci_template_job_step_rel dctjsr
-           ON  dctjsr.ci_template_step_id=dcts.id
-           WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctjg.NAME AS group_name,
+        (select
+        count(dcts.id)
+        FROM devops_ci_template_step dcts
+        JOIN devops_ci_template_job_step_rel dctjsr
+        ON dctjsr.ci_template_step_id=dcts.id
+        WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
         FROM devops_ci_template_job dctj
         JOIN devops_ci_template_job_group dctjg ON dctj.group_id = dctjg.id
         WHERE 1=1
         AND dctj.visibility=1
         <choose>
             <when test="sourceType == 'organization'">
-                and  (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
             </when>
             <when test="sourceType == 'site'">
-                and  (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
             </when>
             <otherwise>
-                AND  (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
+                AND (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
             </otherwise>
         </choose>
 
@@ -55,14 +55,14 @@
         <if test="groupId != null and groupId != ''">
             AND dctjg.id = #{groupId,jdbcType=BIGINT}
         </if>
-        <if test="builtIn != null and builtIn ==true">
-            AND  dctj.built_in = 1
+        <if test="builtIn != null and builtIn == true">
+            AND dctj.built_in = 1
         </if>
-        <if test="builtIn != null and builtIn ==false">
-            AND  dctj.built_in = 0
+        <if test="builtIn != null and builtIn == false">
+            AND dctj.built_in = 0
         </if>
         <if test="params != null and params != ''">
-           AND  dctj.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+            AND dctj.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
         </if>
         ORDER BY
         field( dctj.source_type, 'project', 'organization', 'site' ) ASC,
@@ -71,75 +71,74 @@
     </select>
 
 
-
     <select id="queryJobByStageId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
         SELECT
-	      dctj.*
+        dctj.*
         FROM
-	      devops_ci_template_job dctj
+        devops_ci_template_job dctj
         WHERE
-	      dctj.id IN (
-	          SELECT
-	             dctsjr.ci_template_job_id
-	          FROM devops_ci_template_stage_job_rel dctsjr
-	          WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT} )
-<!--	     AND dctj.source_id = #{sourceId,jdbcType=BIGINT}-->
+        dctj.id IN (
+        SELECT
+        dctsjr.ci_template_job_id
+        FROM devops_ci_template_stage_job_rel dctsjr
+        WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT} )
+        <!--	     AND dctj.source_id = #{sourceId,jdbcType=BIGINT}-->
     </select>
 
     <select id="queryAllCiTemplateJob" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
         SELECT
-           dctj.id,
-           dctj.NAME,
-           dctj.created_by,
-           dctj.last_updated_by,
-           dctj.last_update_date,
-           dctj.source_type,
-           dctj.built_in,
-           dctj.creation_date,
-           dctjg.NAME AS group_name,
-          (select
-           count(dcts.id)
-           FROM devops_ci_template_step dcts
-           JOIN devops_ci_template_job_step_rel dctjsr
-           ON  dctjsr.ci_template_step_id=dcts.id
-           WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctjg.NAME AS group_name,
+        (select
+        count(dcts.id)
+        FROM devops_ci_template_step dcts
+        JOIN devops_ci_template_job_step_rel dctjsr
+        ON dctjsr.ci_template_step_id=dcts.id
+        WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
         FROM devops_ci_template_job dctj
         JOIN devops_ci_template_job_group dctjg ON dctj.group_id = dctjg.id
         WHERE 1=1
         AND dctj.visibility=1
         <choose>
             <when test="sourceType == 'organization'">
-                and  (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
             </when>
             <when test="sourceType == 'site'">
-                and  (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
             </when>
             <otherwise>
-                AND  (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
+                AND (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
             </otherwise>
         </choose>
     </select>
 
     <select id="selectNonVisibilityJob" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
         SELECT
-           dctj.id,
-           dctj.NAME,
-           dctj.created_by,
-           dctj.last_updated_by,
-           dctj.last_update_date,
-           dctj.source_type,
-           dctj.built_in,
-           dctj.creation_date,
-           dctj.visibility,
-           dctj.config_id
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctj.visibility,
+        dctj.config_id
 
         FROM devops_ci_template_job dctj
         INNER JOIN devops_ci_template_stage_job_rel dctsjr ON dctj.id=dctsjr.ci_template_job_id
-	    WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT}
-	    AND dctj.visibility=0
+        WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT}
+        AND dctj.visibility=0
     </select>
 
-    <delete id="deleteNonVisibilityJobByIds" >
+    <delete id="deleteNonVisibilityJobByIds">
         <if test="jobIds != null and jobIds.size() != 0">
             DELETE FROM devops_ci_template_job
             where id IN
@@ -151,4 +150,35 @@
         </if>
     </delete>
 
+    <select id="listByIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        SELECT id,
+        name,
+        group_id,
+        image,
+        source_type,
+        source_id,
+        built_in,
+        type,
+        script,
+        to_upload,
+        to_download,
+        parallel,
+        object_version_number,
+        created_by,
+        creation_date,
+        last_updated_by,
+        last_update_date,
+        config_id,
+        tags,
+        start_in,
+        visibility,
+        trigger_value,
+        trigger_type
+        FROM devops_ci_template_job
+        WHERE id
+        IN
+        <foreach collection="jobIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

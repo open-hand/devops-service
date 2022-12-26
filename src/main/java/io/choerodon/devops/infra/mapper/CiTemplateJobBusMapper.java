@@ -1,13 +1,12 @@
 package io.choerodon.devops.infra.mapper;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 流水线任务模板分组(CiTemplateJobGroup)应用服务
@@ -35,6 +34,8 @@ public interface CiTemplateJobBusMapper extends BaseMapper<CiTemplateJobDTO> {
 
     List<CiTemplateJobDTO> selectNonVisibilityJob(@Param("stageId") Long stageId);
 
-    void deleteNonVisibilityJobByIds(@Param("jobIds")Set<Long> jobIds);
+    void deleteNonVisibilityJobByIds(@Param("jobIds") Set<Long> jobIds);
+
+    List<CiTemplateJobVO> listByIds(@Param("jobIds") Set<Long> jobIds);
 }
 
