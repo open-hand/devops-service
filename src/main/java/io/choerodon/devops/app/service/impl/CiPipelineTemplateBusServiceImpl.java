@@ -396,7 +396,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private void handStage(CiTemplateStageVO ciTemplateStageVO) {
         //查询阶段下的job
         List<CiTemplateJobVO> ciTemplateJobVOS = queryBaseCiTemplateJob(ciTemplateStageVO);
-        ciTemplateJobVOS.stream().sorted(Comparator.comparing(CiTemplateJobVO::getSequence)).forEach(ciTemplateJobVO -> {
+        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
             //根据job step
             List<CiTemplateStepVO> ciTemplateStepVOS = queryBaseCiTemplateStep(ciTemplateJobVO);
             //根据步骤模板的类型填充配置信息
