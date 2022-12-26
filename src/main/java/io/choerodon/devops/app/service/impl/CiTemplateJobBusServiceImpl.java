@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.util.AssertUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.utils.ConvertUtils;
@@ -37,6 +24,18 @@ import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.devops.infra.utils.TemplateJobTypeUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.AssertUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 
 /**
@@ -103,8 +102,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     public CiTemplateJobVO createTemplateJob(Long sourceId, String sourceType, CiTemplateJobVO ciTemplateJobVO) {
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
         checkParam(ciTemplateJobVO);
-        AssertUtils.isTrue(isNameUnique(ciTemplateJobVO.getName(), sourceId, null),
-                "error.job.template.name.exist");
+        ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(JOB, sourceId, ciTemplateJobVO.getName()));
 
         CiTemplateJobDTO ciTemplateJobDTO = ConvertUtils.convertObject(ciTemplateJobVO, CiTemplateJobDTO.class);
         String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());

@@ -1,17 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.util.AssertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -23,7 +12,6 @@ import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHa
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
 import io.choerodon.devops.app.service.CiTemplateMavenPublishService;
 import io.choerodon.devops.app.service.CiTemplateStepBusService;
-import io.choerodon.devops.app.service.impl.DevopsCiStepOperator;
 import io.choerodon.devops.infra.constant.Constant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
@@ -32,6 +20,16 @@ import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.util.AssertUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by wangxiang on 2021/12/14
@@ -226,8 +224,7 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
     @Transactional(rollbackFor = Exception.class)
     public CiTemplateStepVO createTemplateStep(Long sourceId, CiTemplateStepVO ciTemplateStepVO) {
         AssertUtils.notNull(ciTemplateStepVO, "error.ci.template.step.null");
-        AssertUtils.isTrue(checkTemplateStepName(sourceId, ciTemplateStepVO.getName(), null),
-                "error.step.name.already.exists");
+        ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(STEP, sourceId, ciTemplateStepVO.getName()));
         checkCategory(ciTemplateStepVO);
         CiTemplateStepDTO ciTemplateStepDTO = new CiTemplateStepDTO();
         BeanUtils.copyProperties(ciTemplateStepVO, ciTemplateStepDTO);
