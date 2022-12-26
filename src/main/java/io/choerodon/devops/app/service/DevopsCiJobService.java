@@ -127,5 +127,7 @@ public interface DevopsCiJobService {
 
     PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId);
 
+    PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId);
+
     PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
 }

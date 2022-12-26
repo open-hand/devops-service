@@ -410,6 +410,11 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     }
 
     @Override
+    public PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId) {
+        return devopsCiJobMapper.queryDeployValuePipelineReference(projectId, valueId);
+    }
+
+    @Override
     public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
         return devopsCiJobMapper.queryPipelineReferenceHostApp(appId);
     }

@@ -24,6 +24,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CommonScheduleVO;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
@@ -598,6 +599,11 @@ public class PipelineServiceImpl implements PipelineService {
         params.put(MiscConstants.APP_VERSION_ID, appVersionId);
         pipelineDTOS.forEach(pipelindId -> execute(pipelindId, PipelineTriggerTypeEnum.APP_VERSION, params));
 
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId) {
+        return pipelineMapper.listDeployValuePipelineReference(projectId, valueId);
     }
 }
 
