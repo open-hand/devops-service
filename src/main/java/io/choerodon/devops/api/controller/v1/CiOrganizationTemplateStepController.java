@@ -1,16 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import javax.validation.Valid;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.template.CiTemplateStepCategoryVO;
@@ -21,6 +10,16 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Created by wangxiang on 2021/12/14
@@ -33,7 +32,7 @@ public class CiOrganizationTemplateStepController {
     @Autowired
     private CiTemplateStepBusService ciTemplateStepBusService;
 
-    @ApiOperation(value = "平台层查询流水线步骤模板")
+    @ApiOperation(value = "组织层查询流水线步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping
     @CustomPageRequest
@@ -60,7 +59,7 @@ public class CiOrganizationTemplateStepController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "平台项目下的可选的步骤列表")
+    @ApiOperation(value = "组织项目下的可选的步骤列表")
     @GetMapping("/list/with/category")
     public ResponseEntity<List<CiTemplateStepCategoryVO>> listStepWithCategory(
             @ApiParam(value = "organization_id", required = true)
@@ -69,7 +68,7 @@ public class CiOrganizationTemplateStepController {
     }
 
 
-    @ApiOperation(value = "平台层修改流水线步骤模板")
+    @ApiOperation(value = "组织层修改流水线步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PutMapping
     public ResponseEntity<CiTemplateStepVO> updateTemplateStep(
@@ -78,7 +77,7 @@ public class CiOrganizationTemplateStepController {
         return ResponseEntity.ok(ciTemplateStepBusService.updateTemplateStep(sourceId, ciTemplateStepVO));
     }
 
-    @ApiOperation(value = "平台层删除流水线步骤模板")
+    @ApiOperation(value = "组织层删除流水线步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @DeleteMapping("/{ci_step_template_id}")
     public ResponseEntity<Void> deleteTemplateStep(
@@ -89,7 +88,7 @@ public class CiOrganizationTemplateStepController {
     }
 
 
-    @ApiOperation(value = "平台层创建流水线步骤模板")
+    @ApiOperation(value = "组织层创建流水线步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @PostMapping
     public ResponseEntity<CiTemplateStepVO> createTemplateStep(
@@ -99,7 +98,7 @@ public class CiOrganizationTemplateStepController {
         return ResponseEntity.ok(ciTemplateStepBusService.createTemplateStep(sourceId, ciTemplateStepVO));
     }
 
-    @ApiOperation(value = "平台层根据jobId查询步骤模板")
+    @ApiOperation(value = "组织层根据jobId查询步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/template_job_id/{template_job_id}")
     public ResponseEntity<List<CiTemplateStepVO>> queryStepTemplateByJobId(
@@ -108,7 +107,7 @@ public class CiOrganizationTemplateStepController {
         return ResponseEntity.ok(ciTemplateStepBusService.queryStepTemplateByJobId(sourceId, templateJobId));
     }
 
-    @ApiOperation(value = "平台层根据stepId查询步骤模板")
+    @ApiOperation(value = "组织层根据stepId查询步骤模板")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/template_step_id/{template_step_id}")
     public ResponseEntity<CiTemplateStepVO> queryStepTemplateByStepId(
