@@ -281,20 +281,21 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             if (ciTemplateJobDTO.getBuiltIn()) {
                 return;
             } else {
+                deleteTemplateJobConfig(ciTemplateJobDTO);
                 // 看看是不是非预置的关联到了预置的数据
-                CiTemplateJobDTO templateJobDTO = new CiTemplateJobDTO();
-                templateJobDTO.setBuiltIn(Boolean.TRUE);
-                templateJobDTO.setType(ciTemplateJobDTO.getType());
-                List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobBusMapper.select(templateJobDTO);
-                if (CollectionUtils.isEmpty(templateJobDTOS)) {
-                    deleteTemplateJobConfig(ciTemplateJobDTO);
-                } else {
-                    CiTemplateJobDTO jobDTO = templateJobDTOS.get(0);
-                    Long configId = jobDTO.getConfigId();
-                    if (configId.longValue() != ciTemplateJobDTO.getConfigId().longValue()) {
-                        deleteTemplateJobConfig(ciTemplateJobDTO);
-                    }
-                }
+//                CiTemplateJobDTO templateJobDTO = new CiTemplateJobDTO();
+//                templateJobDTO.setBuiltIn(Boolean.TRUE);
+//                templateJobDTO.setType(ciTemplateJobDTO.getType());
+//                List<CiTemplateJobDTO> templateJobDTOS = ciTemplateJobBusMapper.select(templateJobDTO);
+//                if (CollectionUtils.isEmpty(templateJobDTOS)) {
+//                    deleteTemplateJobConfig(ciTemplateJobDTO);
+//                } else {
+//                    CiTemplateJobDTO jobDTO = templateJobDTOS.get(0);
+//                    Long configId = jobDTO.getConfigId();
+//                    if (configId.longValue() != ciTemplateJobDTO.getConfigId().longValue()) {
+//                        deleteTemplateJobConfig(ciTemplateJobDTO);
+//                    }
+//                }
                 ciTemplateJobBusMapper.deleteByPrimaryKey(ciTemplateJobDTO.getId());
             }
         });
