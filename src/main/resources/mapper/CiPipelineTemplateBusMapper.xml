@@ -62,7 +62,7 @@
         </if>
         <if test="builtIn != null and builtIn == true">
             <choose>
-                <when test="sourceType == 'project'">
+                <when test="sourceType == 'project' or sourceType == 'organization'">
                     AND dctp.built_in = 1
                     OR (dctp.built_in = 0 AND dctp.source_type = 'site')
                 </when>
@@ -73,7 +73,7 @@
         </if>
         <if test="builtIn != null and builtIn == false">
             <choose>
-                <when test="sourceType == 'project'">
+                <when test="sourceType == 'project' or sourceType == 'organization'">
                     AND dctp.built_in = 0 AND dctp.source_type != 'site'
                 </when>
                 <otherwise>
