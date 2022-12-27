@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service.impl.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTplChartDeployCfgVO;
 import io.choerodon.devops.infra.dto.CiTplChartDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.CiTplChartDeployCfgMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChartTemplateJobConfigService extends TemplateJobConfigService {
@@ -21,6 +20,9 @@ public class ChartTemplateJobConfigService extends TemplateJobConfigService {
     public Long baseInsert(CiTemplateJobVO ciTemplateJobVO) {
         CiTplChartDeployCfgDTO ciTplChartDeployCfgDTO = ConvertUtils.
                 convertObject(ciTemplateJobVO.getCiChartDeployConfig(), CiTplChartDeployCfgDTO.class);
+        if (ciTplChartDeployCfgDTO == null) {
+            return null;
+        }
         ciTplChartDeployCfgDTO.setId(null);
         ciTplChartDeployCfgMapper.insertSelective(ciTplChartDeployCfgDTO);
         return ciTplChartDeployCfgDTO.getId();
