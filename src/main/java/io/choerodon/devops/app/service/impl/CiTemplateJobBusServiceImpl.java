@@ -100,6 +100,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CiTemplateJobVO createTemplateJob(Long sourceId, String sourceType, CiTemplateJobVO ciTemplateJobVO) {
+        ciTemplateJobVO.setId(null);
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
         checkParam(ciTemplateJobVO);
         ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(JOB, sourceId, ciTemplateJobVO.getName()));

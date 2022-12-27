@@ -305,6 +305,7 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
             ciTemplateStepVO.setSourceType(ResourceLevel.PROJECT.value());
             ciTemplateStepVO.setBuiltIn(false);
             ciTemplateStepVO.setSourceId(sourceId);
+            ciTemplateStepVO.setId(null);
             CiTemplateStepVO templateStep = ciTemplateStepBusService.createTemplateStep(sourceId, ciTemplateStepVO);
 //            //插入步骤的配置：
 //            //MAVEN构建，MAVEN发布等等
