@@ -56,10 +56,25 @@
             AND dctjg.id = #{groupId,jdbcType=BIGINT}
         </if>
         <if test="builtIn != null and builtIn == true">
-            AND dctj.built_in = 1
+            <choose>
+                <when test="sourceType == 'project'">
+                    AND dctj.built_in = 1
+                    OR (dctj.built_in = 0 AND dctj.source_type = 'site')
+                </when>
+                <otherwise>
+                    AND dctj.built_in = 1
+                </otherwise>
+            </choose>
         </if>
         <if test="builtIn != null and builtIn == false">
-            AND dctj.built_in = 0
+            <choose>
+                <when test="sourceType == 'project'">
+                    AND dctj.built_in = 0 AND dctj.source_type != 'site'
+                </when>
+                <otherwise>
+                    AND dctj.built_in = 0
+                </otherwise>
+            </choose>
         </if>
         <if test="params != null and params != ''">
             AND dctj.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')

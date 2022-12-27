@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.CiPipelineTemplateBusMapper">
-
-
     <resultMap id="DevopsPipelineTemplateMap" type="io.choerodon.devops.api.vo.template.CiTemplatePipelineVO">
         <id property="id" column="id"/>
         <result column="name" property="name"/>
@@ -13,45 +11,42 @@
         <result column="built_in" property="builtIn"/>
         <result column="enable" property="enable"/>
 
-        <association property="ciTemplateCategoryVO" javaType="io.choerodon.devops.api.vo.template.CiTemplateCategoryVO">
+        <association property="ciTemplateCategoryVO"
+                     javaType="io.choerodon.devops.api.vo.template.CiTemplateCategoryVO">
             <id column="user_id" property="id"/>
             <result column="category_name" property="category"/>
             <result column="source_type" property="sourceType"/>
             <result column="creation_date" property="creationDate"/>
             <result column="created_by" property="createdBy"/>
         </association>
-
-
-
-
     </resultMap>
 
     <select id="queryDevopsPipelineTemplateByParams" resultMap="DevopsPipelineTemplateMap">
         SELECT
-            dctp.id AS id,
-            dctp.NAME AS name,
-            dctp.source_type AS source_type,
-            dctp.built_in AS built_in,
-            dctp.ENABLE AS enable,
-            dctp.creation_date AS creation_date,
-            dctp.created_by AS created_by,
-            dctc.id AS category_id,
-            dctc.category AS category_name
+        dctp.id AS id,
+        dctp.NAME AS name,
+        dctp.source_type AS source_type,
+        dctp.built_in AS built_in,
+        dctp.ENABLE AS enable,
+        dctp.creation_date AS creation_date,
+        dctp.created_by AS created_by,
+        dctc.id AS category_id,
+        dctc.category AS category_name
         FROM
-           devops_ci_template_pipeline dctp
+        devops_ci_template_pipeline dctp
         JOIN devops_ci_template_category dctc ON dctp.ci_template_category_id=dctc.id
         WHERE 1=1
 
         <choose>
             <when test="sourceType == 'organization'">
-                and  (dctp.source_id = 0 OR dctp.source_id = #{sourceId})
+                and (dctp.source_id = 0 OR dctp.source_id = #{sourceId})
             </when>
             <when test="sourceType == 'site'">
-                and  (dctp.source_id = 0 OR dctp.source_id = #{sourceId})
+                and (dctp.source_id = 0 OR dctp.source_id = #{sourceId})
             </when>
             <otherwise>
-                <if test="organizationId !=null">
-                    AND  (dctp.source_id = 0 OR dctp.source_id= #{organizationId} OR dctp.source_id=#{sourceId} )
+                <if test="organizationId != null">
+                    AND (dctp.source_id = 0 OR dctp.source_id= #{organizationId} OR dctp.source_id=#{sourceId} )
                 </if>
             </otherwise>
         </choose>
@@ -60,22 +55,37 @@
             AND dctp.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
         </if>
         <if test="categoryName != null">
-            AND  dctc.category LIKE CONCAT(CONCAT('%', #{categoryName, jdbcType=VARCHAR}), '%')
+            AND dctc.category LIKE CONCAT(CONCAT('%', #{categoryName, jdbcType=VARCHAR}), '%')
         </if>
         <if test="categoryId != null">
-            AND  dctc.id = #{categoryId,jdbcType=BIGINT}
+            AND dctc.id = #{categoryId,jdbcType=BIGINT}
         </if>
-        <if test="builtIn != null and builtIn ==true">
-            AND  dctp.built_in = 1
+        <if test="builtIn != null and builtIn == true">
+            <choose>
+                <when test="sourceType == 'project'">
+                    AND dctp.built_in = 1
+                    OR (dctp.built_in = 0 AND dctp.source_type = 'site')
+                </when>
+                <otherwise>
+                    AND dctp.built_in = 1
+                </otherwise>
+            </choose>
         </if>
-        <if test="builtIn != null and builtIn ==false">
-            AND  dctp.built_in = 0
+        <if test="builtIn != null and builtIn == false">
+            <choose>
+                <when test="sourceType == 'project'">
+                    AND dctp.built_in = 0 AND dctp.source_type != 'site'
+                </when>
+                <otherwise>
+                    AND dctp.built_in = 0
+                </otherwise>
+            </choose>
         </if>
-        <if test="enable != null != null and enable ==true ">
-            AND  dctp.enable = 1
+        <if test="enable != null != null and enable == true">
+            AND dctp.enable = 1
         </if>
-        <if test="enable != null != null and enable ==false">
-            AND  dctp.enable = 0
+        <if test="enable != null != null and enable == false">
+            AND dctp.enable = 0
         </if>
         <if test="params != null and params != ''">
             AND dctp.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
@@ -84,8 +94,6 @@
         field( dctp.source_type, 'project', 'organization', 'site' ) ASC,
         dctp.id desc,
         field( dctp.built_in, '0', '1' ) ASC
-
-
     </select>
 
     <select id="checkPipelineName" resultType="java.lang.Integer">
@@ -98,6 +106,4 @@
         </if>
         LIMIT 1
     </select>
-
-
 </mapper>
