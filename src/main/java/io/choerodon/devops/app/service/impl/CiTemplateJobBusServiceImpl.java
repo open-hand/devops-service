@@ -106,8 +106,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         ciTemplateJobVO.setId(null);
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
         checkParam(ciTemplateJobVO);
-        ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(JOB, sourceId, ciTemplateJobVO.getName()));
-
+        AssertUtils.isTrue(isNameUnique(ciTemplateJobVO.getName(), sourceId, null),
+                "error.job.template.name.exist");
         CiTemplateJobDTO ciTemplateJobDTO = ConvertUtils.convertObject(ciTemplateJobVO, CiTemplateJobDTO.class);
         String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
         if (!StringUtils.isEmpty(type)) {

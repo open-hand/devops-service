@@ -224,7 +224,8 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
     @Transactional(rollbackFor = Exception.class)
     public CiTemplateStepVO createTemplateStep(Long sourceId, CiTemplateStepVO ciTemplateStepVO) {
         AssertUtils.notNull(ciTemplateStepVO, "error.ci.template.step.null");
-        ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(STEP, sourceId, ciTemplateStepVO.getName()));
+        AssertUtils.isTrue(checkTemplateStepName(sourceId, ciTemplateStepVO.getName(), null),
+                "error.step.name.already.exists");
         checkCategory(ciTemplateStepVO);
         CiTemplateStepDTO ciTemplateStepDTO = new CiTemplateStepDTO();
         BeanUtils.copyProperties(ciTemplateStepVO, ciTemplateStepDTO);
