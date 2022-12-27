@@ -346,8 +346,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
                 "error.ci.template.job.name.length");
 
         // 如果是普通创建类型的任务，需要校验关联的步骤不为空
-        AssertUtils.isTrue(!(CiJobTypeEnum.NORMAL.value().equals(ciTemplateJobVO.getType())
-                && ciTemplateJobVO.getDevopsCiStepVOList().size() == 0), "error.ci.template.job.normal.step.size");
+//        AssertUtils.isTrue(!(CiJobTypeEnum.NORMAL.value().equals(ciTemplateJobVO.getType())
+//                && ciTemplateJobVO.getDevopsCiStepVOList().size() == 0), "error.ci.template.job.normal.step.size");
         if (ciTemplateJobVO.getVisibility() == null || !ciTemplateJobVO.getVisibility()) {
             return;
         }
