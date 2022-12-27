@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service.impl.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTplAuditVO;
 import io.choerodon.devops.infra.dto.CiTemplateAuditDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateAuditMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuditTemplateJobConfigService extends TemplateJobConfigService {
@@ -20,6 +19,9 @@ public class AuditTemplateJobConfigService extends TemplateJobConfigService {
     @Transactional(rollbackFor = Exception.class)
     public Long baseInsert(CiTemplateJobVO ciTemplateJobVO) {
         CiTemplateAuditDTO ciTemplateAuditDTO = ConvertUtils.convertObject(ciTemplateJobVO.getCiAuditConfig(), CiTemplateAuditDTO.class);
+        if (ciTemplateAuditDTO == null) {
+            return null;
+        }
         ciTemplateAuditDTO.setId(null);
         ciTemplateAuditMapper.insertSelective(ciTemplateAuditDTO);
         return ciTemplateAuditDTO.getId();

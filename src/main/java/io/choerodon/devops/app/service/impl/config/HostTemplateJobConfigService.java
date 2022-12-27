@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service.impl.config;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplatePipelineVO;
@@ -13,6 +8,10 @@ import io.choerodon.devops.infra.dto.CiTplHostDeployInfoCfgDTO;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
 import io.choerodon.devops.infra.mapper.CiTplHostDeployInfoMapper;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HostTemplateJobConfigService extends TemplateJobConfigService {
@@ -25,6 +24,9 @@ public class HostTemplateJobConfigService extends TemplateJobConfigService {
     public Long baseInsert(CiTemplateJobVO ciTemplateJobVO) {
         CiTplHostDeployInfoCfgDTO ciTplHostDeployInfoCfgDTO
                 = ConvertUtils.convertObject(ciTemplateJobVO.getDevopsCiHostDeployInfoVO(), CiTplHostDeployInfoCfgDTO.class);
+        if (ciTplHostDeployInfoCfgDTO == null) {
+            return null;
+        }
         ciTplHostDeployInfoCfgDTO.setId(null);
         ciTplHostDeployInfoMapper.insertSelective(ciTplHostDeployInfoCfgDTO);
         return ciTplHostDeployInfoCfgDTO.getId();

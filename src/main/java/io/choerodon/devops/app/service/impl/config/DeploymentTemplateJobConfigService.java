@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service.impl.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTplDeployDeployCfgVO;
 import io.choerodon.devops.infra.dto.CiTplDeployDeployCfgDTO;
 import io.choerodon.devops.infra.mapper.CiTplDeployDeployCfgMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DeploymentTemplateJobConfigService extends TemplateJobConfigService {
@@ -20,6 +19,9 @@ public class DeploymentTemplateJobConfigService extends TemplateJobConfigService
     @Transactional(rollbackFor = Exception.class)
     public Long baseInsert(CiTemplateJobVO ciTemplateJobVO) {
         CiTplDeployDeployCfgDTO ciTplDeployDeployCfgDTO = ConvertUtils.convertObject(ciTemplateJobVO.getCiDeployDeployCfg(), CiTplDeployDeployCfgDTO.class);
+        if (ciTplDeployDeployCfgDTO == null) {
+            return null;
+        }
         ciTplDeployDeployCfgDTO.setId(null);
         ciTplDeployDeployCfgMapper.insertSelective(ciTplDeployDeployCfgDTO);
         return ciTplDeployDeployCfgDTO.getId();
