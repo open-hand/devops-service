@@ -35,7 +35,7 @@
         </if>
         <if test="builtIn != null and builtIn == true">
             <choose>
-                <when test="sourceType == 'project'">
+                <when test="sourceType == 'project' or sourceType == 'organization'">
                     AND dcts.built_in = 1
                     OR (dcts.built_in = 0 AND dcts.source_type = 'site')
                 </when>
@@ -46,7 +46,7 @@
         </if>
         <if test="builtIn != null and builtIn == false">
             <choose>
-                <when test="sourceType == 'project'">
+                <when test="sourceType == 'project' or sourceType == 'organization'">
                     AND dcts.built_in = 0 AND dcts.source_type != 'site'
                 </when>
                 <otherwise>
