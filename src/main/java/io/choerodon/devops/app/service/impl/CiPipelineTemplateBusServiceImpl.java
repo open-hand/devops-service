@@ -481,6 +481,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     }
 
     private void baseInsertStageJobRel(CiTemplateStageDTO ciTemplateStageDTO, List<CiTemplateJobVO> ciTemplateJobVOList) {
+        AtomicReference<Integer> jobSequence = new AtomicReference<>(0);
         ciTemplateJobVOList.forEach(ciTemplateJobVO -> {
             // 保存为模板的jobId为null
             if (ciTemplateJobVO.getId() == null || ciTemplateJobVO.getId() == 0L) {
@@ -490,9 +491,11 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             CiTemplateStageJobRelDTO ciTemplateStageJobRelDTO = new CiTemplateStageJobRelDTO();
             ciTemplateStageJobRelDTO.setCiTemplateJobId(ciTemplateJobVO.getId());
             ciTemplateStageJobRelDTO.setCiTemplateStageId(ciTemplateStageDTO.getId());
+            ciTemplateStageJobRelDTO.setSequence(jobSequence.get());
             if (CollectionUtils.isEmpty(ciTemplateStageJobRelMapper.select(ciTemplateStageJobRelDTO))) {
                 ciTemplateStageJobRelMapper.insertSelective(ciTemplateStageJobRelDTO);
             }
+            jobSequence.getAndSet(jobSequence.get() + 1);
         });
     }
 
