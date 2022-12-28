@@ -111,6 +111,12 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
             DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
             AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
+
+            if (appServiceInstanceService.isInstanceDeploying(preInstance.getId())) {
+                log.append("应用当前处于部署中状态，请等待此次部署完成后重试，跳过此次部署.").append(System.lineSeparator());
+                return;
+            }
+
             // 如果当前部署版本和流水线生成版本相同则重启
             if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())) {
                 log.append("此次部署版本和应用当前版本一致，触发重新部署.").append(System.lineSeparator());

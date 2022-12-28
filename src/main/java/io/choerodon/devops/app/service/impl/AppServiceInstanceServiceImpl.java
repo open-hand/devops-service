@@ -2759,6 +2759,11 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
     }
 
+    @Override
+    public Boolean isInstanceDeploying(Long instanceId) {
+        return appServiceInstanceMapper.countInstanceDeploying(instanceId) > 0;
+    }
+
     private String[] parseMarketRepo(String harborRepo) {
         if (harborRepo.endsWith(BaseConstants.Symbol.SLASH)) {
             harborRepo = harborRepo.substring(0, harborRepo.length() - 1);
