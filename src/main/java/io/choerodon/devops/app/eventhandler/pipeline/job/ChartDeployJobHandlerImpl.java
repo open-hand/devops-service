@@ -89,6 +89,7 @@ public class ChartDeployJobHandlerImpl extends AbstractAppDeployJobHandlerImpl {
             ciChartDeployConfigVO.setSkipCheckPermission(ciChartDeployConfig.getSkipCheckPermission());
             devopsCiJobVO.setCiChartDeployConfig(ciChartDeployConfigVO);
         }
+        devopsCiJobVO.setCompleted(false);
 
     }
 

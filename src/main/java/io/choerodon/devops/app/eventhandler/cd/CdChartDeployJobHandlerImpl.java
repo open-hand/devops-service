@@ -220,16 +220,12 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
         if (!pipelineAppDeployUtil.checkAutoMaticDeploy(log, envId)) {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
-            // 更新阶段状态
-//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 2. 校验用户权限
         if (!pipelineAppDeployUtil.checkUserPermission(log, userId, envId, skipCheckPermission)) {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
-            // 更新阶段状态
-//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 获取部署版本信息
@@ -241,8 +237,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务匹配'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
@@ -257,8 +251,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务版本匹配'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         } else {
@@ -267,8 +259,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务版本不存在'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         }
@@ -304,8 +294,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("应用: ").append(appCode).append(" 不存在, 请确认是否删除? 跳过此部署任务.").append(System.lineSeparator());
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             // 存在则更新
@@ -347,8 +335,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         pipelineJobRecordDTO.setCommandId(commandId);
                         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                         pipelineJobRecordService.update(pipelineJobRecordDTO);
-                        // 更新阶段状态
-//                        pipelineStageRecordService.updateStatus(stageRecordId);
                         return;
                     }
                 }
@@ -373,8 +359,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
         pipelineJobRecordDTO.setCommandId(commandId);
         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
         pipelineJobRecordService.update(pipelineJobRecordDTO);
-        // 更新阶段状态
-//        pipelineStageRecordService.updateStatus(stageRecordId);
 
     }
 

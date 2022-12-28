@@ -98,7 +98,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         devopsCiHostDeployInfoVO.setAppId(null);
         devopsCiHostDeployInfoVO.setAppName(null);
         devopsCiHostDeployInfoVO.setAppCode(null);
-
+        devopsCiJobVO.setCompleted(false);
     }
 
     @Override
