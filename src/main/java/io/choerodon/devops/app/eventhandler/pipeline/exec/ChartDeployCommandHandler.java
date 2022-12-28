@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.PipelineConstants.GITLAB_ADMIN_
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
@@ -113,8 +114,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
 
             if (appServiceInstanceService.isInstanceDeploying(preInstance.getId())) {
-                log.append("应用当前处于部署中状态，请等待此次部署完成后重试，跳过此次部署.").append(System.lineSeparator());
-                return;
+                log.append("应用当前处于部署中状态，请等待此次部署完成后重试.").append(System.lineSeparator());
+                throw new CommonException("devops.app.instance.deploying");
             }
 
             // 如果当前部署版本和流水线生成版本相同则重启

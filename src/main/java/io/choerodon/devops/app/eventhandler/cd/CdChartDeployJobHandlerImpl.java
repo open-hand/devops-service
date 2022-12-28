@@ -315,10 +315,8 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
 
             if (appServiceInstanceService.isInstanceDeploying(preInstance.getId())) {
-                log.append("应用当前处于部署中状态，请等待此次部署完成后重试，跳过此次部署.").append(System.lineSeparator());
-                pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
-                pipelineJobRecordService.update(pipelineJobRecordDTO);
-                return;
+                log.append("应用当前处于部署中状态，请等待此次部署完成后重试。").append(System.lineSeparator());
+                throw new CommonException("devops.app.instance.deploying");
             }
 
             // 如果当前部署版本和流水线生成版本相同则重启
