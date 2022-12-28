@@ -45,7 +45,7 @@ public enum AppServiceEvent {
     /**
      * 标记删除
      */
-    TAG_DELETE(30),
+    TAG_DELETE(20),
 
     /**
      * merge request List
@@ -146,7 +146,6 @@ public enum AppServiceEvent {
      * ci 流水线 取消
      */
     CI_PIPELINE_CANCEL(20);
-
 
 
     private Integer accesslevel;
