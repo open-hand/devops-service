@@ -111,6 +111,9 @@ public class CiTemplateJobVO {
     @ApiModelProperty("顺序")
     private Integer sequence;
 
+    @ApiModelProperty("分组类型")
+    private String groupType;
+
     public Integer getSequence() {
         return sequence;
     }
@@ -367,5 +370,13 @@ public class CiTemplateJobVO {
 
     public void setCiAuditConfig(CiTplAuditVO ciAuditConfig) {
         this.ciAuditConfig = ciAuditConfig;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
     }
 }

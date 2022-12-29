@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.utils.TemplateJobTypeUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -337,11 +338,15 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(JOB, sourceId, ciTemplateJobVO.getName()));
         ciTemplateJobVO.setVisibility(Boolean.FALSE);
         ciTemplateJobVO.setId(null);
-        ciTemplateJobVO.setGroupId(0L);
+//        ciTemplateJobVO.setGroupId(0L);
+        //处理group
+        ciTemplateJobVO.setGroupId(fillGroupId(ciTemplateJobVO.getGroupType()));
         ciTemplateJobVO.setSourceType(ResourceLevel.PROJECT.value());
         ciTemplateJobVO.setSourceId(sourceId);
         ciTemplateJobVO.setBuiltIn(false);
     }
+
+
 
     private void checkParam(CiTemplateJobVO ciTemplateJobVO) {
         // 检验名称
@@ -409,6 +414,16 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     private static List<CiTemplateJobVO> getSortedTemplate(List<CiTemplateJobVO> siteTemplates) {
         return siteTemplates.stream()
                 .sorted(Comparator.comparing(CiTemplateJobVO::getCreationDate).reversed()).collect(Collectors.toList());
+    }
+
+    private Long fillGroupId(String groupType) {
+        if (StringUtils.isNotBlank(groupType)) {
+            return BaseConstants.DEFAULT_TENANT_ID;
+        }
+        CiTemplateJobGroupDTO ciTemplateJobGroupDTO = new CiTemplateJobGroupDTO();
+        ciTemplateJobGroupDTO.setType(groupType);
+        CiTemplateJobGroupDTO templateJobGroupDTO = ciTemplateJobGroupBusMapper.selectOne(ciTemplateJobGroupDTO);
+        return templateJobGroupDTO == null ? BaseConstants.DEFAULT_TENANT_ID : templateJobGroupDTO.getId();
     }
 
 }
