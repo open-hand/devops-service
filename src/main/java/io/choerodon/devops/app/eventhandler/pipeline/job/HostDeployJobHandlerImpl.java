@@ -22,6 +22,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
@@ -78,10 +79,13 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCiHostDeployInfoVO.getAppName(), devopsCiHostDeployInfoVO.getAppCode());
             devopsCiHostDeployInfoVO.setAppId(null);
         } else {
-            if (devopsCiHostDeployInfoVO.getAppId() != null) {
-                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoVO.getAppId());
-                devopsCiHostDeployInfoVO.setHostId(devopsHostAppDTO.getHostId());
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoVO.getAppId());
+            if (devopsHostAppDTO == null) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_NOT_EXIST);
             }
+            devopsCiHostDeployInfoVO.setHostId(devopsHostAppDTO.getHostId());
+            devopsCiHostDeployInfoVO.setAppName(devopsHostAppDTO.getName());
+            devopsCiHostDeployInfoVO.setAppCode(devopsHostAppDTO.getCode());
         }
 
         // 除了其它制品类型，都要关联一个构建任务
