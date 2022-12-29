@@ -390,6 +390,10 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     }
 
     private void insertBaseJobStepRel(CiTemplateJobVO ciTemplateJobVO, CiTemplateJobDTO ciTemplateJobDTO) {
+        //校验不能有重复的步骤
+        List<Long> stepListIds = ciTemplateJobVO.getDevopsCiStepVOList().stream().map(CiTemplateStepVO::getId).collect(Collectors.toList());
+        Set<Long> stepSetIds = ciTemplateJobVO.getDevopsCiStepVOList().stream().map(CiTemplateStepVO::getId).collect(Collectors.toSet());
+        AssertUtils.isTrue(stepListIds.size() == stepSetIds.size(), "devops.error.step.repeat");
         // 添加job和step关系
         AtomicReference<Long> sequence = new AtomicReference<>(0L);
         ciTemplateJobVO.getDevopsCiStepVOList().forEach(ciTemplateStepVO -> {
