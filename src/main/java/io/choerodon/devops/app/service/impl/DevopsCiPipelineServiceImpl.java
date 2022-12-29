@@ -1570,7 +1570,25 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                                             devopsCiHostDeployInfoVO.setPipelineTask(jarDeploy.getPipelineTask());
                                         }
                                     }
-
+                                    // 解密部署命令
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getPreCommand())) {
+                                        devopsCiHostDeployInfoVO.setPreCommand(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getPreCommand()));
+                                    }
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getPostCommand())) {
+                                        devopsCiHostDeployInfoVO.setPostCommand(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getPostCommand()));
+                                    }
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getRunCommand())) {
+                                        devopsCiHostDeployInfoVO.setRunCommand(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getRunCommand()));
+                                    }
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getKillCommand())) {
+                                        devopsCiHostDeployInfoVO.setKillCommand(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getKillCommand()));
+                                    }
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getHealthProb())) {
+                                        devopsCiHostDeployInfoVO.setHealthProb(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getHealthProb()));
+                                    }
+                                    if (StringUtils.isNoneBlank(devopsCdHostDeployInfoDTO.getDockerCommand())) {
+                                        devopsCiHostDeployInfoVO.setDockerCommand(Base64Util.getBase64DecodedString(devopsCdHostDeployInfoDTO.getDockerCommand()));
+                                    }
 
                                     devopsCiJobVO.setTags("cd");
                                     devopsCiJobVO.setType(CiJobTypeEnum.HOST_DEPLOY.value());

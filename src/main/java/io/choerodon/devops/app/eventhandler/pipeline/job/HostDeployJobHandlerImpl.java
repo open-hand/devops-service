@@ -147,6 +147,9 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
 
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(jarDeployVO));
         }
+        if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getDockerCommand())) {
+            devopsCiHostDeployInfoDTO.setDockerCommand(Base64Util.getBase64EncodedString(ciHostDeployInfoVO.getDockerCommand()));
+        }
         if (StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
                 ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getPipelineTask()) &&
                 ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getContainerName())) {
@@ -155,7 +158,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             imageDeploy.setDeploySource(ciHostDeployInfoVO.getDeploySource());
             imageDeploy.setContainerName(ciHostDeployInfoVO.getContainerName());
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
-            devopsCiHostDeployInfoDTO.setDockerCommand(Base64Util.getBase64EncodedString(ciHostDeployInfoVO.getDockerCommand()));
+
             devopsCiHostDeployInfoDTO.setKillCommand(null);
             devopsCiHostDeployInfoDTO.setPreCommand(null);
             devopsCiHostDeployInfoDTO.setRunCommand(null);
