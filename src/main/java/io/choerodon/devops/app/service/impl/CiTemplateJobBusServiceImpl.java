@@ -417,7 +417,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     }
 
     private Long fillGroupId(String groupType) {
-        if (StringUtils.isNotBlank(groupType)) {
+        if (StringUtils.isBlank(groupType)) {
             return BaseConstants.DEFAULT_TENANT_ID;
         }
         CiTemplateJobGroupDTO ciTemplateJobGroupDTO = new CiTemplateJobGroupDTO();
