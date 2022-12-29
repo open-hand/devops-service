@@ -44,8 +44,18 @@ public class PipelineChartDeployCfgVO {
     @ApiModelProperty(value = "环境名称")
     private String envName;
 
-
+    @ApiModelProperty(value = "部署配置")
+    private String value;
     private AppServiceRepVO appServiceDTO;
+
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public AppServiceRepVO getAppServiceDTO() {
         return appServiceDTO;

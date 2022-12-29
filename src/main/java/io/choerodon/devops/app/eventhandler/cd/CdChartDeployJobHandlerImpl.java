@@ -187,6 +187,10 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineChartDeployCfgVO.setAppServiceDTO(ConvertUtils.convertObject(appServiceDTO, AppServiceRepVO.class));
             }
         }
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(pipelineChartDeployCfgVO.getValueId());
+        if (devopsDeployValueDTO != null) {
+            pipelineChartDeployCfgVO.setValue(devopsDeployValueDTO.getValue());
+        }
         pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgVO);
     }
 
@@ -302,7 +306,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
 
-            if (appServiceInstanceService.isInstanceDeploying(preInstance.getId())) {
+            if (Boolean.TRUE.equals(appServiceInstanceService.isInstanceDeploying(preInstance.getId()))) {
                 log.append("应用当前处于部署中状态，请等待此次部署完成后重试。").append(System.lineSeparator());
                 throw new CommonException("devops.app.instance.deploying");
             }

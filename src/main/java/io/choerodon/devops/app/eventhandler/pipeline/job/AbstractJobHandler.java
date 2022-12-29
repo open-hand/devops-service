@@ -2,8 +2,6 @@ package io.choerodon.devops.app.eventhandler.pipeline.job;
 
 import java.util.List;
 
-import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
-import io.choerodon.devops.infra.enums.StageType;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +12,7 @@ import io.choerodon.devops.app.service.DevopsCiJobService;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
+import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
 
