@@ -45,7 +45,7 @@ public class WorkloadServiceImpl implements WorkloadService {
     private static final String DEVOPS_WORKLOAD_RESOURCE_NAME_NOT_FOUND = "devops.workload.resource.name.not.found";
     private static final String DEVOPS_WORKLOAD_RESOURCE_METADATA_NOT_FOUND = "devops.workload.resource.metadata.not.found";
     private static final String DEVOPS_WORKLOAD_RESOURCE_KIND_MISMATCH = "devops.workload.resource.kind.mismatch";
-    private static final String DEVOPS_WORKLOAD_RESOURCE_KIND_NOT_FOUND = "devops.workload.resource.kind.not.found";
+    private static final String DEVOPS_WORKLOAD_RESOURCE_FORMAT_INVALID = "devops.workload.resource.format.invalid";
 
 
     private static final Map<String, String> RESOURCE_FILE_TEMPLATE_PATH_MAP;
@@ -148,7 +148,12 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
 
         for (Object workload : yaml.loadAll(content)) {
-            Map<String, Object> datas = (Map<String, Object>) workload;
+            Map<String, Object> datas = null;
+            try {
+                datas = (Map<String, Object>) workload;
+            } catch (Exception e) {
+                throw new CommonException(DEVOPS_WORKLOAD_RESOURCE_KIND_NOT_FOUND);
+            }
 
             String kind = (String) datas.get(KIND);
 
