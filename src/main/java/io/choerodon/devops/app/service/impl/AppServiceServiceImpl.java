@@ -445,7 +445,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         devOpsAppServicePayload.setAppServiceId(appServiceId);
         devOpsAppServicePayload.setIamProjectId(projectId);
         //删除应用服务后需要发送消息，这里将消息的内容封近paylod, 外部应用不需要
-        if (appServiceDTO.getExternalConfigId() == null) {
+        if (appServiceDTO.getExternalConfigId() == null && appServiceDTO.getGitlabProjectId() != null) {
             List<MemberDTO> memberDTOS = gitlabServiceClientOperator.listMemberByProject(appServiceDTO.getGitlabProjectId(), null);
             devOpsAppServicePayload.setMemberDTOS(memberDTOS);
         }
