@@ -190,7 +190,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     public CiTemplatePipelineVO updatePipelineTemplate(Long sourceId, String sourceType,
                                                        CiTemplatePipelineVO devopsPipelineTemplateVO) {
         AssertUtils.isTrue(checkPipelineTemplateName(sourceId, devopsPipelineTemplateVO.getName(),
-                        devopsPipelineTemplateVO.getId()),
+                devopsPipelineTemplateVO.getId()),
                 "error.pipeline.template.name.exist");
         checkPipelineCategory(devopsPipelineTemplateVO);
         checkStageName(devopsPipelineTemplateVO);
@@ -370,7 +370,9 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         }
 
         Map<Long, CiTemplateJobVO> ciTemplateJobDTOSMappedById = ciTemplateJobDTOS.stream().collect(Collectors.toMap(CiTemplateJobVO::getId, Function.identity()));
-        return ciTemplateStageJobRelDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getSequence)).map(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId())).collect(Collectors.toList());
+        return ciTemplateStageJobRelDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getSequence))
+                .filter(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId()) != null)
+                .map(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId())).collect(Collectors.toList());
     }
 
     private List<CiTemplateStageVO> queryBaseCiTemplateStage(Long ciPipelineTemplateId) {
