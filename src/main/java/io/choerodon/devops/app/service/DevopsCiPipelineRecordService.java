@@ -48,17 +48,6 @@ public interface DevopsCiPipelineRecordService {
     List<DevopsCiPipelineRecordDTO> queryByPipelineId(Long ciPipelineId);
 
     DevopsCiPipelineRecordDTO create(Long ciPipelineId, Long gitlabProjectId, Pipeline pipeline);
-
-    /**
-     * 重试流水线
-     */
-    void retry(Long projectId, Long gitlabPipelineId, Long gitlabProjectId);
-
-    /**
-     * 取消执行流水线
-     */
-    void cancel(Long projectId, Long gitlabPipelineId, Long gitlabProjectId);
-
     /**
      * 查询流水线执行记录
      */
@@ -90,18 +79,16 @@ public interface DevopsCiPipelineRecordService {
      *
      * @param projectId
      * @param id
-     * @param gitlabProjectId
      */
-    void retryPipeline(Long projectId, Long id, Long gitlabProjectId);
+    void retryPipeline(Long projectId, Long id);
 
     /**
      * 取消流水线
      *
      * @param projectId
      * @param id
-     * @param gitlabProjectId
      */
-    void cancelPipeline(Long projectId, Long id, Long gitlabProjectId);
+    void cancelPipeline(Long projectId, Long id);
 
     Long ciPipelineDeployImage(Long projectId, Long gitlabPipelineId, DevopsCiHostDeployInfoDTO devopsCiHostDeployInfoDTO, StringBuilder log);
 

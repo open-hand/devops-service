@@ -46,10 +46,8 @@ private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @RequestParam(value = "id") Long id,
-            @ApiParam(value = "流水线ID", required = true)
-            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        devopsCiPipelineRecordService.retryPipeline(projectId, id, gitlabProjectId);
+            @RequestParam(value = "id") Long id) {
+        devopsCiPipelineRecordService.retryPipeline(projectId, id);
         return Results.success();
     }
 
@@ -62,10 +60,8 @@ private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
     public ResponseEntity<Void> cancel(
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "流水线记录id", required = true)
-            @RequestParam(value = "id") Long id,
-            @ApiParam(value = "流水线ID", required = true)
-            @RequestParam("gitlab_project_id") Long gitlabProjectId) {
-        devopsCiPipelineRecordService.cancelPipeline(projectId, id, gitlabProjectId);
+            @RequestParam(value = "id") Long id) {
+        devopsCiPipelineRecordService.cancelPipeline(projectId, id);
         return ResponseEntity.noContent().build();
     }
 
