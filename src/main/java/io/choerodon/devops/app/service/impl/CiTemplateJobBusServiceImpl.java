@@ -320,6 +320,17 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             //插入不可见的步骤
             ciTemplateStepBusService.createNonVisibilityStep(sourceId, ciTemplateJobVO);
             //插入不可见的任务
+            //插入不可见任务之前先检查一下名称，如果重复再随机一下,只有项目层会走到这里
+            if (!isNameUnique(ciTemplateJobVO.getName(), sourceId, null)) {
+                int indexOf = StringUtils.lastIndexOf(ciTemplateJobVO.getName(), BaseConstants.Symbol.LOWER_LINE);
+                if (indexOf == -1) {
+                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.JOB, sourceId, ciTemplateJobVO.getName()));
+                } else {
+                    String originName = StringUtils.substring(ciTemplateJobVO.getName(), 0, indexOf);
+                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.JOB, sourceId, originName));
+                }
+
+            }
             CiTemplateJobVO templateJob = createTemplateJob(sourceId, sourceType, ciTemplateJobVO);
             ciTemplateJobVO.setId(templateJob.getId());
         });
@@ -345,7 +356,6 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         ciTemplateJobVO.setSourceId(sourceId);
         ciTemplateJobVO.setBuiltIn(false);
     }
-
 
 
     private void checkParam(CiTemplateJobVO ciTemplateJobVO) {

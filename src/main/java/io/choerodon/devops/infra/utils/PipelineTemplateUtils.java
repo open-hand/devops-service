@@ -20,8 +20,8 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 @Component
 public class PipelineTemplateUtils {
 
-    private static final String JOB = "job";
-    private static final String STEP = "step";
+    public static final String JOB = "job";
+    public static final String STEP = "step";
     public static ThreadLocal threadLocal = new ThreadLocal();
 
 

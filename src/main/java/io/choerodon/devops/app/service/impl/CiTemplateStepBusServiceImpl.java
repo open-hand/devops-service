@@ -21,6 +21,7 @@ import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -307,6 +308,17 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
             ciTemplateStepVO.setBuiltIn(false);
             ciTemplateStepVO.setSourceId(sourceId);
             ciTemplateStepVO.setId(null);
+            //插入不可见步骤之前先检查一下名称，如果重复再随机一下,只有项目层会走到这里
+            if (!checkTemplateStepName(sourceId, ciTemplateStepVO.getName(), null)) {
+                int indexOf = StringUtils.lastIndexOf(ciTemplateStepVO.getName(), BaseConstants.Symbol.LOWER_LINE);
+                if (indexOf == -1) {
+                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.STEP, sourceId, ciTemplateStepVO.getName()));
+                } else {
+                    String originName = StringUtils.substring(ciTemplateStepVO.getName(), 0, indexOf);
+                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.STEP, sourceId, originName));
+                }
+
+            }
             CiTemplateStepVO templateStep = ciTemplateStepBusService.createTemplateStep(sourceId, ciTemplateStepVO);
 //            //插入步骤的配置：
 //            //MAVEN构建，MAVEN发布等等
