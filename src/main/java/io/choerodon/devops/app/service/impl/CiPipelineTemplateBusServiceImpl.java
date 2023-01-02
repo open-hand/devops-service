@@ -368,7 +368,6 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         if (CollectionUtils.isEmpty(ciTemplateJobDTOS)) {
             return Collections.emptyList();
         }
-
         Map<Long, CiTemplateJobVO> ciTemplateJobDTOSMappedById = ciTemplateJobDTOS.stream().collect(Collectors.toMap(CiTemplateJobVO::getId, Function.identity()));
         return ciTemplateStageJobRelDTOS.stream().sorted(Comparator.comparing(CiTemplateStageJobRelDTO::getSequence))
                 .filter(ciTemplateStageJobRelDTO -> ciTemplateJobDTOSMappedById.get(ciTemplateStageJobRelDTO.getCiTemplateJobId()) != null)

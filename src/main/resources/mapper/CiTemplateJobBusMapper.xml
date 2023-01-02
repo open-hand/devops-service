@@ -166,31 +166,33 @@
     </delete>
 
     <select id="listByIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
-        SELECT id,
-        name,
-        group_id,
-        image,
-        source_type,
-        source_id,
-        built_in,
-        type,
-        script,
-        to_upload,
-        to_download,
-        parallel,
-        object_version_number,
-        created_by,
-        creation_date,
-        last_updated_by,
-        last_update_date,
-        config_id,
-        tags,
-        start_in,
-        visibility,
-        trigger_value,
-        trigger_type
-        FROM devops_ci_template_job
-        WHERE id
+        SELECT
+          dctj.id,
+          dctj.name,
+          dctj.group_id,
+          dctj.image,
+          dctj.source_type,
+          dctj.source_id,
+          dctj.built_in,
+          dctj.type,
+          dctj.script,
+          dctj.to_upload,
+          dctj.to_download,
+          dctj.parallel,
+          dctj.object_version_number,
+          dctj.created_by,
+          dctj.creation_date,
+          dctj.last_updated_by,
+          dctj.last_update_date,
+          dctj.config_id,
+          dctj.tags,
+          dctj.start_in,
+          dctj.visibility,
+          dctj.trigger_value,
+          dctj.trigger_type,
+          dctjg.type AS groupType
+        FROM devops_ci_template_job dctj LEFT JOIN  devops_ci_template_job_group dctjg ON  dctj.group_id=dctjg.id
+        WHERE dctj.id
         IN
         <foreach collection="jobIds" item="id" open="(" close=")" separator=",">
             #{id}
