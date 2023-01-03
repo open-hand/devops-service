@@ -38,6 +38,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
     @Autowired
     private DevopsDeployValueService devopsDeployValueService;
     @Autowired
+    private DevopsEnvCommandValueService devopsEnvCommandValueService;
+    @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
@@ -111,9 +113,12 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                 log.append("应用当前处于部署中状态，请等待此次部署完成后重试.").append(System.lineSeparator());
                 throw new CommonException("devops.app.instance.deploying");
             }
+            DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = devopsEnvCommandValueService.baseQueryById(preCommand.getId());
+            DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(valueId);
 
             // 如果当前部署版本和流水线生成版本相同则重启
-            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())) {
+            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())
+                    && devopsDeployValueDTO.getValue().equals(devopsEnvCommandValueDTO.getValue())) {
                 log.append("此次部署版本和应用当前版本一致，触发重新部署.").append(System.lineSeparator());
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(projectId,
@@ -142,7 +147,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
                         envId,
-                        devopsDeployValueService.baseQueryById(valueId).getValue(),
+                        devopsDeployValueDTO.getValue(),
                         valueId,
                         appCode,
                         devopsDeployAppCenterEnvDTO.getObjectId(),
