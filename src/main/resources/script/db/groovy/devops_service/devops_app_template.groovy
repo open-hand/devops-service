@@ -33,7 +33,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
 
     changeSet(author: 'scp', id: '2021-05-21-devops_app_template-add-remark') {
         addColumn(tableName: 'devops_app_template') {
-            column(name: 'remark', type: 'text', remarks: '备注',  beforeColumn: "object_version_number")
+            column(name: 'remark', type: 'text', remarks: '备注', beforeColumn: "object_version_number")
         }
+    }
+    changeSet(author: 'wanghao', id: '2023-01-03-delete-data') {
+        sql("""
+        DELETE FROM devops_app_template WHERE source_type = 'site' and code in ('mochatemplate', 'testngseleniumtemplate','testngtemplate')
+        """)
     }
 }
