@@ -312,7 +312,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("应用当前处于部署中状态，请等待此次部署完成后重试。").append(System.lineSeparator());
                 throw new CommonException("devops.app.instance.deploying");
             }
-            DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = devopsEnvCommandValueService.baseQueryById(preCommand.getId());
+            DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = devopsEnvCommandValueService.baseQueryById(preCommand.getValueId());
             DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(valueId);
             // 如果当前部署版本和流水线生成版本相同则重启
             if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())
