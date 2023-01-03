@@ -81,22 +81,12 @@
     <select id="getResourceDetailByEnvIdAndKindAndName" resultType="java.lang.String">
         SELECT detail.message
         FROM devops_env_resource re
-                     INNER JOIN devops_env_resource_detail detail
-                ON re.resource_detail_id = detail.id
-        WHERE re.name = #{name}
+                 INNER JOIN devops_env_resource_detail detail ON re.resource_detail_id = detail.id
+        WHERE re.env_id = #{envId}
           AND re.kind = #{kind}
-          AND re.env_id = #{envId}
+          AND re.name = #{name}
         order by re.id desc
         limit 1
-    </select>
-
-    <select id="queryDetailsByKindAndName" resultType="java.lang.String">
-        select ders.message
-        from devops_env_resource der
-                     inner join devops_env_resource_detail ders on ders.id = der.resource_detail_id
-        where der.env_id = #{envId}
-          and der.kind = #{kind}
-          and der.name = #{name}
     </select>
 
     <select id="getResourceWithDetailByInstanceIdAndKind"

@@ -30,11 +30,9 @@ public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDTO
 
     List<DevopsEnvResourceDTO> listEnvResourceByOptions(@Param("envId") Long envId, @Param("kind") String type, @Param("names") List<String> names);
 
-    String getResourceDetailByEnvIdAndKindAndName(@Param("envId") Long envId, @Param("name") String name, @Param("kind") String type);
-
-    String queryDetailsByKindAndName(@Param("envId") Long envId,
-                                     @Param("kind") String kind,
-                                     @Param("name") String name);
+    String getResourceDetailByEnvIdAndKindAndName(@Param("envId") Long envId,
+                                                  @Param("kind") String kind,
+                                                  @Param("name") String name);
 
     List<DevopsEnvResourceDTO> getResourceWithDetailByInstanceIdAndKind(@Param("instanceId") Long instanceId, @Param("kind") String kind);
 
