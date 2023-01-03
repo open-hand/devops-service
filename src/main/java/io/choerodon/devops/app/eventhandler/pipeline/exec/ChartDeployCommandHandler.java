@@ -34,12 +34,6 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
     @Autowired
     private CiChartDeployConfigService ciChartDeployConfigService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private DevopsDeployValueService devopsDeployValueService;
@@ -160,8 +154,12 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
-        devopsCiJobRecordDTO.setCommandId(commandId);
-        devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        if (commandId != null) {
+            devopsCiJobRecordDTO.setCommandId(commandId);
+            devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        } else {
+            log.append("[warn] 部署命令未找到.").append(System.lineSeparator());
+        }
     }
 
     @Override

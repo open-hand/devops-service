@@ -360,7 +360,11 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
-        pipelineJobRecordDTO.setCommandId(commandId);
+        if (commandId != null) {
+            pipelineJobRecordDTO.setCommandId(commandId);
+        } else {
+            log.append("[warn] 部署命令未找到.").append(System.lineSeparator());
+        }
         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
         pipelineJobRecordService.update(pipelineJobRecordDTO);
 
