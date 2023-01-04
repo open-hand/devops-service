@@ -166,4 +166,6 @@ public interface AppServiceInstanceMapper extends BaseMapper<AppServiceInstanceD
     List<AppServiceInstanceInfoDTO> listInfoById(@Param("instanceIds") List<Long> instanceIds);
 
     List<AppServiceInstanceVO> listMarketInstance(@Param("envId") Long envId);
+
+    Integer countInstanceDeploying(@Param("instanceId") Long instanceId);
 }

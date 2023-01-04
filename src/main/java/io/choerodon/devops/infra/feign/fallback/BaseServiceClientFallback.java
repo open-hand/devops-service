@@ -54,33 +54,8 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Tenant> queryOrganizationById(Long organizationId, Boolean withMoreInfo) {
-        throw new CommonException(DEVOPS_ORGANIZATION_GET, organizationId);
-    }
-
-    @Override
     public ResponseEntity<Tenant> queryOrganizationBasicInfoWithCache(Long organizationId) {
         throw new CommonException(DEVOPS_ORGANIZATION_GET);
-    }
-
-    @Override
-    public ResponseEntity<List<Tenant>> queryOrgByIds(Set<Long> ids) {
-        throw new CommonException(DEVOPS_ORGANIZATION_GET, ids == null ? "null" : ids.toString());
-    }
-
-    @Override
-    public ResponseEntity<IamUserDTO> queryByLoginName(String loginName) {
-        throw new CommonException("devops.user.get.byLoginName");
-    }
-
-    @Override
-    public ResponseEntity<IamUserDTO> queryById(Long id) {
-        throw new CommonException("devops.user.get.byId");
-    }
-
-    @Override
-    public ResponseEntity<String> listUsersByIds(Long[] ids, Boolean onlyEnabled) {
-        throw new CommonException("devops.user.get.byIds");
     }
 
     @Override
@@ -109,21 +84,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<ClientVO> createClient(Long organizationId, @Valid ClientVO clientVO) {
-        throw new CommonException("devops.create.client");
-    }
-
-    @Override
-    public ResponseEntity deleteClient(Long organizationId, Long clientId) {
-        throw new CommonException("devops.delete.client");
-    }
-
-    @Override
-    public ResponseEntity<ClientVO> queryClientBySourceId(Long organizationId, Long sourceId) {
-        throw new CommonException("devops.query.client");
-    }
-
-    @Override
     public ResponseEntity<Boolean> checkIsGitlabProjectOwner(Long id, Long projectId) {
         throw new CommonException("devops.check.project.permission");
     }
@@ -144,16 +104,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> checkIsRoot(Long id) {
-        throw new CommonException("devops.check.is.root");
-    }
-
-    @Override
-    public ResponseEntity<Boolean> checkIsOrgRoot(Long organizationId, Long userId) {
-        throw new CommonException("devops.check.is.org.root");
-    }
-
-    @Override
     public ResponseEntity<Boolean> checkIsProjectOwner(Long id, Long projectId) {
         throw new CommonException("devops.check.is.project.owner");
     }
@@ -169,16 +119,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(Long organizationId, Integer size) {
-        throw new CommonException("devops.query.org.by.id");
-    }
-
-    @Override
-    public ResponseEntity<ClientVO> queryClientByName(Long organizationId, String clientName) {
-        throw new CommonException("devops.get.client");
-    }
-
-    @Override
     public ResponseEntity<List<UserProjectLabelVO>> listRoleLabelsForUserInTheProject(Long userId, Set<Long> projectIds) {
         throw new CommonException("devops.get.user.labels", userId, projectIds == null ? null : projectIds.toString());
     }
@@ -191,16 +131,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<IamUserDTO>> queryUserByProjectId(Long projectId) {
         throw new CommonException("devops.query.user.by.project.id");
-    }
-
-    @Override
-    public ResponseEntity<List<IamUserDTO>> queryRoot() {
-        throw new CommonException("devops.query.root.user");
-    }
-
-    @Override
-    public ResponseEntity<String> countAllUsers() {
-        throw new CommonException("devops.count.all.users");
     }
 
     @Override
@@ -221,26 +151,6 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     @Override
     public ResponseEntity<List<ProjectDTO>> listProjectsByUserId(Long organizationId, Long userId) {
         throw new CommonException("devops.list.projectIds.in.org", organizationId);
-    }
-
-    @Override
-    public ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(Long organizationId) {
-        throw new CommonException("devops.query.tenant", organizationId);
-    }
-
-    @Override
-    public ResponseEntity<List<ExternalTenantVO>> querySaasTenants(List<String> saasLevels) {
-        throw new CommonException("devops.query.saas.tenant");
-    }
-
-    @Override
-    public ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant() {
-        throw new CommonException("devops.query.register.tenant");
-    }
-
-    @Override
-    public ResponseEntity<Boolean> platformAdministratorOrAuditor(Long userId) {
-        throw new CommonException("devops.check.user.site.access");
     }
 
     @Override

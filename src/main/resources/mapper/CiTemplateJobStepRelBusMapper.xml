@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateJobStepRelBusMapper">
+
+    <delete id="deleteByJobId">
+    DELETE FROM devops_ci_template_job_step_rel
+    WHERE ci_template_job_id=#{jobId}
+    </delete>
+
+    <select id="selectNonVisibilityByJobIds" resultType="io.choerodon.devops.infra.dto.CiTemplateJobStepRelDTO">
+
+            SELECT
+             dctjsr.id,
+             dctjsr.ci_template_job_id,
+             dctjsr.ci_template_step_id
+            FROM
+             devops_ci_template_job dctj
+            JOIN devops_ci_template_job_step_rel dctjsr ON dctj.id = dctjsr.ci_template_job_id
+            WHERE
+             1=1
+             and dctj.id IN
+            <if test="jobIds != null and jobIds.size() != 0">
+              <foreach collection="jobIds" item="jobId" index="index"
+                     open="(" close=")" separator=",">
+                #{jobId}
+              </foreach>
+            </if>
+            AND dctj.visibility = 0
+
+
+    </select>
+
+    <delete id="deleteByIds" >
+
+            DELETE FROM devops_ci_template_job_step_rel
+            WHERE  1=1
+            and  id in
+        <if test="jobStepRelIds != null and jobStepRelIds.size() != 0">
+            <foreach collection="jobStepRelIds" item="jobStepRelId" index="index"
+                     open="(" close=")" separator=",">
+                #{jobStepRelId}
+            </foreach>
+        </if>
+
+    </delete>
+</mapper>

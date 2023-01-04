@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.cd.CdJobTypeEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineStatusEnum;
 import io.choerodon.devops.infra.enums.cd.PipelineTriggerTypeEnum;
@@ -64,6 +65,8 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
     @Autowired
     private DevopsEnvCommandService devopsEnvCommandService;
     @Autowired
+    private DevopsEnvCommandValueService devopsEnvCommandValueService;
+    @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private AppServiceService appServiceService;
@@ -94,6 +97,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             if (StringUtils.isEmpty(appDeployConfigVO.getAppCode())) {
                 throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_CODE_IS_EMPTY);
             }
+            appDeployConfigVO.setAppId(null);
         } else {
             if (appDeployConfigVO.getAppId() == null) {
                 throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_ID_IS_EMPTY);
@@ -108,6 +112,9 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                     appDeployConfigVO.getAppCode());
         } else {
             DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.selectByPrimaryKey(appDeployConfigVO.getAppId());
+            if (devopsDeployAppCenterEnvDTO == null) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_NOT_EXIST);
+            }
             appDeployConfigVO.setAppCode(devopsDeployAppCenterEnvDTO.getCode());
             appDeployConfigVO.setAppName(devopsDeployAppCenterEnvDTO.getName());
             if (!devopsDeployAppCenterEnvDTO.getEnvId().equals(appDeployConfigVO.getEnvId())) {
@@ -182,6 +189,10 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 pipelineChartDeployCfgVO.setAppServiceDTO(ConvertUtils.convertObject(appServiceDTO, AppServiceRepVO.class));
             }
         }
+        DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(pipelineChartDeployCfgVO.getValueId());
+        if (devopsDeployValueDTO != null) {
+            pipelineChartDeployCfgVO.setValue(devopsDeployValueDTO.getValue());
+        }
         pipelineJobVO.setChartDeployCfg(pipelineChartDeployCfgVO);
     }
 
@@ -215,16 +226,12 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
         if (!pipelineAppDeployUtil.checkAutoMaticDeploy(log, envId)) {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
-            // 更新阶段状态
-//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 2. 校验用户权限
         if (!pipelineAppDeployUtil.checkUserPermission(log, userId, envId, skipCheckPermission)) {
             pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
             pipelineJobRecordService.update(pipelineJobRecordDTO);
-            // 更新阶段状态
-//            pipelineStageRecordService.updateStatus(stageRecordId);
             return;
         }
         // 获取部署版本信息
@@ -236,8 +243,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务匹配'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordDTO.getAppServiceVersionId());
@@ -252,8 +257,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务版本匹配'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         } else {
@@ -262,8 +265,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("当前任务不满足触发条件'应用服务版本不存在'，跳过此任务");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
         }
@@ -286,7 +287,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                     appCode);
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
                     appServiceDeployVO,
-                    true);
+                    DeployType.AUTO);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
             pipelineChartDeployCfgDTO.setAppId(appId);
@@ -299,8 +300,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 log.append("应用: ").append(appCode).append(" 不存在, 请确认是否删除? 跳过此部署任务.").append(System.lineSeparator());
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
-                // 更新阶段状态
-//                pipelineStageRecordService.updateStatus(stageRecordId);
                 return;
             }
             // 存在则更新
@@ -308,13 +307,21 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
             DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
             AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
+
+            if (Boolean.TRUE.equals(appServiceInstanceService.isInstanceDeploying(preInstance.getId()))) {
+                log.append("应用当前处于部署中状态，请等待此次部署完成后重试。").append(System.lineSeparator());
+                throw new CommonException("devops.app.instance.deploying");
+            }
+            DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = devopsEnvCommandValueService.baseQueryById(preCommand.getValueId());
+            DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(valueId);
             // 如果当前部署版本和流水线生成版本相同则重启
-            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())) {
+            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())
+                    && devopsDeployValueDTO.getValue().equals(devopsEnvCommandValueDTO.getValue())) {
                 log.append("此次部署版本和应用当前版本一致，触发重新部署.").append(System.lineSeparator());
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(projectId,
                         preInstance.getId(),
-                        true,
+                        DeployType.CD,
                         true);
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("重新部署成功.").append(System.lineSeparator());
@@ -336,8 +343,6 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         pipelineJobRecordDTO.setCommandId(commandId);
                         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                         pipelineJobRecordService.update(pipelineJobRecordDTO);
-                        // 更新阶段状态
-//                        pipelineStageRecordService.updateStatus(stageRecordId);
                         return;
                     }
                 }
@@ -345,7 +350,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
                         envId,
-                        devopsDeployValueService.baseQueryById(valueId).getValue(),
+                        devopsDeployValueDTO.getValue(),
                         valueId,
                         appCode,
                         devopsDeployAppCenterEnvDTO.getObjectId(),
@@ -353,15 +358,19 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
+                        appServiceDeployVO,
+                        DeployType.CD);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
-        pipelineJobRecordDTO.setCommandId(commandId);
+        if (commandId != null) {
+            pipelineJobRecordDTO.setCommandId(commandId);
+        } else {
+            log.append("[warn] 部署命令未找到.").append(System.lineSeparator());
+        }
         pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SUCCESS.value());
         pipelineJobRecordService.update(pipelineJobRecordDTO);
-        // 更新阶段状态
-//        pipelineStageRecordService.updateStatus(stageRecordId);
 
     }
 

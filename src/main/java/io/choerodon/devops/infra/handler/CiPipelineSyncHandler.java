@@ -116,7 +116,7 @@ public class CiPipelineSyncHandler {
      * @param gitlabPipelineId 流水线id
      * @return true表示在查询间隔中, 不可以继续执行刷新逻辑
      */
-    private boolean inFetchPeriod(Integer gitlabPipelineId) {
+    public boolean inFetchPeriod(Integer gitlabPipelineId) {
         String redisKey = String.format(GitOpsConstants.CI_PIPELINE_REDIS_KEY_TEMPLATE, gitlabPipelineId);
         // 如果已经有key, 说明此时还处于刷新间隔中
         if (Boolean.TRUE.equals(stringRedisTemplate.hasKey(redisKey))) {

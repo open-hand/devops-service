@@ -55,6 +55,7 @@ services:
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
     internalsshUrl: ${SERVICES_GITLAB_INTERNALSSHURL:} # 用于ssh操作的gitlab地址
+    resetPasswordUrl: ${GITLAB_RESET_PASSWORD_URL:} # 重置gitlab密码的链接
   helm:
     url: "helm.example.com" # 存放helm chart包的仓库地址
     userName: # Helm chart 仓库 的用户名, 选填(与密码要配对)
@@ -73,23 +74,23 @@ services:
 hzero:
   service:
     platform:
-      name: choerodon-platform
+      name: zknow-platform
     oauth:
-      name: choerodon-oauth
+      name: zknow-oauth
     iam:
-      name: choerodon-iam
+      name: zknow-iam
     file:
-      name: choerodon-file
+      name: zknow-file
     message:
-      name: choerodon-message
+      name: zknow-message
     admin:
-      name: choerodon-admin
+      name: zknow-admin
     swagger:
-      name: choerodon-swagger
+      name: zknow-swagger
     gateway:
-      name: choerodon-gateway
+      name: zknow-gateway
     monitor:
-      name: choerodon-monitor
+      name: zknow-monitor
   websocket:
     # 用于连接websocket的路径
     websocket: /websocket
@@ -98,10 +99,10 @@ hzero:
     # 后端长连通信密钥
     secretKey: devops_ws
     # oauth服务用于查询用户信息的接口
-    oauth-url: ${OAUTH_USER_URL:http://choerodon-oauth/oauth/api/user}
+    oauth-url: ${OAUTH_USER_URL:http://zknow-oauth/oauth/api/user}
 choerodon:
   saga:
-    service: choerodon-asgard
+    service: zknow-asgard
     consumer:
       core-thread-num: 20
       max-thread-num: 20 # 消费线程数
@@ -274,3 +275,8 @@ DesEncrypt:
 sonar:
   fix:
     image: ${SONAR_FIX_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/sonar-scanner:4.6-jdk-11.0.11_9}
+nexus:
+  default:
+    url: ${NEXUS_DEFAULT_URL:http://example.com}
+  proxy:
+    url: ${NEXUS_PROXY_URL:http://example.com}

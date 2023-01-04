@@ -79,25 +79,26 @@
 	<select id="queryEnvDeployRecordByCommandId"
 			resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT
-		ddr.id AS id,
-		ddr.deploy_type,
-		denc.status AS command_status,
-		denc.object_id AS instance_id,
-		ddr.app_id,
-		ddr.app_name,
-		ddr.app_code,
-		ddr.deploy_mode,
-		ddr.deploy_payload_id,
-		ddr.deploy_payload_name,
-		ddr.deploy_result,
-		ddr.deploy_object_type,
-		ddr.deploy_object_name,
-		ddr.deploy_object_version,
-		ddr.deploy_time,
-		ddr.created_by
+			ddr.id AS id,
+			ddr.deploy_type,
+			denc.status AS command_status,
+			denc.object_id AS instance_id,
+			ddr.app_id,
+			ddr.app_name,
+			ddr.app_code,
+			ddr.deploy_mode,
+			ddr.deploy_payload_id,
+			ddr.deploy_payload_name,
+			ddr.deploy_result,
+			ddr.deploy_object_type,
+			ddr.deploy_object_name,
+			ddr.deploy_object_version,
+			ddr.deploy_time,
+			ddr.created_by
 		FROM devops_deploy_record ddr
-		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
-		WHERE ddr.deploy_id = #{commandId} and ddr.deploy_mode = 'env' and ddr.deploy_type = 'auto'
+				 LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
+		WHERE ddr.deploy_id = #{commandId}
+		  and ddr.deploy_mode = 'env'
 	</select>
 	<select id="queryHostDeployRecordByCommandId" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT

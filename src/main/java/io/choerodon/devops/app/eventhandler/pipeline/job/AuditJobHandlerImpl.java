@@ -64,6 +64,7 @@ public class AuditJobHandlerImpl extends AbstractJobHandler {
     @Override
     public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
         devopsCiJobVO.setCiAuditConfig(null);
+        devopsCiJobVO.setCompleted(false);
     }
 
     @Override

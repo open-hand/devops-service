@@ -82,6 +82,7 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
             ciChartDeployConfigVO.setSkipCheckPermission(ciDeployDeployCfg.getSkipCheckPermission());
             devopsCiJobVO.setCiDeployDeployCfg(ciChartDeployConfigVO);
         }
+        devopsCiJobVO.setCompleted(false);
     }
 
     @Override

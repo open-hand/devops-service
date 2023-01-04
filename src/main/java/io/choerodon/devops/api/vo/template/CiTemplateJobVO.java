@@ -108,6 +108,20 @@ public class CiTemplateJobVO {
     @ApiModelProperty("审核信息")
     private CiTplAuditVO ciAuditConfig;
 
+    @ApiModelProperty("顺序")
+    private Integer sequence;
+
+    @ApiModelProperty("分组类型")
+    private String groupType;
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
+
     public String getTags() {
         return tags;
     }
@@ -356,5 +370,13 @@ public class CiTemplateJobVO {
 
     public void setCiAuditConfig(CiTplAuditVO ciAuditConfig) {
         this.ciAuditConfig = ciAuditConfig;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
     }
 }

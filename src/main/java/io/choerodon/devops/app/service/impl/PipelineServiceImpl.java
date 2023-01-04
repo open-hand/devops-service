@@ -24,6 +24,7 @@ import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.CommonScheduleVO;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
@@ -331,6 +332,11 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineDTO pipelineDTO = baseQueryById(id);
         CommonExAssertUtil.assertTrue(projectId.equals(pipelineDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
+        pipelineDTO.setName(pipelineVO.getName());
+        pipelineDTO.setToken(pipelineVO.getToken());
+        pipelineDTO.setAppVersionTriggerEnable(pipelineVO.getAppVersionTriggerEnable());
+        baseUpdate(pipelineDTO);
+
         CustomUserDetails userDetails = DetailsHelper.getUserDetails();
         // 更新或创建定时计划
         List<PipelineScheduleDTO> pipelineScheduleDTOS = pipelineScheduleService.listByPipelineId(id);
@@ -338,18 +344,6 @@ public class PipelineServiceImpl implements PipelineService {
         Map<String, PipelineScheduleDTO> pipelineScheduleDTOMap = null;
         if (CollectionUtils.isEmpty(pipelineScheduleDTOS)) {
             pipelineScheduleDTOMap = new HashMap<>();
-//            if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
-//                List<ScheduleTaskDTO> scheduleTaskDTOList = new ArrayList<>();
-//                pipelineScheduleVOS.forEach(pipelineScheduleVO -> {
-//                    PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.create(id, pipelineScheduleVO);
-//                    constructScheduleTaskDTO(projectId,
-//                            id,
-//                            scheduleTaskDTOList,
-//                            pipelineScheduleVO,
-//                            pipelineScheduleDTO,
-//                            ScheduleTaskOperationTypeEnum.CREATE.value());
-//                });
-//            }
         } else {
             pipelineScheduleDTOMap = pipelineScheduleDTOS
                     .stream()
@@ -406,19 +400,6 @@ public class PipelineServiceImpl implements PipelineService {
                     scheduleTaskDTOList.add(scheduleTaskDTO);
                 }
             });
-//                if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
-//
-//                } else {
-//                    // 删除所有定时计划
-//                    pipelineScheduleDTOS.forEach(pipelineScheduleDTO -> {
-//                        ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
-//                        scheduleTaskDTO.setProjectId(projectId);
-//                        scheduleTaskDTO.setName("DevopsPipelineTrigger-" + id + "-" + pipelineScheduleDTO.getName());
-//                        scheduleTaskDTO.setOperationType(ScheduleTaskOperationTypeEnum.DELETE.value());
-//
-//                        scheduleTaskDTOList.add(scheduleTaskDTO);
-//                    });
-//                }
         } else {
             // 没有编辑权限，只能新建定时计划
             if (!CollectionUtils.isEmpty(pipelineScheduleVOS)) {
@@ -618,6 +599,11 @@ public class PipelineServiceImpl implements PipelineService {
         params.put(MiscConstants.APP_VERSION_ID, appVersionId);
         pipelineDTOS.forEach(pipelindId -> execute(pipelindId, PipelineTriggerTypeEnum.APP_VERSION, params));
 
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId) {
+        return pipelineMapper.listDeployValuePipelineReference(projectId, valueId);
     }
 }
 

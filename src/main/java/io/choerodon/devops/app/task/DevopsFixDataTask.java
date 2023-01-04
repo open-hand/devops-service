@@ -129,11 +129,11 @@ public class DevopsFixDataTask {
      * @param map
      */
     @JobTask(maxRetryCount = 3, code = MIGRATION_CD_PIPELINE_DATE, description = "cicd融合迁移cd数据")
-//    @TimedTask(name = MIGRATION_CD_PIPELINE_DATE,
-//            description = "cicd融合迁移cd数据",
-//            repeatInterval = 1,
-//            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
-//            params = {})
+    @TimedTask(name = MIGRATION_CD_PIPELINE_DATE,
+            description = "cicd融合迁移cd数据",
+            repeatInterval = 1,
+            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
+            params = {})
     public void migrationCdPipelineDate(Map<String, Object> map) {
         try {
             devopsCheckLogService.checkLog(MIGRATION_CD_PIPELINE_DATE);

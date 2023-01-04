@@ -1,17 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
 import io.choerodon.devops.app.service.CiTemplateMavenBuildService;
+import io.choerodon.devops.app.service.CiTemplateSonarService;
 import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
+import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 import io.choerodon.devops.infra.dto.DevopsCiTplSonarQualityGateConditionDTO;
 import io.choerodon.devops.infra.dto.DevopsCiTplSonarQualityGateDTO;
+import io.choerodon.devops.infra.mapper.CiTemplateSonarMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiTplSonarQualityGateConditionMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiTplSonarQualityGateMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import io.choerodon.devops.app.service.CiTemplateSonarService;
-import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
-import io.choerodon.devops.infra.mapper.CiTemplateSonarMapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -71,9 +70,7 @@ public class CiTemplateSonarServiceImpl implements CiTemplateSonarService {
         }
         // 保存mvn配置
         CiTemplateMavenBuildDTO mavenBuildConfig = ciTemplateSonarDTO.getMavenBuildConfig();
-        if (mavenBuildConfig != null
-                && (!CollectionUtils.isEmpty(mavenBuildConfig.getNexusMavenRepoIds())
-                || !CollectionUtils.isEmpty(mavenBuildConfig.getRepos()))) {
+        if (mavenBuildConfig != null) {
             ciTemplateMavenBuildService.baseCreate(templateStepId, mavenBuildConfig);
         }
     }

@@ -161,6 +161,8 @@ extraEnv:
   SERVICES_GITLAB_URL: http://git.example.com
   # -- Gitlab ssh url
   SERVICES_GITLAB_SSHURL: git@git.example.com
+  # -- Gitlab password reset url
+  SERVICES_GITLAB_RESETPASSWORDURL: git.example.com/resetpassword
   # -- Helm chart url
   SERVICES_HELM_URL: http://helm.example.com
   # -- Helm chart username

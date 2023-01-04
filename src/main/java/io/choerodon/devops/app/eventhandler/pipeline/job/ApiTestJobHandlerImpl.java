@@ -104,6 +104,7 @@ public class ApiTestJobHandlerImpl extends AbstractJobHandler {
     @Override
     public void deleteCdInfo(DevopsCiJobVO devopsCiJobVO) {
         devopsCiJobVO.setDevopsCiApiTestInfoVO(null);
+        devopsCiJobVO.setCompleted(false);
     }
 
     @Override

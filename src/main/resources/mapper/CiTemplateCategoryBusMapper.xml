@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateCategoryBusMapper">
+
+
+    <select id="pageTemplateCategory" resultType="io.choerodon.devops.infra.dto.CiTemplateCategoryDTO">
+        SELECT
+           dctc.* ,
+           count(dctp.id) as template_number
+        FROM
+           devops_ci_template_category dctc
+        Left JOIN devops_ci_template_pipeline dctp ON dctp.ci_template_category_id=dctc.id
+        <where>
+            <if test="searchParam != null and searchParam != ''">
+                dctc.category LIKE CONCAT(CONCAT('%', #{searchParam, jdbcType=VARCHAR}), '%')
+            </if>
+        </where>
+        group by dctc.id
+
+
+    </select>
+
+    <select id="checkTemplateCategoryName" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_ci_template_category dctc
+        WHERE dctc.category = #{name}
+        <if test="ciTemplateCategoryId != null">
+            AND dctc.id != #{ciTemplateCategoryId}
+        </if>
+        LIMIT 1
+    </select>
+</mapper>

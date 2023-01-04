@@ -5,6 +5,7 @@ import static io.choerodon.devops.infra.constant.PipelineConstants.GITLAB_ADMIN_
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.AppServiceDeployVO;
 import io.choerodon.devops.api.vo.AppServiceInstanceVO;
 import io.choerodon.devops.api.vo.AppServiceVersionRespVO;
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.deploy.DeployTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -32,15 +34,11 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
     @Autowired
     private CiChartDeployConfigService ciChartDeployConfigService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsEnvUserPermissionService devopsEnvUserPermissionService;
-    @Autowired
-    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    @Autowired
     private AppServiceVersionService appServiceVersionService;
     @Autowired
     private DevopsDeployValueService devopsDeployValueService;
+    @Autowired
+    private DevopsEnvCommandValueService devopsEnvCommandValueService;
     @Autowired
     private AppServiceInstanceService appServiceInstanceService;
     @Autowired
@@ -92,7 +90,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                     appCode);
             AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId,
                     appServiceDeployVO,
-                    true);
+                    DeployType.AUTO);
             commandId = appServiceInstanceVO.getCommandId();
             appId = appServiceInstanceVO.getAppId();
             ciChartDeployConfigDTO.setAppId(appId);
@@ -110,13 +108,22 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
             DevopsEnvCommandDTO preCommand = devopsEnvCommandService.baseQuery(preInstance.getCommandId());
             AppServiceVersionRespVO deploydAppServiceVersion = appServiceVersionService.queryById(preCommand.getObjectVersionId());
             log.append("应用存在, 开始更新应用.").append(System.lineSeparator());
+
+            if (Boolean.TRUE.equals(appServiceInstanceService.isInstanceDeploying(preInstance.getId()))) {
+                log.append("应用当前处于部署中状态，请等待此次部署完成后重试.").append(System.lineSeparator());
+                throw new CommonException("devops.app.instance.deploying");
+            }
+            DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = devopsEnvCommandValueService.baseQueryById(preCommand.getValueId());
+            DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueService.baseQueryById(valueId);
+
             // 如果当前部署版本和流水线生成版本相同则重启
-            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())) {
+            if (preCommand.getObjectVersionId().equals(appServiceVersionDTO.getId())
+                    && devopsDeployValueDTO.getValue().equals(devopsEnvCommandValueDTO.getValue())) {
                 log.append("此次部署版本和应用当前版本一致，触发重新部署.").append(System.lineSeparator());
 
                 DevopsEnvCommandDTO devopsEnvCommandDTO = appServiceInstanceService.restartInstance(projectId,
                         preInstance.getId(),
-                        true,
+                        DeployType.AUTO,
                         true);
                 commandId = devopsEnvCommandDTO.getId();
                 log.append("重新部署成功.").append(System.lineSeparator());
@@ -140,7 +147,7 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                 appServiceDeployVO = new AppServiceDeployVO(appServiceVersionDTO.getAppServiceId(),
                         appServiceVersionDTO.getId(),
                         envId,
-                        devopsDeployValueService.baseQueryById(valueId).getValue(),
+                        devopsDeployValueDTO.getValue(),
                         valueId,
                         appCode,
                         devopsDeployAppCenterEnvDTO.getObjectId(),
@@ -148,12 +155,16 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         null,
                         null);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
-                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, true);
+                AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.AUTO);
                 commandId = appServiceInstanceVO.getCommandId();
             }
         }
-        devopsCiJobRecordDTO.setCommandId(commandId);
-        devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        if (commandId != null) {
+            devopsCiJobRecordDTO.setCommandId(commandId);
+            devopsCiJobRecordService.baseUpdate(devopsCiJobRecordDTO);
+        } else {
+            log.append("[warn] 部署命令未找到.").append(System.lineSeparator());
+        }
     }
 
     @Override

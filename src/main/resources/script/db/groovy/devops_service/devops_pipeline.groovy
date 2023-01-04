@@ -12,9 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
             column(name: 'name', type: 'VARCHAR(64)', remarks: '流水线名称') {
                 constraints(nullable: false)
             }
-            column(name: 'effect_version_id', type: 'BIGINT UNSIGNED', remarks: '当前生效的版本，devops_pipeline_version.id') {
-                constraints(nullable: false)
-            }
+            column(name: 'effect_version_id', type: 'BIGINT UNSIGNED', remarks: '当前生效的版本，devops_pipeline_version.id')
             column(name: 'token', type: 'VARCHAR(256)', remarks: '令牌') {
                 constraints(nullable: false)
             }

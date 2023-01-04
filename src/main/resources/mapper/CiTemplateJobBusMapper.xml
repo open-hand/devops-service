@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateJobBusMapper">
+    <select id="isNameUnique" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_ci_template_job dctj
+        WHERE dctj.name = #{name}
+        AND source_id = #{sourceId}
+        <if test="jobId != null">
+            AND dctj.id != #{jobId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <select id="pageUnderOrgLevel" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        SELECT
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctjg.NAME AS group_name,
+        (select
+        count(dcts.id)
+        FROM devops_ci_template_step dcts
+        JOIN devops_ci_template_job_step_rel dctjsr
+        ON dctjsr.ci_template_step_id=dcts.id
+        WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
+        FROM devops_ci_template_job dctj
+        JOIN devops_ci_template_job_group dctjg ON dctj.group_id = dctjg.id
+        WHERE 1=1
+        AND dctj.visibility=1
+        <choose>
+            <when test="sourceType == 'organization'">
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+            </when>
+            <when test="sourceType == 'site'">
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+            </when>
+            <otherwise>
+                AND (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
+            </otherwise>
+        </choose>
+
+        <if test="name != null and name != ''">
+            AND dctj.name LIKE CONCAT(CONCAT('%',
+            #{name, jdbcType=VARCHAR}),'%')
+        </if>
+        <if test="groupName != null and groupName != ''">
+            AND dctjg.name = #{groupName, jdbcType=VARCHAR}
+        </if>
+        <if test="groupId != null and groupId != ''">
+            AND dctjg.id = #{groupId,jdbcType=BIGINT}
+        </if>
+        <if test="builtIn != null and builtIn == true">
+            <choose>
+                <when test="sourceType == 'project' or sourceType == 'organization'">
+                    AND dctj.built_in = 1
+                    OR (dctj.built_in = 0 AND dctj.source_type = 'site')
+                </when>
+                <otherwise>
+                    AND dctj.built_in = 1
+                </otherwise>
+            </choose>
+        </if>
+        <if test="builtIn != null and builtIn == false">
+            <choose>
+                <when test="sourceType == 'project' or sourceType == 'organization'">
+                    AND dctj.built_in = 0 AND dctj.source_type != 'site'
+                </when>
+                <otherwise>
+                    AND dctj.built_in = 0
+                </otherwise>
+            </choose>
+        </if>
+        <if test="params != null and params != ''">
+            AND dctj.NAME LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY
+        field( dctj.source_type, 'project', 'organization', 'site' ) ASC,
+        dctj.id desc,
+        field( dctj.built_in, '0', '1' ) ASC
+    </select>
+
+
+    <select id="queryJobByStageId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
+        SELECT
+        dctj.*
+        FROM
+        devops_ci_template_job dctj
+        WHERE
+        dctj.id IN (
+        SELECT
+        dctsjr.ci_template_job_id
+        FROM devops_ci_template_stage_job_rel dctsjr
+        WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT} )
+        <!--	     AND dctj.source_id = #{sourceId,jdbcType=BIGINT}-->
+    </select>
+
+    <select id="queryAllCiTemplateJob" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        SELECT
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctjg.NAME AS group_name,
+        (select
+        count(dcts.id)
+        FROM devops_ci_template_step dcts
+        JOIN devops_ci_template_job_step_rel dctjsr
+        ON dctjsr.ci_template_step_id=dcts.id
+        WHERE dctjsr.ci_template_job_id =dctj.id ) AS step_number
+        FROM devops_ci_template_job dctj
+        JOIN devops_ci_template_job_group dctjg ON dctj.group_id = dctjg.id
+        WHERE 1=1
+        AND dctj.visibility=1
+        <choose>
+            <when test="sourceType == 'organization'">
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+            </when>
+            <when test="sourceType == 'site'">
+                and (dctj.source_id = 0 OR dctj.source_id = #{sourceId})
+            </when>
+            <otherwise>
+                AND (dctj.source_id = 0 OR dctj.source_id= #{organizationId} OR dctj.source_id=#{sourceId} )
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="selectNonVisibilityJob" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
+        SELECT
+        dctj.id,
+        dctj.NAME,
+        dctj.created_by,
+        dctj.last_updated_by,
+        dctj.last_update_date,
+        dctj.source_type,
+        dctj.built_in,
+        dctj.creation_date,
+        dctj.visibility,
+        dctj.config_id
+
+        FROM devops_ci_template_job dctj
+        INNER JOIN devops_ci_template_stage_job_rel dctsjr ON dctj.id=dctsjr.ci_template_job_id
+        WHERE dctsjr.ci_template_stage_id = #{stageId,jdbcType=BIGINT}
+        AND dctj.visibility=0
+    </select>
+
+    <delete id="deleteNonVisibilityJobByIds">
+        <if test="jobIds != null and jobIds.size() != 0">
+            DELETE FROM devops_ci_template_job
+            where id IN
+            <foreach collection="jobIds" item="jobId" index="index"
+                     open="(" close=")" separator=",">
+                #{jobId}
+            </foreach>
+            AND visibility=0
+        </if>
+    </delete>
+
+    <select id="listByIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        SELECT
+          dctj.id,
+          dctj.name,
+          dctj.group_id,
+          dctj.image,
+          dctj.source_type,
+          dctj.source_id,
+          dctj.built_in,
+          dctj.type,
+          dctj.script,
+          dctj.to_upload,
+          dctj.to_download,
+          dctj.parallel,
+          dctj.object_version_number,
+          dctj.created_by,
+          dctj.creation_date,
+          dctj.last_updated_by,
+          dctj.last_update_date,
+          dctj.config_id,
+          dctj.tags,
+          dctj.start_in,
+          dctj.visibility,
+          dctj.trigger_value,
+          dctj.trigger_type,
+          dctjg.type AS groupType
+        FROM devops_ci_template_job dctj LEFT JOIN  devops_ci_template_job_group dctjg ON  dctj.group_id=dctjg.id
+        WHERE dctj.id
+        IN
+        <foreach collection="jobIds" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+</mapper>

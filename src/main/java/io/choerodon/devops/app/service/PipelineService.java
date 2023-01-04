@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
 import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.PipelineVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.devops.infra.dto.PipelineRecordDTO;
@@ -57,5 +59,9 @@ public interface PipelineService {
     Boolean checkName(Long projectId, Long id, String name);
 
     void triggerByAppVersion(Long appServiceId, Long appVersionId);
+
+    List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId);
+
+
 }
 

@@ -572,8 +572,8 @@ public class DevopsSagaHandler {
         DevOpsAppServicePayload devOpsAppServicePayload = JSONObject.parseObject(data, DevOpsAppServicePayload.class);
         appServiceService.deleteAppServiceSage(devOpsAppServicePayload.getIamProjectId(), devOpsAppServicePayload.getAppServiceId());
         //删除应用服务成功之后，发送消息
-        if (!CollectionUtils.isEmpty(devOpsAppServicePayload.getDevopsUserPermissionVOS())) {
-            sendNotificationService.sendWhenAppServiceDelete(devOpsAppServicePayload.getDevopsUserPermissionVOS(), devOpsAppServicePayload.getAppServiceDTO());
+        if (!CollectionUtils.isEmpty(devOpsAppServicePayload.getMemberDTOS())) {
+            sendNotificationService.sendWhenAppServiceDelete(devOpsAppServicePayload.getMemberDTOS(), devOpsAppServicePayload.getAppServiceDTO());
         }
         LOGGER.info("================删除应用服务执行成功，serviceId：{}", devOpsAppServicePayload.getAppServiceId());
         return data;

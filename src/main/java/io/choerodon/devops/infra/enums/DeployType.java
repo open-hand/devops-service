@@ -8,6 +8,10 @@ package io.choerodon.devops.infra.enums;
  */
 public enum DeployType {
     /**
+     * 持续集成部署
+     */
+    CD("cd"),
+    /**
      * 流水线部署的类型
      */
     AUTO("auto"),

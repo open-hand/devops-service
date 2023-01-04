@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper">
+    <delete id="deleteByIds">
+        <if test="stageJobRelIds != null and stageJobRelIds.size() != 0">
+            DELETE FROM devops_ci_template_stage_job_rel
+            where id IN
+            <foreach collection="stageJobRelIds" item="stageJobRelId" index="index"
+                     open="(" close=")" separator=",">
+                #{stageJobRelId}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="listByStageId" resultType="io.choerodon.devops.infra.dto.CiTemplateStageJobRelDTO">
+        SELECT
+        id,
+        ci_template_stage_id,
+        ci_template_job_id,
+        sequence,
+        object_version_number FROM devops_ci_template_stage_job_rel
+        WHERE ci_template_stage_id=#{stageId}
+    </select>
+</mapper>
