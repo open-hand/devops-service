@@ -26,7 +26,7 @@
         inner join devops_pipeline_record dpr on dpr.id = dpsr.pipeline_record_id
         inner join devops_pipeline dp on dp.id = dpr.pipeline_id
         <where>
-            dcp.project_id in
+            dp.project_id in
             <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
                 #{projectId}
             </foreach>
