@@ -147,7 +147,7 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
                     List<CiTemplateJobVO> stageTemplateJobVOList = stageJobListMap.get(ciTemplateStageDTO.getId());
                     List<DevopsCiJobVO> devopsCiJobVOList = new ArrayList<>();
                     if (!CollectionUtils.isEmpty(stageTemplateJobVOList)) {
-                        stageTemplateJobVOList.forEach(stageTemplateJobVO -> {
+                        stageTemplateJobVOList.stream().sorted(Comparator.comparing(CiTemplateJobVO::getSequence)).forEach(stageTemplateJobVO -> {
                             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(stageTemplateJobVO, DevopsCiJobVO.class);
 
                             CiTemplateJobGroupDTO ciTemplateJobGroupDTO = finalGroupMap.get(stageTemplateJobVO.getGroupId());
