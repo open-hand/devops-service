@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,7 +83,24 @@ public class PipelineTemplateServiceImpl implements PipelineTemplateService {
     @Override
     public List<PipelineTemplateVO> listTemplateForProject(Long projectId) {
         ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-        return pipelineTemplatemapper.listTemplateForProject(projectId, projectDTO.getOrganizationId());
+        List<PipelineTemplateVO> pipelineTemplateVOS = pipelineTemplatemapper.listTemplateForProject(projectId, projectDTO.getOrganizationId());
+        if (CollectionUtils.isEmpty(pipelineTemplateVOS)) {
+            return pipelineTemplateVOS;
+        }
+        pipelineTemplateVOS.forEach(pipelineTemplateVO -> {
+            List<CiTemplateStageVO> ciTemplateStageVOList = pipelineTemplateVO.getCiTemplateStageVOList();
+            if (CollectionUtils.isEmpty(ciTemplateStageVOList)) {
+                return;
+            }
+            ciTemplateStageVOList.forEach(ciTemplateStageVO -> {
+                List<CiTemplateJobVO> ciTemplateJobVOList = ciTemplateStageVO.getCiTemplateJobVOList();
+                if (CollectionUtils.isEmpty(ciTemplateJobVOList)) {
+                    return;
+                }
+                ciTemplateStageVO.setCiTemplateJobVOList(ciTemplateJobVOList.stream().sorted(Comparator.comparing(CiTemplateJobVO::getSequence)).collect(Collectors.toList()));
+            });
+        });
+        return pipelineTemplateVOS;
     }
 
     @Override
