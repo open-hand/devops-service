@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.CiChartPublishConfigMapper">
+
+    <delete id="batchDeleteByStepIds">
+        delete
+        from devops_ci_chart_publish_config
+        where step_id in
+        <foreach collection="stepIds" item="stepId" open="(" separator="," close=")">
+            #{stepId}
+        </foreach>
+    </delete>
+</mapper>
+
