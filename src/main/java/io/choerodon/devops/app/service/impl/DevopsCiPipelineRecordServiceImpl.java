@@ -466,6 +466,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
                 devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+                devopsCiJobRecordDTO.setDurationSeconds(ciJobWebHookVO.getDuration());
                 devopsCiJobRecordDTO.setStage(ciJobWebHookVO.getStage());
                 devopsCiJobRecordDTO.setType(ciJobWebHookVO.getType());
                 devopsCiJobRecordDTO.setGroupType(ciJobWebHookVO.getGroupType());
@@ -483,6 +484,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 devopsCiJobRecordDTO.setCiPipelineRecordId(pipelineRecordId);
                 devopsCiJobRecordDTO.setStartedDate(ciJobWebHookVO.getStartedAt());
                 devopsCiJobRecordDTO.setFinishedDate(ciJobWebHookVO.getFinishedAt());
+                devopsCiJobRecordDTO.setDurationSeconds(ciJobWebHookVO.getDuration());
                 devopsCiJobRecordDTO.setStatus(ciJobWebHookVO.getStatus());
                 devopsCiJobRecordDTO.setTriggerUserId(userAttrService.getIamUserIdByGitlabUserName(ciJobWebHookVO.getUser().getUsername()));
                 MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsCiJobRecordMapper, devopsCiJobRecordDTO, DEVOPS_UPDATE_CI_JOB_RECORD, ciJobWebHookVO.getId());
