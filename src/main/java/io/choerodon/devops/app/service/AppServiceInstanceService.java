@@ -13,7 +13,7 @@ import io.choerodon.devops.app.eventhandler.payload.BatchDeploymentPayload;
 import io.choerodon.devops.app.eventhandler.payload.InstanceSagaPayload;
 import io.choerodon.devops.app.eventhandler.payload.MarketInstanceSagaPayload;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -75,10 +75,12 @@ public interface AppServiceInstanceService {
      *
      * @param projectId          项目id
      * @param appServiceDeployVO 部署信息
-     * @param isFromPipeline     是否是从流水线发起的部署
+     * @param deployType         是否是从流水线发起的部署
      * @return ApplicationInstanceVO
      */
-    AppServiceInstanceVO createOrUpdate(@Nullable Long projectId, AppServiceDeployVO appServiceDeployVO, boolean isFromPipeline);
+    AppServiceInstanceVO createOrUpdate(@Nullable Long projectId,
+                                        AppServiceDeployVO appServiceDeployVO,
+                                        DeployType deployType);
 
     /**
      * 创建或者更新应用市场实例
@@ -158,7 +160,7 @@ public interface AppServiceInstanceService {
      * @param projectId  项目id
      * @param instanceId 实例id
      */
-    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, boolean isFromPipeline, Boolean saveRecord);
+    DevopsEnvCommandDTO restartInstance(Long projectId, Long instanceId, DeployType deployType, Boolean saveRecord);
 
     /**
      * 实例删除
@@ -428,9 +430,9 @@ public interface AppServiceInstanceService {
      */
     List<ApplicationInstanceInfoVO> listByServiceAndEnv(Long projectId, Long appServiceId, Long envId, boolean withPodInfo);
 
-    void hzeroDeploy(Long detailsRecordId);
+//    void hzeroDeploy(Long detailsRecordId);
 
-    void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
+//    void pipelineDeployHzeroApp(Long projectId, DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO);
 
     /**
      * 通过code和envId查询AppServiceInstanceDTO的code集合
@@ -468,4 +470,6 @@ public interface AppServiceInstanceService {
     InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
 
     PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId);
+
+    Boolean isInstanceDeploying(Long instanceId);
 }

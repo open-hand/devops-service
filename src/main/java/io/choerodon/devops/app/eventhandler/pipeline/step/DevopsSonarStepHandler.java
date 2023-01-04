@@ -1,16 +1,5 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
-import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
-
-import java.util.*;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
 import io.choerodon.devops.api.vo.DevopsCiMavenBuildConfigVO;
@@ -38,6 +27,16 @@ import io.choerodon.devops.infra.feign.operator.SonarClientOperator;
 import io.choerodon.devops.infra.util.CommonExAssertUtil;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.GitlabCiUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.*;
+
+import static io.choerodon.devops.infra.constant.MiscConstants.DEFAULT_SONAR_NAME;
 
 /**
  * 〈功能简述〉
@@ -131,7 +130,9 @@ public class DevopsSonarStepHandler extends AbstractDevopsCiStepHandler {
         //maven
         CiTemplateMavenBuildDTO ciTemplateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
         if (ciTemplateMavenBuildDTO != null) {
-            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(ciTemplateMavenBuildDTO));
+            CiTemplateMavenBuildDTO ciTemplateMavenBuildVO = ciTemplateMavenBuildService.dtoToVo(ciTemplateMavenBuildDTO);
+            ciTemplateSonarDTO.setMavenBuildConfig(ciTemplateMavenBuildVO);
+            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildVO);
         }
     }
 

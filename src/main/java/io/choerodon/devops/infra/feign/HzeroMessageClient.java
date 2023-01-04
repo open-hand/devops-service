@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import org.hzero.common.HZeroService;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,7 +13,7 @@ import io.choerodon.devops.infra.feign.fallback.HzeroMessageServiceClientFallBac
  * Created by Sheep on 2019/5/15.
  */
 
-@FeignClient(value = "choerodon-message", fallback = HzeroMessageServiceClientFallBack.class)
+@FeignClient(value = HZeroService.Message.NAME, fallback = HzeroMessageServiceClientFallBack.class)
 public interface HzeroMessageClient {
     @GetMapping("/choerodon/v1/projects/{project_id}/message_settings/type/{notify_type}/code/{code}")
     MessageSettingVO queryByEnvIdAndEventNameAndProjectIdAndCode(

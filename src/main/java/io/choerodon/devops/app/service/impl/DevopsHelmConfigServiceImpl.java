@@ -1,18 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.*;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.ObjectUtils;
-import org.springframework.web.client.RestTemplate;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsHelmConfigVO;
@@ -29,6 +16,18 @@ import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsHelmConfigMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
@@ -280,7 +279,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         if (devopsHelmConfigDTO.getRepoPrivate()) {
             String credentials = devopsHelmConfigDTO.getUsername() + ":"
                     + devopsHelmConfigDTO.getPassword();
@@ -288,8 +287,16 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        String helmRepoUrl = devopsHelmConfigDTO.getUrl();
-        helmRepoUrl = helmRepoUrl.endsWith("/") ? helmRepoUrl.substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : helmRepoUrl;
+
+        String helmRepoUrl;
+        if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
+            helmRepoUrl = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl().substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : devopsHelmConfigDTO.getUrl();
+        } else {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+            Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            helmRepoUrl = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl() + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : devopsHelmConfigDTO.getUrl() + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/";
+        }
         ResponseEntity<String> exchange = restTemplate.exchange(helmRepoUrl + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {

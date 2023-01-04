@@ -32,6 +32,7 @@ import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.infra.dto.iam.*;
 import io.choerodon.devops.infra.enums.LabelType;
 import io.choerodon.devops.infra.feign.BaseServiceClient;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.devops.infra.util.FeignParamUtils;
 import io.choerodon.devops.infra.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -53,6 +54,8 @@ public class BaseServiceClientOperator {
 
     @Autowired
     private BaseServiceClient baseServiceClient;
+    @Autowired
+    private IamServiceClient iamServiceClient;
 
 
     /**
@@ -70,23 +73,7 @@ public class BaseServiceClientOperator {
         }
     }
 
-    public List<ExternalTenantVO> querySaasTenants(List<String> saasLevels) {
-        ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.querySaasTenants(saasLevels);
-        if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
-            return Collections.emptyList();
-        } else {
-            return responseEntity.getBody();
-        }
-    }
 
-    public List<ExternalTenantVO> queryRegisterTenant() {
-        ResponseEntity<List<ExternalTenantVO>> responseEntity = baseServiceClient.queryRegisterTenant();
-        if (responseEntity == null || CollectionUtils.isEmpty(responseEntity.getBody())) {
-            return Collections.emptyList();
-        } else {
-            return responseEntity.getBody();
-        }
-    }
 
     public ProjectDTO queryIamProjectBasicInfoById(Long projectId) {
         ResponseEntity<ProjectDTO> projectDTOResponseEntity = baseServiceClient.queryIamProjectBasicInfo(projectId);
@@ -131,7 +118,7 @@ public class BaseServiceClientOperator {
         if (CollectionUtils.isEmpty(organizationIds)) {
             return Collections.emptyList();
         }
-        ResponseEntity<List<Tenant>> organizationDTOResponseEntity = baseServiceClient.queryOrgByIds(organizationIds);
+        ResponseEntity<List<Tenant>> organizationDTOResponseEntity = iamServiceClient.queryOrgByIds(organizationIds);
         if (organizationDTOResponseEntity.getStatusCode().is2xxSuccessful()) {
             return organizationDTOResponseEntity.getBody();
         } else {
@@ -171,7 +158,7 @@ public class BaseServiceClientOperator {
         if (ids != null && !ids.isEmpty()) {
             Long[] newIds = new Long[ids.size()];
             try {
-                userDTOS = ResponseUtils.getResponse(baseServiceClient
+                userDTOS = ResponseUtils.getResponse(iamServiceClient
                         .listUsersByIds(ids.toArray(newIds), false), new TypeReference<List<IamUserDTO>>() {
                 });
                 if (userDTOS == null) {
@@ -186,7 +173,7 @@ public class BaseServiceClientOperator {
 
     public Boolean checkSiteAccess(Long userId) {
         try {
-            return baseServiceClient.platformAdministratorOrAuditor(userId).getBody();
+            return iamServiceClient.platformAdministratorOrAuditor(userId).getBody();
         } catch (Exception e) {
             throw new CommonException("devops.check.user.site.access", e);
         }
@@ -316,7 +303,7 @@ public class BaseServiceClientOperator {
 
     public List<IamUserDTO> listUsersByIds(Long[] ids, boolean onlyEnabled) {
         try {
-            List<IamUserDTO> userDTOS = ResponseUtils.getResponse(baseServiceClient
+            List<IamUserDTO> userDTOS = ResponseUtils.getResponse(iamServiceClient
                     .listUsersByIds(ids, onlyEnabled), new TypeReference<List<IamUserDTO>>() {
             });
             if (userDTOS == null) {
@@ -497,7 +484,7 @@ public class BaseServiceClientOperator {
 
     public ClientVO createClient(Long organizationId, ClientVO clientVO) {
         try {
-            ClientVO client = baseServiceClient.createClient(organizationId, clientVO).getBody();
+            ClientVO client = iamServiceClient.createClient(organizationId, clientVO).getBody();
             if (client == null || client.getId() == null) {
                 throw new CommonException("devops.create.client");
             }
@@ -509,7 +496,7 @@ public class BaseServiceClientOperator {
 
     public ClientVO queryClientByName(Long organization, String name) {
         try {
-            return baseServiceClient.queryClientByName(organization, name).getBody();
+            return iamServiceClient.queryClientByName(organization, name).getBody();
         } catch (Exception ex) {
             throw new CommonException("devops.get.client");
         }
@@ -517,7 +504,7 @@ public class BaseServiceClientOperator {
 
     public void deleteClient(Long organizationId, Long clientId) {
         try {
-            baseServiceClient.deleteClient(organizationId, clientId);
+            iamServiceClient.deleteClient(organizationId, clientId);
         } catch (Exception ex) {
             throw new CommonException("devops.delete.client");
         }
@@ -525,7 +512,7 @@ public class BaseServiceClientOperator {
 
     public ClientVO queryClientBySourceId(Long organizationId, Long clientId) {
         try {
-            ResponseEntity<ClientVO> responseEntity = baseServiceClient.queryClientBySourceId(organizationId, clientId);
+            ResponseEntity<ClientVO> responseEntity = iamServiceClient.queryClientBySourceId(organizationId, clientId);
             return responseEntity.getBody();
         } catch (Exception ex) {
             throw new CommonException("devops.query.client");
@@ -540,7 +527,7 @@ public class BaseServiceClientOperator {
      */
     public IamUserDTO queryUserByLoginName(String loginName) {
         try {
-            ResponseEntity<IamUserDTO> responseEntity = baseServiceClient.queryByLoginName(loginName);
+            ResponseEntity<IamUserDTO> responseEntity = iamServiceClient.queryByLoginName(loginName);
             IamUserDTO iamUserDTO = responseEntity.getBody();
             if (iamUserDTO == null || iamUserDTO.getId() == null) {
                 throw new CommonException(DEVOPS_QUERY_USER_BY_LOGIN_NAME, loginName);
@@ -558,7 +545,7 @@ public class BaseServiceClientOperator {
      * @return
      */
     public Boolean isRoot(Long userId) {
-        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsRoot(userId);
+        ResponseEntity<Boolean> responseEntity = iamServiceClient.checkIsRoot(userId);
         return responseEntity != null && responseEntity.getBody();
     }
 
@@ -570,7 +557,7 @@ public class BaseServiceClientOperator {
      * @return
      */
     public Boolean isOrganzationRoot(Long userId, Long organizationId) {
-        ResponseEntity<Boolean> responseEntity = baseServiceClient.checkIsOrgRoot(organizationId, userId);
+        ResponseEntity<Boolean> responseEntity = iamServiceClient.checkIsOrgRoot(organizationId, userId);
         return responseEntity != null && responseEntity.getBody();
     }
 
@@ -609,7 +596,7 @@ public class BaseServiceClientOperator {
     }
 
     public Page<OrgAdministratorVO> listOrgAdministrator(Long organizationId) {
-        ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = baseServiceClient.listOrgAdministrator(organizationId, 0);
+        ResponseEntity<Page<OrgAdministratorVO>> pageInfoResponseEntity = iamServiceClient.listOrgAdministrator(organizationId, 0);
         return pageInfoResponseEntity.getBody();
     }
 
@@ -632,12 +619,12 @@ public class BaseServiceClientOperator {
     }
 
     public List<IamUserDTO> queryRoot() {
-        ResponseEntity<List<IamUserDTO>> labels = baseServiceClient.queryRoot();
+        ResponseEntity<List<IamUserDTO>> labels = iamServiceClient.queryRoot();
         return labels.getBody();
     }
 
     public int queryAllUserCount() {
-        return ResponseUtils.getResponse(baseServiceClient.countAllUsers(), UserCountVO.class).getCount();
+        return ResponseUtils.getResponse(iamServiceClient.countAllUsers(), UserCountVO.class).getCount();
     }
 
     public Set<Long> queryAllUserIds() {
@@ -689,7 +676,7 @@ public class BaseServiceClientOperator {
     }
 
     public ExternalTenantVO queryTenantByIdWithExternalInfo(Long organizationId) {
-        ResponseEntity<ExternalTenantVO> responseEntity = baseServiceClient.queryTenantByIdWithExternalInfo(organizationId);
+        ResponseEntity<ExternalTenantVO> responseEntity = iamServiceClient.queryTenantByIdWithExternalInfo(organizationId);
         if (responseEntity == null || responseEntity.getBody() == null) {
             return null;
         } else {

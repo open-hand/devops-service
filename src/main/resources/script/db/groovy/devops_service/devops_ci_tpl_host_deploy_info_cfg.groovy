@@ -24,4 +24,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_host_deploy_info_cfg.groov
         }
     }
 
+    changeSet(author: 'lihao',id: '2022-11-07-add-column'){
+        addColumn(tableName: 'devops_ci_tpl_host_deploy_info_cfg') {
+            column(name: 'deploy_json', type: 'TEXT', remarks: '部署信息')
+        }
+    }
 }

@@ -32,4 +32,7 @@ public interface DevopsCiJobMapper extends BaseMapper<DevopsCiJobDTO> {
     PipelineInstanceReferenceVO queryChartPipelineReference(@Param("projectId") Long projectId, @Param("appId") Long appId);
 
     PipelineInstanceReferenceVO queryPipelineReferenceHostApp(@Param("appId") Long appId);
+
+    PipelineInstanceReferenceVO queryDeployValuePipelineReference(@Param("projectId") Long projectId,
+                                                                  @Param("valueId") Long valueId);
 }

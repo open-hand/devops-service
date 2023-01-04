@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.util.CustomContextUtil;
  * @author wanghao
  * @since 2022/11/23 17:22
  */
+@ConditionalOnProperty(value = "local.test", havingValue = "false", matchIfMissing = true)
 @Component
 @EnableScheduling
 public class CdTaskScheduler {
@@ -53,9 +55,9 @@ public class CdTaskScheduler {
     }
 
     /**
-     * 10分钟执行一次，将running状态超时的任务改为failed
+     * 5分钟执行一次，将running状态超时的任务改为failed
      */
-    @Scheduled(fixedRate = 1000 * 60 * 10)
+    @Scheduled(fixedRate = 1000 * 60 * 5)
     public void cleanTimeoutTask() {
         cdTaskSchedulerService.cleanTimeoutTask(timeoutDuration);
     }

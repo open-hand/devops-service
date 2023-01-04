@@ -55,6 +55,7 @@ public abstract class AbstractAppDeployJobHandlerImpl extends AbstractJobHandler
             if (StringUtils.isEmpty(appDeployConfigVO.getAppCode())) {
                 throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_CODE_IS_EMPTY);
             }
+            appDeployConfigVO.setAppId(null);
         } else {
             if (appDeployConfigVO.getAppId() == null) {
                 throw new CommonException(ExceptionConstants.AppCode.DEVOPS_APP_ID_IS_EMPTY);

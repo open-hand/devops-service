@@ -1,27 +1,11 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
-import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiHostDeployInfoVO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.enums.CiCommandTypeEnum;
@@ -33,6 +17,22 @@ import io.choerodon.devops.infra.util.Base64Util;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.MapperUtil;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiHostDeployCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.CiJobCode.DEVOPS_JOB_CONFIG_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL;
+import static io.choerodon.devops.infra.constant.ResourceCheckConstant.*;
 
 @Service
 public class HostDeployJobHandlerImpl extends AbstractJobHandler {
@@ -78,10 +78,13 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             devopsHostAppService.checkNameAndCodeUniqueAndThrow(projectId, null, devopsCiHostDeployInfoVO.getAppName(), devopsCiHostDeployInfoVO.getAppCode());
             devopsCiHostDeployInfoVO.setAppId(null);
         } else {
-            if (devopsCiHostDeployInfoVO.getAppId() != null) {
-                DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoVO.getAppId());
-                devopsCiHostDeployInfoVO.setHostId(devopsHostAppDTO.getHostId());
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoVO.getAppId());
+            if (devopsHostAppDTO == null) {
+                throw new CommonException(PipelineCheckConstant.DEVOPS_APP_NOT_EXIST);
             }
+            devopsCiHostDeployInfoVO.setHostId(devopsHostAppDTO.getHostId());
+            devopsCiHostDeployInfoVO.setAppName(devopsHostAppDTO.getName());
+            devopsCiHostDeployInfoVO.setAppCode(devopsHostAppDTO.getCode());
         }
 
         // 除了其它制品类型，都要关联一个构建任务
@@ -98,7 +101,7 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
         devopsCiHostDeployInfoVO.setAppId(null);
         devopsCiHostDeployInfoVO.setAppName(null);
         devopsCiHostDeployInfoVO.setAppCode(null);
-
+        devopsCiJobVO.setCompleted(false);
     }
 
     @Override
@@ -129,13 +132,26 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             jarDeployVO.setVersionRegular(ciHostDeployInfoVO.getVersionRegular());
             jarDeployVO.setPipelineTask(ciHostDeployInfoVO.getPipelineTask());
 
-            devopsCiHostDeployInfoDTO.setPreCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPreCommand()));
-            devopsCiHostDeployInfoDTO.setPostCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPostCommand()));
-            devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getRunCommand()));
-            devopsCiHostDeployInfoDTO.setKillCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getKillCommand()));
-            devopsCiHostDeployInfoDTO.setHealthProb(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getHealthProb()));
+            if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getPreCommand())) {
+                devopsCiHostDeployInfoDTO.setPreCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPreCommand()));
+            }
+            if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getPostCommand())) {
+                devopsCiHostDeployInfoDTO.setPostCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getPostCommand()));
+            }
+            if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getRunCommand())) {
+                devopsCiHostDeployInfoDTO.setRunCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getRunCommand()));
+            }
+            if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getKillCommand())) {
+                devopsCiHostDeployInfoDTO.setKillCommand(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getKillCommand()));
+            }
+            if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getHealthProb())) {
+                devopsCiHostDeployInfoDTO.setHealthProb(Base64Util.getBase64EncodedString(devopsCiHostDeployInfoDTO.getHealthProb()));
+            }
 
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(jarDeployVO));
+        }
+        if (StringUtils.isNoneBlank(devopsCiHostDeployInfoDTO.getDockerCommand())) {
+            devopsCiHostDeployInfoDTO.setDockerCommand(Base64Util.getBase64EncodedString(ciHostDeployInfoVO.getDockerCommand()));
         }
         if (StringUtils.equals(ciHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value()) &&
                 ObjectUtils.isNotEmpty(ciHostDeployInfoVO.getPipelineTask()) &&
@@ -145,12 +161,18 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
             imageDeploy.setDeploySource(ciHostDeployInfoVO.getDeploySource());
             imageDeploy.setContainerName(ciHostDeployInfoVO.getContainerName());
             devopsCiHostDeployInfoDTO.setDeployJson(JsonHelper.marshalByJackson(imageDeploy));
-            devopsCiHostDeployInfoDTO.setDockerCommand(Base64Util.getBase64EncodedString(ciHostDeployInfoVO.getDockerCommand()));
+
             devopsCiHostDeployInfoDTO.setKillCommand(null);
             devopsCiHostDeployInfoDTO.setPreCommand(null);
             devopsCiHostDeployInfoDTO.setRunCommand(null);
             devopsCiHostDeployInfoDTO.setPostCommand(null);
             devopsCiHostDeployInfoDTO.setHealthProb(null);
+        }
+
+        if (devopsCiHostDeployInfoDTO.getAppId() != null) {
+            DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsCiHostDeployInfoDTO.getAppId());
+            devopsCiHostDeployInfoDTO.setAppName(devopsHostAppDTO.getName());
+            devopsCiHostDeployInfoDTO.setAppCode(devopsHostAppDTO.getCode());
         }
 
         devopsCiHostDeployInfoDTO.setId(null);

@@ -1,11 +1,13 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.infra.dto.PipelineDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -28,5 +30,8 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
                       @Param("name") String name);
 
     Set<Long> listAppAssociatedPipeline(@Param("appServiceId") Long appServiceId);
+
+    List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(@Param("projectId") Long projectId,
+                                                                       @Param("valueId") Long valueId);
 }
 
