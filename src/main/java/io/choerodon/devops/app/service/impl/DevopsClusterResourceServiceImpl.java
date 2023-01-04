@@ -669,9 +669,9 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
         int minorVersion = Integer.parseInt(split[1]);
         if (minorVersion <= 21) {
-            return "1.1.1";
+            return "v1.1.1";
         } else {
-            return "1.8.2";
+            return "v1.8.2";
         }
     }
 }
