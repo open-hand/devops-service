@@ -1,13 +1,18 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.devops.api.vo.DevopsCiStepVO;
+import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
+import io.choerodon.devops.app.service.CiChartPublishConfigService;
+import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
-import io.choerodon.devops.infra.util.ArrayUtil;
-import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
  * 〈功能简述〉
@@ -19,9 +24,53 @@ import io.choerodon.devops.infra.util.GitlabCiUtil;
 @Service
 public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
+    private static final String CHART_BUILD_CMD = "chart_build %s";
+
+    private CiChartPublishConfigService ciChartPublishConfigService;
+
+    public DevopsChartStepHandler(CiChartPublishConfigService ciChartPublishConfigService) {
+        this.ciChartPublishConfigService = ciChartPublishConfigService;
+    }
+
     @Override
+    public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateStepVO.setChartPublishConfig(ciChartPublishConfigService.queryByStepId(ciTemplateStepVO.getId()));
+    }
+
+
+    @Override
+    public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepVO.getId());
+        devopsCiStepVO.setChartPublishConfig(ciChartPublishConfigDTO);
+    }
+
+    @Override
+    @Transactional
+    public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
+        // 保存任务配置
+        CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
+        chartPublishConfig.setId(null);
+        chartPublishConfig.setStepId(stepId);
+        ciChartPublishConfigService.baseCreate(chartPublishConfig);
+    }
+
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
-        return ArrayUtil.singleAsList(GitlabCiUtil.generateChartBuildScripts());
+        List<String> cmds = new ArrayList<>();
+
+        CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
+        Long repoId = ciChartPublishConfigDTO.getRepoId();
+        if (repoId != null) {
+            cmds.add(String.format(CHART_BUILD_CMD, repoId));
+        } else {
+            cmds.add(String.format(CHART_BUILD_CMD, ""));
+        }
+        return cmds;
+    }
+
+    @Override
+    @Transactional
+    public void batchDeleteConfig(Set<Long> stepIds) {
+        ciChartPublishConfigService.batchDeleteByStepIds(stepIds);
     }
 
     @Override

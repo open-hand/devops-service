@@ -8,6 +8,7 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.CiAuditConfigVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarConfigVO;
+import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiDockerBuildConfigDTO;
 
 /**
@@ -48,6 +49,8 @@ public class DevopsCiStepVO {
 
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
     private DevopsCiDockerBuildConfigDTO dockerBuildConfig;
+    @ApiModelProperty("步骤为chart发布时需要，保存chart发布相关信息")
+    private CiChartPublishConfigDTO chartPublishConfig;
 
     @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
     private DevopsCiMavenPublishConfigVO mavenPublishConfig;
@@ -56,6 +59,14 @@ public class DevopsCiStepVO {
     private DevopsCiMavenBuildConfigVO mavenBuildConfig;
     @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
     private CiAuditConfigVO ciAuditConfig;
+
+    public CiChartPublishConfigDTO getChartPublishConfig() {
+        return chartPublishConfig;
+    }
+
+    public void setChartPublishConfig(CiChartPublishConfigDTO chartPublishConfig) {
+        this.chartPublishConfig = chartPublishConfig;
+    }
 
     public CiAuditConfigVO getCiAuditConfig() {
         return ciAuditConfig;
