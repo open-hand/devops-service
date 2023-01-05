@@ -22,7 +22,7 @@ public class InitHandler implements HostMsgHandler {
         if (!ObjectUtils.isEmpty(payload)) {
             HostInfoVO hostInfoVO = JsonHelper.unmarshalByJackson(payload, HostInfoVO.class);
             if (!ObjectUtils.isEmpty(hostInfoVO.getNetwork())) {
-                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(hostId);
+                DevopsHostDTO devopsHostDTO = devopsHostMapper.selectByPrimaryKey(Long.valueOf(hostId));
                 devopsHostDTO.setNetwork(hostInfoVO.getNetwork());
                 devopsHostMapper.updateByPrimaryKeySelective(devopsHostDTO);
             }
