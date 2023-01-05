@@ -127,4 +127,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host.groovy') {
             column(name: 'description', type: 'VARCHAR(100)', remarks: '主机描述', afterColumn: 'name')
         }
     }
+
+    changeSet(author: 'lihao', id: '2023-01-05-add-network') {
+        addColumn(tableName: 'devops_host') {
+            column(name: 'network', type: 'TEXT', remarks: '网卡信息', afterColumn: 'description')
+        }
+    }
 }

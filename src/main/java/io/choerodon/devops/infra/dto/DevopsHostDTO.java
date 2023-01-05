@@ -85,6 +85,17 @@ public class DevopsHostDTO extends AuditDomain {
     @Transient
     private Integer privatePort;
 
+    @ApiModelProperty("主机网卡信息")
+    private String network;
+
+    public String getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(String network) {
+        this.network = network;
+    }
+
     public String getToken() {
         return token;
     }
