@@ -120,8 +120,19 @@ public class CiController {
             @RequestParam(value = "jobName", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
-            @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref, gitlabPipelineId, jobName);
+            @RequestParam String ref,
+            @RequestParam(value = "helm_repo_id", required = false) Long helmRepoId) {
+        appServiceVersionService.create(image,
+                harborConfigId,
+                repoType,
+                token,
+                version,
+                commit,
+                file,
+                ref,
+                gitlabPipelineId,
+                jobName,
+                helmRepoId);
         return ResponseEntity.ok().build();
     }
 

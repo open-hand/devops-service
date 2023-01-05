@@ -187,6 +187,7 @@ function clean_cache() {
 
 ################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
+# $1 helm 仓库id
 function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
@@ -228,6 +229,7 @@ function chart_build() {
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
     -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
+    -F "helm_repo_id=$1" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
