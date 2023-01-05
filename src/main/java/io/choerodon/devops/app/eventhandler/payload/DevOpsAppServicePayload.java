@@ -3,8 +3,8 @@ package io.choerodon.devops.app.eventhandler.payload;
 import java.util.Date;
 import java.util.List;
 
-import io.choerodon.devops.api.vo.DevopsUserPermissionVO;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.gitlab.MemberDTO;
 
 /**
  * @author crcokitwood
@@ -26,17 +26,26 @@ public class DevOpsAppServicePayload {
     private String errorMessage;
 
     private AppServiceDTO appServiceDTO;
-    private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
+//    private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
 
+    private List<MemberDTO> memberDTOS;
     private Boolean openAppService;
 
-    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
-        return devopsUserPermissionVOS;
+    public List<MemberDTO> getMemberDTOS() {
+        return memberDTOS;
     }
 
-    public void setDevopsUserPermissionVOS(List<DevopsUserPermissionVO> devopsUserPermissionVOS) {
-        this.devopsUserPermissionVOS = devopsUserPermissionVOS;
+    public void setMemberDTOS(List<MemberDTO> memberDTOS) {
+        this.memberDTOS = memberDTOS;
     }
+
+    //    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
+//        return devopsUserPermissionVOS;
+//    }
+//
+//    public void setDevopsUserPermissionVOS(List<DevopsUserPermissionVO> devopsUserPermissionVOS) {
+//        this.devopsUserPermissionVOS = devopsUserPermissionVOS;
+//    }
 
     public AppServiceDTO getAppServiceDTO() {
         return appServiceDTO;
