@@ -12,9 +12,6 @@
                 and (dh.name LIKE CONCAT(CONCAT('%', #{searchParam}), '%')
                         OR dh.host_ip LIKE CONCAT(CONCAT('%', #{searchParam}), '%'))
             </if>
-            <if test='hostStatus != null'>
-                AND dh.host_status = #{hostStatus}
-            </if>
         </where>
     </select>
 

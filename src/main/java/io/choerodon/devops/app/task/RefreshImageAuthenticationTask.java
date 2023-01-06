@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.collections4.ListUtils;
 import org.hzero.core.base.BaseConstants;
 import org.slf4j.Logger;
@@ -47,7 +48,9 @@ public class RefreshImageAuthenticationTask {
     private AgentCommandService agentCommandService;
 
 
-    @JobTask(maxRetryCount = 3, code = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
+            maxRetryCount = 3,
+            code = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证")
     @TimedTask(name = REFRESH_IMAGE_AUTH, description = "定时刷新镜像认证", oneExecution = true, params = {}, cronExpression = "0 0 1 * * ?")
     public void refreshImageAuth(Map<String, Object> map) {
         try {

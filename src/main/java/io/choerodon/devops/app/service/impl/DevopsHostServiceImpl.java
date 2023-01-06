@@ -327,9 +327,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         List<DevopsHostVO> devopsHostVOList;
         Map<Long, DevopsHostUserPermissionDTO> hostPermissionMap = new HashMap<>();
         if (projectOwnerOrRoot) {
-            devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam, hostStatus);
+            devopsHostVOList = devopsHostMapper.listByOptions(projectId, searchParam);
         } else {
-            devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, hostStatus, DetailsHelper.getUserDetails().getUserId());
+            devopsHostVOList = devopsHostMapper.listMemberHostByOptions(projectId, searchParam, DetailsHelper.getUserDetails().getUserId());
             if (CollectionUtils.isEmpty(devopsHostVOList)) {
                 return new Page<>();
             }
@@ -353,7 +353,9 @@ public class DevopsHostServiceImpl implements DevopsHostService {
                         h.setPermissionLabel(finalHostPermissionMap.get(h.getId()).getPermissionLabel());
                     }
                 }).collect(Collectors.toList());
-
+        if (hostStatus != null) {
+            devopsHostVOList = devopsHostVOList.stream().filter(v -> v.getHostStatus().equals(hostStatus)).collect(Collectors.toList());
+        }
         if (doPage != null && doPage) {
             page = PageUtils.createPageFromList(devopsHostVOList, pageRequest);
         } else {
