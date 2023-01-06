@@ -2,6 +2,7 @@ package io.choerodon.devops.app.task;
 
 import java.util.Map;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +63,8 @@ public class CdTaskScheduler {
         cdTaskSchedulerService.cleanTimeoutTask(timeoutDuration);
     }
 
-    @JobTask(maxRetryCount = 3,
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
+            maxRetryCount = 3,
             code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
             level = ResourceLevel.PROJECT,
             description = "流水线定时触发任务", params = {
