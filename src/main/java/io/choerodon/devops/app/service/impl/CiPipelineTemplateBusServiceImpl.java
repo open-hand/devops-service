@@ -246,6 +246,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
                     if (Objects.isNull(ciTemplateStepDTO)) {
                         return;
                     }
+                    ciTemplateStepVO.setCategoryId(0L);
                     ciTemplateStepVO.setVisibility(ciTemplateStepDTO.getVisibility());
                 });
             });
