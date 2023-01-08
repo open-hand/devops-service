@@ -207,6 +207,8 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         AssertUtils.isTrue(!pipelineTemplateDTO.getBuiltIn(), "error.pipeline.built.in");
 
         List<CiTemplateStageVO> templateStageVOS = devopsPipelineTemplateVO.getTemplateStageVOS();
+        //处理步骤模板的字段
+        handNonVisibilityStep(templateStageVOS);
         //删除旧的阶段(包含阶段关系，任务，任务关系，任务配置，步骤关系，步骤配置)
         ciTemplateStageDTOS.forEach(templateStageDTO -> {
             ciTemplateStageBusService.deleteStageById(sourceId, templateStageDTO.getId());
@@ -223,6 +225,32 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
         pipelineTemplateDTO.setSourceId(sourceId);
         ciPipelineTemplateBusMapper.updateByPrimaryKey(pipelineTemplateDTO);
         return devopsPipelineTemplateVO;
+    }
+
+    private void handNonVisibilityStep(List<CiTemplateStageVO> ciTemplateStageVOS) {
+        if (CollectionUtils.isEmpty(ciTemplateStageVOS)) {
+            return;
+        }
+        ciTemplateStageVOS.forEach(ciTemplateStageVO -> {
+            List<CiTemplateJobVO> ciTemplateJobVOList = ciTemplateStageVO.getCiTemplateJobVOList();
+            if (CollectionUtils.isEmpty(ciTemplateJobVOList)) {
+                return;
+            }
+            ciTemplateJobVOList.forEach(ciTemplateJobVO -> {
+                List<CiTemplateStepVO> devopsCiStepVOList = ciTemplateJobVO.getDevopsCiStepVOList();
+                if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
+                    return;
+                }
+                devopsCiStepVOList.forEach(ciTemplateStepVO -> {
+                    CiTemplateStepDTO ciTemplateStepDTO = ciTemplateStepBusMapper.selectByPrimaryKey(ciTemplateStepVO.getId());
+                    if (Objects.isNull(ciTemplateStepDTO)) {
+                        return;
+                    }
+                    ciTemplateStepVO.setVisibility(ciTemplateStepDTO.getVisibility());
+                });
+            });
+        });
+
     }
 
     private void insertNonVisibilityJob(Long sourceId, List<CiTemplateStageVO> templateStageVOS) {
