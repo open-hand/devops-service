@@ -12,6 +12,8 @@ import io.choerodon.devops.infra.dto.DevopsEnvCommandValueDTO;
 public interface DevopsEnvCommandValueService {
     DevopsEnvCommandValueDTO baseCreate(DevopsEnvCommandValueDTO devopsEnvCommandValueDTO);
 
+    DevopsEnvCommandValueDTO baseQueryById(Long id);
+
     void baseDeleteById(Long commandId);
 
     void baseUpdateById(Long valueId, String value);

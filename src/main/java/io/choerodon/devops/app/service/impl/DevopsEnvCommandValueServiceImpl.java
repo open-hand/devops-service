@@ -30,6 +30,11 @@ public class DevopsEnvCommandValueServiceImpl implements DevopsEnvCommandValueSe
     }
 
     @Override
+    public DevopsEnvCommandValueDTO baseQueryById(Long id) {
+        return devopsEnvCommandValueMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
     public void baseDeleteById(Long valueId) {
         DevopsEnvCommandValueDTO devopsEnvCommandValueDTO = new DevopsEnvCommandValueDTO();
         devopsEnvCommandValueDTO.setId(valueId);

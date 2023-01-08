@@ -21,10 +21,21 @@ public class CiJobWebHookVO {
     private Date createdAt;
     private Date startedAt;
     private Date finishedAt;
+
+    private Long duration;
     private GitlabWebHookUserVO user;
     private String metadata;
 
     private CiAuditConfigVO ciAuditConfigVO;
+
+
+    public Long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
 
     public CiAuditConfigVO getCiAuditConfigVO() {
         return ciAuditConfigVO;

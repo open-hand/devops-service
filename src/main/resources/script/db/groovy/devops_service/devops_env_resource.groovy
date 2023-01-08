@@ -60,4 +60,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
             column(name: "resource_detail_id")
         }
     }
+
+    changeSet(author: 'wanghao', id: '2023-01-03-add-index') {
+        createIndex(indexName: "devops_env_resource_u1 ", tableName: "devops_env_resource") {
+            column(name: "env_id")
+            column(name: "kind")
+            column(name: "name")
+        }
+    }
 }

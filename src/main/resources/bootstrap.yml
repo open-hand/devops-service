@@ -46,6 +46,7 @@ eureka:
     # 服务的一些元数据信息
     metadata-map:
       VERSION: ${CHART_VERSION:0.25.0}
+      developer: ${EUREKA_INSTANCE_METADATA_MAP_DEVELOPER:}
   client:
     serviceUrl:
       # 注册中心地址

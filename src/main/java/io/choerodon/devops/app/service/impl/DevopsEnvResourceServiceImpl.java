@@ -611,12 +611,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType resourceType) {
-        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, name, resourceType.getType());
+        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, resourceType.getType(), name);
     }
 
     @Override
     public Object queryDetailsByKindAndName(Long envId, String kind, String name) {
-        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        String message = devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, kind, name);
         if (StringUtils.isEmpty(message)) {
             return null;
         }
@@ -635,7 +635,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public String queryDetailsYamlByKindAndName(Long envId, String kind, String name) {
-        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        String message = devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, kind, name);
         try {
             return JsonYamlConversionUtil.json2yaml(message);
         } catch (IOException e) {
