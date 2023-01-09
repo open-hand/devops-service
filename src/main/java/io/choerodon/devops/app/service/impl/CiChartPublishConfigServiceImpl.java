@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.app.service.CiChartPublishConfigService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
@@ -44,7 +45,9 @@ public class CiChartPublishConfigServiceImpl implements CiChartPublishConfigServ
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDeleteByStepIds(Set<Long> stepIds) {
-        ciChartPublishConfigMapper.batchDeleteByStepIds(stepIds);
+        if (!CollectionUtils.isEmpty(stepIds)) {
+            ciChartPublishConfigMapper.batchDeleteByStepIds(stepIds);
+        }
     }
 }
 
