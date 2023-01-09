@@ -58,11 +58,10 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
         List<String> cmds = new ArrayList<>();
 
         CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
-        Long repoId = ciChartPublishConfigDTO.getRepoId();
-        if (repoId != null) {
-            cmds.add(String.format(CHART_BUILD_CMD, repoId));
-        } else {
+        if (ciChartPublishConfigDTO == null || ciChartPublishConfigDTO.getUseDefaultRepo()) {
             cmds.add(String.format(CHART_BUILD_CMD, ""));
+        } else {
+            cmds.add(String.format(CHART_BUILD_CMD, ciChartPublishConfigDTO.getRepoId()));
         }
         return cmds;
     }
@@ -76,5 +75,17 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public DevopsCiStepTypeEnum getType() {
         return DevopsCiStepTypeEnum.UPLOAD_CHART;
+    }
+
+    @Override
+    public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
+        CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
+        if (chartPublishConfig == null) {
+            return false;
+        }
+        if (Boolean.FALSE.equals(chartPublishConfig.getUseDefaultRepo()) && chartPublishConfig.getRepoId() == null) {
+            return false;
+        }
+        return true;
     }
 }

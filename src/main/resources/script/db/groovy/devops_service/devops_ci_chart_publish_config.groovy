@@ -9,6 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_chart_publish_config.groovy') 
             column(name: 'step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤id') {
                 constraints(nullable: false)
             }
+            column(name: 'is_use_default_repo', type: 'TINYINT', defaultValue: "1", remarks: '是否使用默认仓库')
             column(name: 'repo_id', type: 'BIGINT UNSIGNED', remarks: 'helm仓库id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
