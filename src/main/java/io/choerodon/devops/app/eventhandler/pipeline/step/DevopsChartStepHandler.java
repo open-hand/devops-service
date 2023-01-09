@@ -58,7 +58,7 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
         List<String> cmds = new ArrayList<>();
 
         CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
-        if (ciChartPublishConfigDTO.getUseDefaultRepo()) {
+        if (ciChartPublishConfigDTO == null || ciChartPublishConfigDTO.getUseDefaultRepo()) {
             cmds.add(String.format(CHART_BUILD_CMD, ""));
         } else {
             cmds.add(String.format(CHART_BUILD_CMD, ciChartPublishConfigDTO.getRepoId()));
