@@ -399,6 +399,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         if (sourceId == 0) {
             record.setSourceId(sourceId);
         }
+        record.setVisibility(true);
         List<CiTemplateJobDTO> ciTemplateJobDTOS = ciTemplateJobBusMapper.select(record);
         List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOS, CiTemplateJobVO.class);
         return ciTemplateJobVOS;
