@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
 import io.choerodon.devops.app.service.CiChartPublishConfigService;
+import io.choerodon.devops.app.service.CiTplChartPublishConfigService;
 import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
+import io.choerodon.devops.infra.dto.CiTplChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
  * 〈功能简述〉
@@ -26,11 +30,10 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String CHART_BUILD_CMD = "chart_build %s";
 
+    @Autowired
     private CiChartPublishConfigService ciChartPublishConfigService;
-
-    public DevopsChartStepHandler(CiChartPublishConfigService ciChartPublishConfigService) {
-        this.ciChartPublishConfigService = ciChartPublishConfigService;
-    }
+    @Autowired
+    private CiTplChartPublishConfigService ciTplChartPublishConfigService;
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
@@ -40,6 +43,27 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
+        CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepVO.getId());
+        devopsCiStepVO.setChartPublishConfig(ciChartPublishConfigDTO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        CiChartPublishConfigDTO chartPublishConfig = ciTemplateStepVO.getChartPublishConfig();
+
+        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ConvertUtils.convertObject(chartPublishConfig, CiTplChartPublishConfigDTO.class);
+        ciTplChartPublishConfigDTO.setCiTemplateStepId(ciTemplateStepVO.getId());
+        ciTplChartPublishConfigService.baseCreate(ciTplChartPublishConfigDTO);
+    }
+
+    @Override
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTplChartPublishConfigService.deleteByTemplateStepId(ciTemplateStepVO.getId());
+    }
+
+    @Override
+    public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepVO.getId());
         devopsCiStepVO.setChartPublishConfig(ciChartPublishConfigDTO);
     }
