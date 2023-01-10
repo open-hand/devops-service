@@ -251,9 +251,6 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
 
     @Override
     public CiTemplateStepVO queryStepTemplateByStepId(Long sourceId, Long templateStepId) {
-//        CiTemplateStepDTO record = new CiTemplateStepDTO();
-//        record.setSourceId(sourceId);
-//        record.setId(templateStepId);
         CiTemplateStepDTO ciTemplateStepDTO = ciTemplateStepBusMapper.selectByPrimaryKey(templateStepId);
         //填充步骤的配置参数
         //添加步骤关联的配置信息

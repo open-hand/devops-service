@@ -57,7 +57,7 @@ public class CiTemplateStepVO {
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
     private CiTemplateDockerDTO dockerBuildConfig;
     @ApiModelProperty("步骤为chart 发布时需要，保存chart 发布相关信息")
-    private CiChartPublishConfigDTO chartPublishConfig;
+    private CiTplChartPublishConfigDTO chartPublishConfig;
 
     @ApiModelProperty("步骤为npm 发布时需要，保存npm发布相关信息")
     private CiNpmPublishConfigDTO npmPublishConfig;
@@ -80,11 +80,11 @@ public class CiTemplateStepVO {
         this.npmPublishConfig = npmPublishConfig;
     }
 
-    public CiChartPublishConfigDTO getChartPublishConfig() {
+    public CiTplChartPublishConfigDTO getChartPublishConfig() {
         return chartPublishConfig;
     }
 
-    public void setChartPublishConfig(CiChartPublishConfigDTO chartPublishConfig) {
+    public void setChartPublishConfig(CiTplChartPublishConfigDTO chartPublishConfig) {
         this.chartPublishConfig = chartPublishConfig;
     }
 
