@@ -172,8 +172,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         TypeUtil.objToInteger(gitlabPipelineId),
                         null,
                         null);
-                if (gitlabPipelineDTO != null) {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getCreatedAt()));
+                if (gitlabPipelineDTO != null && gitlabPipelineDTO.getUser() != null) {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId()));
                     if (userAttrDTO != null) {
                         CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
                     }
