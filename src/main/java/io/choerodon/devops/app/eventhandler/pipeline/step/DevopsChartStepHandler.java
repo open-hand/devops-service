@@ -37,7 +37,7 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        ciTemplateStepVO.setChartPublishConfig(ciChartPublishConfigService.queryByStepId(ciTemplateStepVO.getId()));
+        ciTemplateStepVO.setChartPublishConfig(ciTplChartPublishConfigService.queryByStepId(ciTemplateStepVO.getId()));
     }
 
 
@@ -50,9 +50,7 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
-        CiChartPublishConfigDTO chartPublishConfig = ciTemplateStepVO.getChartPublishConfig();
-
-        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ConvertUtils.convertObject(chartPublishConfig, CiTplChartPublishConfigDTO.class);
+        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ciTemplateStepVO.getChartPublishConfig();
         ciTplChartPublishConfigDTO.setCiTemplateStepId(ciTemplateStepVO.getId());
         ciTplChartPublishConfigService.baseCreate(ciTplChartPublishConfigDTO);
     }

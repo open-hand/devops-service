@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
+import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -40,6 +41,7 @@ public class CiTplChartPublishConfigDTO extends AuditDomain {
     private Long ciTemplateStepId;
 
     @ApiModelProperty(value = "是否使用默认仓库")
+    @Column(name = "is_use_default_repo")
     private Integer isUseDefaultRepo;
 
     @ApiModelProperty(value = "helm仓库id")

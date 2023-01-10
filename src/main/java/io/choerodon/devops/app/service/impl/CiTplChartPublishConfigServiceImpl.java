@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +43,14 @@ public class CiTplChartPublishConfigServiceImpl implements CiTplChartPublishConf
         ciTplChartPublishConfigDTO.setCiTemplateStepId(templateId);
 
         ciTplChartPublishConfigMapper.delete(ciTplChartPublishConfigDTO);
+    }
+
+    @Override
+    public CiTplChartPublishConfigDTO queryByStepId(Long stepTemplateId) {
+        Assert.notNull(stepTemplateId, PipelineCheckConstant.DEVOPS_STEP_ID_IS_NULL);
+        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = new CiTplChartPublishConfigDTO();
+        ciTplChartPublishConfigDTO.setCiTemplateStepId(stepTemplateId);
+        return ciTplChartPublishConfigMapper.selectOne(ciTplChartPublishConfigDTO);
     }
 }
 

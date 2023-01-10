@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.CiTplChartPublishConfigDTO;
 
 /**
@@ -13,5 +14,7 @@ public interface CiTplChartPublishConfigService {
     void baseCreate(CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO);
 
     void deleteByTemplateStepId(Long templateId);
+
+    CiTplChartPublishConfigDTO queryByStepId(Long templateId);
 }
 
