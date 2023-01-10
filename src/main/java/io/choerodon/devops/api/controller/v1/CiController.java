@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiAuditResultVO;
-import io.choerodon.devops.api.vo.CiPipelineImageVO;
-import io.choerodon.devops.api.vo.ImageRepoInfoVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.eventhandler.pipeline.exec.CommandOperator;
@@ -418,5 +415,16 @@ public class CiController {
                                                  @RequestParam("success_rate") String successRate) {
         devopsCiJobRecordService.testResultNotify(token, gitlabJobId, successRate);
         return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息", hidden = true)
+    @GetMapping("/npm_repo_info")
+    public ResponseEntity<NpmRepoInfoVO> queryNpmRepoInfo(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "repo_id", required = true)
+            @RequestParam(value = "repo_id") Long repoId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryNpmRepoInfo(token, repoId));
     }
 }

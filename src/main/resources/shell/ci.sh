@@ -801,3 +801,25 @@ function execute_api_test(){
   # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
  java -jar /choerodon/app.jar
 }
+
+# $1 npm repo id
+function export_npm_push_variable() {
+echo "Query npm repo info"
+  http_status_code=$(curl -o npm_repo_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/npm_repo_info?token=${Token}&repo_id=$1")
+  echo "Query npm repo info status code is :"  $http_status_code
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Query npm repo info failed,skip export npm push variable"
+  else
+    is_failed=$(jq -r .failed npm_repo_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Query npm repo info failed,skip export npm push variable"
+    else
+      export DOCKER_REGISTRY=$(jq -r .dockerRegistry npm_repo_info.json)
+      export GROUP_NAME=$(jq -r .groupName npm_repo_info.json)
+      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId npm_repo_info.json)
+      export REPO_TYPE=$(jq -r .repoType npm_repo_info.json)
+    fi
+  fi
+}
