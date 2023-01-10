@@ -816,10 +816,10 @@ echo "Query npm repo info"
     then
       echo "Query npm repo info failed,skip export npm push variable"
     else
-      export DOCKER_REGISTRY=$(jq -r .dockerRegistry npm_repo_info.json)
-      export GROUP_NAME=$(jq -r .groupName npm_repo_info.json)
-      export HARBOR_CONFIG_ID=$(jq -r .harborRepoId npm_repo_info.json)
-      export REPO_TYPE=$(jq -r .repoType npm_repo_info.json)
+      export NPM_REGISTRY=$(jq -r .registry npm_repo_info.json)
+      export NPM_USERNAME=$(jq -r .username npm_repo_info.json)
+      export NPM_PASSWORD=$(jq -r .password npm_repo_info.json)
+      export NPM_EMAIL=$(jq -r .email npm_repo_info.json)
     fi
   fi
 }

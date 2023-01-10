@@ -13,6 +13,16 @@ public class NpmRepoInfoVO {
     private String password;
     private String email;
 
+    public NpmRepoInfoVO(String registry, String username, String password, String email) {
+        this.registry = registry;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
+
+    public NpmRepoInfoVO() {
+    }
+
     public String getRegistry() {
         return registry;
     }
