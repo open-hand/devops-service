@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
+import io.choerodon.devops.api.vo.NpmRepoInfoVO;
 import io.choerodon.devops.app.service.AppServiceImageVersionService;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.AppServiceVersionService;
@@ -194,6 +195,12 @@ public class CiPipelineImageServiceImpl implements CiPipelineImageService {
         CiPipelineImageDTO ciPipelineImageDTO = new CiPipelineImageDTO();
         ciPipelineImageDTO.setAppServiceId(appServiceId);
         ciPipelineImageMapper.delete(ciPipelineImageDTO);
+    }
+
+    @Override
+    public NpmRepoInfoVO queryNpmRepoInfo(String token, Long repoId) {
+//        rdupmClientOperator.q
+        return null;
     }
 
     private String trimPrefix(String dockerRegistry) {
