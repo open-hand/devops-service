@@ -2040,6 +2040,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         Long organizationId = projectDTO.getOrganizationId();
         Long pipelineId = ciCdPipelineDTO.getId();
 
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(ciCdPipelineDTO.getAppServiceId());
+
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(pipelineId);
         // 对阶段排序
         List<String> stages = devopsCiStageDTOS.stream()
@@ -2116,7 +2118,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                             ciJob.setWhen("delayed");
                         }
                     }
-                    if (StringUtils.isNoneBlank(job.getTags())) {
+                    // 外置仓库不渲染tags节点
+                    if (StringUtils.isNoneBlank(job.getTags())
+                            && appServiceDTO.getExternalConfigId() == null) {
                         ciJob.setTags(Arrays.asList(job.getTags().split(",")));
                     }
                     ciJob.setCache(buildJobCache(job));

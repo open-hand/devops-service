@@ -52,6 +52,7 @@ import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -59,6 +60,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -105,6 +107,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
+    private AppExternalConfigService appExternalConfigService;
+    @Autowired
     private DevopsConfigService devopsConfigService;
     @Autowired
     private SendNotificationService sendNotificationService;
@@ -130,6 +134,10 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private DevopsHelmConfigService devopsHelmConfigService;
     @Autowired
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Autowired
     @Qualifier(value = "restTemplateForIp")
@@ -159,10 +167,23 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         try {
 
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
-            DevopsCiPipelineRecordDTO devopsCiPipelineRecordDTO = devopsCiPipelineRecordService.queryByAppServiceIdAndGitlabPipelineId(appServiceDTO.getId(), gitlabPipelineId);
-            if (devopsCiPipelineRecordDTO != null && devopsCiPipelineRecordDTO.getTriggerUserId() != null) {
-                CustomContextUtil.setUserContext(devopsCiPipelineRecordDTO.getTriggerUserId());
+
+            if (appServiceDTO.getExternalConfigId() == null) {
+                GitlabPipelineDTO gitlabPipelineDTO = gitlabServiceClientOperator.queryPipeline(appServiceDTO.getGitlabProjectId(),
+                        TypeUtil.objToInteger(gitlabPipelineId),
+                        null,
+                        null);
+                if (gitlabPipelineDTO != null && gitlabPipelineDTO.getUser() != null) {
+                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId()));
+                    if (userAttrDTO != null) {
+                        CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
+                    }
+                }
+            } else {
+                CustomContextUtil.setUserContext(appServiceDTO.getCreatedBy());
             }
+
+
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
 
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
