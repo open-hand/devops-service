@@ -13,7 +13,6 @@ import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.harbor.HarborImageTagVo;
 import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrds.HarborC7nRepoVo;
-import io.choerodon.devops.api.vo.rdupm.NexusRepositoryVO;
 import io.choerodon.devops.infra.dto.harbor.HarborAllRepoDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
@@ -64,7 +63,7 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
-    public ResponseEntity<NexusRepositoryVO> queryRepoWithDefaultUserInfo(Long projectId, Long repositoryId) {
+    public ResponseEntity<String> queryRepoWithDefaultUserInfo(Long projectId, Long repositoryId) {
         throw new CommonException("devops.query.nexus.repo.");
     }
 
