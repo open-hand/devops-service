@@ -53,10 +53,8 @@ public class HostTemplateJobConfigService extends TemplateJobConfigService {
         }
         //如果是内置的则要看，nodejs则是其他，Java 则是主机
         CiTemplatePipelineVO ciTemplatePipelineVO = (CiTemplatePipelineVO) PipelineTemplateUtils.threadLocal.get();
-        if (ciTemplatePipelineVO == null) {
-            CiTplHostDeployInfoCfgVO ciTplHostDeployInfoCfgVO = new CiTplHostDeployInfoCfgVO();
-            ciTplHostDeployInfoCfgVO.setHostDeployType(DeployObjectTypeEnum.JAR.value());
-            return ciTplHostDeployInfoCfgVO;
+        if (ciTemplatePipelineVO == null ) {
+            return ConvertUtils.convertObject(ciTplHostDeployInfoMapper.selectByPrimaryKey(configId), CiTplHostDeployInfoCfgVO.class);
         }
         PipelineTemplateUtils.threadLocal.remove();
         if (StringUtils.equalsIgnoreCase(ciTemplatePipelineVO.getName().trim(), "Java(Maven构建):构建+主机部署") && ciTemplatePipelineVO.getBuiltIn()) {
