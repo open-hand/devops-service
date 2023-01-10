@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsCdEnvDeployInfoService;
-import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.enums.InstanceStatus;
 
 /**
@@ -35,14 +32,18 @@ public class DevopsEnvironmentValidator {
     @Autowired
     private DevopsServiceService devopsServiceService;
     @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private PipelineService pipelineService;
+
 
     /**
      * 验证环境是否可以禁用
      *
-     * @param envId 环境ID
+     * @param projectId
+     * @param envId     环境ID
      */
-    public void checkEnvCanDisabled(Long envId) {
+    public void checkEnvCanDisabled(Long projectId, Long envId) {
         if (appServiceInstanceService.baseListByEnvId(envId).stream()
                 .anyMatch(applicationInstanceE ->
                         InstanceStatus.RUNNING.getStatus().equals(applicationInstanceE.getStatus()))) {
@@ -54,8 +55,19 @@ public class DevopsEnvironmentValidator {
         if (devopsIngressService.baseCheckByEnv(envId)) {
             throw new CommonException(DEVOPS_ENV_STOP_INGRESS_EXIST);
         }
-        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
+
+        checkPipelineRef(projectId, envId);
+    }
+
+    public void checkPipelineRef(Long projectId, Long envId) {
+        if (!CollectionUtils.isEmpty(devopsCiPipelineService.listChartEnvReferencePipelineInfo(projectId, envId))
+                || !CollectionUtils.isEmpty(devopsCiPipelineService.listDeployEnvReferencePipelineInfo(projectId, envId))) {
             throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
         }
+    }
+
+    public Boolean envRefPipeline(Long projectId, Long envId) {
+        return !CollectionUtils.isEmpty(devopsCiPipelineService.listChartEnvReferencePipelineInfo(projectId, envId))
+                || !CollectionUtils.isEmpty(devopsCiPipelineService.listDeployEnvReferencePipelineInfo(projectId, envId));
     }
 }
