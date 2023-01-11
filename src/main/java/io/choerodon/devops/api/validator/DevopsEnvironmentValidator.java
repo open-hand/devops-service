@@ -60,14 +60,21 @@ public class DevopsEnvironmentValidator {
     }
 
     public void checkPipelineRef(Long projectId, Long envId) {
-        if (!CollectionUtils.isEmpty(devopsCiPipelineService.listChartEnvReferencePipelineInfo(projectId, envId))
-                || !CollectionUtils.isEmpty(devopsCiPipelineService.listDeployEnvReferencePipelineInfo(projectId, envId))) {
+        if (envRefPipeline(projectId, envId)) {
             throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
         }
     }
 
-    public Boolean envRefPipeline(Long projectId, Long envId) {
+    /**
+     * 环境存在关联的流水线或持续部署则返回true
+     *
+     * @param projectId
+     * @param envId
+     * @return
+     */
+    public boolean envRefPipeline(Long projectId, Long envId) {
         return !CollectionUtils.isEmpty(devopsCiPipelineService.listChartEnvReferencePipelineInfo(projectId, envId))
-                || !CollectionUtils.isEmpty(devopsCiPipelineService.listDeployEnvReferencePipelineInfo(projectId, envId));
+                || !CollectionUtils.isEmpty(devopsCiPipelineService.listDeployEnvReferencePipelineInfo(projectId, envId))
+                || !CollectionUtils.isEmpty(pipelineService.listChartEnvReferencePipelineInfo(projectId, envId));
     }
 }
