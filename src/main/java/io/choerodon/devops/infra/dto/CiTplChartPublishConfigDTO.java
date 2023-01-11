@@ -42,7 +42,7 @@ public class CiTplChartPublishConfigDTO extends AuditDomain {
 
     @ApiModelProperty(value = "是否使用默认仓库")
     @Column(name = "is_use_default_repo")
-    private Integer isUseDefaultRepo;
+    private Boolean isUseDefaultRepo;
 
     @ApiModelProperty(value = "helm仓库id")
     private Long repoId;
@@ -64,12 +64,12 @@ public class CiTplChartPublishConfigDTO extends AuditDomain {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
-    public Integer getIsUseDefaultRepo() {
+    public Boolean getUseDefaultRepo() {
         return isUseDefaultRepo;
     }
 
-    public void setIsUseDefaultRepo(Integer isUseDefaultRepo) {
-        this.isUseDefaultRepo = isUseDefaultRepo;
+    public void setUseDefaultRepo(Boolean useDefaultRepo) {
+        isUseDefaultRepo = useDefaultRepo;
     }
 
     public Long getRepoId() {
