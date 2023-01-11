@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -32,13 +33,16 @@ public class CiNpmBuildConfigDTO extends AuditDomain {
     private static final long serialVersionUID = 751180439353515440L;
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "所属步骤id", required = true)
     @NotNull
+    @Encrypt
     private Long stepId;
 
     @ApiModelProperty(value = "nexus的maven仓库在制品库的主键id")
+    @Encrypt
     private Long npmRepoId;
 
 
