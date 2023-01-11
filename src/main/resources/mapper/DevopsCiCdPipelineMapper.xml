@@ -44,45 +44,39 @@
 
     <select id="selectPipelineByProjectId" resultType="io.choerodon.devops.infra.dto.CiCdPipelineDTO">
         SELECT
-	       dcp.id,
-	       dcp.`name`,
-	       dcp.is_enabled AS enabled,
-	       dcp.app_service_id,
-	       dcp.project_id,
-	       dcp.image
-        FROM
-           devops_cicd_pipeline dcp
-	    WHERE
-	       dcp.project_id =#{project_id,jdbcType=BIGINT}
+            dcp.id,
+            dcp.`name`,
+            dcp.is_enabled AS enabled,
+            dcp.app_service_id,
+            dcp.project_id,
+            dcp.image
+        FROM devops_cicd_pipeline dcp
+        WHERE dcp.project_id = #{project_id,jdbcType=BIGINT}
     </select>
 
-    <select id="queryPipelineReference" resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
-        from devops_cd_env_deploy_info dcedi
-                 inner join devops_cd_job dcj on dcj.deploy_info_id = dcedi.id
-                 inner join devops_cd_stage dcs on dcj.stage_id = dcs.id
-                 inner join devops_cicd_pipeline dcp on dcs.pipeline_id = dcp.id
-        where dcedi.instance_id = #{instanceId}
-        limit 1;
-    </select>
-    <select id="queryPipelineReferenceEnvApp" resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
-        from devops_cd_env_deploy_info dcedi
-                 inner join devops_cd_job dcj on dcj.deploy_info_id = dcedi.id
-                 inner join devops_cd_stage dcs on dcj.stage_id = dcs.id
-                 inner join devops_cicd_pipeline dcp on dcs.pipeline_id = dcp.id
-        where dcedi.app_id = #{appId}
-        limit 1;
-    </select>
-    <select id="queryPipelineReferenceHostApp"
+    <select id="listChartEnvReferencePipelineInfo"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
-        from devops_cd_host_deploy_info dchdi
-                 inner join devops_cd_job dcj on dcj.deploy_info_id = dchdi.id
-                 inner join devops_cd_stage dcs on dcj.stage_id = dcs.id
-                 inner join devops_cicd_pipeline dcp on dcs.pipeline_id = dcp.id
-        where dchdi.app_id = #{appId}
-        limit 1;
+        select dcj.id     as job_id,
+               dcj.name   as job_name,
+               dcp.`name` AS pipeline_name
+        from devops_ci_job dcj
+                 left join devops_ci_chart_deploy_cfg dccdc ON dcj.config_id = dccdc.id
+                 LEFT JOIN devops_ci_stage dcs ON dcj.ci_stage_id = dcs.id
+                 LEFT JOIN devops_cicd_pipeline dcp ON dcs.ci_pipeline_id = dcp.id
+        WHERE dcp.project_id = #{projectId}
+          and dccdc.env_id = #{envId}
+    </select>
+    <select id="listDeployEnvReferencePipelineInfo"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.id     as job_id,
+               dcj.name   as job_name,
+               dcp.`name` AS pipeline_name
+        from devops_ci_job dcj
+                 left join devops_ci_deploy_deploy_cfg dcddc ON dcj.config_id = dcddc.id
+                 LEFT JOIN devops_ci_stage dcs ON dcj.ci_stage_id = dcs.id
+                 LEFT JOIN devops_cicd_pipeline dcp ON dcs.ci_pipeline_id = dcp.id
+        WHERE dcp.project_id = #{projectId}
+          and dcddc.env_id = #{envId}
     </select>
 
 

@@ -63,5 +63,6 @@ public interface PipelineService {
     List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId);
 
 
+    List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId);
 }
 
