@@ -14,32 +14,32 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * 流水线模板npm发布配置(CiTplNpmPublishConfig)实体类
+ * 流水线npm构建配置(CiNpmBuildConfig)实体类
  *
  * @author hao.wang@zknow.com
- * @since 2023-01-09 17:46:47
+ * @since 2023-01-11 10:42:10
  */
 
-@ApiModel("流水线模板npm发布配置")
+@ApiModel("流水线npm构建配置")
 @VersionAudit
 @ModifyAudit
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
-@Table(name = "devops_ci_tpl_npm_publish_config")
-public class CiTplNpmPublishConfigDTO extends AuditDomain {
+@Table(name = "devops_ci_npm_build_config")
+public class CiNpmBuildConfigDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_CI_TEMPLATE_STEP_ID = "ciTemplateStepId";
-    public static final String FIELD_NEXUS_REPO_ID = "nexusRepoId";
-    private static final long serialVersionUID = -70907818633337202L;
+    public static final String FIELD_STEP_ID = "stepId";
+    public static final String FIELD_NPM_REPO_ID = "npmRepoId";
+    private static final long serialVersionUID = 751180439353515440L;
     @Id
     @GeneratedValue
     private Long id;
 
     @ApiModelProperty(value = "所属步骤id", required = true)
     @NotNull
-    private Long ciTemplateStepId;
+    private Long stepId;
 
     @ApiModelProperty(value = "nexus的maven仓库在制品库的主键id")
-    private Long npmPushRepoId;
+    private Long npmRepoId;
 
 
     public Long getId() {
@@ -50,20 +50,21 @@ public class CiTplNpmPublishConfigDTO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getCiTemplateStepId() {
-        return ciTemplateStepId;
+    public Long getStepId() {
+        return stepId;
     }
 
-    public void setCiTemplateStepId(Long ciTemplateStepId) {
-        this.ciTemplateStepId = ciTemplateStepId;
+    public void setStepId(Long stepId) {
+        this.stepId = stepId;
     }
 
-    public Long getNpmPushRepoId() {
-        return npmPushRepoId;
+    public Long getNpmRepoId() {
+        return npmRepoId;
     }
 
-    public void setNpmPushRepoId(Long npmPushRepoId) {
-        this.npmPushRepoId = npmPushRepoId;
+    public void setNpmRepoId(Long npmRepoId) {
+        this.npmRepoId = npmRepoId;
     }
+
 }
 
