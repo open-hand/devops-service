@@ -115,16 +115,23 @@
         AND dmr.state='opened'
         <if test="appServiceIds != null">
             AND das.id IN
-            <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
-                #{appServiceId}
-            </foreach>
+          <foreach collection="appServiceIds" item="appServiceId" open="(" close=")" separator=",">
+            #{appServiceId}
+          </foreach>
         </if>
-        <if test="param != null and param != ''">
-            AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
-                    OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
-        </if>
-        ORDER BY dmr.created_at DESC
+      <if test="param != null and param != ''">
+        AND (das.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+        OR das.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
+      </if>
+      ORDER BY dmr.created_at DESC
     </select>
+
+  <delete id="deleteByGitlabProjectIdAndMergeRequestId">
+    DELETE
+    FROM devops_merge_request
+    WHERE gitlab_merge_request_id=#{ids}
+    AND gitlab_project_id=#{gitlabProjectId}
+  </delete>
 </mapper>
 
 
