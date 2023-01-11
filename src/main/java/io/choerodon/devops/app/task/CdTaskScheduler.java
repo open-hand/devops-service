@@ -66,9 +66,8 @@ public class CdTaskScheduler {
     @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
             maxRetryCount = 3,
             code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
-            level = ResourceLevel.PROJECT,
+            level = ResourceLevel.ORGANIZATION,
             description = "流水线定时触发任务", params = {
-            @JobParam(name = MiscConstants.PROJECT_ID, type = Long.class, defaultValue = "0", description = "项目id"),
             @JobParam(name = MiscConstants.PIPELINE_ID, type = Long.class, defaultValue = "0", description = "流水线id"),
             @JobParam(name = MiscConstants.SCHEDULE_TOKEN, description = "流水线id"),
             @JobParam(name = MiscConstants.USER_ID, type = Long.class, defaultValue = "0", description = "流水线id")
