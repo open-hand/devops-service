@@ -62,6 +62,8 @@ public interface PipelineService {
 
     List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId);
 
+    int countAppServicePipelineReference(Long projectId, Long appServiceId);
+
 
 }
 
