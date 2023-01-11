@@ -61,6 +61,9 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty("步骤为npm 发布时需要，保存npm发布相关信息")
     private CiNpmPublishConfigDTO npmPublishConfig;
+
+    @ApiModelProperty("步骤为npm 构建时需要，保存npm构建相关信息")
+    private CiNpmBuildConfigDTO npmBuildConfigDTO;
     @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
     private CiTemplateMavenPublishDTO mavenPublishConfig;
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
@@ -71,6 +74,14 @@ public class CiTemplateStepVO {
     private Date creationDate;
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
+
+    public CiNpmBuildConfigDTO getNpmBuildConfigDTO() {
+        return npmBuildConfigDTO;
+    }
+
+    public void setNpmBuildConfigDTO(CiNpmBuildConfigDTO npmBuildConfigDTO) {
+        this.npmBuildConfigDTO = npmBuildConfigDTO;
+    }
 
     public CiNpmPublishConfigDTO getNpmPublishConfig() {
         return npmPublishConfig;

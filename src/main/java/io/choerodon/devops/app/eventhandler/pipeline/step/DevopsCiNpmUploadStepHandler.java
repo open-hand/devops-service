@@ -85,7 +85,7 @@ public class DevopsCiNpmUploadStepHandler extends AbstractDevopsCiStepHandler {
         List<String> cmds = new ArrayList<>();
         CiNpmPublishConfigDTO ciNpmPublishConfigDTO = ciNpmPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
         if (ciNpmPublishConfigDTO != null) {
-            cmds.add("npm_repo_info " + ciNpmPublishConfigDTO.getStepId());
+            cmds.add("export_npm_push_variable " + ciNpmPublishConfigDTO.getStepId());
         }
         cmds.add(devopsCiStepDTO.getScript());
 
