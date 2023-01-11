@@ -73,9 +73,9 @@ public class CdTaskScheduler {
             @JobParam(name = MiscConstants.USER_ID, type = Long.class, defaultValue = "0", description = "流水线id")
     })
     public void pipelineScheduleTrigger(Map<String, Object> map) {
-        Long pipelineId = (Long) map.get(MiscConstants.PIPELINE_ID);
+        Long pipelineId = Long.valueOf(map.get(MiscConstants.PIPELINE_ID).toString());
         String scheduleToken = map.get(MiscConstants.SCHEDULE_TOKEN).toString();
-        Long userId = (Long) map.get(MiscConstants.USER_ID);
+        Long userId = Long.valueOf(map.get(MiscConstants.USER_ID).toString());
         // 设置用户上下文
         CustomContextUtil.setUserContext(userId);
         PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.queryByToken(scheduleToken);
