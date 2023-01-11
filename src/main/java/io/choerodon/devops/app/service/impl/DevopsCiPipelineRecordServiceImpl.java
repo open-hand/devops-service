@@ -451,8 +451,19 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
         if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.FAILED.value())) {
             sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
-                    MessageCodeConstants.PIPELINE_FAILED, devopsCiPipelineRecordDTO.getCreatedBy(), null, new HashMap<>());
+                    MessageCodeConstants.PIPELINE_FAILED,
+                    devopsCiPipelineRecordDTO.getCreatedBy(),
+                    null,
+                    new HashMap<>());
+        } else if (pipelineWebHookVO.getObjectAttributes().getStatus().equals(JobStatusEnum.SUCCESS.value())) {
+            sendNotificationService.sendCiPipelineNotice(devopsCiPipelineRecordDTO.getId(),
+                    MessageCodeConstants.PIPELINE_SUCCESS,
+                    devopsCiPipelineRecordDTO.getCreatedBy(),
+                    null,
+                    new HashMap<>());
+
         }
+
     }
 
     private void saveJobRecords(PipelineWebHookVO pipelineWebHookVO, Long pipelineRecordId, Long ciPipelineId, Long appServiceId) {
