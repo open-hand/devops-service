@@ -677,4 +677,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<ProjectHookDTO> updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
         throw new CommonException("devops.updateWebHook");
     }
+
+    @Override
+    public List<MergeRequestDTO> listMergeRequest(Integer projectId, String state) {
+        throw new CommonException("devops.open.mergereuqest.list");
+    }
 }

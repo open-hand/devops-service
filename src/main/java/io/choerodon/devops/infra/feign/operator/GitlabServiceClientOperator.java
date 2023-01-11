@@ -1043,15 +1043,19 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<MergeRequestDTO> listMergeRequest(Integer gitlabProjectId, String state) {
+        try {
+            return gitlabServiceClient.listMergeRequest(gitlabProjectId, state);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public List<BranchDTO> listExternalBranch(Integer gitlabProjectId, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
-            return gitlabServiceClient.listBranch(gitlabProjectId,
-                    null,
-                    gitlabRepositoryInfo.getGitlabUrl(),
-                    appExternalConfigDTO.getAuthType(),
-                    appExternalConfigDTO.getAccessToken(),
+            return gitlabServiceClient.listBranch(gitlabProjectId, null, gitlabRepositoryInfo.getGitlabUrl(), appExternalConfigDTO.getAuthType(), appExternalConfigDTO.getAccessToken(),
                     appExternalConfigDTO.getUsername(),
                     appExternalConfigDTO.getPassword()).getBody();
         } catch (Exception e) {
