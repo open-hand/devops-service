@@ -605,5 +605,10 @@ public class PipelineServiceImpl implements PipelineService {
     public List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId) {
         return pipelineMapper.listDeployValuePipelineReference(projectId, valueId);
     }
+
+    @Override
+    public int countAppServicePipelineReference(Long projectId, Long appServiceId) {
+        return pipelineMapper.countAppServicePipelineReference(projectId, appServiceId);
+    }
 }
 
