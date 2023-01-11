@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.Map;
+
+import org.apache.commons.collections.map.HashedMap;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CommonScheduleVO;
 import io.choerodon.devops.infra.enums.CiPipelineScheduleTriggerTypeEnum;
@@ -17,6 +21,18 @@ public class ScheduleUtil {
     private static final String DEVOPS_END_HOUR_OF_DAY_IS_NULL = "devops.end.hour.of.day.is.null";
     private static final String DEVOPS_PERIOD_IS_NULL = "devops.period.is.null";
     private static final String DEVOPS_EXECUTE_TIME_IS_NULL = "devops.executeTime.is.null";
+
+    private static Map<String, String> quartzWeekNumberMap = new HashedMap();
+
+    static {
+        quartzWeekNumberMap.put("1", "2");
+        quartzWeekNumberMap.put("2", "3");
+        quartzWeekNumberMap.put("3", "4");
+        quartzWeekNumberMap.put("4", "5");
+        quartzWeekNumberMap.put("5", "6");
+        quartzWeekNumberMap.put("6", "7");
+        quartzWeekNumberMap.put("7", "1");
+    }
 
     public static void validate(CommonScheduleVO commonScheduleVO) {
         if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(commonScheduleVO.getTriggerType())) {
@@ -46,10 +62,10 @@ public class ScheduleUtil {
      */
     public static String calculateGitlabCiCron(CommonScheduleVO commonScheduleVO) {
         String cronTemplate = "%s %s * * %s";
-        return calculateCron(cronTemplate, commonScheduleVO);
+        return calculateCron(cronTemplate, commonScheduleVO, commonScheduleVO.getWeekNumber());
     }
 
-    public static String calculateCron(String cronTemplate, CommonScheduleVO commonScheduleVO) {
+    public static String calculateCron(String cronTemplate, CommonScheduleVO commonScheduleVO, String weekNumber) {
         String minute = "";
         String hour = "";
         if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(commonScheduleVO.getTriggerType())) {
@@ -69,12 +85,13 @@ public class ScheduleUtil {
         }
 
 
-        String week = commonScheduleVO.getWeekNumber();
-        return String.format(cronTemplate, minute, hour, week);
+        return String.format(cronTemplate, minute, hour, weekNumber);
     }
 
-    public static String calculateNormalCron(CommonScheduleVO commonScheduleVO) {
+    public static String calculateQuartzCron(CommonScheduleVO commonScheduleVO) {
         String cronTemplate = "0 %s %s ? * %s";
-        return calculateCron(cronTemplate, commonScheduleVO);
+        // Quartz在设置周时星期一、星期二、星期三、星期四、星期五、星期六、星期日分别对应数字2、3、4、5、6、7、1或者对应英文的简写，而不是1、2、3、4、5、6、7
+        String weekNumber = quartzWeekNumberMap.get(commonScheduleVO.getWeekNumber());
+        return calculateCron(cronTemplate, commonScheduleVO, weekNumber);
     }
 }

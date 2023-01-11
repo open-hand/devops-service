@@ -204,7 +204,7 @@ public class PipelineServiceImpl implements PipelineService {
                                           String operationType) {
         ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
         scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineId + "-" + pipelineScheduleDTO.getName());
-        scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateNormalCron(pipelineScheduleVO));
+        scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateQuartzCron(pipelineScheduleVO));
         scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
         scheduleTaskDTO.setProjectId(projectId);
         scheduleTaskDTO.setOperationType(operationType);
