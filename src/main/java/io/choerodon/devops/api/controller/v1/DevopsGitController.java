@@ -502,7 +502,7 @@ public class DevopsGitController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "同步开放的合并请求")
-    @GetMapping("/sync_open_merge_request")
+    @PostMapping("/sync_open_merge_request")
     public ResponseEntity<Integer> syncOpenMergeRequest(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
