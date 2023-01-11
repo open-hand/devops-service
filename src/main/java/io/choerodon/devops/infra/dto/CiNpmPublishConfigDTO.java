@@ -39,7 +39,7 @@ public class CiNpmPublishConfigDTO extends AuditDomain {
     private Long stepId;
 
     @ApiModelProperty(value = "nexus的maven仓库在制品库的主键id")
-    private Long nexusRepoId;
+    private Long npmRepoId;
 
 
     public Long getId() {
@@ -58,13 +58,12 @@ public class CiNpmPublishConfigDTO extends AuditDomain {
         this.stepId = stepId;
     }
 
-    public Long getNexusRepoId() {
-        return nexusRepoId;
+    public Long getNpmRepoId() {
+        return npmRepoId;
     }
 
-    public void setNexusRepoId(Long nexusRepoId) {
-        this.nexusRepoId = nexusRepoId;
+    public void setNpmRepoId(Long npmRepoId) {
+        this.npmRepoId = npmRepoId;
     }
-
 }
 

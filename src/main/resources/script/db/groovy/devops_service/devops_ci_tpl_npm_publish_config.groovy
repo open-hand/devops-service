@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_npm_publish_config.groovy'
             column(name: 'ci_template_step_id', type: 'BIGINT UNSIGNED', remarks: '所属步骤id') {
                 constraints(nullable: false)
             }
-            column(name: 'nexus_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id')
+            column(name: 'npm_repo_id', type: 'BIGINT UNSIGNED', remarks: 'nexus的maven仓库在制品库的主键id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
