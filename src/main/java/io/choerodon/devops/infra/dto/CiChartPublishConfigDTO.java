@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -33,13 +34,16 @@ public class CiChartPublishConfigDTO extends AuditDomain {
     private static final long serialVersionUID = -56756448103662134L;
     @Id
     @GeneratedValue
+    @Encrypt
     private Long id;
 
     @ApiModelProperty(value = "所属步骤id", required = true)
+    @Encrypt
     @NotNull
     private Long stepId;
 
     @ApiModelProperty(value = "helm仓库id")
+    @Encrypt
     private Long repoId;
     @ApiModelProperty(value = "是否使用默认仓库")
     @Column(name = "is_use_default_repo")
