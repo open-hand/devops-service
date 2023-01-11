@@ -6,15 +6,12 @@ import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.D
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.ExternalTenantVO;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
@@ -59,7 +56,7 @@ public class BaseServiceClientFallback implements BaseServiceClient {
     }
 
     @Override
-    public ResponseEntity<Page<IamUserDTO>> listUsersByEmail(Long projectId, int page, int size, String email) {
+    public ResponseEntity<String> listUsersByEmail(Long projectId, int page, int size, String email) {
         throw new CommonException("devops.user.get.byEmail");
     }
 

@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -12,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.ExternalTenantVO;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
@@ -49,7 +46,7 @@ public interface BaseServiceClient {
     ResponseEntity<Tenant> queryOrganizationBasicInfoWithCache(@PathVariable("organizationId") Long organizationId);
 
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
-    ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+    ResponseEntity<String> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/choerodon/v1/users/projects/{project_id}/gitlab_role/users")
     ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(
