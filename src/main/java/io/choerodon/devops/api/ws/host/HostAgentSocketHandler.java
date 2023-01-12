@@ -101,7 +101,7 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
                     count = 0;
                 }
                 count++;
-                redisTemplate.opsForValue().set(redisKey, count, 60, TimeUnit.SECONDS);
+                redisTemplate.opsForValue().set(redisKey, count, 120, TimeUnit.SECONDS);
                 DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
                 HostMsgVO hostMsgVO = new HostMsgVO();
                 hostMsgVO.setType(HostCommandEnum.UPGRADE_AGENT.value());

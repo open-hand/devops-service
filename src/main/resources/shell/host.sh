@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+RUNTIME_USER=$1
+if [ -z $RUNTIME_USER ]; then
+    RUNTIME_USER=$USER
+fi
+
 VAR=/var
 WORK_DIR=${VAR}/choerodon
 TOKEN={{ TOKEN }}
@@ -21,6 +26,7 @@ if [ ! -d "${WORK_DIR}" ]; then
   echo "Creating ${WORK_DIR} directory"
   sudo mkdir $WORK_DIR
   sudo chmod 0777 $WORK_DIR
+  sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${WORK_DIR}
   echo "Working directory ${WORK_DIR} created successfully"
 fi
 
@@ -42,6 +48,7 @@ TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 EOF
 
 sudo chmod 0777 ${WORK_DIR}/c7n-agent.env
+sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${WORK_DIR}/c7n-agent.env
 
 cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
 #!/bin/sh
@@ -63,19 +70,22 @@ esac
 EOF
 
 sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
+sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${WORK_DIR}/c7n-agent.sh
 
 # 4. 下载执行程序
 echo "Downloading c7n-agent"
 curl -Lo ${TAR_FILE} "{{ BINARY }}"
 
 sudo chmod 0777 ${TAR_FILE}
+sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${TAR_FILE}
 
 rm -rf /var/choerodon/c7n-agent
 
 tar -zxvf ${TAR_FILE}
 echo "c7n-agent downloaded successfully"
 
-sudo chmod 0777 c7n-agent
+sudo chmod 0777 ${AGENT}
+sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${AGENT}
 
 # 5. 配置systemd
 
@@ -91,8 +101,8 @@ Type=simple
 KillMode=process
 Restart=on-failure
 RestartSec=30s
-User=$USER
-Group=$USER
+User=${RUNTIME_USER}
+Group=${RUNTIME_USER}
 
 [Install]
 WantedBy=multi-user.target
