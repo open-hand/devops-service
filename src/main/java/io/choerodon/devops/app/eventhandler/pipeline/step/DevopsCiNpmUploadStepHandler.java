@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.dto.CiTplNpmPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
  * 〈功能简述〉
@@ -87,7 +88,7 @@ public class DevopsCiNpmUploadStepHandler extends AbstractDevopsCiStepHandler {
         if (ciNpmPublishConfigDTO != null && ciNpmPublishConfigDTO.getNpmPushRepoId() != null) {
             cmds.add("export_npm_push_variable " + ciNpmPublishConfigDTO.getNpmPushRepoId());
         }
-        cmds.add(devopsCiStepDTO.getScript());
+        cmds.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true));
 
         return cmds;
     }

@@ -17,6 +17,7 @@ import io.choerodon.devops.infra.dto.CiTplNpmBuildConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
+import io.choerodon.devops.infra.util.GitlabCiUtil;
 
 /**
  * 〈功能简述〉
@@ -87,7 +88,7 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
             cmds.add("npm-cli-login -u $NPM_USERNAME -p $NPM_PASSWORD -e $NPM_EMAIL -r \"$NPM_REGISTRY/\" -s @privateNPM --quotes=true");
 
         }
-        cmds.add(devopsCiStepDTO.getScript());
+        cmds.addAll(GitlabCiUtil.filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()), true, true));
 
         return cmds;
     }
