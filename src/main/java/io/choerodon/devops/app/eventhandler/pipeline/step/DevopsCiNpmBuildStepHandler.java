@@ -82,8 +82,8 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
         List<String> cmds = new ArrayList<>();
         CiNpmBuildConfigDTO ciNpmBuildConfigDTO = ciNpmBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
-        if (ciNpmBuildConfigDTO != null) {
-            cmds.add("export_npm_push_variable " + ciNpmBuildConfigDTO.getStepId());
+        if (ciNpmBuildConfigDTO != null && ciNpmBuildConfigDTO.getNpmRepoId() != null) {
+            cmds.add("export_npm_push_variable " + ciNpmBuildConfigDTO.getNpmRepoId());
         }
         cmds.add(devopsCiStepDTO.getScript());
 
