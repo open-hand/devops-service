@@ -90,15 +90,14 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     private DevopsDeploymentService devopsDeploymentService;
     @Autowired
     private PermissionHelper permissionHelper;
-    //    @Autowired
-//    @Lazy
-//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
     @Autowired
     private DevopsCiJobService devopsCiJobService;
     @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private PipelineService pipelineService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -472,13 +471,17 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
+    public List<PipelineInstanceReferenceVO> queryPipelineReference(Long projectId, Long appId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-            return devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+            pipelineInstanceReferenceVOList.add(devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId));
         } else {
-            return devopsCiJobService.queryChartPipelineReference(projectId, appId);
+            pipelineInstanceReferenceVOList.add(devopsCiJobService.queryChartPipelineReference(projectId, appId));
+            pipelineInstanceReferenceVOList.addAll(pipelineService.listAppPipelineReference(projectId, appId));
         }
+
+        return pipelineInstanceReferenceVOList;
 
     }
 

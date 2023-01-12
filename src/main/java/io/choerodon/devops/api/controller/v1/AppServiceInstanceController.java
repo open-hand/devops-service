@@ -908,17 +908,17 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 
-    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{instance_id}/pipeline_reference")
-    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "instance_id") Long instanceId) {
-        return ResponseEntity.ok().body(appServiceInstanceService.queryInstancePipelineReference(projectId, instanceId));
-    }
+//    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @GetMapping("/{instance_id}/pipeline_reference")
+//    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt
+//            @ApiParam(value = "实例ID", required = true)
+//            @PathVariable(value = "instance_id") Long instanceId) {
+//        return ResponseEntity.ok().body(appServiceInstanceService.queryInstancePipelineReference(projectId, instanceId));
+//    }
 
     @ApiOperation("查询服务下在环境下的实例列表")
     @Permission(level = ResourceLevel.ORGANIZATION)
