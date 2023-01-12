@@ -477,7 +477,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
             pipelineInstanceReferenceVOList.add(devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId));
         } else {
-            pipelineInstanceReferenceVOList.add(devopsCiJobService.queryChartPipelineReference(projectId, appId));
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryChartPipelineReference(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
             pipelineInstanceReferenceVOList.addAll(pipelineService.listAppPipelineReference(projectId, appId));
         }
 
