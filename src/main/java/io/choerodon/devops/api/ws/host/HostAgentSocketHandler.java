@@ -1,10 +1,7 @@
 package io.choerodon.devops.api.ws.host;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 
@@ -89,17 +86,14 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         // 版本不一致，需要升级
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
             String redisKey = String.format(C7N_AGENT_UPGRADE_COUNT_REDIS_KEY, hostId);
-            Integer count = (Integer) redisTemplate.opsForValue().get(redisKey);
-            if (maxAgentUpgradeFailedTime.equals(count) && Boolean.TRUE.equals(c7nAgentExitIfUpgradeFailedTimeExceedMaxCount)) {
+            Integer count = Optional.ofNullable((Integer) redisTemplate.opsForValue().get(redisKey)).orElse(0);
+            if (maxAgentUpgradeFailedTime < count && Boolean.TRUE.equals(c7nAgentExitIfUpgradeFailedTimeExceedMaxCount)) {
                 // 表示agent进行了3次尝试升级，都失败了，并且系统设置升级失败超过限制退出，那么agent应该退出。手动处理升级失败问题
                 HostMsgVO hostMsgVO = new HostMsgVO();
                 hostMsgVO.setType(HostCommandEnum.EXIT_AGENT.value());
                 hostMsgVO.setPayload("{}");
                 msgVO = (new MsgVO()).setGroup(DevopsHostConstants.GROUP + hostId).setKey(HostCommandEnum.EXIT_AGENT.value()).setMessage(JsonHelper.marshalByJackson(hostMsgVO)).setType(ClientWebSocketConstant.SendType.S_GROUP);
             } else {
-                if (count == null) {
-                    count = 0;
-                }
                 count++;
                 redisTemplate.opsForValue().set(redisKey, count, 120, TimeUnit.SECONDS);
                 DevopsHostDTO devopsHostDTO = devopsHostService.baseQuery(Long.parseLong(hostId));
