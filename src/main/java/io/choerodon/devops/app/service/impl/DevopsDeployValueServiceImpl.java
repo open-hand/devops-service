@@ -20,7 +20,6 @@ import io.choerodon.devops.api.vo.DevopsDeployValueVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
-import io.choerodon.devops.infra.dto.AppServiceInstanceDTO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -133,7 +132,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
         DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
-        devopsDeployValueVO.setIndex(checkDelete(projectId, valueId));
+        devopsDeployValueVO.setIndex(CollectionUtils.isEmpty(checkDelete(projectId, valueId)));
         return devopsDeployValueVO;
     }
 
@@ -173,21 +172,13 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public Boolean checkDelete(Long projectId, Long valueId) {
+    public List<PipelineInstanceReferenceVO> checkDelete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
-        permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
-
-        PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryDeployValuePipelineReference(projectId, valueId);
-        if (pipelineInstanceReferenceVO == null) {
-            List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOS = pipelineService.listDeployValuePipelineReference(projectId, valueId);
-            if (CollectionUtils.isEmpty(pipelineInstanceReferenceVOS)) {
-                List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
-                return CollectionUtils.isEmpty(appServiceInstanceDTOS);
-            } else {
-                return false;
-            }
-        }
-        return false;
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
+        pipelineInstanceReferenceVOList.add(devopsCiJobService.queryDeployValuePipelineReference(projectId, valueId));
+        pipelineInstanceReferenceVOList.addAll(pipelineService.listDeployValuePipelineReference(projectId, valueId));
+//        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
+        return pipelineInstanceReferenceVOList;
     }
 
     @Override
