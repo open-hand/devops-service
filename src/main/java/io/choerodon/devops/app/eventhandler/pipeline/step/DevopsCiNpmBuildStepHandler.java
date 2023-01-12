@@ -84,6 +84,8 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
         CiNpmBuildConfigDTO ciNpmBuildConfigDTO = ciNpmBuildConfigService.queryByStepId(devopsCiStepDTO.getId());
         if (ciNpmBuildConfigDTO != null && ciNpmBuildConfigDTO.getNpmRepoId() != null) {
             cmds.add("export_npm_push_variable " + ciNpmBuildConfigDTO.getNpmRepoId());
+            cmds.add("npm-cli-login -u $NPM_USERNAME -p $NPM_PASSWORD -e $NPM_EMAIL -r \"$NPM_REGISTRY/\" -s @privateNPM --quotes=true");
+
         }
         cmds.add(devopsCiStepDTO.getScript());
 
