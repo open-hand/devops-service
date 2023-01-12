@@ -45,9 +45,8 @@ public class DevopsCiNpmUploadStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        // 步骤模板没有mvn配置,所以只填充maven信息
-        CiNpmPublishConfigDTO ciNpmPublishConfigDTO = ciNpmPublishConfigService.queryByStepId(ciTemplateStepVO.getId());
-        ciTemplateStepVO.setNpmPublishConfig(ciNpmPublishConfigDTO);
+        CiTplNpmPublishConfigDTO ciTplNpmPublishConfigDTO = ciTplNpmPublishConfigService.queryByStepId(ciTemplateStepVO.getId());
+        ciTemplateStepVO.setNpmPublishConfig(ConvertUtils.convertObject(ciTplNpmPublishConfigDTO, CiNpmPublishConfigDTO.class));
     }
 
     @Override
