@@ -48,7 +48,7 @@ cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
 operate=\$1
 case \$operate in
 start)
-    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION} > ${WORK_DIR}/agent.log 2>&1"
+    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" > ${WORK_DIR}/agent.log 2>&1
     ;;
 stop)
     pidFile=/var/choerodon/c7n-agent.pid
