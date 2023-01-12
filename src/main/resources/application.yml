@@ -201,6 +201,10 @@ devops:
     binary-download-url: ${C7N_AGENT_BINARY_URL:http://examplle.minio.com/agent/c7n-agent-1.0.0}
     # agent版本
     agent-version: ${C7N_AGENT_VERSION:1.0.0}
+    # 如果agent升级失败次数达到阈值，是否退出
+    agent-exit-if-upgrade-failed-time-exceed-max-count: ${AGENT_EXIT_IF_UPGRADE_FAILED_TIME_EXCEED_MAX_COUNT:true}
+    # agent升级次数失败阈值
+    max-agent-upgrade-failed-time: ${MAX_AGENT_UPGRADE_FAILED_TIME:3}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
     # 主机部署超时时间，单位是分钟

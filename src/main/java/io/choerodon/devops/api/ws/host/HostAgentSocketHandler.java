@@ -42,14 +42,16 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HostAgentSocketHandler.class);
     private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s";
-    private static final Integer C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT = 3;
-
     protected final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
     @Value("${devops.host.agent-version}")
     private String agentVersion;
     @Value("${devops.host.binary-download-url}")
     private String agentUrl;
+    @Value("${devops.host.agent-exit-if-upgrade-failed-time-exceed-max-count:true}")
+    private Boolean c7nAgentExitIfUpgradeFailedTimeExceedMaxCount;
+    @Value("${devops.host.max-agent-upgrade-failed-time:3}")
+    private Integer maxAgentUpgradeFailedTime;
 
     @Autowired
     private List<HostMsgHandler> hostMsgHandlers;
@@ -88,8 +90,8 @@ public class HostAgentSocketHandler extends AbstractSocketHandler {
         if (!agentVersion.equals(WebSocketTool.getVersion(session))) {
             String redisKey = String.format(C7N_AGENT_UPGRADE_COUNT_REDIS_KEY, hostId);
             Integer count = (Integer) redisTemplate.opsForValue().get(redisKey);
-            if (C7N_AGENT_MAX_UPGRADE_ATTEMPT_COUNT.equals(count)) {
-                // 表示agent进行了3次尝试升级，都失败了，那么agent应该退出。手动处理升级失败问题
+            if (maxAgentUpgradeFailedTime.equals(count) && Boolean.TRUE.equals(c7nAgentExitIfUpgradeFailedTimeExceedMaxCount)) {
+                // 表示agent进行了3次尝试升级，都失败了，并且系统设置升级失败超过限制退出，那么agent应该退出。手动处理升级失败问题
                 HostMsgVO hostMsgVO = new HostMsgVO();
                 hostMsgVO.setType(HostCommandEnum.EXIT_AGENT.value());
                 hostMsgVO.setPayload("{}");
