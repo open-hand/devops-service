@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,13 +97,16 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
             List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
             if (!CollectionUtils.isEmpty(ciTemplateStepVOList)) {
                 List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                ciTemplateStepVOList.forEach(ciTemplateStepVO -> {
-                    // 添加步骤关联的配置信息
-                    DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                    AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
-                    stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
-                    devopsCiStepVOList.add(devopsCiStepVO);
-                });
+                ciTemplateStepVOList
+                        .stream()
+                        .sorted(Comparator.comparing(CiTemplateStepVO::getSequence))
+                        .forEach(ciTemplateStepVO -> {
+                            // 添加步骤关联的配置信息
+                            DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
+                            AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+                            stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+                            devopsCiStepVOList.add(devopsCiStepVO);
+                        });
                 devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
             }
             devopsCiJobVOList.add(devopsCiJobVO);
