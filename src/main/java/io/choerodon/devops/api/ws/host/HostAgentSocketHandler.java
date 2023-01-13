@@ -38,7 +38,7 @@ import io.choerodon.devops.infra.util.JsonHelper;
 public class HostAgentSocketHandler extends AbstractSocketHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HostAgentSocketHandler.class);
-    private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s";
+    private static final String C7N_AGENT_UPGRADE_COUNT_REDIS_KEY = "host:%s:upgrade-count";
     protected final Map<String, HostMsgHandler> hostMsgHandlerMap = new HashMap<>();
 
     @Value("${devops.host.agent-version}")
