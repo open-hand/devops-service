@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.devops.api.vo.CiPipelineImageVO;
 import io.choerodon.devops.api.vo.ImageRepoInfoVO;
+import io.choerodon.devops.api.vo.NpmRepoInfoVO;
 import io.choerodon.devops.infra.dto.CiPipelineImageDTO;
 
 /**
@@ -22,4 +23,6 @@ public interface CiPipelineImageService {
     CiPipelineImageDTO queryPipelineLatestImage(Long appServiceId, Long gitlabPipelineId);
 
     void deleteByAppServiceId(Long appServiceId);
+
+    NpmRepoInfoVO queryNpmRepoInfo(String token, Long repoId);
 }

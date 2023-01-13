@@ -63,12 +63,37 @@
     </select>
     <select id="listDeployValuePipelineReference"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dpj.name as job_name, dp.name as pipeline_name
+        select dpj.name as job_name,
+               dp.name  as pipeline_name,
+               dpj.name as stage_name,
+               "cd"     as type
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline_stage dps on dps.id = dpj.stage_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.value_id = #{valueId}
+    </select>
+    <select id="countAppServicePipelineReference" resultType="java.lang.Integer">
+        select count(1)
         from devops_pipeline_chart_deploy_cfg dpcdc
                  inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
                  inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
         where dp.project_id = #{projectId}
-          and dpcdc.value_id = #{valueId}
+          and dpcdc.app_service_id = #{appServiceId}
+    </select>
+    <select id="listAppPipelineReference"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dpj.name as job_name,
+               dp.name  as pipeline_name,
+               dpj.name as stage_name,
+               "cd"     as type
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline_stage dps on dps.id = dpj.stage_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.app_id = #{appId}
     </select>
     <select id="listChartEnvReferencePipelineInfo"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">

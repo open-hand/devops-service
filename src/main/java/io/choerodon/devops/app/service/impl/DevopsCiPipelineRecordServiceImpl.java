@@ -394,8 +394,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         if (applicationDTO.getExternalConfigId() == null) {
             iamUserId = userAttrService.getIamUserIdByGitlabUserName(pipelineWebHookVO.getUser().getUsername());
         } else {
-            // 外置仓库默认使用admin账户执行
-            iamUserId = IamAdminIdHolder.getAdminId();
+            iamUserId = applicationDTO.getCreatedBy();
         }
 
         CustomContextUtil.setDefaultIfNull(iamUserId);

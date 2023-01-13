@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -143,17 +142,19 @@ public class CertificationServiceImpl implements CertificationService {
                 FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
                 FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
             }
-            File certPath = new File(path + FILE_SEPARATOR + certFileName);
-            File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-            try {
-                SslUtil.validate(certPath, keyPath);
-            } catch (CommonException e) {
-                FileUtil.deleteFile(certPath);
-                FileUtil.deleteFile(keyPath);
-                throw e;
-            }
-            FileUtil.deleteFile(certPath);
-            FileUtil.deleteFile(keyPath);
+            // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
+//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+//        try {
+//            SslUtil.validate(certPath, keyPath);
+//        } catch (Exception e) {
+//            FileUtil.deleteFile(certPath);
+//            FileUtil.deleteFile(keyPath);
+//            throw new CommonException(e.getMessage());
+//        }
+//
+//        FileUtil.deleteFile(certPath);
+//        FileUtil.deleteFile(keyPath);
         }
 
         String certName = certificationDTO.getCertName();

@@ -8,10 +8,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.api.vo.pipeline.CiTemplateAuditConfigVO;
-import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
-import io.choerodon.devops.infra.dto.CiTemplateMavenBuildDTO;
-import io.choerodon.devops.infra.dto.CiTemplateMavenPublishDTO;
-import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
+import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
 /**
@@ -59,20 +56,48 @@ public class CiTemplateStepVO {
 
     @ApiModelProperty("步骤为Docker构建时需要，保存docker构建相关信息")
     private CiTemplateDockerDTO dockerBuildConfig;
+    @ApiModelProperty("步骤为chart 发布时需要，保存chart 发布相关信息")
+    private CiTplChartPublishConfigDTO chartPublishConfig;
 
+    @ApiModelProperty("步骤为npm 发布时需要，保存npm发布相关信息")
+    private CiNpmPublishConfigDTO npmPublishConfig;
+
+    @ApiModelProperty("步骤为npm 构建时需要，保存npm构建相关信息")
+    private CiNpmBuildConfigDTO npmBuildConfigDTO;
     @ApiModelProperty("步骤为maven发布时需要，保存maven发布相关信息")
     private CiTemplateMavenPublishDTO mavenPublishConfig;
-
     @ApiModelProperty("步骤为maven构建时需要，保存maven构建相关信息")
     private CiTemplateMavenBuildDTO mavenBuildConfig;
-
     @ApiModelProperty("步骤为人工卡点时需要，保存人工卡点相关信息")
     private CiTemplateAuditConfigVO ciAuditConfig;
-
     @ApiModelProperty(value = "创建时间")
     private Date creationDate;
     @ApiModelProperty("任务模板是否可见")
     private Boolean visibility;
+
+    public CiNpmBuildConfigDTO getNpmBuildConfigDTO() {
+        return npmBuildConfigDTO;
+    }
+
+    public void setNpmBuildConfigDTO(CiNpmBuildConfigDTO npmBuildConfigDTO) {
+        this.npmBuildConfigDTO = npmBuildConfigDTO;
+    }
+
+    public CiNpmPublishConfigDTO getNpmPublishConfig() {
+        return npmPublishConfig;
+    }
+
+    public void setNpmPublishConfig(CiNpmPublishConfigDTO npmPublishConfig) {
+        this.npmPublishConfig = npmPublishConfig;
+    }
+
+    public CiTplChartPublishConfigDTO getChartPublishConfig() {
+        return chartPublishConfig;
+    }
+
+    public void setChartPublishConfig(CiTplChartPublishConfigDTO chartPublishConfig) {
+        this.chartPublishConfig = chartPublishConfig;
+    }
 
     public CiTemplateAuditConfigVO getCiAuditConfig() {
         return ciAuditConfig;

@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 
+import org.hzero.core.util.ResponseUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.harbor.HarborCustomRepo;
 import io.choerodon.devops.api.vo.hrds.HarborC7nRepoImageTagVo;
 import io.choerodon.devops.api.vo.hrds.HarborC7nRepoVo;
+import io.choerodon.devops.api.vo.rdupm.NexusRepositoryVO;
 import io.choerodon.devops.infra.dto.harbor.HarborRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusComponentDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
@@ -54,6 +56,13 @@ public class RdupmClientOperator {
             throw new CommonException("devops.query.nexus.repo.user.list", projectId, repositoryIds);
         }
         return response.getBody();
+    }
+
+    public NexusRepositoryVO queryRepoWithDefaultUserInfo(Long projectId, Long repoId) {
+
+        ResponseEntity<String> response = rdupmClient.queryRepoWithDefaultUserInfo(projectId, repoId);
+
+        return ResponseUtils.getResponse(response, NexusRepositoryVO.class);
     }
 
     /**

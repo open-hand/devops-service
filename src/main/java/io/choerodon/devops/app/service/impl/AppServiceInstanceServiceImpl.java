@@ -2753,10 +2753,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId) {
+    public List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
 
-        return devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
+        return devopsDeployAppCenterService.queryPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
     }
 
     @Override

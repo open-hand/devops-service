@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -89,6 +90,8 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
     private UserAttrService userAttrService;
     @Autowired
     private SendNotificationService sendNotificationService;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public void baseCreate(DevopsClusterResourceDTO devopsClusterResourceDTO) {
@@ -123,7 +126,7 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         DevopsCertManagerDTO devopsCertManagerDTO = new DevopsCertManagerDTO();
         devopsCertManagerDTO.setReleaseName(certManagerProperties.getReleaseName());
         devopsCertManagerDTO.setNamespace(certManagerProperties.getNamespace());
-        devopsCertManagerDTO.setChartVersion(certManagerProperties.getChartVersion());
+        devopsCertManagerDTO.setChartVersion(getCertManagerVersion(clusterId));
         MapperUtil.resultJudgedInsertSelective(devopsCertManagerMapper, devopsCertManagerDTO, DEVOPS_INSERT_CERT_MANAGER);
         // 插入数据
         devopsClusterResourceDTO.setObjectId(devopsCertManagerRecordDTO.getId());
@@ -659,5 +662,16 @@ public class DevopsClusterResourceServiceImpl implements DevopsClusterResourceSe
         // 添加两个角色id
         clientVO.setAccessRoles(String.valueOf(projectAdminId).concat(",").concat(String.valueOf(tenantAdminId)));
         return baseServiceClientOperator.createClient(devopsClusterDTO.getOrganizationId(), clientVO);
+    }
+
+    public String getCertManagerVersion(Long clusterId) {
+        ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId)), ClusterSummaryInfoVO.class);
+        String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
+        int minorVersion = Integer.parseInt(split[1]);
+        if (minorVersion <= 21) {
+            return "v1.1.1";
+        } else {
+            return "v1.8.2";
+        }
     }
 }
