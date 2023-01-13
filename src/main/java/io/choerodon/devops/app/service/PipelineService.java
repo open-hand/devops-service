@@ -67,5 +67,6 @@ public interface PipelineService {
     int countAppServicePipelineReference(Long projectId, Long appServiceId);
 
 
+    List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId);
 }
 

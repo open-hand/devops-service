@@ -43,15 +43,9 @@ public interface DevopsCiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
 
     List<CiCdPipelineDTO> selectPipelineByProjectId(@Param("project_id") Long projectId);
 
-    /**
-     * 查询引用了实例作为替换对象的流水线信息，如果有多个任务引用了这个实例，取一个
-     *
-     * @param instanceId 实例id
-     * @return 一个或无
-     */
-    PipelineInstanceReferenceVO queryPipelineReference(@Param("instanceId") Long instanceId);
+    List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(@Param("projectId") Long projectId,
+                                                                        @Param("envId") Long envId);
 
-    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(@Param("appId") Long appId);
-
-    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(@Param("appId") Long appId);
+    List<PipelineInstanceReferenceVO> listDeployEnvReferencePipelineInfo(@Param("projectId") Long projectId,
+                                                                         @Param("envId") Long envId);
 }

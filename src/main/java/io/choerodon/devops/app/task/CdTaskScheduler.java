@@ -66,17 +66,16 @@ public class CdTaskScheduler {
     @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
             maxRetryCount = 3,
             code = MiscConstants.PIPELINE_SCHEDULE_TRIGGER,
-            level = ResourceLevel.PROJECT,
+            level = ResourceLevel.ORGANIZATION,
             description = "流水线定时触发任务", params = {
-            @JobParam(name = MiscConstants.PROJECT_ID, type = Long.class, defaultValue = "0", description = "项目id"),
             @JobParam(name = MiscConstants.PIPELINE_ID, type = Long.class, defaultValue = "0", description = "流水线id"),
             @JobParam(name = MiscConstants.SCHEDULE_TOKEN, description = "流水线id"),
             @JobParam(name = MiscConstants.USER_ID, type = Long.class, defaultValue = "0", description = "流水线id")
     })
     public void pipelineScheduleTrigger(Map<String, Object> map) {
-        Long pipelineId = (Long) map.get(MiscConstants.PIPELINE_ID);
+        Long pipelineId = Long.valueOf(map.get(MiscConstants.PIPELINE_ID).toString());
         String scheduleToken = map.get(MiscConstants.SCHEDULE_TOKEN).toString();
-        Long userId = (Long) map.get(MiscConstants.USER_ID);
+        Long userId = Long.valueOf(map.get(MiscConstants.USER_ID).toString());
         // 设置用户上下文
         CustomContextUtil.setUserContext(userId);
         PipelineScheduleDTO pipelineScheduleDTO = pipelineScheduleService.queryByToken(scheduleToken);

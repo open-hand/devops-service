@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.SagaInstanceDetails;
 import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
 import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
@@ -32,8 +33,10 @@ public class AsgardServiceClientOperator {
         return listResponseEntity.getBody();
     }
 
-    public QuartzTaskDTO createByServiceCodeAndMethodCode(Long projectId, ScheduleTaskDTO scheduleTaskDTO) {
-        ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.createByServiceCodeAndMethodCode("project", projectId, scheduleTaskDTO);
+    public QuartzTaskDTO createByServiceCodeAndMethodCode(Long organizationId, ScheduleTaskDTO scheduleTaskDTO) {
+        ResponseEntity<QuartzTaskDTO> quartzTaskDTOResponseEntity = asgardFeignClient.createByServiceCodeAndMethodCode(ResourceLevel.ORGANIZATION.value(),
+                organizationId,
+                scheduleTaskDTO);
         QuartzTaskDTO quartzTaskDTO = quartzTaskDTOResponseEntity.getBody();
         if (quartzTaskDTOResponseEntity.getStatusCode().is2xxSuccessful() && quartzTaskDTO != null && quartzTaskDTO.getId() != null) {
             return quartzTaskDTOResponseEntity.getBody();

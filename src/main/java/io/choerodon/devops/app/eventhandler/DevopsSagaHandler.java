@@ -758,6 +758,7 @@ public class DevopsSagaHandler {
         List<ScheduleTaskDTO> scheduleTaskDTOList = JsonHelper.unmarshalByJackson(data, new TypeReference<List<ScheduleTaskDTO>>() {
         });
 
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(scheduleTaskDTOList.get(0).getProjectId());
         scheduleTaskDTOList.forEach(scheduleTaskDTO -> {
             QuartzTaskDTO quartzTaskDTO = asgardServiceClientOperator.queryByName(scheduleTaskDTO.getName());
             List<Long> delTaskIds = new ArrayList<>();
@@ -768,7 +769,7 @@ public class DevopsSagaHandler {
 
             if (ScheduleTaskOperationTypeEnum.CREATE.value().equals(scheduleTaskDTO.getOperationType())
                     || ScheduleTaskOperationTypeEnum.UPDATE.value().equals(scheduleTaskDTO.getOperationType())) {
-                asgardServiceClientOperator.createByServiceCodeAndMethodCode(scheduleTaskDTO.getProjectId(), scheduleTaskDTO);
+                asgardServiceClientOperator.createByServiceCodeAndMethodCode(projectDTO.getOrganizationId(), scheduleTaskDTO);
             }
         });
 

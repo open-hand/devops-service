@@ -345,14 +345,15 @@ public class BaseServiceClientOperator {
 
     public IamUserDTO queryByEmail(Long projectId, String email) {
         try {
-            ResponseEntity<Page<IamUserDTO>> userDOResponseEntity = baseServiceClient
+            ResponseEntity<String> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-            if (userDOResponseEntity == null || userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
-                return null;
-            }
-            return userDOResponseEntity.getBody().getContent().get(0);
+//            if (userDOResponseEntity == null || userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
+//                return null;
+//            }
+            return ResponseUtils.getResponse(userDOResponseEntity, new TypeReference<Page<IamUserDTO>>() {
+            }).getContent().get(0);
         } catch (Exception e) {
-            LOGGER.error("get user by email {} error", email);
+            LOGGER.error("get user by email error", e);
             return null;
         }
     }

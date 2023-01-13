@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CdEnvDeployInfoDTOCode.DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
@@ -199,8 +198,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
@@ -607,11 +604,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!active) {
             // 如果已连接
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+                devopsEnvironmentValidator.checkEnvCanDisabled(projectId, environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
-                    throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
-                }
+                devopsEnvironmentValidator.checkPipelineRef(projectId, environmentId);
             }
         }
 
@@ -1426,9 +1421,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("devops.env.delete");
         }
 
-        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
-            throw new CommonException("devops.delete.env.with.pipeline");
-        }
+        devopsEnvironmentValidator.checkPipelineRef(projectId, envId);
 
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
         JSONObject JSONObject = new JSONObject();
@@ -1913,7 +1906,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean disableCheck(Long projectId, Long envId) {
         // 停用环境校验资源和流水线
         // pipeLineAppDeploy为空
-        boolean pipeLineAppDeployEmpty = CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
 
@@ -1925,13 +1917,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getConfigMapCount() == 0
                 && devopsEnvResourceCountVO.getPvcCount() == 0
                 && devopsEnvResourceCountVO.getCustomCount() == 0
-                && pipeLineAppDeployEmpty;
+                && !devopsEnvironmentValidator.envRefPipeline(projectId, envId);
     }
 
     @Override
     public Boolean deleteCheck(Long projectId, Long envId) {
         // 删除环境只校验是否有流水线
-        return CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
+        return !devopsEnvironmentValidator.envRefPipeline(projectId, envId);
     }
 
     @Override
@@ -2028,10 +2020,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId) {
         EnvAutoDeployVO envAutoDeployVO = new EnvAutoDeployVO();
         envAutoDeployVO.setExistAutoDeploy(false);
-        List<DevopsCdEnvDeployInfoDTO> list = devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId);
-        if (!CollectionUtils.isEmpty(list)) {
-            envAutoDeployVO.setExistAutoDeploy(true);
-        }
+        envAutoDeployVO.setExistAutoDeploy(devopsEnvironmentValidator.envRefPipeline(projectId, envId));
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
         return envAutoDeployVO;

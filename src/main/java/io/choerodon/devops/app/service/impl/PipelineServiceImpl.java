@@ -204,7 +204,7 @@ public class PipelineServiceImpl implements PipelineService {
                                           String operationType) {
         ScheduleTaskDTO scheduleTaskDTO = new ScheduleTaskDTO();
         scheduleTaskDTO.setName("DevopsPipelineTrigger-" + pipelineId + "-" + pipelineScheduleDTO.getName());
-        scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateNormalCron(pipelineScheduleVO));
+        scheduleTaskDTO.setCronExpression(ScheduleUtil.calculateQuartzCron(pipelineScheduleVO));
         scheduleTaskDTO.setTriggerType(CRON_TRIGGER);
         scheduleTaskDTO.setProjectId(projectId);
         scheduleTaskDTO.setOperationType(operationType);
@@ -604,6 +604,11 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public List<PipelineInstanceReferenceVO> listDeployValuePipelineReference(Long projectId, Long valueId) {
         return pipelineMapper.listDeployValuePipelineReference(projectId, valueId);
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId) {
+        return pipelineMapper.listChartEnvReferencePipelineInfo(projectId, envId);
     }
 
     @Override
