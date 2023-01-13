@@ -113,7 +113,6 @@ sudo systemctl daemon-reload
 
 # 6. 启动程序
 cd "${WORK_DIR}"
-chmod +x "${AGENT}"
 
 if [ -f "/var/choerodon/c7n-agent.pid" ]; then
   sudo systemctl stop c7n-agent
