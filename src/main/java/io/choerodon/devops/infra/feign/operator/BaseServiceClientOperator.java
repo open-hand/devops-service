@@ -347,13 +347,16 @@ public class BaseServiceClientOperator {
         try {
             ResponseEntity<String> userDOResponseEntity = baseServiceClient
                     .listUsersByEmail(projectId, 0, 0, email);
-//            if (userDOResponseEntity == null || userDOResponseEntity.getBody() == null || userDOResponseEntity.getBody().getContent() == null || userDOResponseEntity.getBody().getContent().isEmpty()) {
-//                return null;
-//            }
-            return ResponseUtils.getResponse(userDOResponseEntity, new TypeReference<Page<IamUserDTO>>() {
-            }).getContent().get(0);
+            List<IamUserDTO> content = ResponseUtils.getResponse(userDOResponseEntity, new TypeReference<Page<IamUserDTO>>() {
+            }).getContent();
+            if (CollectionUtils.isEmpty(content)) {
+                LOGGER.warn("Email:{} not found", email);
+                return null;
+            } else {
+                return content.get(0);
+            }
         } catch (Exception e) {
-            LOGGER.error("get user by email error", e);
+            LOGGER.error("get user by email:{} error", email, e);
             return null;
         }
     }
