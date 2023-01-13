@@ -152,8 +152,8 @@ public class ChartDeployCommandHandler extends AbstractAppDeployCommandHandler {
                         appCode,
                         devopsDeployAppCenterEnvDTO.getObjectId(),
                         CommandType.UPDATE.getType(),
-                        null,
-                        null);
+                        appName,
+                        appCode);
                 appServiceDeployVO.setInstanceId(devopsDeployAppCenterEnvDTO.getObjectId());
                 AppServiceInstanceVO appServiceInstanceVO = appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.AUTO);
                 commandId = appServiceInstanceVO.getCommandId();
