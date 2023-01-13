@@ -71,6 +71,7 @@
         dpv.last_update_date,
         de.`name` AS env_name,
         da.`name` AS app_service_name,
+        da.`code` AS app_service_code,
         dpv.env_id,
         dpv.app_service_id
         FROM
