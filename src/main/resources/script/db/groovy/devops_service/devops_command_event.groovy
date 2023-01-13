@@ -33,7 +33,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
         }
     }
 
-    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+    changeSet(author: 'lihao', id: '2021-11-02-drop-index') {
         dropIndex(indexName: "idx_command_id_type", tableName: "devops_command_event")
+    }
+    changeSet(author: 'wanghao', id: '2023-01-13-modify-column') {
+        modifyDataType(tableName: 'devops_command_event', columnName: 'message', newDataType: 'VARCHAR(5000)')
     }
 }
