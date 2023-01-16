@@ -59,7 +59,13 @@ public interface DevopsHostAppMapper extends BaseMapper<DevopsHostAppDTO> {
                                                       @Param("name") String name,
                                                       @Param("appId") Long appId);
 
-    Boolean checkNameUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("name") String name);
+    Boolean checkNameUnique(@Param("projectId") Long projectId,
+                            @Param("hostId") Long hostId,
+                            @Param("appId") Long appId,
+                            @Param("name") String name);
 
-    Boolean checkCodeUnique(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("code") String code);
+    Boolean checkCodeUnique(@Param("projectId") Long projectId,
+                            @Param("hostId") Long hostId,
+                            @Param("appId") Long appId,
+                            @Param("code") String code);
 }
