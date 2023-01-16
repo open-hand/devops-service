@@ -126,7 +126,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public CiTemplateJobVO updateTemplateJob(Long sourceId, String sourceType, CiTemplateJobVO ciTemplateJobVO) {
-        pipelineTemplateUtils.checkAccess(sourceId, sourceType);
+//        pipelineTemplateUtils.checkAccess(sourceId, sourceType);
         checkParam(ciTemplateJobVO);
         AssertUtils.isTrue(isNameUnique(ciTemplateJobVO.getName(), sourceId, ciTemplateJobVO.getId()),
                 "error.job.template.name.exist");
@@ -137,6 +137,12 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         // 更新job记录
         ciTemplateJobDTO.setObjectVersionNumber(templateJobDTO.getObjectVersionNumber());
         ciTemplateJobBusMapper.updateByPrimaryKeySelective(ciTemplateJobDTO);
+        String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
+        if (!StringUtils.isEmpty(type)) {
+            TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
+            templateJobConfigService.baseDelete(ciTemplateJobVO);
+            templateJobConfigService.baseInsert(ciTemplateJobVO);
+        }
         // 更新job和step关系
         if (!CollectionUtils.isEmpty(ciTemplateJobVO.getDevopsCiStepVOList())) {
             // 先删除旧关系
@@ -151,10 +157,19 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteTemplateJob(Long sourceId, String sourceType, Long jobId) {
         pipelineTemplateUtils.checkAccess(sourceId, sourceType);
+        CiTemplateJobDTO templateJobDTO = ciTemplateJobBusMapper.selectByPrimaryKey(jobId);
+        if (templateJobDTO == null) {
+            return;
+        }
         // 删除与steps的关系
         ciTemplateJobStepRelBusMapper.deleteByJobId(jobId);
         // 删除job
         ciTemplateJobBusMapper.deleteByPrimaryKey(jobId);
+        String type = TemplateJobTypeUtils.stringStringMap.get(templateJobDTO.getType());
+        if (!StringUtils.isEmpty(type)) {
+            TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
+            templateJobConfigService.baseDelete(ConvertUtils.convertObject(templateJobDTO, CiTemplateJobVO.class));
+        }
     }
 
     @Override
