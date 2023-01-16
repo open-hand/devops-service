@@ -69,5 +69,18 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_app.groovy') {
             }
         }
     }
-    
+    changeSet(author: 'wanghao', id: '2023-01-16-drop-index') {
+        dropIndex(indexName: "uk_host_id_name", tableName: "devops_host_app")
+        dropIndex(indexName: "uk_host_id_code", tableName: "devops_host_app")
+        dropIndex(indexName: "uk_host_id_name", tableName: "devops_host_app")
+    }
+
+    changeSet(author: 'wanghao', id: '2023-01-16-add-index') {
+
+        addUniqueConstraint(tableName: 'devops_host_app',
+                constraintName: 'devops_host_app_u1', columnNames: 'host_id,name')
+        addUniqueConstraint(tableName: 'devops_host_app',
+                constraintName: 'devops_host_app_u2', columnNames: 'host_id,code')
+    }
+
 }
