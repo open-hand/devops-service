@@ -136,13 +136,13 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         CiTemplateJobDTO ciTemplateJobDTO = ConvertUtils.convertObject(ciTemplateJobVO, CiTemplateJobDTO.class);
         // 更新job记录
         ciTemplateJobDTO.setObjectVersionNumber(templateJobDTO.getObjectVersionNumber());
-        ciTemplateJobBusMapper.updateByPrimaryKeySelective(ciTemplateJobDTO);
         String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
         if (!StringUtils.isEmpty(type)) {
             TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
             templateJobConfigService.baseDelete(ciTemplateJobVO);
-            templateJobConfigService.baseInsert(ciTemplateJobVO);
+            ciTemplateJobDTO.setConfigId(templateJobConfigService.baseInsert(ciTemplateJobVO));
         }
+        ciTemplateJobBusMapper.updateByPrimaryKeySelective(ciTemplateJobDTO);
         // 更新job和step关系
         if (!CollectionUtils.isEmpty(ciTemplateJobVO.getDevopsCiStepVOList())) {
             // 先删除旧关系

@@ -4,8 +4,10 @@ import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplatePipelineVO;
 import io.choerodon.devops.api.vo.template.CiTplHostDeployInfoCfgVO;
+import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.devops.infra.dto.CiTplHostDeployInfoCfgDTO;
 import io.choerodon.devops.infra.enums.deploy.DeployObjectTypeEnum;
+import io.choerodon.devops.infra.mapper.CiTemplateJobMapper;
 import io.choerodon.devops.infra.mapper.CiTplHostDeployInfoMapper;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +20,9 @@ public class HostTemplateJobConfigService extends TemplateJobConfigService {
 
     @Autowired
     private CiTplHostDeployInfoMapper ciTplHostDeployInfoMapper;
+
+    @Autowired
+    private CiTemplateJobMapper ciTemplateJobMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -41,10 +46,11 @@ public class HostTemplateJobConfigService extends TemplateJobConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void baseDelete(CiTemplateJobVO ciTemplateJobVO) {
-        if (ciTemplateJobVO.getConfigId() == null) {
+        CiTemplateJobDTO templateJobDTO = ciTemplateJobMapper.selectByPrimaryKey(ciTemplateJobVO.getId());
+        if (templateJobDTO.getConfigId() == null) {
             return;
         }
-        ciTplHostDeployInfoMapper.deleteByPrimaryKey(ciTemplateJobVO.getConfigId());
+        ciTplHostDeployInfoMapper.deleteByPrimaryKey(templateJobDTO.getConfigId());
     }
 
     private CiTplHostDeployInfoCfgVO fillHostDeployConfig(Long configId, boolean builtIn) {
@@ -53,7 +59,7 @@ public class HostTemplateJobConfigService extends TemplateJobConfigService {
         }
         //如果是内置的则要看，nodejs则是其他，Java 则是主机
         CiTemplatePipelineVO ciTemplatePipelineVO = (CiTemplatePipelineVO) PipelineTemplateUtils.threadLocal.get();
-        if (ciTemplatePipelineVO == null ) {
+        if (ciTemplatePipelineVO == null) {
             return ConvertUtils.convertObject(ciTplHostDeployInfoMapper.selectByPrimaryKey(configId), CiTplHostDeployInfoCfgVO.class);
         }
         PipelineTemplateUtils.threadLocal.remove();
