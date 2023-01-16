@@ -392,33 +392,33 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long appId, String name, String code) {
-        checkNameUniqueAndThrow(projectId, appId, name);
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long hostId, Long appId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, hostId, appId, name);
 
-        checkCodeUniqueAndThrow(projectId, appId, name);
+        checkCodeUniqueAndThrow(projectId, hostId, appId, name);
 
     }
 
-    public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
-        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
+    public void checkCodeUniqueAndThrow(Long projectId, Long hostId, Long appId, String code) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, hostId, appId, code))) {
             throw new CommonException("devops.host.app.code.exist");
         }
     }
 
-    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
-        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
+    public void checkNameUniqueAndThrow(Long projectId, Long hostId, Long appId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, hostId, appId, name))) {
             throw new CommonException("devops.host.app.name.exist");
         }
     }
 
     @Override
-    public Boolean checkCodeUnique(Long projectId, Long appId, String code) {
-        return devopsHostAppMapper.checkCodeUnique(projectId, appId, code);
+    public Boolean checkCodeUnique(Long projectId, Long hostId, Long appId, String code) {
+        return devopsHostAppMapper.checkCodeUnique(projectId, hostId, appId, code);
     }
 
     @Override
-    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
-        return devopsHostAppMapper.checkNameUnique(projectId, appId, name);
+    public Boolean checkNameUnique(Long projectId, Long hostId, Long appId, String name) {
+        return devopsHostAppMapper.checkNameUnique(projectId, hostId, appId, name);
     }
 
     @Override
