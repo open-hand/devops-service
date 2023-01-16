@@ -5,6 +5,7 @@ import java.util.Set;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
+import io.choerodon.devops.api.vo.template.DeleteCheckResultVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -25,7 +26,7 @@ public interface CiTemplateJobBusService {
 
     Page<CiTemplateJobVO> pageTemplateJobs(Long sourceId, String sourceType, PageRequest pageRequest, String name, Long groupId, Boolean builtIn, String params);
 
-    Boolean checkJobTemplateByJobId(Long sourceId, Long templateJobId);
+    DeleteCheckResultVO checkJobTemplateByJobId(Long sourceId, String sourceType, Long templateJobId);
 
     List<CiTemplateJobVO> listTemplateJobs(Long sourceId, String sourceType);
 

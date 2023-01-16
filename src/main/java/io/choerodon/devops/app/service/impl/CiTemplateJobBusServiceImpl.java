@@ -5,6 +5,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.utils.ConvertUtils;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
+import io.choerodon.devops.api.vo.template.DeleteCheckResultVO;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateJobBusService;
 import io.choerodon.devops.app.service.CiTemplateStepBusService;
@@ -203,12 +204,50 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     }
 
     @Override
-    public Boolean checkJobTemplateByJobId(Long sourceId, Long templateJobId) {
-        CiTemplateStageJobRelDTO ciTemplateStageJobRelDTO = new CiTemplateStageJobRelDTO();
-        ciTemplateStageJobRelDTO.setCiTemplateJobId(templateJobId);
-        List<CiTemplateStageJobRelDTO> ciTemplateStageJobRelDTOS
-                = ciTemplateStageJobRelBusMapper.select(ciTemplateStageJobRelDTO);
-        return CollectionUtils.isEmpty(ciTemplateStageJobRelDTOS);
+    public DeleteCheckResultVO checkJobTemplateByJobId(Long sourceId, String sourceType, Long templateJobId) {
+        DeleteCheckResultVO deleteCheckResultVO = new DeleteCheckResultVO();
+        //根据层级来判断模板是否被引用
+        if (Objects.equals(sourceType, ResourceLevel.PROJECT.value())) {
+            extracted(sourceType, templateJobId, deleteCheckResultVO);
+            return deleteCheckResultVO;
+        } else {
+            if (Objects.equals(sourceType, ResourceLevel.ORGANIZATION.value())) {
+                extracted(ResourceLevel.PROJECT.value(), templateJobId, deleteCheckResultVO);
+                if (deleteCheckResultVO.getResult()) {
+                    extracted(ResourceLevel.ORGANIZATION.value(), templateJobId, deleteCheckResultVO);
+                    return deleteCheckResultVO;
+                } else {
+                    return deleteCheckResultVO;
+                }
+            }
+
+            if (Objects.equals(sourceType, ResourceLevel.SITE.value())) {
+                extracted(ResourceLevel.PROJECT.value(), templateJobId, deleteCheckResultVO);
+                if (deleteCheckResultVO.getResult()) {
+                    extracted(ResourceLevel.ORGANIZATION.value(), templateJobId, deleteCheckResultVO);
+                    if (deleteCheckResultVO.getResult()) {
+                        extracted(ResourceLevel.SITE.value(), templateJobId, deleteCheckResultVO);
+                        return deleteCheckResultVO;
+                    } else {
+                        return deleteCheckResultVO;
+                    }
+                } else {
+                    return deleteCheckResultVO;
+                }
+            }
+        }
+        return deleteCheckResultVO;
+    }
+
+    private void extracted(String sourceType, Long templateJobId, DeleteCheckResultVO deleteCheckResultVO) {
+        Integer integer = ciTemplateJobBusMapper.existRecord(sourceType, templateJobId);
+        if (integer != null) {
+            deleteCheckResultVO.setResult(false);
+            deleteCheckResultVO.setSourceType(sourceType);
+        } else {
+            deleteCheckResultVO.setResult(true);
+            deleteCheckResultVO.setSourceType(sourceType);
+        }
     }
 
     @Override
