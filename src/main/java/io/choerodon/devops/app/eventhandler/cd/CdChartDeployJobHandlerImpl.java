@@ -254,7 +254,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
                 Pattern pattern = Pattern.compile(versionRegex);
                 return pattern.matcher(appServiceVersionDTO.getVersion()).matches();
             })) {
-                log.append("当前任务不满足触发条件'应用服务版本匹配'，跳过此任务");
+                log.append("当前任务不满足触发条件'应用服务版本匹配'，跳过此任务。匹配版本格式：").append(version).append(", 当前版本：").append(appServiceVersionDTO.getVersion());
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 return;
@@ -262,7 +262,7 @@ public class CdChartDeployJobHandlerImpl extends AbstractCdJobHandler {
         } else {
             appServiceVersionDTO = appServiceVersionService.queryLatestByAppServiceIdVersionType(appServiceId, version);
             if (appServiceVersionDTO == null) {
-                log.append("当前任务不满足触发条件'应用服务版本不存在'，跳过此任务");
+                log.append("当前任务不满足触发条件'应用服务版本不存在'，跳过此任务。").append("目标版本类型：").append(version).append(", 不存在");
                 pipelineJobRecordDTO.setStatus(PipelineStatusEnum.SKIPPED.value());
                 pipelineJobRecordService.update(pipelineJobRecordDTO);
                 return;
