@@ -46,13 +46,13 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         CiTplNpmBuildConfigDTO ciTplNpmBuildConfigDTO = ciTplNpmBuildConfigService.queryByStepId(ciTemplateStepVO.getId());
-        ciTemplateStepVO.setNpmBuildConfigDTO(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
+        ciTemplateStepVO.setNpmBuildConfig(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
-        CiNpmBuildConfigDTO npmBuildConfigDTO = ciTemplateStepVO.getNpmBuildConfigDTO();
+        CiNpmBuildConfigDTO npmBuildConfigDTO = ciTemplateStepVO.getNpmBuildConfig();
         if (npmBuildConfigDTO == null) {
             return;
         }
