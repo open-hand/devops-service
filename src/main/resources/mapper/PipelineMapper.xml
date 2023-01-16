@@ -65,7 +65,7 @@
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
         select dpj.name as job_name,
                dp.name  as pipeline_name,
-               dpj.name as stage_name,
+               dps.name as stage_name,
                "cd"     as type
         from devops_pipeline_chart_deploy_cfg dpcdc
                  inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
@@ -86,7 +86,7 @@
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
         select dpj.name as job_name,
                dp.name  as pipeline_name,
-               dpj.name as stage_name,
+               dps.name as stage_name,
                "cd"     as type
         from devops_pipeline_chart_deploy_cfg dpcdc
                  inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
