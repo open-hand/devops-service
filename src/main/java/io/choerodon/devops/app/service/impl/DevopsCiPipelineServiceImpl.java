@@ -1502,6 +1502,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         }
     }
 
+    @Override
+    public String queryGitlabCiYamlById(Long pipelineId) {
+        CiCdPipelineDTO ciCdPipelineDTO = baseQueryById(pipelineId);
+        return devopsCiContentService.queryLatestContent(ciCdPipelineDTO);
+    }
+
     private CiCdPipelineRecordVO dtoToVo(DevopsCiPipelineRecordDTO devopsPipelineRecordRelDTO) {
         CiCdPipelineRecordVO ciCdPipelineRecordVO = new CiCdPipelineRecordVO();
         ciCdPipelineRecordVO.setDevopsPipelineRecordRelId(devopsPipelineRecordRelDTO.getId());
