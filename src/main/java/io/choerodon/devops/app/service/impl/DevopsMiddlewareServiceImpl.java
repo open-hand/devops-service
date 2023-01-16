@@ -580,7 +580,7 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
         DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceService.baseQuery(middlewareHostInstanceVO.getInstanceId());
         CommonExAssertUtil.assertTrue(projectId.equals(devopsHostAppInstanceDTO.getProjectId()), "devops.operating.resource.in.other.project");
         DevopsHostAppDTO devopsHostAppDTO = devopsHostAppService.baseQuery(devopsHostAppInstanceDTO.getAppId());
-        devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
+//        devopsHostAppService.checkNameUniqueAndThrow(projectId, devopsHostAppInstanceDTO.getAppId(), middlewareHostInstanceVO.getAppName());
         devopsHostAppDTO.setName(middlewareHostInstanceVO.getAppName());
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
     }
@@ -741,9 +741,9 @@ public class DevopsMiddlewareServiceImpl implements DevopsMiddlewareService {
     }
 
     public void checkMiddlewareNameAndCode(Long projectId, String name, String code, String type) {
-        if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name))) {
-            throw new CommonException("devops.middleware.name.exists");
-        }
+//        if (Boolean.FALSE.equals(devopsHostAppService.checkNameUnique(projectId, null, name))) {
+//            throw new CommonException("devops.middleware.name.exists");
+//        }
 
         AppServiceInstanceValidator.checkCode(code);
         CommonExAssertUtil.assertTrue(devopsMiddlewareMapper.checkCodeUnique(projectId, code, type) < 1, "devops.middleware.code.exists");
