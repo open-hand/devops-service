@@ -97,6 +97,7 @@ Description=Choerodon Host Manager Agent daemon
 EnvironmentFile=/var/choerodon/c7n-agent.env
 ExecStart=/var/choerodon/c7n-agent.sh start
 ExecStop=/var/choerodon/c7n-agent.sh stop
+WorkingDirectory=/var/choerodon
 Type=simple
 KillMode=process
 Restart=on-failure
