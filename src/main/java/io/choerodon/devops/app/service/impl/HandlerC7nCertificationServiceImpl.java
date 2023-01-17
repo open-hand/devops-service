@@ -75,7 +75,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             }
         });
 
-        validateCertManager(envId, updateC7nCertification, addC7nCertification, objectPath);
+//        validateCertManager(envId, updateC7nCertification, addC7nCertification, objectPath);
 
         // 证书的内容不能更新，只能更新文件路径
         updateC7nCertification.forEach(c7nCertification1 ->
