@@ -475,13 +475,19 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
         List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
         if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
-            pipelineInstanceReferenceVOList.add(devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId));
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
         } else {
             PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryChartPipelineReference(projectId, appId);
             if (pipelineInstanceReferenceVO != null) {
                 pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
             }
-            pipelineInstanceReferenceVOList.addAll(pipelineService.listAppPipelineReference(projectId, appId));
+            List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listAppPipelineReference(projectId, appId);
+            if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
+                pipelineInstanceReferenceVOList.addAll(pipelineInstanceReferenceVOList1);
+            }
         }
 
         return pipelineInstanceReferenceVOList;
