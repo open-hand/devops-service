@@ -3,11 +3,12 @@ set -e
 
 RUNTIME_USER=$1
 if [ -z $RUNTIME_USER ]; then
-    RUNTIME_USER=$USER
+  RUNTIME_USER=$USER
 fi
 
 VAR=/var
 WORK_DIR=${VAR}/choerodon
+LOG_DIR=${WORK_DIR}/log
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
 HOST_ID={{ HOST_ID }}
@@ -24,13 +25,22 @@ fi
 # 2. 创建choerodon目录
 if [ ! -d "${WORK_DIR}" ]; then
   echo "Creating ${WORK_DIR} directory"
-  sudo mkdir $WORK_DIR
-  sudo chmod 0777 $WORK_DIR
+  sudo mkdir ${WORK_DIR}
+  sudo chmod 0777 ${WORK_DIR}
   sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${WORK_DIR}
   echo "Working directory ${WORK_DIR} created successfully"
 fi
 
-cd "$WORK_DIR" || exit
+cd "${WORK_DIR}" || exit
+
+# 3. 创建日志目录
+if [ ! -d "${LOG_DIR}" ]; then
+  echo "Creating ${LOG_DIR} directory"
+  sudo mkdir ${LOG_DIR}
+  sudo chmod 0777 ${LOG_DIR}
+  sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${LOG_DIR}
+  echo "Working directory ${LOG_DIR} created successfully"
+fi
 
 # 3. 保存环境变量
 cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.env
