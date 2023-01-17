@@ -1401,9 +1401,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         List<MergeRequestDTO> mergeRequestDTOS = gitlabServiceClientOperator.listMergeRequest(appServiceDTO.getGitlabProjectId(), MergeRequestState.OPENED.getValue());
-        if (CollectionUtils.isEmpty(mergeRequestDTOS)) {
-            return syncCount;
-        }
         List<Integer> openMergeRequestIds = mergeRequestDTOS.stream().map(MergeRequestDTO::getIid).collect(Collectors.toList());
         // 查询c7n已经存在的开放合并请求
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
