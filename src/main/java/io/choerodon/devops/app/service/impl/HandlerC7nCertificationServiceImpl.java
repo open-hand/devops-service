@@ -1,7 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.kubernetes.client.openapi.models.V1Endpoints;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationExistCert;
 import io.choerodon.devops.api.vo.kubernetes.certification.CertificationSpec;
@@ -12,13 +20,6 @@ import io.choerodon.devops.infra.enums.*;
 import io.choerodon.devops.infra.exception.GitOpsExplainException;
 import io.choerodon.devops.infra.util.GitUtil;
 import io.choerodon.devops.infra.util.TypeUtil;
-import io.kubernetes.client.openapi.models.V1Endpoints;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -217,7 +218,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private void checkApiVersionByCertManagerVersion(List<C7nCertification> toUpdate, List<C7nCertification> toAdd, String certManagerVersion, Map<String, String> objectPath) {
         String validApiVersion;
         String errorMessage;
-        if (CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+        if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
             validApiVersion = C7nCertification.API_VERSION_V1ALPHA1;
             errorMessage = GitOpsObjectError.CERT_API_VERSION_NOT_FOUND.getError();
         } else {

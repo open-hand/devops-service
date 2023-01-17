@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -117,7 +119,7 @@ public class CertificationServiceImpl implements CertificationService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+        String certManagerVersion = Optional.ofNullable(devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId())).orElse(NEW_V1_CERT_MANAGER_CHART_VERSION);
         // 校验CertManager已经安装
         // TODO 也许有必要进一步校验 CertManager 的状态是否为可用的
         CommonExAssertUtil.assertNotNull(certManagerVersion, DEVOPS_CERT_MANAGER_NOT_INSTALLED);
@@ -189,7 +191,7 @@ public class CertificationServiceImpl implements CertificationService {
             certContent = certificationFileDTO.getCertFile();
         }
 
-        String apiVersion = CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion) ? C7nCertification.API_VERSION_V1ALPHA1 : C7nCertification.API_VERSION_V1;
+        String apiVersion = CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion) ? C7nCertification.API_VERSION_V1ALPHA1 : C7nCertification.API_VERSION_V1;
         newCertificationDTO.setApiVersion(apiVersion);
 
         // 存入数据库
@@ -200,7 +202,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        if (CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+        if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
             handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
         } else {
             handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
