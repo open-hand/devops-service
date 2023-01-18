@@ -86,7 +86,7 @@ public class DevopsHostAppController {
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
-            @Encrypt @RequestParam(value = "host_id") Long hostId,
+            @Encrypt @RequestParam(value = "host_id", required = false) Long hostId,
             @ApiParam(value = "应用id，更新应用时才需要传", required = true)
             @Encrypt @RequestParam(value = "app_id", required = false) Long appId) {
         return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, hostId, appId, name));

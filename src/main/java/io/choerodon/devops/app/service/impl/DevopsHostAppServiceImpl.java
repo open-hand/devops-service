@@ -418,7 +418,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
     @Override
     public Boolean checkNameUnique(Long projectId, Long hostId, Long appId, String name) {
-        return devopsHostAppMapper.checkNameUnique(projectId, hostId, appId, name);
+//        return devopsHostAppMapper.checkNameUnique(projectId, hostId, appId, name);
+        return true;
     }
 
     @Override
