@@ -330,7 +330,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 devopsHostAppDTO.getId(),
                 new DeploySourceVO(AppSourceType.DOCKER_COMPOSE, projectDTO.getName()));
 
-        runCommand = appendCmd(appId, runCommand);
+        runCommand = appendCmd(appId, devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion(), runCommand);
 
         // 发送部署指令给aegent
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
@@ -346,8 +346,8 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         return devopsHostCommandDTO;
     }
 
-    private String appendCmd(Long appId, String runCommand) {
-        String workingDir = HostDeployUtil.getWorkingDir(appId);
+    private String appendCmd(Long appId, String appCode, String version, String runCommand) {
+        String workingDir = HostDeployUtil.getWorkingDir(appId, appCode, version);
         String intoWorkdir = "cd " + workingDir;
         return intoWorkdir + "\n" + runCommand;
     }

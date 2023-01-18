@@ -664,7 +664,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
@@ -691,7 +691,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getPostCommand()),
                 ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getKillCommand()),
                 ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getHealthProb()),
-                customDeployVO.getOperation());
+                customDeployVO.getOperation(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -851,7 +853,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
         params.put("{{ WORK_DIR }}", workDir);
         String downloadCommand;
         String appFile;
@@ -892,7 +894,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getPostCommand()),
                 ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getKillCommand()),
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getHealthProb()),
-                jarDeployVO.getOperation());
+                jarDeployVO.getOperation(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());

@@ -42,6 +42,17 @@ public class DockerComposeDeployVO {
     @ApiModelProperty(value = "部署配置信息，正常部署时需要")
     private DockerComposeValueDTO dockerComposeValueDTO;
 
+    @ApiModelProperty("应用版本")
+    private String version;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
     public Long getValueId() {
         return valueId;
     }
