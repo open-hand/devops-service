@@ -629,7 +629,7 @@ public class DevopsEnvironmentController {
 
     @ApiOperation("开启确认values生效策略")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/enable_check_values_policy")
+    @PostMapping("/{env_id}/enable_check_values_policy")
     public ResponseEntity<Void> enableCheckValuesPolicy(@ApiParam("项目id")
                                                         @PathVariable("project_id") Long projectId,
                                                         @ApiParam("环境id")
@@ -641,7 +641,7 @@ public class DevopsEnvironmentController {
 
     @ApiOperation("关闭确认values生效策略")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @PostMapping("/disable_check_values_policy")
+    @PostMapping("/{env_id}/disable_check_values_policy")
     public ResponseEntity<Void> disableCheckValuesPolicy(@ApiParam("项目id")
                                                          @PathVariable("project_id") Long projectId,
                                                          @ApiParam("环境id")
