@@ -29,6 +29,7 @@
         <result property="name" column="env_name"/>
         <result property="code" column="env_code"/>
         <result property="clusterId" column="cluster_id"/>
+        <result property="checkValuesPolicy" column="check_values_policy"/>
         <collection property="instances" ofType="io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO"
                     notNullColumn="ins_id">
             <id property="id" column="ins_id"/>
