@@ -3,25 +3,26 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.AppServiceInstanceMapper">
     <select id="queryInfoById" resultType="io.choerodon.devops.infra.dto.AppServiceInstanceInfoDTO">
-        SELECT ins.id,
-               ins.code,
-               ins.status,
-               ins.source,
-               ins.last_updated_by,
-               ddace.name               AS     name,
-               env.id                   AS     environmentId,
-               env.project_id,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id) pod_count,
-               (SELECT count(1)
-                FROM devops_env_pod dp
-                WHERE dp.instance_id = ins.id
-                  AND dp.`status` = 'Running'
-                  AND dp.is_ready = TRUE)      pod_running_count,
-               ins.app_service_id,
-               ins.app_service_version_id,
-               ins.effect_command_id,
+      SELECT ins.id,
+      ins.code,
+      ins.status,
+      ins.source,
+      ins.last_updated_by,
+      ddace.name AS name,
+      env.id AS environmentId,
+      env.project_id,
+      env.check_values_policy AS checkValuesPolicy,
+      (SELECT count(1)
+      FROM devops_env_pod dp
+      WHERE dp.instance_id = ins.id) pod_count,
+      (SELECT count(1)
+      FROM devops_env_pod dp
+      WHERE dp.instance_id = ins.id
+      AND dp.`status` = 'Running'
+      AND dp.is_ready = TRUE) pod_running_count,
+      ins.app_service_id,
+      ins.app_service_version_id,
+      ins.effect_command_id,
                effect.object_version_id AS     effect_command_version_id,
                effect.status            AS     effect_command_status,
                (
