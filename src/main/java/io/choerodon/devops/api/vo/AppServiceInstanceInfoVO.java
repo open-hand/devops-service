@@ -108,6 +108,17 @@ public class AppServiceInstanceInfoVO {
     @ApiModelProperty(name = "实例所属的应用信息")
     private DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO;
 
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
+    }
+
     public DevopsDeployAppCenterEnvDTO getDevopsDeployAppCenterEnvDTO() {
         return devopsDeployAppCenterEnvDTO;
     }
