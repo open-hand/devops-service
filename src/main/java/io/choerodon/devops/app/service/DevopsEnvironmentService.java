@@ -378,4 +378,6 @@ public interface DevopsEnvironmentService {
     Boolean hasEnvironmentPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, Long projectId);
 
     Boolean hasEnvironmentPermission(Long envId, Long projectId);
+
+    void updateCheckValuesPolicy(Long projectId, Long envId, boolean enableCheckValuesPolicy);
 }

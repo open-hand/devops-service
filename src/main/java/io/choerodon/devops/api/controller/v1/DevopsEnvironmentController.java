@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Optional;
 import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.*;
@@ -627,5 +625,29 @@ public class DevopsEnvironmentController {
     @GetMapping("/check_enable_create")
     public ResponseEntity<Boolean> checkEnableCreateEnv(@PathVariable(name = "project_id") Long projectId) {
         return ResponseEntity.ok(devopsEnvironmentService.checkEnableCreateEnv(projectId));
+    }
+
+    @ApiOperation("开启确认values生效策略")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/enable_check_values_policy")
+    public ResponseEntity<Void> enableCheckValuesPolicy(@ApiParam("项目id")
+                                                        @PathVariable("project_id") Long projectId,
+                                                        @ApiParam("环境id")
+                                                        @Encrypt
+                                                        @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateCheckValuesPolicy(projectId, envId, true);
+        return Results.success();
+    }
+
+    @ApiOperation("关闭确认values生效策略")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @PostMapping("/disable_check_values_policy")
+    public ResponseEntity<Void> disableCheckValuesPolicy(@ApiParam("项目id")
+                                                         @PathVariable("project_id") Long projectId,
+                                                         @ApiParam("环境id")
+                                                         @Encrypt
+                                                         @PathVariable("env_id") Long envId) {
+        devopsEnvironmentService.updateCheckValuesPolicy(projectId, envId, false);
+        return Results.success();
     }
 }
