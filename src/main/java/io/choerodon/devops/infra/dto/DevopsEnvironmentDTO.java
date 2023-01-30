@@ -75,6 +75,8 @@ public class DevopsEnvironmentDTO extends AuditDomain {
     private Boolean isSkipCheckPermission;
     @ApiModelProperty("是否开启流水线部署")
     private Boolean isAutoDeploy;
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
     @Transient
     @ApiModelProperty("环境是否连接")
     private Boolean connected;
@@ -300,6 +302,14 @@ public class DevopsEnvironmentDTO extends AuditDomain {
 
     public void setInstances(List<String> instances) {
         this.instances = instances;
+    }
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
     }
 
     @Override

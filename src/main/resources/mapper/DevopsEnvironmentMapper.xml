@@ -349,25 +349,26 @@
     </select>
 
     <select id="listAllResourceEnvTree" resultMap="resourceEnvTree">
-        SELECT any_value(env.id)         as env_id,
-               any_value(env.name)       as env_name,
-               any_value(env.code)       as env_code,
-               any_value(ins.id)         as ins_id,
-               any_value(ddace.id)       as app_id,
-               any_value(ins.status)     as ins_status,
-               any_value(ins.code)       as ins_code,
-               any_value(env.cluster_id) as cluster_id,
-               any_value(ddace.name)     as name,
-               SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-               SUM(CASE
-                       WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                            env.id = ins.env_id THEN 1
-                       ELSE 0 END)                                                              AS pod_running_count
-        FROM devops_env env
-                     LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
-                     LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
-                    LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
-        WHERE env.project_id = #{projectId}
+      SELECT any_value(env.id) as env_id,
+      any_value(env.name) as env_name,
+      any_value(env.code) as env_code,
+      any_value(ins.id) as ins_id,
+      any_value(ddace.id) as app_id,
+      any_value(ins.status) as ins_status,
+      any_value(ins.code) as ins_code,
+      any_value(env.cluster_id) as cluster_id,
+      any_value(ddace.name) as name,
+      any_value(env.check_values_policy) as check_values_policy,
+      SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+      SUM(CASE
+      WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
+      env.id = ins.env_id THEN 1
+      ELSE 0 END) AS pod_running_count
+      FROM devops_env env
+      LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
+      LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
+      LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
+      WHERE env.project_id = #{projectId}
           AND env.is_active = TRUE
           AND env.is_failed = FALSE
           AND env.is_synchro = TRUE
@@ -376,25 +377,26 @@
     </select>
 
     <select id="listMemberResourceEnvTree" resultMap="resourceEnvTree">
-        (SELECT any_value(env.id)                                                                as env_id,
-                any_value(env.name)                                                              as env_name,
-                any_value(env.code)                                                              as env_code,
-                any_value(ins.id)                                                                as ins_id,
-                any_value(ddace.id)                                                              as app_id,
-                any_value(ddace.name)                                                            as name,
-                any_value(ins.status)                                                            as ins_status,
-                any_value(ins.code)                                                              as ins_code,
-                any_value(env.cluster_id)                                                        as cluster_id,
-                SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-                SUM(CASE
-                        WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                             env.id = ins.env_id THEN 1
-                        ELSE 0 END)                                                              AS pod_running_count
-         FROM devops_env env
-                      LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
-                      LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
-                      LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
-         WHERE env.project_id = #{projectId}
+      (SELECT any_value(env.id) as env_id,
+      any_value(env.name) as env_name,
+      any_value(env.code) as env_code,
+      any_value(ins.id) as ins_id,
+      any_value(ddace.id) as app_id,
+      any_value(ddace.name) as name,
+      any_value(ins.status) as ins_status,
+      any_value(ins.code) as ins_code,
+      any_value(env.cluster_id) as cluster_id,
+      any_value(env.check_values_policy) as check_values_policy,
+      SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+      SUM(CASE
+      WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
+      env.id = ins.env_id THEN 1
+      ELSE 0 END) AS pod_running_count
+      FROM devops_env env
+      LEFT JOIN devops_app_service_instance ins ON env.id = ins.env_id AND ins.status != 'deleted'
+      LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
+      LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
+      WHERE env.project_id = #{projectId}
            AND env.is_skip_check_permission = TRUE
            AND env.is_active = TRUE
            AND env.is_synchro = TRUE
@@ -402,26 +404,27 @@
          GROUP BY env.name, ins.id
         )
         UNION ALL
-        (
-            SELECT any_value(env.id)                                                                as env_id,
-                   any_value(env.name)                                                              as env_name,
-                   any_value(env.code)                                                              as env_code,
-                   any_value(ins.id)                                                                as ins_id,
-                   any_value(ddace.id)                                                              as app_id,
-                   any_value(ddace.name)                                                            as name,
-                   any_value(ins.status)                                                            as ins_status,
-                   any_value(ins.code)                                                              as ins_code,
-                   any_value(env.cluster_id)                                                        as cluster_id,
-                   SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
-                   SUM(CASE
-                           WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
-                                env.id = ins.env_id THEN 1
-                           ELSE 0 END)                                                              AS pod_running_count
-            FROM devops_env env
-                     LEFT JOIN devops_app_service_instance ins
-                        ON env.id = ins.env_id AND ins.status != 'deleted'
-                             LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
-                             LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
+      (
+      SELECT any_value(env.id) as env_id,
+      any_value(env.name) as env_name,
+      any_value(env.code) as env_code,
+      any_value(ins.id) as ins_id,
+      any_value(ddace.id) as app_id,
+      any_value(ddace.name) as name,
+      any_value(ins.status) as ins_status,
+      any_value(ins.code) as ins_code,
+      any_value(env.cluster_id) as cluster_id,
+      any_value(env.check_values_policy) as check_values_policy,
+      SUM(CASE WHEN dp.namespace = env.code and env.id = ins.env_id THEN 1 ELSE 0 END) AS pod_count,
+      SUM(CASE
+      WHEN dp.`status` = 'Running' AND dp.is_ready = TRUE AND dp.namespace = env.code AND
+      env.id = ins.env_id THEN 1
+      ELSE 0 END) AS pod_running_count
+      FROM devops_env env
+      LEFT JOIN devops_app_service_instance ins
+      ON env.id = ins.env_id AND ins.status != 'deleted'
+      LEFT JOIN devops_env_user_permission deup ON env.id = deup.env_id
+      LEFT JOIN devops_env_pod dp ON dp.instance_id = ins.id
                              LEFT JOIN devops_deploy_app_center_env ddace ON (ddace.object_id = ins.id AND ddace.rdupm_type = 'chart')
                 WHERE env.project_id = #{projectId}
                   AND env.is_skip_check_permission = FALSE

@@ -48,6 +48,17 @@ public class DevopsResourceEnvOverviewVO {
     @ApiModelProperty("PVC基本信息")
     private List<DevopsResourceBasicInfoVO> pvcs;
 
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
+    }
+
     public List<DevopsResourceBasicInfoVO> getPvcs() {
         return pvcs;
     }

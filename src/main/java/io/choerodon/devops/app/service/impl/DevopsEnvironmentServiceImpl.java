@@ -854,6 +854,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public void updateCheckValuesPolicy(Long projectId, Long envId, boolean enableCheckValuesPolicy) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        devopsEnvironmentDTO.setCheckValuesPolicy(enableCheckValuesPolicy);
+        if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
+            throw new CommonException("devops.update.env");
+        }
+    }
+
+    @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!isCodePatternValid(code)) {
             throw new CommonException("devops.env.code.notMatch");
@@ -889,16 +898,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (appServiceId == null) {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
-                            .anyMatch(applicationInstanceDTO ->
-                                    applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
+                            appServiceInstanceService.baseListByEnvId(t.getId()).stream()
+                                    .anyMatch(applicationInstanceDTO ->
+                                            applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
                     .collect(Collectors.toList());
         } else {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
-                            .anyMatch(applicationInstanceDTO ->
-                                    applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
-                                            && applicationInstanceDTO.getAppServiceId().equals(appServiceId)))
+                            appServiceInstanceService.baseListByEnvId(t.getId()).stream()
+                                    .anyMatch(applicationInstanceDTO ->
+                                            applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
+                                                    && applicationInstanceDTO.getAppServiceId().equals(appServiceId)))
                     .collect(Collectors.toList());
         }
     }
