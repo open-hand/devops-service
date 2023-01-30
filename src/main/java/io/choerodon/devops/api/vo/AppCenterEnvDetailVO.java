@@ -113,6 +113,16 @@ public class AppCenterEnvDetailVO {
     @ApiModelProperty(name = "部署组容器配置")
     private List<DevopsDeployGroupContainerConfigVO> containerConfig;
 
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
+    }
 
     public Long getAppId() {
         return appId;
