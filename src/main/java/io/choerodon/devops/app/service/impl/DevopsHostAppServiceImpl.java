@@ -172,6 +172,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    instanceDeployOptions.setVersion(devopsHostAppInstanceDTO.getVersion());
+                    instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
                     HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
                     hostAgentMsgVO.setHostId(String.valueOf(hostId));
                     hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
@@ -462,6 +464,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(appId));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+            instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
             LOGGER.info("Delete docker-compose app msg is {}", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
@@ -482,7 +486,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostCommandDTO.setInstanceId(dockerInstanceDTO.getId());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-            sendHostDockerAgentMsg(hostId, dockerInstanceDTO, devopsHostCommandDTO);
+            sendHostDockerAgentMsg(hostId, devopsHostAppDTO, dockerInstanceDTO, devopsHostCommandDTO);
         } else {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
@@ -509,18 +513,22 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
             instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+            instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
     }
 
-    private void sendHostDockerAgentMsg(Long hostId, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
+    private void sendHostDockerAgentMsg(Long hostId, DevopsHostAppDTO devopsHostAppDTO, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
         HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setContainerId(dockerInstanceDTO.getContainerId());
         dockerProcessInfoVO.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
         instanceDeployOptions.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
@@ -581,6 +589,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+                    instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
                     HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
                     hostAgentMsgVO.setHostId(String.valueOf(hostId));
                     hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());

@@ -436,8 +436,11 @@ public class DevopsHostServiceImpl implements DevopsHostService {
             devopsDockerInstanceMapper.deleteByPrimaryKey(instanceId);
             return;
         }
-        //删除hostapp
-        devopsHostMapper.deleteByPrimaryKey(dockerInstanceDTO.getAppId());
+        //删除host app
+
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(dockerInstanceDTO.getAppId());
+
+        devopsHostAppMapper.deleteByPrimaryKey(dockerInstanceDTO.getAppId());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.REMOVE_DOCKER.value());
@@ -457,6 +460,8 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         dockerProcessInfoVO.setContainerId(dockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -485,10 +490,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(devopsDockerInstanceDTO.getAppId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
@@ -517,10 +525,13 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(devopsDockerInstanceDTO.getAppId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
 
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
@@ -550,10 +561,14 @@ public class DevopsHostServiceImpl implements DevopsHostService {
         hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = devopsDockerInstanceMapper.selectByPrimaryKey(instanceId);
+        DevopsHostAppDTO devopsHostAppDTO = devopsHostAppMapper.selectByPrimaryKey(devopsDockerInstanceDTO.getAppId());
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setInstanceId(String.valueOf(instanceId));
         dockerProcessInfoVO.setContainerId(devopsDockerInstanceDTO.getContainerId());
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
+
         hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(dockerProcessInfoVO));
 
         webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
