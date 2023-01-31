@@ -55,7 +55,7 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String version;
 
     public DevopsHostAppDTO() {
-        this.version = "2";
+
     }
 
     public String getVersion() {
@@ -69,7 +69,6 @@ public class DevopsHostAppDTO extends AuditDomain {
     public DevopsHostAppDTO(Long hostId, String code) {
         this.hostId = hostId;
         this.code = code;
-        this.version = "2";
     }
 
     public DevopsHostAppDTO(Long projectId, Long hostId, String name, String code, String rdupmType, String operationType) {
@@ -79,7 +78,6 @@ public class DevopsHostAppDTO extends AuditDomain {
         this.code = code;
         this.rdupmType = rdupmType;
         this.operationType = operationType;
-        this.version = "2";
     }
 
 
