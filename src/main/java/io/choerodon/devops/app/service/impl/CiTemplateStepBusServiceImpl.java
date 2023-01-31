@@ -288,6 +288,11 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
     public void deleteTemplateStepByIds(Long projectId, Set<Long> ciStepTemplateIds) {
         if (!CollectionUtils.isEmpty(ciStepTemplateIds)) {
             ciStepTemplateIds.forEach(ciStepTemplateId -> {
+                //可见的模板不删除
+                CiTemplateStepDTO ciTemplateStepDTO = ciTemplateStepBusMapper.selectByPrimaryKey(ciStepTemplateId);
+                if (ciTemplateStepDTO != null && ciTemplateStepDTO.getVisibility()) {
+                    return;
+                }
                 deleteTemplateStep(projectId, ResourceLevel.PROJECT.value(), ciStepTemplateId);
             });
         }

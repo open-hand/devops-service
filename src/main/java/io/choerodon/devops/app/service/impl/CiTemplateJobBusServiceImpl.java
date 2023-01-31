@@ -297,7 +297,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             return;
         }
         ciTemplateJobDTOS.forEach(ciTemplateJobDTO -> {
-            if (ciTemplateJobDTO.getBuiltIn()) {
+            if (ciTemplateJobDTO.getBuiltIn() || ciTemplateJobDTO.getVisibility()) {
                 return;
             } else {
                 deleteTemplateJobConfig(ciTemplateJobDTO);
