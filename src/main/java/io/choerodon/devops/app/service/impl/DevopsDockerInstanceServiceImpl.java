@@ -119,6 +119,8 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
         //获取部署对象
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
+        dockerDeployDTO.setVersion(devopsHostAppDTO.getVersion());
+        dockerDeployDTO.setAppCode(devopsHostAppDTO.getCode());
 
         // 保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
