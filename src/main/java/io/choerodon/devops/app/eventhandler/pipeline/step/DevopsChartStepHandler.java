@@ -16,7 +16,6 @@ import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.CiTplChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
-import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
  * 〈功能简述〉
@@ -29,6 +28,8 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String CHART_BUILD_CMD = "chart_build %s";
+
+    private static final String CHART_BUILD_CMD_DEFAULT = "chart_build";
 
     @Autowired
     private CiChartPublishConfigService ciChartPublishConfigService;
@@ -81,7 +82,7 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
         CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepDTO.getId());
         if (ciChartPublishConfigDTO == null || ciChartPublishConfigDTO.getUseDefaultRepo()) {
-            cmds.add(String.format(CHART_BUILD_CMD, ""));
+            cmds.add(CHART_BUILD_CMD_DEFAULT);
         } else {
             cmds.add(String.format(CHART_BUILD_CMD, ciChartPublishConfigDTO.getRepoId()));
         }
