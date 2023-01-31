@@ -163,13 +163,13 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         }
         // 删除与steps的关系
         ciTemplateJobStepRelBusMapper.deleteByJobId(jobId);
-        // 删除job
-        ciTemplateJobBusMapper.deleteByPrimaryKey(jobId);
         String type = TemplateJobTypeUtils.stringStringMap.get(templateJobDTO.getType());
         if (!StringUtils.isEmpty(type)) {
             TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
             templateJobConfigService.baseDelete(ConvertUtils.convertObject(templateJobDTO, CiTemplateJobVO.class));
         }
+        // 删除job
+        ciTemplateJobBusMapper.deleteByPrimaryKey(jobId);
     }
 
     @Override
