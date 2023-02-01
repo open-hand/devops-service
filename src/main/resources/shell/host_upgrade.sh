@@ -3,6 +3,7 @@ set -e
 
 VAR=/var
 WORK_DIR=${VAR}/choerodon
+LOG_DIR=${WORK_DIR}/log
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
 HOST_ID={{ HOST_ID }}
@@ -10,6 +11,16 @@ VERSION={{ VERSION }}
 AGENT_NAME=c7n-agent
 AGENT=${WORK_DIR}/${AGENT_NAME}
 TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
+
+
+# 2. 校验日志目录是否存在
+if [ ! -d "${LOG_DIR}" ]; then
+  echo "Creating ${LOG_DIR} directory"
+  sudo mkdir ${LOG_DIR}
+  sudo chmod 0777 ${LOG_DIR}
+  sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${LOG_DIR}
+  echo "Working directory ${LOG_DIR} created successfully"
+fi
 
 # 3. 保存环境变量
 cat <<EOF | tee ${WORK_DIR}/c7n-agent.env
