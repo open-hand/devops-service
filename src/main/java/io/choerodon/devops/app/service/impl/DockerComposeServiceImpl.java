@@ -114,7 +114,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppService.baseUpdate(devopsHostAppDTO1);
 
         // 保存操作记录
-        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, null, null, devopsHostDTO, devopsHostAppDTO, null);
+        return deployDockerComposeApp(projectId, appId, hostId, dockerComposeDeployVO.getAppCode(), dockerComposeDeployVO.getVersion(), runCommand, value, null, null, devopsHostDTO, devopsHostAppDTO, null);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         devopsHostAppDTO.setName(appName);
         devopsHostAppService.baseUpdate(devopsHostAppDTO);
 
-        return deployDockerComposeApp(projectId, appId, hostId, runCommand, value, cdJobRecordId, pipelineRecordId, devopsHostDTO, devopsHostAppDTO, downFlag);
+        return deployDockerComposeApp(projectId, appId, hostId, devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion(), runCommand, value, cdJobRecordId, pipelineRecordId, devopsHostDTO, devopsHostAppDTO, downFlag);
 
     }
 
@@ -300,7 +300,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
                 JsonHelper.marshalByJackson(hostAgentMsgVO));
     }
 
-    private DevopsHostCommandDTO deployDockerComposeApp(Long projectId, Long appId, Long hostId, String runCommand, String value, @Nullable Long cdJobRecordId, @Nullable Long pipelineRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO, Boolean downFlag) {
+    private DevopsHostCommandDTO deployDockerComposeApp(Long projectId, Long appId, Long hostId, String appCode, String appVersion, String runCommand, String value, @Nullable Long cdJobRecordId, @Nullable Long pipelineRecordId, DevopsHostDTO devopsHostDTO, DevopsHostAppDTO devopsHostAppDTO, Boolean downFlag) {
         // 保存操作记录
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO(hostId,
                 HostResourceType.DOCKER_COMPOSE.value(),
@@ -336,7 +336,7 @@ public class DockerComposeServiceImpl implements DockerComposeService {
         HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO(String.valueOf(hostId),
                 HostCommandEnum.DEPLOY_DOCKER_COMPOSE.value(),
                 String.valueOf(devopsHostCommandDTO.getId()),
-                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), String.valueOf(appId), value, runCommand, downFlag)));
+                JsonHelper.marshalByJackson(new DockerComposeDeployDTO(String.valueOf(hostId), appCode, appVersion, String.valueOf(appId), value, runCommand, downFlag)));
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>> deploy docker instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
