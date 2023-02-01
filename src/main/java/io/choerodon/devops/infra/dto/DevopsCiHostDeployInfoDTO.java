@@ -55,6 +55,17 @@ public class DevopsCiHostDeployInfoDTO extends AuditDomain {
 
     private String imageJobName;
 
+    @ApiModelProperty("dockercompose执行命令")
+    private String dockerComposeRunCommand;
+
+    public String getDockerComposeRunCommand() {
+        return dockerComposeRunCommand;
+    }
+
+    public void setDockerComposeRunCommand(String dockerComposeRunCommand) {
+        this.dockerComposeRunCommand = dockerComposeRunCommand;
+    }
+
     public Long getCiPipelineId() {
         return ciPipelineId;
     }
