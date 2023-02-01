@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -56,6 +53,7 @@ public class DevopsCiHostDeployInfoDTO extends AuditDomain {
     private String imageJobName;
 
     @ApiModelProperty("dockercompose执行命令")
+    @Transient
     private String dockerComposeRunCommand;
 
     public String getDockerComposeRunCommand() {
