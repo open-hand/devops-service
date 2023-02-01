@@ -191,33 +191,34 @@ public class HostDeployJobHandlerImpl extends AbstractJobHandler {
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
         DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO = ConvertUtils.convertObject(devopsCiHostDeployInfoService.selectByPrimaryKey(devopsCiJobVO.getConfigId()), DevopsCiHostDeployInfoVO.class);
 
-        if (!ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getDeployJson())) {
-            if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                DevopsCiHostDeployInfoVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.JarDeploy.class);
-                devopsCiHostDeployInfoVO.setDeploySource(jarDeploy.getDeploySource());
-                devopsCiHostDeployInfoVO.setRepositoryId(jarDeploy.getRepositoryId());
-                devopsCiHostDeployInfoVO.setGroupId(jarDeploy.getGroupId());
-                devopsCiHostDeployInfoVO.setArtifactId(jarDeploy.getArtifactId());
-                devopsCiHostDeployInfoVO.setVersionRegular(jarDeploy.getVersionRegular());
-                devopsCiHostDeployInfoVO.setPipelineTask(jarDeploy.getPipelineTask());
-                devopsCiHostDeployInfoVO.setPreCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPreCommand()));
-                devopsCiHostDeployInfoVO.setRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
-                devopsCiHostDeployInfoVO.setPostCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPostCommand()));
-                devopsCiHostDeployInfoVO.setKillCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getKillCommand()));
-                devopsCiHostDeployInfoVO.setHealthProb(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getHealthProb()));
-            }
-            if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
-                DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
-                devopsCiHostDeployInfoVO.setContainerName(imageDeploy.getContainerName());
-                devopsCiHostDeployInfoVO.setPipelineTask(imageDeploy.getPipelineTask());
-                devopsCiHostDeployInfoVO.setDeploySource(imageDeploy.getDeploySource());
-
-                devopsCiHostDeployInfoVO.setDockerCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getDockerCommand()));
-
-            }
-        }
         if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER_COMPOSE.value())) {
             devopsCiHostDeployInfoVO.setDockerComposeRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
+        } else {
+            if (!ObjectUtils.isEmpty(devopsCiHostDeployInfoVO.getDeployJson())) {
+                if (!StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                    DevopsCiHostDeployInfoVO.JarDeploy jarDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.JarDeploy.class);
+                    devopsCiHostDeployInfoVO.setDeploySource(jarDeploy.getDeploySource());
+                    devopsCiHostDeployInfoVO.setRepositoryId(jarDeploy.getRepositoryId());
+                    devopsCiHostDeployInfoVO.setGroupId(jarDeploy.getGroupId());
+                    devopsCiHostDeployInfoVO.setArtifactId(jarDeploy.getArtifactId());
+                    devopsCiHostDeployInfoVO.setVersionRegular(jarDeploy.getVersionRegular());
+                    devopsCiHostDeployInfoVO.setPipelineTask(jarDeploy.getPipelineTask());
+                    devopsCiHostDeployInfoVO.setPreCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPreCommand()));
+                    devopsCiHostDeployInfoVO.setRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getRunCommand()));
+                    devopsCiHostDeployInfoVO.setPostCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getPostCommand()));
+                    devopsCiHostDeployInfoVO.setKillCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getKillCommand()));
+                    devopsCiHostDeployInfoVO.setHealthProb(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getHealthProb()));
+                }
+                if (StringUtils.equals(devopsCiHostDeployInfoVO.getHostDeployType(), RdupmTypeEnum.DOCKER.value())) {
+                    DevopsCiHostDeployInfoVO.ImageDeploy imageDeploy = JsonHelper.unmarshalByJackson(devopsCiHostDeployInfoVO.getDeployJson(), DevopsCiHostDeployInfoVO.ImageDeploy.class);
+                    devopsCiHostDeployInfoVO.setContainerName(imageDeploy.getContainerName());
+                    devopsCiHostDeployInfoVO.setPipelineTask(imageDeploy.getPipelineTask());
+                    devopsCiHostDeployInfoVO.setDeploySource(imageDeploy.getDeploySource());
+
+                    devopsCiHostDeployInfoVO.setDockerCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoVO.getDockerCommand()));
+
+                }
+            }
         }
         devopsCiJobVO.setDevopsCiHostDeployInfoVO(devopsCiHostDeployInfoVO);
     }
