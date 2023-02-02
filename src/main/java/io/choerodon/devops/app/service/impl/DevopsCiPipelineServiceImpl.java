@@ -1713,12 +1713,12 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         List<DevopsCiStageDTO> devopsCiStageDTOS = devopsCiStageService.listByPipelineId(ciCdPipelineDTO.getId());
         Set<Long> oldStageIds = devopsCiStageDTOS.stream().map(DevopsCiStageDTO::getId).collect(Collectors.toSet());
 
-        Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
-                .map(DevopsCiStageVO::getId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+//        Set<Long> updateIds = ciCdPipelineVO.getDevopsCiStageVOS().stream()
+//                .map(DevopsCiStageVO::getId)
+//                .filter(Objects::nonNull)
+//                .collect(Collectors.toSet());
         // 去掉要更新的记录，剩下的为要删除的记录
-        oldStageIds.removeAll(updateIds);
+//        oldStageIds.removeAll(updateIds);
         oldStageIds.forEach(stageId -> {
             devopsCiStageService.deleteById(stageId);
             devopsCiJobService.deleteByStageIdCascade(stageId);
