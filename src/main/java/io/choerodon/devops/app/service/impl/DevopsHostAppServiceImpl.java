@@ -508,9 +508,10 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+            Map<String, String> params = getRuntimeParams(projectId, devopsHostAppDTO, devopsHostAppInstanceDTO);
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
+            instanceDeployOptions.setKillCommand(HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand())));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
             instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
             instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
@@ -870,7 +871,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName();
-            appFile = workDir + SLASH + appFileName + ".jar";
+            appFile = workDir + SLASH + appFileName;
+            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(null,
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
@@ -879,14 +881,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             String downloadUrl = jarDeployVO.getJarPullInfoDTO().getDownloadUrl();
 
             appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
-            appFile = workDir + SLASH + appFileName + ".jar";
+            appFile = workDir + SLASH + appFileName;
+            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(jarDeployVO.getJarPullInfoDTO().getPullUserId(),
                     jarDeployVO.getJarPullInfoDTO().getPullUserPassword(),
                     downloadUrl,
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
-            appFile = workDir + SLASH + appFileName + ".jar";
+            appFile = workDir + SLASH + appFileName;
+            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
@@ -943,8 +947,60 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
-                JsonHelper.marshalByJackson(hostAgentMsgVO));
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()), JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
+
+    private Map<String, String> getRuntimeParams(Long projectId, DevopsHostAppDTO devopsHostAppDTO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
+        Map<String, String> params = new HashMap<>();
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String appFileName;
+
+
+        if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceType())) {
+            appFileName = devopsHostAppInstanceDTO.getCode();
+        } else {
+            AppSourceType appSourceType = AppSourceType.valueOf(devopsHostAppInstanceDTO.getSourceType().toUpperCase());
+            switch (appSourceType) {
+                case CURRENT_PROJECT:
+                    JarDeployVO jarDeployVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarDeployVO.class);
+                    Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
+                    // 从制品库获取仓库信息
+                    // 获取并记录信息
+                    List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+                    String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
+                    String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
+                    String jarVersion = jarDeployVO.getProdJarInfoVO().getVersion();
+                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, jarVersion);
+                    if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                        appFileName = devopsHostAppInstanceDTO.getCode();
+                    } else {
+                        appFileName = nexusComponentDTOList.get(0).getName();
+                    }
+                    break;
+                case CUSTOM_JAR:
+                    JarPullInfoDTO jarPullInfoDTO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarPullInfoDTO.class);
+                    String downloadUrl = jarPullInfoDTO.getDownloadUrl();
+                    appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+                    break;
+                case UPLOAD:
+                    FileInfoVO fileInfoVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class);
+                    appFileName = fileInfoVO.getFileName();
+                    break;
+                default:
+                    appFileName = devopsHostAppInstanceDTO.getCode();
+            }
+        }
+        String appFile = workDir + SLASH + appFileName;
+
+        if (devopsHostAppDTO.getRdupmType().equals("jar")) {
+            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
+        }
+
+        params.put("{{ WORK_DIR }}", workDir);
+        params.put("{{ APP_FILE_NAME }}", appFileName);
+        params.put("{{ APP_FILE }}", appFile);
+
+        return params;
     }
 }
