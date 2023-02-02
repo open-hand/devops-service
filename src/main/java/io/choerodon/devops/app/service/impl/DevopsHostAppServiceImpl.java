@@ -871,8 +871,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName();
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
-            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(null,
                     null,
                     jarDeployVO.getFileInfoVO().getUploadUrl(),
@@ -881,16 +881,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             String downloadUrl = jarDeployVO.getJarPullInfoDTO().getDownloadUrl();
 
             appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
-            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(jarDeployVO.getJarPullInfoDTO().getPullUserId(),
                     jarDeployVO.getJarPullInfoDTO().getPullUserPassword(),
                     downloadUrl,
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
-            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
                     nexusComponentDTOList.get(0).getDownloadUrl(),
@@ -959,18 +959,18 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceType())) {
             appFileName = devopsHostAppInstanceDTO.getCode();
         } else {
-            AppSourceType appSourceType = AppSourceType.valueOf(devopsHostAppInstanceDTO.getSourceType().toUpperCase());
+            AppSourceType appSourceType = AppSourceType.find(devopsHostAppInstanceDTO.getSourceType());
             switch (appSourceType) {
                 case CURRENT_PROJECT:
-                    JarDeployVO jarDeployVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarDeployVO.class);
-                    Long nexusRepoId = jarDeployVO.getProdJarInfoVO().getRepositoryId();
+                    ProdJarInfoVO prodJarInfoVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), ProdJarInfoVO.class);
+                    Long nexusRepoId = prodJarInfoVO.getRepositoryId();
                     // 从制品库获取仓库信息
                     // 获取并记录信息
                     List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
                     ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
-                    String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
-                    String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
-                    String jarVersion = jarDeployVO.getProdJarInfoVO().getVersion();
+                    String groupId = prodJarInfoVO.getGroupId();
+                    String artifactId = prodJarInfoVO.getArtifactId();
+                    String jarVersion = prodJarInfoVO.getVersion();
                     nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, jarVersion);
                     if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                         appFileName = devopsHostAppInstanceDTO.getCode();
@@ -991,11 +991,12 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     appFileName = devopsHostAppInstanceDTO.getCode();
             }
         }
-        String appFile = workDir + SLASH + appFileName;
 
         if (devopsHostAppDTO.getRdupmType().equals("jar")) {
-            appFile = appFile.endsWith(".jar") ? appFile : appFile + ".jar";
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
         }
+
+        String appFile = workDir + SLASH + appFileName;
 
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", appFileName);

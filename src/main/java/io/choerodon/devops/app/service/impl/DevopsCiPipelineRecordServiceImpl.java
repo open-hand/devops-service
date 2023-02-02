@@ -1867,9 +1867,10 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
-        String appFile = workDir + SLASH + artifactId + ".jar";
+        String appFileName = artifactId.endsWith(".jar") ? artifactId : artifactId + ".jar";
+        String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", artifactId);
+        params.put("{{ APP_FILE_NAME }}", appFileName);
         params.put("{{ APP_FILE }}", appFile);
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
