@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.dto;
 
-import io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO;
-import io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO;
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.List;
+import io.choerodon.devops.api.vo.DevopsAppServiceInstanceViewVO;
+import io.choerodon.devops.api.vo.DevopsResourceBasicInfoVO;
 
 /**
  * 资源视图下环境目录信息
@@ -67,6 +68,17 @@ public class DevopsResourceEnvOverviewDTO {
      * PVC 基本信息
      */
     private List<DevopsResourceBasicInfoVO> pvcs;
+
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
+    }
 
     public List<DevopsResourceBasicInfoVO> getPvcs() {
         return pvcs;

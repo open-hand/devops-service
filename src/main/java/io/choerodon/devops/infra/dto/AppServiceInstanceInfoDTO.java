@@ -44,6 +44,17 @@ public class AppServiceInstanceInfoDTO {
     @ApiModelProperty("更新者")
     private Long lastUpdatedBy;
 
+    @ApiModelProperty("是否开启确认副本生效策略，默认为false")
+    private Boolean checkValuesPolicy;
+
+    public Boolean getCheckValuesPolicy() {
+        return checkValuesPolicy;
+    }
+
+    public void setCheckValuesPolicy(Boolean checkValuesPolicy) {
+        this.checkValuesPolicy = checkValuesPolicy;
+    }
+
     public Long getLastUpdatedBy() {
         return lastUpdatedBy;
     }

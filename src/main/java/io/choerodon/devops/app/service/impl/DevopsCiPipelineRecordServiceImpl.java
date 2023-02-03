@@ -1600,6 +1600,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         dockerDeployDTO.setContainerName(imageDeploy.getContainerName());
         dockerDeployDTO.setCmd(HostDeployUtil.getDockerRunCmd(dockerDeployDTO, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getDockerCommand())));
         dockerDeployDTO.setInstanceId(String.valueOf(devopsDockerInstanceDTO.getId()));
+        dockerDeployDTO.setAppCode(devopsHostAppDTO.getCode());
+        dockerDeployDTO.setVersion(devopsHostAppDTO.getVersion());
 
         // 3. 保存部署记录
         devopsDeployRecordService.saveRecord(
@@ -1687,6 +1689,8 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         dockerComposeDeployVO.setRunCommand(Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getRunCommand()));
         dockerComposeDeployVO.setDockerComposeValueDTO(dockerComposeValueDTO);
         dockerComposeDeployVO.setAppName(devopsHostAppDTO.getName());
+        dockerComposeDeployVO.setAppCode(devopsHostAppDTO.getCode());
+        dockerComposeDeployVO.setVersion(devopsHostAppDTO.getVersion());
 
         // 3. 更新docker-compose应用
         log.append("4. 开始部署...").append(System.lineSeparator());
@@ -1861,10 +1865,11 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
-        String appFile = workDir + SLASH + artifactId + ".jar";
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String appFileName = artifactId.endsWith(".jar") ? artifactId : artifactId + ".jar";
+        String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
-        params.put("{{ APP_FILE_NAME }}", artifactId);
+        params.put("{{ APP_FILE_NAME }}", appFileName);
         params.put("{{ APP_FILE }}", appFile);
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions(
@@ -1879,7 +1884,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
                 ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
-                jarDeployVO.getOperation());
+                jarDeployVO.getOperation(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
         devopsHostCommandDTO.setHostId(hostId);
@@ -1993,7 +2000,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", "");
         params.put("{{ APP_FILE }}", "");
@@ -2007,7 +2014,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                 ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getPostCommand())),
                 ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getKillCommand())),
                 ObjectUtils.isEmpty(devopsCiHostDeployInfoDTO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsCiHostDeployInfoDTO.getHealthProb())),
-                devopsCiHostDeployInfoDTO.getDeployType());
+                devopsCiHostDeployInfoDTO.getDeployType(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());

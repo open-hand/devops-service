@@ -43,6 +43,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_host_command.groovy') {
         }
     }
 
-
+    changeSet(author: 'lihao', id: '2023-02-03-change-column') {
+        modifyDataType(tableName: 'devops_host_command', columnName: 'error', newDataType: 'MEDIUMTEXT')
+    }
 
 }

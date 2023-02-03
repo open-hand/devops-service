@@ -21,6 +21,10 @@ public class DockerDeployDTO {
     private String containerId;
     @ApiModelProperty("镜像拉取账户信息")
     private DockerPullAccountDTO dockerPullAccountDTO;
+    @ApiModelProperty("应用code")
+    private String appCode;
+    @ApiModelProperty("应用版本")
+    private String version;
 
     private String repoName;
 
@@ -42,6 +46,14 @@ public class DockerDeployDTO {
 
     @ApiModelProperty("自定义仓库是否是私库")
     private Boolean privateRepository;
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getUserName() {
         return userName;
@@ -155,5 +167,13 @@ public class DockerDeployDTO {
 
     public void setDockerPullAccountDTO(DockerPullAccountDTO dockerPullAccountDTO) {
         this.dockerPullAccountDTO = dockerPullAccountDTO;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 }

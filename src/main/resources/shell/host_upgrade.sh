@@ -3,6 +3,7 @@ set -e
 
 VAR=/var
 WORK_DIR=${VAR}/choerodon
+LOG_DIR=${WORK_DIR}/log
 TOKEN={{ TOKEN }}
 CONNECT={{ CONNECT }}
 HOST_ID={{ HOST_ID }}
@@ -11,22 +12,18 @@ AGENT_NAME=c7n-agent
 AGENT=${WORK_DIR}/${AGENT_NAME}
 TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 
-# 1. 校验当前用户有var目录
-if [ -z "${VAR}" ]; then
-  sudo mkdir /var
-fi
 
-# 2. 创建choerodon目录
-if [ ! -d "${WORK_DIR}" ]; then
-  echo "Creating ${WORK_DIR} directory"
-  sudo mkdir $WORK_DIR
-  sudo chmod 0777 $WORK_DIR
-  sudo chown $USER:$USER $WORK_DIR
-  echo "Working directory ${WORK_DIR} created successfully"
+# 2. 校验日志目录是否存在
+if [ ! -d "${LOG_DIR}" ]; then
+  echo "Creating ${LOG_DIR} directory"
+  sudo mkdir ${LOG_DIR}
+  sudo chmod 0777 ${LOG_DIR}
+  sudo chown ${RUNTIME_USER}:${RUNTIME_USER} ${LOG_DIR}
+  echo "Working directory ${LOG_DIR} created successfully"
 fi
 
 # 3. 保存环境变量
-cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.env
+cat <<EOF | tee ${WORK_DIR}/c7n-agent.env
 VAR=/var
 WORK_DIR=${VAR}/choerodon
 TOKEN={{ TOKEN }}
@@ -38,14 +35,15 @@ AGENT=${WORK_DIR}/${AGENT_NAME}
 TAR_FILE=${WORK_DIR}/c7n-agent.tar.gz
 
 EOF
-sudo chmod 0777 ${WORK_DIR}/c7n-agent.env
 
-cat <<EOF | sudo tee ${WORK_DIR}/c7n-agent.sh
+chmod 0777 ${WORK_DIR}/c7n-agent.env
+
+cat <<EOF | tee ${WORK_DIR}/c7n-agent.sh
 #!/bin/sh
 operate=\$1
 case \$operate in
 start)
-    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}"
+    /var/choerodon/c7n-agent --connect="${CONNECT}" --token="${TOKEN}" --hostId="${HOST_ID}" --version="${VERSION}" > ${WORK_DIR}/log/agent-cmd.log 2>&1
     ;;
 stop)
     pidFile=/var/choerodon/c7n-agent.pid
@@ -59,7 +57,7 @@ esac
 
 EOF
 
-sudo chmod 0777 ${WORK_DIR}/c7n-agent.sh
+chmod 0777 ${WORK_DIR}/c7n-agent.sh
 
 cd "$WORK_DIR" || exit
 

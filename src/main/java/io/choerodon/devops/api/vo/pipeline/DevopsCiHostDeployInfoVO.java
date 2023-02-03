@@ -66,6 +66,17 @@ public class DevopsCiHostDeployInfoVO {
     @ApiModelProperty("版本正则")
     private String versionRegular;
 
+    @ApiModelProperty("dockercompose执行命令")
+    private String dockerComposeRunCommand;
+
+    public String getDockerComposeRunCommand() {
+        return dockerComposeRunCommand;
+    }
+
+    public void setDockerComposeRunCommand(String dockerComposeRunCommand) {
+        this.dockerComposeRunCommand = dockerComposeRunCommand;
+    }
+
     public String getServerName() {
         return serverName;
     }

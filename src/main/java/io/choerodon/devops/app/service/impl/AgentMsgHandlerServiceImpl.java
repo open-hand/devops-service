@@ -57,7 +57,7 @@ import io.choerodon.devops.infra.util.*;
 @Service
 public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
-    public static final String CHOERODON_IO_REPLICAS_STRATEGY="choerodon.io/replicas-strategy";
+    public static final String CHOERODON_IO_REPLICAS_STRATEGY = "choerodon.io/replicas-strategy";
     public static final String EVICTED = "Evicted";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT_NAME = "choerodon.io/parent-workload-name";
     private static final String CHOERODON_IO_PARENT_WORKLOAD_PARENT = "choerodon.io/parent-workload";
@@ -313,6 +313,9 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
      * @return true 当状态不等于Pending时，所有container都ready
      */
     private Boolean getReadyValue(String podStatus, V1Pod v1Pod) {
+        if (ObjectUtils.isEmpty(v1Pod.getStatus()) || ObjectUtils.isEmpty(v1Pod.getStatus().getContainerStatuses())) {
+            return false;
+        }
         return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::getReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
     }
 
@@ -1568,14 +1571,14 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private void instanceDeployFailed(Long instanceId, Long commandId) {
         DevopsDeployFailedVO devopsDeployFailedVO = new DevopsDeployFailedVO(instanceId, commandId);
         producer.applyAndReturn(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withRefId(instanceId.toString())
-                        .withRefType("instance")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_DEPLOY_FAILED),
-                builder -> builder
-                        .withPayloadAndSerialize(devopsDeployFailedVO))
+                        StartSagaBuilder
+                                .newBuilder()
+                                .withLevel(ResourceLevel.PROJECT)
+                                .withRefId(instanceId.toString())
+                                .withRefType("instance")
+                                .withSagaCode(SagaTopicCodeConstants.DEVOPS_DEPLOY_FAILED),
+                        builder -> builder
+                                .withPayloadAndSerialize(devopsDeployFailedVO))
                 .withRefId(instanceId.toString());
     }
 

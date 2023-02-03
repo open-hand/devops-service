@@ -87,7 +87,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
                     devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
-                    if ("root".equals(commitDTO.getAuthor().getName())) {
+                    if ("Administrator".equals(commitDTO.getAuthor().getName())
+                            || "root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(IamAdminIdHolder.getAdminId());
                     } else {
                         UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
