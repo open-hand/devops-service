@@ -469,7 +469,7 @@ public interface AppServiceInstanceService {
 
     InstanceValueVO queryValueForMarketInstance(Long projectId, Long instanceId, Long marketDeployObjectId);
 
-    PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId);
+    List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId);
 
     Boolean isInstanceDeploying(Long instanceId);
 }

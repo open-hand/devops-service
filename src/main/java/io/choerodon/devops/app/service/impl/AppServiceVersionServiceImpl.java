@@ -162,7 +162,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                        MultipartFile files,
                        String ref,
                        Long gitlabPipelineId,
-                       String jobName) {
+                       String jobName,
+                       Long helmRepoId) {
         try {
 
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
@@ -189,7 +190,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             // 查询helm仓库配置id
-            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            DevopsHelmConfigDTO devopsHelmConfigDTO;
+
+            if (helmRepoId == null) {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            } else {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmRepoId);
+            }
 
             String repository;
             if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {

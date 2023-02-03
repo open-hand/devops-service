@@ -134,4 +134,6 @@ public interface DevopsCiPipelineService {
      * @param cdStageDTOS
      */
     void migrationPipelineData(Long pipelineId, List<DevopsCdStageDTO> cdStageDTOS);
+
+    String queryGitlabCiYamlById(Long pipelineId);
 }

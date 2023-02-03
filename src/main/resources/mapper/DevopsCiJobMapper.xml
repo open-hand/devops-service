@@ -43,7 +43,10 @@
     </select>
     <select id="queryPipelineReferenceEnvApp"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
         from devops_ci_deploy_deploy_cfg dcddc
                  inner join devops_ci_job dcj on dcj.config_id = dcddc.id
                  inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
@@ -53,7 +56,10 @@
     </select>
     <select id="queryChartPipelineReference"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
         from devops_ci_chart_deploy_cfg dccdc
                  inner join devops_ci_job dcj on dcj.config_id = dccdc.id
                  inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
@@ -73,7 +79,10 @@
     </select>
     <select id="queryDeployValuePipelineReference"
             resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
-        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
         from devops_ci_chart_deploy_cfg dccdc
                  inner join devops_ci_job dcj on dcj.config_id = dccdc.id
                  inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id

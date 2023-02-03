@@ -66,6 +66,17 @@ public class DevopsHostVO {
     @ApiModelProperty("主机描述")
     private String description;
 
+    @ApiModelProperty("主机网卡信息")
+    private String network;
+
+    public String getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(String network) {
+        this.network = network;
+    }
+
     public Long getId() {
         return id;
     }

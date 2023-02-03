@@ -37,7 +37,11 @@ public enum HostMsgEventEnum {
     /**
      * 更新长时间状态未更新的记录状态
      */
-    SYNC_COMMAND_STATUS("sync_command_status");
+    SYNC_COMMAND_STATUS("sync_command_status"),
+    /**
+     * 初始化
+     */
+    INIT_AGENT("init_agent");
 
     private final String value;
 

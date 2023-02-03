@@ -13,7 +13,11 @@ public class CertManagerConstants {
     /**
      * 旧的CertManager的chart的版本, 不再安装这个版本
      */
-    public static final String V1_CERT_MANAGER_CHART_VERSION = "0.1.0";
+    public static final String OLD_V1_CERT_MANAGER_CHART_VERSION = "0.1.0";
+    /**
+     * 新的certManager的chart版本
+     */
+    public static final String NEW_V1_CERT_MANAGER_CHART_VERSION = "1.1.1";
     /**
      * 第一个版本的 cert-manager 的名称
      */

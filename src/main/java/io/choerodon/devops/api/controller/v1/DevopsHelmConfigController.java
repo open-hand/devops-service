@@ -40,7 +40,7 @@ public class DevopsHelmConfigController {
             @PathVariable("project_id") Long projectId,
             @ApiParam("项目id")
             @Encrypt
-            @RequestParam("app_service_id") Long appServiceId) {
+            @RequestParam(value = "app_service_id", required = false) Long appServiceId) {
         return Results.success(helmConfigService.listHelmConfigOnApp(projectId, appServiceId));
     }
 

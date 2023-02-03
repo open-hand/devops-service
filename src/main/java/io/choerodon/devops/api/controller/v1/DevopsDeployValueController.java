@@ -16,6 +16,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DevopsDeployValueUpdateVO;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.DevopsDeployValueService;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -161,17 +162,10 @@ public class DevopsDeployValueController {
         return ResponseEntity.ok(devopsDeployValueService.isNameUnique(projectId, name, envId));
     }
 
-    /**
-     * 检测能否删除
-     *
-     * @param projectId 项目id
-     * @param valueId   配置id
-     * @return true则可以删除
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检测能否删除")
     @GetMapping("/check_delete")
-    public ResponseEntity<Boolean> checkDelete(
+    public ResponseEntity<List<PipelineInstanceReferenceVO>> checkDelete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt

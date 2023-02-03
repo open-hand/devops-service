@@ -225,4 +225,6 @@ public interface DevopsGitService {
     Page<BranchVO> pageBranchBasicInfoByOptions(Long projectId, PageRequest pageable, Long appServiceId, String params);
 
     Integer syncBranch(Long projectId, Long appServiceId, Boolean sync);
+
+    Integer syncOpenMergeRequest(Long projectId, Long appServiceId, Boolean sync);
 }

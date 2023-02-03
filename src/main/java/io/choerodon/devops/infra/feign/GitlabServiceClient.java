@@ -1082,4 +1082,11 @@ public interface GitlabServiceClient {
             @RequestParam("userId") Integer userId,
             @PathVariable(value = "hook_id") Integer hookId,
             @RequestBody ProjectHookDTO projectHookDTO);
+
+    @GetMapping("/v1/projects/{projectId}/merge_requests")
+    List<MergeRequestDTO> listMergeRequest(
+            @ApiParam(value = "工程id", required = true)
+            @PathVariable Integer projectId,
+            @RequestParam("state") String state
+    );
 }

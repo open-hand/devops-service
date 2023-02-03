@@ -63,6 +63,11 @@ public class RdupmClientFallback implements RdupmClient {
     }
 
     @Override
+    public ResponseEntity<String> queryRepoWithDefaultUserInfo(Long projectId, Long repositoryId) {
+        throw new CommonException("devops.query.nexus.repo.");
+    }
+
+    @Override
     public ResponseEntity<HarborRepoDTO> queryHarborRepoConfigById(Long projectId, Long repoId, String repoType) {
         throw new CommonException("devops.query.config.by.configId");
     }
