@@ -913,7 +913,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
                 } else if (ResourceType.INGRESS.getType().equals(type)) {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
                     if (operateForOldTypeIngress) {
                         currentHandler = converters.get(ResourceType.V1BETA1_INGRESS.getType());
                     } else {
