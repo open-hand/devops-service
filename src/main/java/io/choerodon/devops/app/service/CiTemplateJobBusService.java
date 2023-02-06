@@ -12,7 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Created by wangxiang on 2021/12/16
  */
 public interface CiTemplateJobBusService {
-    List<CiTemplateJobVO> queryTemplateJobsByGroupId(Long sourceId, Long ciTemplateJobGroupId);
+    List<CiTemplateJobVO> queryTemplateJobsByGroupId(Long sourceId, String sourceType, Long ciTemplateJobGroupId);
 
     CiTemplateJobVO createTemplateJob(Long sourceId, String sourceType, CiTemplateJobVO ciTemplateJobVO);
 

@@ -27,6 +27,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.hzero.core.base.BaseConstants;
 import org.hzero.core.util.AssertUtils;
+import org.hzero.mybatis.domian.Condition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +81,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
 
 
     @Override
-    public List<CiTemplateJobVO> queryTemplateJobsByGroupId(Long sourceId, Long ciTemplateJobGroupId) {
-        List<CiTemplateJobVO> ciTemplateJobVOS = queryBaseTemplateJob(sourceId, ciTemplateJobGroupId);
+    public List<CiTemplateJobVO> queryTemplateJobsByGroupId(Long sourceId, String sourceType, Long ciTemplateJobGroupId) {
+        List<CiTemplateJobVO> ciTemplateJobVOS = queryBaseTemplateJob(sourceId, sourceType, ciTemplateJobGroupId);
         // 填充任务中的步骤信息
         if (CollectionUtils.isEmpty(ciTemplateJobVOS)) {
             return Collections.emptyList();
@@ -407,17 +408,11 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         }
     }
 
-    private List<CiTemplateJobVO> queryBaseTemplateJob(Long sourceId, Long ciTemplateJobGroupId) {
-        CiTemplateJobDTO record = new CiTemplateJobDTO();
-        record.setGroupId(ciTemplateJobGroupId);
-        //平台层的查不到组织层的job
-        if (sourceId == 0) {
-            record.setSourceId(sourceId);
-        }
-        record.setVisibility(true);
-        List<CiTemplateJobDTO> ciTemplateJobDTOS = ciTemplateJobBusMapper.select(record);
-        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOS, CiTemplateJobVO.class);
-        return ciTemplateJobVOS;
+    private List<CiTemplateJobVO> queryBaseTemplateJob(Long sourceId, String sourceType, Long ciTemplateJobGroupId) {
+        List<CiTemplateJobVO> templateJobVOS = ciTemplateJobBusMapper.pageUnderOrgLevel(sourceId, sourceType,
+                pipelineTemplateUtils.getOrganizationId(sourceId, sourceType),
+                null, null, ciTemplateJobGroupId, null, null);
+        return templateJobVOS;
     }
 
     private void insertBaseJobStepRel(CiTemplateJobVO ciTemplateJobVO, CiTemplateJobDTO ciTemplateJobDTO) {
