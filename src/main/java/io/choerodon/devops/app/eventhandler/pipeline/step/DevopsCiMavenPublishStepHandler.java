@@ -280,12 +280,12 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         List<String> shells = new ArrayList<>();
         // 声明变量
         if (MavenGavSourceTypeEnum.POM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
-            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
         } else if (MavenGavSourceTypeEnum.CUSTOM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
-            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
-            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
-            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_VERSION", ciConfigTemplateVO.getMavenSettings()));
-            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_VERSION", ciConfigTemplateVO.getMavenSettings()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
         }
 
         // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
