@@ -20,7 +20,6 @@ import io.choerodon.devops.infra.util.MapperUtil;
 @Service
 public class CiTplNpmPublishConfigServiceImpl implements CiTplNpmPublishConfigService {
 
-    @Autowired
     private static final String DEVOPS_SAVE_NPM_PUBLISH_CONFIG_FAILED = "devops.save.npm.publish.config.failed";
 
     @Autowired
