@@ -1,6 +1,20 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
@@ -16,22 +30,10 @@ import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.enums.pipline.MavenGavSourceTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.*;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
 public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "devops.maven.settings.insert";
+    private static final String EXPORT_VAR_TPL = "export %s=%s";
 
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
@@ -139,7 +142,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                 devopsCiStepDTO,
                 targetRepos);
         return buildMavenJarDeployScripts(projectId,
-                devopsCiJobId,
                 devopsCiMavenSettingsDTO,
                 devopsCiMavenPublishConfigVO,
                 devopsCiStepDTO,
@@ -264,7 +266,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
      * 生成jar包发布相关的脚本
      *
      * @param projectId                项目id
-     * @param jobId                    job id
      * @param devopsCiMavenSettingsDTO settings配置
      * @param ciConfigTemplateVO       maven发布软件包阶段的信息
      * @param devopsCiStepDTO
@@ -272,12 +273,21 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
      * @return 生成的shell脚本
      */
     private List<String> buildMavenJarDeployScripts(final Long projectId,
-                                                    final Long jobId,
                                                     final DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO,
                                                     DevopsCiMavenPublishConfigVO ciConfigTemplateVO,
                                                     DevopsCiStepDTO devopsCiStepDTO,
                                                     List<MavenRepoVO> targetMavenRepoVO) {
         List<String> shells = new ArrayList<>();
+        // 声明变量
+        if (MavenGavSourceTypeEnum.POM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
+            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
+        } else if (MavenGavSourceTypeEnum.CUSTOM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
+            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_VERSION", ciConfigTemplateVO.getMavenSettings()));
+            shells.add(String.format(EXPORT_VAR_TPL, "C7N_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
+        }
+
         // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
         // TODO 重构逻辑
         List<String> templateShells = GitlabCiUtil
