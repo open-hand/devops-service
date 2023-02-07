@@ -38,8 +38,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_maven_publish_config.groovy') 
             column(name: "gav_source_type", type: "VARCHAR(32)", remarks: '坐标来源类型：pom、custom', defaultValue: "pom", afterColumn: "nexus_repo_id")
             column(name: "pom_location", type: "VARCHAR(256)", remarks: 'pom文件路径', defaultValue: "pom.xml", afterColumn: "gav_source_type")
             column(name: "group_id", type: "VARCHAR(256)", remarks: 'groupId', afterColumn: "pom_location")
-            column(name: "artifact_id", type: "VARCHAR(256)", remarks: 'artifactId', afterColumn: "groupId")
-            column(name: "version", type: "VARCHAR(256)", remarks: 'version', afterColumn: "artifactId")
+            column(name: "artifact_id", type: "VARCHAR(256)", remarks: 'artifactId', afterColumn: "group_id")
+            column(name: "version", type: "VARCHAR(256)", remarks: 'version', afterColumn: "artifact_id")
             column(name: "packaging", type: "VARCHAR(256)", remarks: 'packaging', defaultValue: "jar", afterColumn: "version")
         }
     }
