@@ -44,7 +44,7 @@ public class CiSiteTemplateJobController extends BaseController {
     public ResponseEntity<List<CiTemplateJobVO>> queryTemplateJobsByGroupId(
             @PathVariable(value = "source_id") Long sourceId,
             @Encrypt @RequestParam(value = "ci_template_job_group_id") Long ciTemplateJobGroupId) {
-        return ResponseEntity.ok(ciTemplateJobBusService.queryTemplateJobsByGroupId(sourceId, ciTemplateJobGroupId));
+        return ResponseEntity.ok(ciTemplateJobBusService.queryTemplateJobsByGroupId(sourceId, ResourceLevel.SITE.value(), ciTemplateJobGroupId));
     }
 
     @ApiOperation(value = "平台层分页查询job列表")
