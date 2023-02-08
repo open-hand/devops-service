@@ -266,6 +266,10 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     private DevopsCiSonarQualityGateService devopsCiSonarQualityGateService;
 
+    @Autowired
+    @Lazy
+    private PipelineService pipelineService;
+
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
             CI_FILE_TEMPLATE = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
@@ -697,6 +701,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         appServiceMsgVO.setCheckCi(appServiceIsExistsCi(projectId, appServiceId));
 
+        appServiceMsgVO.setCheckCd(pipelineService.countAppServicePipelineReference(projectId, appServiceId) > 0);
         return appServiceMsgVO;
     }
 

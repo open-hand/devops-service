@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.dto.repo.C7nNexusServerDTO;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.feign.fallback.RdupmClientFallback;
+import io.choerodon.swagger.annotation.Permission;
 
 /**
  * User: Mr.Wang
@@ -127,6 +128,12 @@ public interface RdupmClient {
             @PathVariable(name = "projectId") Long projectId,
             @ApiParam(value = "仓库主键list", required = true)
             @RequestParam("repositoryIds") Set<Long> repositoryIds);
+
+    @ApiOperation(value = "查询npm仓库-包含默认账户信息")
+    @Permission(permissionWithin = true)
+    @GetMapping("/v1/nexus-repositorys/project/{projectId}/npm/repo/{repositoryId}/with_default_user")
+    ResponseEntity<String> queryRepoWithDefaultUserInfo(@PathVariable(name = "projectId") Long projectId,
+                                                        @PathVariable(name = "repositoryId") Long repositoryId);
 
 
     @ApiOperation(value = "查询项目下所有Harbor仓库")

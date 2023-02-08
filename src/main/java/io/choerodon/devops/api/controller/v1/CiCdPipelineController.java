@@ -95,6 +95,17 @@ public class CiCdPipelineController {
         return ResponseEntity.ok(devopsCiPipelineService.queryById(pipelineId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询流水线当前gitalb-ci.yaml文件内容")
+    @GetMapping("/{pipeline_id}/gitlab_ci_yaml")
+    public ResponseEntity<String> queryGitlabCiYamlById(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.queryGitlabCiYamlById(pipelineId));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询项目下流水线")

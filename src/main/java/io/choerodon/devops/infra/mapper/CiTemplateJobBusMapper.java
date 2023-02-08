@@ -37,5 +37,9 @@ public interface CiTemplateJobBusMapper extends BaseMapper<CiTemplateJobDTO> {
     void deleteNonVisibilityJobByIds(@Param("jobIds") Set<Long> jobIds);
 
     List<CiTemplateJobVO> listByIds(@Param("jobIds") Set<Long> jobIds);
+
+    Integer existRecord(@Param("sourceType") String sourceType, @Param("templateJobId") Long templateJobId);
+
+
 }
 

@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service;
 
-import org.apache.catalina.core.ApplicationContext;
-
 import java.util.List;
 
-import io.choerodon.asgard.common.ApplicationContextHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsIngressVO;
 import io.choerodon.devops.app.eventhandler.payload.IngressSagaPayload;
@@ -161,5 +158,7 @@ public interface DevopsIngressService {
 
     void updateStatus(Long envId, String name, String status);
 
-    boolean operateForOldTypeIngress(Long clusterId);
+    boolean operateForOldTypeIngressJudgeByClusterVersion(Long clusterId);
+
+    boolean operateForOldTypeIngressJudgeByIngressVersion(String version);
 }

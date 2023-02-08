@@ -37,6 +37,9 @@ public class DevopsHelmConfigVO {
     @ApiModelProperty("是否为默认仓库")
     private Boolean repoDefault;
 
+    @ApiModelProperty("是否为当前应用服务生效仓库")
+    private Boolean repoEffective;
+
     @ApiModelProperty("创建时间")
     private Date creationDate;
 
@@ -55,6 +58,14 @@ public class DevopsHelmConfigVO {
     @ApiModelProperty("创建者")
     @Encrypt
     private Long createdBy;
+
+    public Boolean getRepoEffective() {
+        return repoEffective;
+    }
+
+    public void setRepoEffective(Boolean repoEffective) {
+        this.repoEffective = repoEffective;
+    }
 
     public Long getId() {
         return id;

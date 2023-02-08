@@ -952,7 +952,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.getPath(),
                     devopsEnvironmentDTO.getEnvIdRsaPub(),
                     true,
-                    gitlabProjectPayload.getUserId());
+                    GitUserNameUtil.getAdminId());
         }
         ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
         projectHookDTO.setEnableSslVerification(true);
@@ -1651,7 +1651,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     devopsEnvironmentDTO.getCode(),
                     devopsEnvironmentDTO.getEnvIdRsaPub(),
                     true,
-                    gitlabUserId);
+                    GitUserNameUtil.getAdminId()
+            );
         }
 
         // 初始化web hook

@@ -10,38 +10,31 @@ public class ApprovalVO {
 
     @ApiModelProperty("项目名称")
     private String projectName;
-
     @ApiModelProperty("项目id")
     private Long projectId;
-
     @ApiModelProperty("用户头像")
     private String imageUrl;
-
     @ApiModelProperty("审批内容")
     private String content;
-
     @ApiModelProperty("审批消息类型")
     private String type;
-
     @ApiModelProperty("gitlab项目id")
     private Integer gitlabProjectId;
-
     @ApiModelProperty("合并请求gitlab项目地址")
     private String mergeRequestUrl;
-
     @ApiModelProperty("pipeline id")
     private Long pipelineId;
-
+    @ApiModelProperty("cd pipeline id")
+    private Long cdPipelineId;
     @ApiModelProperty("pipeline record id")
     private Long pipelineRecordId;
-
+    @ApiModelProperty("Cd pipeline record id")
+    private Long cdPipelineRecordId;
     @ApiModelProperty("ci 和 cd 关联关系id")
     private Long devopsPipelineRecordRelId;
-
     @Encrypt
     @ApiModelProperty("pipeline stage id")
     private Long stageRecordId;
-
     @Encrypt
     @ApiModelProperty("pipeline task id")
     private Long taskRecordId;
@@ -49,6 +42,22 @@ public class ApprovalVO {
     private String stageName;
 
     private String pipelineName;
+
+    public Long getCdPipelineId() {
+        return cdPipelineId;
+    }
+
+    public void setCdPipelineId(Long cdPipelineId) {
+        this.cdPipelineId = cdPipelineId;
+    }
+
+    public Long getCdPipelineRecordId() {
+        return cdPipelineRecordId;
+    }
+
+    public void setCdPipelineRecordId(Long cdPipelineRecordId) {
+        this.cdPipelineRecordId = cdPipelineRecordId;
+    }
 
     public String getStageName() {
         return stageName;

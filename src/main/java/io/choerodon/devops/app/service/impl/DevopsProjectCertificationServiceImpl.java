@@ -194,18 +194,20 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             FileUtil.saveDataToFile(path, certFileName, projectCertificationVO.getCertValue());
             FileUtil.saveDataToFile(path, keyFileName, projectCertificationVO.getKeyValue());
         }
-        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-        try {
-            SslUtil.validate(certPath, keyPath);
-        } catch (Exception e) {
-            FileUtil.deleteFile(certPath);
-            FileUtil.deleteFile(keyPath);
-            throw new CommonException(e.getMessage());
-        }
 
-        FileUtil.deleteFile(certPath);
-        FileUtil.deleteFile(keyPath);
+        // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
+//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+//        try {
+//        SslUtil.validate(certPath, keyPath);
+//        } catch (Exception e) {
+//            FileUtil.deleteFile(certPath);
+//            FileUtil.deleteFile(keyPath);
+//            throw new CommonException(e.getMessage());
+//        }
+//
+//        FileUtil.deleteFile(certPath);
+//        FileUtil.deleteFile(keyPath);
 
         if (projectCertificationVO.getType().equals(CREATE)) {
             CertificationDTO certificationDTO = new CertificationDTO();

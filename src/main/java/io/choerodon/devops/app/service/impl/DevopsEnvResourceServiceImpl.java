@@ -171,7 +171,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             case INGRESS:
                 if (devopsEnvResourceDTO.getInstanceId() != null) {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-                    if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+                    if (devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId())) {
                         V1beta1Ingress v1beta1Ingress = json.deserialize(
                                 devopsEnvResourceDetailDTO.getMessage(),
                                 V1beta1Ingress.class);

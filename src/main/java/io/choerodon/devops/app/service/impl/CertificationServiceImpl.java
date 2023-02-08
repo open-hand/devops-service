@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import static io.choerodon.devops.app.eventhandler.constants.CertManagerConstants.NEW_V1_CERT_MANAGER_CHART_VERSION;
+
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.C7nCertification;
@@ -118,7 +119,7 @@ public class CertificationServiceImpl implements CertificationService {
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        String certManagerVersion = devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId());
+        String certManagerVersion = Optional.ofNullable(devopsClusterResourceService.queryCertManagerVersion(devopsEnvironmentDTO.getClusterId())).orElse(NEW_V1_CERT_MANAGER_CHART_VERSION);
         // 校验CertManager已经安装
         // TODO 也许有必要进一步校验 CertManager 的状态是否为可用的
         CommonExAssertUtil.assertNotNull(certManagerVersion, DEVOPS_CERT_MANAGER_NOT_INSTALLED);
@@ -143,17 +144,19 @@ public class CertificationServiceImpl implements CertificationService {
                 FileUtil.saveDataToFile(path, certFileName, certificationDTO.getCertValue());
                 FileUtil.saveDataToFile(path, keyFileName, certificationDTO.getKeyValue());
             }
-            File certPath = new File(path + FILE_SEPARATOR + certFileName);
-            File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-            try {
-                SslUtil.validate(certPath, keyPath);
-            } catch (CommonException e) {
-                FileUtil.deleteFile(certPath);
-                FileUtil.deleteFile(keyPath);
-                throw e;
-            }
-            FileUtil.deleteFile(certPath);
-            FileUtil.deleteFile(keyPath);
+            // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
+//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+//        try {
+//            SslUtil.validate(certPath, keyPath);
+//        } catch (Exception e) {
+//            FileUtil.deleteFile(certPath);
+//            FileUtil.deleteFile(keyPath);
+//            throw new CommonException(e.getMessage());
+//        }
+//
+//        FileUtil.deleteFile(certPath);
+//        FileUtil.deleteFile(keyPath);
         }
 
         String certName = certificationDTO.getCertName();
@@ -188,7 +191,7 @@ public class CertificationServiceImpl implements CertificationService {
             certContent = certificationFileDTO.getCertFile();
         }
 
-        String apiVersion = CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion) ? C7nCertification.API_VERSION_V1ALPHA1 : C7nCertification.API_VERSION_V1;
+        String apiVersion = CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion) ? C7nCertification.API_VERSION_V1ALPHA1 : C7nCertification.API_VERSION_V1;
         newCertificationDTO.setApiVersion(apiVersion);
 
         // 存入数据库
@@ -199,7 +202,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     private void handleCertificationToGitlab(String certManagerVersion, String certName, String createType, List<String> domains, String keyContent, String certContent, DevopsEnvironmentDTO devopsEnvironmentDTO) {
-        if (CertManagerConstants.V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
+        if (CertManagerConstants.OLD_V1_CERT_MANAGER_CHART_VERSION.equals(certManagerVersion)) {
             handleAlpha1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
         } else {
             handleV1Certification(certName, createType, domains, keyContent, certContent, devopsEnvironmentDTO);
