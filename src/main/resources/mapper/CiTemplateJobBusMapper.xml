@@ -14,14 +14,7 @@
 
     <select id="pageUnderOrgLevel" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
         SELECT
-        dctj.id,
-        dctj.NAME,
-        dctj.created_by,
-        dctj.last_updated_by,
-        dctj.last_update_date,
-        dctj.source_type,
-        dctj.built_in,
-        dctj.creation_date,
+        dctj.*,
         dctjg.NAME AS group_name,
         (select
         count(dcts.id)
