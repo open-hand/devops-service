@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.common.KubernetesObject;
@@ -149,7 +151,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
         }
 
-        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
         // 初始化Ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
         KubernetesObject ingress = initIngressByK8sVersion(devopsIngressVO.getDomain(), devopsIngressVO.getName(), certName, devopsIngressVO.getAnnotations(), operateForOldIngress);
@@ -183,7 +185,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             }
         }
 
-        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
 
         // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
@@ -240,7 +242,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         clusterConnectionHandler.checkEnvConnection(devopsEnvironmentDTO.getClusterId());
 
-        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
 
         // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
@@ -311,7 +313,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(UPDATE);
 
-        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
 
         // 初始化ingress对象
         String certName = getCertName(devopsIngressVO.getCertId());
@@ -354,7 +356,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             return;
         }
 
-        boolean operateForOldIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
 
         // 初始化ingress对象
         String certName = devopsIngressVO.getCertName();
@@ -467,7 +469,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         // 校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
-        boolean operateForOldTypeIngress = operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+        boolean operateForOldTypeIngress = operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = initDevopsEnvCommandDTO(DELETE);
 
@@ -1120,7 +1122,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             LOGGER.error("save chart resource failed! env not found! envId: {}", appServiceInstanceDTO.getEnvId());
             return;
         }
-        if (operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+
+        String ingressVersion = "";
+        try {
+            JsonNode jsonNode = JsonHelper.OBJECT_MAPPER.readTree(detailsJson);
+            ingressVersion = jsonNode.get("version").asText();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (operateForOldTypeIngressJudgeByIngressVersion(ingressVersion)) {
             V1beta1Ingress v1beta1Ingress = k8sJson.deserialize(detailsJson, V1beta1Ingress.class);
             devopsIngressDTO = getDevopsIngressDTOOfV1Beta1Ingress(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
             ingressName = v1beta1Ingress.getMetadata().getName();
@@ -1199,7 +1210,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
     }
 
     @Override
-    public boolean operateForOldTypeIngress(Long clusterId) {
+    public boolean operateForOldTypeIngressJudgeByClusterVersion(Long clusterId) {
         ClusterSummaryInfoVO clusterSummaryInfoVO = JsonHelper.unmarshalByJackson(redisTemplate.opsForValue().get(DevopsClusterServiceImpl.renderClusterInfoRedisKey(clusterId)), ClusterSummaryInfoVO.class);
         String[] split = clusterSummaryInfoVO.getVersion().split("\\.");
         int minorVersion = Integer.parseInt(split[1]);
@@ -1209,6 +1220,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             return false;
         }
     }
+
+    @Override
+    public boolean operateForOldTypeIngressJudgeByIngressVersion(String version) {
+        if (!"networking.k8s.io/v1".equals(version)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
     private DevopsIngressDTO getDevopsIngressDTOOfV1Ingress(V1Ingress v1Ingress, Long envId) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();

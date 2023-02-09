@@ -61,6 +61,10 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
     private PipelineJobRecordService pipelineJobRecordService;
     @Autowired
     private CdJobOperator cdJobOperator;
+    @Autowired
+    private AppServiceService appServiceService;
+    @Autowired
+    private AppServiceVersionService appServiceVersionService;
 
     @Autowired
     private PipelineAuditRecordService pipelineAuditRecordService;
@@ -264,6 +268,18 @@ public class PipelineRecordServiceImpl implements PipelineRecordService {
         addAuditInfo(pipelineRecordVO);
 
         pipelineRecordVO.setStageRecordList(sortedPipelineStageRecordVOS);
+        if (pipelineRecordVO.getAppServiceId() != null) {
+            AppServiceDTO appServiceDTO = appServiceService.baseQuery(pipelineRecordVO.getAppServiceId());
+            if (appServiceDTO != null) {
+                pipelineRecordVO.setAppServiceName(appServiceDTO.getName());
+            }
+        }
+        if (pipelineRecordVO.getAppServiceVersionId() != null) {
+            AppServiceVersionDTO appServiceVersionDTO = appServiceVersionService.baseQuery(pipelineRecordVO.getAppServiceVersionId());
+            if (appServiceVersionDTO != null) {
+                pipelineRecordVO.setAppServiceVersion(appServiceVersionDTO.getVersion());
+            }
+        }
         return pipelineRecordVO;
     }
 

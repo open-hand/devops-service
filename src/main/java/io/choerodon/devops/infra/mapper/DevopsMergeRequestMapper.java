@@ -49,6 +49,15 @@ public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestD
                                                           @Param("ids") List<Long> mergeRequestIds);
 
     /**
+     * 根据合并请求id进行删除
+     *
+     * @param gitlabProjectId
+     * @param mergeRequestIds
+     */
+    void deleteByGitlabProjectIdAndMergeRequestId(@Param("gitlabProjectId") Integer gitlabProjectId,
+                                                  @Param("ids") Long mergeRequestIds);
+
+    /**
      * 查询指定分支中，已合并的分支数量
      *
      * @param branchNames 所有的分支名称

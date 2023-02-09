@@ -5,13 +5,13 @@ package io.choerodon.devops.infra.enums;
  */
 public enum ApprovalTypeEnum {
     /**
-     * ci_pipeline
+     * 应用流水线类型
      */
     CI_PIPELINE("ci_pipeline"),
     /**
-     * 流水线类型
+     * 持续部署流水线类型
      */
-    PIPELINE("pipeline"),
+    CD_PIPELINE("cd_pipeline"),
     /**
      * 分支合并类型
      */

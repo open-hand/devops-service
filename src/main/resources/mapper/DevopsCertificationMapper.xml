@@ -61,13 +61,13 @@
         SELECT
         *
         FROM
-          devops_certification dc
-				left join devops_env de on dc.env_id = de.id
+        devops_certification dc
+        left join devops_env de on dc.env_id = de.id
         WHERE
         `status` = 'active'
         AND de.project_id = #{projectId}
         AND de.cluster_id = #{clusterId}
-        AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+        AND domains LIKE CONCAT(CONCAT('%', #{domain, jdbcType=VARCHAR}),'%')
     </select>
 
     <update id="updateSkipCheckPro">

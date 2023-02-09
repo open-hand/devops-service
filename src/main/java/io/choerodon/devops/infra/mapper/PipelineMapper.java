@@ -36,5 +36,11 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
 
     List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(@Param("projectId") Long projectId,
                                                                         @Param("envId") Long envId);
+
+    int countAppServicePipelineReference(@Param("projectId") Long projectId,
+                                         @Param("appServiceId") Long appServiceId);
+
+    List<PipelineInstanceReferenceVO> listAppPipelineReference(@Param("projectId") Long projectId,
+                                                               @Param("appId") Long appId);
 }
 

@@ -45,8 +45,10 @@ public class PipelineRecordVO extends AuditDomain {
     private String triggerType;
     @ApiModelProperty(value = "触发应用服务id,devops_app_service.id", required = true)
     private Long appServiceId;
+    private String appServiceName;
     @ApiModelProperty(value = "触发应用服务版本id,devops_app_service_version.id", required = true)
     private Long appServiceVersionId;
+    private String appServiceVersion;
 
     private IamUserDTO trigger;
 
@@ -55,9 +57,27 @@ public class PipelineRecordVO extends AuditDomain {
     @ApiModelProperty("待审核状态时需要的一些数据")
     private List<DevopsPipelineAuditVO> pipelineAuditInfo;
 
+
+    public String getAppServiceName() {
+        return appServiceName;
+    }
+
+    public void setAppServiceName(String appServiceName) {
+        this.appServiceName = appServiceName;
+    }
+
+    public String getAppServiceVersion() {
+        return appServiceVersion;
+    }
+
+    public void setAppServiceVersion(String appServiceVersion) {
+        this.appServiceVersion = appServiceVersion;
+    }
+
     public List<DevopsPipelineAuditVO> getPipelineAuditInfo() {
         return pipelineAuditInfo;
     }
+
 
     public void setPipelineAuditInfo(List<DevopsPipelineAuditVO> pipelineAuditInfo) {
         this.pipelineAuditInfo = pipelineAuditInfo;
