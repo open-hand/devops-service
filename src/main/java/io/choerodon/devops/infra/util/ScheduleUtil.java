@@ -1,8 +1,11 @@
 package io.choerodon.devops.infra.util;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.apache.commons.lang3.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.CommonScheduleVO;
@@ -22,7 +25,7 @@ public class ScheduleUtil {
     private static final String DEVOPS_PERIOD_IS_NULL = "devops.period.is.null";
     private static final String DEVOPS_EXECUTE_TIME_IS_NULL = "devops.executeTime.is.null";
 
-    private static Map<String, String> quartzWeekNumberMap = new HashedMap();
+    public static Map<String, String> quartzWeekNumberMap = new HashedMap();
 
     static {
         quartzWeekNumberMap.put("1", "2");
@@ -91,7 +94,14 @@ public class ScheduleUtil {
     public static String calculateQuartzCron(CommonScheduleVO commonScheduleVO) {
         String cronTemplate = "0 %s %s ? * %s";
         // Quartz在设置周时星期一、星期二、星期三、星期四、星期五、星期六、星期日分别对应数字2、3、4、5、6、7、1或者对应英文的简写，而不是1、2、3、4、5、6、7
-        String weekNumber = quartzWeekNumberMap.get(commonScheduleVO.getWeekNumber());
+        String weekNumber;
+        if (StringUtils.isBlank(commonScheduleVO.getWeekNumber())) {
+            weekNumber = "*";
+        } else {
+            weekNumber = Arrays
+                    .stream(commonScheduleVO.getWeekNumber().split(","))
+                    .map(week -> quartzWeekNumberMap.get(week)).collect(Collectors.joining(","));
+        }
         return calculateCron(cronTemplate, commonScheduleVO, weekNumber);
     }
 }
