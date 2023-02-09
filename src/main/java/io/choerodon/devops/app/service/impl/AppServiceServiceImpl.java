@@ -3649,17 +3649,17 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     private void initApplicationParamsWithProxyUrl(ImmutableProjectInfoVO info, AppServiceDTO appService, String urlSlash) {
         if (appService.getGitlabProjectId() != null) {
-            String projectCode = info.getProjCode();
+            String devopsComponentCode = info.getDevopsComponentCode();
             String tenantCode = info.getTenantNum();
             if (appService.getExternalConfigId() == null) {
-                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, projectCode, appService.getCode()));
+                appService.setSshRepositoryUrl(GitUtil.getAppServiceSshUrl(gitlabSshUrl, tenantCode, devopsComponentCode, appService.getCode()));
                 if (org.apache.commons.lang3.StringUtils.isNoneBlank(gitlabProxyUrl)) {
                     appService.setRepoUrl(
-                            gitlabProxyUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                            gitlabProxyUrl + urlSlash + tenantCode + "-" + devopsComponentCode + "/"
                                     + appService.getCode() + ".git");
                 } else {
                     appService.setRepoUrl(
-                            gitlabUrl + urlSlash + tenantCode + "-" + projectCode + "/"
+                            gitlabUrl + urlSlash + tenantCode + "-" + devopsComponentCode + "/"
                                     + appService.getCode() + ".git");
                 }
 
