@@ -12,5 +12,7 @@ public interface DevopsCheckLogService {
 
     void migrationCdPipelineDate();
 
+    void fixPipeline(Long pipelineId);
+
     void fixCiTemplateStageJobRelSequence();
 }
