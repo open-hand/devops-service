@@ -15,10 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiAuditResultVO;
-import io.choerodon.devops.api.vo.CiPipelineImageVO;
-import io.choerodon.devops.api.vo.ImageRepoInfoVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
 import io.choerodon.devops.app.eventhandler.pipeline.exec.CommandOperator;
@@ -120,8 +117,19 @@ public class CiController {
             @RequestParam(value = "jobName", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
-            @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref, gitlabPipelineId, jobName);
+            @RequestParam String ref,
+            @RequestParam(value = "helm_repo_id", required = false) Long helmRepoId) {
+        appServiceVersionService.create(image,
+                harborConfigId,
+                repoType,
+                token,
+                version,
+                commit,
+                file,
+                ref,
+                gitlabPipelineId,
+                jobName,
+                helmRepoId);
         return ResponseEntity.ok().build();
     }
 
@@ -215,8 +223,27 @@ public class CiController {
             @ApiParam(value = "版本", required = true)
             @RequestParam String version,
             @ApiParam(value = "pom文件", required = true)
-            @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdateJarInfo(nexusRepoId, mvnSettingsId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
+            @RequestParam(required = false) MultipartFile file,
+            @RequestParam(value = "group_id", required = false) String groupId,
+            @RequestParam(value = "artifact_id", required = false) String artifactId,
+            @RequestParam(value = "jar_version", required = false) String jarVersion,
+            @RequestParam(value = "packaging", required = false) String packaging
+    ) {
+        ciPipelineMavenService.createOrUpdateJarInfo(nexusRepoId,
+                mvnSettingsId,
+                sequence,
+                gitlabPipelineId,
+                jobName,
+                token,
+                file,
+                mavenRepoUrl,
+                username,
+                password,
+                version,
+                groupId,
+                artifactId,
+                jarVersion,
+                packaging);
         return ResponseEntity.ok().build();
     }
 
@@ -407,5 +434,16 @@ public class CiController {
                                                  @RequestParam("success_rate") String successRate) {
         devopsCiJobRecordService.testResultNotify(token, gitlabJobId, successRate);
         return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息", hidden = true)
+    @GetMapping("/npm_repo_info")
+    public ResponseEntity<NpmRepoInfoVO> queryNpmRepoInfo(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "repo_id", required = true)
+            @RequestParam(value = "repo_id") Long repoId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryNpmRepoInfo(token, repoId));
     }
 }

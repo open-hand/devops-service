@@ -157,7 +157,7 @@ public interface DevopsDeployAppCenterService {
      */
     Page<DevopsDeployAppCenterVO> pageChart(Long projectId, Long envId, String name, String operationType, String params, PageRequest pageable);
 
-    PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId);
+    List<PipelineInstanceReferenceVO> queryPipelineReference(Long projectId, Long appId);
 
     void checkEnableDeleteAndThrowE(Long projectId, RdupmTypeEnum rdupmTypeEnum, Long instanceId);
 

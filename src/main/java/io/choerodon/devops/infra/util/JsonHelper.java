@@ -19,7 +19,7 @@ import io.choerodon.core.exception.CommonException;
  * @since 20-5-8
  */
 public final class JsonHelper {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private JsonHelper() {
     }
@@ -31,7 +31,7 @@ public final class JsonHelper {
         OBJECT_MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         OBJECT_MAPPER.setDateFormat(new SimpleDateFormat(BaseConstants.Pattern.DATETIME));
         // 不区分属性的大小写 比如Target 转换为target
-        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES,true);
+        OBJECT_MAPPER.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
     }
 
     /**

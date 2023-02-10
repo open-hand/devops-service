@@ -78,11 +78,13 @@ import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
+import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
+import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -198,15 +200,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     @Lazy
-    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-    @Autowired
-    @Lazy
-    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
-    @Autowired
-    @Lazy
-    private WorkFlowServiceOperator workFlowServiceOperator;
-    @Autowired
-    @Lazy
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Autowired
@@ -221,12 +214,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
-    @Autowired
-    @Lazy
-    private DevopsCiJobService devopsCiJobService;
-
-    @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -2753,10 +2740,10 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryInstancePipelineReference(Long projectId, Long instanceId) {
+    public List<PipelineInstanceReferenceVO> queryInstancePipelineReference(Long projectId, Long instanceId) {
         DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, instanceId);
 
-        return devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
+        return devopsDeployAppCenterService.queryPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId());
     }
 
     @Override

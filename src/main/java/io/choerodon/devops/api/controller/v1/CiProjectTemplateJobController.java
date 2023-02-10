@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.template.DeleteCheckResultVO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.util.Results;
@@ -121,10 +122,10 @@ public class CiProjectTemplateJobController {
     @ApiOperation(value = "校验任务是否可以删除（是否关联流水线）")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @GetMapping("/{template_job_id}/check/delete")
-    public ResponseEntity<Boolean> checkJobTemplateByJobId(
+    public ResponseEntity<DeleteCheckResultVO> checkJobTemplateByJobId(
             @PathVariable(value = "project_id") Long sourceId,
             @Encrypt @PathVariable(value = "template_job_id") Long templateJobId) {
-        return ResponseEntity.ok(ciTemplateJobBusService.checkJobTemplateByJobId(sourceId, templateJobId));
+        return ResponseEntity.ok(ciTemplateJobBusService.checkJobTemplateByJobId(sourceId, ResourceLevel.PROJECT.value(), templateJobId));
     }
 
     @ApiOperation(value = "项目层根据job分组id查询job列表")
