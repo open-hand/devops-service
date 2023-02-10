@@ -123,18 +123,18 @@ public class GitOpsConstants {
     /**
      * 默认的sonar scanner命令
      */
-    public static final String DEFAULT_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
+    public static final String DEFAULT_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=${SONAR_URL} -Dsonar.login=${SONAR_LOGIN} -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s";
 
     /**
      * 使用Token认证的sonar命令
      * SonarUrl
      * Token
      */
-    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dmaven.test.failure.ignore=true -DskipTests=%s";
+    public static final String SONAR_TOKEN_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dmaven.test.failure.ignore=true -DskipTests=%s";
     /**
      * 使用Token认证的sonar命令
      */
-    public static final String SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
+    public static final String SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
 
     /**
      * 使用用户名密码认证的sonar命令
@@ -142,14 +142,14 @@ public class GitOpsConstants {
      * SonarUsername sonar的用户名
      * SonarPassword
      */
-    public static final String SONAR_USER_PSW_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dmaven.test.failure.ignore=true -DskipTests=%s";
+    public static final String SONAR_USER_PSW_TEMPLATE = "mvn --batch-mode clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dmaven.test.failure.ignore=true -DskipTests=%s";
     /**
      * 使用用户名密码认证的sonar scanner命令
      * SonarUrl
      * SonarUsername sonar的用户名
      * SonarPassword
      */
-    public static final String SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.gitlab.project_id=$CI_PROJECT_PATH -Dsonar.gitlab.commit_sha=$CI_COMMIT_REF_NAME -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
+    public static final String SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE = "sonar-scanner -Dsonar.host.url=%s -Dsonar.login=%s -Dsonar.password=%s -Dsonar.analysis.serviceGroup=$GROUP_NAME -Dsonar.analysis.commitId=$CI_COMMIT_SHA -Dsonar.projectKey=${SONAR_GROUP_NAME}:${PROJECT_NAME} -Dsonar.sourceEncoding=UTF-8 -Dsonar.sources=%s -Dsonar.qualitygate.wait=%s";
 
     public static final String COMMA = ",";
 
