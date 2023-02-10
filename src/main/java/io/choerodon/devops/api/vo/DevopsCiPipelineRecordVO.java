@@ -31,6 +31,9 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
+
+    @ApiModelProperty("排队时长")
+    private Long queuedDuration;
     @ApiModelProperty("界面展示id")
     private String viewId;
 
@@ -61,6 +64,14 @@ public class DevopsCiPipelineRecordVO extends DevopsPipelineRecordVO {
     private List<DevopsCiPipelineAuditVO> pipelineAuditInfo;
 
     private IamUserDTO trigger;
+
+    public Long getQueuedDuration() {
+        return queuedDuration;
+    }
+
+    public void setQueuedDuration(Long queuedDuration) {
+        this.queuedDuration = queuedDuration;
+    }
 
     public IamUserDTO getTrigger() {
         return trigger;

@@ -18,17 +18,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_ci_pipeline_record")
 public class DevopsCiPipelineRecordDTO extends AuditDomain {
     public static final String FIELD_ID = "id";
-    public static final String FIELD_GITLAB_PIPELINE_ID = "gitlab_pipeline_id";
-    public static final String FIELD_CI_PIPELINE_ID = "ci_pipeline_id";
-    public static final String FIELD_GITLAB_PROJECT_ID = "gitlab_project_id";
-    public static final String FIELD_COMMIT_SHA = "commit_sha";
-    public static final String FIELD_GITLAB_TRIGGER_REF = "gitlab_trigger_ref";
-    public static final String FIELD_STATUS = "status";
-    public static final String FIELD_TRIGGER_USER_ID = "trigger_user_id";
-    public static final String FIELD_CREATED_DATE = "created_date";
-    public static final String FIELD_FINISHED_DATE = "finished_date";
-    public static final String FIELD_DURATION_SECONDS = "duration_seconds";
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -52,10 +41,20 @@ public class DevopsCiPipelineRecordDTO extends AuditDomain {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
+    @ApiModelProperty("排队时长")
+    private Long queuedDuration;
     @ApiModelProperty("gitlab source")
     private String source;
     @Transient
     private String pipelineName;
+
+    public Long getQueuedDuration() {
+        return queuedDuration;
+    }
+
+    public void setQueuedDuration(Long queuedDuration) {
+        this.queuedDuration = queuedDuration;
+    }
 
     public String getSource() {
         return source;

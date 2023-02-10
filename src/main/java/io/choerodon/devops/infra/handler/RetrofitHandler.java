@@ -13,9 +13,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import com.google.gson.Gson;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
 import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -23,13 +20,10 @@ import org.slf4j.LoggerFactory;
 import retrofit2.Converter;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.feign.NexusClient;
 import io.choerodon.devops.infra.feign.SonarClient;
-import io.choerodon.devops.infra.util.FileUtil;
 
 public class RetrofitHandler {
 
@@ -174,29 +168,6 @@ public class RetrofitHandler {
         configurationProperties.setInsecureSkipTlsVerify(true);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         return retrofit.create(SonarClient.class);
-    }
-
-    public static NexusClient getNexusClient(String nexusUrl, String userName, String password) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(FileUtil.ensureEndWithSlash(nexusUrl));
-        configurationProperties.setUsername(userName);
-        configurationProperties.setPassword(password);
-        configurationProperties.setType("nexus");
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        return retrofit.create(NexusClient.class);
-    }
-
-    /**
-     * 用于处理返回字符串的client
-     */
-    public static NexusClient getScalarNexusClient(String nexusUrl, String userName, String password) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setBaseUrl(FileUtil.ensureEndWithSlash(nexusUrl));
-        configurationProperties.setUsername(userName);
-        configurationProperties.setPassword(password);
-        configurationProperties.setType("nexus");
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties, ScalarsConverterFactory.create());
-        return retrofit.create(NexusClient.class);
     }
 
     public static class StringConverter extends Converter.Factory {

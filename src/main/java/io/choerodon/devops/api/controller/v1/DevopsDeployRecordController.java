@@ -4,10 +4,8 @@ import java.util.Date;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -15,8 +13,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.DeployRecordCountVO;
 import io.choerodon.devops.api.vo.DeployRecordVO;
-import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployRecordVO;
-import io.choerodon.devops.api.vo.deploy.hzero.HzeroDeployVO;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -73,33 +69,33 @@ public class DevopsDeployRecordController {
         return ResponseEntity.ok(devopsDeployRecordService.countByDate(projectId, startTime, endTime));
     }
 
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "停止hzero部署", hidden = true)
-    @PutMapping("/{record_id}/stop")
-    public ResponseEntity<Void> stop(
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @PathVariable(value = "record_id") Long recordId) {
-        devopsDeployRecordService.stop(projectId, recordId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "重试hzero部署", hidden = true)
-    @PostMapping("/{record_id}/retry")
-    public ResponseEntity<Void> retry(
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @PathVariable(value = "record_id") Long recordId,
-            @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
-        devopsDeployRecordService.retry(projectId, recordId, hzeroDeployVO);
-        return ResponseEntity.noContent().build();
-    }
-
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "查询部署记录", hidden = true)
-    @GetMapping("/{record_id}")
-    public ResponseEntity<HzeroDeployRecordVO> queryHzeroDetailsById(
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt @PathVariable(value = "record_id") Long recordId) {
-        return ResponseEntity.ok(devopsDeployRecordService.queryHzeroDetailsById(projectId, recordId));
-    }
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "停止hzero部署", hidden = true)
+//    @PutMapping("/{record_id}/stop")
+//    public ResponseEntity<Void> stop(
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt @PathVariable(value = "record_id") Long recordId) {
+//        devopsDeployRecordService.stop(projectId, recordId);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "重试hzero部署", hidden = true)
+//    @PostMapping("/{record_id}/retry")
+//    public ResponseEntity<Void> retry(
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt @PathVariable(value = "record_id") Long recordId,
+//            @RequestBody @Validated HzeroDeployVO hzeroDeployVO) {
+//        devopsDeployRecordService.retry(projectId, recordId, hzeroDeployVO);
+//        return ResponseEntity.noContent().build();
+//    }
+//
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "查询部署记录", hidden = true)
+//    @GetMapping("/{record_id}")
+//    public ResponseEntity<HzeroDeployRecordVO> queryHzeroDetailsById(
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt @PathVariable(value = "record_id") Long recordId) {
+//        return ResponseEntity.ok(devopsDeployRecordService.queryHzeroDetailsById(projectId, recordId));
+//    }
 }

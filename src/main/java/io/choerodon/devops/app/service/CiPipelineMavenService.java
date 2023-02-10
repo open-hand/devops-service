@@ -52,6 +52,10 @@ public interface CiPipelineMavenService {
      * @param username
      * @param password
      * @param version
+     * @param groupId
+     * @param artifactId
+     * @param jarVersion
+     * @param packaging
      */
     void createOrUpdateJarInfo(Long nexusRepoId,
                                Long mvnSettingsId,
@@ -63,7 +67,11 @@ public interface CiPipelineMavenService {
                                String mavenRepoUrl,
                                String username,
                                String password,
-                               String version);
+                               String version,
+                               String groupId,
+                               String artifactId,
+                               String jarVersion,
+                               String packaging);
 
     CiPipelineMavenDTO queryByGitlabPipelineId(Long appServiceId, Long gitlabPipelineId, String jobName);
 

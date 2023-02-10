@@ -96,7 +96,21 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createOrUpdateJarInfo(Long nexusRepoId, Long mvnSettingsId, Long sequence, Long gitlabPipelineId, String jobName, String token, MultipartFile file, String mavenRepoUrl, String username, String password, String version) {
+    public void createOrUpdateJarInfo(Long nexusRepoId,
+                                      Long mvnSettingsId,
+                                      Long sequence,
+                                      Long gitlabPipelineId,
+                                      String jobName,
+                                      String token,
+                                      MultipartFile file,
+                                      String mavenRepoUrl,
+                                      String username,
+                                      String password,
+                                      String version,
+                                      String groupId,
+                                      String artifactId,
+                                      String jarVersion,
+                                      String packaging) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
             if (appServiceDTO == null) {
@@ -104,11 +118,20 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
             }
             CiPipelineMavenDTO ciPipelineMavenDTO;
 
-            try {
-                ciPipelineMavenDTO = MavenSettingsUtil.parsePom(new String(file.getBytes(), StandardCharsets.UTF_8));
-            } catch (Exception e) {
-                throw new DevopsCiInvalidException(DEVOPS_FAILED_TO_READ_POM_FILE);
+            if (file != null) {
+                try {
+                    ciPipelineMavenDTO = MavenSettingsUtil.parsePom(new String(file.getBytes(), StandardCharsets.UTF_8));
+                } catch (Exception e) {
+                    throw new DevopsCiInvalidException(DEVOPS_FAILED_TO_READ_POM_FILE);
+                }
+            } else {
+                ciPipelineMavenDTO = new CiPipelineMavenDTO();
+                ciPipelineMavenDTO.setArtifactId(artifactId);
+                ciPipelineMavenDTO.setGroupId(groupId);
+                ciPipelineMavenDTO.setVersion(jarVersion);
+                ciPipelineMavenDTO.setArtifactType(packaging);
             }
+
             ciPipelineMavenDTO.setAppServiceId(Objects.requireNonNull(appServiceDTO.getId()));
             ciPipelineMavenDTO.setGitlabPipelineId(Objects.requireNonNull(gitlabPipelineId));
             ciPipelineMavenDTO.setNexusRepoId(nexusRepoId);

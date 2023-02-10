@@ -1,6 +1,20 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
@@ -16,22 +30,10 @@ import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.dto.maven.Proxy;
 import io.choerodon.devops.infra.dto.repo.NexusMavenRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.enums.pipline.MavenGavSourceTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.*;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -44,6 +46,7 @@ import java.util.stream.Collectors;
 public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler {
 
     private static final String ERROR_CI_MAVEN_SETTINGS_INSERT = "devops.maven.settings.insert";
+    private static final String EXPORT_VAR_TPL = "export %s=%s";
 
     @Autowired
     private DevopsCiMavenPublishConfigService devopsCiMavenPublishConfigService;
@@ -139,7 +142,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                 devopsCiStepDTO,
                 targetRepos);
         return buildMavenJarDeployScripts(projectId,
-                devopsCiJobId,
                 devopsCiMavenSettingsDTO,
                 devopsCiMavenPublishConfigVO,
                 devopsCiStepDTO,
@@ -264,7 +266,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
      * 生成jar包发布相关的脚本
      *
      * @param projectId                项目id
-     * @param jobId                    job id
      * @param devopsCiMavenSettingsDTO settings配置
      * @param ciConfigTemplateVO       maven发布软件包阶段的信息
      * @param devopsCiStepDTO
@@ -272,79 +273,112 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
      * @return 生成的shell脚本
      */
     private List<String> buildMavenJarDeployScripts(final Long projectId,
-                                                    final Long jobId,
                                                     final DevopsCiMavenSettingsDTO devopsCiMavenSettingsDTO,
                                                     DevopsCiMavenPublishConfigVO ciConfigTemplateVO,
                                                     DevopsCiStepDTO devopsCiStepDTO,
                                                     List<MavenRepoVO> targetMavenRepoVO) {
         List<String> shells = new ArrayList<>();
+        // 声明变量
+        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
+            shells.add(String.format(EXPORT_VAR_TPL, GitOpsConstants.CHOERODON_MAVEN_REPO_ID, targetMavenRepoVO.get(0).getName()));
+            shells.add(String.format(EXPORT_VAR_TPL, GitOpsConstants.CHOERODON_MAVEN_REPO_URL, targetMavenRepoVO.get(0).getUrl()));
+        }
+
+        if (MavenGavSourceTypeEnum.POM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_POM_LOCATION", ciConfigTemplateVO.getPomLocation()));
+        } else if (MavenGavSourceTypeEnum.CUSTOM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_GROUP_ID", ciConfigTemplateVO.getGroupId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_ARTIFACT_ID", ciConfigTemplateVO.getArtifactId()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_VERSION", ciConfigTemplateVO.getVersion()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
+        }
+
         // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
         // TODO 重构逻辑
-        List<String> templateShells = GitlabCiUtil
-                .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
-                        true,
-                        true);
+//        List<String> templateShells = GitlabCiUtil
+//                .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
+//                        true,
+//                        true);
         // 如果有settings配置, 填入获取settings的指令
         if (devopsCiMavenSettingsDTO != null) {
             shells.add(GitlabCiUtil.downloadMavenSettings(projectId, devopsCiMavenSettingsDTO.getId()));
         }
-        // 根据目标仓库信息, 渲染发布jar包的指令
-        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
-            // 插入shell指令将配置的settings文件下载到项目目录下
-
-            // 包含repoId锚点的字符串在templateShells中的索引号
-            int repoIdIndex = -1;
-            // 包含repoUrl锚点的字符串在templateShells中的索引号
-            int repoUrlIndex = -1;
-            // 寻找包含这两个锚点的字符串位置
-            for (int i = 0; i < templateShells.size(); i++) {
-                if (repoIdIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
-                    repoIdIndex = i;
-                }
-                if (repoUrlIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
-                    repoUrlIndex = i;
-                }
-                if (repoIdIndex != -1 && repoUrlIndex != -1) {
-                    // 没必要再找了
-                    break;
-                }
-            }
-
-            // 为每一个仓库都从模板的脚本中加一份生成的命令
-            for (MavenRepoVO repo : targetMavenRepoVO) {
-                // 将预定的变量(仓库名和地址)替换为settings.xml文件指定的
-                List<String> commands = new ArrayList<>(templateShells);
-                if (repoIdIndex != -1) {
-                    commands.set(repoIdIndex, commands.get(repoIdIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_ID, repo.getName()));
-                }
-                if (repoUrlIndex != -1) {
-                    commands.set(repoUrlIndex, commands.get(repoUrlIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_URL, repo.getUrl()));
-                }
-                shells.addAll(commands);
-            }
-
-            // 只生成一个jar包元数据上传指令用于CD阶段
-            //加上jobId  与sequence，用于查询jar包的时间戳
-            String cmd;
-            if (ciConfigTemplateVO.getNexusRepoId() != null) {
-
-                cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
-                        devopsCiMavenSettingsDTO.getId(),
-                        devopsCiStepDTO.getSequence());
-            } else {
-                MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
-                cmd = GitlabCiUtil.saveCustomJarMetadata(devopsCiMavenSettingsDTO.getId(),
-                        devopsCiStepDTO.getSequence(),
-                        targetRepo.getUrl(),
-                        targetRepo.getUsername(),
-                        targetRepo.getPassword());
-            }
-
-            shells.add(cmd);
+        shells.addAll(GitlabCiUtil
+                .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
+                        true,
+                        true));
+        // 保存jar包信息到猪齿鱼
+        String cmd;
+        if (ciConfigTemplateVO.getNexusRepoId() != null) {
+            cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
+                    devopsCiMavenSettingsDTO.getId(),
+                    devopsCiStepDTO.getSequence());
         } else {
-            // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
-            shells.addAll(templateShells);
+            MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
+            cmd = GitlabCiUtil.saveCustomJarMetadata(devopsCiMavenSettingsDTO.getId(),
+                    devopsCiStepDTO.getSequence(),
+                    targetRepo.getUrl(),
+                    targetRepo.getUsername(),
+                    targetRepo.getPassword());
         }
+        shells.add(cmd);
+//        // 根据目标仓库信息, 渲染发布jar包的指令
+//        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
+//            // 插入shell指令将配置的settings文件下载到项目目录下
+//
+//            // 包含repoId锚点的字符串在templateShells中的索引号
+//            int repoIdIndex = -1;
+//            // 包含repoUrl锚点的字符串在templateShells中的索引号
+//            int repoUrlIndex = -1;
+//            // 寻找包含这两个锚点的字符串位置
+//            for (int i = 0; i < templateShells.size(); i++) {
+//                if (repoIdIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_ID)) {
+//                    repoIdIndex = i;
+//                }
+//                if (repoUrlIndex == -1 && templateShells.get(i).contains(GitOpsConstants.CHOERODON_MAVEN_REPO_URL)) {
+//                    repoUrlIndex = i;
+//                }
+//                if (repoIdIndex != -1 && repoUrlIndex != -1) {
+//                    // 没必要再找了
+//                    break;
+//                }
+//            }
+//
+//            // 为每一个仓库都从模板的脚本中加一份生成的命令
+//            for (MavenRepoVO repo : targetMavenRepoVO) {
+//                // 将预定的变量(仓库名和地址)替换为settings.xml文件指定的
+//                List<String> commands = new ArrayList<>(templateShells);
+//                if (repoIdIndex != -1) {
+//                    commands.set(repoIdIndex, commands.get(repoIdIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_ID, repo.getName()));
+//                }
+//                if (repoUrlIndex != -1) {
+//                    commands.set(repoUrlIndex, commands.get(repoUrlIndex).replace(GitOpsConstants.CHOERODON_MAVEN_REPO_URL, repo.getUrl()));
+//                }
+//                shells.addAll(commands);
+//            }
+//
+//            // 只生成一个jar包元数据上传指令用于CD阶段
+//            //加上jobId  与sequence，用于查询jar包的时间戳
+//            String cmd;
+//            if (ciConfigTemplateVO.getNexusRepoId() != null) {
+//
+//                cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
+//                        devopsCiMavenSettingsDTO.getId(),
+//                        devopsCiStepDTO.getSequence());
+//            } else {
+//                MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
+//                cmd = GitlabCiUtil.saveCustomJarMetadata(devopsCiMavenSettingsDTO.getId(),
+//                        devopsCiStepDTO.getSequence(),
+//                        targetRepo.getUrl(),
+//                        targetRepo.getUsername(),
+//                        targetRepo.getPassword());
+//            }
+//
+//            shells.add(cmd);
+//        } else {
+//            // 如果没有目标仓库信息, 则认为用户是自己填入好了maven发布jar的指令, 不需要渲染
+//            shells.addAll(templateShells);
+//        }
         return shells;
     }
 

@@ -66,7 +66,10 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.RdupmClient;
-import io.choerodon.devops.infra.feign.operator.*;
+import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
+import io.choerodon.devops.infra.feign.operator.TestServiceClientOperator;
 import io.choerodon.devops.infra.gitops.IamAdminIdHolder;
 import io.choerodon.devops.infra.handler.CiPipelineSyncHandler;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
@@ -169,25 +172,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
     @Autowired
     protected DevopsDeploymentService devopsDeploymentService;
 
-
-//    @Autowired
-//    protected DevopsCdAuditRecordService devopsCdAuditRecordService;
-
-//    @Autowired
-//    protected DevopsCdJobRecordService devopsCdJobRecordService;
-
-//    @Autowired
-//    protected DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
-//
-//    @Autowired
-//    protected DevopsCdJobRecordMapper devopsCdJobRecordMapper;
-
-//    @Autowired
-//    protected DevopsCdStageRecordService devopsCdStageRecordService;
-
-//    @Autowired
-//    protected DevopsCdStageRecordMapper devopsCdStageRecordMapper;
-
     @Autowired
     protected DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
 
@@ -212,8 +196,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
     @Autowired
     protected KeySocketSendHelper webSocketHelper;
-    @Autowired
-    protected WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     protected DevopsHostAppMapper devopsHostAppMapper;
 
@@ -410,6 +392,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setQueuedDuration(pipelineWebHookVO.getObjectAttributes().getQueuedDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsCiPipelineRecordDTO.setGitlabProjectId(pipelineWebHookVO.getProject().getId());
             devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
@@ -437,6 +420,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             devopsCiPipelineRecordDTO.setCreatedDate(pipelineWebHookVO.getObjectAttributes().getCreatedAt());
             devopsCiPipelineRecordDTO.setFinishedDate(pipelineWebHookVO.getObjectAttributes().getFinishedAt());
             devopsCiPipelineRecordDTO.setDurationSeconds(pipelineWebHookVO.getObjectAttributes().getDuration());
+            devopsCiPipelineRecordDTO.setQueuedDuration(pipelineWebHookVO.getObjectAttributes().getQueuedDuration());
             devopsCiPipelineRecordDTO.setStatus(pipelineWebHookVO.getObjectAttributes().getStatus());
             devopsCiPipelineRecordDTO.setSource(pipelineWebHookVO.getObjectAttributes().getSource());
             devopsCiPipelineRecordMapper.updateByPrimaryKeySelective(devopsCiPipelineRecordDTO);
