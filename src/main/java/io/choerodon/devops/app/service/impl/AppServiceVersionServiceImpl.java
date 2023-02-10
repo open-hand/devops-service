@@ -173,12 +173,26 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                         TypeUtil.objToInteger(gitlabPipelineId),
                         null,
                         null);
-                if (gitlabPipelineDTO != null && gitlabPipelineDTO.getUser() != null) {
-                    UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId()));
-                    if (userAttrDTO != null) {
-                        CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
+                if (gitlabPipelineDTO != null) {
+                    if (gitlabPipelineDTO.getUser() != null) {
+                        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId()));
+                        if (userAttrDTO != null) {
+                            CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
+                        }
+                    } else {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline user info from gitlab is null. gitlabProjectId: {}, gitlabPipelineDTO: {}<<<<<<<<<<<<<<<<<<<",
+                                    appServiceDTO.getGitlabProjectId(),
+                                    JsonHelper.marshalByJackson(gitlabPipelineDTO));
+                        }
                     }
+                } else {
+                    LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline info from gitlab is null. gitlabProjectId: {}, gitlabPipelineId: {}<<<<<<<<<<<<<<<<<<<",
+                            appServiceDTO.getGitlabProjectId(),
+                            gitlabPipelineId);
                 }
+
+
             } else {
                 CustomContextUtil.setUserContext(appServiceDTO.getCreatedBy());
             }

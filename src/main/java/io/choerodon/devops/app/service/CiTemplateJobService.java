@@ -16,7 +16,7 @@ public interface CiTemplateJobService {
 
     List<CiTemplateJobVO> listByStageIds(Set<Long> stageIds);
 
-    List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId);
+//    List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId);
 
     List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId);
 }

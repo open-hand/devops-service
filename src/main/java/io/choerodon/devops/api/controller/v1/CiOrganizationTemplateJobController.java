@@ -134,6 +134,6 @@ public class CiOrganizationTemplateJobController {
     public ResponseEntity<List<CiTemplateJobVO>> queryTemplateJobsByGroupId(
             @PathVariable(value = "organization_id") Long sourceId,
             @Encrypt @RequestParam(value = "ci_template_job_group_id") Long ciTemplateJobGroupId) {
-        return ResponseEntity.ok(ciTemplateJobBusService.queryTemplateJobsByGroupId(sourceId, ciTemplateJobGroupId));
+        return ResponseEntity.ok(ciTemplateJobBusService.queryTemplateJobsByGroupId(sourceId, ResourceLevel.ORGANIZATION.value(), ciTemplateJobGroupId));
     }
 }
