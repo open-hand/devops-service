@@ -16,6 +16,7 @@ import io.choerodon.devops.infra.dto.CiChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.CiTplChartPublishConfigDTO;
 import io.choerodon.devops.infra.dto.DevopsCiStepDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
+import io.choerodon.devops.infra.util.ConvertUtils;
 
 /**
  * 〈功能简述〉
@@ -63,8 +64,10 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
-        CiChartPublishConfigDTO ciChartPublishConfigDTO = ciChartPublishConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setChartPublishConfig(ciChartPublishConfigDTO);
+        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ciTplChartPublishConfigService.queryByStepId(devopsCiStepVO.getId());
+        if (ciTplChartPublishConfigDTO != null) {
+            devopsCiStepVO.setChartPublishConfig(ConvertUtils.convertObject(ciTplChartPublishConfigDTO, CiChartPublishConfigDTO.class));
+        }
     }
 
     @Override
