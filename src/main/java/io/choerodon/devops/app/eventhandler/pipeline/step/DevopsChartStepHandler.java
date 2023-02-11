@@ -52,9 +52,13 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
-        CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ciTemplateStepVO.getChartPublishConfig();
-        ciTplChartPublishConfigDTO.setCiTemplateStepId(ciTemplateStepVO.getId());
-        ciTplChartPublishConfigService.baseCreate(ciTplChartPublishConfigDTO);
+        if (ciTemplateStepVO.getChartPublishConfig() != null) {
+            CiTplChartPublishConfigDTO ciTplChartPublishConfigDTO = ciTemplateStepVO.getChartPublishConfig();
+            ciTplChartPublishConfigDTO.setCiTemplateStepId(ciTemplateStepVO.getId());
+            ciTplChartPublishConfigService.baseCreate(ciTplChartPublishConfigDTO);
+        }
+
+
     }
 
     @Override
