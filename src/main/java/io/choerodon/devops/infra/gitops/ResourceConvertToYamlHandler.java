@@ -126,7 +126,7 @@ public class ResourceConvertToYamlHandler<T> {
             }
             gitlabServiceClientOperator.updateFile(gitlabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), getUpdateContent(type, deleteCert,
                             endpointContent, devopsEnvFileResourceDTO.getFilePath(), objectType, filePath, operationType),
-                    String.format("update: %s", filePath), TypeUtil.objToInteger(userId), "master");
+                    String.format("update: %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userId), "master");
         }
     }
 
