@@ -78,10 +78,12 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
         // 保存任务配置
-        CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
-        chartPublishConfig.setId(null);
-        chartPublishConfig.setStepId(stepId);
-        ciChartPublishConfigService.baseCreate(chartPublishConfig);
+        if (devopsCiStepVO.getChartPublishConfig() != null) {
+            CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
+            chartPublishConfig.setId(null);
+            chartPublishConfig.setStepId(stepId);
+            ciChartPublishConfigService.baseCreate(chartPublishConfig);
+        }
     }
 
     public List<String> buildGitlabCiScript(DevopsCiStepDTO devopsCiStepDTO) {
@@ -110,10 +112,9 @@ public class DevopsChartStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     public Boolean isComplete(DevopsCiStepVO devopsCiStepVO) {
         CiChartPublishConfigDTO chartPublishConfig = devopsCiStepVO.getChartPublishConfig();
-        if (chartPublishConfig == null) {
-            return false;
-        }
-        if (Boolean.FALSE.equals(chartPublishConfig.getUseDefaultRepo()) && chartPublishConfig.getRepoId() == null) {
+        if (chartPublishConfig != null
+                && Boolean.FALSE.equals(chartPublishConfig.getUseDefaultRepo())
+                && chartPublishConfig.getRepoId() == null) {
             return false;
         }
         return true;
