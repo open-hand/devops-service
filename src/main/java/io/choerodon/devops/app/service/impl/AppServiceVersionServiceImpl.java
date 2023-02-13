@@ -180,7 +180,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
                         }
                     } else {
-                        if (LOGGER.isDebugEnabled()) {
+                        if (LOGGER.isWarnEnabled()) {
                             LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline user info from gitlab is null. gitlabProjectId: {}, gitlabPipelineDTO: {}<<<<<<<<<<<<<<<<<<<",
                                     appServiceDTO.getGitlabProjectId(),
                                     JsonHelper.marshalByJackson(gitlabPipelineDTO));
