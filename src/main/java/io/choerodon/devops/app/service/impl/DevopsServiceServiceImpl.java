@@ -408,7 +408,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX,
-                        "DELETE FILE",
+                        String.format("delete: %s", GitOpsConstants.SERVICE_PREFIX + devopsServiceDTO.getName() + GitOpsConstants.YAML_FILE_SUFFIX),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
@@ -431,7 +431,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {

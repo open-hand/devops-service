@@ -1678,7 +1678,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
-                        "DELETE FILE",
+                        String.format("delete: %s", RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
@@ -1704,7 +1704,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
