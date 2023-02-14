@@ -600,12 +600,25 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         //不能减少到0
         if (!workload && count == 0) {
-            return;
+            if (count == 0) {
+                return;
+            }
+            // 保存操作记录
+            AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
+            appServiceInstanceDTOToSearch.setEnvId(envId);
+            appServiceInstanceDTOToSearch.setCode(name);
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+            devopsEnvCommandDTO.setCommandType("scale_pod_count");
+            devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+            devopsEnvCommandDTO.setId(null);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         }
 
-        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
+        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count, devopsEnvCommandDTO.getId() == null ? null : devopsEnvCommandDTO.getId().toString());
     }
 
 

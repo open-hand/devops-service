@@ -1,5 +1,12 @@
 package io.choerodon.devops.api.ws.gitops;
 
+import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
+import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.hzero.websocket.redis.BrokerSessionRedis;
 import org.hzero.websocket.registry.GroupSessionRegistry;
 import org.slf4j.Logger;
@@ -10,13 +17,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static io.choerodon.devops.infra.handler.ClusterConnectionHandler.CLUSTER_SESSION;
-import static org.hzero.websocket.constant.WebSocketConstant.Attributes.GROUP;
 
 import io.choerodon.devops.api.vo.AgentMsgVO;
 import io.choerodon.devops.api.vo.ClusterSessionVO;
@@ -311,6 +311,11 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
             case DELETE_POD:
                 agentMsgHandlerService.handleDeletePod(Long.parseLong(msg.getClusterId()), msg.getPayload());
                 break;
+            case OPERATE_POD_COUNT_SUCCEED:
+                agentMsgHandlerService.operatePodCount(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()), true);
+                break;
+            case OPERATE_POD_COUNT_FAILED:
+                agentMsgHandlerService.operatePodCount(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()), false);
             default:
                 LOGGER.warn("UnExpected message type {}", msg.getType());
                 break;
