@@ -38,15 +38,19 @@ public class DevopsCiNpmUploadStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        CiNpmPublishConfigDTO npmPublishConfig = devopsCiStepVO.getNpmPublishConfig();
-        npmPublishConfig.setStepId(stepId);
-        ciNpmPublishConfigService.baseCreate(npmPublishConfig);
+        if (devopsCiStepVO.getNpmPublishConfig() != null) {
+            CiNpmPublishConfigDTO npmPublishConfig = devopsCiStepVO.getNpmPublishConfig();
+            npmPublishConfig.setStepId(stepId);
+            ciNpmPublishConfigService.baseCreate(npmPublishConfig);
+        }
     }
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         CiTplNpmPublishConfigDTO ciTplNpmPublishConfigDTO = ciTplNpmPublishConfigService.queryByStepId(ciTemplateStepVO.getId());
-        ciTemplateStepVO.setNpmPublishConfig(ConvertUtils.convertObject(ciTplNpmPublishConfigDTO, CiNpmPublishConfigDTO.class));
+        if (ciTplNpmPublishConfigDTO != null) {
+            ciTemplateStepVO.setNpmPublishConfig(ConvertUtils.convertObject(ciTplNpmPublishConfigDTO, CiNpmPublishConfigDTO.class));
+        }
     }
 
     @Override
