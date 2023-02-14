@@ -153,7 +153,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
 
         if (devopsCustomizeResourceReqVO.getType().equals(CREATE)) {
             gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()),
-                    "ADD FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                    String.format("create: %s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -174,7 +174,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             resourceConvertToYamlHandler.setType(devopsCustomizeResourceDTO);
             // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.UPDATE.getType());
-            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, String.format("update: %s", devopsCustomizeResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
 
     }
@@ -244,7 +244,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsCustomizeResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("delete: %s", devopsCustomizeResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             } else {
                 devopsCustomizeResourceMapper.deleteByPrimaryKey(resourceId);
@@ -256,7 +256,7 @@ public class DevopsCustomizeResourceServiceImpl implements DevopsCustomizeResour
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             resourceConvertToYamlHandler.setType(devopsCustomizeResourceContentDTO);
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(FileUtil.getYaml().load(devopsCustomizeResourceContentDTO.getContent()), false, null, devopsCustomizeResourceDTO.getFilePath(), ResourceType.CUSTOM.getType(), gitOpsPath, CommandType.DELETE.getType());
-            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, "UPDATE FILE", TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), devopsCustomizeResourceDTO.getFilePath(), updateContent, String.format("remove from file: %s", devopsCustomizeResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
     }
 

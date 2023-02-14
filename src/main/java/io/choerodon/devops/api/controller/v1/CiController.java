@@ -225,8 +225,27 @@ public class CiController {
             @ApiParam(value = "版本", required = true)
             @RequestParam String version,
             @ApiParam(value = "pom文件", required = true)
-            @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdateJarInfo(nexusRepoId, mvnSettingsId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
+            @RequestParam(required = false) MultipartFile file,
+            @RequestParam(value = "group_id", required = false) String groupId,
+            @RequestParam(value = "artifact_id", required = false) String artifactId,
+            @RequestParam(value = "jar_version", required = false) String jarVersion,
+            @RequestParam(value = "packaging", required = false) String packaging
+    ) {
+        ciPipelineMavenService.createOrUpdateJarInfo(nexusRepoId,
+                mvnSettingsId,
+                sequence,
+                gitlabPipelineId,
+                jobName,
+                token,
+                file,
+                mavenRepoUrl,
+                username,
+                password,
+                version,
+                groupId,
+                artifactId,
+                jarVersion,
+                packaging);
         return ResponseEntity.ok().build();
     }
 

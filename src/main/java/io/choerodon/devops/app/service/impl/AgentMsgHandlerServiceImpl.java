@@ -40,13 +40,12 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.*;
-import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.enums.*;
-import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
@@ -179,8 +178,8 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private ChartResourceOperator chartResourceOperator;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    @Autowired
-    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
+    //    @Autowired
+//    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
     @Autowired
     private AppExceptionRecordService appExceptionRecordService;
 
@@ -259,28 +258,28 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             List<DevopsEnvPodDTO> devopsEnvPodEList = devopsEnvPodService
                     .baseListByInstanceId(appServiceInstanceDTO.getId());
             handleEnvPod(v1Pod, appServiceInstanceDTO, resourceVersion, devopsEnvPodDTO, flag, devopsEnvPodEList);
-            // 实例下的pod状态变为ready,发送通知
-
-            if (Boolean.TRUE.equals(devopsEnvPodDTO.getReady())) {
-                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
-                if (devopsDeployAppCenterEnvDTO != null) {
-                    DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
-                    if (devopsHzeroDeployDetailsDTO != null) {
-                        PodReadyEventVO podReadyEventVO = new PodReadyEventVO(TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND)), devopsHzeroDeployDetailsDTO);
-                        producer.applyAndReturn(
-                                StartSagaBuilder
-                                        .newBuilder()
-                                        .withLevel(ResourceLevel.SITE)
-                                        .withRefType("")
-                                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
-                                builder -> builder
-                                        .withPayloadAndSerialize(podReadyEventVO)
-                                        .withRefId(""));
-                    }
-                }
-
-
-            }
+//            // 实例下的pod状态变为ready,发送通知
+//
+//            if (Boolean.TRUE.equals(devopsEnvPodDTO.getReady())) {
+//                DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = devopsDeployAppCenterService.queryByRdupmTypeAndObjectId(RdupmTypeEnum.CHART, appServiceInstanceDTO.getId());
+//                if (devopsDeployAppCenterEnvDTO != null) {
+//                    DevopsHzeroDeployDetailsDTO devopsHzeroDeployDetailsDTO = devopsHzeroDeployDetailsService.baseQueryByAppId(devopsDeployAppCenterEnvDTO.getId());
+//                    if (devopsHzeroDeployDetailsDTO != null) {
+//                        PodReadyEventVO podReadyEventVO = new PodReadyEventVO(TypeUtil.objToLong(labels.get(CHOERODON_IO_V1_COMMAND)), devopsHzeroDeployDetailsDTO);
+//                        producer.applyAndReturn(
+//                                StartSagaBuilder
+//                                        .newBuilder()
+//                                        .withLevel(ResourceLevel.SITE)
+//                                        .withRefType("")
+//                                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_POD_READY),
+//                                builder -> builder
+//                                        .withPayloadAndSerialize(podReadyEventVO)
+//                                        .withRefId(""));
+//                    }
+//                }
+//
+//
+//            }
         } else {
             DevopsEnvPodDTO devopsEnvPodDTORecord = devopsEnvPodService.baseQueryByEnvIdAndName(envId, v1Pod.getMetadata().getName());
             if (devopsEnvPodDTORecord != null) {
@@ -930,14 +929,56 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
         // 如果是创建实例失败，发送通知
-        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
-                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
             instanceDeployFailed(instanceDTO.getId(), devopsEnvCommandDTO.getId());
             LOGGER.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
             sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
         }
-        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
-                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus)) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateStartOrStopInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String payload) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            LOGGER.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
+            return;
+        }
+        AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+        if (instanceDTO == null) {
+            LOGGER.info("update instance status: the release {} in namespace {} doesn't exist in db", releaseName, KeyParseUtil.getNamespace(key));
+            return;
+        }
+
+        // 如果实例状态不是 running， 才允许更新
+        if (!instanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+            instanceDTO.setStatus(instanceStatus);
+            appServiceInstanceService.baseUpdate(instanceDTO);
+        }
+
+        // 更新command的状态
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        devopsEnvCommandDTO.setStatus(commandStatus);
+        devopsEnvCommandDTO.setError(payload);
+        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+        // 更新实例的生效command
+        if (CommandStatus.SUCCESS.getStatus().equals(commandStatus)) {
+            instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
+            instanceDTO.setObjectVersionNumber(instanceDTO.getObjectVersionNumber() + 1);
+            appServiceInstanceService.baseUpdate(instanceDTO);
+        }
+
+        // 如果是创建实例失败，发送通知
+        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            instanceDeployFailed(instanceDTO.getId(), devopsEnvCommandDTO.getId());
+            LOGGER.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
+        }
+        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus)) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
             sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
         }
     }
@@ -1189,11 +1230,29 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             devopsEnvPodService.baseDeleteByName(deletePodVO.getPodName(), deletePodVO.getNamespace());
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, deletePodVO.getNamespace());
-            devopsEnvResourceService.deleteByEnvIdAndKindAndName(
-                    devopsEnvironmentDTO.getId(),
-                    ResourceType.POD.getType(),
-                    deletePodVO.getPodName());
+            devopsEnvResourceService.deleteByEnvIdAndKindAndName(devopsEnvironmentDTO.getId(), ResourceType.POD.getType(), deletePodVO.getPodName());
         }
+    }
+
+    @Override
+    public void operatePodCount(String key, String payload, Long clusterId, boolean success) {
+        OperationPodPayload operationPodPayload = JsonHelper.unmarshalByJackson(payload, OperationPodPayload.class);
+        if (ObjectUtils.isEmpty(operationPodPayload.getCommandId())) {
+            return;
+        }
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Long.parseLong(operationPodPayload.getCommandId()));
+        if (success) {
+            devopsEnvCommandDTO.setStatus("success");
+            AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+            if (instanceDTO != null) {
+                instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
+                appServiceInstanceService.baseUpdate(instanceDTO);
+            }
+        } else {
+            devopsEnvCommandDTO.setStatus("failed");
+            devopsEnvCommandDTO.setError(operationPodPayload.getMsg());
+        }
+        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)

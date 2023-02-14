@@ -151,9 +151,6 @@ public class MavenSettingsUtil {
                         if (VERSION.equals(parentElement.getName())) {
                             parentVersion = parentElement.getStringValue();
                         }
-                        if (PACKAGING.equals(parentElement.getName())) {
-                            parentArtifactType = parentElement.getStringValue();
-                        }
                     }
                 }
                 if (GROUP_ID.equals(element.getName())) {
@@ -166,7 +163,7 @@ public class MavenSettingsUtil {
                     version = element.getStringValue();
                 }
                 if (PACKAGING.equals(element.getName())) {
-                    parentArtifactType = element.getStringValue();
+                    artifactType = element.getStringValue();
                 }
             }
         } catch (DocumentException e) {
@@ -176,7 +173,7 @@ public class MavenSettingsUtil {
         ciPipelineMavenDTO.setArtifactId(artifactId != null ? artifactId : parentArtifactId);
         ciPipelineMavenDTO.setGroupId(groupId != null ? groupId : parentGroupId);
         ciPipelineMavenDTO.setVersion(version != null ? version : parentVersion);
-        ciPipelineMavenDTO.setArtifactType(artifactType != null ? artifactType : parentArtifactType);
+        ciPipelineMavenDTO.setArtifactType(artifactType != null ? artifactType : "jar");
         return ciPipelineMavenDTO;
     }
 

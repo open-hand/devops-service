@@ -78,7 +78,6 @@ import io.choerodon.devops.infra.enums.deploy.*;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -198,15 +197,6 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     @Lazy
-    private DevopsHzeroDeployDetailsService devopsHzeroDeployDetailsService;
-    @Autowired
-    @Lazy
-    private DevopsHzeroDeployConfigService devopsHzeroDeployConfigService;
-    @Autowired
-    @Lazy
-    private WorkFlowServiceOperator workFlowServiceOperator;
-    @Autowired
-    @Lazy
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
 
     @Autowired
@@ -222,11 +212,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
     @Autowired
-    @Lazy
-    private DevopsCiJobService devopsCiJobService;
-
-    @Autowired
-    private DevopsProjectMapper devopsProjectMapper;
+    private DevopsDeploymentMapper devopsDeploymentMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -613,12 +599,34 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         //校验环境相关信息
         devopsEnvironmentService.checkEnv(devopsEnvironmentDTO, userAttrDTO);
 
+        DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         //不能减少到0
-        if (!workload && count == 0) {
-            return;
+        if (!workload) {
+            if (count == 0) {
+                return;
+            }
+            // 保存操作记录
+            AppServiceInstanceDTO appServiceInstanceDTOToSearch = new AppServiceInstanceDTO();
+            appServiceInstanceDTOToSearch.setEnvId(envId);
+            appServiceInstanceDTOToSearch.setCode(name);
+            AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
+            if (appServiceInstanceDTO != null) {
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+            } else {
+                DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
+                devopsDeploymentDTO.setSourceType("deploy_group");
+                devopsDeploymentDTO.setName(name);
+                devopsDeploymentDTO.setEnvId(envId);
+                devopsDeploymentDTO = devopsDeploymentMapper.selectOne(devopsDeploymentDTO);
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId());
+            }
+            devopsEnvCommandDTO.setCommandType("scale_pod_count");
+            devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
+            devopsEnvCommandDTO.setId(null);
+            devopsEnvCommandDTO = devopsEnvCommandService.baseCreate(devopsEnvCommandDTO);
         }
 
-        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count);
+        agentCommandService.operatePodCount(kind, name, devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), count, devopsEnvCommandDTO.getId() == null ? null : devopsEnvCommandDTO.getId().toString());
     }
 
 
@@ -1691,7 +1699,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
-                        "DELETE FILE",
+                        String.format("delete: %s", RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
@@ -1717,7 +1725,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 gitlabServiceClientOperator.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         devopsEnvFileResourceDTO.getFilePath(),
-                        "DELETE FILE",
+                        String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
