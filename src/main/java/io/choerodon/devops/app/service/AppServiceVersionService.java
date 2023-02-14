@@ -31,6 +31,7 @@ public interface AppServiceVersionService {
      * @param gitlabPipelineId
      * @param jobName
      * @param helmRepoId
+     * @param gitlabUserId
      */
     void create(String image,
                 String harborConfigId,
@@ -42,7 +43,8 @@ public interface AppServiceVersionService {
                 String ref,
                 Long gitlabPipelineId,
                 String jobName,
-                Long helmRepoId);
+                Long helmRepoId,
+                Long gitlabUserId);
 
 
     /**

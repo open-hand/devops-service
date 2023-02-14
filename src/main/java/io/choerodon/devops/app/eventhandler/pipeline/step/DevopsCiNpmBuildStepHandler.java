@@ -38,15 +38,19 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
-        CiNpmBuildConfigDTO npmBuildConfig = devopsCiStepVO.getNpmBuildConfig();
-        npmBuildConfig.setStepId(stepId);
-        ciNpmBuildConfigService.baseCreate(npmBuildConfig);
+        if (devopsCiStepVO.getNpmBuildConfig() != null) {
+            CiNpmBuildConfigDTO npmBuildConfig = devopsCiStepVO.getNpmBuildConfig();
+            npmBuildConfig.setStepId(stepId);
+            ciNpmBuildConfigService.baseCreate(npmBuildConfig);
+        }
     }
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
         CiTplNpmBuildConfigDTO ciTplNpmBuildConfigDTO = ciTplNpmBuildConfigService.queryByStepId(ciTemplateStepVO.getId());
-        ciTemplateStepVO.setNpmBuildConfig(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
+        if (ciTplNpmBuildConfigDTO != null) {
+            ciTemplateStepVO.setNpmBuildConfig(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
+        }
     }
 
     @Override
@@ -71,7 +75,9 @@ public class DevopsCiNpmBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Transactional(rollbackFor = Exception.class)
     public void fillTemplateStepConfigInfo(DevopsCiStepVO devopsCiStepVO) {
         CiTplNpmBuildConfigDTO ciTplNpmBuildConfigDTO = ciTplNpmBuildConfigService.queryByStepId(devopsCiStepVO.getId());
-        devopsCiStepVO.setNpmBuildConfig(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
+        if (ciTplNpmBuildConfigDTO != null) {
+            devopsCiStepVO.setNpmBuildConfig(ConvertUtils.convertObject(ciTplNpmBuildConfigDTO, CiNpmBuildConfigDTO.class));
+        }
     }
 
     @Override

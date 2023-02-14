@@ -230,6 +230,7 @@ function chart_build() {
     -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
     -F "helm_repo_id=$1" \
+    -F "gitlab_user_id=${GITLAB_USER_ID}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
