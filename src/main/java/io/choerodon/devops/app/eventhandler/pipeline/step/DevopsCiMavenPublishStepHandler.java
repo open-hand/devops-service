@@ -280,8 +280,8 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
         List<String> shells = new ArrayList<>();
         // 声明变量
         if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
-            shells.add(String.format(EXPORT_VAR_TPL, GitOpsConstants.CHOERODON_MAVEN_REPO_ID, targetMavenRepoVO.get(0).getName()));
-            shells.add(String.format(EXPORT_VAR_TPL, GitOpsConstants.CHOERODON_MAVEN_REPO_URL, targetMavenRepoVO.get(0).getUrl()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPOSITORY_ID", targetMavenRepoVO.get(0).getName()));
+            shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_REPO_URL", targetMavenRepoVO.get(0).getUrl()));
         }
 
         if (MavenGavSourceTypeEnum.POM.value().equals(ciConfigTemplateVO.getGavSourceType())) {
