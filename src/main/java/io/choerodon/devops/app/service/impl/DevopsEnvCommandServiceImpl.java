@@ -149,7 +149,7 @@ public class DevopsEnvCommandServiceImpl implements DevopsEnvCommandService {
             if (devopsEnvCommandDTOS.size() > 1) {
                 LOGGER.info("Unexpected multi-record for commands with instanceId {} and sha {}", instanceId, sha);
             }
-            return devopsEnvCommandDTOS.get(0);
+            return devopsEnvCommandDTOS.get(devopsEnvCommandDTOS.size() - 1);
         }
     }
 
