@@ -124,6 +124,7 @@ public class DevopsCiContentServiceImpl implements DevopsCiContentService {
             // 缓存配置
             devopsCiContentDTO = new DevopsCiContentDTO();
             devopsCiContentDTO.setCiContentFile(ciContent);
+            devopsCiContentDTO.setCiPipelineId(devopsCiPipelineDTO.getId());
             devopsCiContentDTO.setDevopsDefaultRuleNumber(defaultRuleNumber);
             devopsCiContentDTO.setPipelineVersionNumber(devopsCiPipelineDTO.getObjectVersionNumber());
             MapperUtil.resultJudgedInsertSelective(devopsCiContentMapper,
