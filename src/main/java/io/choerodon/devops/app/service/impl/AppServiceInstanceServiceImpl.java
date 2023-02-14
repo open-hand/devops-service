@@ -611,7 +611,15 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             appServiceInstanceDTOToSearch.setEnvId(envId);
             appServiceInstanceDTOToSearch.setCode(name);
             AppServiceInstanceDTO appServiceInstanceDTO = appServiceInstanceMapper.selectOne(appServiceInstanceDTOToSearch);
-            devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+            if (appServiceInstanceDTO != null) {
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), appServiceInstanceDTO.getId());
+            } else {
+                DevopsDeploymentDTO devopsDeploymentDTO = new DevopsDeploymentDTO();
+                devopsDeploymentDTO.setSourceType("deploy_group");
+                devopsDeploymentDTO.setName(name);
+                devopsDeploymentDTO.setEnvId(envId);
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.DEPLOYMENT.getType(), appServiceInstanceDTO.getId());
+            }
             devopsEnvCommandDTO.setCommandType("scale_pod_count");
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
             devopsEnvCommandDTO.setId(null);
