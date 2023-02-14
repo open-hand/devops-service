@@ -81,10 +81,7 @@ import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.gitops.ResourceConvertToYamlHandler;
 import io.choerodon.devops.infra.gitops.ResourceFileCheckHandler;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.AppServiceInstanceMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
-import io.choerodon.devops.infra.mapper.DevopsClusterResourceMapper;
-import io.choerodon.devops.infra.mapper.DevopsPrometheusMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -214,6 +211,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
     private AppServiceHelmVersionService appServiceHelmVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    private DevopsDeploymentMapper devopsDeploymentMapper;
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
      */
@@ -618,7 +617,8 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
                 devopsDeploymentDTO.setSourceType("deploy_group");
                 devopsDeploymentDTO.setName(name);
                 devopsDeploymentDTO.setEnvId(envId);
-                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.DEPLOYMENT.getType(), appServiceInstanceDTO.getId());
+                devopsDeploymentDTO = devopsDeploymentMapper.selectOne(devopsDeploymentDTO);
+                devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.DEPLOYMENT.getType(), devopsDeploymentDTO.getId());
             }
             devopsEnvCommandDTO.setCommandType("scale_pod_count");
             devopsEnvCommandDTO.setStatus(CommandStatus.OPERATING.getStatus());
