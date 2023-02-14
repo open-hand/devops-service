@@ -602,7 +602,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         DevopsEnvCommandDTO devopsEnvCommandDTO = new DevopsEnvCommandDTO();
         //不能减少到0
-        if (!workload && count == 0) {
+        if (!workload) {
             if (count == 0) {
                 return;
             }
