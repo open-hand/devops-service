@@ -929,14 +929,56 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
 
         // 如果是创建实例失败，发送通知
-        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus)
-                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
             instanceDeployFailed(instanceDTO.getId(), devopsEnvCommandDTO.getId());
             LOGGER.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
             sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
         }
-        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus))
-                && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus)) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void updateStartOrStopInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String payload) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            LOGGER.info(ENV_NOT_EXIST, KeyParseUtil.getNamespace(key));
+            return;
+        }
+        AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQueryByCodeAndEnv(releaseName, envId);
+        if (instanceDTO == null) {
+            LOGGER.info("update instance status: the release {} in namespace {} doesn't exist in db", releaseName, KeyParseUtil.getNamespace(key));
+            return;
+        }
+
+        // 如果实例状态不是 running， 才允许更新
+        if (!instanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+            instanceDTO.setStatus(instanceStatus);
+            appServiceInstanceService.baseUpdate(instanceDTO);
+        }
+
+        // 更新command的状态
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQueryByObject(ObjectType.INSTANCE.getType(), instanceDTO.getId());
+        devopsEnvCommandDTO.setStatus(commandStatus);
+        devopsEnvCommandDTO.setError(payload);
+        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
+
+        // 更新实例的生效command
+        if (CommandStatus.SUCCESS.getStatus().equals(commandStatus)) {
+            instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
+            instanceDTO.setObjectVersionNumber(instanceDTO.getObjectVersionNumber() + 1);
+            appServiceInstanceService.baseUpdate(instanceDTO);
+        }
+
+        // 如果是创建实例失败，发送通知
+        if (InstanceStatus.FAILED.getStatus().equals(instanceStatus) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
+            instanceDeployFailed(instanceDTO.getId(), devopsEnvCommandDTO.getId());
+            LOGGER.debug("Sending instance notices: env id: {}, instance code {}, createdby: {}", instanceDTO.getEnvId(), instanceDTO.getCode(), instanceDTO.getCreatedBy());
+            sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, InstanceStatus.FAILED.getStatus());
+        }
+        if (!(InstanceStatus.FAILED.getStatus().equals(instanceStatus)) && CommandType.CREATE.getType().equals(devopsEnvCommandDTO.getCommandType())) {
             sendNotificationService.sendInstanceStatusUpdate(instanceDTO, devopsEnvCommandDTO, instanceStatus);
         }
     }
@@ -1199,8 +1241,11 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Long.parseLong(operationPodPayload.getCommandId()));
+        AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
         if (success) {
             devopsEnvCommandDTO.setStatus("success");
+            instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
+            appServiceInstanceService.baseUpdate(instanceDTO);
         } else {
             devopsEnvCommandDTO.setStatus("failed");
             devopsEnvCommandDTO.setError(operationPodPayload.getMsg());

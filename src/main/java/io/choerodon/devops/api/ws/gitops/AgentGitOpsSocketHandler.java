@@ -165,23 +165,23 @@ public class AgentGitOpsSocketHandler extends AbstractSocketHandler {
                 break;
             // 更新实例启动的状态
             case HELM_RELEASE_START:
-                agentMsgHandlerService.updateInstanceStatus(
+                agentMsgHandlerService.updateStartOrStopInstanceStatus(
                         msg.getKey(),
                         KeyParseUtil.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
-                        "");
+                        msg.getPayload());
                 break;
             // 更新实例停止的状态
             case HELM_RELEASE_STOP:
-                agentMsgHandlerService.updateInstanceStatus(
+                agentMsgHandlerService.updateStartOrStopInstanceStatus(
                         msg.getKey(),
                         KeyParseUtil.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.STOPPED.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
-                        "");
+                        msg.getPayload());
                 break;
             // 同步release升级时 JOB信息
             case HELM_UPGRADE_JOB_INFO:
