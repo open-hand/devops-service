@@ -363,9 +363,9 @@ public class DevopsDeploymentServiceImpl implements DevopsDeploymentService, Cha
 
         // 改变pod数量
         if (CommandType.RESTART.getType().equals(type)) {
-            agentCommandService.operatePodCount(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), 1L);
+            agentCommandService.operatePodCount(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), 1L, null);
         } else {
-            agentCommandService.operatePodCount(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), 0L);
+            agentCommandService.operatePodCount(ResourceType.DEPLOYMENT.getType(), devopsDeploymentDTO.getName(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getClusterId(), 0L, null);
         }
     }
 }

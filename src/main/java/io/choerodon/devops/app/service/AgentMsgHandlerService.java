@@ -87,9 +87,10 @@ public interface AgentMsgHandlerService {
 
     /**
      * 处理工作负载产生的pod事件
-     *
      */
     void workloadPodEvent(String key, String msg, Long clusterId);
 
     void handleDeletePod(Long clusterId, String payload);
+
+    void operatePodCount(String key, String payload, Long clusterId, boolean success);
 }

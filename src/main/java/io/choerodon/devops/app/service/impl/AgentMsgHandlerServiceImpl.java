@@ -40,6 +40,7 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.kubernetes.*;
 import io.choerodon.devops.app.eventhandler.constants.CertManagerConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
+import io.choerodon.devops.app.eventhandler.payload.OperationPodPayload;
 import io.choerodon.devops.app.eventhandler.payload.TestReleaseStatusPayload;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
@@ -1187,11 +1188,24 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
         } else {
             devopsEnvPodService.baseDeleteByName(deletePodVO.getPodName(), deletePodVO.getNamespace());
             DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryByClusterIdAndCode(clusterId, deletePodVO.getNamespace());
-            devopsEnvResourceService.deleteByEnvIdAndKindAndName(
-                    devopsEnvironmentDTO.getId(),
-                    ResourceType.POD.getType(),
-                    deletePodVO.getPodName());
+            devopsEnvResourceService.deleteByEnvIdAndKindAndName(devopsEnvironmentDTO.getId(), ResourceType.POD.getType(), deletePodVO.getPodName());
         }
+    }
+
+    @Override
+    public void operatePodCount(String key, String payload, Long clusterId, boolean success) {
+        OperationPodPayload operationPodPayload = JsonHelper.unmarshalByJackson(payload, OperationPodPayload.class);
+        if (ObjectUtils.isEmpty(operationPodPayload.getCommandId())) {
+            return;
+        }
+        DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Long.parseLong(operationPodPayload.getCommandId()));
+        if (success) {
+            devopsEnvCommandDTO.setStatus("success");
+        } else {
+            devopsEnvCommandDTO.setStatus("failed");
+            devopsEnvCommandDTO.setError(operationPodPayload.getMsg());
+        }
+        devopsEnvCommandService.baseUpdate(devopsEnvCommandDTO);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = READ_COMMITTED)
