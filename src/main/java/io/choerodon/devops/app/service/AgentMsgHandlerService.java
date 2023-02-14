@@ -22,6 +22,8 @@ public interface AgentMsgHandlerService {
 
     void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
 
+    void updateStartOrStopInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String payload);
+
     void handlerDomainCreateMessage(String key, String msg, Long clusterId);
 
     void helmUpgradeJobInfo(String key, String msg, Long clusterId);
