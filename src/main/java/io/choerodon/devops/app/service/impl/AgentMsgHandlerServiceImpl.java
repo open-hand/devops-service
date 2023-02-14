@@ -1241,11 +1241,13 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
             return;
         }
         DevopsEnvCommandDTO devopsEnvCommandDTO = devopsEnvCommandService.baseQuery(Long.parseLong(operationPodPayload.getCommandId()));
-        AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
         if (success) {
             devopsEnvCommandDTO.setStatus("success");
-            instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
-            appServiceInstanceService.baseUpdate(instanceDTO);
+            AppServiceInstanceDTO instanceDTO = appServiceInstanceService.baseQuery(devopsEnvCommandDTO.getObjectId());
+            if (instanceDTO != null) {
+                instanceDTO.setEffectCommandId(devopsEnvCommandDTO.getId());
+                appServiceInstanceService.baseUpdate(instanceDTO);
+            }
         } else {
             devopsEnvCommandDTO.setStatus("failed");
             devopsEnvCommandDTO.setError(operationPodPayload.getMsg());
