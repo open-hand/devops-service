@@ -87,6 +87,11 @@ public class DevopsCiJobVO {
 
     private String tags;
 
+    @Encrypt
+    private Long configFileId;
+
+    private String configFilePath;
+
     @ApiModelProperty("是否有权限修改cd的job,默认有")
     private boolean edit = true;
 
@@ -102,6 +107,23 @@ public class DevopsCiJobVO {
 
     @ApiModelProperty("任务为主机部署类型，保存主机部署相关配置信息")
     private DevopsCiHostDeployInfoVO devopsCiHostDeployInfoVO;
+
+
+    public Long getConfigFileId() {
+        return configFileId;
+    }
+
+    public void setConfigFileId(Long configFileId) {
+        this.configFileId = configFileId;
+    }
+
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
+
+    public void setConfigFilePath(String configFilePath) {
+        this.configFilePath = configFilePath;
+    }
 
     public boolean isEdit() {
         return edit;
