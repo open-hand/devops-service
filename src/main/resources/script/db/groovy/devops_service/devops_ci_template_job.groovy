@@ -79,10 +79,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
             column(name: 'trigger_type', type: 'VARCHAR(255)', remarks: '触发方式', afterColumn: 'trigger_value', defaultValue: 'refs')
         }
     }
-    changeSet(author: 'wx',id: '2022-11-23-update-column'){
+    changeSet(author: 'wx', id: '2022-11-23-update-column') {
         sql("""
               ALTER TABLE devops_ci_template_job ALTER COLUMN type 
                SET DEFAULT 'normal'
         """)
+    }
+    changeSet(author: 'wanghao', id: '2023-02-16-add-column') {
+        addColumn(tableName: 'devops_ci_template_job') {
+            column(name: 'config_file_id', type: 'BIGINT UNSIGNED', remarks: 'devops_config_file.id', afterColumn: 'tags')
+            column(name: 'config_file_path', type: 'VARCHAR(1024)', remarks: '配置文件下载路径', afterColumn: 'config_file_id')
+        }
     }
 }

@@ -44,6 +44,11 @@ public class CiTemplateJobVO {
     @ApiModelProperty("任务标签")
     private String tags;
 
+    @Encrypt
+    private Long configFileId;
+
+    private String configFilePath;
+
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
@@ -113,6 +118,22 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("分组类型")
     private String groupType;
+
+    public Long getConfigFileId() {
+        return configFileId;
+    }
+
+    public void setConfigFileId(Long configFileId) {
+        this.configFileId = configFileId;
+    }
+
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
+
+    public void setConfigFilePath(String configFilePath) {
+        this.configFilePath = configFilePath;
+    }
 
     public Integer getSequence() {
         return sequence;
