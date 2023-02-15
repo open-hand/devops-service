@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang@zknow.com
@@ -8,17 +9,18 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class ConfigFileVO {
 
-
+    @Encrypt
+    @ApiModelProperty(hidden = true)
     private Long id;
-    @ApiModelProperty(value = "层级", required = true)
+    @ApiModelProperty(value = "层级", hidden = true)
     private String sourceType;
-    @ApiModelProperty(value = "层级Id", required = true)
+    @ApiModelProperty(value = "层级Id", hidden = true)
     private Long sourceId;
     @ApiModelProperty(value = "配置名称", required = true)
     private String name;
     @ApiModelProperty(value = "描述")
     private String description;
-    @ApiModelProperty(value = "devops_config_file_detail.id", required = true)
+    @ApiModelProperty(value = "devops_config_file_detail.id", hidden = true)
     private Long detailId;
 
     private String message;

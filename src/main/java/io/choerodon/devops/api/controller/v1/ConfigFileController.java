@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class ConfigFileController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> update(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id,
             @RequestBody ConfigFileVO configFileVO) {
         configFileService.update(ResourceLevel.PROJECT.value(),
@@ -62,6 +64,7 @@ public class ConfigFileController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Void> delete(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id) {
         configFileService.delete(ResourceLevel.PROJECT.value(),
                 projectId,
@@ -90,6 +93,7 @@ public class ConfigFileController {
     @CustomPageRequest
     public ResponseEntity<ConfigFileVO> query(
             @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(configFileService.queryByIdWithDetail(ResourceLevel.PROJECT.value(),
                 projectId,
