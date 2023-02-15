@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.choerodon.devops.infra.mapper.ConfigFileMapper">
+
+    <select id="listByParams" resultType="io.choerodon.devops.api.vo.ConfigFileVO">
+        select *
+        from devops_config_file dcf
+        <where>
+            dcf.source_type = #{sourceType} and dcf.source_id = #{sourceId}
+            <if test='param != null and param!=""'>
+                AND
+                (dcf.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                OR dcf.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                )
+            </if>
+        </where>
+    </select>
+    <select id="queryByIdWithDetail" resultType="io.choerodon.devops.api.vo.ConfigFileVO">
+        select dcf.*, dcfd.message
+        from devops_config_file dcf
+                 join devops_config_file_detail dcfd on dcfd.id = dcf.detail_id
+    </select>
+</mapper>
+
