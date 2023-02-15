@@ -290,6 +290,36 @@ function downloadSettingsFileByUId() {
   fi
 }
 
+#################################### 下载配置文件 ####################################
+# $1 config_file_id
+# $2 config_file_path
+function downloadConfigFileByUId() {
+  http_status_code=$(curl -o result.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/config_file/?token=${Token}&config_file_id=${1}")
+  if [ "$http_status_code" != "200" ];
+    then
+      echo "Download Configfile failed."
+      exit 1
+  else
+    is_failed=$(jq -r .failed result.json)
+    # 判断是否成功
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Download Configfile failed."
+      exit 1
+    fi
+    # 输出配置文件到目标路径
+    echo result.json > "$2"
+  fi
+
+
+  if [ "$http_status_code" != "200" ]; then
+    cat "settings.xml"
+    echo "failed to downloadSettingsFile: $1"
+    exit 1
+  fi
+}
+
+
 ############################### 存储镜像元数据, 用于CD阶段主机部署-镜像部署 ################################
 # 无参数
 # 此函数上传镜像构建元数据, 只有任务(job)通过这个函数上传了镜像元数据,

@@ -89,7 +89,7 @@ public class ConfigFileServiceImpl implements ConfigFileService {
     }
 
     @Override
-    public ConfigFileVO queryByIdWithDetail(String sourceType, Long sourceId, Long id) {
+    public ConfigFileVO queryByIdWithDetail(Long id) {
         return configFileMapper.queryByIdWithDetail(id);
     }
 

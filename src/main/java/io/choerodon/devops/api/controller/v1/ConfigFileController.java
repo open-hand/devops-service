@@ -95,9 +95,7 @@ public class ConfigFileController {
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "id") Long id) {
-        return ResponseEntity.ok(configFileService.queryByIdWithDetail(ResourceLevel.PROJECT.value(),
-                projectId,
-                id));
+        return ResponseEntity.ok(configFileService.queryByIdWithDetail(id));
     }
 
 }

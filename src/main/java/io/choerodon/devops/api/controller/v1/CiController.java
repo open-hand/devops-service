@@ -56,6 +56,10 @@ public class CiController {
     private CiAuditRecordService ciAuditRecordService;
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
+    @Autowired
+    private ConfigFileService configFileService;
+    @Autowired
+    private CiService ciService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -447,5 +451,16 @@ public class CiController {
             @ApiParam(value = "repo_id", required = true)
             @RequestParam(value = "repo_id") Long repoId) {
         return ResponseEntity.ok(ciPipelineImageService.queryNpmRepoInfo(token, repoId));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询配置文件信息", hidden = true)
+    @GetMapping("/config_file")
+    public ResponseEntity<String> queryConfigFileById(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "config_file_id", required = true)
+            @RequestParam(value = "config_file_id") Long configFileId) {
+        return ResponseEntity.ok(ciService.queryConfigFileById(token, configFileId));
     }
 }
