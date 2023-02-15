@@ -1889,9 +1889,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     handler.setCiJobConfig(job, ciJob);
                     List<String> script = new ArrayList<>();
                     // 下载配置文件
-                    if (job.getConfigFileId() != null && job.getConfigFilePath() != null) {
-                        script.add(String.format("downloadConfigFileByUId %s %s", job.getConfigFileId(), job.getConfigFilePath()));
-                    }
+//                    if (job.getConfigFileId() != null && job.getConfigFilePath() != null) {
+//                        script.add(String.format("downloadConfigFileByUId %s %s", job.getConfigFileId(), job.getConfigFilePath()));
+//                    }
 
                     script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 
