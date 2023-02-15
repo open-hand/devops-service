@@ -15,6 +15,7 @@ import io.choerodon.devops.infra.dto.ConfigFileDetailDTO;
 import io.choerodon.devops.infra.mapper.ConfigFileMapper;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
+import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -84,8 +85,9 @@ public class ConfigFileServiceImpl implements ConfigFileService {
 
     @Override
     public Page<ConfigFileVO> paging(String sourceType, Long sourceId, PageRequest pageable, String param) {
-        PageHelper.doPage(pageable, () -> configFileMapper.listByParams(sourceType, sourceId, param));
-        return null;
+        Page<ConfigFileVO> page = PageHelper.doPage(pageable, () -> configFileMapper.listByParams(sourceType, sourceId, param));
+        UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
+        return page;
     }
 
     @Override

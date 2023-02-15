@@ -73,7 +73,7 @@ public class ConfigFileController {
     }
 
     @ApiOperation(value = "分页查询配置文件列表")
-    @GetMapping
+    @GetMapping("/paging")
     @Permission(level = ResourceLevel.ORGANIZATION)
     @CustomPageRequest
     public ResponseEntity<Page<ConfigFileVO>> paging(

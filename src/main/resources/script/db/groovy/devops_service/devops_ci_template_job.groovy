@@ -85,10 +85,4 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_job.groovy') {
                SET DEFAULT 'normal'
         """)
     }
-    changeSet(author: 'wanghao', id: '2023-02-16-add-column') {
-        addColumn(tableName: 'devops_ci_template_job') {
-            column(name: 'config_file_id', type: 'BIGINT UNSIGNED', remarks: 'devops_config_file.id', afterColumn: 'tags')
-            column(name: 'config_file_path', type: 'VARCHAR(1024)', remarks: '配置文件下载路径', afterColumn: 'config_file_id')
-        }
-    }
 }

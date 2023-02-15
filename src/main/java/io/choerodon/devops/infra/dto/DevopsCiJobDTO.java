@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -66,27 +65,6 @@ public class DevopsCiJobDTO extends AuditDomain {
     private Integer startIn;
     @ApiModelProperty("任务tags")
     private String tags;
-
-    @Encrypt
-    private Long configFileId;
-
-    private String configFilePath;
-
-    public Long getConfigFileId() {
-        return configFileId;
-    }
-
-    public void setConfigFileId(Long configFileId) {
-        this.configFileId = configFileId;
-    }
-
-    public String getConfigFilePath() {
-        return configFilePath;
-    }
-
-    public void setConfigFilePath(String configFilePath) {
-        this.configFilePath = configFilePath;
-    }
 
     public String getTags() {
         return tags;
