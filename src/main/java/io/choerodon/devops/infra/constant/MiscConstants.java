@@ -34,6 +34,8 @@ public final class MiscConstants {
 
     public static final String DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT = "devops.operating.resource.in.other.project";
 
+    public static final String DEVOPS_OPERATING_RESOURCE_IN_OTHER_TEAM = "devops.operating.resource.in.other.team";
+
     /**
      * devops_branch表的last_commit_message的最大长度限制
      */
