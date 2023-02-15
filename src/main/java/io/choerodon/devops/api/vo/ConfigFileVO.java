@@ -3,11 +3,14 @@ package io.choerodon.devops.api.vo;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.infra.dto.iam.IamUserDTO;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * @author hao.wang@zknow.com
  * @since 2023-02-15 09:27:44
  */
-public class ConfigFileVO {
+public class ConfigFileVO extends AuditDomain {
 
     @Encrypt
     @ApiModelProperty(hidden = true)
@@ -24,6 +27,16 @@ public class ConfigFileVO {
     private Long detailId;
 
     private String message;
+
+    private IamUserDTO creator;
+
+    public IamUserDTO getCreator() {
+        return creator;
+    }
+
+    public void setCreator(IamUserDTO creator) {
+        this.creator = creator;
+    }
 
     public String getMessage() {
         return message;
