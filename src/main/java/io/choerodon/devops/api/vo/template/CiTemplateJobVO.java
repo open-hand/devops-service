@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 
@@ -44,11 +45,6 @@ public class CiTemplateJobVO {
     @ApiModelProperty("任务标签")
     private String tags;
 
-    @Encrypt
-    private Long configFileId;
-
-    private String configFilePath;
-
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
@@ -64,6 +60,8 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("任务中的步骤列表")
     private List<CiTemplateStepVO> devopsCiStepVOList;
+
+    private List<ConfigFileRelVO> configFileRelList;
 
 
     @ApiModelProperty("所属任务分组名称")
@@ -119,20 +117,12 @@ public class CiTemplateJobVO {
     @ApiModelProperty("分组类型")
     private String groupType;
 
-    public Long getConfigFileId() {
-        return configFileId;
+    public List<ConfigFileRelVO> getConfigFileRelList() {
+        return configFileRelList;
     }
 
-    public void setConfigFileId(Long configFileId) {
-        this.configFileId = configFileId;
-    }
-
-    public String getConfigFilePath() {
-        return configFilePath;
-    }
-
-    public void setConfigFilePath(String configFilePath) {
-        this.configFilePath = configFilePath;
+    public void setConfigFileRelList(List<ConfigFileRelVO> configFileRelList) {
+        this.configFileRelList = configFileRelList;
     }
 
     public Integer getSequence() {

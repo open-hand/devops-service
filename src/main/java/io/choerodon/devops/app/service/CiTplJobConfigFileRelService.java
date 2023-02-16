@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
+import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
+
 /**
  * CI任务模板配置文件关联表(CiTplJobConfigFileRel)应用服务
  *
@@ -8,5 +12,10 @@ package io.choerodon.devops.app.service;
  */
 public interface CiTplJobConfigFileRelService {
 
+    void baseCreate(CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO);
+
+    void deleteByJobId(Long jobId);
+
+    List<CiTplJobConfigFileRelDTO> listByJobId(Long jobId);
 }
 

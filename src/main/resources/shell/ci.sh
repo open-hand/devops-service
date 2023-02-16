@@ -409,9 +409,9 @@ function saveJarInfo() {
                 -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
                 -F "job_name=${CI_JOB_NAME}" \
                 -F "version=${CI_COMMIT_TAG}" \
-                -F "groupId=${CHOERODON_MAVEN_GROUP_ID}" \
-                -F "artifactId=${CHOERODON_MAVEN_ARTIFACT_ID}" \
-                -F "jarVersion=${CHOERODON_MAVEN_VERSION}" \
+                -F "group_id=${CHOERODON_MAVEN_GROUP_ID}" \
+                -F "artifact_id=${CHOERODON_MAVEN_ARTIFACT_ID}" \
+                -F "jar_version=${CHOERODON_MAVEN_VERSION}" \
                 -F "packaging=${CHOERODON_MAVEN_PACKAGING}" \
                 "${CHOERODON_URL}/devops/ci/save_jar_info" \
                 -o "${CI_COMMIT_SHA}-ci.response" \

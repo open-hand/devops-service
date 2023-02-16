@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.vo.pipeline;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
  * @author hao.wang@zknow.com
@@ -8,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class ConfigFileRelVO {
 
+    @Encrypt
     @ApiModelProperty(value = "devops_config_file.id", required = true)
     private Long configFileId;
     @ApiModelProperty(value = "配置文件下载路径", required = true)

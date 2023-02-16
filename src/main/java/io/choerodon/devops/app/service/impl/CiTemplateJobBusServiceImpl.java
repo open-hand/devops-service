@@ -1,5 +1,19 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.utils.ConvertUtils;
@@ -10,35 +24,20 @@ import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHa
 import io.choerodon.devops.app.service.CiTemplateJobBusService;
 import io.choerodon.devops.app.service.CiTemplateStepBusService;
 import io.choerodon.devops.app.service.CiTemplateStepService;
+import io.choerodon.devops.app.service.CiTplJobConfigFileRelService;
 import io.choerodon.devops.app.service.impl.config.TemplateJobConfigService;
 import io.choerodon.devops.infra.dto.CiTemplateJobDTO;
 import io.choerodon.devops.infra.dto.CiTemplateJobGroupDTO;
 import io.choerodon.devops.infra.dto.CiTemplateJobStepRelDTO;
-import io.choerodon.devops.infra.dto.CiTemplateStageJobRelDTO;
-import io.choerodon.devops.infra.enums.CiJobTypeEnum;
+import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
 import io.choerodon.devops.infra.mapper.CiTemplateJobBusMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateJobGroupBusMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateJobStepRelBusMapper;
-import io.choerodon.devops.infra.mapper.CiTemplateStageJobRelBusMapper;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.devops.infra.utils.TemplateJobTypeUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
-import org.hzero.mybatis.domian.Condition;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 
 /**
@@ -63,9 +62,6 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     private CiTemplateJobStepRelBusMapper ciTemplateJobStepRelBusMapper;
 
     @Autowired
-    private CiTemplateStageJobRelBusMapper ciTemplateStageJobRelBusMapper;
-
-    @Autowired
     private CiTemplateStepService ciTemplateStepService;
 
     @Autowired
@@ -79,6 +75,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
 
     @Autowired
     private Map<String, TemplateJobConfigService> stringTemplateJobConfigServiceMap;
+    @Autowired
+    private CiTplJobConfigFileRelService ciTplJobConfigFileRelService;
 
 
     @Override
@@ -121,6 +119,14 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         if (!CollectionUtils.isEmpty(ciTemplateJobVO.getDevopsCiStepVOList())) {
             insertBaseJobStepRel(ciTemplateJobVO, ciTemplateJobDTO);
         }
+        if (!CollectionUtils.isEmpty(ciTemplateJobVO.getConfigFileRelList())) {
+            ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
+                ciTplJobConfigFileRelService.baseCreate(new CiTplJobConfigFileRelDTO(ciTemplateJobDTO.getId(),
+                        configFileRelVO.getConfigFileId(),
+                        configFileRelVO.getConfigFilePath()));
+            });
+
+        }
         return ConvertUtils.convertObject(ciTemplateJobDTO, CiTemplateJobVO.class);
     }
 
@@ -151,6 +157,16 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             ciTemplateJobStepRelBusMapper.deleteByJobId(ciTemplateJobVO.getId());
             // 添加job和step关系
             insertBaseJobStepRel(ciTemplateJobVO, ciTemplateJobDTO);
+        }
+        ciTplJobConfigFileRelService.deleteByJobId(ciTemplateJobDTO.getId());
+
+        if (!CollectionUtils.isEmpty(ciTemplateJobVO.getConfigFileRelList())) {
+            ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
+                ciTplJobConfigFileRelService.baseCreate(new CiTplJobConfigFileRelDTO(ciTemplateJobDTO.getId(),
+                        configFileRelVO.getConfigFileId(),
+                        configFileRelVO.getConfigFilePath()));
+            });
+
         }
         return ConvertUtils.convertObject(ciTemplateJobDTO, CiTemplateJobVO.class);
     }
@@ -387,6 +403,16 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
 
             }
             CiTemplateJobVO templateJob = createTemplateJob(sourceId, sourceType, ciTemplateJobVO);
+
+            if (!CollectionUtils.isEmpty(ciTemplateJobVO.getConfigFileRelList())) {
+                ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
+                    ciTplJobConfigFileRelService.baseCreate(new CiTplJobConfigFileRelDTO(templateJob.getId(),
+                            configFileRelVO.getConfigFileId(),
+                            configFileRelVO.getConfigFilePath()));
+                });
+
+            }
+
             ciTemplateJobVO.setId(templateJob.getId());
         });
     }

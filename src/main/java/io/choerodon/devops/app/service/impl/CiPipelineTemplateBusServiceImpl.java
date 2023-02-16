@@ -1,8 +1,22 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.hzero.core.util.AssertUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplatePipelineVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStageVO;
@@ -17,18 +31,6 @@ import io.choerodon.devops.infra.util.UserDTOFillUtil;
 import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.hzero.core.util.AssertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Created by wangxiang on 2021/12/3
@@ -78,34 +80,13 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private CiTemplateJobStepRelBusMapper ciTemplateJobStepRelBusMapper;
 
     @Autowired
-    private CiTemplateMavenBuildMapper ciTemplateMavenBuildMapper;
-
-    @Autowired
-    private CiTemplateMavenPublishMapper ciTemplateMavenPublishMapper;
-
-    @Autowired
-    private CiTemplateDockerMapper ciTemplateDockerMapper;
-
-    @Autowired
-    private CiTemplateSonarMapper ciTemplateSonarMapper;
-
-    @Autowired
-    private DevopsCiTplSonarQualityGateMapper devopsCiTplSonarQualityGateMapper;
-
-    @Autowired
-    private DevopsCiTplSonarQualityGateConditionMapper devopsCiTplSonarQualityGateConditionMapper;
-
-    @Autowired
-    private CiTemplateMavenBuildService ciTemplateMavenBuildService;
-
-    @Autowired
-    private CiTemplateMavenPublishService ciTemplateMavenPublishService;
-
-    @Autowired
     private CiTemplateStageBusService ciTemplateStageBusService;
 
     @Autowired
     private CiTemplateVariableBusService ciTemplateVariableBusService;
+
+    @Autowired
+    private CiTplJobConfigFileRelService ciTplJobConfigFileRelService;
 
 
     @Override
@@ -434,6 +415,11 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
             //填充CD Job的配置信息
             //根据步骤的类型填充CD的配置信息
             ciTemplateJobBusService.fillCdJobConfig(ciTemplateJobVO);
+            List<CiTplJobConfigFileRelDTO> ciTplJobConfigFileRelDTOS = ciTplJobConfigFileRelService.listByJobId(ciTemplateJobVO.getId());
+            if (!CollectionUtils.isEmpty(ciTplJobConfigFileRelDTOS)) {
+                ciTemplateJobVO.setConfigFileRelList(ConvertUtils.convertList(ciTplJobConfigFileRelDTOS, ConfigFileRelVO.class));
+            }
+
             ciTemplateJobVO.setDevopsCiStepVOList(ciTemplateStepVOS);
         });
         ciTemplateStageVO.setCiTemplateJobVOList(ciTemplateJobVOS);
