@@ -22,7 +22,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_config_file_rel.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-        addUniqueConstraint(tableName: 'devops_ci_job',
+        addUniqueConstraint(tableName: 'devops_ci_job_config_file_rel',
                 constraintName: 'devops_ci_job_config_file_rel_u1', columnNames: 'ci_job_id,config_file_id,config_file_path')
     }
 }
