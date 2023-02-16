@@ -27,6 +27,7 @@
         select dcf.*, dcfd.message
         from devops_config_file dcf
                  join devops_config_file_detail dcfd on dcfd.id = dcf.detail_id
+        where dcf.id = #{id}
     </select>
 </mapper>
 
