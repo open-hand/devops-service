@@ -230,13 +230,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             AppServiceMapper appServiceMapper,
             CiCdPipelineMapper ciCdPipelineMapper,
             DevopsCdStageService devopsCdStageService,
-            DevopsCdAuditService devopsCdAuditService,
             DevopsCdJobService devopsCdJobService,
             DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService,
             DevopsEnvironmentMapper devopsEnvironmentMapper
-//            @Lazy DevopsPipelineRecordRelService devopsPipelineRecordRelService
-//            @Lazy DevopsCdPipelineService devopsCdPipelineService,
-//            DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper
     ) {
         this.devopsCiCdPipelineMapper = devopsCiCdPipelineMapper;
         this.devopsCiPipelineRecordService = devopsCiPipelineRecordService;
@@ -254,7 +250,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         this.appServiceMapper = appServiceMapper;
         this.ciCdPipelineMapper = ciCdPipelineMapper;
         this.devopsCdStageService = devopsCdStageService;
-        this.devopsCdAuditService = devopsCdAuditService;
         this.devopsCdJobService = devopsCdJobService;
         this.devopsCdEnvDeployInfoService = devopsCdEnvDeployInfoService;
         this.devopsEnvironmentMapper = devopsEnvironmentMapper;
