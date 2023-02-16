@@ -31,6 +31,8 @@ public interface ConfigFileService {
     Page<ConfigFileVO> paging(String sourceType,
                               Long sourceId,
                               PageRequest pageable,
+                              String name,
+                              String description,
                               String param);
 
     ConfigFileVO queryByIdWithDetail(Long id);

@@ -17,6 +17,8 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface ConfigFileMapper extends BaseMapper<ConfigFileDTO> {
     List<ConfigFileVO> listByParams(@Param("sourceType") String sourceType,
                                     @Param("sourceId") Long sourceId,
+                                    @Param("name") String name,
+                                    @Param("description") String description,
                                     @Param("param") String param);
 
     ConfigFileVO queryByIdWithDetail(@Param("id") Long id);
