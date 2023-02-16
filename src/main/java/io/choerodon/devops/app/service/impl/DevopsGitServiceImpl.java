@@ -498,8 +498,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             throw new CommonException("devops.gitlabProjectId.not.exists");
         }
 
-        // 由于gitlab不会同步被删掉的合并请求，所以每一次查询前先删除已经不存在的合并请求
-        syncMergeRequest(appServiceDTO.getGitlabProjectId());
 
         Page<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService.basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageable);
 
