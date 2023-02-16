@@ -7,6 +7,14 @@
         from devops_config_file dcf
         <where>
             dcf.source_type = #{sourceType} and dcf.source_id = #{sourceId}
+            <if test='name != null and name!=""'>
+                AND
+                dcf.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test='description != null and description!=""'>
+                AND
+                dcf.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+            </if>
             <if test='param != null and param!=""'>
                 AND
                 (dcf.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')

@@ -80,10 +80,14 @@ public class ConfigFileController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageable,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
             @RequestParam(required = false) String param) {
         return ResponseEntity.ok(configFileService.paging(ResourceLevel.PROJECT.value(),
                 projectId,
                 pageable,
+                name,
+                description,
                 param));
     }
 
