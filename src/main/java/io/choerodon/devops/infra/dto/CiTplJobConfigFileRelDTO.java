@@ -48,6 +48,14 @@ public class CiTplJobConfigFileRelDTO extends AuditDomain {
     @NotBlank
     private String configFilePath;
 
+    public CiTplJobConfigFileRelDTO() {
+    }
+
+    public CiTplJobConfigFileRelDTO(Long ciTemplateJobId, Long configFileId, String configFilePath) {
+        this.ciTemplateJobId = ciTemplateJobId;
+        this.configFileId = configFileId;
+        this.configFilePath = configFilePath;
+    }
 
     public Long getId() {
         return id;

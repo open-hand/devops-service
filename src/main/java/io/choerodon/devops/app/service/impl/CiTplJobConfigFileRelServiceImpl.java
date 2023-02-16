@@ -1,10 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.devops.app.service.CiTplJobConfigFileRelService;
+import io.choerodon.devops.infra.constant.PipelineCheckConstant;
+import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
 import io.choerodon.devops.infra.mapper.CiTplJobConfigFileRelMapper;
+import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
  * CI任务模板配置文件关联表(CiTplJobConfigFileRel)应用服务
@@ -14,7 +21,37 @@ import io.choerodon.devops.infra.mapper.CiTplJobConfigFileRelMapper;
  */
 @Service
 public class CiTplJobConfigFileRelServiceImpl implements CiTplJobConfigFileRelService {
+
+    private static final String DEVOPS_SAVE_TPL_JOB_CONFIG_FILE_REL_FAILED = "devops.save.tpl.job.config.file.rel.failed";
+
     @Autowired
     private CiTplJobConfigFileRelMapper ciTplJobConfigFileRelMapper;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void baseCreate(CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO) {
+        MapperUtil.resultJudgedInsertSelective(ciTplJobConfigFileRelMapper,
+                ciTplJobConfigFileRelDTO,
+                DEVOPS_SAVE_TPL_JOB_CONFIG_FILE_REL_FAILED);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByJobId(Long jobId) {
+        Assert.notNull(jobId, PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL);
+
+        CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO = new CiTplJobConfigFileRelDTO();
+        ciTplJobConfigFileRelDTO.setCiTemplateJobId(jobId);
+        ciTplJobConfigFileRelMapper.delete(ciTplJobConfigFileRelDTO);
+    }
+
+    @Override
+    public List<CiTplJobConfigFileRelDTO> listByJobId(Long jobId) {
+        Assert.notNull(jobId, PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL);
+
+        CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO = new CiTplJobConfigFileRelDTO();
+        ciTplJobConfigFileRelDTO.setCiTemplateJobId(jobId);
+        return ciTplJobConfigFileRelMapper.select(ciTplJobConfigFileRelDTO);
+    }
 }
 
