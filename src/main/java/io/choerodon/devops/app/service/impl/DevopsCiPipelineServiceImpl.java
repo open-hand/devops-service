@@ -116,7 +116,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final AppServiceMapper appServiceMapper;
     private final CiCdPipelineMapper ciCdPipelineMapper;
     private final DevopsCdStageService devopsCdStageService;
-    private final DevopsCdAuditService devopsCdAuditService;
+//    private final DevopsCdAuditService devopsCdAuditService;
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
@@ -130,8 +130,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //    @Autowired
 //    private DevopsCdPipelineRecordMapper devopsCdPipelineRecordMapper;
 
-    @Autowired
-    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
+//    @Autowired
+//    private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
 //    @Autowired
 //    private DevopsCdStageRecordMapper devopsCdStageRecordMapper;
@@ -142,17 +142,17 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     //    @Autowired
 //    @Lazy
 //    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
+//    @Autowired
+//    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
     @Autowired
     private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
-    @Autowired
-    private DevopsDeployAppCenterService devopsDeployAppCenterService;
-    @Autowired
-    private DevopsHostAppService devopsHostAppService;
-    @Autowired
-    @Lazy
-    private DevopsHostUserPermissionService devopsHostUserPermissionService;
+    //    @Autowired
+//    private DevopsDeployAppCenterService devopsDeployAppCenterService;
+//    @Autowired
+//    private DevopsHostAppService devopsHostAppService;
+//    @Autowired
+//    @Lazy
+//    private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
     private AppExternalConfigService appExternalConfigService;
     @Autowired
@@ -182,8 +182,6 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     @Autowired
     private CiPipelineAppVersionService ciPipelineAppVersionService;
     @Autowired
-    private DevopsHostService devopsHostService;
-    @Autowired
     private JobOperator jobOperator;
     @Autowired
     @Lazy
@@ -209,6 +207,8 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private DevopsCdAuditMapper devopsCdAuditMapper;
     @Autowired
     private PipelineService pipelineService;
+    @Autowired
+    private CiJobConfigFileRelService ciJobConfigFileRelService;
 
 
     public DevopsCiPipelineServiceImpl(
@@ -1889,10 +1889,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                     handler.setCiJobConfig(job, ciJob);
                     List<String> script = new ArrayList<>();
                     // 下载配置文件
-//                    if (job.getConfigFileId() != null && job.getConfigFilePath() != null) {
-//                        script.add(String.format("downloadConfigFileByUId %s %s", job.getConfigFileId(), job.getConfigFilePath()));
-//                    }
+                    List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = ciJobConfigFileRelService.listByJobId(job.getId());
+                    if (!CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
+                        ciJobConfigFileRelDTOS.forEach(ciJobConfigFileRelDTO -> {
+                            script.add(String.format("downloadConfigFileByUId %s %s", ciJobConfigFileRelDTO.getConfigFileId(), ciJobConfigFileRelDTO.getConfigFilePath()));
+                        });
 
+                    }
                     script.addAll(handler.buildScript(Objects.requireNonNull(organizationId), projectId, job));
 
                     ciJob.setScript(script);
