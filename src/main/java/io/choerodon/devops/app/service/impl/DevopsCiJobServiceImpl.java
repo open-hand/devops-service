@@ -22,7 +22,6 @@ import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.*;
-import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -80,8 +79,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     @Autowired
-    private JobOperator jobOperator;
-
+    private CiJobConfigFileRelService ciJobConfigFileRelService;
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -143,6 +141,10 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         if (!jobIds.isEmpty()) {
             // 删除任务下的步骤
             devopsCiStepService.deleteByJobIds(jobIds);
+
+            // 删除任务和配置文件关系
+            ciJobConfigFileRelService.deleteByJobIds(jobIds);
+
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiStageId(stageId);
             devopsCiJobMapper.delete(devopsCiJobDTO);

@@ -12,7 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_tpl_job_config_file_rel.groovy
             column(name: 'config_file_id', type: 'BIGINT UNSIGNED', remarks: 'devops_config_file.id') {
                 constraints(nullable: false)
             }
-            column(name: 'config_file_path', type: 'VARCHAR(1024)', remarks: '配置文件下载路径', afterColumn: 'config_file_id') {
+            column(name: 'config_file_path', type: 'VARCHAR(256)', remarks: '配置文件下载路径') {
                 constraints(nullable: false)
             }
 

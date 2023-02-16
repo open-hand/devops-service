@@ -5,10 +5,13 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.CiJobWebHookVO;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
+import io.choerodon.devops.app.service.CiJobConfigFileRelService;
 import io.choerodon.devops.app.service.DevopsCiJobService;
+import io.choerodon.devops.infra.dto.CiJobConfigFileRelDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobRecordDTO;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
@@ -26,6 +29,9 @@ import io.choerodon.devops.infra.util.ConvertUtils;
 public abstract class AbstractJobHandler {
     @Autowired
     private DevopsCiJobService devopsCiJobService;
+
+    @Autowired
+    private CiJobConfigFileRelService ciJobConfigFileRelService;
 
     public abstract CiJobTypeEnum getType();
 
@@ -60,7 +66,19 @@ public abstract class AbstractJobHandler {
         devopsCiJobDTO.setCiPipelineId(ciPipelineId);
         devopsCiJobDTO.setCiStageId(ciStageId);
         devopsCiJobDTO.setConfigId(configId);
+
         devopsCiJobService.create(devopsCiJobDTO);
+
+        // 保存文件配置
+        if (!CollectionUtils.isEmpty(devopsCiJobVO.getConfigFileRelList())) {
+            devopsCiJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
+                ciJobConfigFileRelService.baseCreate(new CiJobConfigFileRelDTO(devopsCiJobDTO.getId(),
+                        configFileRelVO.getConfigFileId(),
+                        configFileRelVO.getConfigFilePath()));
+            });
+
+        }
+
         return devopsCiJobDTO;
     }
 
