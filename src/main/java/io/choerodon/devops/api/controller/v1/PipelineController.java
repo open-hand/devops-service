@@ -94,8 +94,8 @@ public class PipelineController extends BaseController {
             @RequestParam(value = "enable", required = false) Boolean enable,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "trigger_type", required = false) String triggerType,
-            @RequestParam(value = "param", required = false) String param) {
-        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enable, status, triggerType, param));
+            @RequestParam(value = "params", required = false) String params) {
+        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enable, status, triggerType, params));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)

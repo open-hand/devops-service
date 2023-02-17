@@ -564,8 +564,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String param) {
-        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enable, status, triggerType, param));
+    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String params) {
+        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enable, status, triggerType, params));
         if (pipelineVOS.isEmpty()) {
             return new Page<>();
         }

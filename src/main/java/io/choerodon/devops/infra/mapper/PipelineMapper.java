@@ -23,7 +23,7 @@ public interface PipelineMapper extends BaseMapper<PipelineDTO> {
                                                      @Param("enable") Boolean enable,
                                                      @Param("status") String status,
                                                      @Param("triggerType") String triggerType,
-                                                     @Param("param") String param);
+                                                     @Param("params") String params);
 
     Boolean checkName(@Param("projectId") Long projectId,
                       @Param("id") Long id,

@@ -33,7 +33,7 @@ public interface ConfigFileService {
                               PageRequest pageable,
                               String name,
                               String description,
-                              String param);
+                              String params);
 
     ConfigFileVO queryByIdWithDetail(Long id);
 
