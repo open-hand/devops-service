@@ -300,8 +300,12 @@ function downloadConfigFileByUId() {
       echo "Download Configfile failed."
       exit 1
   else
+    # 保存到其他目录，需要提前创建目录
+    if [[ "$2" =~ "/" ]]; then
+      mkdir -p $(dirname "$2")
+    fi
     # 输出配置文件到目标路径
-    echo result.json > "$2"
+    mv result.json "$2"
   fi
 }
 
