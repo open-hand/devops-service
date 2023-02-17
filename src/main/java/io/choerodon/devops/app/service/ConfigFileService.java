@@ -36,5 +36,7 @@ public interface ConfigFileService {
                               String param);
 
     ConfigFileVO queryByIdWithDetail(Long id);
+
+    Boolean checkIsUsed(Long projectId, Long id);
 }
 

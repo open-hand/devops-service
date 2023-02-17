@@ -1,14 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.ConfigFileVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
+import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
+import io.choerodon.devops.app.service.CiTemplateJobService;
 import io.choerodon.devops.app.service.ConfigFileDetailService;
 import io.choerodon.devops.app.service.ConfigFileService;
+import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.ConfigFileDTO;
 import io.choerodon.devops.infra.dto.ConfigFileDetailDTO;
@@ -35,6 +42,11 @@ public class ConfigFileServiceImpl implements ConfigFileService {
     private ConfigFileMapper configFileMapper;
     @Autowired
     private ConfigFileDetailService configFileDetailService;
+
+    @Autowired
+    private DevopsCiPipelineService devopsCiPipelineService;
+    @Autowired
+    private CiTemplateJobService ciTemplateJobService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -93,6 +105,21 @@ public class ConfigFileServiceImpl implements ConfigFileService {
     @Override
     public ConfigFileVO queryByIdWithDetail(Long id) {
         return configFileMapper.queryByIdWithDetail(id);
+    }
+
+    @Override
+    public Boolean checkIsUsed(Long projectId, Long id) {
+        // 查询是否存在流水线引用
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = devopsCiPipelineService.listConfigFileReferencePipelineInfo(projectId, id);
+        if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList)) {
+            return true;
+        }
+        // 查询是否存在流水线模板引用
+        List<CiTemplateJobVO> ciTemplateJobVOS = ciTemplateJobService.listConfigFileReferenceInfo(id);
+        if (!CollectionUtils.isEmpty(ciTemplateJobVOS)) {
+            return true;
+        }
+        return false;
     }
 
 

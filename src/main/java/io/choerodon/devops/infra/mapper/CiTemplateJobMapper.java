@@ -25,5 +25,6 @@ public interface CiTemplateJobMapper extends BaseMapper<CiTemplateJobDTO> {
 
     void updateImageByIds(@Param("ids") Set<Long> jobIds, @Param("image") String sonarImage);
 
+    List<CiTemplateJobVO> listConfigFileReferenceInfo(@Param("configFileId") Long configFileId);
 }
 
