@@ -1240,6 +1240,11 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     }
 
     @Override
+    public List<PipelineInstanceReferenceVO> listConfigFileReferencePipelineInfo(Long projectId, Long configFileId) {
+        return devopsCiCdPipelineMapper.listConfigFileReferencePipelineInfo(projectId, configFileId);
+    }
+
+    @Override
     public List<PipelineInstanceReferenceVO> listDeployEnvReferencePipelineInfo(Long projectId, Long envId) {
         return devopsCiCdPipelineMapper.listDeployEnvReferencePipelineInfo(projectId, envId);
     }

@@ -20,13 +20,20 @@
 --         AND dctj.visibility=1
     </select>
     <select id="listByTenantIdAndGroupId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
-        select * from devops_ci_template_job dctj
+        select *
+        from devops_ci_template_job dctj
         where dctj.group_id = #{groupId}
-        and ((dctj.source_type = 'site' and dctj.source_id = 0)
-        or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
-        or (dctj.source_type = 'project' and dctj.source_id = #{projectId})
+          and ((dctj.source_type = 'site' and dctj.source_id = 0)
+            or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
+            or (dctj.source_type = 'project' and dctj.source_id = #{projectId})
             )
-        AND dctj.visibility=1
+          AND dctj.visibility = 1
+    </select>
+    <select id="listConfigFileReferenceInfo" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
+        select dctj.*
+        from devops_ci_template_job dctj
+                 join devops_ci_tpl_job_config_file_rel dctjcfr
+                      on dctjcfr.ci_template_job_id = dctj.id and dctjcfr.config_file_id = #{configFileId}
     </select>
 
     <update id="updateImageByIds">

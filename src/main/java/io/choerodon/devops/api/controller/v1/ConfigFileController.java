@@ -94,12 +94,21 @@ public class ConfigFileController {
     @ApiOperation(value = "查询配置文件详情")
     @GetMapping("{id}")
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @CustomPageRequest
     public ResponseEntity<ConfigFileVO> query(
             @PathVariable(value = "project_id") Long projectId,
             @Encrypt
             @PathVariable(value = "id") Long id) {
         return ResponseEntity.ok(configFileService.queryByIdWithDetail(id));
+    }
+
+    @ApiOperation(value = "校验配置文件是否存在引用关系")
+    @GetMapping("{id}")
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    public ResponseEntity<Boolean> checkIsUsed(
+            @PathVariable(value = "project_id") Long projectId,
+            @Encrypt
+            @PathVariable(value = "id") Long id) {
+        return ResponseEntity.ok(configFileService.checkIsUsed(projectId, id));
     }
 
 }
