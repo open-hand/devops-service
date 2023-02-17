@@ -22,6 +22,7 @@
                 )
             </if>
         </where>
+        order by id desc
     </select>
     <select id="queryByIdWithDetail" resultType="io.choerodon.devops.api.vo.ConfigFileVO">
         select dcf.*, dcfd.message
