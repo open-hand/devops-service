@@ -11,6 +11,7 @@ import io.choerodon.devops.app.service.CiService;
 import io.choerodon.devops.app.service.ConfigFileService;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 
 /**
  * 〈功能简述〉
@@ -28,12 +29,16 @@ public class CiServiceImpl implements CiService {
 
     @Override
     public String queryConfigFileById(String token, Long configFileId) {
-        AppServiceDTO appServiceDTO = appServiceService.queryByTokenOrThrowE(token);
+        try {
+            AppServiceDTO appServiceDTO = appServiceService.queryByTokenOrThrowE(token);
 
-        ConfigFileVO configFileVO = configFileService.queryByIdWithDetail(configFileId);
-        if (ResourceLevel.PROJECT.value().equals(configFileVO.getSourceType()) && !configFileVO.getSourceId().equals(appServiceDTO.getProjectId())) {
-            throw new CommonException(MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_TEAM);
+            ConfigFileVO configFileVO = configFileService.queryByIdWithDetail(configFileId);
+            if (ResourceLevel.PROJECT.value().equals(configFileVO.getSourceType()) && !configFileVO.getSourceId().equals(appServiceDTO.getProjectId())) {
+                throw new CommonException(MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_TEAM);
+            }
+            return configFileVO.getMessage();
+        } catch (CommonException e) {
+            throw new DevopsCiInvalidException(e.getCode(), e, e.getParameters());
         }
-        return configFileVO.getMessage();
     }
 }

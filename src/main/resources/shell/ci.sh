@@ -300,13 +300,6 @@ function downloadConfigFileByUId() {
       echo "Download Configfile failed."
       exit 1
   else
-    is_failed=$(jq -r .failed result.json)
-    # 判断是否成功
-    if [ "${is_failed}" == "true" ];
-    then
-      echo "Download Configfile failed."
-      exit 1
-    fi
     # 输出配置文件到目标路径
     echo result.json > "$2"
   fi
