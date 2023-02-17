@@ -82,13 +82,13 @@ public class ConfigFileController {
             @ApiIgnore PageRequest pageable,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) String param) {
+            @RequestParam(required = false) String params) {
         return ResponseEntity.ok(configFileService.paging(ResourceLevel.PROJECT.value(),
                 projectId,
                 pageable,
                 name,
                 description,
-                param));
+                params));
     }
 
     @ApiOperation(value = "查询配置文件详情")

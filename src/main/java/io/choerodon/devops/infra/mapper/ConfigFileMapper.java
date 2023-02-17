@@ -19,7 +19,7 @@ public interface ConfigFileMapper extends BaseMapper<ConfigFileDTO> {
                                     @Param("sourceId") Long sourceId,
                                     @Param("name") String name,
                                     @Param("description") String description,
-                                    @Param("param") String param);
+                                    @Param("params") String params);
 
     ConfigFileVO queryByIdWithDetail(@Param("id") Long id);
 }

@@ -96,8 +96,8 @@ public class ConfigFileServiceImpl implements ConfigFileService {
     }
 
     @Override
-    public Page<ConfigFileVO> paging(String sourceType, Long sourceId, PageRequest pageable, String name, String description, String param) {
-        Page<ConfigFileVO> page = PageHelper.doPage(pageable, () -> configFileMapper.listByParams(sourceType, sourceId, name, description, param));
+    public Page<ConfigFileVO> paging(String sourceType, Long sourceId, PageRequest pageable, String name, String description, String params) {
+        Page<ConfigFileVO> page = PageHelper.doPage(pageable, () -> configFileMapper.listByParams(sourceType, sourceId, name, description, params));
         UserDTOFillUtil.fillUserInfo(page.getContent(), "createdBy", "creator");
         return page;
     }

@@ -15,10 +15,10 @@
                 AND
                 dcf.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
             </if>
-            <if test='param != null and param!=""'>
+            <if test='params != null and params!=""'>
                 AND
-                (dcf.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-                OR dcf.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+                (dcf.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+                OR dcf.description LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
                 )
             </if>
         </where>

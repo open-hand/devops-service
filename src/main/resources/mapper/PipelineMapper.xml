@@ -28,8 +28,8 @@
         dp.id)
         <where>
             dp.project_id = #{projectId}
-            <if test="param != null">
-                and dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            <if test="params != null">
+                and dp.name like CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>
             <if test="enable!=null">
                 and dp.is_enable = #{enable}
