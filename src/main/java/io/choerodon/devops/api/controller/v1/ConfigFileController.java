@@ -102,7 +102,7 @@ public class ConfigFileController {
     }
 
     @ApiOperation(value = "校验配置文件是否存在引用关系")
-    @GetMapping("{id}")
+    @GetMapping("/{id}/check_is_used")
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<Boolean> checkIsUsed(
             @PathVariable(value = "project_id") Long projectId,

@@ -57,8 +57,6 @@ public class CiController {
     @Autowired
     private DevopsCiJobRecordService devopsCiJobRecordService;
     @Autowired
-    private ConfigFileService configFileService;
-    @Autowired
     private CiService ciService;
 
     public CiController(AppServiceService applicationService,
