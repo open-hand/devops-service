@@ -270,7 +270,7 @@ public class GitlabCiUtil {
                                                String url,
                                                String username,
                                                String password) {
-        String rawCommand = "saveCustomJarInfo %s %s %s %s %s";
+        String rawCommand = "saveCustomJarInfo %s %s %s %s";
         return String.format(rawCommand, sequence, url, DESEncryptUtil.encode(username), DESEncryptUtil.encode(password));
     }
 }
