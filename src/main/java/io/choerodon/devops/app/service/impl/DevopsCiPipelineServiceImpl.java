@@ -628,11 +628,9 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
         fillEditPipelinePermission(projectId, ciCdPipelineVO, appServiceDTO);
         //查询CI相关的阶段以及JOB
         List<DevopsCiStageVO> devopsCiStageVOS = handleCiStage(pipelineId, deleteCdInfo);
-//        //查询CD相关的阶段以及JOB
-//        List<DevopsCdStageVO> devopsCdStageVOS = handleCdStage(pipelineId);
+
         //封装流水线
         ciCdPipelineVO.setDevopsCiStageVOS(devopsCiStageVOS);
-//        ciCdPipelineVO.setDevopsCdStageVOS(devopsCdStageVOS);
 
         // 添加是否开启执行计划
         List<CiPipelineScheduleVO> ciPipelineScheduleVOS = ciPipelineScheduleService.listByAppServiceId(projectId, appServiceDTO.getId());
@@ -695,6 +693,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
             if (Boolean.TRUE.equals(deleteCdInfo)) {
                 jobHandler.deleteCdInfo(devopsCiJobVO);
             }
+            devopsCiJobVO.setConfigFileRelList(ciJobConfigFileRelService.listVOByJobId(devopsCiJobVO.getId()));
 
             List<DevopsCiStepDTO> ciStepDTOS = jobStepMap.get(devopsCiJobVO.getId());
             if (!CollectionUtils.isEmpty(ciStepDTOS)) {

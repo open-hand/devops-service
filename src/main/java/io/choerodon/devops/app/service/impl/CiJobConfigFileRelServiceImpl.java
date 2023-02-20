@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +9,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.app.service.CiJobConfigFileRelService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiJobConfigFileRelDTO;
 import io.choerodon.devops.infra.mapper.CiJobConfigFileRelMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -50,6 +53,15 @@ public class CiJobConfigFileRelServiceImpl implements CiJobConfigFileRelService 
         ciJobConfigFileRelDTO.setCiJobId(jobId);
 
         return ciJobConfigFileRelMapper.select(ciJobConfigFileRelDTO);
+    }
+
+    @Override
+    public List<ConfigFileRelVO> listVOByJobId(Long jobId) {
+        List<CiJobConfigFileRelDTO> ciJobConfigFileRelDTOS = listByJobId(jobId);
+        if (CollectionUtils.isEmpty(ciJobConfigFileRelDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(ciJobConfigFileRelDTOS, ConfigFileRelVO.class);
     }
 }
 
