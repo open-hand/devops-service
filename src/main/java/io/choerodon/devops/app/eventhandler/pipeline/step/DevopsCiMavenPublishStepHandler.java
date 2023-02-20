@@ -293,7 +293,6 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
             shells.add(String.format(EXPORT_VAR_TPL, "CHOERODON_MAVEN_PACKAGING", ciConfigTemplateVO.getPackaging()));
         }
 
-        // 这里这么写是为了考虑之后可能选了多个仓库, 如果是多个仓库的话, 变量替换不便
         // TODO 重构逻辑
 //        List<String> templateShells = GitlabCiUtil
 //                .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
@@ -307,21 +306,18 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
                 .filterLines(GitlabCiUtil.splitLinesForShell(devopsCiStepDTO.getScript()),
                         true,
                         true));
+
         // 保存jar包信息到猪齿鱼
-        String cmd;
         if (ciConfigTemplateVO.getNexusRepoId() != null) {
-            cmd = GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
-                    devopsCiMavenSettingsDTO.getId(),
-                    devopsCiStepDTO.getSequence());
+            shells.add(GitlabCiUtil.saveJarMetadata(ciConfigTemplateVO.getNexusRepoId(),
+                    devopsCiStepDTO.getSequence()));
         } else {
             MavenRepoVO targetRepo = ciConfigTemplateVO.getTargetRepo();
-            cmd = GitlabCiUtil.saveCustomJarMetadata(devopsCiMavenSettingsDTO.getId(),
-                    devopsCiStepDTO.getSequence(),
+            shells.add(GitlabCiUtil.saveCustomJarMetadata(devopsCiStepDTO.getSequence(),
                     targetRepo.getUrl(),
                     targetRepo.getUsername(),
-                    targetRepo.getPassword());
+                    targetRepo.getPassword()));
         }
-        shells.add(cmd);
 //        // 根据目标仓库信息, 渲染发布jar包的指令
 //        if (!CollectionUtils.isEmpty(targetMavenRepoVO)) {
 //            // 插入shell指令将配置的settings文件下载到项目目录下

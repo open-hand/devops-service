@@ -172,35 +172,35 @@ public class CiController {
         return ResponseEntity.ok().build();
     }
 
-    @Permission(permissionPublic = true)
-    @ApiOperation(value = "存储Jar包的元数据")
-    @PostMapping("/save_jar_metadata")
-    public ResponseEntity<Void> saveJarMetaData(
-            @ApiParam(value = "制品库id", required = true)
-            @RequestParam(value = "nexus_repo_id", required = false) Long nexusRepoId,
-            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
-            @RequestParam("job_id") Long jobId,
-            @ApiParam(value = "制品库id", required = true)
-            @RequestParam("sequence") Long sequence,
-            @ApiParam(value = "maven仓库地址", required = true)
-            @RequestParam(value = "maven_repo_url", required = false) String mavenRepoUrl,
-            @ApiParam(value = "maven仓库用户名", required = true)
-            @RequestParam(value = "username", required = false) String username,
-            @ApiParam(value = "maven仓库用户密码", required = true)
-            @RequestParam(value = "password", required = false) String password,
-            @ApiParam(value = "GitLab流水线id", required = true)
-            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
-            @ApiParam(value = "job_name", required = true)
-            @RequestParam(value = "job_name") String jobName,
-            @ApiParam(value = "token", required = true)
-            @RequestParam String token,
-            @ApiParam(value = "版本", required = true)
-            @RequestParam String version,
-            @ApiParam(value = "pom文件", required = true)
-            @RequestParam MultipartFile file) {
-        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
-        return ResponseEntity.ok().build();
-    }
+//    @Permission(permissionPublic = true)
+//    @ApiOperation(value = "存储Jar包的元数据")
+//    @PostMapping("/save_jar_metadata")
+//    public ResponseEntity<Void> saveJarMetaData(
+//            @ApiParam(value = "制品库id", required = true)
+//            @RequestParam(value = "nexus_repo_id", required = false) Long nexusRepoId,
+//            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
+//            @RequestParam("job_id") Long jobId,
+//            @ApiParam(value = "制品库id", required = true)
+//            @RequestParam("sequence") Long sequence,
+//            @ApiParam(value = "maven仓库地址", required = true)
+//            @RequestParam(value = "maven_repo_url", required = false) String mavenRepoUrl,
+//            @ApiParam(value = "maven仓库用户名", required = true)
+//            @RequestParam(value = "username", required = false) String username,
+//            @ApiParam(value = "maven仓库用户密码", required = true)
+//            @RequestParam(value = "password", required = false) String password,
+//            @ApiParam(value = "GitLab流水线id", required = true)
+//            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+//            @ApiParam(value = "job_name", required = true)
+//            @RequestParam(value = "job_name") String jobName,
+//            @ApiParam(value = "token", required = true)
+//            @RequestParam String token,
+//            @ApiParam(value = "版本", required = true)
+//            @RequestParam String version,
+//            @ApiParam(value = "pom文件", required = true)
+//            @RequestParam MultipartFile file) {
+//        ciPipelineMavenService.createOrUpdate(nexusRepoId, jobId, sequence, gitlabPipelineId, jobName, token, file, mavenRepoUrl, username, password, version);
+//        return ResponseEntity.ok().build();
+//    }
 
     @Permission(permissionPublic = true)
     @ApiOperation(value = "存储Jar包的元数据")
@@ -208,8 +208,8 @@ public class CiController {
     public ResponseEntity<Void> saveJarInfo(
             @ApiParam(value = "制品库id", required = true)
             @RequestParam(value = "nexus_repo_id", required = false) Long nexusRepoId,
-            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
-            @RequestParam("mvn_settings_id") Long mvnSettingsId,
+//            @ApiParam(value = "猪齿鱼的CI的JOB纪录的id", required = true)
+//            @RequestParam("mvn_settings_id") Long mvnSettingsId,
             @ApiParam(value = "制品库id", required = true)
             @RequestParam("sequence") Long sequence,
             @ApiParam(value = "maven仓库地址", required = true)
@@ -234,7 +234,7 @@ public class CiController {
             @RequestParam(value = "packaging", required = false) String packaging
     ) {
         ciPipelineMavenService.createOrUpdateJarInfo(nexusRepoId,
-                mvnSettingsId,
+//                mvnSettingsId,
                 sequence,
                 gitlabPipelineId,
                 jobName,
