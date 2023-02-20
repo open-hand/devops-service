@@ -34,7 +34,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.exception.NoTraceException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.mapper.UserAttrMapper;
 import io.choerodon.devops.infra.util.ArrayUtil;
 import io.choerodon.devops.infra.util.JsonHelper;
 import io.choerodon.devops.infra.util.LogUtil;
@@ -70,12 +69,6 @@ public class SagaHandler {
     private GitlabHandleService gitlabHandleService;
     @Autowired
     private DevopsAppTemplateService devopsAppTemplateService;
-    @Autowired
-    private UserAttrService userAttrService;
-    @Autowired
-    private UserAttrMapper userAttrMapper;
-    @Autowired
-    private DevopsGitService devopsGitService;
 
     private void loggerInfo(Object o) {
         if (LOGGER.isInfoEnabled()) {
