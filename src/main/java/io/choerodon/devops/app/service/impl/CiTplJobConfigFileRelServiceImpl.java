@@ -1,16 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.app.service.CiTplJobConfigFileRelService;
 import io.choerodon.devops.infra.constant.PipelineCheckConstant;
 import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
 import io.choerodon.devops.infra.mapper.CiTplJobConfigFileRelMapper;
+import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.MapperUtil;
 
 /**
@@ -52,6 +56,15 @@ public class CiTplJobConfigFileRelServiceImpl implements CiTplJobConfigFileRelSe
         CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO = new CiTplJobConfigFileRelDTO();
         ciTplJobConfigFileRelDTO.setCiTemplateJobId(jobId);
         return ciTplJobConfigFileRelMapper.select(ciTplJobConfigFileRelDTO);
+    }
+
+    @Override
+    public List<ConfigFileRelVO> listVOByJobId(Long jobId) {
+        List<CiTplJobConfigFileRelDTO> ciTplJobConfigFileRelDTOS = listByJobId(jobId);
+        if (CollectionUtils.isEmpty(ciTplJobConfigFileRelDTOS)) {
+            return new ArrayList<>();
+        }
+        return ConvertUtils.convertList(ciTplJobConfigFileRelDTOS, ConfigFileRelVO.class);
     }
 }
 

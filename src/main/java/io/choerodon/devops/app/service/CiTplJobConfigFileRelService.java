@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.pipeline.ConfigFileRelVO;
 import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
 
 /**
@@ -17,5 +18,7 @@ public interface CiTplJobConfigFileRelService {
     void deleteByJobId(Long jobId);
 
     List<CiTplJobConfigFileRelDTO> listByJobId(Long jobId);
+
+    List<ConfigFileRelVO> listVOByJobId(Long jobId);
 }
 
