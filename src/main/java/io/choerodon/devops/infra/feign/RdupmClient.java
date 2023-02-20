@@ -129,9 +129,9 @@ public interface RdupmClient {
             @ApiParam(value = "仓库主键list", required = true)
             @RequestParam("repositoryIds") Set<Long> repositoryIds);
 
-    @ApiOperation(value = "查询npm仓库-包含默认账户信息")
+    @ApiOperation(value = "查询仓库-包含默认账户信息")
     @Permission(permissionWithin = true)
-    @GetMapping("/v1/nexus-repositorys/project/{projectId}/npm/repo/{repositoryId}/with_default_user")
+    @GetMapping("/v1/nexus-repositorys/project/{projectId}/repo/{repositoryId}/with_default_user")
     ResponseEntity<String> queryRepoWithDefaultUserInfo(@PathVariable(name = "projectId") Long projectId,
                                                         @PathVariable(name = "repositoryId") Long repositoryId);
 
