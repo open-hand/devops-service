@@ -1696,11 +1696,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
             devopsDeployAppCenterService.deleteByEnvIdAndObjectIdAndRdupmType(devopsEnvironmentDTO.getId(), appServiceInstanceDTO.getId(), RdupmTypeEnum.CHART.value());
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX)) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX,
-                        String.format("delete: %s", RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX),
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX, String.format("【DELETE】%s", RELEASE_PREFIX + appServiceInstanceDTO.getCode() + YAML_SUFFIX), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), MASTER);
             }
             return;
         } else {
@@ -1722,11 +1718,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         if (devopsEnvFileResourceES.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceDTO.getFilePath(),
-                        String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()),
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nHelmRelease> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
@@ -2156,6 +2148,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         }
 
         Map<String, String> pathContentMap = new HashMap<>();
+        List<String> fileNames = new ArrayList<>();
 
         List<InstanceSagaPayload> instanceSagaPayloads = batchDeploymentPayload.getInstanceSagaPayloads();
         for (InstanceSagaPayload instanceSagaPayload : instanceSagaPayloads) {
@@ -2176,6 +2169,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
             String instanceContent = resourceConvertToYamlHandler.getCreationResourceContentForBatchDeployment();
             String fileName = GitOpsConstants.RELEASE_PREFIX + instanceSagaPayload.getAppServiceDeployVO().getInstanceName() + GitOpsConstants.YAML_FILE_SUFFIX;
+            fileNames.add(fileName);
             pathContentMap.put(fileName, instanceContent);
         }
 
@@ -2204,12 +2198,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         }
 
-        gitlabServiceClientOperator.createGitlabFiles(
-                TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
-                batchDeploymentPayload.getGitlabUserId(),
-                GitOpsConstants.MASTER,
-                pathContentMap,
-                GitOpsConstants.BATCH_DEPLOYMENT_COMMIT_MESSAGE);
+        gitlabServiceClientOperator.createGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), batchDeploymentPayload.getGitlabUserId(), GitOpsConstants.MASTER, pathContentMap, String.join(",", fileNames));
     }
 
 

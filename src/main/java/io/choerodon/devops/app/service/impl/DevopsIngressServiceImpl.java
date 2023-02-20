@@ -492,7 +492,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             baseDeletePathByIngressId(ingressId);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX)) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX, String.format("delete: %s", GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX, String.format("【DELETE】%s", GitOpsConstants.INGRESS_PREFIX + ingressDO.getName() + GitOpsConstants.YAML_FILE_SUFFIX), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
 
@@ -512,7 +512,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         if (devopsEnvFileResourceDTOS.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), GitOpsConstants.MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             if (operateForOldTypeIngress) {

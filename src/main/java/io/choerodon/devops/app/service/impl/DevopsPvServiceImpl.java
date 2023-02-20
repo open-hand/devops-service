@@ -212,7 +212,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
             devopsPvProPermissionService.baseDeleteByPvId(pvId);
 
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX)) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX, String.format("delete: %s", PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX, String.format("【DELETE】%s", PERSISTENTVOLUME_PREFIX + devopsPvDTO.getName() + YAML_SUFFIX), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
             }
             return true;
         } else {
@@ -227,7 +227,7 @@ public class DevopsPvServiceImpl implements DevopsPvService {
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(GitUserNameUtil.getAdminId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<V1PersistentVolume> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();

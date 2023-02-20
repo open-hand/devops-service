@@ -331,7 +331,7 @@ public class CertificationServiceImpl implements CertificationService {
                     CERT_PREFIX + certificationDTO.getName() + ".yaml")) {
                 gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()),
                         CERT_PREFIX + certificationDTO.getName() + ".yaml",
-                        String.format("delete: %s", CERT_PREFIX + certificationDTO.getName() + ".yaml"),
+                        String.format("【DELETE】%s", CERT_PREFIX + certificationDTO.getName() + ".yaml"),
                         TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
                         "master");
             }
@@ -354,7 +354,7 @@ public class CertificationServiceImpl implements CertificationService {
                 .baseQueryByEnvIdAndPath(certEnvId, devopsEnvFileResourceDTO.getFilePath()).size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER,
                     devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(gitLabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(gitLabEnvProjectId, devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<C7nCertification> certificationOperation = new ResourceConvertToYamlHandler<>();
