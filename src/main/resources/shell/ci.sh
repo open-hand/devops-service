@@ -350,7 +350,6 @@ function saveJarInfo() {
           -H 'Expect:' \
           -F "token=${Token}" \
           -F "nexus_repo_id=$1" \
-#          -F "mvn_settings_id=$2" \
           -F "sequence=$2" \
           -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
           -F "job_name=${CI_JOB_NAME}" \
@@ -364,7 +363,6 @@ function saveJarInfo() {
                 -H 'Expect:' \
                 -F "token=${Token}" \
                 -F "nexus_repo_id=$1" \
-#                -F "mvn_settings_id=$2" \
                 -F "sequence=$2" \
                 -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
                 -F "job_name=${CI_JOB_NAME}" \
@@ -401,7 +399,6 @@ function saveCustomJarInfo() {
     result_upload_to_devops=$(curl -X POST \
         -H 'Expect:' \
         -F "token=${Token}" \
-#        -F "mvn_settings_id=$1" \
         -F "sequence=$1" \
         -F "maven_repo_url=$2" \
         -F "username='$3'" \
@@ -417,7 +414,6 @@ function saveCustomJarInfo() {
     result_upload_to_devops=$(curl -X POST \
             -H 'Expect:' \
             -F "token=${Token}" \
-#            -F "mvn_settings_id=$1" \
             -F "sequence=$1" \
             -F "maven_repo_url=$2" \
             -F "username='$3'" \
