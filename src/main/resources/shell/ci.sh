@@ -399,7 +399,6 @@ function saveCustomJarInfo() {
     result_upload_to_devops=$(curl -X POST \
         -H 'Expect:' \
         -F "token=${Token}" \
-#        -F "mvn_settings_id=$1" \
         -F "sequence=$1" \
         -F "maven_repo_url=$2" \
         -F "username='$3'" \
@@ -415,7 +414,6 @@ function saveCustomJarInfo() {
     result_upload_to_devops=$(curl -X POST \
             -H 'Expect:' \
             -F "token=${Token}" \
-#            -F "mvn_settings_id=$1" \
             -F "sequence=$1" \
             -F "maven_repo_url=$2" \
             -F "username='$3'" \
