@@ -210,8 +210,8 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         if (CollectionUtils.isEmpty(templatePipelineVOS)) {
             return ciTemplateJobVOPage;
         }
-        // 添加配置文件
-        templatePipelineVOS.forEach(job -> job.setConfigFileRelList(ciTplJobConfigFileRelService.listVOByJobId(job.getId())));
+//        // 添加配置文件
+//        templatePipelineVOS.forEach(job -> job.setConfigFileRelList(ciTplJobConfigFileRelService.listVOByJobId(job.getId())));
 
         Map<String, List<CiTemplateJobVO>> stringListMap = templatePipelineVOS.stream()
                 .collect(Collectors.groupingBy(CiTemplateJobVO::getSourceType));
@@ -302,6 +302,9 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         fillCdJobConfig(ciTemplateJobVO);
         CiTemplateJobGroupDTO ciTemplateJobGroupDTO = ciTemplateJobGroupBusMapper.selectByPrimaryKey(ciTemplateJobVO.getGroupId());
         ciTemplateJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+
+        ciTemplateJobVO.setConfigFileRelList(ciTplJobConfigFileRelService.listVOByJobId(ciTemplateJobVO.getId()));
+
         //查询step
         List<CiTemplateStepVO> templateStepVOList = ciTemplateStepService
                 .listByJobIds(Arrays.asList(ciTemplateJobVO.getId()).stream().collect(Collectors.toSet()));
