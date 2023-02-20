@@ -350,7 +350,6 @@ function saveJarInfo() {
           -H 'Expect:' \
           -F "token=${Token}" \
           -F "nexus_repo_id=$1" \
-#          -F "mvn_settings_id=$2" \
           -F "sequence=$2" \
           -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
           -F "job_name=${CI_JOB_NAME}" \
@@ -364,7 +363,6 @@ function saveJarInfo() {
                 -H 'Expect:' \
                 -F "token=${Token}" \
                 -F "nexus_repo_id=$1" \
-#                -F "mvn_settings_id=$2" \
                 -F "sequence=$2" \
                 -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
                 -F "job_name=${CI_JOB_NAME}" \
