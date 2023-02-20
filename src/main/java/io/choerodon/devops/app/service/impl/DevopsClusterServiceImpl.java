@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,7 +152,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_INSTALL_K8S, description = "创建集群", inputSchema = "{}")
     public String createCluster(Long projectId, DevopsClusterReqVO devopsClusterReqVO) {
         String clusterInfoRedisKey = String.format(CLUSTER_INFO_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
         String redisKey = String.format(NODE_CHECK_STEP_REDIS_KEY_TEMPLATE, projectId, devopsClusterReqVO.getCode());
@@ -219,7 +220,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_RETRY_INSTALL_K8S, description = "重试创建集群", inputSchema = "{}")
     public void retryInstallK8s(Long projectId, Long clusterId) {
         DevopsClusterDTO devopsClusterDTO = devopsClusterMapper.selectByPrimaryKey(clusterId);
         if (!devopsClusterDTO.getStatus().equalsIgnoreCase(ClusterStatusEnum.FAILED.value())) {

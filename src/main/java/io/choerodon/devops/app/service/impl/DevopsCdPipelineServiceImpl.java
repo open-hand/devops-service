@@ -1094,7 +1094,7 @@
 //    }
 //
 ////    @Override
-////    @Saga(code = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD, description = "ci流水线成功，执行纯cd流水线", inputSchemaClass = PipelineWebHookVO.class)
+////    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,code = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD, description = "ci流水线成功，执行纯cd流水线", inputSchemaClass = PipelineWebHookVO.class)
 ////    public void handlerCiPipelineStatusSuccess(PipelineWebHookVO pipelineWebHookVO, String token) {
 ////        AppServiceDTO appServiceDTO = applicationService.baseQueryByToken(token);
 ////        pipelineWebHookVO.setToken(token);

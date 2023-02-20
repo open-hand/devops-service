@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +124,7 @@ public class DevopsMergeRequestServiceImpl implements DevopsMergeRequestService 
         baseCreate(devopsMergeRequestVO, token);
     }
 
-    @Saga(code = DEVOPS_MERGE_REQUEST_PASS,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = DEVOPS_MERGE_REQUEST_PASS,
             description = "合并请求通过的saga事件",
             inputSchemaClass = DevopsMergeRequestPayload.class
     )

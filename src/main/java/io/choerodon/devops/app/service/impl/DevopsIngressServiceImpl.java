@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.common.KubernetesObject;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -117,7 +118,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_INGRESS,
             description = "Devops创建域名", inputSchema = "{}")
     public void createIngress(Long projectId, DevopsIngressVO devopsIngressVO) {
 

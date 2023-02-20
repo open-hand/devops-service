@@ -23,6 +23,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.V1Ingress;
@@ -719,7 +720,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
      * @return 部署后实例信息
      */
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_INSTANCE,
             description = "Devops创建实例", inputSchemaClass = InstanceSagaPayload.class)
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     public AppServiceInstanceVO createOrUpdate(@Nullable Long projectId,
@@ -875,7 +876,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceVO;
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_MARKET_INSTANCE,
             description = "Devops创建市场实例", inputSchemaClass = MarketInstanceSagaPayload.class)
     @Override
     public AppServiceInstanceVO createOrUpdateMarketInstance(Long projectId, MarketInstanceCreationRequestVO appServiceDeployVO, Boolean saveRecord) {
@@ -2065,7 +2066,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
         return instanceSagaPayload;
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_BATCH_DEPLOYMENT, inputSchemaClass = BatchDeploymentPayload.class, description = "批量部署实例")
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRED)
     @Override
     public List<AppServiceInstanceVO> batchDeployment(Long projectId, List<AppServiceDeployVO> appServiceDeployVOS) {

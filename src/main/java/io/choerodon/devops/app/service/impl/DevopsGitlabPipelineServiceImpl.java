@@ -9,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -79,7 +80,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
 
     @Override
-    @Saga(code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = DEVOPS_GITLAB_PIPELINE, description = "gitlab pipeline创建到数据库", inputSchemaClass = PipelineWebHookVO.class)
     public void create(PipelineWebHookVO pipelineWebHookVO, String token) {
         pipelineWebHookVO.setToken(token);
         AppServiceDTO applicationDTO = applicationService.baseQueryByToken(token);

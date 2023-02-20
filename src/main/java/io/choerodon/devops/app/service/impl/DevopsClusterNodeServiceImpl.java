@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.TransportException;
 import org.hzero.core.util.UUIDUtils;
@@ -452,7 +453,7 @@ public class DevopsClusterNodeServiceImpl implements DevopsClusterNodeService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchemaClass = DevopsAddNodePayload.class)
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CLUSTER_ADD_NODE, description = "添加集群节点", inputSchemaClass = DevopsAddNodePayload.class)
     public void addNode(Long projectId, Long clusterId, DevopsClusterNodeVO nodeVO) {
         Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
         Assert.notNull(clusterId, ClusterCheckConstant.ERROR_CLUSTER_ID_IS_NULL);

@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import groovy.lang.Lazy;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,7 +151,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
             description = "创建流水线定时执行计划",
             inputSchema = "{}")
     public PipelineDTO create(Long projectId, PipelineVO pipelineVO) {
