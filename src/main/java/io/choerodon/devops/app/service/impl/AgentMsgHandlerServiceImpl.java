@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import io.kubernetes.client.openapi.JSON;
 import io.kubernetes.client.openapi.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -184,7 +185,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     private AppExceptionRecordService appExceptionRecordService;
 
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_POD_READY,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_POD_READY,
             description = "pod状态更新",
             inputSchemaClass = PodReadyEventVO.class)
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -1624,7 +1625,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_DEPLOY_FAILED,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_DEPLOY_FAILED,
             description = "实例部署失败",
             inputSchemaClass = DevopsDeployFailedVO.class)
     private void instanceDeployFailed(Long instanceId, Long commandId) {
@@ -2031,7 +2032,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    @Saga(code = SagaTopicCodeConstants.TEST_POD_UPDATE_SAGA,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.TEST_POD_UPDATE_SAGA,
             description = "测试应用Pod升级(test pod update saga)", inputSchema = "{}")
     public void testPodUpdate(String key, String msg, Long clusterId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -2059,7 +2060,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.TEST_JOB_LOG_SAGA,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.TEST_JOB_LOG_SAGA,
             description = "测试Job日志(test job log saga)", inputSchema = "{}")
     public void testJobLog(String key, String msg, Long clusterId) {
         LOGGER.debug("Test JOB LOG SAGA: key: {}, payload: {}", key, msg);
@@ -2087,7 +2088,7 @@ public class AgentMsgHandlerServiceImpl implements AgentMsgHandlerService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.TEST_STATUS_SAGA,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.TEST_STATUS_SAGA,
             description = "测试Release状态(test status saga)", inputSchema = "{}")
     public void getTestAppStatus(String key, String msg, Long clusterId) {
         LOGGER.debug("Test STATUS SAGA: key: {}, payload: {}", key, msg);

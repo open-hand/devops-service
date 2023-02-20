@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jgit.api.Git;
@@ -280,7 +281,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     @Transactional
     public AppServiceRepVO create(Long projectId, AppServiceReqVO appServiceReqVO) {
@@ -408,7 +409,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_APP_DELETE,
             description = "Devops删除应用服务", inputSchemaClass = DevOpsAppServicePayload.class)
     @Transactional
     @Override
@@ -615,7 +616,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_APP_SYNC_STATUS,
             description = "同步应用服务状态", inputSchemaClass = DevOpsAppServicePayload.class)
     public Boolean updateActive(Long projectId, Long appServiceId, final Boolean active) {
         AppServiceDTO appServiceDTO = permissionHelper.checkAppServiceBelongToProject(projectId, appServiceId);
@@ -1219,7 +1220,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_CREATE_APP_FAIL,
             description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
     public void setAppErrStatus(String input, Long projectId, Long appServiceId) {
         producer.applyAndReturn(
@@ -1340,7 +1341,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importApp(Long projectId, AppServiceImportVO appServiceImportVO, Boolean isTemplate) {
@@ -1348,7 +1349,7 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_GITLAB_PROJECT,
             description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public AppServiceRepVO importFromGeneralGit(Long projectId, AppServiceImportVO appServiceImportVO) {
@@ -2121,7 +2122,7 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_IMPORT_INTERNAL_APPLICATION_SERVICE,
             description = "Devops创建应用服务", inputSchema = "{}")
     public void importAppServiceInternal(Long projectId, List<ApplicationImportInternalVO> importInternalVOS) {
         List<AppServiceImportPayload> importPayloadList = createAppService(projectId, importInternalVOS);
@@ -3599,7 +3600,7 @@ public class AppServiceServiceImpl implements AppServiceService {
         return ConvertUtils.convertObject(baseQueryByCode(appServiceDTO.getCode(), appServiceDTO.getProjectId()), OpenAppServiceReqVO.class);
     }
 
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
+    @Saga(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, code = SagaTopicCodeConstants.DEVOPS_TRANSFER_APP_SERVICE,
             description = "迁移应用服务",
             inputSchemaClass = AppServiceTransferVO.class)
     public void transferAppService(Long projectId, Long gitlabGroupId, AppServiceTransferVO appServiceTransferVO) {
