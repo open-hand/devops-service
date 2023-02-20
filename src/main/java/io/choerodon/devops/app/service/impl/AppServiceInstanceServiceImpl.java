@@ -2198,7 +2198,7 @@ public class AppServiceInstanceServiceImpl implements AppServiceInstanceService 
 
         }
 
-        gitlabServiceClientOperator.createGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), batchDeploymentPayload.getGitlabUserId(), GitOpsConstants.MASTER, pathContentMap, String.join(",", fileNames));
+        gitlabServiceClientOperator.createGitlabFiles(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), batchDeploymentPayload.getGitlabUserId(), GitOpsConstants.MASTER, pathContentMap, "BATCH DEPLOY:" + String.join(",", fileNames));
     }
 
 
