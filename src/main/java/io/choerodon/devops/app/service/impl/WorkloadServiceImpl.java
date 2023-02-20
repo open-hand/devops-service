@@ -178,7 +178,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         }
 
         if (CREATE_TYPE.equals(workloadBaseVO.getOperateType())) {
-            gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()), String.format("create: %s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+            gitlabServiceClientOperator.createFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, FileUtil.getYaml().dumpAll(objects.iterator()), String.format("【CREATE】%s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String gitOpsPath = clusterConnectionHandler.handDevopsEnvGitRepository(
@@ -197,7 +197,7 @@ public class WorkloadServiceImpl implements WorkloadService {
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
             // TODO 这里的get(0)似乎意味着不支持多个资源的更新
             String updateContent = resourceConvertToYamlHandler.getUpdateContent(objects.get(0), false, null, resourceFilePath, resourceType.getType(), gitOpsPath, CommandType.UPDATE.getType());
-            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, updateContent, String.format("update: %s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+            gitlabServiceClientOperator.updateFile(devopsEnvironmentDTO.getGitlabEnvProjectId().intValue(), resourceFilePath, updateContent, String.format("【UPDATE】%s", resourceFilePath), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
         }
         return devopsEnvCommandDTO;
     }
@@ -285,7 +285,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         if (devopsEnvFileResourceDTO == null) {
             deleteWorkload(resourceType.getType(), id);
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, resourceFileName)) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), resourceFileName, String.format("delete: %s", resourceFileName), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), resourceFileName, String.format("【DELETE】%s", resourceFileName), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
             return;
         } else {
@@ -302,7 +302,7 @@ public class WorkloadServiceImpl implements WorkloadService {
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceDTOS.size() == 1) {
             if (gitlabServiceClientOperator.getFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), MASTER, devopsEnvFileResourceDTO.getFilePath())) {
-                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("delete: %s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
+                gitlabServiceClientOperator.deleteFile(TypeUtil.objToInteger(devopsEnvironmentDTO.getGitlabEnvProjectId()), devopsEnvFileResourceDTO.getFilePath(), String.format("【DELETE】%s", devopsEnvFileResourceDTO.getFilePath()), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), "master");
             }
         } else {
             ResourceConvertToYamlHandler<Object> resourceConvertToYamlHandler = new ResourceConvertToYamlHandler<>();
