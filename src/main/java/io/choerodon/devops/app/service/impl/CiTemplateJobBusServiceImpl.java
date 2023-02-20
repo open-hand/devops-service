@@ -210,6 +210,9 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         if (CollectionUtils.isEmpty(templatePipelineVOS)) {
             return ciTemplateJobVOPage;
         }
+        // 添加配置文件
+        templatePipelineVOS.forEach(job -> job.setConfigFileRelList(ciTplJobConfigFileRelService.listVOByJobId(job.getId())));
+
         Map<String, List<CiTemplateJobVO>> stringListMap = templatePipelineVOS.stream()
                 .collect(Collectors.groupingBy(CiTemplateJobVO::getSourceType));
         List<CiTemplateJobVO> siteTemplates = stringListMap.get(ResourceLevel.PROJECT.value());
