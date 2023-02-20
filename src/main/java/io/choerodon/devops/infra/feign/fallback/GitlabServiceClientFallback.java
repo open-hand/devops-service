@@ -343,7 +343,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<ImpersonationTokenDTO> createProjectToken(Integer userId, String tokenName, Date date) {
+    public ResponseEntity<String> createProjectToken(Integer userId, String tokenName, Date date) {
         throw new CommonException("devops.project.token.create");
     }
 

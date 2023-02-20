@@ -282,18 +282,13 @@ public class GitlabServiceClientOperator {
     }
 
     public String createProjectToken(Integer gitlabProjectId, Integer userId, String name) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
         try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId, null, null);
+            return createImpersonationToken(userId, null);
         } catch (Exception e) {
             gitUtil.deleteWorkingDirectory(name);
             gitlabServiceClient.deleteProjectById(gitlabProjectId, userId);
             throw new CommonException(e);
         }
-        if (impersonationToken.getBody() == null) {
-            throw new CommonException("devops.create.project.token");
-        }
-        return impersonationToken.getBody().getToken();
     }
 
     /**
@@ -304,11 +299,11 @@ public class GitlabServiceClientOperator {
      * @return
      */
     public String createImpersonationToken(Integer userId, String name) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken = gitlabServiceClient.createProjectToken(userId, name, null);
-        if (impersonationToken.getBody() == null) {
-            throw new CommonException("devops.create.project.token");
+        ImpersonationTokenDTO response = createPrivateToken(userId, name, null);
+        if (response != null) {
+            return response.getToken();
         }
-        return impersonationToken.getBody().getToken();
+        return null;
     }
 
     /**
@@ -319,13 +314,8 @@ public class GitlabServiceClientOperator {
      */
     @Nullable
     public ImpersonationTokenDTO createPrivateToken(Integer userId, String tokenName, Date date) {
-        ResponseEntity<ImpersonationTokenDTO> impersonationToken;
-        try {
-            impersonationToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
-        } catch (Exception e) {
-            return null;
-        }
-        return impersonationToken.getBody();
+        ResponseEntity<String> projectToken = gitlabServiceClient.createProjectToken(userId, tokenName, date);
+        return ResponseUtils.getResponse(projectToken, ImpersonationTokenDTO.class);
     }
 
     public void revokeImpersonationToken(Integer userId, Integer tokenId) {

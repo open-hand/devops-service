@@ -141,9 +141,9 @@ public interface GitlabServiceClient {
                                                         @RequestParam(value = "perPage", required = false) Integer perPage);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDTO> createProjectToken(@PathVariable("userId") Integer userId,
-                                                             @RequestParam(value = "tokenName", required = false) String tokenName,
-                                                             @RequestParam(value = "date", required = false) Date date);
+    ResponseEntity<String> createProjectToken(@PathVariable("userId") Integer userId,
+                                              @RequestParam(value = "tokenName", required = false) String tokenName,
+                                              @RequestParam(value = "date", required = false) Date date);
 
     @DeleteMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<Void> revokeImpersonationToken(@PathVariable("userId") Integer userId,
