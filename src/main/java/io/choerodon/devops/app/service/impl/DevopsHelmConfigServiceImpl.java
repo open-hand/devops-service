@@ -372,10 +372,8 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
             effectiveRepoId = defaultDevopsHelmConfigDTOOnProject.getId();
         } else if (devopsHelmConfigDTOtOnOrganization != null) {
             effectiveRepoId = devopsHelmConfigDTOtOnOrganization.getId();
-        } else if (devopsHelmConfigDTOOnSite != null) {
-            effectiveRepoId = devopsHelmConfigDTOOnSite.getId();
         } else {
-            effectiveRepoId = null;
+            effectiveRepoId = devopsHelmConfigDTOOnSite.getId();
         }
 
         List<DevopsHelmConfigVO> devopsHelmConfigVOS = ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);

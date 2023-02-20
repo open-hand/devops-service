@@ -1420,7 +1420,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
             updatePipelineStatus(gitlabPipelineId, pipeline.getStatus());
             // 更新job status
 
-            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId.intValue(),
+            List<JobDTO> jobDTOS = gitlabServiceClientOperator.listJobs(gitlabProjectId,
                     gitlabPipelineId.intValue(),
                     userAttrDTO.getGitlabUserId().intValue(),
                     appExternalConfigDTO);
