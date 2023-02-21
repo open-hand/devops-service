@@ -6,7 +6,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_file_detail.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'message', type: 'TEXT', remarks: '配置文件详情')
+            column(name: 'message', type: 'TEXT', remarks: '配置文件详情') {
+                constraints(nullable: false)
+            }
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

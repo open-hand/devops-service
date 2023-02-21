@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo;
 
+import javax.validation.constraints.NotBlank;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
@@ -20,12 +22,13 @@ public class ConfigFileVO extends AuditDomain {
     @ApiModelProperty(value = "层级Id", hidden = true)
     private Long sourceId;
     @ApiModelProperty(value = "配置名称", required = true)
+    @NotBlank
     private String name;
     @ApiModelProperty(value = "描述")
     private String description;
     @ApiModelProperty(value = "devops_config_file_detail.id", hidden = true)
     private Long detailId;
-
+    @NotBlank
     private String message;
 
     private IamUserDTO creator;
