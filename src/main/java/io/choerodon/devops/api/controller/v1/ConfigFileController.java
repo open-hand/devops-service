@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
 
+import javax.validation.Valid;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -38,7 +40,7 @@ public class ConfigFileController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     public ResponseEntity<ConfigFileDTO> create(
             @PathVariable(value = "project_id") Long projectId,
-            @RequestBody ConfigFileVO configFileVO) {
+            @Valid @RequestBody ConfigFileVO configFileVO) {
         return ResponseEntity.ok(configFileService.create(ResourceLevel.PROJECT.value(),
                 projectId,
                 configFileVO));
