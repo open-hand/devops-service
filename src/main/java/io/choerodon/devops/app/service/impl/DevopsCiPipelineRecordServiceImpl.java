@@ -1724,7 +1724,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         artifactType = ciPipelineMavenDTO.getArtifactType();
 
         //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
-        versionRegular = "^" + ciPipelineMavenDTO.getVersion() + "$";
         if (nexusRepoId == null) {
             downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
             username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
@@ -1740,7 +1739,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
             // 0.3 获取并记录信息
-            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, versionRegular);
+            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, ciPipelineMavenDTO.getVersion());
             if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                 log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
                 throw new CommonException(DEVOPS_DEPLOY_FAILED);

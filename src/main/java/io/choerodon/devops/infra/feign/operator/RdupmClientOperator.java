@@ -114,7 +114,7 @@ public class RdupmClientOperator {
      * @param repositoryId
      * @param groupId
      * @param artifactId
-     * @param versionRegular
+     * @param version
      * @return
      */
     public List<C7nNexusComponentDTO> listMavenComponents(@Nullable Long organizationId,
@@ -122,8 +122,8 @@ public class RdupmClientOperator {
                                                           @Nullable Long repositoryId,
                                                           String groupId,
                                                           String artifactId,
-                                                          String versionRegular) {
-        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, versionRegular);
+                                                          String version) {
+        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, version);
         if (response == null || response.getBody() == null) {
             throw new CommonException("devops.query.nexus.maven.list");
         }
