@@ -1708,8 +1708,9 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         Long nexusRepoId;
         String groupId;
         String artifactId;
-        String versionRegular;
+//        String versionRegular;
         String version = null;
+        String repoUrl;
         String artifactType;
         String downloadUrl = null;
         String username = null;
@@ -1723,13 +1724,6 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         artifactId = ciPipelineMavenDTO.getArtifactId();
         artifactType = ciPipelineMavenDTO.getArtifactType();
 
-        //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
-        if (nexusRepoId == null) {
-            downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
-            username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
-            password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
-            version = ciPipelineMavenDTO.getVersion();
-        }
         log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
         log.append("groupId：").append(groupId).append(System.lineSeparator());
         log.append("artifactId：").append(artifactId).append(System.lineSeparator());
@@ -1739,29 +1733,30 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
             // 0.3 获取并记录信息
-            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, ciPipelineMavenDTO.getVersion());
-            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
-                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
-                throw new CommonException(DEVOPS_DEPLOY_FAILED);
-            }
+//            List<C7nNexusComponentDTO> nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, ciPipelineMavenDTO.getVersion());
+//            if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+//                log.append("获取部署jar包信息失败，请检查关联的构建任务是否执行成功、发布的jar包坐标是否和pom文件一致").append(System.lineSeparator());
+//                throw new CommonException(DEVOPS_DEPLOY_FAILED);
+//            }
             List<NexusMavenRepoDTO> mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             if (CollectionUtils.isEmpty(mavenRepoDTOList)) {
                 log.append("获取制品仓库信息失败，请检查关联制品库是否正常").append(System.lineSeparator());
                 throw new CommonException(DEVOPS_DEPLOY_FAILED);
             }
 
-            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
+//            C7nNexusComponentDTO c7nNexusComponentDTO = nexusComponentDTOList.get(0);
             C7nNexusRepoDTO c7nNexusRepoDTO = rdupmClientOperator.getMavenRepo(projectDTO.getOrganizationId(), projectId, nexusRepoId);
 
             ProdJarInfoVO prodJarInfoVO = new ProdJarInfoVO(c7nNexusRepoDTO.getConfigId(),
                     nexusRepoId,
                     groupId,
                     artifactId,
-                    c7nNexusComponentDTO.getVersion());
-            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
+                    ciPipelineMavenDTO.getVersion());
+            repoUrl = mavenRepoDTOList.get(0).getUrl();
+//            downloadUrl = nexusComponentDTOList.get(0).getDownloadUrl();
             username = mavenRepoDTOList.get(0).getNePullUserId();
             password = mavenRepoDTOList.get(0).getNePullUserPassword();
-            version = c7nNexusComponentDTO.getVersion();
+//            version = c7nNexusComponentDTO.getVersion();
 
             jarDeployVO = new JarDeployVO(AppSourceType.CURRENT_PROJECT.getValue(),
                     devopsCiHostDeployInfoDTO.getAppName(),
@@ -1784,7 +1779,17 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
                     devopsCiHostDeployInfoDTO.getHealthProb(),
                     jarPullInfoDTO,
                     devopsCiHostDeployInfoDTO.getDeployType());
+            repoUrl = ciPipelineMavenDTO.getMavenRepoUrl();
+            username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
+            password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
+
         }
+        version = ciPipelineMavenDTO.getVersion();
+        downloadUrl = MavenUtil.calculateDownloadUrl(repoUrl,
+                ciPipelineMavenDTO.getGroupId(),
+                ciPipelineMavenDTO.getArtifactId(),
+                ciPipelineMavenDTO.getVersion(),
+                ciPipelineMavenDTO.getArtifactType());
 
         // 2.保存记录
         log.append("3. 开始部署...").append(System.lineSeparator());
