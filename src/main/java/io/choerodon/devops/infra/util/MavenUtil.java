@@ -17,4 +17,31 @@ public class MavenUtil {
                 BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getArtifactId() + BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getVersion() +
                 BaseConstants.Symbol.SLASH + jarReleaseConfigVO.getArtifactId() + BaseConstants.Symbol.MIDDLE_LINE + jarReleaseConfigVO.getSnapshotTimestamp() + ".jar";
     }
+
+    public static String calculateDownloadUrl(String repoUrl, String groupId, String artifactId, String version, String artifactType) {
+        String downloadUrl = "";
+        // SNAPSHOT类型
+        if (version.contains(BaseConstants.Symbol.SLASH)) {
+            downloadUrl = appendWithSlash(repoUrl, groupId.replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+            downloadUrl = appendWithSlash(downloadUrl, artifactId);
+            downloadUrl = appendWithSlash(downloadUrl, version + "." + artifactType);
+        } else {
+            // RELEASE类型
+            downloadUrl = appendWithSlash(repoUrl, groupId.replace(BaseConstants.Symbol.POINT, BaseConstants.Symbol.SLASH));
+            downloadUrl = appendWithSlash(downloadUrl, artifactId);
+            downloadUrl = appendWithSlash(downloadUrl, version);
+            downloadUrl = appendWithSlash(downloadUrl, artifactId + BaseConstants.Symbol.MIDDLE_LINE + version + "." + artifactType);
+        }
+        return downloadUrl;
+    }
+
+    public static String appendWithSlash(String source, String str) {
+        if (source.endsWith("/")) {
+            source = source.substring(0, source.length() - 1);
+        }
+        if (str.startsWith("/")) {
+            str = str.substring(1, str.length());
+        }
+        return source + BaseConstants.Symbol.SLASH + str;
+    }
 }
