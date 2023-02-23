@@ -22,7 +22,7 @@
         dcjr.stage as stage_name
         from devops_ci_audit_record dcar
         inner join devops_ci_audit_user_record dcaur on (dcar.id = dcaur.audit_record_id and dcaur.status = 'not_audit')
-        inner join devops_ci_job_record dcjr on dcar.job_record_id = dcjr.id
+        inner join devops_ci_job_record dcjr on (dcar.job_record_id = dcjr.id and dcjr.status = 'manual')
         inner join devops_ci_pipeline_record dcpr on dcpr.id = dcjr.ci_pipeline_record_id
         inner join devops_cicd_pipeline dcp on dcp.id = dcpr.ci_pipeline_id
         <where>
