@@ -1710,36 +1710,32 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         String artifactId;
         String versionRegular;
         String version = null;
+        String artifactType;
         String downloadUrl = null;
         String username = null;
         String password = null;
-        if (jarDeploy.getDeploySource().equals(HostDeploySource.MATCH_DEPLOY.getValue())) {
-            nexusRepoId = jarDeploy.getRepositoryId();
-            groupId = jarDeploy.getGroupId();
-            artifactId = jarDeploy.getArtifactId();
-            versionRegular = jarDeploy.getVersionRegular();
-        } else {
 
-            CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceDTO.getId(),
-                    gitlabPipelineId,
-                    jarDeploy.getPipelineTask());
-            nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
-            groupId = ciPipelineMavenDTO.getGroupId();
-            artifactId = ciPipelineMavenDTO.getArtifactId();
+        CiPipelineMavenDTO ciPipelineMavenDTO = ciPipelineMavenService.queryByGitlabPipelineId(appServiceDTO.getId(),
+                gitlabPipelineId,
+                jarDeploy.getPipelineTask());
+        nexusRepoId = ciPipelineMavenDTO.getNexusRepoId();
+        groupId = ciPipelineMavenDTO.getGroupId();
+        artifactId = ciPipelineMavenDTO.getArtifactId();
+        artifactType = ciPipelineMavenDTO.getArtifactType();
 
-            //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
-            versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
-            if (nexusRepoId == null) {
-                downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
-                username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
-                password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
-                version = ciPipelineMavenDTO.getVersion();
-            }
-            log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
-            log.append("groupId：").append(groupId).append(System.lineSeparator());
-            log.append("artifactId：").append(artifactId).append(System.lineSeparator());
-            log.append("version：").append(getMavenVersion(ciPipelineMavenDTO.getVersion())).append(System.lineSeparator());
+        //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
+        versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
+        if (nexusRepoId == null) {
+            downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
+            username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
+            password = DESEncryptUtil.decode(ciPipelineMavenDTO.getPassword());
+            version = ciPipelineMavenDTO.getVersion();
         }
+        log.append("根据坐标获取jar包信息：").append(System.lineSeparator());
+        log.append("groupId：").append(groupId).append(System.lineSeparator());
+        log.append("artifactId：").append(artifactId).append(System.lineSeparator());
+        log.append("version：").append(getMavenVersion(ciPipelineMavenDTO.getVersion())).append(System.lineSeparator());
+        log.append("packaging：").append(artifactType).append(System.lineSeparator());
         JarPullInfoDTO jarPullInfoDTO = new JarPullInfoDTO(username, password, downloadUrl);
         JarDeployVO jarDeployVO = null;
         if (nexusRepoId != null) {
@@ -1851,7 +1847,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
 
         Map<String, String> params = new HashMap<>();
         String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
-        String appFileName = artifactId.endsWith(".jar") ? artifactId : artifactId + ".jar";
+        String appFileName = artifactId + "/" + artifactType;
         String appFile = workDir + SLASH + appFileName;
         params.put("{{ WORK_DIR }}", workDir);
         params.put("{{ APP_FILE_NAME }}", appFileName);
