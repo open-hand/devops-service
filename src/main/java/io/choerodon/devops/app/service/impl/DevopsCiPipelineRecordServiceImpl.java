@@ -1724,7 +1724,7 @@ public class DevopsCiPipelineRecordServiceImpl implements DevopsCiPipelineRecord
         artifactType = ciPipelineMavenDTO.getArtifactType();
 
         //0.0.1-SNAPSHOT/springbbot-0.0.1-20210506.081037-4
-        versionRegular = "^" + getMavenVersion(ciPipelineMavenDTO.getVersion()) + "$";
+        versionRegular = "^" + ciPipelineMavenDTO.getVersion() + "$";
         if (nexusRepoId == null) {
             downloadUrl = ciPipelineMavenDTO.calculateDownloadUrl();
             username = DESEncryptUtil.decode(ciPipelineMavenDTO.getUsername());
