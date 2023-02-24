@@ -161,7 +161,8 @@ public interface RdupmClient {
                                                                    @RequestParam(name = "groupId", required = false) String groupId,
                                                                    @ApiParam(value = "artifactId", required = false)
                                                                    @RequestParam(name = "artifactId", required = false) String artifactId,
-                                                                   @RequestParam(name = "version", required = false) String version);
+                                                                   @RequestParam(name = "version", required = false) String version,
+                                                                   @RequestParam(name = "versionRegular", required = false) String versionRegular);
 
 
     @ApiOperation(value = "choerodon-获取nexus服务下、项目下的maven仓库")
