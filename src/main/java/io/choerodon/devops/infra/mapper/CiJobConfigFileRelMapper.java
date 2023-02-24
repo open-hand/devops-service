@@ -15,5 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface CiJobConfigFileRelMapper extends BaseMapper<CiJobConfigFileRelDTO> {
     void deleteByJobIds(@Param("jobIds") List<Long> jobIds);
+
+    List<CiJobConfigFileRelDTO> listByJobId(@Param("jobId") Long jobId);
 }
 

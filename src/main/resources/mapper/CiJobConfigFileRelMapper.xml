@@ -10,5 +10,11 @@
             #{jobId}
         </foreach>
     </delete>
+    <select id="listByJobId" resultType="io.choerodon.devops.infra.dto.CiJobConfigFileRelDTO">
+        select *
+        from devops_ci_job_config_file_rel dcjcfr
+        where ci_job_id = #{jobId}
+        order by id
+    </select>
 </mapper>
 
