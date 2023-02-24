@@ -122,8 +122,9 @@ public class RdupmClientOperator {
                                                           @Nullable Long repositoryId,
                                                           String groupId,
                                                           String artifactId,
-                                                          String version) {
-        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, version);
+                                                          String version,
+                                                          String versionRegular) {
+        ResponseEntity<List<C7nNexusComponentDTO>> response = rdupmClient.listMavenComponents(organizationId, projectId, repositoryId, groupId, artifactId, version, versionRegular);
         if (response == null || response.getBody() == null) {
             throw new CommonException("devops.query.nexus.maven.list");
         }

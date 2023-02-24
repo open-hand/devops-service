@@ -815,7 +815,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
             artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
             version = jarDeployVO.getProdJarInfoVO().getVersion();
-            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, version);
+            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, null, version);
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
@@ -971,7 +971,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     String groupId = prodJarInfoVO.getGroupId();
                     String artifactId = prodJarInfoVO.getArtifactId();
                     String jarVersion = prodJarInfoVO.getVersion();
-                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, jarVersion);
+                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, null, jarVersion);
                     if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
                         appFileName = devopsHostAppInstanceDTO.getCode();
                     } else {

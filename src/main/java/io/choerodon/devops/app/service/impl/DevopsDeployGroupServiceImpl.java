@@ -676,7 +676,7 @@ public class DevopsDeployGroupServiceImpl implements DevopsDeployGroupService {
             String groupId = jarDeployVO.getProdJarInfoVO().getGroupId();
             String artifactId = jarDeployVO.getProdJarInfoVO().getArtifactId();
             String version = jarDeployVO.getProdJarInfoVO().getVersion();
-            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId, groupId, artifactId, version);
+            nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectDTO.getId(), nexusRepoId, groupId, artifactId, null, version);
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectDTO.getId(), Collections.singleton(nexusRepoId));
 
         }
