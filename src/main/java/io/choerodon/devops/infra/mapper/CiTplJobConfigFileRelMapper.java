@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.util.List;
+
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dto.CiTplJobConfigFileRelDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -10,5 +14,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  * @since 2023-02-16 15:50:17
  */
 public interface CiTplJobConfigFileRelMapper extends BaseMapper<CiTplJobConfigFileRelDTO> {
+    List<CiTplJobConfigFileRelDTO> listByJobId(@Param("jobId") Long jobId);
 }
 
