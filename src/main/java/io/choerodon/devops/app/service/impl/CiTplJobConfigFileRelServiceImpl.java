@@ -53,9 +53,7 @@ public class CiTplJobConfigFileRelServiceImpl implements CiTplJobConfigFileRelSe
     public List<CiTplJobConfigFileRelDTO> listByJobId(Long jobId) {
         Assert.notNull(jobId, PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL);
 
-        CiTplJobConfigFileRelDTO ciTplJobConfigFileRelDTO = new CiTplJobConfigFileRelDTO();
-        ciTplJobConfigFileRelDTO.setCiTemplateJobId(jobId);
-        return ciTplJobConfigFileRelMapper.select(ciTplJobConfigFileRelDTO);
+        return ciTplJobConfigFileRelMapper.listByJobId(jobId);
     }
 
     @Override
