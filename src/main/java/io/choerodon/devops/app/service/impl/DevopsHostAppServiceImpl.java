@@ -762,6 +762,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
 
         String deployObjectName = null;
         String deployVersion = null;
+        String packaging = "jar";
 
         // 获取并记录信息
         List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
@@ -819,6 +820,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             mavenRepoDTOList = rdupmClientOperator.getRepoUserByProject(projectDTO.getOrganizationId(), projectId, Collections.singleton(nexusRepoId));
             deployObjectName = nexusComponentDTOList.get(0).getName();
             deployVersion = nexusComponentDTOList.get(0).getVersion();
+            packaging = nexusComponentDTOList.get(0).getExtension();
         }
 
         if (devopsHostAppDTO == null) {
@@ -889,7 +891,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
-            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
+            appFileName = appFileName + "." + packaging;
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
