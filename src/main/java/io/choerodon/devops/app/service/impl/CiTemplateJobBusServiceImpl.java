@@ -120,11 +120,10 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             insertBaseJobStepRel(ciTemplateJobVO, ciTemplateJobDTO);
         }
         if (!CollectionUtils.isEmpty(ciTemplateJobVO.getConfigFileRelList())) {
-            ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
-                ciTplJobConfigFileRelService.baseCreate(new CiTplJobConfigFileRelDTO(ciTemplateJobDTO.getId(),
-                        configFileRelVO.getConfigFileId(),
-                        configFileRelVO.getConfigFilePath()));
-            });
+            ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> ciTplJobConfigFileRelService
+                    .baseCreate(new CiTplJobConfigFileRelDTO(ciTemplateJobDTO.getId(),
+                            configFileRelVO.getConfigFileId(),
+                            configFileRelVO.getConfigFilePath())));
 
         }
         return ConvertUtils.convertObject(ciTemplateJobDTO, CiTemplateJobVO.class);
@@ -407,15 +406,6 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
 
             }
             CiTemplateJobVO templateJob = createTemplateJob(sourceId, sourceType, ciTemplateJobVO);
-
-            if (!CollectionUtils.isEmpty(ciTemplateJobVO.getConfigFileRelList())) {
-                ciTemplateJobVO.getConfigFileRelList().forEach(configFileRelVO -> {
-                    ciTplJobConfigFileRelService.baseCreate(new CiTplJobConfigFileRelDTO(templateJob.getId(),
-                            configFileRelVO.getConfigFileId(),
-                            configFileRelVO.getConfigFilePath()));
-                });
-
-            }
 
             ciTemplateJobVO.setId(templateJob.getId());
         });
