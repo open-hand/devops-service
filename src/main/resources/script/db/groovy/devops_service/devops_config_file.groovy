@@ -15,7 +15,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_config_file.groovy') {
             column(name: 'name', type: 'VARCHAR(255)', remarks: '配置名称') {
                 constraints(nullable: false)
             }
-            column(name: 'description', type: 'VARCHAR(255)', remarks: '描述')
+            column(name: 'description', type: 'VARCHAR(1024)', remarks: '描述')
 
             column(name: 'detail_id', type: 'BIGINT UNSIGNED', remarks: 'devops_config_file_detail.id') {
                 constraints(nullable: false)
