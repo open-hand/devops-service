@@ -48,11 +48,7 @@ public class CiJobConfigFileRelServiceImpl implements CiJobConfigFileRelService 
     @Override
     public List<CiJobConfigFileRelDTO> listByJobId(Long jobId) {
         Assert.notNull(jobId, PipelineCheckConstant.DEVOPS_JOB_ID_IS_NULL);
-
-        CiJobConfigFileRelDTO ciJobConfigFileRelDTO = new CiJobConfigFileRelDTO();
-        ciJobConfigFileRelDTO.setCiJobId(jobId);
-
-        return ciJobConfigFileRelMapper.select(ciJobConfigFileRelDTO);
+        return ciJobConfigFileRelMapper.listByJobId(jobId);
     }
 
     @Override
