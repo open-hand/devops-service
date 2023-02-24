@@ -1126,7 +1126,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
         String ingressVersion = "";
         try {
             JsonNode jsonNode = JsonHelper.OBJECT_MAPPER.readTree(detailsJson);
-            ingressVersion = jsonNode.get("version").asText();
+            ingressVersion = jsonNode.get("apiVersion").asText();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -1136,7 +1136,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
             devopsIngressDTO = getDevopsIngressDTOOfV1Beta1Ingress(v1beta1Ingress, appServiceInstanceDTO.getEnvId());
             ingressName = v1beta1Ingress.getMetadata().getName();
         } else {
-            V1Ingress v1Ingress = k8sJson.deserialize(detailsJson, V1beta1Ingress.class);
+            V1Ingress v1Ingress = k8sJson.deserialize(detailsJson, V1Ingress.class);
             devopsIngressDTO = getDevopsIngressDTOOfV1Ingress(v1Ingress, appServiceInstanceDTO.getEnvId());
             ingressName = v1Ingress.getMetadata().getName();
         }
@@ -1259,7 +1259,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService, ChartReso
 
             Integer servicePort = null;
             Integer number = port.getNumber();
-            if (PATTERN.matcher(TypeUtil.objToString(number)).matches()) {
+            if (number != null && PATTERN.matcher(TypeUtil.objToString(number)).matches()) {
                 servicePort = TypeUtil.objToInteger(number);
             } else {
                 if (devopsServiceDTO != null) {
