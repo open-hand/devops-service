@@ -25,7 +25,16 @@ public class C7nNexusComponentDTO {
     private String version;
     @ApiModelProperty(value = "下载地址")
     private String downloadUrl;
+    @ApiModelProperty(value = "extension: pom、jar、war等")
+    private String extension;
 
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
 
     public String getId() {
         return id;
