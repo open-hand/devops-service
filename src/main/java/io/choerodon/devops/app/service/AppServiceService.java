@@ -631,4 +631,6 @@ public interface AppServiceService {
      * @return
      */
     List<Long> listProjectIdsByAppIds(List<Long> appIds);
+
+    ImageRepoInfoVO queryRepoConfigByCode(Long projectId, String code, String repoType, String repoCode);
 }

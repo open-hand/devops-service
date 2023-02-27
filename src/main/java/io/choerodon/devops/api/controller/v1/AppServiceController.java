@@ -915,6 +915,18 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.queryRepoConfigById(projectId, appServiceId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询应用服务关联的镜像仓库")
+    @GetMapping("/docker_repo_config")
+    public ResponseEntity<ImageRepoInfoVO> queryRepoConfigByCode(
+            @ApiParam(value = "项目Id")
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "code") String code,
+            @RequestParam(value = "repoType") String repoType,
+            @RequestParam(value = "repoCode", required = false) String repoCode) {
+        return ResponseEntity.ok(applicationServiceService.queryRepoConfigByCode(projectId, code, repoType, repoCode));
+    }
+
 
 }
 
