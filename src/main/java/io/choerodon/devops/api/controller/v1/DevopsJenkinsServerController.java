@@ -49,9 +49,9 @@ public class DevopsJenkinsServerController {
     @ApiOperation(value = "查询jenkins server")
     @CustomPageRequest
     @GetMapping("/{jenkins_server_id}")
-    public ResponseEntity<DevopsJenkinsServerVO> pageServer(@ApiParam(value = "项目ID", required = true)
-                                                            @PathVariable(value = "project_id") Long projectId,
-                                                            @Encrypt @PathVariable("jenkins_server_id") Long jenkinsServerId) {
+    public ResponseEntity<DevopsJenkinsServerVO> query(@ApiParam(value = "项目ID", required = true)
+                                                       @PathVariable(value = "project_id") Long projectId,
+                                                       @Encrypt @PathVariable("jenkins_server_id") Long jenkinsServerId) {
         return ResponseEntity.ok(devopsJenkinsServerService.query(projectId, jenkinsServerId));
     }
 
