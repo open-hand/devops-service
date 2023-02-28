@@ -139,7 +139,7 @@ public class DevopsJenkinsServerController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检查jenkins 名称是否存在")
-    @PostMapping("/check_connection")
+    @PostMapping("/check_name_exists")
     public ResponseEntity<Boolean> checkNameExists(@ApiParam(value = "项目ID", required = true)
                                                    @PathVariable(value = "project_id") Long projectId,
                                                    @ApiParam(value = "server信息", required = true)
