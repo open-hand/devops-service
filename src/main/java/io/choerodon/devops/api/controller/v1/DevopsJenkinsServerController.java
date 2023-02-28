@@ -132,4 +132,19 @@ public class DevopsJenkinsServerController {
                                                                                     @RequestBody DevopsJenkinsServerVO devopsJenkinsServerVO) {
         return ResponseEntity.ok(devopsJenkinsServerService.checkConnection(projectId, devopsJenkinsServerVO));
     }
+
+    /**
+     * 检查jenkins 名称是否存在
+     * 如果是更新操作，需要带上jenkinsServerId
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "检查jenkins 名称是否存在")
+    @PostMapping("/check_connection")
+    public ResponseEntity<Boolean> checkNameExists(@ApiParam(value = "项目ID", required = true)
+                                                   @PathVariable(value = "project_id") Long projectId,
+                                                   @ApiParam(value = "server信息", required = true)
+                                                   @Encrypt @RequestParam(value = "jenkins_server_id", required = false) Long jenkinsServerId,
+                                                   @RequestParam(value = "name") String name) {
+        return ResponseEntity.ok(devopsJenkinsServerService.checkNameExists(projectId, jenkinsServerId, name));
+    }
 }

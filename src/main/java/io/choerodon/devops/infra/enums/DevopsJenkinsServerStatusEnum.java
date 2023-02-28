@@ -1,8 +1,6 @@
 package io.choerodon.devops.infra.enums;
 
 public enum DevopsJenkinsServerStatusEnum {
-    SUCCESS("success"),
-    FAILED("failed"),
     ENABLED("enabled"),
     DISABLE("disable");
 

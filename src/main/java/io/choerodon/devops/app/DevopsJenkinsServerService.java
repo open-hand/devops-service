@@ -23,5 +23,5 @@ public interface DevopsJenkinsServerService {
 
     DevopsJenkinsServerVO query(Long projectId, Long jenkinsServerId);
 
-    Boolean checkNameExist(Long projectId, Long jenkinsServerId, String serverName);
+    Boolean checkNameExists(Long projectId, Long jenkinsServerId, String serverName);
 }
