@@ -65,5 +65,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
         }
     }
 
+    changeSet(author: 'lihao', id: '2023-02-28-updateDataType') {
+        modifyDataType(tableName: 'devops_env_command', columnName: 'error', newDataType: 'VARCHAR(30000)')
+    }
+
 
 }
