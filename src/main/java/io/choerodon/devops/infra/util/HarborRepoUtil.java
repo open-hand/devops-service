@@ -36,7 +36,7 @@ public class HarborRepoUtil {
         imageRepoInfoVO.setDockerUsername(dockerUsername);
         imageRepoInfoVO.setDockerPassword(dockerPassword);
         imageRepoInfoVO.setRepoType(repoType);
-        imageRepoInfoVO.setRepoCode(repoCode);
+        imageRepoInfoVO.setRepoCode(groupName);
         return imageRepoInfoVO;
     }
 
