@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsJenkinsServerMapper">
+  <select id="checkNameExist" resultType="java.lang.Boolean">
+    SELECT COUNT(*) > 0
+    FROM devops_jenkins_server
+    WHERE project_id = #{projectId}
+    AND name = #{serverName}
+    <if test="jenkinsServerId">
+      AND id != #{jenkinsServerId}
+    </if>
+  </select>
+
+  <select id="page" resultType="io.choerodon.devops.api.vo.DevopsJenkinsServerVO">
+    SELECT *
+    FROM devops_jenkins_server djs
+    WHERE project_id = #{projectId}
+    <if test="searchVO != null">
+      <if test='searchVO.searchParam != null'>
+        <if test="searchVO.searchParam.name != null and searchVO.searchParam.name.length > 0">
+          AND dpv.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="searchVO.searchParam.description != null and searchVO.searchParam.description.length > 0">
+          AND dpv.description LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.description, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="searchVO.searchParam.appServiceName != null and searchVO.searchParam.appServiceName != ''">
+          AND da.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.appServiceName}), '%')
+        </if>
+        <if test="searchVO.searchParam.appServiceCode != null and searchVO.searchParam.appServiceCode != ''">
+          AND da.code LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.appServiceCode}), '%')
+        </if>
+        <if test="searchVO.searchParam.envName != null and searchVO.searchParam.envName != ''">
+          AND de.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.envName}), '%')
+        </if>
+      </if>
+      <if test='searchVO.params != null and searchVO.params.size > 0'>
+        AND
+        <foreach collection="searchVO.params" item="param" open="(" separator=" OR " close=")">
+          (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          OR da.name LIKE CONCAT(CONCAT('%', #{searchParam.appServiceName}), '%')
+          OR da.code LIKE CONCAT(CONCAT('%', #{searchParam.appServiceCode}), '%')
+          OR de.name LIKE CONCAT(CONCAT('%', #{searchParam.envName}), '%'))
+        </foreach>
+      </if>
+    </if>
+  </select>
+</mapper>
