@@ -270,6 +270,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Autowired
     @Lazy
     private PipelineService pipelineService;
+    @Autowired
+    private RdupmClientOperator rdupmClientOperator;
 
     static {
         try (InputStream inputStream = AppServiceServiceImpl.class.getResourceAsStream("/shell/ci.sh")) {
@@ -4003,4 +4005,16 @@ public class AppServiceServiceImpl implements AppServiceService {
         }
         return appServiceMapper.listProjectIdsByAppIds(appIds);
     }
+
+    @Override
+    public ImageRepoInfoVO queryRepoConfigByCode(Long projectId, String code, String repoType, String repoCode) {
+        AppServiceRepVO appServiceRepVO = queryByCode(projectId, code);
+        if (appServiceRepVO == null) {
+            throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
+        }
+        CommonExAssertUtil.assertTrue((projectId.equals(appServiceRepVO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+        HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigByCode(projectId, repoType, repoCode);
+        return HarborRepoUtil.getHarborRepoInfo(repoType, repoCode, harborRepoDTO);
+    }
+
 }

@@ -139,6 +139,10 @@ public class RdupmClientOperator {
         return response.getBody();
     }
 
+    public HarborRepoDTO queryHarborRepoConfigByCode(Long projectId, String repoType, String repoCode) {
+        return ResponseUtils.getResponse(rdupmClient.queryHarborRepoConfigByCode(projectId, repoType, repoCode), HarborRepoDTO.class);
+    }
+
     public C7nNexusRepoDTO getMavenRepo(Long organizationId, Long projectId, Long repositoryId) {
         return rdupmClient.getMavenRepo(organizationId, projectId, repositoryId).getBody();
     }

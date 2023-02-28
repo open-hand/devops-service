@@ -220,4 +220,11 @@ public interface RdupmClient {
     @GetMapping("/v1/projects/{project_id}/custom_repos/{repo_id}/basic_info_internal")
     ResponseEntity<HarborCustomRepo> queryCustomRepoById(@PathVariable("project_id") Long projectId,
                                                          @PathVariable("repo_id") Long repoId);
+
+    @GetMapping("/v1/harbor-choerodon-repos/project/{projectId}/harbor_config_by_code")
+    ResponseEntity<String> queryHarborRepoConfigByCode(@ApiParam(value = "猪齿鱼项目ID", required = true)
+                                                       @PathVariable("projectId") Long projectId,
+                                                       @ApiParam(value = "仓库类型", required = true)
+                                                       @RequestParam("repoType") String repoType,
+                                                       @RequestParam("repoCode") String repoCode);
 }
