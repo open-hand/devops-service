@@ -1,5 +1,7 @@
 package io.choerodon.devops.app;
 
+import com.cdancy.jenkins.rest.JenkinsClient;
+import com.cdancy.jenkins.rest.domain.system.SystemInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +48,19 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
 
     @Override
     public DevopsJenkinsServerStatusCheckResponseVO checkStatus(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO) {
-        return null;
+        DevopsJenkinsServerStatusCheckResponseVO devopsJenkinsServerStatusCheckResponseVO = new DevopsJenkinsServerStatusCheckResponseVO();
+        devopsJenkinsServerStatusCheckResponseVO.setSuccess(false);
+        try {
+            JenkinsClient client = JenkinsClient.builder().endPoint(devopsJenkinsServerVO.getUrl()).credentials(String.format("%s:%s", devopsJenkinsServerVO.getUsername(), devopsJenkinsServerVO.getPassword())).build();
+            SystemInfo systemInfo = client.api().systemApi().systemInfo();
+            if (systemInfo != null) {
+                devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
+            }
+        } catch (Exception e) {
+            devopsJenkinsServerStatusCheckResponseVO.setMessage(e.getMessage());
+            devopsJenkinsServerStatusCheckResponseVO.setSuccess(false);
+        }
+        return devopsJenkinsServerStatusCheckResponseVO;
     }
 
     @Transactional
