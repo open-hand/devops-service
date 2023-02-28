@@ -87,7 +87,7 @@ public class DevopsJenkinsServerController {
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "删除jenkins server")
     @DeleteMapping("/{jenkins_server_id}")
-    public void create(@ApiParam(value = "项目ID", required = true)
+    public void delete(@ApiParam(value = "项目ID", required = true)
                        @PathVariable(value = "project_id") Long projectId,
                        @ApiParam(value = "server信息", required = true)
                        @Encrypt @PathVariable("jenkins_server_id") Long jenkinsServerId) {
@@ -125,7 +125,7 @@ public class DevopsJenkinsServerController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检查jenkins server状态")
-    @PostMapping
+    @PostMapping("/check_status")
     public ResponseEntity<DevopsJenkinsServerStatusCheckResponseVO> checkStatus(@ApiParam(value = "项目ID", required = true)
                                                                                 @PathVariable(value = "project_id") Long projectId,
                                                                                 @ApiParam(value = "server信息", required = true)
