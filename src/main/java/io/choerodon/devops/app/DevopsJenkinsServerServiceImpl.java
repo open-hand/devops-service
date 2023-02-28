@@ -31,6 +31,14 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         if (checkNameExist(projectId, null, devopsJenkinsServerVO.getName())) {
             throw new CommonException("error.devops.jenkins.server.name.exists");
         }
+        devopsJenkinsServerVO.setProjectId(projectId);
+        // 检查并设置状态
+        DevopsJenkinsServerStatusCheckResponseVO devopsJenkinsServerStatusCheckResponseVO = checkConnection(projectId, devopsJenkinsServerVO);
+        if (devopsJenkinsServerStatusCheckResponseVO.getSuccess().equals(Boolean.TRUE)) {
+            devopsJenkinsServerVO.setStatus(DevopsJenkinsServerStatusEnum.SUCCESS.getStatus());
+        } else {
+            devopsJenkinsServerVO.setStatus(DevopsJenkinsServerStatusEnum.FAILED.getStatus());
+        }
         DevopsJenkinsServerDTO devopsJenkinsServerDTO = MapperUtil.resultJudgedInsert(devopsJenkinsServerMapper, ConvertUtils.convertObject(devopsJenkinsServerVO, DevopsJenkinsServerDTO.class), "error.devops.jenkins.server.create");
         devopsJenkinsServerVO.setId(devopsJenkinsServerDTO.getId());
         return devopsJenkinsServerVO;
@@ -43,18 +51,30 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
         if (checkNameExist(projectId, devopsJenkinsServerVO.getId(), devopsJenkinsServerVO.getName())) {
             throw new CommonException("error.devops.jenkins.server.name.exists");
         }
+        devopsJenkinsServerVO.setProjectId(projectId);
+        // 检查并设置状态
+        DevopsJenkinsServerStatusCheckResponseVO devopsJenkinsServerStatusCheckResponseVO = checkConnection(projectId, devopsJenkinsServerVO);
+        if (devopsJenkinsServerStatusCheckResponseVO.getSuccess().equals(Boolean.TRUE)) {
+            devopsJenkinsServerVO.setStatus(DevopsJenkinsServerStatusEnum.SUCCESS.getStatus());
+        } else {
+            devopsJenkinsServerVO.setStatus(DevopsJenkinsServerStatusEnum.FAILED.getStatus());
+        }
         MapperUtil.resultJudgedUpdateByPrimaryKey(devopsJenkinsServerMapper, ConvertUtils.convertObject(devopsJenkinsServerVO, DevopsJenkinsServerDTO.class), "error.devops.jenkins.server.update");
     }
 
     @Override
-    public DevopsJenkinsServerStatusCheckResponseVO checkStatus(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO) {
+    public DevopsJenkinsServerStatusCheckResponseVO checkConnection(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO) {
         DevopsJenkinsServerStatusCheckResponseVO devopsJenkinsServerStatusCheckResponseVO = new DevopsJenkinsServerStatusCheckResponseVO();
         devopsJenkinsServerStatusCheckResponseVO.setSuccess(false);
         try {
             JenkinsClient client = JenkinsClient.builder().endPoint(devopsJenkinsServerVO.getUrl()).credentials(String.format("%s:%s", devopsJenkinsServerVO.getUsername(), devopsJenkinsServerVO.getPassword())).build();
             SystemInfo systemInfo = client.api().systemApi().systemInfo();
             if (systemInfo != null) {
-                devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
+                if (systemInfo.errors().size() == 0) {
+                    devopsJenkinsServerStatusCheckResponseVO.setSuccess(true);
+                } else {
+                    devopsJenkinsServerStatusCheckResponseVO.setMessage(systemInfo.errors().get(0).exceptionName());
+                }
             }
         } catch (Exception e) {
             devopsJenkinsServerStatusCheckResponseVO.setMessage(e.getMessage());

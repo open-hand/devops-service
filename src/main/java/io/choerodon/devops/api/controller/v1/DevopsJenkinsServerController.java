@@ -125,11 +125,11 @@ public class DevopsJenkinsServerController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "检查jenkins server状态")
-    @PostMapping("/check_status")
-    public ResponseEntity<DevopsJenkinsServerStatusCheckResponseVO> checkStatus(@ApiParam(value = "项目ID", required = true)
-                                                                                @PathVariable(value = "project_id") Long projectId,
-                                                                                @ApiParam(value = "server信息", required = true)
-                                                                                @RequestBody DevopsJenkinsServerVO devopsJenkinsServerVO) {
-        return ResponseEntity.ok(devopsJenkinsServerService.checkStatus(projectId, devopsJenkinsServerVO));
+    @PostMapping("/check_connection")
+    public ResponseEntity<DevopsJenkinsServerStatusCheckResponseVO> checkConnection(@ApiParam(value = "项目ID", required = true)
+                                                                                    @PathVariable(value = "project_id") Long projectId,
+                                                                                    @ApiParam(value = "server信息", required = true)
+                                                                                    @RequestBody DevopsJenkinsServerVO devopsJenkinsServerVO) {
+        return ResponseEntity.ok(devopsJenkinsServerService.checkConnection(projectId, devopsJenkinsServerVO));
     }
 }

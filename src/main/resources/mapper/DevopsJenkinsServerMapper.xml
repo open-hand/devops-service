@@ -12,7 +12,19 @@
   </select>
 
   <select id="page" resultType="io.choerodon.devops.api.vo.DevopsJenkinsServerVO">
-    SELECT *
+    SELECT djs.id,
+    djs.name,
+    djs.project_id,
+    djs.url,
+    djs.username,
+    djs.password,
+    djs.description,
+    djs.status,
+    djs.object_version_number,
+    djs.created_by,
+    djs.creation_date,
+    djs.last_updated_by,
+    djs.last_update_date
     FROM devops_jenkins_server djs
     WHERE project_id = #{projectId}
     <if test="searchVO != null">
@@ -40,7 +52,8 @@
           OR djs.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
           OR djs.url LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
           OR djs.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
-          OR djs.username LIKE CONCAT(CONCAT('%',#{param, jdbcType=VARCHAR}), '%')
+          OR djs.username LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
+          )
         </foreach>
       </if>
     </if>

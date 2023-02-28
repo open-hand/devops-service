@@ -11,7 +11,7 @@ public interface DevopsJenkinsServerService {
 
     void update(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO);
 
-    DevopsJenkinsServerStatusCheckResponseVO checkStatus(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO);
+    DevopsJenkinsServerStatusCheckResponseVO checkConnection(Long projectId, DevopsJenkinsServerVO devopsJenkinsServerVO);
 
     void enable(Long projectId, Long jenkinsId);
 
