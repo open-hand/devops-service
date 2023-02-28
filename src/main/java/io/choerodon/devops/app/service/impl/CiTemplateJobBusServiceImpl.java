@@ -34,8 +34,7 @@ import io.choerodon.devops.infra.mapper.CiTemplateJobBusMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateJobGroupBusMapper;
 import io.choerodon.devops.infra.mapper.CiTemplateJobStepRelBusMapper;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
-import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
-import io.choerodon.devops.infra.utils.TemplateJobTypeUtils;
+import io.choerodon.devops.infra.util.UserSyncErrorBuilder;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -71,7 +70,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     private DevopsCiStepOperator devopsCiStepOperator;
 
     @Autowired
-    private PipelineTemplateUtils pipelineTemplateUtils;
+    private UserSyncErrorBuilder.PipelineTemplateUtils pipelineTemplateUtils;
 
     @Autowired
     private Map<String, TemplateJobConfigService> stringTemplateJobConfigServiceMap;
@@ -110,7 +109,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         AssertUtils.isTrue(isNameUnique(ciTemplateJobVO.getName(), sourceId, null),
                 "error.job.template.name.exist");
         CiTemplateJobDTO ciTemplateJobDTO = ConvertUtils.convertObject(ciTemplateJobVO, CiTemplateJobDTO.class);
-        String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
+        String type = UserSyncErrorBuilder.TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
         if (!StringUtils.isEmpty(type)) {
             ciTemplateJobDTO.setConfigId(stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE).baseInsert(ciTemplateJobVO));
         }
@@ -143,7 +142,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         CiTemplateJobDTO ciTemplateJobDTO = ConvertUtils.convertObject(ciTemplateJobVO, CiTemplateJobDTO.class);
         // 更新job记录
         ciTemplateJobDTO.setObjectVersionNumber(templateJobDTO.getObjectVersionNumber());
-        String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
+        String type = UserSyncErrorBuilder.TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
         if (!StringUtils.isEmpty(type)) {
             TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
             templateJobConfigService.baseDelete(ciTemplateJobVO);
@@ -180,7 +179,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
         }
         // 删除与steps的关系
         ciTemplateJobStepRelBusMapper.deleteByJobId(jobId);
-        String type = TemplateJobTypeUtils.stringStringMap.get(templateJobDTO.getType());
+        String type = UserSyncErrorBuilder.TemplateJobTypeUtils.stringStringMap.get(templateJobDTO.getType());
         if (!StringUtils.isEmpty(type)) {
             TemplateJobConfigService templateJobConfigService = stringTemplateJobConfigServiceMap.get(type + TEMPLATE_JOB_CONFIG_SERVICE);
             templateJobConfigService.baseDelete(ConvertUtils.convertObject(templateJobDTO, CiTemplateJobVO.class));
@@ -326,7 +325,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
 
     @Override
     public void fillCdJobConfig(CiTemplateJobVO ciTemplateJobVO) {
-        String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
+        String type = UserSyncErrorBuilder.TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobVO.getType());
         if (StringUtils.isEmpty(type)) {
             return;
         }
@@ -336,7 +335,7 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTemplateJobConfig(CiTemplateJobDTO ciTemplateJobDTO) {
-        String type = TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobDTO.getType());
+        String type = UserSyncErrorBuilder.TemplateJobTypeUtils.stringStringMap.get(ciTemplateJobDTO.getType());
         if (StringUtils.isEmpty(type)) {
             return;
         }
@@ -398,10 +397,10 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
             if (!isNameUnique(ciTemplateJobVO.getName(), sourceId, null)) {
                 int indexOf = StringUtils.lastIndexOf(ciTemplateJobVO.getName(), BaseConstants.Symbol.LOWER_LINE);
                 if (indexOf == -1) {
-                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.JOB, sourceId, ciTemplateJobVO.getName()));
+                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(UserSyncErrorBuilder.PipelineTemplateUtils.JOB, sourceId, ciTemplateJobVO.getName()));
                 } else {
                     String originName = StringUtils.substring(ciTemplateJobVO.getName(), 0, indexOf);
-                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.JOB, sourceId, originName));
+                    ciTemplateJobVO.setName(pipelineTemplateUtils.generateRandomName(UserSyncErrorBuilder.PipelineTemplateUtils.JOB, sourceId, originName));
                 }
 
             }

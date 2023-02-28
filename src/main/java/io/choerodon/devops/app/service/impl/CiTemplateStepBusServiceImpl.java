@@ -1,6 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
 
+import java.util.*;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hzero.core.base.BaseConstants;
+import org.hzero.core.util.AssertUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
@@ -17,20 +29,9 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
-import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
+import io.choerodon.devops.infra.util.UserSyncErrorBuilder;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang3.StringUtils;
-import org.hzero.core.base.BaseConstants;
-import org.hzero.core.util.AssertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by wangxiang on 2021/12/14
@@ -53,7 +54,7 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
 
 
     @Autowired
-    private PipelineTemplateUtils pipelineTemplateUtils;
+    private UserSyncErrorBuilder.PipelineTemplateUtils pipelineTemplateUtils;
 
 
     @Autowired
@@ -314,10 +315,10 @@ public class CiTemplateStepBusServiceImpl implements CiTemplateStepBusService {
             if (!checkTemplateStepName(sourceId, ciTemplateStepVO.getName(), null)) {
                 int indexOf = StringUtils.lastIndexOf(ciTemplateStepVO.getName(), BaseConstants.Symbol.LOWER_LINE);
                 if (indexOf == -1) {
-                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.STEP, sourceId, ciTemplateStepVO.getName()));
+                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(UserSyncErrorBuilder.PipelineTemplateUtils.STEP, sourceId, ciTemplateStepVO.getName()));
                 } else {
                     String originName = StringUtils.substring(ciTemplateStepVO.getName(), 0, indexOf);
-                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(PipelineTemplateUtils.STEP, sourceId, originName));
+                    ciTemplateStepVO.setName(pipelineTemplateUtils.generateRandomName(UserSyncErrorBuilder.PipelineTemplateUtils.STEP, sourceId, originName));
                 }
 
             }

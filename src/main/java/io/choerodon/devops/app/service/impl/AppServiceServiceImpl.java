@@ -4008,42 +4008,13 @@ public class AppServiceServiceImpl implements AppServiceService {
 
     @Override
     public ImageRepoInfoVO queryRepoConfigByCode(Long projectId, String code, String repoType, String repoCode) {
-        ImageRepoInfoVO imageRepoInfoVO = null;
         AppServiceRepVO appServiceRepVO = queryByCode(projectId, code);
         if (appServiceRepVO == null) {
             throw new CommonException(DEVOPS_APP_SERVICE_NOT_EXIST);
         }
         CommonExAssertUtil.assertTrue((projectId.equals(appServiceRepVO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigByCode(projectId, repoType, repoCode);
-        String dockerRegistry;
-        String groupName;
-        String dockerUsername;
-        String dockerPassword;
-        if (DevopsRegistryRepoType.CUSTOM_REPO.getType().equals(repoType)) {
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-            dockerUsername = harborRepoDTO.getHarborRepoConfig().getLoginName();
-            dockerPassword = harborRepoDTO.getHarborRepoConfig().getPassword();
-
-        } else {
-            dockerRegistry = harborRepoDTO.getHarborRepoConfig().getRepoUrl();
-            groupName = harborRepoDTO.getHarborRepoConfig().getRepoName();
-            dockerUsername = harborRepoDTO.getPushRobot().getName();
-            dockerPassword = harborRepoDTO.getPushRobot().getToken();
-        }
-        imageRepoInfoVO = new ImageRepoInfoVO();
-        imageRepoInfoVO.setDockerRegistry(trimPrefix(dockerRegistry));
-        imageRepoInfoVO.setGroupName(groupName);
-        imageRepoInfoVO.setDockerUsername(dockerUsername);
-        imageRepoInfoVO.setDockerPassword(dockerPassword);
-        imageRepoInfoVO.setRepoType(repoType);
-        imageRepoInfoVO.setRepoCode(repoCode);
-        return imageRepoInfoVO;
-    }
-
-    private String trimPrefix(String dockerRegistry) {
-        String dockerUrl = dockerRegistry.replace("http://", "").replace("https://", "");
-        return dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
+        return HarborRepoUtil.getHarborRepoInfo(repoType, repoCode, harborRepoDTO);
     }
 
 }

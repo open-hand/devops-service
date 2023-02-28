@@ -28,7 +28,7 @@ import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.ConvertUtils;
 import io.choerodon.devops.infra.util.UserDTOFillUtil;
-import io.choerodon.devops.infra.utils.PipelineTemplateUtils;
+import io.choerodon.devops.infra.util.UserSyncErrorBuilder;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -65,7 +65,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     private CiTemplateVariableBusMapper ciTemplateVariableBusMapper;
 
     @Autowired
-    private PipelineTemplateUtils pipelineTemplateUtils;
+    private UserSyncErrorBuilder.PipelineTemplateUtils pipelineTemplateUtils;
 
     @Autowired
     private DevopsCiStepOperator devopsCiStepOperator;
@@ -155,7 +155,7 @@ public class CiPipelineTemplateBusServiceImpl implements CiPipelineTemplateBusSe
     public CiTemplatePipelineVO queryPipelineTemplateById(Long sourceId, Long ciPipelineTemplateId) {
         //1. 查询流水线模板
         CiTemplatePipelineVO ciTemplatePipelineVO = queryBaseCiPipelineTemplate(ciPipelineTemplateId);
-        PipelineTemplateUtils.threadLocal.set(ciTemplatePipelineVO);
+        UserSyncErrorBuilder.PipelineTemplateUtils.threadLocal.set(ciTemplatePipelineVO);
         //2.查询模板下面的阶段
         List<CiTemplateStageVO> ciTemplateStageVOS = queryBaseCiTemplateStage(ciPipelineTemplateId);
         ciTemplateStageVOS.forEach(ciTemplateStageVO -> {
