@@ -72,21 +72,17 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     @Transactional
     @Override
     public void enable(Long projectId, Long jenkinsId) {
-        DevopsJenkinsServerDTO devopsJenkinsServerUpdateDTO = new DevopsJenkinsServerDTO();
-        devopsJenkinsServerUpdateDTO.setId(jenkinsId);
-        devopsJenkinsServerUpdateDTO.setProjectId(projectId);
-        devopsJenkinsServerUpdateDTO.setStatus(DevopsJenkinsServerStatusEnum.ENABLED.getStatus());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJenkinsServerMapper, devopsJenkinsServerUpdateDTO, "error.devops.jenkins.server.update");
+        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerMapper.selectByPrimaryKey(jenkinsId);
+        devopsJenkinsServerDTO.setStatus(DevopsJenkinsServerStatusEnum.ENABLED.getStatus());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJenkinsServerMapper, devopsJenkinsServerDTO, "error.devops.jenkins.server.update");
     }
 
     @Transactional
     @Override
     public void disable(Long projectId, Long jenkinsId) {
-        DevopsJenkinsServerDTO devopsJenkinsServerUpdateDTO = new DevopsJenkinsServerDTO();
-        devopsJenkinsServerUpdateDTO.setId(jenkinsId);
-        devopsJenkinsServerUpdateDTO.setProjectId(projectId);
-        devopsJenkinsServerUpdateDTO.setStatus(DevopsJenkinsServerStatusEnum.DISABLE.getStatus());
-        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJenkinsServerMapper, devopsJenkinsServerUpdateDTO, "error.devops.jenkins.server.update");
+        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerMapper.selectByPrimaryKey(jenkinsId);
+        devopsJenkinsServerDTO.setStatus(DevopsJenkinsServerStatusEnum.DISABLE.getStatus());
+        MapperUtil.resultJudgedUpdateByPrimaryKeySelective(devopsJenkinsServerMapper, devopsJenkinsServerDTO, "error.devops.jenkins.server.update");
     }
 
     @Transactional
