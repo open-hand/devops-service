@@ -392,6 +392,20 @@ public class AppServiceVersionController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "保存镜像版本信息")
+    @PostMapping(value = "/image_version")
+    public ResponseEntity<AppServiceVersionDTO> saveImageVersion(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam(value = "code") String code,
+            @RequestParam String version,
+            @RequestParam String commit,
+            @RequestParam(value = "harbor_config_id") Long harborConfigId,
+            @RequestParam(value = "repo_type") String repoType,
+            @RequestParam String image) {
+        return ResponseEntity.ok(appServiceVersionService.saveImageVersion(projectId, code, version, commit, harborConfigId, repoType, image));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "保存helm版本信息")
     @PostMapping(value = "/helm_version")
     public ResponseEntity<AppServiceVersionDTO> saveHelmVersion(

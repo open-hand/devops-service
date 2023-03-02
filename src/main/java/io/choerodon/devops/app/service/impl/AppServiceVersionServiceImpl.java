@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
@@ -1117,7 +1116,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
         if (appServiceVersionDTO == null) {
             appServiceVersionDTO = create(appServiceId, version, commit, null);
         }
-        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
         saveHelmVersion(projectDTO,
                 appServiceDTO.getId(),
                 appServiceVersionDTO.getId(),
@@ -1128,6 +1127,32 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                 null,
                 null,
                 null);
+
+        // 创建helm版本
+        return appServiceVersionDTO;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppServiceVersionDTO saveImageVersion(Long projectId,
+                                                 String code,
+                                                 String version,
+                                                 String commit,
+                                                 Long harborConfigId,
+                                                 String repoType,
+                                                 String image) {
+        AppServiceDTO appServiceDTO = applicationService.baseQueryByCode(code, projectId);
+        Long appServiceId = appServiceDTO.getId();
+        // 创建应用服务版本
+        AppServiceVersionDTO appServiceVersionDTO = baseQueryByAppServiceIdAndVersion(appServiceId, version);
+        if (appServiceVersionDTO == null) {
+            appServiceVersionDTO = create(appServiceId, version, commit, null);
+        }
+        appServiceImageVersionService.create(appServiceVersionDTO.getId(),
+                version,
+                harborConfigId,
+                repoType,
+                image);
 
         // 创建helm版本
         return appServiceVersionDTO;

@@ -256,4 +256,12 @@ public interface AppServiceVersionService {
     AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version);
 
     AppServiceVersionDTO saveHelmVersion(Long projectId, String code, String version, String commit, MultipartFile file);
+
+    AppServiceVersionDTO saveImageVersion(Long projectId,
+                                          String code,
+                                          String version,
+                                          String commit,
+                                          Long harborConfigId,
+                                          String repoType,
+                                          String image);
 }
