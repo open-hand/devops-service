@@ -28,6 +28,9 @@
         dp.id)
         <where>
             dp.project_id = #{projectId}
+            <if test="name != null">
+                and dp.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            </if>
             <if test="params != null">
                 and dp.name like CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
             </if>

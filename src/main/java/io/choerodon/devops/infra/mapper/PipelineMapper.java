@@ -20,6 +20,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface PipelineMapper extends BaseMapper<PipelineDTO> {
 
     Page<PipelineHomeVO> pagingByProjectIdAndOptions(@Param("projectId") Long projectId,
+                                                     @Param("name") String name,
                                                      @Param("enable") Boolean enable,
                                                      @Param("status") String status,
                                                      @Param("triggerType") String triggerType,
