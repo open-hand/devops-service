@@ -43,7 +43,8 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
                 Long serverId = devopsJenkinsServerDTO.getId();
                 String serverName = devopsJenkinsServerDTO.getName();
-                listFolderJobs(serverId, serverName, "/", jenkinsJobVOList);
+                JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+                listFolderJobs(jenkinsClient,serverId, serverName, "/", jenkinsJobVOList);
             }
         }
 
@@ -66,21 +67,20 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         }
     }
 
-    private void listFolderJobs(Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
-        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+    private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
+
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);
         if (CollectionUtils.isEmpty(jobList.jobs())) {
             return;
         }
         for (Job job : jobList.jobs()) {
-            if (JenkinsJobTypeEnum.FOLDER.className().equals(job.clazz())) {
-                listFolderJobs(serverId, serverName, folder + "/" + job.name(), jenkinsJobVOList);
-            } else if (JenkinsJobTypeEnum.ORGANIZATION_FOLDER.className().equals(job.clazz())) {
-                listFolderJobs(serverId, serverName, folder + "/" + job.name(), jenkinsJobVOList);
+            if (JenkinsJobTypeEnum.FOLDER.className().equals(job.clazz())
+                    || JenkinsJobTypeEnum.ORGANIZATION_FOLDER.className().equals(job.clazz())) {
+                listFolderJobs(jenkinsClient, serverId, serverName, folder + job.name() + "/", jenkinsJobVOList);
             } else {
                 JenkinsJobVO jenkinsJobVO = new JenkinsJobVO(serverId,
-                        JenkinsJobTypeEnum.getTypeByClassName(job.clazz()),
                         serverName,
+                        JenkinsJobTypeEnum.getTypeByClassName(job.clazz()),
                         folder,
                         job.name(),
                         job.url());
