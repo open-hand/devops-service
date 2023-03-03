@@ -1,9 +1,12 @@
 package io.choerodon.devops.app;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
+import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsJenkinsServerService {
@@ -24,4 +27,8 @@ public interface DevopsJenkinsServerService {
     DevopsJenkinsServerVO query(Long projectId, Long jenkinsServerId);
 
     Boolean checkNameExists(Long projectId, Long jenkinsServerId, String serverName);
+
+    List<DevopsJenkinsServerDTO> listByProjectId(Long projectId);
+
+    DevopsJenkinsServerDTO queryById(Long id);
 }

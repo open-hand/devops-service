@@ -1,16 +1,20 @@
 package io.choerodon.devops.app;
 
+import java.util.List;
+
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.system.SystemInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
+import io.choerodon.devops.infra.constant.ResourceCheckConstant;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;
 import io.choerodon.devops.infra.mapper.DevopsJenkinsServerMapper;
@@ -104,5 +108,19 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     @Override
     public Boolean checkNameExists(Long projectId, Long jenkinsServerId, String serverName) {
         return devopsJenkinsServerMapper.checkNameExist(projectId, jenkinsServerId, serverName);
+    }
+
+    @Override
+    public List<DevopsJenkinsServerDTO> listByProjectId(Long projectId) {
+        Assert.notNull(projectId, ResourceCheckConstant.DEVOPS_PROJECT_ID_IS_NULL);
+
+        DevopsJenkinsServerDTO devopsJenkinsServerDTO = new DevopsJenkinsServerDTO();
+        devopsJenkinsServerDTO.setProjectId(projectId);
+        return devopsJenkinsServerMapper.select(devopsJenkinsServerDTO);
+    }
+
+    @Override
+    public DevopsJenkinsServerDTO queryById(Long id) {
+        return devopsJenkinsServerMapper.selectByPrimaryKey(id);
     }
 }
