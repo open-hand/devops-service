@@ -34,7 +34,7 @@ public class JenkinsClientUtil {
                         .endPoint(devopsJenkinsServerDTO.getUrl())
                         .credentials(String.format("%s:%s", devopsJenkinsServerDTO.getUsername(), devopsJenkinsServerDTO.getPassword()))
                         .build();
-                jenkinsClientWrapper = new JenkinsClientWrapper(devopsJenkinsServerDTO.getObjectVersionNumber(), jenkinsClient)
+                jenkinsClientWrapper = new JenkinsClientWrapper(devopsJenkinsServerDTO.getObjectVersionNumber(), jenkinsClient);
                 jenkinsClientMap.put(serverId, jenkinsClientWrapper);
             }
         }
