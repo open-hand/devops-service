@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 
@@ -13,4 +14,7 @@ import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
  */
 public interface JenkinsJobService {
     List<JenkinsJobVO> listAll(Long projectId);
+
+    void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params);
+
 }

@@ -1,13 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.job.Job;
 import com.cdancy.jenkins.rest.domain.job.JobList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
@@ -47,6 +50,22 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         return jenkinsJobVOList;
     }
 
+    @Override
+    public void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        if (CollectionUtils.isEmpty(params)) {
+            jenkinsClient.api().jobsApi().build(folder, name);
+        } else {
+            Map<String, List<String>> paramMap = new HashMap<>();
+            params.forEach((k, v) -> {
+                List<String> valueList = new ArrayList<>();
+                valueList.add(v);
+                paramMap.put(k, valueList);
+            });
+            jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
+        }
+    }
+
     private void listFolderJobs(Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);
@@ -59,6 +78,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 JenkinsJobVO jenkinsJobVO = new JenkinsJobVO(serverId,
                         JenkinsJobTypeEnum.getTypeByClassName(job.clazz()),
                         serverName,
+                        folder,
                         job.name(),
                         job.url());
                 jenkinsJobVOList.add(jenkinsJobVO);

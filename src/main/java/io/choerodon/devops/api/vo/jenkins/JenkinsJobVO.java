@@ -18,30 +18,29 @@ public class JenkinsJobVO {
 
     private String type;
 
+    private String folder;
     private String name;
-
-    private String fullName;
 
     private String url;
 
     public JenkinsJobVO() {
     }
 
-    public JenkinsJobVO(Long jenkinsServerId, String jenkinsServerName, String type, String name, String url) {
+    public JenkinsJobVO(Long jenkinsServerId, String jenkinsServerName, String type, String folder, String name, String url) {
         this.jenkinsServerId = jenkinsServerId;
         this.jenkinsServerName = jenkinsServerName;
         this.type = type;
+        this.folder = folder;
         this.name = name;
         this.url = url;
     }
 
-    public JenkinsJobVO(Long jenkinsServerId, String jenkinsServerName, String type, String name, String fullName, String url) {
-        this.jenkinsServerId = jenkinsServerId;
-        this.jenkinsServerName = jenkinsServerName;
-        this.type = type;
-        this.name = name;
-        this.fullName = fullName;
-        this.url = url;
+    public String getFolder() {
+        return folder;
+    }
+
+    public void setFolder(String folder) {
+        this.folder = folder;
     }
 
     public String getJenkinsServerName() {
@@ -52,13 +51,6 @@ public class JenkinsJobVO {
         this.jenkinsServerName = jenkinsServerName;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 
     public Long getJenkinsServerId() {
         return jenkinsServerId;
