@@ -682,4 +682,19 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public List<MergeRequestDTO> listMergeRequest(Integer projectId, String state) {
         throw new CommonException("devops.open.mergereuqest.list");
     }
+
+    @Override
+    public ResponseEntity<PipelineTrigger> createPipelineTrigger(Integer projectId, Integer userId, String description) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.create");
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePipelineTrigger(Integer projectId, Integer userId, Integer triggerId) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.delete");
+    }
+
+    @Override
+    public ResponseEntity<List<PipelineTrigger>> listPipelineTrigger(Integer projectId, Integer userId) {
+        throw new CommonException("devops.gitlab.pipeline.trigger.list");
+    }
 }

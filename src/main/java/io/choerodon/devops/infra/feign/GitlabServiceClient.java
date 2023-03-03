@@ -1089,4 +1089,53 @@ public interface GitlabServiceClient {
             @PathVariable Integer projectId,
             @RequestParam("state") String state
     );
+
+    /**
+     * 创建流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @PostMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<PipelineTrigger> createPipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "trigger name")
+            @RequestParam String description);
+
+    /**
+     * 删除流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @DeleteMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<Void> deletePipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId,
+            @ApiParam(value = "trigger id")
+            @RequestParam Integer triggerId);
+
+    /**
+     * 查询流水线自动触发trigger
+     *
+     * @param projectId 项目id
+     * @param userId    用户id
+     * @return Pipeline
+     */
+    @ApiOperation(value = "Create a pipelines")
+    @GetMapping("/v1/projects/{projectId}/pipelines_triggers")
+    ResponseEntity<List<PipelineTrigger>> listPipelineTrigger(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "projectId") Integer projectId,
+            @ApiParam(value = "userId")
+            @RequestParam(value = "userId") Integer userId);
 }

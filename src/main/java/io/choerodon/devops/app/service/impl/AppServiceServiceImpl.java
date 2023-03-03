@@ -1872,7 +1872,6 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
 
-
     public String getTimestampTimeV17(String str) {
         if (org.apache.commons.lang3.StringUtils.isEmpty(str)) {
             return "";
@@ -4015,6 +4014,11 @@ public class AppServiceServiceImpl implements AppServiceService {
         CommonExAssertUtil.assertTrue((projectId.equals(appServiceRepVO.getProjectId())), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
         HarborRepoDTO harborRepoDTO = rdupmClientOperator.queryHarborRepoConfigByCode(projectId, repoType, repoCode);
         return HarborRepoUtil.getHarborRepoInfo(repoType, repoCode, harborRepoDTO);
+    }
+
+    @Override
+    public AppServiceDTO queryByPipelineId(Long pipelineId) {
+        return appServiceMapper.queryByPipelineId(pipelineId);
     }
 
 }
