@@ -39,24 +39,26 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
             if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
                 Long serverId = devopsJenkinsServerDTO.getId();
-                listFolderJobs(serverId, "/", jenkinsJobVOList);
+                String serverName = devopsJenkinsServerDTO.getName();
+                listFolderJobs(serverId, serverName, "/", jenkinsJobVOList);
             }
         }
 
         return jenkinsJobVOList;
     }
 
-    private void listFolderJobs(Long serverId, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
+    private void listFolderJobs(Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);
         for (Job job : jobList.jobs()) {
             if (JenkinsJobTypeEnum.FOLDER.className().equals(job.clazz())) {
-                listFolderJobs(serverId, job.name(), jenkinsJobVOList);
+                listFolderJobs(serverId, serverName, folder + "/" + job.name(), jenkinsJobVOList);
             } else if (JenkinsJobTypeEnum.ORGANIZATION_FOLDER.className().equals(job.clazz())) {
-                listFolderJobs(serverId, job.name(), jenkinsJobVOList);
+                listFolderJobs(serverId, serverName, folder + "/" + job.name(), jenkinsJobVOList);
             } else {
                 JenkinsJobVO jenkinsJobVO = new JenkinsJobVO(serverId,
                         JenkinsJobTypeEnum.getTypeByClassName(job.clazz()),
+                        serverName,
                         job.name(),
                         job.url());
                 jenkinsJobVOList.add(jenkinsJobVO);

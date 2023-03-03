@@ -6,10 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
@@ -24,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * @since 2023/3/3 9:22
  */
 @RestController
-@RequestMapping("/v1/projects/{project_id}/jobs")
+@RequestMapping("/v1/projects/{project_id}/jenkins_jobs")
 public class JenkinsJobController {
 
     @Autowired
@@ -38,4 +35,14 @@ public class JenkinsJobController {
             @PathVariable(value = "project_id") Long projectId) {
         return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
     }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "立即构建")
+    @PostMapping("/name/build")
+    public ResponseEntity<List<JenkinsJobVO>> build(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
+    }
+
 }
