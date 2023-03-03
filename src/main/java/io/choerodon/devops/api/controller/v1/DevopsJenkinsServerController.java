@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -14,6 +16,7 @@ import io.choerodon.devops.api.vo.DevopsJenkinsServerStatusCheckResponseVO;
 import io.choerodon.devops.api.vo.DevopsJenkinsServerVO;
 import io.choerodon.devops.api.vo.SearchVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
+import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
@@ -40,6 +43,15 @@ public class DevopsJenkinsServerController {
                                                                   @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageable,
                                                                   @RequestBody SearchVO searchVO) {
         return ResponseEntity.ok(devopsJenkinsServerService.pageServer(projectId, pageable, searchVO));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询项目下可见的jenkins服务")
+    @GetMapping("/all")
+    public ResponseEntity<List<DevopsJenkinsServerDTO>> listAll(@ApiParam(value = "项目ID", required = true)
+                                                               @PathVariable(value = "project_id") Long projectId,
+                                                                @RequestParam(required = false, defaultValue = "enabled") String status) {
+        return ResponseEntity.ok(devopsJenkinsServerService.listAll(projectId, status));
     }
 
     /**

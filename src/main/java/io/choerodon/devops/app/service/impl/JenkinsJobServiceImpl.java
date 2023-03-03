@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
 import io.choerodon.devops.app.service.JenkinsJobService;
@@ -36,17 +37,21 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     private DevopsJenkinsServerService devopsJenkinsServerService;
 
     @Override
-    public List<JenkinsJobVO> listAll(Long projectId) {
+    public List<JenkinsJobVO> listAll(Long projectId, Long serverId) {
         List<JenkinsJobVO> jenkinsJobVOList = new ArrayList<>();
-        List<DevopsJenkinsServerDTO> devopsJenkinsServerDTOS = devopsJenkinsServerService.listByProjectId(projectId);
-        for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
-            if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
-                Long serverId = devopsJenkinsServerDTO.getId();
+//        List<DevopsJenkinsServerDTO> devopsJenkinsServerDTOS = devopsJenkinsServerService.listByProjectId(projectId);
+        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerService.queryById(serverId);
+//        for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
+        if (DevopsJenkinsServerStatusEnum.DISABLE.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
+            throw new CommonException("devops.jenkins.server.is.disable");
+        }
+//            if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
+//                Long serverId = devopsJenkinsServerDTO.getId();
                 String serverName = devopsJenkinsServerDTO.getName();
                 JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
                 listFolderJobs(jenkinsClient,serverId, serverName, "/", jenkinsJobVOList);
-            }
-        }
+//            }
+//        }
 
         return jenkinsJobVOList;
     }

@@ -123,4 +123,9 @@ public class DevopsJenkinsServerServiceImpl implements DevopsJenkinsServerServic
     public DevopsJenkinsServerDTO queryById(Long id) {
         return devopsJenkinsServerMapper.selectByPrimaryKey(id);
     }
+
+    @Override
+    public List<DevopsJenkinsServerDTO> listAll(Long projectId, String status) {
+        return devopsJenkinsServerMapper.listAll(projectId, status);
+    }
 }

@@ -58,4 +58,11 @@
       </if>
     </if>
   </select>
+  <select id="listAll" resultType="io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO">
+        select *
+        from devops_jenkins_server djs
+        <where>
+          project_id = #{projectId}
+        </where>
+  </select>
 </mapper>

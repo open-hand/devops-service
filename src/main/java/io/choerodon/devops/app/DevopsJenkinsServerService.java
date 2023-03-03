@@ -31,4 +31,6 @@ public interface DevopsJenkinsServerService {
     List<DevopsJenkinsServerDTO> listByProjectId(Long projectId);
 
     DevopsJenkinsServerDTO queryById(Long id);
+
+    List<DevopsJenkinsServerDTO> listAll(Long projectId, String status);
 }

@@ -13,4 +13,6 @@ public interface DevopsJenkinsServerMapper extends BaseMapper<DevopsJenkinsServe
     Boolean checkNameExist(@Param("projectId") Long projectId, @Param("jenkinsServerId") Long jenkinsServerId, @Param("serverName") String serverName);
 
     List<DevopsJenkinsServerVO> page(@Param("projectId") Long projectId, @Param("searchVO") SearchVO searchVO);
+
+    List<DevopsJenkinsServerDTO> listAll(@Param("projectId") Long projectId, @Param("status") String status);
 }
