@@ -69,6 +69,9 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     private void listFolderJobs(Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);
+        if (CollectionUtils.isEmpty(jobList.jobs())) {
+            return;
+        }
         for (Job job : jobList.jobs()) {
             if (JenkinsJobTypeEnum.FOLDER.className().equals(job.clazz())) {
                 listFolderJobs(serverId, serverName, folder + "/" + job.name(), jenkinsJobVOList);
