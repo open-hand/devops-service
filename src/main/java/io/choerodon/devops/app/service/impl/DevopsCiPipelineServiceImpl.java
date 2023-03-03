@@ -63,6 +63,7 @@ import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * 〈功能简述〉
@@ -116,7 +117,7 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
     private final AppServiceMapper appServiceMapper;
     private final CiCdPipelineMapper ciCdPipelineMapper;
     private final DevopsCdStageService devopsCdStageService;
-//    private final DevopsCdAuditService devopsCdAuditService;
+    //    private final DevopsCdAuditService devopsCdAuditService;
     private final DevopsCdJobService devopsCdJobService;
     private final DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     private final DevopsEnvironmentMapper devopsEnvironmentMapper;
@@ -769,12 +770,18 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 return new Page<>();
             }
         }
-
-        // 查询流水线
-        Page<CiCdPipelineVO> pipelinePage = PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status));
-
-        return pipelinePage;
+        String sortStr;
+        Sort sort = pageRequest.getSort();
+        if (sort == null) {
+            sortStr = " ORDER BY dcp.id DESC";
+        } else if (sort.getOrderFor("status") != null) {
+            sortStr = " ORDER BY latest_execute_status1 asc, dcpr.creation_date DESC";
+        } else {
+            sortStr = " ORDER BY dcpr.creation_date DESC";
+        }
+        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, sortStr));
     }
+
     /**
      * 校验应用服务之前并不存在流水线
      *
@@ -1757,13 +1764,13 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
 //                        devopsCiJobDTO.setCiPipelineId(ciCdPipelineDTO.getId());
 //                        devopsCiJobService.create(devopsCiJobDTO);
 
-                        // 保存任务信息
-                        AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
-                        DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
+                    // 保存任务信息
+                    AbstractJobHandler handler = jobOperator.getHandlerOrThrowE(devopsCiJobVO.getType());
+                    DevopsCiJobDTO devopsCiJobDTO = handler.saveJobInfo(projectId, ciCdPipelineDTO.getId(), savedDevopsCiStageDTO.getId(), devopsCiJobVO);
 
-                        batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
-                    });
-                }
+                    batchSaveStep(projectId, devopsCiJobDTO, devopsCiJobVO.getDevopsCiStepVOList());
+                });
+            }
 //            }
         });
 

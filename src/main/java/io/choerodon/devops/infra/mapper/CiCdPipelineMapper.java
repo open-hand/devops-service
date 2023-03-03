@@ -24,7 +24,8 @@ public interface CiCdPipelineMapper extends BaseMapper<CiCdPipelineDTO> {
                                                  @Param("appServiceIds") Set<Long> appServiceIds,
                                                  @Param("searchParam") String searchParam,
                                                  @Param("enableFlag") Boolean enableFlag,
-                                                 @Param("status") String status);
+                                                 @Param("status") String status,
+                                                 @Param("sortStr") String sortStr);
 
     List<String> listPipelineNameByTaskConfigId(@Param("taskConfigId") Long taskConfigId);
 }
