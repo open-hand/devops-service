@@ -33,6 +33,10 @@ public enum CiJobTypeEnum {
      */
     HOST_DEPLOY("host_deploy"),
     /**
+     * 触发其它流水线
+     */
+    PIPELINE_TRIGGER("pipeline_trigger"),
+    /**
      * 脚本任务类型
      */
     CUSTOM("custom");

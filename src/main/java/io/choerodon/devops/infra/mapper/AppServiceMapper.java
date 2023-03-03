@@ -219,5 +219,7 @@ public interface AppServiceMapper extends BaseMapper<AppServiceDTO> {
     Set<Long> listAllIdsByProjectId(@Param("projectId") Long projectId);
 
     List<Long> listProjectIdsByAppIds(@Param("appIds") List<Long> appIds);
+
+    AppServiceDTO queryByPipelineId(@Param("pipelineId") Long pipelineId);
 }
 
