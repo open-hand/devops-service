@@ -17,17 +17,19 @@
         das.`name` AS app_service_name, das.gitlab_project_id, dcp.image,dcp.last_update_date,
         dcp.last_updated_by,dcp.creation_date,
         dcpr.status as latest_execute_status,
-        CASE dcpr.STATUS
-        WHEN 'success' THEN 1
-        WHEN 'pending' THEN 2
-        WHEN 'running' THEN 3
-        WHEN 'not_audit' THEN 4
-        WHEN 'manual' THEN 4
-        WHEN 'failed' THEN 5
-        WHEN 'skipped' THEN 6
-        ELSE 7
-        END
-        as latest_execute_status1,
+        <if test="sortStr.contains('status')">
+            CASE dcpr.STATUS
+            WHEN 'success' THEN 1
+            WHEN 'pending' THEN 2
+            WHEN 'running' THEN 3
+            WHEN 'not_audit' THEN 4
+            WHEN 'manual' THEN 4
+            WHEN 'failed' THEN 5
+            WHEN 'skipped' THEN 6
+            ELSE 7
+            END
+            as latest_execute_status1,
+        </if>
         dcpr.creation_date as latest_execute_date, dcpr.id is not null as
         has_records
         FROM devops_cicd_pipeline dcp
