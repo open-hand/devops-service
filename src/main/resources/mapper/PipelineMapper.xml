@@ -31,7 +31,7 @@
             dp.project_id = #{projectId}
             <if test="searchVO != null and searchVO.searchParam != null">
                 <if test="searchVO.searchParam.name != null">
-                    and dp.name=#{searchVO.searchParam.name}
+                    and dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
                 </if>
                 <if test="searchVO.searchParam.enable != null">
                     and dp.is_enable = #{searchVO.searchParam.enable}
