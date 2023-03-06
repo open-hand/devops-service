@@ -1,10 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import groovy.lang.Lazy;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
 import io.choerodon.asgard.saga.producer.TransactionalProducer;
@@ -23,10 +23,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.vo.CommonScheduleVO;
-import io.choerodon.devops.api.vo.PipelineHomeVO;
-import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
-import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.cd.PipelineJobVO;
 import io.choerodon.devops.api.vo.cd.PipelineScheduleVO;
 import io.choerodon.devops.api.vo.cd.PipelineStageVO;
@@ -565,8 +562,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, Boolean enable, String status, String triggerType, String params) {
-        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, enable, status, triggerType, params));
+    public Page<PipelineHomeVO> paging(Long projectId, PageRequest pageRequest, SearchVO searchVO) {
+        Page<PipelineHomeVO> pipelineVOS = PageHelper.doPage(pageRequest, () -> pipelineMapper.pagingByProjectIdAndOptions(projectId, searchVO));
         if (pipelineVOS.isEmpty()) {
             return new Page<>();
         }
