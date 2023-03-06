@@ -1,31 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
-import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
-import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.annotation.Nullable;
-
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
@@ -57,6 +31,32 @@ import org.springframework.util.StringUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
+
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.CUSTOM_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceCode.*;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.DEVOPS_USER_NOT_GITLAB_OWNER;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_CODE_EXIST;
+import static io.choerodon.devops.infra.constant.ExceptionConstants.PublicCode.DEVOPS_NAME_EXIST;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.*;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.producer.StartSagaBuilder;
@@ -719,12 +719,12 @@ public class AppServiceServiceImpl implements AppServiceService {
     public Page<AppServiceRepVO> pageByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
                                                String type, Boolean doPage,
                                                PageRequest pageable,
-                                               String params,
+                                               SearchVO searchVO,
                                                Boolean checkMember,
                                                Boolean includeExternal,
                                                Boolean excludeFailed) {
 
-        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, params, checkMember, includeExternal, excludeFailed);
+        Page<AppServiceDTO> applicationServiceDTOS = basePageByOptions(projectId, isActive, hasVersion, type, doPage, pageable, searchVO, checkMember, includeExternal, excludeFailed);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         initApplicationParams(projectId, applicationServiceDTOS.getContent(), urlSlash);
 
@@ -764,8 +764,8 @@ public class AppServiceServiceImpl implements AppServiceService {
     @Override
     public Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
                                                                       PageRequest pageable,
-                                                                      String params) {
-        Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, params, true, false, true);
+                                                                      SearchVO searchVO) {
+        Page<AppServiceRepVO> appServiceRepVOS = pageByOptions(projectId, true, null, null, true, pageable, searchVO, true, false, true);
         Set<Long> appServiceIds = appServiceRepVOS.getContent().stream().map(AppServiceRepVO::getId).collect(toSet());
         Map<Long, MemberPrivilegeViewDTO> memberPrivilegeViewDTOMap = hrdsCodeRepoClientOperator.selfPrivilege(null, projectId, appServiceIds).stream().collect(toMap(MemberPrivilegeViewDTO::getRepositoryId, Function.identity()));
         appServiceRepVOS.getContent().forEach(appServiceRepVO -> {
@@ -2631,12 +2631,11 @@ public class AppServiceServiceImpl implements AppServiceService {
                                                  String type,
                                                  Boolean doPage,
                                                  PageRequest pageable,
-                                                 String params,
+                                                 SearchVO searchVO,
                                                  Boolean checkMember,
                                                  Boolean includeExternal,
                                                  Boolean excludeFailed) {
 
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         Long userId = DetailsHelper.getUserDetails().getUserId();
 
         boolean projectOwnerOrRoot = permissionHelper.isGitlabProjectOwnerOrGitlabAdmin(projectId, userId);
@@ -2646,16 +2645,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.list(projectId, isActive, hasVersion, type,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                                searchVO.getSearchParam(),
+                                searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
                                 PageRequestUtil.checkSortIsEmpty(pageable),
                                 includeExternal,
                                 excludeFailed)
                 );
             } else {
                 list = appServiceMapper.list(projectId, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        searchVO.getSearchParam(),
+                        searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
                         PageRequestUtil.checkSortIsEmpty(pageable),
                         includeExternal,
                         excludeFailed);
@@ -2677,16 +2676,16 @@ public class AppServiceServiceImpl implements AppServiceService {
             if (doPage == null || doPage) {
                 return PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable),
                         () -> appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                                TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                                searchVO.getSearchParam(),
+                                searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
                                 pageable.getSort() == null,
                                 userId,
                                 includeExternal,
                                 excludeFailed));
             } else {
                 list = appServiceMapper.listProjectMembersAppService(projectId, appServiceIds, isActive, hasVersion, type,
-                        TypeUtil.cast(mapParams.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(mapParams.get(TypeUtil.PARAMS)),
+                        searchVO.getSearchParam(),
+                        searchVO.getParams().stream().map(o -> (String) o).collect(toList()),
                         pageable.getSort() == null,
                         userId,
                         includeExternal,
@@ -3179,18 +3178,20 @@ public class AppServiceServiceImpl implements AppServiceService {
     }
 
     @Override
-    public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable) {
+    public Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable, String params) {
         // 如果没指定应用服务id，按照普通分页处理
         if (CollectionUtils.isEmpty(ids)) {
-            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, null, false, true, null), AppServiceVO.class);
+            SearchVO searchVO = new SearchVO();
+            searchVO.setParams(ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params));
+            return ConvertUtils.convertPage(basePageByOptions(projectId, null, null, null, doPage, pageable, searchVO, false, true, null), AppServiceVO.class);
         } else {
             // 指定应用服务id，从这些id中根据参数决定是否分页
             // 如果不分页
             if (Boolean.FALSE.equals(doPage)) {
-                return PageInfoUtil.listAsPage(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, null), AppServiceVO.class));
+                return PageInfoUtil.listAsPage(ConvertUtils.convertList(appServiceMapper.listAppServiceByIds(ids, null, ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params)), AppServiceVO.class));
             } else {
                 // 如果分页
-                return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listAppServiceByIds(ids, null, null)), AppServiceVO.class);
+                return ConvertUtils.convertPage(PageHelper.doPageAndSort(PageRequestUtil.simpleConvertSortForPage(pageable), () -> appServiceMapper.listAppServiceByIds(ids, null, ObjectUtils.isEmpty(params) ? null : Collections.singletonList(params))), AppServiceVO.class);
             }
         }
     }
