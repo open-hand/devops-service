@@ -79,21 +79,12 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
     @Autowired
+    private DevopsCiPipelineTriggerConfigService devopsCiPipelineTriggerConfigService;
+
+    @Autowired
     private CiJobConfigFileRelService ciJobConfigFileRelService;
 
-    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
-                                  GitlabServiceClientOperator gitlabServiceClientOperator,
-                                  UserAttrService userAttrService,
-                                  AppServiceService appServiceService,
-                                  DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
-                                  DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
-                                  @Lazy DevopsCiPipelineService devopsCiPipelineService,
-                                  @Lazy
-                                          DevopsCiJobRecordService devopsCiJobRecordService,
-                                  AppServiceMapper appServiceMapper,
-                                  CheckGitlabAccessLevelService checkGitlabAccessLevelService,
-                                  DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
-                                  DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
+    public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper, GitlabServiceClientOperator gitlabServiceClientOperator, UserAttrService userAttrService, AppServiceService appServiceService, DevopsCiCdPipelineMapper devopsCiCdPipelineMapper, DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper, @Lazy DevopsCiPipelineService devopsCiPipelineService, @Lazy DevopsCiJobRecordService devopsCiJobRecordService, AppServiceMapper appServiceMapper, CheckGitlabAccessLevelService checkGitlabAccessLevelService, DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper, DevopsCiJobRecordMapper devopsCiJobRecordMapper) {
         this.devopsCiJobMapper = devopsCiJobMapper;
         this.gitlabServiceClientOperator = gitlabServiceClientOperator;
         this.userAttrService = userAttrService;
@@ -144,6 +135,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
 
             // 删除任务和配置文件关系
             ciJobConfigFileRelService.deleteByJobIds(jobIds);
+
+            // 删除pipeline trigger
+            devopsCiPipelineTriggerConfigService.deleteByJobIds(jobIds);
 
             DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
             devopsCiJobDTO.setCiStageId(stageId);
@@ -276,6 +270,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
         List<Long> jobIds = devopsCiJobDTOS.stream().map(DevopsCiJobDTO::getId).collect(Collectors.toList());
         // 删除maven settings
         deleteMavenSettingsRecordByJobIds(jobIds);
+
+        // 删除pipeline trigger
+        devopsCiPipelineTriggerConfigService.deleteByJobIds(jobIds);
 
         // 删除步骤
         devopsCiStepService.deleteByJobIds(jobIds);

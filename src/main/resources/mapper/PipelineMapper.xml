@@ -2,7 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
-
     <select id="pagingByProjectIdAndOptions" resultType="io.choerodon.devops.api.vo.PipelineHomeVO">
         select dp.id,
         dp.project_id,
@@ -24,7 +23,9 @@
         dpr.app_service_version_id,
         dpr.created_by as latest_pipeline_trigger_id
         from devops_pipeline dp
-        left join devops_pipeline_record dpr on dpr.id = (select max(id) from devops_pipeline_record where pipeline_id =
+        left join devops_pipeline_record dpr on dpr.id = (select max(id)
+        from devops_pipeline_record
+        where pipeline_id =
         dp.id)
         <where>
             dp.project_id = #{projectId}
@@ -39,13 +40,30 @@
             </if>
             <if test="triggerType!=null">
                 and dpr.trigger_type = #{triggerType}
+            <if test="searchVO != null and searchVO.searchParam != null">
+                <if test="searchVO.searchParam.name != null">
+                    and dp.name=#{searchVO.searchParam.name}
+                </if>
+                <if test="searchVO.searchParam.enable != null">
+                    and dp.is_enable = #{searchVO.searchParam.enable}
+                </if>
+                <if test="searchVO.searchParam.triggerType != null">
+                    and dpr.trigger_type = #{searchVO.searchParam.triggerType}
+                </if>
+                <if test="searchVO.searchParam.status != null">
+                    and dpr.status = #{searchVO.searchParam.status}
+                </if>
             </if>
-            <if test="status!=null">
-                and dpr.status = #{status}
+            <if test="searchVO != null and searchVO.params.size() > 0">
+                and
+                <foreach collection="searchVO.params" item="param" open="(" close=")" separator="OR">
+                    (dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
+                </foreach>
             </if>
         </where>
         order by dp.id desc
     </select>
+
     <select id="checkName" resultType="java.lang.Boolean">
         select count(1) = 0
         from devops_pipeline dp

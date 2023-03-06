@@ -1969,4 +1969,15 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public PipelineTrigger createPipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long lastUpdatedBy, String triggerName) {
+        return gitlabServiceClient.createPipelineTrigger(triggeredPipelineGitlabProjectId, lastUpdatedBy.intValue(), triggerName).getBody();
+    }
+
+    public List<PipelineTrigger> listPipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long userId) {
+        return gitlabServiceClient.listPipelineTrigger(triggeredPipelineGitlabProjectId, userId.intValue()).getBody();
+    }
+
+    public void deletePipelineTrigger(Integer triggeredPipelineGitlabProjectId, Long userId, Long triggerId) {
+        gitlabServiceClient.deletePipelineTrigger(triggeredPipelineGitlabProjectId, userId.intValue(), triggerId.intValue());
+    }
 }
