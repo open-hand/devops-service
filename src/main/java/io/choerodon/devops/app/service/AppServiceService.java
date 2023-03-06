@@ -99,7 +99,7 @@ public interface AppServiceService {
                                         String type,
                                         Boolean doPage,
                                         PageRequest pageable,
-                                        String params,
+                                        SearchVO searchVO,
                                         Boolean checkMember,
                                         Boolean includeExternal,
                                         Boolean excludeFailed);
@@ -160,7 +160,7 @@ public interface AppServiceService {
 
     Page<AppServiceRepVO> pageInternalByOptionsWithAccessLevel(Long projectId,
                                                                PageRequest pageable,
-                                                               String params);
+                                                               SearchVO searchVO);
 
     /**
      * 项目下查询所有已经启用的服务
@@ -378,7 +378,7 @@ public interface AppServiceService {
                                           String type,
                                           Boolean doPage,
                                           PageRequest pageable,
-                                          String params,
+                                          SearchVO searchVO,
                                           Boolean checkMember,
                                           Boolean includeExternal,
                                           Boolean excludeFailed);
@@ -465,7 +465,7 @@ public interface AppServiceService {
      * @param pageable  分页参数
      * @return 结果
      */
-    Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable);
+    Page<AppServiceVO> listByIdsOrPage(Long projectId, @Nullable Set<Long> ids, @Nullable Boolean doPage, PageRequest pageable, String params);
 
     /**
      * 根据导入应用类型查询应用所属的项目集合
