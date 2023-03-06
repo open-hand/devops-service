@@ -38,6 +38,17 @@ public class JenkinsJobController {
         return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
     }
 
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "查询Job的执行参数")
+//    @GetMapping("/{name}/property")
+//    public ResponseEntity<List<JenkinsJobVO>> listProperty(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @PathVariable String name,
+//            @RequestParam(value = "folder") String folder) {
+//        return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
+//    }
+
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "立即构建")
     @PostMapping("/{name}/build")

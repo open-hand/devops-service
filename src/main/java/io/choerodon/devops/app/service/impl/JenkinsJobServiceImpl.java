@@ -103,6 +103,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 jenkinsJobVO.setDurationMillis(buildInfo.durationTimeMillis());
                 jenkinsJobVO.setUsername(buildInfo.username());
                 jenkinsJobVO.setTriggerType(buildInfo.triggerType());
+                jenkinsJobVO.setStatus(buildInfo.status());
 
                 jenkinsJobVOList.add(jenkinsJobVO);
             }
