@@ -23,6 +23,13 @@ public class JenkinsJobVO {
 
     private String url;
 
+    private Long startTimeMillis;
+    private Long durationMillis;
+
+    private String username;
+
+    private String triggerType;
+
     public JenkinsJobVO() {
     }
 
@@ -33,6 +40,39 @@ public class JenkinsJobVO {
         this.folder = folder;
         this.name = name;
         this.url = url;
+    }
+
+    public Long getStartTimeMillis() {
+        return startTimeMillis;
+    }
+
+    public void setStartTimeMillis(Long startTimeMillis) {
+        this.startTimeMillis = startTimeMillis;
+    }
+
+
+    public Long getDurationMillis() {
+        return durationMillis;
+    }
+
+    public void setDurationMillis(Long durationMillis) {
+        this.durationMillis = durationMillis;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
     }
 
     public String getFolder() {

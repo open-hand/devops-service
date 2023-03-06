@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
+import com.cdancy.jenkins.rest.domain.job.C7nBuildInfo;
 import com.cdancy.jenkins.rest.domain.job.Job;
 import com.cdancy.jenkins.rest.domain.job.JobList;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +90,12 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                         folder,
                         job.name(),
                         job.url());
+                C7nBuildInfo buildInfo = jenkinsClient.api().c7nJobsApi().lastBuild(folder, job.name());
+                jenkinsJobVO.setStartTimeMillis(buildInfo.startTimeMillis());
+                jenkinsJobVO.setDurationMillis(buildInfo.durationTimeMillis());
+                jenkinsJobVO.setUsername(buildInfo.username());
+                jenkinsJobVO.setTriggerType(buildInfo.triggerType());
+
                 jenkinsJobVOList.add(jenkinsJobVO);
             }
         }
