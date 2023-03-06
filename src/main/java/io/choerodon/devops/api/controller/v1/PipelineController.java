@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import javax.validation.Valid;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.hzero.core.base.BaseController;
@@ -10,10 +8,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.PipelineHomeVO;
 import io.choerodon.devops.api.vo.PipelineVO;
+import io.choerodon.devops.api.vo.SearchVO;
 import io.choerodon.devops.app.service.PipelinePersonalTokenService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.infra.dto.PipelineDTO;
@@ -84,18 +85,15 @@ public class PipelineController extends BaseController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "分页查询自动化部署流水线")
-    @GetMapping("/paging")
+    @PostMapping("/paging")
     @CustomPageRequest
     public ResponseEntity<Page<PipelineHomeVO>> paging(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
-            @RequestParam(value = "enable", required = false) Boolean enable,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "trigger_type", required = false) String triggerType,
-            @RequestParam(value = "params", required = false) String params) {
-        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, enable, status, triggerType, params));
+            @RequestBody SearchVO searchVO) {
+        return ResponseEntity.ok(pipelineService.paging(projectId, pageRequest, searchVO));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
