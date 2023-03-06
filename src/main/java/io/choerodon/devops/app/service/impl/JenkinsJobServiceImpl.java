@@ -91,6 +91,17 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             if (JenkinsJobTypeEnum.FOLDER.className().equals(job.clazz())
                     || JenkinsJobTypeEnum.ORGANIZATION_FOLDER.className().equals(job.clazz())) {
                 listFolderJobs(jenkinsClient, serverId, serverName, folder + job.name() + "/", jenkinsJobVOList);
+            } else if (JenkinsJobTypeEnum.WORKFLOW_MULTI_BRANCH_PROJECT.className().equals(job.clazz())) {
+                JenkinsJobVO jenkinsJobVO = new JenkinsJobVO(serverId,
+                        serverName,
+                        JenkinsJobTypeEnum.getTypeByClassName(job.clazz()),
+                        folder,
+                        job.name(),
+                        job.url());
+                List<JenkinsJobVO> workflowJobList = new ArrayList<>();
+                jenkinsJobVO.setJobs(workflowJobList);
+                jenkinsJobVOList.add(jenkinsJobVO);
+                listFolderJobs(jenkinsClient, serverId, serverName, folder + job.name() + "/", workflowJobList);
             } else {
                 JenkinsJobVO jenkinsJobVO = new JenkinsJobVO(serverId,
                         serverName,

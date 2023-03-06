@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.jenkins;
 
+import java.util.List;
+
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 /**
@@ -34,6 +36,8 @@ public class JenkinsJobVO {
 
     private String triggerType;
 
+    private List<JenkinsJobVO> jobs;
+
     public JenkinsJobVO() {
     }
 
@@ -45,6 +49,14 @@ public class JenkinsJobVO {
         this.name = name;
         this.url = url;
         this.fullName = folder + name;
+    }
+
+    public List<JenkinsJobVO> getJobs() {
+        return jobs;
+    }
+
+    public void setJobs(List<JenkinsJobVO> jobs) {
+        this.jobs = jobs;
     }
 
     public String getStatus() {
