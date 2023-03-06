@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
+import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 
 /**
  * 〈功能简述〉
@@ -17,4 +18,5 @@ public interface JenkinsJobService {
 
     void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params);
 
+    List<PropertyVO> listProperty(Long projectId, Long serverId, String folder, String name);
 }

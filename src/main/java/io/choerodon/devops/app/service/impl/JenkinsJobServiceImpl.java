@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
-import com.cdancy.jenkins.rest.domain.job.C7nBuildInfo;
-import com.cdancy.jenkins.rest.domain.job.Job;
-import com.cdancy.jenkins.rest.domain.job.JobList;
+import com.cdancy.jenkins.rest.domain.job.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
+import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
@@ -79,6 +78,20 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
             });
             jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
         }
+    }
+
+    @Override
+    public List<PropertyVO> listProperty(Long projectId, Long serverId, String folder, String name) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        JobInfo jobInfo = jenkinsClient.api().jobsApi().jobInfo(folder, name);
+        List<PropertyVO> propertyList = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(jobInfo.property()) && !CollectionUtils.isEmpty(jobInfo.property().get(0).parameterDefinitions())) {
+            for (ParameterDefinition parameterDefinition : jobInfo.property().get(0).parameterDefinitions()) {
+                propertyList.add(new PropertyVO(parameterDefinition.name(), parameterDefinition.defaultParameterValue().get("value")));
+            }
+        }
+
+        return propertyList;
     }
 
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {

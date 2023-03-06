@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
+import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -38,16 +39,18 @@ public class JenkinsJobController {
         return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
     }
 
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "查询Job的执行参数")
-//    @GetMapping("/{name}/property")
-//    public ResponseEntity<List<JenkinsJobVO>> listProperty(
-//            @ApiParam(value = "项目Id", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @PathVariable String name,
-//            @RequestParam(value = "folder") String folder) {
-//        return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询Job的执行参数")
+    @GetMapping("/{name}/property")
+    public ResponseEntity<List<PropertyVO>> listProperty(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.listProperty(projectId, serverId, folder, name));
+    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "立即构建")

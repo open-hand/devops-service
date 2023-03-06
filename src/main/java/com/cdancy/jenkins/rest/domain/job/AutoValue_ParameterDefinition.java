@@ -23,11 +23,11 @@ public class AutoValue_ParameterDefinition extends ParameterDefinition {
 
     @Override
     public String name() {
-        return null;
+        return name;
     }
 
     @Override
     public Map<String, String> defaultParameterValue() {
-        return null;
+        return defaultParameterValue;
     }
 }
