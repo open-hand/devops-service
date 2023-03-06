@@ -31,7 +31,7 @@
             dp.project_id = #{projectId}
             <if test="searchVO != null and searchVO.searchParam != null">
                 <if test="searchVO.searchParam.name != null">
-                    and dp.name=#{searchVO.searchParam.name}
+                    and dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%')
                 </if>
                 <if test="searchVO.searchParam.enable != null">
                     and dp.is_enable = #{searchVO.searchParam.enable}
@@ -43,7 +43,7 @@
                     and dpr.status = #{searchVO.searchParam.status}
                 </if>
             </if>
-            <if test="searchVO != null and searchVO.params.size() > 0">
+            <if test="searchVO != null and searchVO.params != null and searchVO.params.size() > 0">
                 and
                 <foreach collection="searchVO.params" item="param" open="(" close=")" separator="OR">
                     (dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
