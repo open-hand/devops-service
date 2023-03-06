@@ -43,6 +43,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
@@ -171,11 +172,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
             // 设置用户上下文
             setUserContext(gitlabPipelineId, gitlabUserId, appServiceDTO);
-
+            LOGGER.warn(">>>>>>>>>>>>>>>>>>Before save appVersion,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
-
+            LOGGER.warn(">>>>>>>>>>>>>>>>>>End save appVersion,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
             ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(appServiceDTO.getProjectId());
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+            LOGGER.warn(">>>>>>>>>>>>>>>>>>End feign base-service,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
 
             // 查询helm仓库配置id
             DevopsHelmConfigDTO devopsHelmConfigDTO;
@@ -202,7 +204,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
 
             // 解析chart包中的values文件
             String values = getValues(storeFilePath, destFilePath, path);
-
+            LOGGER.warn(">>>>>>>>>>>>>>>>>>Before create or update helm version ,userId {}<<<<<<<<<<<<<<<<<<<", DetailsHelper.getUserDetails().getUserId());
             AppServiceHelmVersionDTO appServiceHelmVersionDTO = appServiceHelmVersionService.queryByAppServiceVersionId(appServiceVersionDTO.getId());
             if (appServiceHelmVersionDTO == null) {
                 AppServiceVersionValueDTO appServiceVersionValueDTO = new AppServiceVersionValueDTO();
