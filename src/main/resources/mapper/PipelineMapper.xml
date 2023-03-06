@@ -29,18 +29,6 @@
         dp.id)
         <where>
             dp.project_id = #{projectId}
-            <if test="name != null">
-                and dp.name like CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test="params != null">
-                and dp.name like CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test="enable!=null">
-                and dp.is_enable = #{enable}
-            </if>
-            <if test="triggerType!=null">
-                and dpr.trigger_type = #{triggerType}
-            </if>
             <if test="searchVO != null and searchVO.searchParam != null">
                 <if test="searchVO.searchParam.name != null">
                     and dp.name=#{searchVO.searchParam.name}
