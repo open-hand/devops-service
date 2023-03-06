@@ -9,11 +9,12 @@ import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.job.C7nBuildInfo;
 import com.cdancy.jenkins.rest.domain.job.Job;
 import com.cdancy.jenkins.rest.domain.job.JobList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
 import io.choerodon.devops.app.service.JenkinsJobService;
@@ -32,27 +33,34 @@ import io.choerodon.devops.infra.util.JenkinsClientUtil;
 @Service
 public class JenkinsJobServiceImpl implements JenkinsJobService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JenkinsJobServiceImpl.class);
+
     @Autowired
     private JenkinsClientUtil jenkinsClientUtil;
     @Autowired
     private DevopsJenkinsServerService devopsJenkinsServerService;
 
     @Override
-    public List<JenkinsJobVO> listAll(Long projectId, Long serverId) {
+    public List<JenkinsJobVO> listAll(Long projectId) {
         List<JenkinsJobVO> jenkinsJobVOList = new ArrayList<>();
-//        List<DevopsJenkinsServerDTO> devopsJenkinsServerDTOS = devopsJenkinsServerService.listByProjectId(projectId);
-        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerService.queryById(serverId);
-//        for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
-        if (DevopsJenkinsServerStatusEnum.DISABLE.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
-            throw new CommonException("devops.jenkins.server.is.disable");
-        }
-//            if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
-//                Long serverId = devopsJenkinsServerDTO.getId();
+        List<DevopsJenkinsServerDTO> devopsJenkinsServerDTOS = devopsJenkinsServerService.listByProjectId(projectId);
+//        DevopsJenkinsServerDTO devopsJenkinsServerDTO = devopsJenkinsServerService.queryById(serverId);
+
+        for (DevopsJenkinsServerDTO devopsJenkinsServerDTO : devopsJenkinsServerDTOS) {
+//            if (DevopsJenkinsServerStatusEnum.DISABLE.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
+//                throw new CommonException("devops.jenkins.server.is.disable");
+//            }
+            if (DevopsJenkinsServerStatusEnum.ENABLED.getStatus().equals(devopsJenkinsServerDTO.getStatus())) {
+                Long serverId = devopsJenkinsServerDTO.getId();
                 String serverName = devopsJenkinsServerDTO.getName();
                 JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
-                listFolderJobs(jenkinsClient,serverId, serverName, "/", jenkinsJobVOList);
-//            }
-//        }
+                try {
+                    listFolderJobs(jenkinsClient, serverId, serverName, "/", jenkinsJobVOList);
+                } catch (Exception e) {
+                    LOGGER.error("Query jenkins jobs failed, server name: {}", serverName);
+                }
+            }
+        }
 
         return jenkinsJobVOList;
     }

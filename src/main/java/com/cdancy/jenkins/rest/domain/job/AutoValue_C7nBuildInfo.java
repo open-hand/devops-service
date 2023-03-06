@@ -7,13 +7,13 @@ import org.jclouds.javax.annotation.Nullable;
 @Generated("com.google.auto.value.processor.AutoValueProcessor")
 final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
 
+  @Nullable
+  public String id;
   public final String status;
   public final long startTimeMillis;
   public final long durationTimeMillis;
   public final String username;
   public final String triggerType;
-  @Nullable
-  public String id;
 
 
   public AutoValue_C7nBuildInfo(String id,
@@ -30,19 +30,23 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
     this.triggerType = triggerType;
   }
 
+  @Override
   public String id() {
     return id;
   }
 
+  @Override
   public String status() {
     return status;
   }
 
+  @Override
   @Nullable
   public long startTimeMillis() {
     return startTimeMillis;
   }
 
+  @Override
   @Nullable
   public long durationTimeMillis() {
     return durationTimeMillis;

@@ -13,7 +13,7 @@ import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
  * @since 2023/3/3 9:24
  */
 public interface JenkinsJobService {
-    List<JenkinsJobVO> listAll(Long projectId, Long serverId);
+    List<JenkinsJobVO> listAll(Long projectId);
 
     void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params);
 

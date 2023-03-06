@@ -34,10 +34,8 @@ public class JenkinsJobController {
     @GetMapping("/all")
     public ResponseEntity<List<JenkinsJobVO>> listAll(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @RequestParam(value = "server_id") Long serverId) {
-        return ResponseEntity.ok(jenkinsJobService.listAll(projectId, serverId));
+            @PathVariable(value = "project_id") Long projectId) {
+        return ResponseEntity.ok(jenkinsJobService.listAll(projectId));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
