@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
@@ -109,7 +109,10 @@ public class DeploymentDeployJobHandlerImpl extends AbstractAppDeployJobHandlerI
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setCiDeployDeployCfg(ciDeployDeployCfgService.queryConfigVoById(devopsCiJobVO.getConfigId()));
+        CiDeployDeployCfgVO ciDeployDeployCfgVO = ciDeployDeployCfgService.queryConfigVoById(devopsCiJobVO.getConfigId());
+        DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(ciDeployDeployCfgVO.getEnvId());
+        ciDeployDeployCfgVO.setEnvName(devopsEnvironmentDTO.getName());
+        devopsCiJobVO.setCiDeployDeployCfg(ciDeployDeployCfgVO);
     }
 
     @Override
