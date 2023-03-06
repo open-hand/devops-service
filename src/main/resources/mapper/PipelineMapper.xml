@@ -40,6 +40,7 @@
             </if>
             <if test="triggerType!=null">
                 and dpr.trigger_type = #{triggerType}
+            </if>
             <if test="searchVO != null and searchVO.searchParam != null">
                 <if test="searchVO.searchParam.name != null">
                     and dp.name=#{searchVO.searchParam.name}
