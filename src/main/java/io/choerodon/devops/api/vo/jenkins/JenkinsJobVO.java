@@ -21,6 +21,8 @@ public class JenkinsJobVO {
     private String folder;
     private String name;
 
+    private String fullName;
+
     private String url;
 
     private Long startTimeMillis;
@@ -40,6 +42,15 @@ public class JenkinsJobVO {
         this.folder = folder;
         this.name = name;
         this.url = url;
+        this.fullName = folder + name;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public Long getStartTimeMillis() {

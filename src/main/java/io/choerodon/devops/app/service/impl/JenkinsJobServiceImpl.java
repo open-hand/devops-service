@@ -57,7 +57,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 try {
                     listFolderJobs(jenkinsClient, serverId, serverName, "/", jenkinsJobVOList);
                 } catch (Exception e) {
-                    LOGGER.error("Query jenkins jobs failed, server name: {}", serverName);
+                    LOGGER.error("Query jenkins jobs failed, server name: {}", serverName, e);
                 }
             }
         }
