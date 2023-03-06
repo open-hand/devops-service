@@ -43,7 +43,7 @@
                     and dpr.status = #{searchVO.searchParam.status}
                 </if>
             </if>
-            <if test="searchVO != null and searchVO.params.size() > 0">
+            <if test="searchVO != null and searchVO.params != null and searchVO.params.size() > 0">
                 and
                 <foreach collection="searchVO.params" item="param" open="(" close=")" separator="OR">
                     (dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}), '%'))
