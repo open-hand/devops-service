@@ -1,24 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigMapper">
-  <select id="queryGitlabProjectId" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO">
-    SELECT dcptc.id,
-    dcptc.trigger_pipeline_gitlab_project_id,
-    dcptc.last_updated_by
-    FROM devops_ci_pipeline_trigger_config dcptc
-    JOIN devops_cicd_pipeline dcp ON dcp.id = dcptc.pipeline_id
-    JOIN devops_app_service das ON das.id = dcp.app_service_id
-    WHERE dcptc.id = #{configId}
-    AND das.token = #{token}
-  </select>
+  <resultMap id="devopsCiPipelineTriggerConfigVO"
+             type="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
+    <result property="id" column="id"/>
+    <collection property="devopsCiPipelineVariables"
+                ofType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO">
+      <result property="id" column="id"/>
+      <result property="variableKey" column="variable_key"/>
+      <result property="variableValue" column="variable_value"/>
+    </collection>
+  </resultMap>
 
   <select id="listByJobIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO">
     SELECT dcptc.id,
     dcptc.triggered_pipeline_gitlab_project_id,
     dcptc.pipeline_trigger_id
     FROM devops_ci_pipeline_trigger_config dcptc
-    JOIN devops_ci_job dcj ON dcj.config_id = dcptc.id AND dcj.type = 'pipeline_trigger'
-    WHERE dcj.id IN
+    WHERE dcptc.job_id IN
     <foreach collection="jobIds" separator="," open="(" close=")" item="jobId">
       #{jobId}
     </foreach>
@@ -31,4 +30,12 @@
       #{id}
     </foreach>
   </delete>
+
+  <select id="queryConfigVoByIdWithVariables"
+          resultType="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
+    SELECT *
+    FROM devops_ci_pipeline_trigger_config dcptc
+    LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.job_id = dcptc.job_id
+    WHERE dcptc.id = #{configId}
+  </select>
 </mapper>
