@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
+import com.cdancy.jenkins.rest.domain.common.IntegerResponse;
 import com.cdancy.jenkins.rest.domain.job.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
@@ -67,8 +69,9 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        IntegerResponse build;
         if (CollectionUtils.isEmpty(params)) {
-            jenkinsClient.api().jobsApi().build(folder, name);
+            build = jenkinsClient.api().jobsApi().build(folder, name);
         } else {
             Map<String, List<String>> paramMap = new HashMap<>();
             params.forEach((k, v) -> {
@@ -76,7 +79,10 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                 valueList.add(v);
                 paramMap.put(k, valueList);
             });
-            jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
+            build = jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
+        }
+        if (!CollectionUtils.isEmpty(build.errors())) {
+            throw new CommonException("devops.build.failed");
         }
     }
 
@@ -123,11 +129,14 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
                         job.name(),
                         job.url());
                 C7nBuildInfo buildInfo = jenkinsClient.api().c7nJobsApi().lastBuild(folder, job.name());
-                jenkinsJobVO.setStartTimeMillis(buildInfo.startTimeMillis());
-                jenkinsJobVO.setDurationMillis(buildInfo.durationTimeMillis());
-                jenkinsJobVO.setUsername(buildInfo.username());
-                jenkinsJobVO.setTriggerType(buildInfo.triggerType());
-                jenkinsJobVO.setStatus(buildInfo.status());
+                if (buildInfo != null) {
+                    jenkinsJobVO.setStartTimeMillis(buildInfo.startTimeMillis());
+                    jenkinsJobVO.setDurationMillis(buildInfo.durationTimeMillis());
+                    jenkinsJobVO.setUsername(buildInfo.username());
+                    jenkinsJobVO.setTriggerType(buildInfo.triggerType());
+                    jenkinsJobVO.setStatus(buildInfo.status());
+                }
+
 
                 jenkinsJobVOList.add(jenkinsJobVO);
             }

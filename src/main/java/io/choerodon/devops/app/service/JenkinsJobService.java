@@ -16,7 +16,12 @@ import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 public interface JenkinsJobService {
     List<JenkinsJobVO> listAll(Long projectId);
 
-    void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params);
+    void build(Long projectId,
+               Long serverId,
+               String folder,
+               String name,
+               Map<String, String> params);
 
     List<PropertyVO> listProperty(Long projectId, Long serverId, String folder, String name);
+
 }

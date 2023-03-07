@@ -53,7 +53,7 @@ public class JenkinsJobController {
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
-    @ApiOperation(value = "立即构建")
+    @ApiOperation(value = "全新执行")
     @PostMapping("/{name}/build")
     public ResponseEntity<Void> build(
             @ApiParam(value = "项目Id", required = true)
@@ -66,5 +66,18 @@ public class JenkinsJobController {
         jenkinsJobService.build(projectId, serverId, folder, name, params);
         return ResponseEntity.noContent().build();
     }
+
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "构建历史")
+//    @GetMapping("/{name}/build_history")
+//    public ResponseEntity<List<PropertyVO>> listBuildHistory(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @PathVariable String name,
+//            @Encrypt
+//            @RequestParam(value = "server_id") Long serverId,
+//            @RequestParam(value = "folder") String folder) {
+//        return ResponseEntity.ok(jenkinsJobService.listBuildHistory(projectId, serverId, folder, name));
+//    }
 
 }
