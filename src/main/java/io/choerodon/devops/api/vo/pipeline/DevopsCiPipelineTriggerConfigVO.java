@@ -1,7 +1,11 @@
 package io.choerodon.devops.api.vo.pipeline;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
+
+import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO;
 
 public class DevopsCiPipelineTriggerConfigVO {
     @Encrypt
@@ -29,6 +33,17 @@ public class DevopsCiPipelineTriggerConfigVO {
 
     @ApiModelProperty("token")
     private String token;
+
+    @ApiModelProperty("流水线变量")
+    private List<DevopsCiPipelineTriggerConfigVariableDTO> devopsCiPipelineVariables;
+
+    public List<DevopsCiPipelineTriggerConfigVariableDTO> getDevopsCiPipelineVariables() {
+        return devopsCiPipelineVariables;
+    }
+
+    public void setDevopsCiPipelineVariables(List<DevopsCiPipelineTriggerConfigVariableDTO> devopsCiPipelineVariables) {
+        this.devopsCiPipelineVariables = devopsCiPipelineVariables;
+    }
 
     public String getToken() {
         return token;
