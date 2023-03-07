@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_trigger_config.groovy
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线id')
+            column(name: 'job_id', type: 'BIGINT UNSIGNED', remarks: '流水线job id')
             column(name: 'triggered_pipeline_project_id', type: 'BIGINT UNSIGNED', remarks: '触发的其它流水线所属项目id')
             column(name: 'triggered_pipeline_id', type: 'BIGINT UNSIGNED', remarks: '触发的其它流水线id')
             column(name: 'triggered_pipeline_gitlab_project_id', type: 'BIGINT UNSIGNED', remarks: '触发的其它流水线gitlab 项目 id')
