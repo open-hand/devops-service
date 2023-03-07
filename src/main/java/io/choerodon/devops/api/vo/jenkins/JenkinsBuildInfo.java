@@ -22,6 +22,8 @@ public class JenkinsBuildInfo {
 
     private String branch;
 
+    private JenkinsPendingInputAction nextPendingInputAction;
+
     public JenkinsBuildInfo() {
     }
 
@@ -33,6 +35,14 @@ public class JenkinsBuildInfo {
         this.username = username;
         this.triggerType = triggerType;
         this.branch = branch;
+    }
+
+    public JenkinsPendingInputAction getNextPendingInputAction() {
+        return nextPendingInputAction;
+    }
+
+    public void setNextPendingInputAction(JenkinsPendingInputAction nextPendingInputAction) {
+        this.nextPendingInputAction = nextPendingInputAction;
     }
 
     public String getId() {

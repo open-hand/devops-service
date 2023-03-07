@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.common.IntegerResponse;
+import com.cdancy.jenkins.rest.domain.common.Response;
 import com.cdancy.jenkins.rest.domain.job.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,17 +105,48 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name) {
         JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
-        List<C7nBuildInfo> c7nBuildInfos = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
-        if (CollectionUtils.isEmpty(c7nBuildInfos)) {
-            return new ArrayList<>();
-        }
-        return c7nBuildInfos.stream().map(c7nBuildInfo -> new JenkinsBuildInfo(c7nBuildInfo.id(),
-                c7nBuildInfo.status(),
-                c7nBuildInfo.startTimeMillis(),
-                c7nBuildInfo.durationTimeMillis(),
-                c7nBuildInfo.username(),
-                c7nBuildInfo.triggerType(),
-                c7nBuildInfo.branch())).collect(Collectors.toList());
+        Response c7nBuildInfos = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
+//        List<JenkinsBuildInfo> buildInfoList = JsonHelper.unmarshalByJackson(c7nBuildInfos, new TypeReference<List<JenkinsBuildInfo>>() {
+//        });
+        return new ArrayList<>();
+//        if (CollectionUtils.isEmpty(c7nBuildInfos)) {
+//            return new ArrayList<>();
+//        }
+//        return c7nBuildInfos.stream().map(c7nBuildInfo -> {
+//            if (c7nBuildInfo.nextPendingInputAction() != null) {
+//                JenkinsPendingInputAction jenkinsPendingInputAction = new JenkinsPendingInputAction();
+//            }
+//            return new JenkinsBuildInfo(c7nBuildInfo.id(),
+//                c7nBuildInfo.status(),
+//                c7nBuildInfo.startTimeMillis(),
+//                c7nBuildInfo.durationTimeMillis(),
+//                c7nBuildInfo.username(),
+//                c7nBuildInfo.triggerType(),
+//                c7nBuildInfo.branch())}).collect(Collectors.toList());
+    }
+
+    @Override
+    public void stopBuild(Long projectId, Long serverId, String folder, String name, Integer buildId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        jenkinsClient.api().jobsApi().stop(folder, name, buildId);
+    }
+
+    @Override
+    public void retryBuild(Long projectId, Long serverId, String folder, String name, Integer buildId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        jenkinsClient.api().jobsApi().stop(folder, name, buildId);
+    }
+
+    @Override
+    public void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId);
+    }
+
+    @Override
+    public void auditRefuse(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        jenkinsClient.api().c7nJobsApi().abort(folder, name, buildId, inputId);
     }
 
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {

@@ -25,4 +25,12 @@ public interface JenkinsJobService {
     List<PropertyVO> listProperty(Long projectId, Long serverId, String folder, String name);
 
     List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name);
+
+    void stopBuild(Long projectId, Long serverId, String folder, String name, Integer buildId);
+
+    void retryBuild(Long projectId, Long serverId, String folder, String name, Integer buildId);
+
+    void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
+
+    void auditRefuse(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
 }

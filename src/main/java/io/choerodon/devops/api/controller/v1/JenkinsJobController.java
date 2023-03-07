@@ -80,4 +80,66 @@ public class JenkinsJobController {
         return ResponseEntity.ok(jenkinsJobService.listBuildHistory(projectId, serverId, folder, name));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "停止构建")
+    @GetMapping("/{name}/build/{build_id}/stop")
+    public ResponseEntity<Void> stopBuild(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        jenkinsJobService.stopBuild(projectId, serverId, folder, name, buildId);
+        return ResponseEntity.noContent().build();
+    }
+
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @ApiOperation(value = "重新执行")
+//    @GetMapping("/{name}/build/{build_id}/retry")
+//    public ResponseEntity<Void> retryBuild(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @PathVariable String name,
+//            @PathVariable(value = "build_id") Integer buildId,
+//            @Encrypt
+//            @RequestParam(value = "server_id") Long serverId,
+//            @RequestParam(value = "folder") String folder) {
+//        jenkinsJobService.retryBuild(projectId, serverId, folder, name, buildId);
+//        return ResponseEntity.noContent().build();
+//    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "审核通过")
+    @GetMapping("/{name}/build/{build_id}/audit_pass")
+    public ResponseEntity<Void> auditPass(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder,
+            @RequestParam(value = "inputId") String inputId) {
+        jenkinsJobService.auditPass(projectId, serverId, folder, name, buildId, inputId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "审核拒绝")
+    @GetMapping("/{name}/build/{build_id}/audit_refuse")
+    public ResponseEntity<Void> auditRefuse(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder,
+            @RequestParam(value = "inputId") String inputId) {
+        jenkinsJobService.auditRefuse(projectId, serverId, folder, name, buildId, inputId);
+        return ResponseEntity.noContent().build();
+    }
+
 }

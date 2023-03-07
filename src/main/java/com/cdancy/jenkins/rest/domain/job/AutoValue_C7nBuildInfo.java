@@ -4,14 +4,13 @@ package com.cdancy.jenkins.rest.domain.job;
 import org.jclouds.javax.annotation.Nullable;
 
 final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
-
+    private final PendingInputAction nextPendingInputAction;
     public final String branch;
     public final String status;
     public final long startTimeMillis;
     public final long durationTimeMillis;
     public final String username;
     public final String triggerType;
-    @Nullable
     public String id;
 
 
@@ -21,7 +20,8 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
                                   long durationTimeMillis,
                                   String username,
                                   String triggerType,
-                                  String branch) {
+                                  String branch,
+                                  PendingInputAction nextPendingInputAction) {
         this.id = id;
         this.status = status;
         this.startTimeMillis = startTimeMillis;
@@ -29,6 +29,7 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
         this.username = username;
         this.triggerType = triggerType;
         this.branch = branch;
+        this.nextPendingInputAction = nextPendingInputAction;
     }
 
     @Override
@@ -66,5 +67,10 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
     @Override
     public String branch() {
         return branch;
+    }
+
+    @Override
+    public PendingInputAction nextPendingInputAction() {
+        return nextPendingInputAction;
     }
 }
