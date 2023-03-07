@@ -5,7 +5,7 @@
         <oracle merge="false" target-schema="" />
         <mysql merge="false" target-schema="" />
         <sqlserver merge="false" target-schema="" />
-        <postgresql merge="false" target-schema="" />
+        <postgresql merge="true" target-schema="yqcloud" />
     </schema-merge>
     <service name="hzero_platform" filename="hzero_platform" schema="hzero_platform" env="platform" description="平台服务"/>
     <service name="devops_service" filename="devops_service" schema="devops_service" description="devops服务"/>
