@@ -1,16 +1,18 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfigServiceImpl.PIPELINE_TRIGGER_NAME_TEMPLATE;
+
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
@@ -29,10 +31,6 @@ import io.choerodon.devops.infra.util.ConvertUtils;
  */
 @Service
 public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
-    private static final String PIPELINE_TRIGGER_NAME_TEMPLATE = "choerodon-pipeline-trigger-for:%s";
-
-    @Autowired
-    private DevopsCiPipelineService devopsCiPipelineService;
     @Autowired
     private AppServiceService appServiceService;
     @Autowired
@@ -60,18 +58,26 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     protected Long saveConfig(Long ciPipelineId, DevopsCiJobVO devopsCiJobVO) {
         DevopsCiPipelineTriggerConfigDTO devopsCiPipelineTriggerConfigDTO = ConvertUtils.convertObject(devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO(), DevopsCiPipelineTriggerConfigDTO.class);
 
-        AppServiceDTO appServiceDTO = appServiceService.queryByPipelineId(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineId());
-        devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        AppServiceDTO currentAppServiceDTO = appServiceService.queryByPipelineId(ciPipelineId);
+
+        AppServiceDTO targetAppServiceDTO = appServiceService.queryByPipelineId(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineId());
+        devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineGitlabProjectId(targetAppServiceDTO.getGitlabProjectId().longValue());
+        devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineProjectId(targetAppServiceDTO.getProjectId());
         devopsCiPipelineTriggerConfigDTO.setPipelineId(ciPipelineId);
 
-        String pipelineTriggerName = String.format(PIPELINE_TRIGGER_NAME_TEMPLATE, appServiceDTO.getCode());
+        String pipelineTriggerName = String.format(PIPELINE_TRIGGER_NAME_TEMPLATE, currentAppServiceDTO.getCode());
 
-        List<PipelineTrigger> pipelineTriggers = gitlabServiceClientOperator.listPipelineTrigger(appServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId());
-        PipelineTrigger pipelineTrigger = pipelineTriggers.stream().filter(t -> t.getDescription().equals(pipelineTriggerName)).findAny().orElseGet(null);
+        List<PipelineTrigger> pipelineTriggers = gitlabServiceClientOperator.listPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId());
+        PipelineTrigger pipelineTrigger = pipelineTriggers.stream().filter(t -> t.getDescription().equals(pipelineTriggerName)).findAny().orElse(null);
         if (pipelineTrigger != null) {
+            devopsCiPipelineTriggerConfigDTO.setToken(pipelineTrigger.getToken());
             devopsCiPipelineTriggerConfigDTO.setPipelineTriggerId(pipelineTrigger.getId().longValue());
         } else {
-            PipelineTrigger createdPipelineTrigger = gitlabServiceClientOperator.createPipelineTrigger(appServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId(), pipelineTriggerName);
+            PipelineTrigger createdPipelineTrigger = gitlabServiceClientOperator.createPipelineTrigger(targetAppServiceDTO.getGitlabProjectId(), DetailsHelper.getUserDetails().getUserId(), pipelineTriggerName);
+            if (createdPipelineTrigger == null) {
+                throw new CommonException("error.ci.job.pipeline.trigger.config.create");
+            }
+            devopsCiPipelineTriggerConfigDTO.setToken(createdPipelineTrigger.getToken());
             devopsCiPipelineTriggerConfigDTO.setPipelineTriggerId(createdPipelineTrigger.getId().longValue());
         }
 
@@ -81,11 +87,14 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobVO.getConfigId()));
+        DevopsCiPipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO = devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobVO.getConfigId());
+        devopsCiPipelineTriggerConfigVO.setToken(null);
+        devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerConfigVO);
     }
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
+        // todo 任务模板查询
         devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobVO.getConfigId()));
     }
 

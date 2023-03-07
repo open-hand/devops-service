@@ -968,7 +968,8 @@
         SELECT das.id,
         das.name,
         das.code,
-        das.gitlab_project_id
+        das.gitlab_project_id,
+        das.project_id
         FROM devops_app_service das
         JOIN devops_cicd_pipeline dcp ON dcp.app_service_id = das.id
         WHERE dcp.id = #{pipelineId}
