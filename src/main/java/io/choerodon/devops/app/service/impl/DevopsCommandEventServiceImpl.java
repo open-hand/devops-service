@@ -53,7 +53,7 @@ public class DevopsCommandEventServiceImpl implements DevopsCommandEventService 
     }
 
     @Override
-    public List<DevopsCommandEventDTO> listByCommandIdsAndType(Set<Long> commandIds, String type) {
+    public List<DevopsCommandEventDTO> listLastByCommandIdsAndType(Set<Long> commandIds, String type) {
         return commandIds.isEmpty() ? new ArrayList<>() : devopsCommandEventMapper.listByCommandIdsAndType(commandIds, type);
     }
 
