@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.common.IntegerResponse;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
@@ -67,17 +69,17 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     }
 
     @Override
-    public void build(Long projectId, Long serverId, String folder, String name, Map<String, String> params) {
+    public void build(Long projectId, Long serverId, String folder, String name, List<PropertyVO> properties) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
         IntegerResponse build;
-        if (CollectionUtils.isEmpty(params)) {
+        if (CollectionUtils.isEmpty(properties)) {
             build = jenkinsClient.api().jobsApi().build(folder, name);
         } else {
             Map<String, List<String>> paramMap = new HashMap<>();
-            params.forEach((k, v) -> {
+            properties.forEach(property -> {
                 List<String> valueList = new ArrayList<>();
-                valueList.add(v);
-                paramMap.put(k, valueList);
+                valueList.add(property.getValue());
+                paramMap.put(property.getKey(), valueList);
             });
             build = jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
         }
@@ -98,6 +100,22 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         }
 
         return propertyList;
+    }
+
+    @Override
+    public List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name) {
+        JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
+        List<C7nBuildInfo> c7nBuildInfos = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
+        if (CollectionUtils.isEmpty(c7nBuildInfos)) {
+            return new ArrayList<>();
+        }
+        return c7nBuildInfos.stream().map(c7nBuildInfo -> new JenkinsBuildInfo(c7nBuildInfo.id(),
+                c7nBuildInfo.status(),
+                c7nBuildInfo.startTimeMillis(),
+                c7nBuildInfo.durationTimeMillis(),
+                c7nBuildInfo.username(),
+                c7nBuildInfo.triggerType(),
+                c7nBuildInfo.branch())).collect(Collectors.toList());
     }
 
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {

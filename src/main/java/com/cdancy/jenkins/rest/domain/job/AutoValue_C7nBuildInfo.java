@@ -5,6 +5,7 @@ import org.jclouds.javax.annotation.Nullable;
 
 final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
 
+    public final String branch;
     public final String status;
     public final long startTimeMillis;
     public final long durationTimeMillis;
@@ -19,13 +20,15 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
                                   long startTimeMillis,
                                   long durationTimeMillis,
                                   String username,
-                                  String triggerType) {
+                                  String triggerType,
+                                  String branch) {
         this.id = id;
         this.status = status;
         this.startTimeMillis = startTimeMillis;
         this.durationTimeMillis = durationTimeMillis;
         this.username = username;
         this.triggerType = triggerType;
+        this.branch = branch;
     }
 
     @Override
@@ -58,5 +61,10 @@ final class AutoValue_C7nBuildInfo extends C7nBuildInfo {
     @Nullable
     public String triggerType() {
         return triggerType;
+    }
+
+    @Override
+    public String branch() {
+        return branch;
     }
 }

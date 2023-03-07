@@ -17,6 +17,7 @@
 
 package com.cdancy.jenkins.rest.features;
 
+import java.util.List;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -46,5 +47,12 @@ public interface C7nJobsApi {
     C7nBuildInfo lastBuild(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
                            @PathParam("name") String jobName);
 
+    @Named("jobs:buildHisttory")
+    @Path("{optionalFolderPath}job/{name}/choerodon/buildHistory")
+    @Fallback(Fallbacks.NullOnNotFoundOr404.class)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @GET
+    List<C7nBuildInfo> buildHistory(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
+                                    @PathParam("name") String jobName);
 
 }

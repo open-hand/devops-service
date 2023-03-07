@@ -1,8 +1,8 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
+import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
 import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 
@@ -20,8 +20,9 @@ public interface JenkinsJobService {
                Long serverId,
                String folder,
                String name,
-               Map<String, String> params);
+               List<PropertyVO> properties);
 
     List<PropertyVO> listProperty(Long projectId, Long serverId, String folder, String name);
 
+    List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name);
 }
