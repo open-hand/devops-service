@@ -18,7 +18,7 @@ public interface DevopsCommandEventService {
     void baseDeleteByCommandId(Long commandId);
 
     /**
-     * 根据commandIds 批量查询(最多查询500条)
+     * 根据commandIds 批量查询(最多查询1000条)
      *
      * @param commandIds
      * @param type
