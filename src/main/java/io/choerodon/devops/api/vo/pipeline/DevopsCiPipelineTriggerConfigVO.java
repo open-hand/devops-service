@@ -8,6 +8,7 @@ public class DevopsCiPipelineTriggerConfigVO {
     private Long id;
 
     @ApiModelProperty("流水线id")
+    @Encrypt
     private Long pipelineId;
 
     @ApiModelProperty("触发的流水线id")
