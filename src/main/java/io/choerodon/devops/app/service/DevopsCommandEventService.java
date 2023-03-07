@@ -18,13 +18,13 @@ public interface DevopsCommandEventService {
     void baseDeleteByCommandId(Long commandId);
 
     /**
-     * 根据commandIds 批量查询
+     * 根据commandIds 批量查询(最多查询最近200条)
      *
      * @param commandIds
      * @param type
      * @return
      */
-    List<DevopsCommandEventDTO> listByCommandIdsAndType(Set<Long> commandIds, String type);
+    List<DevopsCommandEventDTO> listLastByCommandIdsAndType(Set<Long> commandIds, String type);
 
     /**
      * 根据commandIds 批量查询
