@@ -10,10 +10,20 @@ public class PipelineWebHookAttributesVO {
     private String status;
     private String sha;
     private String ref;
+
+    private String source;
     private Date createdAt;
     private Date finishedAt;
     private Long duration;
     private Boolean tag;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public Long getId() {
         return id;

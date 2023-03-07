@@ -144,4 +144,14 @@ public class DevopsCdJobServiceImpl implements DevopsCdJobService {
         }
         return cdApiTestConfigForSagaVOArrayList;
     }
+
+    @Override
+    public List<DevopsCdJobDTO> listByStageId(Long stageId) {
+        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
+
+        DevopsCdJobDTO devopsCdJobDTO = new DevopsCdJobDTO();
+        devopsCdJobDTO.setStageId(stageId);
+
+        return devopsCdJobMapper.select(devopsCdJobDTO);
+    }
 }

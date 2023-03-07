@@ -9,6 +9,8 @@ import io.swagger.annotations.ApiModelProperty;
  * @since 2021/3/17
  */
 public class PipelineInstanceReferenceVO {
+    @ApiModelProperty("流程类型/ci、cd")
+    private String type;
     @ApiModelProperty("任务id")
     private Long jobId;
     @ApiModelProperty("任务id")
@@ -19,6 +21,14 @@ public class PipelineInstanceReferenceVO {
     private String stageName;
     @ApiModelProperty("任务名称")
     private String jobName;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public PipelineInstanceReferenceVO() {
     }

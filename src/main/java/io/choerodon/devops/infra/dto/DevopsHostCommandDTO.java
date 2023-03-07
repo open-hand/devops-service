@@ -56,6 +56,10 @@ public class DevopsHostCommandDTO extends AuditDomain {
     @ApiModelProperty("操作关联的流水线任务记录id/nullable, 不为空则说明操作关联了流水线任务")
     private Long cdJobRecordId;
 
+    @Encrypt
+    @ApiModelProperty("操作关联的流水线记录id/nullable, 不为空则说明操作关联了流水线任务")
+    private Long ciPipelineRecordId;
+
     public DevopsHostCommandDTO() {
     }
 
@@ -129,5 +133,13 @@ public class DevopsHostCommandDTO extends AuditDomain {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getCiPipelineRecordId() {
+        return ciPipelineRecordId;
+    }
+
+    public void setCiPipelineRecordId(Long ciPipelineRecordId) {
+        this.ciPipelineRecordId = ciPipelineRecordId;
     }
 }

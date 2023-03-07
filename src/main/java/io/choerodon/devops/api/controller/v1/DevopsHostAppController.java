@@ -86,9 +86,10 @@ public class DevopsHostAppController {
     public ResponseEntity<Boolean> checkNameUnique(
             @PathVariable("project_id") Long projectId,
             @RequestParam(value = "name") String name,
+            @Encrypt @RequestParam(value = "host_id") Long hostId,
             @ApiParam(value = "应用id，更新应用时才需要传", required = true)
             @Encrypt @RequestParam(value = "app_id", required = false) Long appId) {
-        return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, appId, name));
+        return ResponseEntity.ok(devopsHostAppService.checkNameUnique(projectId, hostId, appId, name));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -97,8 +98,9 @@ public class DevopsHostAppController {
     public ResponseEntity<Boolean> checkCodeUnique(
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "应用编码", required = true)
+            @Encrypt @RequestParam(value = "host_id") Long hostId,
             @RequestParam(value = "code") String code) {
-        return ResponseEntity.ok(devopsHostAppService.checkCodeUnique(projectId, null, code));
+        return ResponseEntity.ok(devopsHostAppService.checkCodeUnique(projectId, hostId, null, code));
     }
 
     @ApiOperation("查询引用了主机应用作为替换对象的流水线信息")

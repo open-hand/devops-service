@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.enums;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by wangxiang on 2020/12/15
  */
@@ -73,5 +76,17 @@ public enum AppSourceType {
 
     public String getValue() {
         return value;
+    }
+
+    private static Map<String, AppSourceType> appSourceTypeMap = new HashMap<>();
+
+    static {
+        for (AppSourceType sourceType : AppSourceType.values()) {
+            appSourceTypeMap.put(sourceType.getValue(), sourceType);
+        }
+    }
+
+    public static AppSourceType find(String value) {
+        return appSourceTypeMap.get(value);
     }
 }

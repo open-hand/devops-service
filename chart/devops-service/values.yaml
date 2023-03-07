@@ -161,6 +161,8 @@ extraEnv:
   SERVICES_GITLAB_URL: http://git.example.com
   # -- Gitlab ssh url
   SERVICES_GITLAB_SSHURL: git@git.example.com
+  # -- Gitlab password reset url
+  SERVICES_GITLAB_RESETPASSWORDURL: git.example.com/resetpassword
   # -- Helm chart url
   SERVICES_HELM_URL: http://helm.example.com
   # -- Helm chart username
@@ -218,6 +220,10 @@ extraEnv:
   DEVOPS_CI_MAVEN_PROXY_PORT: 80
   # 流水线执行代码扫描的用户token.需要Analysis和Create权限
   SERVICES_SONARQUBE_ANALYSIS_USER_TOKEN:
+  # api测试的runner镜像
+  TEST_RUNNER_IMAGE:
+  # 主机部署超时时间，单位是分钟
+  CI_HOST_DEPLOY_TIMEOUT: 10
 
 # -- ConfigMap with extra environment variables
 ##

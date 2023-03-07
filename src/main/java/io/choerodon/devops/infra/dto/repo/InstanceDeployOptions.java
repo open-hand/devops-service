@@ -28,11 +28,15 @@ public class InstanceDeployOptions {
     private String healthProb;
     @ApiModelProperty("操作类型 create/update")
     private String operation;
+    @ApiModelProperty("应用code")
+    private String appCode;
+    @ApiModelProperty("应用版本")
+    private String version;
 
     public InstanceDeployOptions() {
     }
 
-    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operation) {
+    public InstanceDeployOptions(String instanceName, String instanceId, String downloadCommand, String preCommand, String runCommand, String postCommand, String killCommand, String healthProb, String operation, String appCode, String version) {
         this.instanceName = instanceName;
         this.instanceId = instanceId;
         this.downloadCommand = downloadCommand;
@@ -42,6 +46,24 @@ public class InstanceDeployOptions {
         this.killCommand = killCommand;
         this.healthProb = healthProb;
         this.operation = operation;
+        this.appCode = appCode;
+        this.version = version;
+    }
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getDownloadCommand() {

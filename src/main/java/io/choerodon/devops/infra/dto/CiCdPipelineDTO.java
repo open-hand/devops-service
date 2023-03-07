@@ -13,7 +13,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @Table(name = "devops_cicd_pipeline")
 public class CiCdPipelineDTO extends AuditDomain {
-    @Encrypt(ignoreUserConflict = true)
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

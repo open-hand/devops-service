@@ -7,10 +7,8 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.hzero.mybatis.BatchInsertHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -28,15 +26,12 @@ import io.choerodon.devops.api.vo.DevopsGitlabCommitVO;
 import io.choerodon.devops.api.vo.PushWebHookVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.DevopsGitlabTagPayload;
-import io.choerodon.devops.app.service.AppServiceService;
-import io.choerodon.devops.app.service.DevopsBranchService;
-import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.devops.app.service.DevopsIssueRelService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsBranchDTO;
 import io.choerodon.devops.infra.dto.DevopsGitlabCommitDTO;
-import io.choerodon.devops.infra.dto.DevopsIssueRelDTO;
+import io.choerodon.devops.infra.dto.UserAttrDTO;
 import io.choerodon.devops.infra.dto.gitlab.CommitDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -72,10 +67,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private TransactionalProducer producer;
     @Autowired
-    @Qualifier("devopsIssueRelBatchInsertHelper")
-    private BatchInsertHelper<DevopsIssueRelDTO> batchInsertHelper;
-    @Autowired
     private DevopsIssueRelService devopsIssueRelService;
+    @Autowired
+    private UserAttrService userAttrService;
 
     @Override
     public void create(PushWebHookVO pushWebHookVO, String token, String operate) {
@@ -93,13 +87,13 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                     devopsGitlabCommitDTO.setCommitSha(commitDTO.getId());
                     devopsGitlabCommitDTO.setRef(ref);
                     devopsGitlabCommitDTO.setUrl(commitDTO.getUrl());
-                    if ("root".equals(commitDTO.getAuthor().getName())) {
+                    if ("Administrator".equals(commitDTO.getAuthor().getName())
+                            || "root".equals(commitDTO.getAuthor().getName())) {
                         devopsGitlabCommitDTO.setUserId(IamAdminIdHolder.getAdminId());
                     } else {
-                        IamUserDTO iamUserDTO = baseServiceClientOperator.queryByEmail(applicationDTO.getProjectId(),
-                                commitDTO.getAuthor().getEmail());
-                        if (iamUserDTO != null) {
-                            devopsGitlabCommitDTO.setUserId(iamUserDTO.getId());
+                        UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(TypeUtil.objToLong(pushWebHookVO.getUserId()));
+                        if (userAttrDTO != null) {
+                            devopsGitlabCommitDTO.setUserId(userAttrDTO.getIamUserId());
                         }
                     }
                     devopsGitlabCommitDTO.setCommitDate(commitDTO.getTimestamp());

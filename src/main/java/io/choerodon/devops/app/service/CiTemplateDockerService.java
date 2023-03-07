@@ -11,5 +11,9 @@ import io.choerodon.devops.infra.dto.CiTemplateDockerDTO;
 public interface CiTemplateDockerService {
 
     CiTemplateDockerDTO queryByStepId(Long stepId);
+
+    void baseCreate(CiTemplateDockerDTO dockerBuildConfig);
+
+    void deleteByTemplateId(Long templateStepId);
 }
 

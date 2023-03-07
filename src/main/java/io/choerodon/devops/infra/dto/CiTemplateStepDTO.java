@@ -61,9 +61,6 @@ public class CiTemplateStepDTO extends AuditDomain {
 
     @ApiModelProperty(value = "步骤类型", required = true)
     @NotBlank
-    /**
-     *
-     */
     private String type;
 
     @ApiModelProperty(value = "自定义步骤的脚本", required = true)
@@ -74,6 +71,9 @@ public class CiTemplateStepDTO extends AuditDomain {
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     @NotNull
     private Boolean builtIn;
+
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
 
     public Boolean getBuiltIn() {
         return builtIn;
@@ -139,6 +139,12 @@ public class CiTemplateStepDTO extends AuditDomain {
         this.script = script;
     }
 
+    public Boolean getVisibility() {
+        return visibility;
+    }
 
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
+    }
 }
 

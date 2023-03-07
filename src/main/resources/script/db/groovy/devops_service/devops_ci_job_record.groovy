@@ -108,5 +108,25 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_job_record.groovy') {
             UPDATE devops_ci_job_record dcjr set dcjr.type = 'normal' WHERE dcjr.type != 'custom'
         """)
     }
+    changeSet(author: 'wanghao', id: '2022-11-09-add-column') {
 
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '部署操作commandId', afterColumn: 'trigger_user_id')
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2022-11-14-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '配置id', afterColumn: 'command_id')
+        }
+    }
+
+    changeSet(author: 'lihao', id: '2022-11-16-add-column') {
+        addColumn(tableName: 'devops_ci_job_record') {
+            column(name: 'api_test_task_record_id', type: 'BIGINT UNSIGNED', remarks: 'api测试任务记录id', afterColumn: 'config_id')
+        }
+    }
+    changeSet(author: 'wanghao', id: '2022-11-17-drop-column') {
+        dropColumn(columnName: "metadata", tableName: "devops_ci_job_record")
+    }
 }

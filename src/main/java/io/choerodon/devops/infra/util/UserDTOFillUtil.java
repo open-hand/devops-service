@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import io.choerodon.asgard.common.ApplicationContextHelper;
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 
@@ -49,7 +49,7 @@ public class UserDTOFillUtil {
             return null;
         }).collect(Collectors.toList());
 
-        List<IamUserDTO> iamUserDTOS = ApplicationContextHelper.getBean(BaseServiceClientOperator.class).listUsersByIds(userIds);
+        List<IamUserDTO> iamUserDTOS = ApplicationContextHelper.getContext().getBean(BaseServiceClientOperator.class).listUsersByIds(userIds);
         if(iamUserDTOS != null) {
             Map<Long, IamUserDTO> iamUserDTOMap = iamUserDTOS.stream().collect(Collectors.toMap(IamUserDTO::getId, Function.identity()));
             sourceList.forEach(source -> {

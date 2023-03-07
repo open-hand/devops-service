@@ -391,6 +391,8 @@ public interface AppServiceService {
 
     AppServiceDTO baseQueryByToken(String token);
 
+    AppServiceDTO queryByTokenOrThrowE(String token);
+
     void baseDelete(Long appServiceId);
 
     List<AppServiceDTO> baseListByProjectId(Long projectId);

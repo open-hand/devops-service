@@ -1,10 +1,7 @@
 package io.choerodon.devops.infra.dto;
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -55,6 +52,26 @@ public class DevopsCiPipelineRecordDTO extends AuditDomain {
     private Date finishedDate;
     @ApiModelProperty("执行耗时")
     private Long durationSeconds;
+    @ApiModelProperty("gitlab source")
+    private String source;
+    @Transient
+    private String pipelineName;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public Long getId() {
         return id;

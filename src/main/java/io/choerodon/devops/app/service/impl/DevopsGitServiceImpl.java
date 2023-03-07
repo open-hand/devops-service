@@ -237,10 +237,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             ReleaseParams releaseParams = new ReleaseParams();
             releaseParams.setTagName(tag);
             releaseParams.setDescription(releaseNotes);
-            gitlabServiceClientOperator.createRelease(applicationDTO.getGitlabProjectId(),
-                    tag,
-                    releaseNotes,
-                    getGitlabUserId());
+            gitlabServiceClientOperator.createRelease(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId());
         } else {
             gitlabServiceClientOperator.updateRelease(applicationDTO.getGitlabProjectId(), tag, releaseNotes, getGitlabUserId());
         }
@@ -257,8 +254,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH,
-            description = "devops创建分支", inputSchema = "{}")
+    @Saga(code = SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH, description = "devops创建分支", inputSchema = "{}")
     @Transactional(rollbackFor = Exception.class)
     public void createBranch(Long projectId, Long appServiceId, DevopsBranchVO devopsBranchVO) {
         checkGitlabAccessLevelService.checkGitlabPermission(projectId, appServiceId, AppServiceEvent.BRANCH_CREATE);
@@ -278,16 +274,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
         BranchSagaPayLoad branchSagaPayLoad = new BranchSagaPayLoad(TypeUtil.objToLong(appServiceDTO.getGitlabProjectId()), devopsBranchId, devopsBranchVO.getBranchName(), devopsBranchVO.getOriginBranch());
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(projectId)
-                        .withRefType(PROJECT)
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH),
-                builder -> builder
-                        .withPayloadAndSerialize(branchSagaPayLoad)
-                        .withRefId(String.valueOf(devopsBranchId)));
+        producer.apply(StartSagaBuilder.newBuilder().withLevel(ResourceLevel.PROJECT).withSourceId(projectId).withRefType(PROJECT).withSagaCode(SagaTopicCodeConstants.DEVOPS_CREATE_BRANCH), builder -> builder.withPayloadAndSerialize(branchSagaPayLoad).withRefId(String.valueOf(devopsBranchId)));
     }
 
     @Override
@@ -296,11 +283,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             BranchDTO branchDTO = gitlabServiceClientOperator.queryBranch(TypeUtil.objToInteger(branchSagaPayLoad.getGitlabProjectId()), branchSagaPayLoad.getBranchName());
             if (branchDTO.getName() == null) {
                 //创建gitlab分支，并处理返回值
-                branchDTO = gitlabServiceClientOperator.createBranch(
-                        TypeUtil.objToInteger(branchSagaPayLoad.getGitlabProjectId()),
-                        branchSagaPayLoad.getBranchName(),
-                        branchSagaPayLoad.getOriginBranch(),
-                        getGitlabUserId());
+                branchDTO = gitlabServiceClientOperator.createBranch(TypeUtil.objToInteger(branchSagaPayLoad.getGitlabProjectId()), branchSagaPayLoad.getBranchName(), branchSagaPayLoad.getOriginBranch(), getGitlabUserId());
             }
 
             if (branchDTO.getCommit() == null) {
@@ -374,10 +357,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
 
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
-        Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
+        String path = String.format("%s%s%s-%s/%s", gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
+        Page<DevopsBranchDTO> devopsBranchDTOPageInfo = devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
         Page<BranchVO> devopsBranchVOPageInfo = ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
 
         if (CollectionUtils.isEmpty(devopsBranchVOPageInfo.getContent())) {
@@ -407,9 +388,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             if (!CollectionUtils.isEmpty(issuedIds)) {
                 // 敏捷需要提供接口 根据ids查询Issue  返回 内容要带projectId
-                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds)
-                        .stream()
-                        .collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
+                issues = agileServiceClientOperator.listIssueByIdsWithProjectId(issuedIds).stream().collect(Collectors.toMap(IssueDTO::getIssueId, v -> v));
             }
         } catch (Exception e) {
             LOGGER.error("query agile issue failed:{}", e.getMessage());
@@ -488,21 +467,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         // 不能删除仓库下最后一个分支
         if (branchDTOS.size() <= 1) {
             throw new CommonException("devops.delete.the.only.branch");
         }
-        Optional<BranchDTO> branchDTO = branchDTOS
-                .stream().filter(e -> branchName.equals(e.getName())).findFirst();
+        Optional<BranchDTO> branchDTO = branchDTOS.stream().filter(e -> branchName.equals(e.getName())).findFirst();
         branchDTO.ifPresent(e -> {
             if (Boolean.TRUE.equals(e.getProtected())) {
                 // 不能删除保护分支
                 throw new CommonException("devops.delete.protected.branch");
             } else {
-                gitlabServiceClientOperator.deleteBranch(appServiceDTO.getGitlabProjectId(), branchName,
-                        TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+                gitlabServiceClientOperator.deleteBranch(appServiceDTO.getGitlabProjectId(), branchName, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
             }
         });
         devopsBranchService.baseDelete(appServiceId, branchName);
@@ -522,11 +498,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             throw new CommonException("devops.gitlabProjectId.not.exists");
         }
 
-        // 由于gitlab不会同步被删掉的合并请求，所以每一次查询前先删除已经不存在的合并请求
-        syncMergeRequest(appServiceDTO.getGitlabProjectId());
 
-        Page<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService
-                .basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageable);
+        Page<DevopsMergeRequestDTO> devopsMergeRequestDTOPageInfo = devopsMergeRequestService.basePageByOptions(appServiceDTO.getGitlabProjectId(), state, pageable);
 
         List<MergeRequestVO> pageContent = new ArrayList<>();
         List<DevopsMergeRequestDTO> devopsMergeRequestDTOS = devopsMergeRequestDTOPageInfo.getContent();
@@ -596,8 +569,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        String path = String.format("%s%s%s-%s/%s",
-                gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
+        String path = String.format("%s%s%s-%s/%s", gitlabUrl, urlSlash, organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), applicationDTO.getCode());
         return ConvertUtils.convertPage(gitlabServiceClientOperator.pageTag(projectDTO, applicationDTO.getGitlabProjectId(), path, page, params, size, getGitlabUserId(), checkMember), TagVO.class);
     }
 
@@ -615,8 +587,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
         AppServiceDTO applicationDTO = appServiceService.baseQuery(applicationId);
-        return gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream()
-                .noneMatch(t -> tagName.equals(t.getName()));
+        return gitlabServiceClientOperator.listTags(applicationDTO.getGitlabProjectId(), getGitlabUserId()).stream().noneMatch(t -> tagName.equals(t.getName()));
     }
 
     @Override
@@ -662,27 +633,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsEnvCommitDTO.setCommitSha(commitDTO.getId());
             devopsEnvCommitDTO.setCommitUser(TypeUtil.objToLong(pushWebHookVO.getUserId()));
             devopsEnvCommitDTO.setCommitDate(commitDTO.getTimestamp());
-            if (devopsEnvCommitService
-                    .baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), commitDTO.getId()) == null) {
+            if (devopsEnvCommitService.baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), commitDTO.getId()) == null) {
                 devopsEnvCommitService.baseCreate(devopsEnvCommitDTO);
             }
         });
-        DevopsEnvCommitDTO devopsEnvCommitDTO = devopsEnvCommitService
-                .baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), pushWebHookVO.getCheckoutSha());
+        DevopsEnvCommitDTO devopsEnvCommitDTO = devopsEnvCommitService.baseQueryByEnvIdAndCommit(devopsEnvironmentDTO.getId(), pushWebHookVO.getCheckoutSha());
         devopsEnvironmentDTO.setSagaSyncCommit(devopsEnvCommitDTO.getId());
         devopsEnvironmentService.baseUpdateSagaSyncEnvCommit(devopsEnvironmentDTO);
         LOGGER.info("update devopsCommit successfully: {}", pushWebHookVO.getCheckoutSha());
 
-        producer.apply(
-                StartSagaBuilder
-                        .newBuilder()
-                        .withLevel(ResourceLevel.PROJECT)
-                        .withSourceId(devopsEnvironmentDTO.getProjectId())
-                        .withRefType("env")
-                        .withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS),
-                builder -> builder
-                        .withPayloadAndSerialize(pushWebHookVO)
-                        .withRefId(devopsEnvironmentDTO.getId().toString()));
+        producer.apply(StartSagaBuilder.newBuilder().withLevel(ResourceLevel.PROJECT).withSourceId(devopsEnvironmentDTO.getProjectId()).withRefType("env").withSagaCode(SagaTopicCodeConstants.DEVOPS_SYNC_GITOPS), builder -> builder.withPayloadAndSerialize(pushWebHookVO).withRefId(devopsEnvironmentDTO.getId().toString()));
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -713,14 +673,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Tenant organizationDTO = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
         //本地路径
-        final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(),
-                projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
+        final String path = GitOpsUtil.getLocalPathToStoreEnv(organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getClusterCode(), devopsEnvironmentDTO.getCode(), devopsEnvironmentDTO.getId());
         //生成环境git仓库ssh地址
-        final String url = GitUtil.getGitlabSshUrl(
-                pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(),
-                devopsEnvironmentDTO.getCode(),
-                EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
-                devopsEnvironmentDTO.getClusterCode());
+        final String url = GitUtil.getGitlabSshUrl(pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(), projectDTO.getDevopsComponentCode(), devopsEnvironmentDTO.getCode(), EnvironmentType.forValue(devopsEnvironmentDTO.getType()), devopsEnvironmentDTO.getClusterCode());
 
         LOGGER.info("The gitOps Repository ssh url: {}", url);
 
@@ -738,24 +693,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
                 operationFiles.forEach(file -> {
-                    List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
-                            .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
+                    List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService.baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
                     if (!devopsEnvFileResourceDTOS.isEmpty()) {
                         beforeSync.addAll(devopsEnvFileResourceDTOS);
                     }
                 });
             } else {
-                handleDiffs(gitLabProjectId, operationFiles, deletedFiles, beforeSync, beforeSyncDelete,
-                        devopsEnvironmentDTO, devopsEnvCommitDTO);
+                handleDiffs(gitLabProjectId, operationFiles, deletedFiles, beforeSync, beforeSyncDelete, devopsEnvironmentDTO, devopsEnvCommitDTO);
             }
 
             Map<Class, List> resourceKindMap = initResourceKindContainer();
 
             //从文件中读出对象,序列化为K8S对象
-            objectPath = convertFileToK8sObjects(operationFiles, path,
-                    EnvironmentType.forValue(devopsEnvironmentDTO.getType()),
-                    resourceKindMap, devopsEnvironmentDTO.getId(),
-                    new ArrayList<>(beforeSyncDelete));
+            objectPath = convertFileToK8sObjects(operationFiles, path, EnvironmentType.forValue(devopsEnvironmentDTO.getType()), resourceKindMap, devopsEnvironmentDTO.getId(), new ArrayList<>(beforeSyncDelete));
 
             LOGGER.info("序列化k8s对象成功！");
 
@@ -791,8 +741,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String errorCode = "";
             if (e instanceof GitOpsExplainException) {
                 filePath = ((GitOpsExplainException) e).getFilePath();
-                errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e)
-                        .getErrorCode();
+                errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
             }
             DevopsEnvFileErrorDTO devopsEnvFileErrorDTO = getDevopsFileError(envId, filePath, path);
             String error;
@@ -832,12 +781,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return branchDTO == null || ObjectUtils.isEmpty(branchDTO.getName());
     }
 
-    private void handleFiles(List<String> operationFiles, List<String> deletedFiles,
-                             DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO, String path) {
+    private void handleFiles(List<String> operationFiles, List<String> deletedFiles, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO, String path) {
         //新增解释文件记录
         for (String filePath : operationFiles) {
-            DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService
-                    .baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), filePath);
+            DevopsEnvFileDTO devopsEnvFileDTO = devopsEnvFileService.baseQueryByEnvAndPath(devopsEnvironmentDTO.getId(), filePath);
             if (devopsEnvFileDTO == null) {
                 devopsEnvFileDTO = new DevopsEnvFileDTO();
                 devopsEnvFileDTO.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
@@ -858,8 +805,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO,
-                           DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
+    private void handleTag(Git git, String sshKey, PushWebHookVO pushWebHookVO, DevopsEnvCommitDTO devopsEnvCommitDTO, Boolean tagNotExist) {
         if (Boolean.TRUE.equals(tagNotExist)) {
             GitUtil.createTagAndPush(git, sshKey, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
             if (getDevopsSyncTag(pushWebHookVO)) {
@@ -873,12 +819,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles,
-                             Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete,
-                             DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO) {
+    private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles, Set<DevopsEnvFileResourceDTO> beforeSync, Set<DevopsEnvFileResourceDTO> beforeSyncDelete, DevopsEnvironmentDTO devopsEnvironmentDTO, DevopsEnvCommitDTO devopsEnvCommitDTO) {
         //获取将此次最新提交与tag作比价得到diff
-        CompareResultDTO compareResultDTO = gitlabServiceClientOperator
-                .queryCompareResult(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
+        CompareResultDTO compareResultDTO = gitlabServiceClientOperator.queryCompareResult(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitDTO.getCommitSha());
         compareResultDTO.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (Boolean.TRUE.equals(t.getDeletedFile())) {
@@ -892,16 +835,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
             }
 
-            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
-                    .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), t.getOldPath());
+            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService.baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), t.getOldPath());
             if (!devopsEnvFileResourceDTOS.isEmpty()) {
                 beforeSync.addAll(devopsEnvFileResourceDTOS);
             }
         });
 
         deletedFiles.forEach(file -> {
-            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService
-                    .baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
+            List<DevopsEnvFileResourceDTO> devopsEnvFileResourceDTOS = devopsEnvFileResourceService.baseQueryByEnvIdAndPath(devopsEnvironmentDTO.getId(), file);
             if (!devopsEnvFileResourceDTOS.isEmpty()) {
                 beforeSyncDelete.addAll(devopsEnvFileResourceDTOS);
             }
@@ -919,12 +860,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
      * @param beforeSyncDelete  删除的文件的 资源文件关联关系
      * @return 对象hashcode和对象所处文件名对映射
      */
-    private Map<String, String> convertFileToK8sObjects(List<String> files,
-                                                        String path,
-                                                        EnvironmentType environmentType,
-                                                        Map<Class, List> resourceContainer,
-                                                        Long envId,
-                                                        List<DevopsEnvFileResourceDTO> beforeSyncDelete) {
+    private Map<String, String> convertFileToK8sObjects(List<String> files, String path, EnvironmentType environmentType, Map<Class, List> resourceContainer, Long envId, List<DevopsEnvFileResourceDTO> beforeSyncDelete) {
         Map<String, String> objectPath = new HashMap<>();
         Yaml yaml = new Yaml();
         final Map<String, ConvertK8sObjectService> converters = EnvironmentType.USER == environmentType ? userEnvSupportedResourceConverters : systemEnvSupportedResourceConverters;
@@ -970,13 +906,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
                 // 处理当前资源的处理逻辑
                 ConvertK8sObjectService currentHandler;
-                if (ResourceType.PERSISTENT_VOLUME_CLAIM.getType().equals(type)
-                        && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
+                if (ResourceType.PERSISTENT_VOLUME_CLAIM.getType().equals(type) && isPvcTreatedAsCustomizeResourceBefore(envId, getPersistentVolumeClaimName(jsonObject, filePath))) {
                     // 0.20版本之前被作为自定义资源解析的PVC仍然作为自定义资源看待
                     currentHandler = converters.get(ResourceType.MISSTYPE.getType());
                 } else if (ResourceType.INGRESS.getType().equals(type)) {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId());
+                    boolean operateForOldTypeIngress = devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId());
                     if (operateForOldTypeIngress) {
                         currentHandler = converters.get(ResourceType.V1BETA1_INGRESS.getType());
                     } else {
@@ -1009,8 +944,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             name = jsonObject.getJSONObject(METADATA).getString(NAME);
         } catch (Exception e) {
-            throw new GitOpsExplainException(
-                    GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.PERSISTENT_VOLUME_CLAIM_NAME_NOT_FOUND.getError(), filePath);
         }
         return name;
     }
@@ -1038,8 +972,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
             String lastCommit = pushWebHookVO.getAfter();
-            Optional<CommitVO> lastCommitOptional
-                    = pushWebHookVO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
+            Optional<CommitVO> lastCommitOptional = pushWebHookVO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
             CommitVO lastCommitDTO = new CommitVO();
             if (lastCommitOptional.isPresent()) {
                 lastCommitDTO = lastCommitOptional.get();
@@ -1057,21 +990,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private MergeRequestVO devopsMergeRequestToMergeRequest(DevopsMergeRequestDTO
-                                                                    devopsMergeRequestDTO) {
+    private MergeRequestVO devopsMergeRequestToMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO) {
         MergeRequestVO mergeRequestVO = ConvertUtils.convertObject(devopsMergeRequestDTO, MergeRequestVO.class);
         mergeRequestVO.setProjectId(devopsMergeRequestDTO.getGitlabProjectId().intValue());
         mergeRequestVO.setId(devopsMergeRequestDTO.getId().intValue());
         mergeRequestVO.setIid(devopsMergeRequestDTO.getGitlabMergeRequestId().intValue());
-        Long authorUserId = userAttrService
-                .queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
-        Long assigneeId = userAttrService
-                .queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
+        Long authorUserId = userAttrService.queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAuthorId());
+        Long assigneeId = userAttrService.queryUserIdByGitlabUserId(devopsMergeRequestDTO.getAssigneeId());
         List<CommitDTO> commitDTOS;
         try {
-            commitDTOS = gitlabServiceClientOperator.listCommits(
-                    devopsMergeRequestDTO.getGitlabProjectId().intValue(),
-                    devopsMergeRequestDTO.getGitlabMergeRequestId().intValue(), getGitlabUserId());
+            commitDTOS = gitlabServiceClientOperator.listCommits(devopsMergeRequestDTO.getGitlabProjectId().intValue(), devopsMergeRequestDTO.getGitlabMergeRequestId().intValue(), getGitlabUserId());
             if (commitDTOS == null) {
                 LOGGER.info("MergeRequest not exist");
                 devopsMergeRequestMapper.delete(devopsMergeRequestDTO);
@@ -1107,8 +1035,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO
-            commitUserDTO, IamUserDTO userDTO, List<IssueDTO> issues, Long sagaInstanceId) {
+    private BranchVO getBranchVO(DevopsBranchDTO devopsBranchDTO, String lastCommitUrl, IamUserDTO commitUserDTO, IamUserDTO userDTO, List<IssueDTO> issues, Long sagaInstanceId) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
@@ -1121,17 +1048,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             createUserUrl = userDTO.getImageUrl();
             createUserRealName = userDTO.getRealName();
         }
-        return new BranchVO(
-                devopsBranchDTO,
-                lastCommitUrl,
-                createUserUrl,
-                issues,
-                commitUserDTO,
-                createUserName,
-                createUserRealName,
-                devopsBranchDTO.getStatus(),
-                devopsBranchDTO.getErrorMessage(),
-                sagaInstanceId);
+        return new BranchVO(devopsBranchDTO, lastCommitUrl, createUserUrl, issues, commitUserDTO, createUserName, createUserRealName, devopsBranchDTO.getStatus(), devopsBranchDTO.getErrorMessage(), sagaInstanceId);
     }
 
     private void deleteBranchSync(PushWebHookVO pushWebHookVO, Long appServiceId) {
@@ -1150,9 +1067,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             CommitDTO commitDTO = gitlabServiceClientOperator.queryCommit(
 
-                    pushWebHookVO.getProjectId(),
-                    lastCommit,
-                    userId.intValue());
+                    pushWebHookVO.getProjectId(), lastCommit, userId.intValue());
             String branchName = pushWebHookVO.getRef().replaceFirst(REF_HEADS, "");
 
             if (devopsBranchService.baseQueryByAppAndBranchName(appServiceId, branchName) == null) {
@@ -1194,32 +1109,33 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private boolean getDevopsSyncTag(PushWebHookVO pushWebHookVO) {
 
-        return gitlabServiceClientOperator.listTags(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId())
-                .stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
+        return gitlabServiceClientOperator.listTags(pushWebHookVO.getProjectId(), pushWebHookVO.getUserId()).stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }
 
     private Git handDevopsEnvGitRepository(String path, String url, String envIdRsa) {
-        File file = new File(path);
-        if (!file.exists()) {
-            return gitUtil.cloneBySsh(path, url, envIdRsa);
-        } else {
-            if (file.isDirectory() && file.listFiles().length > 0) {
-                try {
-                    String localPath = String.format("%s%s", path, GIT_SUFFIX);
-                    return gitUtil.pullBySsh(localPath, envIdRsa);
-                } catch (Exception e) {
-                    // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
-                    if (e instanceof CheckoutConflictException) {
-                        // 删除本地gitops文件，然后重新clone
-                        FileUtil.deleteDirectory(file);
-                        return gitUtil.cloneBySsh(path, url, envIdRsa);
-                    } else {
-                        throw new CommonException("devops.git.pull", e);
-                    }
-                }
-            } else {
+        synchronized (path.intern()) {
+            File file = new File(path);
+            if (!file.exists()) {
                 return gitUtil.cloneBySsh(path, url, envIdRsa);
+            } else {
+                if (file.isDirectory() && file.listFiles().length > 0) {
+                    try {
+                        String localPath = String.format("%s%s", path, GIT_SUFFIX);
+                        return gitUtil.pullBySsh(localPath, envIdRsa);
+                    } catch (Exception e) {
+                        // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
+                        if (e instanceof CheckoutConflictException) {
+                            // 删除本地gitops文件，然后重新clone
+                            FileUtil.deleteDirectory(file);
+                            return gitUtil.cloneBySsh(path, url, envIdRsa);
+                        } else {
+                            throw new CommonException("devops.git.pull", e);
+                        }
+                    }
+                } else {
+                    return gitUtil.cloneBySsh(path, url, envIdRsa);
+                }
             }
         }
     }
@@ -1327,10 +1243,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         // 查询是owner权限的group列表
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
-        List<GroupDTO> groupDTOS = gitlabServiceClientOperator.listGroupsWithParam(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                true,
-                search,
-                Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
+        List<GroupDTO> groupDTOS = gitlabServiceClientOperator.listGroupsWithParam(TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), true, search, Collections.singletonList(TypeUtil.objToInteger(devopsProjectDTO.getDevopsAppGroupId())));
 
         if (CollectionUtils.isEmpty(groupDTOS)) {
             return new ArrayList<>();
@@ -1339,9 +1252,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         List<DevopsProjectDTO> devopsProjectDTOS = devopsProjectService.listExistGroup(groupIds);
         if (!CollectionUtils.isEmpty(devopsProjectDTOS)) {
-            Map<Long, GroupDTO> groupDTOMap = groupDTOS.stream()
-                    .distinct()
-                    .collect(Collectors.toMap(v -> TypeUtil.objToLong(v.getId()), Function.identity()));
+            Map<Long, GroupDTO> groupDTOMap = groupDTOS.stream().distinct().collect(Collectors.toMap(v -> TypeUtil.objToLong(v.getId()), Function.identity()));
             devopsProjectDTOS.forEach(devopsProjectDTO1 -> {
 
                 if (groupDTOMap.get(devopsProjectDTO1.getDevopsAppGroupId()) != null) {
@@ -1364,25 +1275,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(GitUserNameUtil.getUserId());
 
-        List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId,
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                true,
-                search,
-                pageRequest.getPage(),
-                pageRequest.getSize(),
-                null);
+        List<GitlabProjectDTO> gitlabProjectDTOS = gitlabServiceClientOperator.listProject(gitlabGroupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), true, search, pageRequest.getPage(), pageRequest.getSize(), null);
 
         int totalElements = 0;
         if (gitlabProjectDTOS.size() < pageRequest.getSize()) {
             totalElements = (pageRequest.getPage() * pageRequest.getSize()) + gitlabProjectDTOS.size();
         } else {
-            List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId,
-                    TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()),
-                    true,
-                    search,
-                    pageRequest.getPage() + 1,
-                    pageRequest.getSize(),
-                    null);
+            List<GitlabProjectDTO> nextProjects = gitlabServiceClientOperator.listProject(gitlabGroupId, TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()), true, search, pageRequest.getPage() + 1, pageRequest.getSize(), null);
             if (CollectionUtils.isEmpty(nextProjects)) {
                 totalElements = ((pageRequest.getPage() + 1) * pageRequest.getSize());
             } else {
@@ -1433,8 +1332,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 throw new CommonException(DEVOPS_USER_NOT_IN_GITLAB_PROJECT);
             }
         }
-        Page<DevopsBranchDTO> devopsBranchDTOPageInfo =
-                devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
+        Page<DevopsBranchDTO> devopsBranchDTOPageInfo = devopsBranchService.basePageBranch(appServiceId, pageable, params, null);
 
         return ConvertUtils.convertPage(devopsBranchDTOPageInfo, BranchVO.class);
     }
@@ -1448,8 +1346,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
 
         UserAttrDTO userAttrDTO = userAttrService.baseQueryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(),
-                TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
+        List<BranchDTO> branchDTOS = gitlabServiceClientOperator.listBranch(appServiceDTO.getGitlabProjectId(), TypeUtil.objToInteger(userAttrDTO.getGitlabUserId()));
         if (CollectionUtils.isEmpty(branchDTOS)) {
             return syncCount;
         }
@@ -1487,6 +1384,52 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 syncCount = syncCount + 1;
                 if (sync) {
                     devopsBranchService.baseDelete(appServiceId, t);
+                }
+            }
+        }
+        return syncCount;
+    }
+
+    @Override
+    public Integer syncOpenMergeRequest(Long projectId, Long appServiceId, Boolean sync) {
+        int syncCount = 0;
+        // 查询所有开放的合并请求
+        AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
+        checkGitlabAccessLevelService.checkGitlabPermission(appServiceDTO.getProjectId(), appServiceId, AppServiceEvent.MERGE_REQUEST_LIST);
+        CommonExAssertUtil.assertTrue(projectId.equals(appServiceDTO.getProjectId()), MiscConstants.DEVOPS_OPERATING_RESOURCE_IN_OTHER_PROJECT);
+
+        List<MergeRequestDTO> mergeRequestDTOS = gitlabServiceClientOperator.listMergeRequest(appServiceDTO.getGitlabProjectId(), MergeRequestState.OPENED.getValue());
+        List<Integer> openMergeRequestIds = mergeRequestDTOS.stream().map(MergeRequestDTO::getIid).collect(Collectors.toList());
+        // 查询c7n已经存在的开放合并请求
+        DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
+        devopsMergeRequestDTO.setGitlabProjectId(appServiceDTO.getGitlabProjectId().longValue());
+        List<Long> devopsOpenMergeRequestIds = devopsMergeRequestMapper.select(devopsMergeRequestDTO).stream().map(DevopsMergeRequestDTO::getGitlabMergeRequestId).collect(Collectors.toList());
+        // 创建合并请求
+        for (MergeRequestDTO mergeRequestDTO : mergeRequestDTOS) {
+            if (!devopsOpenMergeRequestIds.contains(mergeRequestDTO.getIid().longValue())) {
+                syncCount = syncCount + 1;
+                if (sync) {
+                    DevopsMergeRequestDTO devopsMergeRequestDTOToInsert = new DevopsMergeRequestDTO();
+                    devopsMergeRequestDTOToInsert.setGitlabProjectId(mergeRequestDTO.getProjectId().longValue());
+                    devopsMergeRequestDTOToInsert.setGitlabMergeRequestId(mergeRequestDTO.getIid().longValue());
+                    devopsMergeRequestDTOToInsert.setSourceBranch(mergeRequestDTO.getSourceBranch());
+                    devopsMergeRequestDTOToInsert.setTargetBranch(mergeRequestDTO.getTargetBranch());
+                    devopsMergeRequestDTOToInsert.setAuthorId(mergeRequestDTO.getAuthor().getId().longValue());
+                    if (mergeRequestDTO.getAssignee() != null) {
+                        devopsMergeRequestDTOToInsert.setAssigneeId(mergeRequestDTO.getAssignee().getId().longValue());
+                    }
+                    devopsMergeRequestDTOToInsert.setState(mergeRequestDTO.getState());
+                    devopsMergeRequestDTOToInsert.setTitle(mergeRequestDTO.getTitle());
+                    MapperUtil.resultJudgedInsertSelective(devopsMergeRequestMapper, devopsMergeRequestDTOToInsert, "devops.save.merge.request");
+                }
+            }
+        }
+        // 删除不存在分支
+        for (Long t : devopsOpenMergeRequestIds) {
+            if (!openMergeRequestIds.contains(t.intValue())) {
+                syncCount = syncCount + 1;
+                if (sync) {
+                    devopsMergeRequestMapper.deleteByGitlabProjectIdAndMergeRequestId(appServiceDTO.getGitlabProjectId(), t);
                 }
             }
         }

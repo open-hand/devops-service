@@ -6,6 +6,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
@@ -44,6 +45,9 @@ public class CiTemplateStageJobRelDTO extends AuditDomain {
     @NotNull
     private Long ciTemplateJobId;
 
+    @ApiModelProperty(value = "顺序")
+    private Integer sequence;
+
 
     public Long getId() {
         return id;
@@ -69,5 +73,12 @@ public class CiTemplateStageJobRelDTO extends AuditDomain {
         this.ciTemplateJobId = ciTemplateJobId;
     }
 
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
 }
 

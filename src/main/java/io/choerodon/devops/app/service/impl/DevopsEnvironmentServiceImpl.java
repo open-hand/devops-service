@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import static io.choerodon.devops.infra.constant.ExceptionConstants.CdEnvDeployInfoDTOCode.DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.ClusterCode.DEVOPS_CLUSTER_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.EnvironmentCode.DEVOPS_ENV_ID_NOT_EXIST;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.GitlabCode.*;
@@ -36,6 +35,7 @@ import io.choerodon.asgard.saga.producer.TransactionalProducer;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.api.vo.*;
@@ -198,8 +198,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private SendNotificationService sendNotificationService;
     @Autowired
     private AsgardServiceClientOperator asgardServiceClientOperator;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
     private MarketServiceClientOperator marketServiceClientOperator;
 
@@ -606,11 +604,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!active) {
             // 如果已连接
             if (updatedClusterList.contains(devopsEnvironmentDTO.getClusterId())) {
-                devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+                devopsEnvironmentValidator.checkEnvCanDisabled(projectId, environmentId);
             } else {
-                if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(environmentId))) {
-                    throw new CommonException(DEVOPS_ENV_STOP_PIPELINE_APP_DEPLOY_EXIST);
-                }
+                devopsEnvironmentValidator.checkPipelineRef(projectId, environmentId);
             }
         }
 
@@ -816,6 +812,57 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
+    public DevopsEnvironmentDTO queryByIdOrThrowE(Long id) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(id);
+        if (devopsEnvironmentDTO == null) {
+            throw new CommonException("devops.get.environment");
+        }
+        return devopsEnvironmentDTO;
+    }
+
+    @Override
+    public Boolean hasEnvironmentPermission(DevopsEnvironmentDTO devopsEnvironmentDTO, Long projectId) {
+        if (Objects.isNull(devopsEnvironmentDTO)) {
+            return Boolean.FALSE;
+        }
+        if (devopsEnvironmentDTO.getSkipCheckPermission()) {
+            return Boolean.TRUE;
+        }
+        CustomUserDetails userDetails = DetailsHelper.getUserDetails();
+        if (baseServiceClientOperator.isProjectOwner(userDetails.getUserId(), projectId)) {
+            return Boolean.TRUE;
+        }
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+        if (baseServiceClientOperator.isOrganzationRoot(userDetails.getUserId(), projectDTO.getOrganizationId()) || userDetails.getAdmin()) {
+            return Boolean.TRUE;
+        }
+        DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+        devopsEnvUserPermissionDTO.setEnvId(devopsEnvironmentDTO.getId());
+        devopsEnvUserPermissionDTO.setIamUserId(userDetails.getUserId());
+        List<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOS = devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDTO);
+        if (!CollectionUtils.isEmpty(devopsEnvUserPermissionDTOS)) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
+
+    @Override
+    public Boolean hasEnvironmentPermission(Long envId, Long projectId) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = baseQueryById(envId);
+        return hasEnvironmentPermission(devopsEnvironmentDTO, projectId);
+    }
+
+    @Override
+    public void updateCheckValuesPolicy(Long projectId, Long envId, boolean enableCheckValuesPolicy) {
+        DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
+        devopsEnvironmentDTO.setCheckValuesPolicy(enableCheckValuesPolicy);
+        if (devopsEnvironmentMapper.updateByPrimaryKey(devopsEnvironmentDTO) != 1) {
+            throw new CommonException("devops.update.env");
+        }
+    }
+
+    @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         if (!isCodePatternValid(code)) {
             throw new CommonException("devops.env.code.notMatch");
@@ -851,16 +898,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (appServiceId == null) {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
-                            .anyMatch(applicationInstanceDTO ->
-                                    applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
+                            appServiceInstanceService.baseListByEnvId(t.getId()).stream()
+                                    .anyMatch(applicationInstanceDTO ->
+                                            applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
                     .collect(Collectors.toList());
         } else {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    appServiceInstanceService.baseListByEnvId(t.getId()).stream()
-                            .anyMatch(applicationInstanceDTO ->
-                                    applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
-                                            && applicationInstanceDTO.getAppServiceId().equals(appServiceId)))
+                            appServiceInstanceService.baseListByEnvId(t.getId()).stream()
+                                    .anyMatch(applicationInstanceDTO ->
+                                            applicationInstanceDTO.getStatus().equals(InstanceStatus.RUNNING.getStatus())
+                                                    && applicationInstanceDTO.getAppServiceId().equals(appServiceId)))
                     .collect(Collectors.toList());
         }
     }
@@ -905,7 +952,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     gitlabProjectPayload.getPath(),
                     devopsEnvironmentDTO.getEnvIdRsaPub(),
                     true,
-                    gitlabProjectPayload.getUserId());
+                    GitUserNameUtil.getAdminId());
         }
         ProjectHookDTO projectHookDTO = ProjectHookDTO.allHook();
         projectHookDTO.setEnableSslVerification(true);
@@ -1383,9 +1430,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException("devops.env.delete");
         }
 
-        if (!CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId))) {
-            throw new CommonException("devops.delete.env.with.pipeline");
-        }
+        devopsEnvironmentValidator.checkPipelineRef(projectId, envId);
 
         devopsEnvironmentDTO.setSynchro(Boolean.FALSE);
         JSONObject JSONObject = new JSONObject();
@@ -1606,7 +1651,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     devopsEnvironmentDTO.getCode(),
                     devopsEnvironmentDTO.getEnvIdRsaPub(),
                     true,
-                    gitlabUserId);
+                    GitUserNameUtil.getAdminId()
+            );
         }
 
         // 初始化web hook
@@ -1869,7 +1915,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean disableCheck(Long projectId, Long envId) {
         // 停用环境校验资源和流水线
         // pipeLineAppDeploy为空
-        boolean pipeLineAppDeployEmpty = CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
 
         DevopsEnvResourceCountVO devopsEnvResourceCountVO = devopsEnvironmentMapper.queryEnvResourceCount(envId);
 
@@ -1881,13 +1926,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 && devopsEnvResourceCountVO.getConfigMapCount() == 0
                 && devopsEnvResourceCountVO.getPvcCount() == 0
                 && devopsEnvResourceCountVO.getCustomCount() == 0
-                && pipeLineAppDeployEmpty;
+                && !devopsEnvironmentValidator.envRefPipeline(projectId, envId);
     }
 
     @Override
     public Boolean deleteCheck(Long projectId, Long envId) {
         // 删除环境只校验是否有流水线
-        return CollectionUtils.isEmpty(devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId));
+        return !devopsEnvironmentValidator.envRefPipeline(projectId, envId);
     }
 
     @Override
@@ -1984,10 +2029,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public EnvAutoDeployVO queryAutoDeploy(Long projectId, @Nullable Long envId) {
         EnvAutoDeployVO envAutoDeployVO = new EnvAutoDeployVO();
         envAutoDeployVO.setExistAutoDeploy(false);
-        List<DevopsCdEnvDeployInfoDTO> list = devopsCdEnvDeployInfoService.queryCurrentByEnvId(envId);
-        if (!CollectionUtils.isEmpty(list)) {
-            envAutoDeployVO.setExistAutoDeploy(true);
-        }
+        envAutoDeployVO.setExistAutoDeploy(devopsEnvironmentValidator.envRefPipeline(projectId, envId));
         DevopsEnvironmentDTO devopsEnvironmentDTO = permissionHelper.checkEnvBelongToProject(projectId, envId);
         envAutoDeployVO.setAutoDeployStatus(devopsEnvironmentDTO.getAutoDeploy());
         return envAutoDeployVO;

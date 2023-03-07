@@ -6,10 +6,8 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
-import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestReportVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineChartInfo;
-import io.choerodon.devops.api.vo.pipeline.PipelineImageInfoVO;
-import io.choerodon.devops.api.vo.pipeline.PipelineSonarInfo;
+import io.choerodon.devops.api.vo.pipeline.*;
+import io.choerodon.devops.api.vo.test.ApiTestTaskRecordVO;
 
 /**
  * 〈功能简述〉
@@ -48,12 +46,13 @@ public class DevopsCiJobRecordVO {
     private Long durationSeconds;
     @ApiModelProperty("单元测试覆盖率")
     private String codeCoverage;
-    @ApiModelProperty("详细信息")
-    private String metadata;
+    //    @ApiModelProperty("详细信息")
+//    private String metadata;
     @ApiModelProperty("是否有镜像扫描")
     private Boolean imageScan;
-    @ApiModelProperty("任务记录关联的maven配置id")
-    private Long mavenSettingId;
+    //    @ApiModelProperty("任务记录关联的maven配置id")
+//    private Long mavenSettingId;
+    private Long commandId;
 
     @ApiModelProperty("ci生成jar包地址")
     private PipelineJarInfoVO pipelineJarInfo;
@@ -64,7 +63,69 @@ public class DevopsCiJobRecordVO {
     @ApiModelProperty("ci任务产生的镜像信息")
     private PipelineImageInfoVO pipelineImageInfo;
     @ApiModelProperty("ci任务产生的单元测试信息")
-    List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
+    private List<DevopsCiUnitTestReportVO> devopsCiUnitTestReportInfoList;
+    @ApiModelProperty("人工卡点任务信息")
+    private Audit audit;
+    @ApiModelProperty("chart部署任务信息")
+    private DeployInfo deployInfo;
+
+    @ApiModelProperty("api测试记录id")
+    @Encrypt
+    private Long apiTestTaskRecordId;
+
+    @Encrypt
+    @ApiModelProperty("关联的配置id")
+    private Long configId;
+
+    private ApiTestTaskRecordVO apiTestTaskRecordVO;
+
+    public ApiTestTaskRecordVO getApiTestTaskRecordVO() {
+        return apiTestTaskRecordVO;
+    }
+
+    public void setApiTestTaskRecordVO(ApiTestTaskRecordVO apiTestTaskRecordVO) {
+        this.apiTestTaskRecordVO = apiTestTaskRecordVO;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
+    public DeployInfo getDeployInfo() {
+        return deployInfo;
+    }
+
+    public void setDeployInfo(DeployInfo deployInfo) {
+        this.deployInfo = deployInfo;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
+    public Audit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(Audit audit) {
+        this.audit = audit;
+    }
 
     public List<DevopsCiUnitTestReportVO> getDevopsCiUnitTestReportInfoList() {
         return devopsCiUnitTestReportInfoList;
@@ -97,14 +158,14 @@ public class DevopsCiJobRecordVO {
     public void setPipelineChartInfo(PipelineChartInfo pipelineChartInfo) {
         this.pipelineChartInfo = pipelineChartInfo;
     }
-
-    public Long getMavenSettingId() {
-        return mavenSettingId;
-    }
-
-    public void setMavenSettingId(Long mavenSettingId) {
-        this.mavenSettingId = mavenSettingId;
-    }
+//
+//    public Long getMavenSettingId() {
+//        return mavenSettingId;
+//    }
+//
+//    public void setMavenSettingId(Long mavenSettingId) {
+//        this.mavenSettingId = mavenSettingId;
+//    }
 
     public Boolean getImageScan() {
         return imageScan;
@@ -122,13 +183,13 @@ public class DevopsCiJobRecordVO {
         this.pipelineJarInfo = pipelineJarInfo;
     }
 
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
+//    public String getMetadata() {
+//        return metadata;
+//    }
+//
+//    public void setMetadata(String metadata) {
+//        this.metadata = metadata;
+//    }
 
     public Long getId() {
         return id;

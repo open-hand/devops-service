@@ -3,9 +3,11 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.choerodon.devops.api.vo.MavenRepoVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
@@ -13,6 +15,9 @@ import org.hzero.starter.keyencrypt.core.Encrypt;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * devops_ci_template_maven_publish(CiTemplateMavenPublish)实体类
@@ -47,7 +52,30 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
 
     @ApiModelProperty(value = "所属步骤Id", required = true)
     @NotNull
+    @Encrypt
     private Long ciTemplateStepId;
+
+    @ApiModelProperty("项目下已有的maven仓库id列表 json")
+    private String nexusMavenRepoIdStr;
+
+    @Encrypt
+    @ApiModelProperty("项目下已有的maven仓库id列表")
+    @Transient
+    private Set<Long> nexusMavenRepoIds;
+
+    @ApiModelProperty("发包的目的仓库信息 json格式")
+    private String targetRepoStr;
+
+
+    @Encrypt
+    @ApiModelProperty("nexus的maven仓库在制品库的主键id")
+    private Long nexusRepoId;
+    @ApiModelProperty("表单填写的Maven的依赖仓库")
+    @Transient
+    private List<MavenRepoVO> repos;
+    @ApiModelProperty("发包的目的仓库信息")
+    @Transient
+    private MavenRepoVO targetRepo;
 
 
     public Long getId() {
@@ -83,5 +111,52 @@ public class CiTemplateMavenPublishDTO extends AuditDomain {
         this.ciTemplateStepId = ciTemplateStepId;
     }
 
+    public String getNexusMavenRepoIdStr() {
+        return nexusMavenRepoIdStr;
+    }
+
+    public void setNexusMavenRepoIdStr(String nexusMavenRepoIdStr) {
+        this.nexusMavenRepoIdStr = nexusMavenRepoIdStr;
+    }
+
+    public String getTargetRepoStr() {
+        return targetRepoStr;
+    }
+
+    public void setTargetRepoStr(String targetRepoStr) {
+        this.targetRepoStr = targetRepoStr;
+    }
+
+    public Long getNexusRepoId() {
+        return nexusRepoId;
+    }
+
+    public void setNexusRepoId(Long nexusRepoId) {
+        this.nexusRepoId = nexusRepoId;
+    }
+
+    public Set<Long> getNexusMavenRepoIds() {
+        return nexusMavenRepoIds;
+    }
+
+    public void setNexusMavenRepoIds(Set<Long> nexusMavenRepoIds) {
+        this.nexusMavenRepoIds = nexusMavenRepoIds;
+    }
+
+    public List<MavenRepoVO> getRepos() {
+        return repos;
+    }
+
+    public void setRepos(List<MavenRepoVO> repos) {
+        this.repos = repos;
+    }
+
+    public MavenRepoVO getTargetRepo() {
+        return targetRepo;
+    }
+
+    public void setTargetRepo(MavenRepoVO targetRepo) {
+        this.targetRepo = targetRepo;
+    }
 }
 

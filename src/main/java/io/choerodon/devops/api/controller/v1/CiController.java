@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.vo.CiPipelineImageVO;
-import io.choerodon.devops.api.vo.ImageRepoInfoVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.pipeline.CiResponseVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiUnitTestResultVO;
+import io.choerodon.devops.app.eventhandler.pipeline.exec.CommandOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -50,6 +50,12 @@ public class CiController {
     private DevopsCiPipelineSonarService devopsCiPipelineSonarService;
     @Autowired
     private DevopsCiUnitTestReportService devopsCiUnitTestReportService;
+    @Autowired
+    private CommandOperator commandOperator;
+    @Autowired
+    private CiAuditRecordService ciAuditRecordService;
+    @Autowired
+    private DevopsCiJobRecordService devopsCiJobRecordService;
 
     public CiController(AppServiceService applicationService,
                         AppServiceVersionService appServiceVersionService,
@@ -111,8 +117,21 @@ public class CiController {
             @RequestParam(value = "jobName", required = false) String jobName,
             @ApiParam(value = "taz包", required = true)
             @RequestParam MultipartFile file,
-            @RequestParam String ref) {
-        appServiceVersionService.create(image, harborConfigId, repoType, token, version, commit, file, ref, gitlabPipelineId, jobName);
+            @RequestParam String ref,
+            @RequestParam(value = "helm_repo_id", required = false) Long helmRepoId,
+            @RequestParam(value = "gitlab_user_id", required = false) Long gitlabUserId) {
+        appServiceVersionService.create(image,
+                harborConfigId,
+                repoType,
+                token,
+                version,
+                commit,
+                file,
+                ref,
+                gitlabPipelineId,
+                jobName,
+                helmRepoId,
+                gitlabUserId);
         return ResponseEntity.ok().build();
     }
 
@@ -279,7 +298,7 @@ public class CiController {
             @ApiParam(value = "测试报告", required = true)
             @RequestParam MultipartFile file,
             @ApiParam(value = "测试结果（如果传了则使用用户上传的结果）")
-                    DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
+            DevopsCiUnitTestResultVO devopsCiUnitTestResultVO) {
         devopsCiUnitTestReportService.uploadUnitTest(gitlabPipelineId, jobName, token, type, file, devopsCiUnitTestResultVO);
         return ResponseEntity.ok().build();
     }
@@ -309,4 +328,105 @@ public class CiController {
         return ResponseEntity.ok(ciPipelineImageService.queryImageRepoInfo(token, gitlabPipelineId));
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "执行命令", hidden = true)
+    @PostMapping("/exec_command")
+    public ResponseEntity<CiResponseVO> execCommand(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "GitLab Jobid", required = true)
+            @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
+            @ApiParam(value = "部署配置id", required = true)
+            @RequestParam(value = "config_id") Long configId,
+            @ApiParam(value = "指令类型", required = true)
+            @RequestParam(value = "command_type") String commandType) {
+        return ResponseEntity.ok(commandOperator.executeCommandByType(token, gitlabPipelineId, gitlabJobId, configId, commandType));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "流水线runner中查询主机部署命令执行状态", hidden = true)
+    @PostMapping("/host_command_status")
+    public ResponseEntity<CiResponseVO> hostCommandStatus(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "commandId", required = true)
+            @RequestParam(value = "command_id") Long commandId) {
+        return ResponseEntity.ok(commandOperator.getHostCommandStatus(token, gitlabPipelineId, commandId));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "更新job 关联的api测试执行记录信息", hidden = true)
+    @PostMapping("/update_api_test_task_record_info")
+    public ResponseEntity<Void> updateApiTestTaskRecordInfo(@ApiParam(value = "token", required = true)
+                                                            @RequestParam String token,
+                                                            @ApiParam(value = "GitLab Jobid", required = true)
+                                                            @RequestParam(value = "gitlab_job_id") Long gitlabJobId,
+                                                            @ApiParam(value = "configId", required = true)
+                                                            @RequestParam(value = "config_id") Long configId,
+                                                            @ApiParam(value = "测试任务执行记录id")
+                                                            @RequestParam(value = "api_test_task_record_id") Long apiTestTaskRecordId) {
+        devopsCiJobRecordService.updateApiTestTaskRecordInfo(token, gitlabJobId, configId, apiTestTaskRecordId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询人工卡点任务审核状态", hidden = true)
+    @PostMapping("/audit_status")
+    public ResponseEntity<CiAuditResultVO> queryAuditStatus(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "GitLab流水线id", required = true)
+            @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+            @ApiParam(value = "job_name", required = true)
+            @RequestParam(value = "job_name") String jobName) {
+        return ResponseEntity.ok(ciAuditRecordService.queryAuditStatus(token, gitlabPipelineId, jobName));
+    }
+
+    @Permission(permissionWithin = true)
+    @ApiOperation(value = "校验项目并返回触发job的用户id", hidden = true)
+    @GetMapping("/check_and_get_trigger_user_id")
+    public ResponseEntity<Long> checkAndGetTriggerUserId(@ApiParam("应用token")
+                                                         @RequestParam("token") String token,
+                                                         @ApiParam("gitlab job id")
+                                                         @RequestParam("gitlab_job_id") Long gitlabJobId) {
+        return ResponseEntity.ok(devopsCiJobRecordService.checkAndGetTriggerUserId(token, gitlabJobId));
+    }
+
+    @Permission(permissionPublic = false)
+    @ApiOperation(value = "查询sonar质量门执行结果", hidden = true)
+    @GetMapping("/get_sonar_quality_gate_result")
+    public ResponseEntity<Boolean> getSonarQualityGateScanResult(@ApiParam(value = "GitLab流水线id", required = true)
+                                                                 @RequestParam(value = "gitlab_pipeline_id") Long gitlabPipelineId,
+                                                                 @ApiParam(value = "job_name", required = true)
+                                                                 @RequestParam String token) {
+        return ResponseEntity.ok(devopsCiPipelineSonarService.getSonarQualityGateScanResult(gitlabPipelineId, token));
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "api测试job触发通知", hidden = true)
+    @PostMapping("/test_result_notify")
+    public ResponseEntity<Void> testResultNotify(@ApiParam("应用token")
+                                                 @RequestParam("token") String token,
+                                                 @ApiParam("gitlab job id")
+                                                 @RequestParam("gitlab_job_id") Long gitlabJobId,
+                                                 @ApiParam("成功率")
+                                                 @RequestParam("success_rate") String successRate) {
+        devopsCiJobRecordService.testResultNotify(token, gitlabJobId, successRate);
+        return ResponseEntity.ok().build();
+    }
+
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "查询制品仓库信息", hidden = true)
+    @GetMapping("/npm_repo_info")
+    public ResponseEntity<NpmRepoInfoVO> queryNpmRepoInfo(
+            @ApiParam(value = "token", required = true)
+            @RequestParam String token,
+            @ApiParam(value = "repo_id", required = true)
+            @RequestParam(value = "repo_id") Long repoId) {
+        return ResponseEntity.ok(ciPipelineImageService.queryNpmRepoInfo(token, repoId));
+    }
 }

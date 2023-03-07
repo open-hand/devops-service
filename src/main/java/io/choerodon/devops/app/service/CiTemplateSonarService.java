@@ -11,5 +11,9 @@ import io.choerodon.devops.infra.dto.CiTemplateSonarDTO;
 public interface CiTemplateSonarService {
 
     CiTemplateSonarDTO queryByStepId(Long id);
+
+    void baseCreate(Long templateStepId, CiTemplateSonarDTO ciTemplateSonarDTO);
+
+    void deleteByTemplateStepId(Long templateStepId);
 }
 

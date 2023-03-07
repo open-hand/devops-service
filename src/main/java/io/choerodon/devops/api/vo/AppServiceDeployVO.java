@@ -75,6 +75,9 @@ public class AppServiceDeployVO {
     @ApiModelProperty(value = "实例的域名配置")
     private DevopsIngressVO devopsIngressVO;
 
+    @ApiModelProperty("replicas生效策略在 values/deployment")
+    private  String replicasStrategy;
+
     public AppServiceDeployVO() {
     }
 
@@ -98,6 +101,15 @@ public class AppServiceDeployVO {
         this.type = type;
         this.appName = appName;
         this.appCode = appCode;
+    }
+
+
+    public String getReplicasStrategy() {
+        return replicasStrategy;
+    }
+
+    public void setReplicasStrategy(String replicasStrategy) {
+        this.replicasStrategy = replicasStrategy;
     }
 
     public Long getAppCenterId() {

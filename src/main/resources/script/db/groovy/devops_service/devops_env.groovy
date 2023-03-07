@@ -205,11 +205,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         }
     }
 
-    changeSet(author: 'lihao',id: '2021-11-02-drop-index'){
+    changeSet(author: 'lihao', id: '2021-11-02-drop-index') {
         dropIndex(indexName: "devops_env_idx_project_id", tableName: "devops_env")
     }
 
     changeSet(author: 'scp', id: '2021-12-10-fix-auto-deploy') {
         sql("UPDATE devops_env SET is_auto_deploy = 1 WHERE is_auto_deploy IS NULL;")
+    }
+
+    changeSet(author: 'lihao', id: '2023-01-30-addColumn') {
+        addColumn(tableName: 'devops_env') {
+            column(name: 'check_values_policy', type: 'TINYINT UNSIGNED', defaultValue: '0', remarks: '是否开启确认values生效策略，1：开启，0：关闭', afterColumn: 'is_active')
+        }
     }
 }

@@ -31,4 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_variable.groovy') {
             column(name: 'devops_pipeline_id')
         }
     }
+    changeSet(author: 'wanghao', id: '2023-02-15-updateDataType') {
+        modifyDataType(tableName: 'devops_ci_pipeline_variable', columnName: 'variable_value', newDataType: 'TEXT')
+    }
 }

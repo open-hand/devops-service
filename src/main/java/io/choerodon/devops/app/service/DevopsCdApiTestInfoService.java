@@ -13,7 +13,5 @@ public interface DevopsCdApiTestInfoService {
     void baseCreate(DevopsCdApiTestInfoDTO devopsCdApiTestInfoDTO);
 
     DevopsCdApiTestInfoDTO queryById(Long deployInfoId);
-
-    Boolean doesApiTestSuiteRelatedWithPipeline(Long suiteId);
 }
 

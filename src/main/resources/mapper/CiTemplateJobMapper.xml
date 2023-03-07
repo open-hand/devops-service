@@ -7,15 +7,17 @@
         from devops_ci_template_stage_job_rel dctsjr
                  join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
         where dctsjr.ci_template_stage_id = #{stageId}
+          AND dctj.visibility=1
     </select>
     <select id="listByStageIds" resultType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
-        select dctj.*, dctsjr.ci_template_stage_id as relate_stage_id
+        select dctj.*, dctsjr.ci_template_stage_id as relate_stage_id , dctsjr.sequence
         from devops_ci_template_stage_job_rel dctsjr
         join devops_ci_template_job dctj on dctj.id = dctsjr.ci_template_job_id
         where dctsjr.ci_template_stage_id in
         <foreach collection="stageIds" item="stageId" open="(" separator="," close=")">
             #{stageId}
         </foreach>
+--         AND dctj.visibility=1
     </select>
     <select id="listByTenantIdAndGroupId" resultType="io.choerodon.devops.infra.dto.CiTemplateJobDTO">
         select * from devops_ci_template_job dctj
@@ -24,6 +26,7 @@
         or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
         or (dctj.source_type = 'project' and dctj.source_id = #{projectId})
             )
+        AND dctj.visibility=1
     </select>
 
     <update id="updateImageByIds">

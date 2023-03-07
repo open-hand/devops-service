@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import static io.choerodon.devops.app.eventhandler.constants.HarborRepoConstants.DEFAULT_REPO;
+import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_ID_NULL;
 import static io.choerodon.devops.infra.constant.ExceptionConstants.AppServiceHelmVersionCode.DEVOPS_HELM_CONFIG_NOT_EXIST;
 import static java.util.Comparator.comparing;
@@ -45,11 +46,13 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.appversion.AppServiceHelmVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceImageVersionVO;
 import io.choerodon.devops.api.vo.appversion.AppServiceMavenVersionVO;
+import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
 import io.choerodon.devops.api.vo.chart.ChartTagVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.gitlab.GitlabPipelineDTO;
 import io.choerodon.devops.infra.dto.harbor.HarborImageTagDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
@@ -57,6 +60,7 @@ import io.choerodon.devops.infra.dto.iam.Tenant;
 import io.choerodon.devops.infra.enums.ProjectConfigType;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
+import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.devops.infra.util.*;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -103,6 +107,8 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Autowired
     private AppServiceMapper appServiceMapper;
     @Autowired
+    private AppExternalConfigService appExternalConfigService;
+    @Autowired
     private DevopsConfigService devopsConfigService;
     @Autowired
     private SendNotificationService sendNotificationService;
@@ -126,6 +132,12 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     private CiPipelineAppVersionService ciPipelineAppVersionService;
     @Autowired
     private DevopsHelmConfigService devopsHelmConfigService;
+    @Autowired
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+    @Autowired
+    private UserAttrService userAttrService;
+    @Autowired
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
 
     @Autowired
     @Qualifier(value = "restTemplateForIp")
@@ -140,6 +152,7 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
+    @Saga(code = DEVOPS_APP_VERSION_TRIGGER_PIPELINE, description = "应用服务版本生成触发流水线", inputSchemaClass = AppVersionTriggerVO.class)
     public void create(String image,
                        String harborConfigId,
                        String repoType,
@@ -149,10 +162,14 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                        MultipartFile files,
                        String ref,
                        Long gitlabPipelineId,
-                       String jobName) {
+                       String jobName,
+                       Long helmRepoId,
+                       Long gitlabUserId) {
         try {
 
             AppServiceDTO appServiceDTO = appServiceMapper.queryByToken(token);
+            // 设置用户上下文
+            setUserContext(gitlabPipelineId, gitlabUserId, appServiceDTO);
 
             AppServiceVersionDTO appServiceVersionDTO = saveAppVersion(version, commit, ref, gitlabPipelineId, appServiceDTO.getId());
 
@@ -160,7 +177,13 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
 
             // 查询helm仓库配置id
-            DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            DevopsHelmConfigDTO devopsHelmConfigDTO;
+
+            if (helmRepoId == null) {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryAppConfig(appServiceDTO.getId(), projectDTO.getId(), organization.getTenantId());
+            } else {
+                devopsHelmConfigDTO = devopsHelmConfigService.queryById(helmRepoId);
+            }
 
             String repository;
             if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
@@ -222,6 +245,17 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
                             appServiceVersionDTO.getId()));
                 }
             }
+            // 触发流水线自动部署任务
+            producer.apply(
+                    StartSagaBuilder
+                            .newBuilder()
+                            .withLevel(ResourceLevel.PROJECT)
+                            .withSourceId(appServiceDTO.getProjectId())
+                            .withRefType("appVersion")
+                            .withSagaCode(SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE),
+                    builder -> builder
+                            .withJson(GSON.toJson(new AppVersionTriggerVO(appServiceDTO.getId(), appServiceVersionDTO.getId())))
+                            .withRefId(appServiceDTO.getId().toString()));
         } catch (Exception e) {
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e, ((CommonException) e).getParameters());
@@ -229,6 +263,46 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
             throw new DevopsCiInvalidException(e);
         }
 
+    }
+
+    private void setUserContext(Long gitlabPipelineId, Long gitlabUserId, AppServiceDTO appServiceDTO) {
+        if (appServiceDTO.getExternalConfigId() == null) {
+            GitlabPipelineDTO gitlabPipelineDTO = gitlabServiceClientOperator.queryPipeline(appServiceDTO.getGitlabProjectId(),
+                    TypeUtil.objToInteger(gitlabPipelineId),
+                    null,
+                    null);
+            Long gitlabUserIid;
+            if (gitlabPipelineDTO != null) {
+                if (gitlabPipelineDTO.getUser() != null) {
+                    gitlabUserIid = TypeUtil.objToLong(gitlabPipelineDTO.getUser().getId());
+                } else {
+                    if (LOGGER.isWarnEnabled()) {
+                        LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline user info from gitlab is null. gitlabProjectId: {}, gitlabPipelineDTO: {}<<<<<<<<<<<<<<<<<<<",
+                                appServiceDTO.getGitlabProjectId(),
+                                JsonHelper.marshalByJackson(gitlabPipelineDTO));
+                    }
+                    gitlabUserIid = gitlabUserId;
+                }
+            } else {
+                LOGGER.warn(">>>>>>>>>>>>>>>>>>Query pipeline info from gitlab is null. gitlabProjectId: {}, gitlabPipelineId: {}<<<<<<<<<<<<<<<<<<<",
+                        appServiceDTO.getGitlabProjectId(),
+                        gitlabPipelineId);
+                gitlabUserIid = gitlabUserId;
+            }
+
+            if (gitlabUserIid != null) {
+                UserAttrDTO userAttrDTO = userAttrService.baseQueryByGitlabUserId(gitlabUserIid);
+                if (userAttrDTO != null) {
+                    CustomContextUtil.setUserContext(userAttrDTO.getIamUserId());
+                }
+            } else {
+                LOGGER.warn(">>>>>>>>>>>>>>>>>>GitlabUserIid is null,skip set user context. gitlabProjectId: {}, gitlabPipelineId: {}<<<<<<<<<<<<<<<<<<<",
+                        appServiceDTO.getGitlabProjectId(),
+                        gitlabPipelineId);
+            }
+        } else {
+            CustomContextUtil.setUserContext(appServiceDTO.getCreatedBy());
+        }
     }
 
     /**
@@ -995,6 +1069,11 @@ public class AppServiceVersionServiceImpl implements AppServiceVersionService {
     @Override
     public List<AppServiceVersionDTO> listAllVersionsWithHelmConfigNullOrImageConfigNull() {
         return appServiceVersionMapper.listAllVersionsWithHelmConfigNullOrImageConfigNull();
+    }
+
+    @Override
+    public AppServiceVersionDTO queryLatestByAppServiceIdVersionType(Long appServiceId, String version) {
+        return appServiceVersionMapper.queryLatestByAppServiceIdVersionType(appServiceId, version);
     }
 
     private Set<AppServiceVersionDTO> checkVersion(Long appServiceId, Set<Long> versionIds) {

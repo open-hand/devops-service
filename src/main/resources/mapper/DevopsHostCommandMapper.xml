@@ -4,7 +4,8 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostCommandMapper">
     <update id="batchUpdateTimeoutCommand">
         update devops_host_command dhc
-        set dhc.status = 'failed', dhc.error = 'Time out!'
+        set dhc.status = 'failed', dhc.error = '获取命令状态失败。可能有如下失败原因：\n1. 命令执行超时
+        \n2.消息过大被系统丢弃\n请检查命令是否正确以及是否输出超过1M日志'
         where dhc.status = 'operating' and dhc.id in
         <foreach collection="missCommands" item="commandId" open="(" close=")" index="i" separator=",">
             #{commandId}

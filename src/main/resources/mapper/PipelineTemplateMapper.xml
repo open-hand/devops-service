@@ -18,6 +18,7 @@
             <id column="pipeline_template_id" property="pipelineTemplateId"/>
             <collection property="ciTemplateJobVOList" ofType="io.choerodon.devops.api.vo.template.CiTemplateJobVO">
                 <id column="job_id" property="id"/>
+                <id column="sequence" property="sequence"/>
                 <id column="job_name" property="name"/>
                 <id column="group_id" property="groupId"/>
                 <id column="job_image" property="image"/>
@@ -51,7 +52,8 @@
                dctj.source_id   as job_source_id,
                dctj.type,
                dctj.to_upload,
-               dctj.to_download
+               dctj.to_download,
+               dctsjr.sequence
         from devops_ci_template_pipeline dpt
                  left join devops_ci_template_stage dcts on dcts.pipeline_template_id = dpt.id
                  left join devops_ci_template_stage_job_rel dctsjr on dctsjr.ci_template_stage_id = dcts.id

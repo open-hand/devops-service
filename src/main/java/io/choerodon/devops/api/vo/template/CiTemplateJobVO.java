@@ -41,6 +41,9 @@ public class CiTemplateJobVO {
 
     private String type;
 
+    @ApiModelProperty("任务标签")
+    private String tags;
+
     @ApiModelProperty(value = "是否预置，1:预置，0:自定义", required = true)
     private Boolean builtIn;
 
@@ -76,6 +79,64 @@ public class CiTemplateJobVO {
 
     @ApiModelProperty("是否开启并发")
     private Boolean openParallel;
+
+    @ApiModelProperty("关联的任务配置id")
+    @Encrypt
+    private Long configId;
+    @ApiModelProperty("任务模板是否可见")
+    private Boolean visibility;
+    @ApiModelProperty("触发类型对应的值")
+    private String triggerValue;
+    /**
+     * {@link io.choerodon.devops.infra.enums.CiTriggerType}
+     */
+    @ApiModelProperty("触发类型")
+    private String triggerType;
+
+    @ApiModelProperty("chart部署时候的配置")
+    private CiTplChartDeployCfgVO ciChartDeployConfig;
+
+    @ApiModelProperty("api测试任务信息")
+    private CiTplApiTestInfoCfgVO devopsCiApiTestInfoVO;
+
+    @ApiModelProperty("deployment部署配置")
+    private CiTplDeployDeployCfgVO ciDeployDeployCfg;
+
+    @ApiModelProperty("主机部署的配置")
+    private CiTplHostDeployInfoCfgVO devopsCiHostDeployInfoVO;
+
+    @ApiModelProperty("审核信息")
+    private CiTplAuditVO ciAuditConfig;
+
+    @ApiModelProperty("顺序")
+    private Integer sequence;
+
+    @ApiModelProperty("分组类型")
+    private String groupType;
+
+    public Integer getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Integer sequence) {
+        this.sequence = sequence;
+    }
+
+    public String getTags() {
+        return tags;
+    }
+
+    public void setTags(String tags) {
+        this.tags = tags;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
 
     public Boolean getOpenParallel() {
         return openParallel;
@@ -245,5 +306,77 @@ public class CiTemplateJobVO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Boolean getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
+    }
+
+    public String getTriggerValue() {
+        return triggerValue;
+    }
+
+    public void setTriggerValue(String triggerValue) {
+        this.triggerValue = triggerValue;
+    }
+
+    public String getTriggerType() {
+        return triggerType;
+    }
+
+    public void setTriggerType(String triggerType) {
+        this.triggerType = triggerType;
+    }
+
+    public CiTplChartDeployCfgVO getCiChartDeployConfig() {
+        return ciChartDeployConfig;
+    }
+
+    public void setCiChartDeployConfig(CiTplChartDeployCfgVO ciChartDeployConfig) {
+        this.ciChartDeployConfig = ciChartDeployConfig;
+    }
+
+    public CiTplApiTestInfoCfgVO getDevopsCiApiTestInfoVO() {
+        return devopsCiApiTestInfoVO;
+    }
+
+    public void setDevopsCiApiTestInfoVO(CiTplApiTestInfoCfgVO devopsCiApiTestInfoVO) {
+        this.devopsCiApiTestInfoVO = devopsCiApiTestInfoVO;
+    }
+
+    public CiTplDeployDeployCfgVO getCiDeployDeployCfg() {
+        return ciDeployDeployCfg;
+    }
+
+    public void setCiDeployDeployCfg(CiTplDeployDeployCfgVO ciDeployDeployCfg) {
+        this.ciDeployDeployCfg = ciDeployDeployCfg;
+    }
+
+    public CiTplHostDeployInfoCfgVO getDevopsCiHostDeployInfoVO() {
+        return devopsCiHostDeployInfoVO;
+    }
+
+    public void setDevopsCiHostDeployInfoVO(CiTplHostDeployInfoCfgVO devopsCiHostDeployInfoVO) {
+        this.devopsCiHostDeployInfoVO = devopsCiHostDeployInfoVO;
+    }
+
+    public CiTplAuditVO getCiAuditConfig() {
+        return ciAuditConfig;
+    }
+
+    public void setCiAuditConfig(CiTplAuditVO ciAuditConfig) {
+        this.ciAuditConfig = ciAuditConfig;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
     }
 }

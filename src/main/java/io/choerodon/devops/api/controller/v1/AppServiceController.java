@@ -230,14 +230,6 @@ public class AppServiceController {
         return ResponseEntity.ok(applicationServiceService.update(projectId, appServiceUpdateDTO));
     }
 
-    /**
-     * 项目下启用停用应用服务
-     *
-     * @param projectId    项目id
-     * @param appServiceId 服务id
-     * @param active       启用停用
-     * @return Boolean
-     */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用服务")
     @PutMapping("/{app_service_id}")
@@ -289,7 +281,6 @@ public class AppServiceController {
      *
      * @param projectId 项目id
      * @param isActive  项目是否启用
-     * @param appMarket 服务市场导入
      * @param pageable  分页参数
      * @param params    参数
      * @return Page

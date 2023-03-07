@@ -6,9 +6,12 @@ import static io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConsta
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.kubernetes.client.openapi.JSON;
@@ -22,8 +25,9 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.cd.AppVersionTriggerVO;
+import io.choerodon.devops.api.vo.cd.PipelineJobFinishVO;
 import io.choerodon.devops.api.vo.deploy.DeploySourceVO;
-import io.choerodon.devops.api.vo.test.ApiTestCompleteEventVO;
 import io.choerodon.devops.app.eventhandler.constants.SagaTaskCodeConstants;
 import io.choerodon.devops.app.eventhandler.constants.SagaTopicCodeConstants;
 import io.choerodon.devops.app.eventhandler.payload.*;
@@ -31,17 +35,19 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.app.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.constant.MiscConstants;
 import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.asgard.QuartzTaskDTO;
+import io.choerodon.devops.infra.dto.asgard.ScheduleTaskDTO;
 import io.choerodon.devops.infra.dto.deploy.DevopsHzeroDeployDetailsDTO;
 import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.enums.ClusterOperationStatusEnum;
 import io.choerodon.devops.infra.enums.ClusterOperationTypeEnum;
 import io.choerodon.devops.infra.enums.HzeroDeployDetailsStatusEnum;
 import io.choerodon.devops.infra.enums.UseRecordType;
+import io.choerodon.devops.infra.enums.cd.ScheduleTaskOperationTypeEnum;
 import io.choerodon.devops.infra.enums.deploy.DeployResultEnum;
 import io.choerodon.devops.infra.enums.deploy.RdupmTypeEnum;
-import io.choerodon.devops.infra.enums.test.ApiTestTriggerType;
+import io.choerodon.devops.infra.feign.operator.AsgardServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.WorkFlowServiceOperator;
 import io.choerodon.devops.infra.mapper.DevopsClusterOperationRecordMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
@@ -88,16 +94,8 @@ public class DevopsSagaHandler {
     @Autowired
     @Lazy
     private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
-    @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
-    @Autowired
-    private DevopsCdJobRecordService devopsCdJobRecordService;
-    @Autowired
-    private DevopsCdStageRecordService devopsCdStageRecordService;
-    @Autowired
-    private DevopsCdPipelineRecordService devopsCdPipelineRecordService;
-    @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    //    @Autowired
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsClusterNodeService devopsClusterNodeService;
     @Autowired
@@ -113,13 +111,18 @@ public class DevopsSagaHandler {
     @Autowired
     private DevopsEnvPodService devopsEnvPodService;
     @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
-    @Autowired
     private WorkFlowServiceOperator workFlowServiceOperator;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
     @Autowired
     private DevopsDeployAppCenterService devopsDeployAppCenterService;
+    @Autowired
+    private AsgardServiceClientOperator asgardServiceClientOperator;
+    @Autowired
+    private PipelineService pipelineService;
+
+    @Autowired
+    private PipelineStageRecordService pipelineStageRecordService;
 
     /**
      * devops创建环境
@@ -306,33 +309,33 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    /**
-     * 监听gitlab ci pipeline事件，触发cd逻辑
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
-            description = "gitlab pipeline事件",
-            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
-            maxRetryCount = 0,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            seq = 20)
-    public String gitlabCDPipeline(String data) {
-        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
-        return data;
-    }
+//    /**
+//     * 监听gitlab ci pipeline事件，触发cd逻辑
+//     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_GITLAB_CD_PIPELINE,
+//            description = "gitlab pipeline事件",
+//            sagaCode = DEVOPS_GITLAB_CI_PIPELINE,
+//            maxRetryCount = 0,
+//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+//            seq = 20)
+//    public String gitlabCDPipeline(String data) {
+//        devopsCdPipelineService.handleCiPipelineStatusUpdate(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+//        return data;
+//    }
 
-    /**
-     * 监听gitlab ci pipeline事件，触发cd逻辑
-     */
-    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
-            description = "gitlab pipeline事件",
-            sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
-            maxRetryCount = 0,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            seq = 10)
-    public String trigerSimpleCDPipeline(String data) {
-        devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
-        return data;
-    }
+//    /**
+//     * 监听gitlab ci pipeline事件，触发cd逻辑
+//     */
+//    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_TRIGGER_SIMPLE_CD_PIPELINE,
+//            description = "gitlab pipeline事件",
+//            sagaCode = DEVOPS_CI_PIPELINE_SUCCESS_FOR_SIMPLE_CD,
+//            maxRetryCount = 0,
+//            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+//            seq = 10)
+//    public String trigerSimpleCDPipeline(String data) {
+//        devopsCdPipelineService.trigerSimpleCDPipeline(JsonHelper.unmarshalByJackson(data, PipelineWebHookVO.class));
+//        return data;
+//    }
 
     /**
      * devops创建分支
@@ -643,40 +646,6 @@ public class DevopsSagaHandler {
     }
 
     /**
-     * 创建流水线自动部署实例
-     */
-    @SagaTask(code = SagaTaskCodeConstants.HANDLE_API_TEST_TASK_COMPLETE_EVENT,
-            description = "创建流水线自动部署实例",
-            sagaCode = SagaTopicCodeConstants.API_TEST_TASK_COMPLETE_EVENT,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void handleApiTestTaskCompleteEvent(String data) {
-        ApiTestCompleteEventVO apiTestCompleteEventVO = JsonHelper.unmarshalByJackson(data, ApiTestCompleteEventVO.class);
-        // 只处理流水线触发的api测试任务
-        if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
-            devopsCdPipelineService.handleApiTestTaskCompleteEvent(apiTestCompleteEventVO);
-        }
-    }
-
-    /**
-     * 消费测试套件执行成功的消息
-     */
-    @SagaTask(code = SagaTaskCodeConstants.HANDLE_API_TEST_SUITE_COMPLETE_EVENT,
-            description = "创建流水线自动部署实例",
-            sagaCode = SagaTopicCodeConstants.API_TEST_SUITE_COMPLETE_EVENT,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 0,
-            seq = 1)
-    public void handleApiTestSuiteCompleteEvent(String data) {
-        ApiTestCompleteEventVO apiTestCompleteEventVO = JsonHelper.unmarshalByJackson(data, ApiTestCompleteEventVO.class);
-        // 只处理流水线触发的api测试任务
-        if (ApiTestTriggerType.PIPELINE.getValue().equals(apiTestCompleteEventVO.getTriggerType())) {
-            devopsCdPipelineService.handleApiTestSuiteCompleteEvent(apiTestCompleteEventVO);
-        }
-    }
-
-    /**
      * 接收实例下pod ready的消息，用于通知hzero部署是否需要进行下一个流程
      */
     @SagaTask(code = SagaTaskCodeConstants.DEVOPS_POD_READY_HANDLER_FOR_HZERO_DEPLOY,
@@ -778,4 +747,53 @@ public class DevopsSagaHandler {
 
     }
 
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+            description = "创建、修改、删除流水线定时任务",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_CREATE_PIPELINE_TIME_TASK,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void createOrDeleteTimeTask(String data) {
+
+        List<ScheduleTaskDTO> scheduleTaskDTOList = JsonHelper.unmarshalByJackson(data, new TypeReference<List<ScheduleTaskDTO>>() {
+        });
+
+        ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(scheduleTaskDTOList.get(0).getProjectId());
+        scheduleTaskDTOList.forEach(scheduleTaskDTO -> {
+            QuartzTaskDTO quartzTaskDTO = asgardServiceClientOperator.queryByName(scheduleTaskDTO.getName());
+            List<Long> delTaskIds = new ArrayList<>();
+            if (quartzTaskDTO != null) {
+                delTaskIds.add(quartzTaskDTO.getId());
+                asgardServiceClientOperator.deleteQuartzTask(delTaskIds);
+            }
+
+            if (ScheduleTaskOperationTypeEnum.CREATE.value().equals(scheduleTaskDTO.getOperationType())
+                    || ScheduleTaskOperationTypeEnum.UPDATE.value().equals(scheduleTaskDTO.getOperationType())) {
+                asgardServiceClientOperator.createByServiceCodeAndMethodCode(projectDTO.getOrganizationId(), scheduleTaskDTO);
+            }
+        });
+
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE,
+            description = "应用服务版本生成触发流水线",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_APP_VERSION_TRIGGER_PIPELINE,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void triggerByAppVersion(String data) {
+        AppVersionTriggerVO appVersionTriggerVO = JsonHelper.unmarshalByJackson(data, AppVersionTriggerVO.class);
+        pipelineService.triggerByAppVersion(appVersionTriggerVO.getAppServiceId(), appVersionTriggerVO.getAppVersionId());
+    }
+
+    @SagaTask(code = SagaTaskCodeConstants.DEVOPS_PIPELINE_JOB_FINISH,
+            description = "流水线任务执行结束-更新流水线记录状态",
+            sagaCode = SagaTopicCodeConstants.DEVOPS_PIPELINE_JOB_FINISH,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            maxRetryCount = 0,
+            seq = 1)
+    public void pipelineJobFinish(String data) {
+        PipelineJobFinishVO pipelineJobFinishVO = JsonHelper.unmarshalByJackson(data, PipelineJobFinishVO.class);
+        pipelineStageRecordService.updateStatus(pipelineJobFinishVO.getStageRecordId());
+    }
 }

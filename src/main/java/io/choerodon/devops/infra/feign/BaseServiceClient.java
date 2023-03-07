@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.feign;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -12,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.vo.ExternalTenantVO;
-import io.choerodon.devops.api.vo.OrgAdministratorVO;
 import io.choerodon.devops.api.vo.ResourceLimitVO;
 import io.choerodon.devops.api.vo.RoleAssignmentSearchVO;
 import io.choerodon.devops.infra.dto.iam.*;
@@ -23,7 +20,7 @@ import io.choerodon.devops.infra.feign.fallback.BaseServiceClientFallback;
  * Created by younger on 2018/3/29.
  */
 
-@FeignClient(value = "choerodon-iam", fallback = BaseServiceClientFallback.class)
+@FeignClient(value = "choerodon-base", fallback = BaseServiceClientFallback.class)
 public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/immutable")
     @ApiOperation(value = "按照项目Id查询项目的不可变信息")
@@ -40,14 +37,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/projects/{projectId}/basic_info_with_cache")
     ResponseEntity<ProjectDTO> queryIamProjectBasicInfo(@PathVariable("projectId") Long projectId);
 
-    /**
-     * @param organizationId 组织id
-     * @param withMoreInfo   获取更详细的组织配置信息以及用户信息
-     * @return
-     */
-    @GetMapping(value = "/choerodon/v1/organizations/{organizationId}")
-    ResponseEntity<Tenant> queryOrganizationById(@PathVariable("organizationId") Long organizationId,
-                                                 @RequestParam(value = "with_more_info") Boolean withMoreInfo);
 
     /**
      * @param organizationId 组织id
@@ -56,26 +45,8 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/organizations/{organizationId}/basic_info")
     ResponseEntity<Tenant> queryOrganizationBasicInfoWithCache(@PathVariable("organizationId") Long organizationId);
 
-    /**
-     * 根据id集合查询组织
-     *
-     * @param ids id集合，去重
-     * @return 组织集合
-     */
-    @PostMapping(value = "/choerodon/v1/organizations/ids")
-    ResponseEntity<List<Tenant>> queryOrgByIds(@RequestBody Set<Long> ids);
-
-    @GetMapping(value = "/choerodon/v1/users")
-    ResponseEntity<IamUserDTO> queryByLoginName(@RequestParam("login_name") String loginName);
-
-    @GetMapping(value = "/choerodon/v1/users/{id}/info")
-    ResponseEntity<IamUserDTO> queryById(@PathVariable("id") Long id);
-
-    @PostMapping(value = "/choerodon/v1/users/ids")
-    ResponseEntity<String> listUsersByIds(@RequestBody Long[] ids, @RequestParam(value = "only_enabled") Boolean onlyEnabled);
-
     @GetMapping(value = "/choerodon/v1/projects/{project_id}/users")
-    ResponseEntity<Page<IamUserDTO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+    ResponseEntity<String> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
 
     @PostMapping(value = "/choerodon/v1/users/projects/{project_id}/gitlab_role/users")
     ResponseEntity<List<IamUserDTO>> listUsersWithGitlabLabel(
@@ -107,37 +78,6 @@ public interface BaseServiceClient {
     ResponseEntity<ProjectDTO> queryProjectByCodeAndOrgId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @RequestParam(name = "code") String projectCode);
 
-    /**
-     * 组织下创client
-     *
-     * @param clientVO clientVO
-     * @return 分配结果
-     */
-    @PostMapping(value = "/choerodon/v1/organizations/{organization_id}/clients")
-    ResponseEntity<ClientVO> createClient(@PathVariable("organization_id") Long organizationId,
-                                          @RequestBody @Valid ClientVO clientVO);
-
-    /**
-     * 组织下删除client
-     *
-     * @param organizationId 组织id
-     * @param clientId       clientId
-     * @return 分配结果
-     */
-    @DeleteMapping(value = "/choerodon/v1/organizations/{organization_id}/clients/{client_id}")
-    ResponseEntity deleteClient(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
-
-    /**
-     * 根据集群Id和组织Id查询client
-     *
-     * @param organizationId
-     * @param clientId
-     * @return
-     */
-    @GetMapping(value = "/v1/{organization_id}/clients/{client_id}")
-    ResponseEntity<ClientVO> queryClientBySourceId(@PathVariable("organization_id") Long organizationId, @PathVariable("client_id") Long clientId);
-
-
     @GetMapping(value = "/choerodon/v1/users/{id}/projects/{project_id}/check_is_gitlab_owner")
     ResponseEntity<Boolean> checkIsGitlabProjectOwner(
             @PathVariable("id") Long id,
@@ -159,26 +99,6 @@ public interface BaseServiceClient {
     ResponseEntity<Boolean> checkIsOrgOrProjectGitlabOwner(
             @PathVariable("id") Long id,
             @PathVariable("project_id") Long projectId);
-
-    /**
-     * 判断用户是否是平台root用户
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping(value = "/choerodon/v1/users/{id}/check_is_root")
-    ResponseEntity<Boolean> checkIsRoot(@PathVariable("id") Long id);
-
-    /**
-     * 判段用户是否是组织root用户
-     *
-     * @param organizationId
-     * @param userId
-     * @return
-     */
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/users/{user_id}/check_is_root")
-    ResponseEntity<Boolean> checkIsOrgRoot(@PathVariable(name = "organization_id") Long organizationId,
-                                           @PathVariable(name = "user_id") Long userId);
 
     /**
      * 校验用户是否是项目所有者
@@ -204,12 +124,6 @@ public interface BaseServiceClient {
     @GetMapping(value = "/choerodon/v1/organizations/{tenant_id}/check_is_register")
     ResponseEntity<Boolean> checkOrganizationIsRegister(@PathVariable(name = "tenant_id") Long organizationId);
 
-
-    @GetMapping(value = "/choerodon/v1/organizations/{organization_id}/org_administrator")
-    ResponseEntity<Page<OrgAdministratorVO>> listOrgAdministrator(
-            @PathVariable("organization_id") Long organizationId,
-            @RequestParam("size") Integer size);
-
     /**
      * 查询组织下指定角色的id
      */
@@ -224,13 +138,6 @@ public interface BaseServiceClient {
      */
     @GetMapping("/choerodon/v1/organizations/{organization_id}/resource_limit")
     ResponseEntity<ResourceLimitVO> queryResourceLimit(@PathVariable("organization_id") Long organizationId);
-
-    /**
-     * 根据名称查询客户端
-     */
-    @GetMapping("/choerodon/v1/organizations/{organization_id}/clients/query_by_name")
-    ResponseEntity<ClientVO> queryClientByName(@PathVariable("organization_id") Long organizationId,
-                                               @RequestParam(value = "client_name") String clientName);
 
     /**
      * 批量根据项目id查询用户在这个项目下拥有的角色标签, 如果在某个项目下没有角色, 不会包含该项目的纪录
@@ -254,18 +161,6 @@ public interface BaseServiceClient {
     @GetMapping("/choerodon/v1/projects/{project_id}/all/users")
     ResponseEntity<List<IamUserDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId);
 
-    /**
-     * 查询所有root
-     */
-    @GetMapping("/choerodon/v1/users/root")
-    ResponseEntity<List<IamUserDTO>> queryRoot();
-
-    /**
-     * @return {@link UserCountVO}
-     */
-    @ApiOperation(value = "查询平台中所有用户的数量")
-    @GetMapping(value = "/choerodon/v1/users/all_user_count")
-    ResponseEntity<String> countAllUsers();
 
     /**
      * @return {@link Set<Long>}
@@ -287,21 +182,6 @@ public interface BaseServiceClient {
     @ApiOperation(value = "查询当前组织下用户的项目列表")
     ResponseEntity<List<ProjectDTO>> listProjectsByUserId(@PathVariable(name = "organization_id") Long organizationId,
                                                           @PathVariable(name = "user_id") Long userId);
-
-    @GetMapping("/choerodon/v1/organizations/external/tenants")
-    ResponseEntity<ExternalTenantVO> queryTenantByIdWithExternalInfo(@RequestParam("organization_id") Long organizationId);
-
-    @PostMapping("/choerodon/v1/organizations/saas/tenants")
-    @ApiOperation(value = "查询Saas的组织")
-    ResponseEntity<List<ExternalTenantVO>> querySaasTenants(@RequestBody List<String> saasLevels);
-
-    @GetMapping("/choerodon/v1/organizations/register/tenants")
-    @ApiOperation(value = "查询注册的组织")
-    ResponseEntity<List<ExternalTenantVO>> queryRegisterTenant();
-
-    @ApiOperation(value = "查询用户是不是平台管理员(供市场使用，包含平台管理员，平台维护者，root)")
-    @GetMapping(value = "/choerodon/v1/users/self/is_site_administrator")
-    ResponseEntity<Boolean> platformAdministratorOrAuditor(@RequestParam(value = "user_id") Long userId);
 
     /* 其他 */
     // -------------------------------

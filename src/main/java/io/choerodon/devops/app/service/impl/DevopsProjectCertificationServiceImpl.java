@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -111,16 +113,18 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             throw new CommonException(ERROR_CERTIFICATION_NOT_EXIST, certId);
         }
 
-        Map<String, Object> map = TypeUtil.castMapParams(params);
-        List<String> paramList = TypeUtil.cast(map.get(TypeUtil.PARAMS));
-        Map<String, Object> searchParamsMap = TypeUtil.cast(map.get(TypeUtil.SEARCH_PARAM));
+        Map<String, String> paramMap = JsonHelper.unmarshalByJackson(params, new TypeReference<Map<String, String>>() {
+        });
+
+        String param = paramMap.get("params");
+
         String name = null;
         String code = null;
-        if (!CollectionUtils.isEmpty(searchParamsMap)) {
-            name = TypeUtil.cast(searchParamsMap.get("name"));
-            code = TypeUtil.cast(searchParamsMap.get("code"));
+        if (!CollectionUtils.isEmpty(paramMap)) {
+            name = TypeUtil.cast(paramMap.get("name"));
+            code = TypeUtil.cast(paramMap.get("code"));
         }
-        if (CollectionUtils.isEmpty(paramList) && StringUtils.isEmpty(name) && StringUtils.isEmpty(code)) {
+        if (ObjectUtils.isEmpty(param) && ObjectUtils.isEmpty(name) && ObjectUtils.isEmpty(code)) {
             // 如果不搜索，在数据库中进行分页
             Page<DevopsCertificationProRelationshipDTO> relationPage = PageHelper.doPage(pageable, () -> devopsCertificationProRelationshipService.baseListByCertificationId(certId));
             return ConvertUtils.convertPage(relationPage, permission -> {
@@ -132,10 +136,7 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             ProjectDTO iamProjectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
 
             // 手动查出所有组织下的项目
-            List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(
-                    iamProjectDTO.getOrganizationId(),
-                    name, code,
-                    paramList.get(0));
+            List<ProjectDTO> filteredProjects = baseServiceClientOperator.listIamProjectByOrgId(iamProjectDTO.getOrganizationId(), name, code, param);
 
             // 数据库中的有权限的项目
             List<Long> permissions = devopsCertificationProRelationshipService.baseListByCertificationId(certId)
@@ -193,18 +194,20 @@ public class DevopsProjectCertificationServiceImpl implements DevopsProjectCerti
             FileUtil.saveDataToFile(path, certFileName, projectCertificationVO.getCertValue());
             FileUtil.saveDataToFile(path, keyFileName, projectCertificationVO.getKeyValue());
         }
-        File certPath = new File(path + FILE_SEPARATOR + certFileName);
-        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
-        try {
-            SslUtil.validate(certPath, keyPath);
-        } catch (Exception e) {
-            FileUtil.deleteFile(certPath);
-            FileUtil.deleteFile(keyPath);
-            throw new CommonException(e.getMessage());
-        }
 
-        FileUtil.deleteFile(certPath);
-        FileUtil.deleteFile(keyPath);
+        // 因为放开了证书格式限制，所以不同格式有不同的校验逻辑。但是证书内容都是文本，无法正确判断当前上传的证书是什么格式，所以将证书校验这块交给用户自己来控制
+//        File certPath = new File(path + FILE_SEPARATOR + certFileName);
+//        File keyPath = new File(path + FILE_SEPARATOR + keyFileName);
+//        try {
+//        SslUtil.validate(certPath, keyPath);
+//        } catch (Exception e) {
+//            FileUtil.deleteFile(certPath);
+//            FileUtil.deleteFile(keyPath);
+//            throw new CommonException(e.getMessage());
+//        }
+//
+//        FileUtil.deleteFile(certPath);
+//        FileUtil.deleteFile(keyPath);
 
         if (projectCertificationVO.getType().equals(CREATE)) {
             CertificationDTO certificationDTO = new CertificationDTO();

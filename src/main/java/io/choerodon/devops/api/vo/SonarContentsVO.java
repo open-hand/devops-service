@@ -2,6 +2,8 @@ package io.choerodon.devops.api.vo;
 
 import java.util.List;
 
+import io.choerodon.devops.api.vo.pipeline.DevopsCiSonarQualityGateVO;
+
 /**
  * Created by Sheep on 2019/5/7.
  */
@@ -11,6 +13,7 @@ public class SonarContentsVO {
     private String mode;
     private String parameter;
     private List<SonarContentVO> sonarContents;
+    private DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO;
 
     public String getStatus() {
         return status;
@@ -50,5 +53,13 @@ public class SonarContentsVO {
 
     public void setParameter(String parameter) {
         this.parameter = parameter;
+    }
+
+    public DevopsCiSonarQualityGateVO getDevopsCiSonarQualityGateVO() {
+        return devopsCiSonarQualityGateVO;
+    }
+
+    public void setDevopsCiSonarQualityGateVO(DevopsCiSonarQualityGateVO devopsCiSonarQualityGateVO) {
+        this.devopsCiSonarQualityGateVO = devopsCiSonarQualityGateVO;
     }
 }

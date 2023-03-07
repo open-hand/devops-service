@@ -48,6 +48,9 @@ public class AppServiceInstanceDTO extends AuditDomain {
     @ApiModelProperty("当前实例生效的commandId")
     private Long effectCommandId;
 
+    @ApiModelProperty("replicas生效策略在 values/deployment")
+    private  String replicasStrategy;
+
     @Transient
     private String appServiceName;
     @Transient
@@ -84,6 +87,14 @@ public class AppServiceInstanceDTO extends AuditDomain {
     private String appServiceCode;
     @Transient
     private String applicationType;
+
+    public String getReplicasStrategy() {
+        return replicasStrategy;
+    }
+
+    public void setReplicasStrategy(String replicasStrategy) {
+        this.replicasStrategy = replicasStrategy;
+    }
 
     public String getApplicationType() {
         return applicationType;

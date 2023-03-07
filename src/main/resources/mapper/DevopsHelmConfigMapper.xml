@@ -35,11 +35,11 @@
   </select>
 
     <select id="listHelmConfigWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">
-        SELECT id, name, creation_date
-        FROM devops_helm_config
-        WHERE resource_id = #{resourceId}
-          AND resource_type = #{resourceType}
-      AND deleted=0
+      SELECT *
+      FROM devops_helm_config
+      WHERE resource_id = #{resourceId}
+        AND resource_type = #{resourceType}
+        AND deleted = 0
     </select>
 
   <select id="selectOneWithIdAndName" resultType="io.choerodon.devops.infra.dto.DevopsHelmConfigDTO">

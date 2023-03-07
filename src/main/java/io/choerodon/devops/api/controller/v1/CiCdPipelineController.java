@@ -19,10 +19,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.validator.DevopsCiPipelineAdditionalValidator;
-import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.api.vo.CiCdPipelineRecordVO;
+import io.choerodon.devops.api.vo.CiCdPipelineVO;
+import io.choerodon.devops.api.vo.PipelineFrequencyVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
-import io.choerodon.devops.app.service.CiCdPipelineRecordService;
-import io.choerodon.devops.app.service.DevopsCdJobService;
 import io.choerodon.devops.app.service.DevopsCiPipelineService;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
@@ -45,10 +46,6 @@ public class CiCdPipelineController {
 
     @Autowired
     private DevopsCiPipelineService devopsCiPipelineService;
-    @Autowired
-    private CiCdPipelineRecordService ciCdPipelineRecordService;
-    @Autowired
-    private DevopsCdJobService devopsCdJobService;
 
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线")
@@ -68,7 +65,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> update(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestBody @Valid CiCdPipelineVO ciCdPipelineVO) {
@@ -82,10 +78,10 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineVO> query(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
-            @PathVariable(value = "pipeline_id") Long pipelineId) {
-        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId));
+            @PathVariable(value = "pipeline_id") Long pipelineId,
+            @RequestParam(value = "delete_cd_info", defaultValue = "false") Boolean deleteCdInfo) {
+        return ResponseEntity.ok(devopsCiPipelineService.query(projectId, pipelineId, deleteCdInfo));
     }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
@@ -94,10 +90,20 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineVO> queryBasicInfoById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @ApiParam(value = "流水线Id", required = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.queryById(pipelineId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查询流水线当前gitalb-ci.yaml文件内容")
+    @GetMapping("/{pipeline_id}/gitlab_ci_yaml")
+    public ResponseEntity<String> queryGitlabCiYamlById(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线Id", required = true)
+            @PathVariable(value = "pipeline_id") Long pipelineId) {
+        return ResponseEntity.ok(devopsCiPipelineService.queryGitlabCiYamlById(pipelineId));
     }
 
 
@@ -124,7 +130,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> disablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.disablePipeline(projectId, pipelineId));
     }
@@ -135,7 +140,6 @@ public class CiCdPipelineController {
     public ResponseEntity<CiCdPipelineDTO> enablePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         return ResponseEntity.ok(devopsCiPipelineService.enablePipeline(projectId, pipelineId));
     }
@@ -146,7 +150,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Void> deletePipeline(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId) {
         devopsCiPipelineService.deletePipeline(projectId, pipelineId);
         return ResponseEntity.noContent().build();
@@ -156,7 +159,6 @@ public class CiCdPipelineController {
     @ApiOperation(value = "全新执行GitLab流水线")
     @PostMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity<Boolean> executeNew(
-            @Encrypt(ignoreUserConflict = true)
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -166,20 +168,9 @@ public class CiCdPipelineController {
             @RequestParam(value = "tag", defaultValue = "false") Boolean tag,
             @RequestBody Map<String, String> variables) {
         DevopsCiPipelineAdditionalValidator.additionalCheckVariablesKey(variables);
-        ciCdPipelineRecordService.executeNew(projectId, pipelineId, gitlabProjectId, ref, tag, variables);
+        devopsCiPipelineService.executeNew(projectId, pipelineId, gitlabProjectId, ref, variables);
         return ResponseEntity.noContent().build();
     }
-
-
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "测试主机连接")
-//    @PostMapping(value = "/test_connection")
-//    public ResponseEntity<Boolean> testConnection(
-//            @ApiParam(value = "项目ID", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @RequestBody HostConnectionVO hostConnectionVO) {
-//        return Results.success(devopsCdPipelineRecordService.testConnection(hostConnectionVO));
-//    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "devops图表，查询项目下流水线名称")
@@ -196,7 +187,6 @@ public class CiCdPipelineController {
     public ResponseEntity<PipelineFrequencyVO> listPipelineTrigger(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_id")
             @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
             @ApiParam(value = "start_time")
@@ -216,7 +206,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Page<CiCdPipelineRecordVO>> pagePipelineTrigger(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_id")
             @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
             @ApiParam(value = "start_time")
@@ -234,7 +223,6 @@ public class CiCdPipelineController {
     public ResponseEntity<ExecuteTimeVO> pipelineExecuteTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_ids")
             @RequestBody(required = true) List<Long> pipelineIds,
             @ApiParam(value = "start_time")
@@ -252,7 +240,6 @@ public class CiCdPipelineController {
     public ResponseEntity<Page<CiCdPipelineRecordVO>> pagePipelineExecuteTime(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
             @ApiParam(value = "pipeline_ids")
             @RequestBody(required = true) List<Long> pipelineIds,
             @ApiParam(value = "start_time")
@@ -296,6 +283,14 @@ public class CiCdPipelineController {
         return Results.success(devopsCiPipelineService.listPipelineNameReferenceByConfigId(projectId, taskConfigId));
     }
 
+    @ApiOperation("查询测试套件是否关联流水线")
+    @GetMapping("/suite_related_with_pipeline")
+    public ResponseEntity<Boolean> doesApiTestSuiteRelatedWithPipeline(@ApiParam(value = "项目Id", required = true)
+                                                                       @PathVariable(value = "project_id") Long projectId,
+                                                                       @RequestParam(value = "suite_id") Long suiteId) {
+        return Results.success(devopsCiPipelineService.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId));
+    }
+
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "查询流水线下定义的函数")
@@ -303,19 +298,9 @@ public class CiCdPipelineController {
     public ResponseEntity<List<DevopsCiPipelineFunctionDTO>> listFunctionsByDevopsPipelineId(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @Encrypt(ignoreUserConflict = true, ignoreValue = {"0"})
             @PathVariable(value = "pipeline_id") Long pipelineId,
             @RequestParam(value = "include_default", defaultValue = "false") Boolean includeDefault) {
         return ResponseEntity.ok(devopsCiPipelineService.listFunctionsByDevopsPipelineId(projectId, pipelineId, includeDefault));
-    }
-
-    @ApiOperation(value = "修复数据使用，查询所有apiTest类型的数据", hidden = true)
-    @Permission(level = ResourceLevel.ORGANIZATION, permissionWithin = true)
-    @GetMapping("/api_test/list")
-    public ResponseEntity<List<CdApiTestConfigForSagaVO>> listCdApiTestConfig(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Results.success(devopsCdJobService.listCdApiTestConfig());
     }
 
 }

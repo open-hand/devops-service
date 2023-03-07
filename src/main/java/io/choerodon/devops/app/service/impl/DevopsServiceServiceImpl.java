@@ -1024,10 +1024,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService, ChartReso
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
                     if (t.getNodePort() != null) {
-                        v1ServicePort.setNodePort(t.getNodePort().intValue());
+                        v1ServicePort.setNodePort(t.getNodePort());
                     }
                     if (t.getPort() != null) {
-                        v1ServicePort.setPort(t.getPort().intValue());
+                        v1ServicePort.setPort(t.getPort());
                     }
                     if (t.getTargetPort() != null) {
                         v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));

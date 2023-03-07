@@ -49,7 +49,6 @@ import io.choerodon.devops.infra.enums.host.HostCommandEnum;
 import io.choerodon.devops.infra.enums.host.HostCommandStatusEnum;
 import io.choerodon.devops.infra.enums.host.HostResourceType;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.feign.operator.MarketServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.handler.HostConnectionHandler;
 import io.choerodon.devops.infra.mapper.DevopsDockerInstanceMapper;
@@ -89,15 +88,13 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
     @Autowired
-    private MarketServiceClientOperator marketServiceClientOperator;
-    @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
     @Autowired
     private DevopsHostAppMapper devopsHostAppMapper;
     @Autowired
     private DevopsHostUserPermissionService devopsHostUserPermissionService;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
 
@@ -122,12 +119,14 @@ public class DevopsDockerInstanceServiceImpl implements DevopsDockerInstanceServ
         DeploySourceVO deploySourceVO = initDeploySourceVO(dockerDeployVO, projectDTO);
         //获取部署对象
         DockerDeployDTO dockerDeployDTO = getDockerDeployDTO(dockerDeployVO);
+        dockerDeployDTO.setVersion(devopsHostAppDTO.getVersion());
+        dockerDeployDTO.setAppCode(devopsHostAppDTO.getCode());
 
         // 保存实例的信息
         DevopsDockerInstanceDTO devopsDockerInstanceDTO = createDockerInstanceDTO(dockerDeployVO, devopsHostAppDTO, dockerDeployDTO);
 
         // 如果该应用关联了流水线，同步修改流水线里面的信息
-        devopsCdHostDeployInfoService.updateDockerDeployInfoFromAppCenter(dockerDeployVO);
+        devopsCiHostDeployInfoService.updateDockerDeployInfoFromAppCenter(dockerDeployVO);
 
         //保存命令
         DevopsHostCommandDTO devopsHostCommandDTO = saveDevopsHostCommandDTO(hostDTO, devopsDockerInstanceDTO);

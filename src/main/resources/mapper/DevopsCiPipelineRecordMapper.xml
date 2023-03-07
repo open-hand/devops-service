@@ -2,10 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiPipelineRecordMapper">
 
-    <select id="listByCiPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiPipelineRecordVO">
+    <select id="listByCiPipelineId" resultType="io.choerodon.devops.api.vo.CiPipelineRecordVO">
         SELECT *
         FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.ci_pipeline_id = #{ciPipelineId}
+        order by id desc
     </select>
     <update id="updateStatusByGitlabPipelineId">
         UPDATE devops_ci_pipeline_record
@@ -40,5 +41,65 @@
         SELECT *
         FROM devops_ci_pipeline_record dcpr
         WHERE dcpr.id = #{ciPipelineId}
+    </select>
+    <select id="queryByAppServiceIdAndGitlabPipelineId"
+            resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        SELECT *
+        FROM devops_ci_pipeline_record dcpr
+                 left join devops_cicd_pipeline dcp on dcp.id = dcpr.ci_pipeline_id
+        WHERE dcpr.gitlab_pipeline_id = #{gitlabPipelineId}
+          and dcp.app_service_id = #{appServiceId}
+    </select>
+
+  <select id="queryByIdWithPipelineName" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+    SELECT dcpr.id,
+           dcpr.ci_pipeline_id,
+           dcpr.gitlab_pipeline_id,
+           dcpr.commit_sha,
+           dcpr.gitlab_trigger_ref,
+           dcpr.status,
+           dcpr.trigger_user_id,
+           dcpr.created_date,
+           dcpr.finished_date,
+           dcpr.duration_seconds,
+           dcpr.gitlab_project_id,
+           dcp.name AS pipeline_name
+    FROM devops_ci_pipeline_record dcpr
+           JOIN devops_cicd_pipeline dcp ON dcp.id = dcpr.ci_pipeline_id
+    WHERE dcpr.id = #{ciPipelineRecordId}
+  </select>
+
+    <select id="listByPipelineId" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select
+        dcpr.*
+        from devops_ci_pipeline_record dcpr
+        where dcpr.ci_pipeline_id = #{pipelineId}
+        <if test="startTime != null">
+            AND dcpr.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND dcpr.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        order by dcpr.creation_date DESC
+    </select>
+
+    <select id="listByPipelineIds" resultType="io.choerodon.devops.infra.dto.DevopsCiPipelineRecordDTO">
+        select
+        dcpr.*
+        from devops_ci_pipeline_record dcpr
+        where 1=1
+        <if test="pipelineIds != null">
+            AND dcpr.ci_pipeline_id in
+            <foreach collection="pipelineIds" item="pipelineId" open="(" close=")" separator=",">
+                #{pipelineId}
+            </foreach>
+        </if>
+        <if test="startTime != null">
+            AND dcpr.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND dcpr.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        order by dcpr.creation_date DESC
     </select>
 </mapper>

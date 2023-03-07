@@ -13,8 +13,6 @@ import io.choerodon.devops.app.service.DevopsCiDockerBuildConfigService;
 /**
  * 根据配置注入不同的bean
  *
- * @author lihao
- * @date 2019-09-17 09:16
  */
 @Configuration
 public class PipelineConfiguration {

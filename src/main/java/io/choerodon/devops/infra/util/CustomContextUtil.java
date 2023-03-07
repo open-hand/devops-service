@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.concurrent.Callable;
 import javax.annotation.Nullable;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -75,7 +76,7 @@ public class CustomContextUtil {
             oAuth2AuthenticationDetails.setDecodedDetails(customUserDetails);
             authentication.setDetails(oAuth2AuthenticationDetails);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
+            ZKnowDetailsHelper.setRequestSource(customUserDetails, ZKnowDetailsHelper.VALUE_CHOERODON);
         } catch (Exception e) {
             throw new CommonException(DEVOPS_CONTEXT_SET_ERROR, e);
         }

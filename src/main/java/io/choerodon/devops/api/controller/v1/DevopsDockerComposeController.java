@@ -54,7 +54,7 @@ public class DevopsDockerComposeController {
             @ApiParam(value = "docker_compose应用Id", required = true)
             @PathVariable(value = "id") Long id,
             @RequestBody @Validated(UpdateGroup.class) DockerComposeDeployVO dockerComposeDeployVO) {
-        dockerComposeService.updateDockerComposeApp(projectId, id, null, dockerComposeDeployVO, false);
+        dockerComposeService.updateDockerComposeApp(projectId, id, null, null, dockerComposeDeployVO, false);
         return ResponseEntity.noContent().build();
     }
 

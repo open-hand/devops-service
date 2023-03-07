@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -40,6 +41,12 @@ public class RetrofitCallExceptionParse {
     public static <T> T executeCall(Call<ResponseBody> call, String exceptionMessage, Class<T> clazz) {
         String bodyStr = parseException(call, exceptionMessage);
         try {
+            if (ObjectUtils.isEmpty(bodyStr)) {
+                return null;
+            }
+            if (clazz.getName().equals(Void.class.getName())) {
+                return null;
+            }
             return gson.fromJson(bodyStr, clazz);
         } catch (Exception e) {
             parseCommonException(bodyStr, exceptionMessage);
@@ -88,6 +95,9 @@ public class RetrofitCallExceptionParse {
             if (execute == null) {
                 logger.info("::Retrofit::response is null");
                 throw new CommonException("devops.retrofit.execute.response.is.empty");
+            }
+            if (execute.raw().code() == HttpStatus.NO_CONTENT.value()) {
+                return null;
             }
             if (!execute.isSuccessful()) {
                 logger.info("::Retrofit::unsuccessful");

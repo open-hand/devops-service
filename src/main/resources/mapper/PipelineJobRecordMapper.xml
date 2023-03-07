@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineJobRecordMapper">
+    <delete id="cancelPipelineJobs">
+        update
+            devops_pipeline_job_record
+        set status       = 'canceled',
+            started_date = null
+        where pipeline_record_id = #{pipelineRecordId}
+          and (status = 'created' or status = 'pending')
+    </delete>
+
+    <select id="listPendingJobs" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.status = 'pending'
+        order by id asc
+        limit #{number}
+    </select>
+    <select id="listCreatedByStageIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.stage_record_id = #{stageRecordId}
+          and dpjr.status = 'created'
+            for update
+    </select>
+    <select id="listCreatedAndPendingJobsForUpdate"
+            resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.pipeline_record_id = #{pipelineRecordId}
+          and (dpjr.status = 'created' or dpjr.status = 'pending')
+            for
+        update
+    </select>
+    <select id="listByStageRecordIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.stage_record_id = #{stageRecordId}
+            for
+        update
+    </select>
+    <select id="listByStatusForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where dpjr.pipeline_record_id = #{pipelineRecordId}
+        and dpjr.status in
+        <foreach collection="statusList" item="status" open="(" separator="," close=")">
+            #{status}
+        </foreach>
+        for update
+    </select>
+    <select id="listRunningTaskBeforeDate" resultType="io.choerodon.devops.infra.dto.PipelineJobRecordDTO">
+        select *
+        from devops_pipeline_job_record dpjr
+        where status = 'running'
+          and started_date <![CDATA[<]]> #{date};
+    </select>
+
+    <update id="updatePendingJobToRunning">
+        update devops_pipeline_job_record
+        set status = 'running'
+        where id = #{id}
+          and status = 'pending'
+    </update>
+    <update id="retryPipelineJobs">
+        update devops_pipeline_job_record
+        set status       = 'created',
+            started_date = null,
+            finished_date= null
+        where pipeline_record_id = #{pipelineRecordId}
+          and (status = 'canceled' or status = 'failed')
+    </update>
+</mapper>

@@ -14,9 +14,20 @@ public class AppServiceMsgVO {
     @ApiModelProperty("该应用服务下是否存在ci流水线")
     private Boolean checkCi;
 
+    @ApiModelProperty("该应用服务下是否存在持续部署流程")
+    private Boolean checkCd;
+
     public AppServiceMsgVO(Boolean checkResources, Boolean checkRule) {
         this.checkResources = checkResources;
         this.checkRule = checkRule;
+    }
+
+    public Boolean getCheckCd() {
+        return checkCd;
+    }
+
+    public void setCheckCd(Boolean checkCd) {
+        this.checkCd = checkCd;
     }
 
     public Boolean getCheckResources() {

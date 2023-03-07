@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.vo.deploy;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * 〈功能简述〉
  * 〈〉
@@ -13,6 +15,25 @@ public class DockerComposeDeployDTO {
     private String value;
     private String runCommand;
     private Boolean downFlag;
+    private String appCode;
+    @ApiModelProperty("应用版本")
+    private String version;
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public DockerComposeDeployDTO() {
     }
@@ -24,12 +45,15 @@ public class DockerComposeDeployDTO {
         this.runCommand = runCommand;
     }
 
-    public DockerComposeDeployDTO(String hostId, String instanceId, String value, String runCommand, Boolean downFlag) {
+    public DockerComposeDeployDTO(String hostId, String appCode, String appVersion, String instanceId, String value, String runCommand, Boolean downFlag) {
         this.hostId = hostId;
+        this.appCode = appCode;
+        this.version = appVersion;
         this.instanceId = instanceId;
         this.value = value;
         this.runCommand = runCommand;
         this.downFlag = downFlag;
+
     }
 
     public Boolean getDownFlag() {

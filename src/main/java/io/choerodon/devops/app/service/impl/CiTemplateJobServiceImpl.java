@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +12,8 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.template.CiTemplateJobVO;
 import io.choerodon.devops.api.vo.template.CiTemplateStepVO;
+import io.choerodon.devops.app.eventhandler.pipeline.job.AbstractJobHandler;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.eventhandler.pipeline.step.AbstractDevopsCiStepHandler;
 import io.choerodon.devops.app.service.CiTemplateJobGroupService;
 import io.choerodon.devops.app.service.CiTemplateJobService;
@@ -46,27 +45,30 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
     private CiTemplateStepService ciTemplateStepService;
     @Autowired
     private BaseServiceClientOperator baseServiceClientOperator;
+    @Autowired
+    private JobOperator jobOperator;
 
 
     @Override
     public List<CiTemplateJobVO> listByStageIds(Set<Long> stageIds) {
+        //这个方法查询可见的不可见的任务
         return ciTemplateJobmapper.listByStageIds(stageIds);
     }
 
-    @Override
-    public List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId) {
-        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
-
-        List<CiTemplateJobDTO> ciTemplateJobDTOList = ciTemplateJobmapper.listByStageId(stageId);
-
-        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOList, CiTemplateJobVO.class);
-        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
-            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = ciTemplateJobGroupService.baseQuery(ciTemplateJobVO.getGroupId());
-            ciTemplateJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
-        });
-
-        return ciTemplateJobVOS;
-    }
+//    @Override
+//    public List<CiTemplateJobVO> listByStageIdWithGroupInfo(Long stageId) {
+//        Assert.notNull(stageId, PipelineCheckConstant.DEVOPS_STAGE_ID_IS_NULL);
+//
+//        List<CiTemplateJobDTO> ciTemplateJobDTOList = ciTemplateJobmapper.listByStageId(stageId);
+//
+//        List<CiTemplateJobVO> ciTemplateJobVOS = ConvertUtils.convertList(ciTemplateJobDTOList, CiTemplateJobVO.class);
+//        ciTemplateJobVOS.forEach(ciTemplateJobVO -> {
+//            CiTemplateJobGroupDTO ciTemplateJobGroupDTO = ciTemplateJobGroupService.baseQuery(ciTemplateJobVO.getGroupId());
+//            ciTemplateJobVO.setCiTemplateJobGroupDTO(ciTemplateJobGroupDTO);
+//        });
+//
+//        return ciTemplateJobVOS;
+//    }
 
     @Override
     public List<DevopsCiJobVO> listJobsByGroupId(Long projectId, Long groupId) {
@@ -87,17 +89,25 @@ public class CiTemplateJobServiceImpl implements CiTemplateJobService {
         ciTemplateJobVOList.forEach(templateJobVO -> {
             DevopsCiJobVO devopsCiJobVO = ConvertUtils.convertObject(templateJobVO, DevopsCiJobVO.class);
             devopsCiJobVO.setTriggerType(CiTriggerType.REFS.value());
+            // 填充任务配置
+            AbstractJobHandler handler = jobOperator.getHandler(templateJobVO.getType());
+            if (handler != null) {
+                handler.fillJobTemplateConfigInfo(devopsCiJobVO);
+            }
             // 填充步骤信息
             List<CiTemplateStepVO> ciTemplateStepVOList = jobStepsMap.get(templateJobVO.getId());
             if (!CollectionUtils.isEmpty(ciTemplateStepVOList)) {
                 List<DevopsCiStepVO> devopsCiStepVOList = new ArrayList<>();
-                ciTemplateStepVOList.forEach(ciTemplateStepVO -> {
-                    // 添加步骤关联的配置信息
-                    DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
-                    AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
-                    stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
-                    devopsCiStepVOList.add(devopsCiStepVO);
-                });
+                ciTemplateStepVOList
+                        .stream()
+                        .sorted(Comparator.comparing(CiTemplateStepVO::getSequence))
+                        .forEach(ciTemplateStepVO -> {
+                            // 添加步骤关联的配置信息
+                            DevopsCiStepVO devopsCiStepVO = ConvertUtils.convertObject(ciTemplateStepVO, DevopsCiStepVO.class);
+                            AbstractDevopsCiStepHandler stepHandler = devopsCiStepOperator.getHandlerOrThrowE(devopsCiStepVO.getType());
+                            stepHandler.fillTemplateStepConfigInfo(devopsCiStepVO);
+                            devopsCiStepVOList.add(devopsCiStepVO);
+                        });
                 devopsCiJobVO.setDevopsCiStepVOList(devopsCiStepVOList);
             }
             devopsCiJobVOList.add(devopsCiJobVO);

@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dto;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -72,6 +73,15 @@ public class CiTemplateSonarDTO extends AuditDomain {
 
     @ApiModelProperty(value = "流水线模板步骤Id")
     private Long ciTemplateStepId;
+
+    @ApiModelProperty("SonarQualityGate")
+    @Transient
+    private DevopsCiTplSonarQualityGateDTO devopsCiSonarQualityGateVO;
+
+    @ApiModelProperty("保存maven相关信息")
+    @Transient
+    private CiTemplateMavenBuildDTO mavenBuildConfig;
+
 
 
     public String getConfigType() {
@@ -161,6 +171,22 @@ public class CiTemplateSonarDTO extends AuditDomain {
 
     public void setCiTemplateStepId(Long ciTemplateStepId) {
         this.ciTemplateStepId = ciTemplateStepId;
+    }
+
+    public DevopsCiTplSonarQualityGateDTO getDevopsCiSonarQualityGateVO() {
+        return devopsCiSonarQualityGateVO;
+    }
+
+    public void setDevopsCiSonarQualityGateVO(DevopsCiTplSonarQualityGateDTO devopsCiSonarQualityGateVO) {
+        this.devopsCiSonarQualityGateVO = devopsCiSonarQualityGateVO;
+    }
+
+    public CiTemplateMavenBuildDTO getMavenBuildConfig() {
+        return mavenBuildConfig;
+    }
+
+    public void setMavenBuildConfig(CiTemplateMavenBuildDTO mavenBuildConfig) {
+        this.mavenBuildConfig = mavenBuildConfig;
     }
 }
 

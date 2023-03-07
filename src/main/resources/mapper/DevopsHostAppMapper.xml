@@ -1,310 +1,308 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsHostAppMapper">
+  <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppDTO">
+    select *
+    from devops_host_app dha
+    where dha.host_id = #{hostId}
+    order by dha.creation_date desc
+  </select>
 
-    <select id="listByHostId" resultType="io.choerodon.devops.infra.dto.DevopsHostAppDTO">
-        select *
-        from devops_host_app dha
-        where dha.host_id = #{hostId}
-        order by dha.creation_date desc
-    </select>
+  <select id="listByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    SELECT
+    tmp.*
+    FROM
+    (
+    SELECT
+    dha.id, dha.project_id, dha.host_id, dha.name, dha.code, dha.operation_type, dha.rdupm_type,
+    dha.object_version_number, dha.created_by, dha.creation_date, dha.last_updated_by, dha.last_update_date,
+    dh.NAME AS host_name,
+    dhai.app_id,
+    dhai.source_type,
+    dhai.source_config,
+    dhai.pre_command,
+    dhai.run_command,
+    dhai.post_command,
+    dhai.kill_command,
+    dhai.health_prob,
+    dhai.ready,
+    dhai.group_id,
+    dhai.artifact_id,
+    dhai.version,
+    dhai.id AS instanceId,
+    null AS status
+    FROM
+    devops_host_app dha
+    LEFT JOIN devops_host dh ON dh.id = dha.host_id
+    LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
+    <where>
+      dha.project_id = #{projectId}
+      AND rdupm_type != 'docker'
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
+    UNION
+    SELECT
+    dha.*,
+    dh.NAME AS host_name,
+    ddi.app_id,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    ddi.id AS instanceId,
+    ddi.status AS status
+    FROM
+    devops_host_app dha
+    LEFT JOIN devops_host dh ON dh.id = dha.host_id
+    LEFT JOIN devops_docker_instance ddi ON ddi.app_id = dha.id
+    <where>
+      dha.project_id = #{projectId}
+      AND rdupm_type = 'docker'
+      AND ddi.id IN (SELECT
+      MAX( ddix.id )
+      FROM
+      devops_docker_instance ddix
+      WHERE
+      ddix.app_id = dha.id)
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
+    ) tmp
+    ORDER BY
+    tmp.id DESC
+  </select>
 
-    <select id="listByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+  <delete id="deleteByHostId">
+    DELETE FROM devops_host_app WHERE host_id = #{hostId}
+  </delete>
 
-        SELECT
-        tmp.*
-        FROM
-        (
-        SELECT
-        dha.id, dha.project_id, dha.host_id, dha.name, dha.code, dha.operation_type, dha.rdupm_type,
-        dha.object_version_number, dha.created_by, dha.creation_date, dha.last_updated_by, dha.last_update_date,
-        dh.NAME AS host_name,
-        dhai.app_id,
-        dhai.source_type,
-        dhai.source_config,
-        dhai.pre_command,
-        dhai.run_command,
-        dhai.post_command,
-        dhai.kill_command,
-        dhai.health_prob,
-        dhai.ready,
-           dhai.group_id,
-           dhai.artifact_id,
-           dhai.version,
-           dhai.id AS instanceId,
-           null AS status
-        FROM
-          devops_host_app dha
-        LEFT JOIN devops_host dh ON dh.id = dha.host_id
-        LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
-        <where>
-            dha.project_id = #{projectId}
-            AND rdupm_type != 'docker'
-            <if test="hostId != null">
-                and dha.host_id = #{hostId}
-            </if>
-            <if test="operationType != null">
-                and dha.operation_type = #{operationType}
-            </if>
-            <if test="rdupmType != null">
-                and dha.rdupm_type = #{rdupmType}
-            </if>
-            <if test="params != null">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-        </where>
-        UNION
-        SELECT
-           dha.*,
-           dh.NAME AS host_name,
-           ddi.app_id,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           NULL,
-           ddi.id AS instanceId,
-           ddi.status AS status
-        FROM
-           devops_host_app dha
-        LEFT JOIN devops_host dh ON dh.id = dha.host_id
-        LEFT JOIN devops_docker_instance ddi ON ddi.app_id = dha.id
-            <where>
-                dha.project_id = #{projectId}
-                AND rdupm_type = 'docker'
-                AND ddi.id IN (SELECT
-                MAX( ddix.id )
-                FROM
-                devops_docker_instance ddix
-                WHERE
-                ddix.app_id = dha.id)
-                <if test="hostId != null">
-                    and dha.host_id = #{hostId}
-                </if>
-                <if test="operationType != null">
-                    and dha.operation_type = #{operationType}
-                </if>
-                <if test="rdupmType != null">
-                    and dha.rdupm_type = #{rdupmType}
-                </if>
-                <if test="params != null">
-                    and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-                </if>
-            </where>
-        ) tmp
-        ORDER BY
-        tmp.id DESC
+  <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    SELECT dha.id,
+    dha.project_id,
+    dha.host_id,
+    dha.name,
+    dha.code,
+    dha.operation_type,
+    dha.rdupm_type,
+    dha.object_version_number,
+    dha.created_by,
+    dha.creation_date,
+    dha.last_updated_by,
+    dha.last_update_date,
+    dha.effect_value_id,
+    dhai.pre_command,
+    dhai.run_command,
+    dhai.post_command,
+    dhai.kill_command,
+    dhai.health_prob,
+    dhai.ready,
+    dh.name AS host_name
+    FROM devops_host_app dha
+    JOIN devops_host dh ON dh.id = dha.host_id
+    LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
+    WHERE dha.id = #{id}
+  </select>
 
+  <select id="listOwnedByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    SELECT
+    tmp.*
+    FROM (
 
+    select dha.*,
+    dh.name as host_name,
+    dhai.app_id,
+    dhai.source_type,
+    dhai.source_config,
+    dhai.pre_command,
+    dhai.run_command,
+    dhai.post_command,
+    dhai.kill_command,
+    dhai.health_prob,
+    dhai.ready,
+    dhai.group_id,
+    dhai.artifact_id,
+    dhai.version,
+    dhai.id as instanceId,
+    null as status
+    from devops_host_app dha
+    left join devops_host dh ON dh.id = dha.host_id
+    left join devops_host_user_permission dhup ON dhup.host_id = dh.id
+    left join devops_host_app_instance dhai on dhai.app_id = dha.id
+    <where>
+      dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
+      AND rdupm_type != 'docker'
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
+    UNION
+    select dha.*,
+    dh.name as host_name,
+    ddi.app_id,
+    ddi.source_type,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    ddi.status AS status
+    from devops_host_app dha
+    left join devops_host dh ON dh.id = dha.host_id
+    left join devops_host_user_permission dhup ON dhup.host_id = dh.id
+    LEFT JOIN devops_docker_instance ddi ON ddi.app_id = dha.id
+    <where>
+      dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
+      AND rdupm_type = 'docker'
+      AND ddi.id IN (SELECT
+      MAX( ddix.id )
+      FROM
+      devops_docker_instance ddix
+      WHERE
+      ddix.app_id = dha.id)
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
 
-    </select>
+    ) tmp
+    order by tmp.id desc
+  </select>
 
-    <delete id="deleteByHostId">
-        DELETE FROM devops_host_app WHERE host_id = #{hostId}
-    </delete>
+  <select id="checkNameUnique" resultType="java.lang.Boolean">
+    SELECT count(*) = 0
+    FROM devops_host_app dha
+    WHERE dha.project_id = #{projectId}
+    and dha.host_id = #{hostId}
+    AND dha.name = #{name}
+    <if test="appId != null">
+      AND dha.id != #{appId}
+    </if>
+  </select>
 
-    <select id="queryAppById" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        SELECT dha.id,
-               dha.project_id,
-               dha.host_id,
-               dha.name,
-               dha.code,
-               dha.operation_type,
-               dha.rdupm_type,
-               dha.object_version_number,
-               dha.created_by,
-               dha.creation_date,
-               dha.last_updated_by,
-               dha.last_update_date,
-               dha.effect_value_id,
-               dhai.pre_command,
-               dhai.run_command,
-               dhai.post_command,
-               dhai.kill_command,
-               dhai.health_prob,
-               dh.name AS host_name
-        FROM devops_host_app dha
-                     JOIN devops_host dh ON dh.id = dha.host_id
-                     LEFT JOIN devops_host_app_instance dhai ON dhai.app_id = dha.id
-        WHERE dha.id = #{id}
-    </select>
-
-    <select id="listOwnedByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        SELECT
-        tmp.*
-        FROM (
-
-        select dha.*,
-        dh.name as host_name,
-        dhai.app_id,
-        dhai.source_type,
-        dhai.source_config,
-        dhai.pre_command,
-        dhai.run_command,
-        dhai.post_command,
-        dhai.kill_command,
-        dhai.health_prob,
-        dhai.ready,
-        dhai.group_id,
-        dhai.artifact_id,
-        dhai.version,
-        dhai.id as instanceId,
-        null as status
-        from devops_host_app dha
-        left join devops_host dh ON dh.id = dha.host_id
-        left join devops_host_user_permission dhup ON dhup.host_id = dh.id
-        left join devops_host_app_instance dhai on dhai.app_id = dha.id
-        <where>
-            dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
-            AND rdupm_type != 'docker'
-            <if test="hostId != null">
-                and dha.host_id = #{hostId}
-            </if>
-            <if test="operationType != null">
-                and dha.operation_type = #{operationType}
-            </if>
-            <if test="rdupmType != null">
-                and dha.rdupm_type = #{rdupmType}
-            </if>
-            <if test="params != null">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-        </where>
-        UNION
-        select dha.*,
-        dh.name as host_name,
-        ddi.app_id,
-        ddi.source_type,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
-        ddi.status AS status
-        from devops_host_app dha
-        left join devops_host dh ON dh.id = dha.host_id
-        left join devops_host_user_permission dhup ON dhup.host_id = dh.id
-        LEFT JOIN devops_docker_instance ddi ON ddi.app_id = dha.id
-        <where>
-            dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
-            AND rdupm_type = 'docker'
-            AND ddi.id IN (SELECT
-            MAX( ddix.id )
-            FROM
-            devops_docker_instance ddix
-            WHERE
-            ddix.app_id = dha.id)
-            <if test="hostId != null">
-                and dha.host_id = #{hostId}
-            </if>
-            <if test="operationType != null">
-                and dha.operation_type = #{operationType}
-            </if>
-            <if test="rdupmType != null">
-                and dha.rdupm_type = #{rdupmType}
-            </if>
-            <if test="params != null">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-        </where>
-
-        ) tmp
-        order by tmp.id desc
-    </select>
-
-    <select id="checkNameUnique" resultType="java.lang.Boolean">
-        SELECT count(*) = 0
-        FROM devops_host_app dha
-        WHERE dha.project_id = #{projectId}
-        AND dha.name = #{name}
-        <if test="appId != null">
-            AND dha.id != #{appId}
-        </if>
-    </select>
-
-    <select id="checkCodeUnique" resultType="java.lang.Boolean">
-        SELECT count(*) = 0
-        FROM devops_host_app dha
-        WHERE dha.project_id = #{projectId}
-        AND dha.code = #{code, jdbcType=VARCHAR}
-        <if test="appId != null">
-            AND dha.id != #{appId}
-        </if>
-    </select>
-    <select id="listBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        SELECT
-        dha.*,
-        dh.NAME AS host_name
-        FROM
-        devops_host_app dha
-        LEFT JOIN devops_host dh ON dh.id = dha.host_id
-        <where>
-            dha.project_id = #{projectId}
-            <if test="hostId != null">
-                and dha.host_id = #{hostId}
-            </if>
-            <if test="operationType != null">
-                and dha.operation_type = #{operationType}
-            </if>
-            <if test="rdupmType != null">
-                and dha.rdupm_type = #{rdupmType}
-            </if>
-            <if test="params != null">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test="name != null and name != ''">
-                and dha.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-            </if>
-        </where>
-        <if test="appId == null">
-            order by dha.id desc
-        </if>
-        <if test="appId != null">
-            order by dha.id = #{appId} desc, dha.id desc
-        </if>
-    </select>
-    <select id="listOwnedBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
-        select dha.*,
-        dh.name as host_name
-        from devops_host_app dha
-        left join devops_host dh ON dh.id = dha.host_id
-        left join devops_host_user_permission dhup ON dhup.host_id = dh.id
-        <where>
-            dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
-            <if test="hostId != null">
-                and dha.host_id = #{hostId}
-            </if>
-            <if test="operationType != null">
-                and dha.operation_type = #{operationType}
-            </if>
-            <if test="rdupmType != null">
-                and dha.rdupm_type = #{rdupmType}
-            </if>
-            <if test="params != null">
-                and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
-            </if>
-            <if test="name != null and name != ''">
-                and dha.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-            </if>
-        </where>
-        GROUP BY dha.id
-        <if test="appId == null">
-            order by dha.id desc
-        </if>
-        <if test="appId != null">
-            order by dha.id = #{appId} desc, dha.id desc
-        </if>
-    </select>
+  <select id="checkCodeUnique" resultType="java.lang.Boolean">
+    SELECT count(*) = 0
+    FROM devops_host_app dha
+    WHERE dha.project_id = #{projectId}
+    and dha.host_id = #{hostId}
+    AND dha.code = #{code, jdbcType=VARCHAR}
+    <if test="appId != null">
+      AND dha.id != #{appId}
+    </if>
+  </select>
+  <select id="listBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    SELECT
+    dha.*,
+    dh.NAME AS host_name
+    FROM
+    devops_host_app dha
+    LEFT JOIN devops_host dh ON dh.id = dha.host_id
+    <where>
+      dha.project_id = #{projectId}
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+      <if test="name != null and name != ''">
+        and dha.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
+    <if test="appId == null">
+      order by dha.id desc
+    </if>
+    <if test="appId != null">
+      order by dha.id = #{appId} desc, dha.id desc
+    </if>
+  </select>
+  <select id="listOwnedBasicInfoByOptions" resultType="io.choerodon.devops.api.vo.host.DevopsHostAppVO">
+    select dha.*,
+    dh.name as host_name
+    from devops_host_app dha
+    left join devops_host dh ON dh.id = dha.host_id
+    left join devops_host_user_permission dhup ON dhup.host_id = dh.id
+    <where>
+      dha.project_id = #{projectId} AND dhup.iam_user_id = #{userId}
+      <if test="hostId != null">
+        and dha.host_id = #{hostId}
+      </if>
+      <if test="operationType != null">
+        and dha.operation_type = #{operationType}
+      </if>
+      <if test="rdupmType != null">
+        and dha.rdupm_type = #{rdupmType}
+      </if>
+      <if test="params != null">
+        and dha.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}),'%')
+      </if>
+      <if test="name != null and name != ''">
+        and dha.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+      </if>
+    </where>
+    GROUP BY dha.id
+    <if test="appId == null">
+      order by dha.id desc
+    </if>
+    <if test="appId != null">
+      order by dha.id = #{appId} desc, dha.id desc
+    </if>
+  </select>
 </mapper>

@@ -10,7 +10,6 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
 
-import io.choerodon.devops.infra.constant.GitOpsConstants;
 import io.choerodon.devops.infra.dto.gitlab.ci.CiJob;
 import io.choerodon.devops.infra.dto.gitlab.ci.GitlabCi;
 import io.choerodon.devops.infra.dto.gitlab.ci.OnlyExceptPolicy;
@@ -170,8 +169,8 @@ public class GitlabCiUtil {
     }
 
 
-    public static String renderSonarScannerCommandForToken(String sonarUrl, String token, String sources) {
-        return String.format(SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE, sonarUrl, token, sources);
+    public static String renderSonarScannerCommandForToken(String sonarUrl, String token, String sources, Boolean blockAfterQualityGateFail) {
+        return String.format(SONAR_TOKEN_SONAR_SCANNNER_TEMPLATE, sonarUrl, token, sources, blockAfterQualityGateFail);
     }
 
     /**
@@ -186,8 +185,8 @@ public class GitlabCiUtil {
         return String.format(SONAR_USER_PSW_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, skipTests);
     }
 
-    public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources) {
-        return String.format(SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources);
+    public static String renderSonarScannerCommand(String sonarUrl, String sonarUsername, String sonarPassword, String sources, Boolean blockAfterQualityGateFail) {
+        return String.format(SONAR_USER_PSW_SONAR_SCANNNER_TEMPLATE, sonarUrl, sonarUsername, sonarPassword, sources, blockAfterQualityGateFail);
     }
 
     /**
@@ -198,15 +197,6 @@ public class GitlabCiUtil {
     public static String downloadMavenSettings(Long projectId, Long mvnSettingsId) {
         String rawCommand = "downloadSettingsFileByUId %s %s";
         return String.format(rawCommand, projectId, mvnSettingsId);
-    }
-
-    /**
-     * 生成chart build步骤的script
-     *
-     * @return 脚本
-     */
-    public static String generateChartBuildScripts() {
-        return GitOpsConstants.CHART_BUILD;
     }
 
     public static String generateCreateCacheDir(String cacheDir) {

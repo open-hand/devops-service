@@ -723,6 +723,14 @@ public interface GitlabServiceClient {
             @RequestParam(value = "username") String username,
             @RequestParam(value = "password") String password);
 
+    @ApiOperation(value = "查询项目下某个Job的具体信息")
+    @GetMapping(value = "/v1/projects/{projectId}/jobs/{jobId}")
+    ResponseEntity<JobDTO> queryJob(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable Integer projectId,
+            @ApiParam(value = "jobId", required = true)
+            @PathVariable Integer jobId);
+
     /**
      * 列举出gitlab项目组的ci variable
      *
@@ -1074,4 +1082,11 @@ public interface GitlabServiceClient {
             @RequestParam("userId") Integer userId,
             @PathVariable(value = "hook_id") Integer hookId,
             @RequestBody ProjectHookDTO projectHookDTO);
+
+    @GetMapping("/v1/projects/{projectId}/merge_requests")
+    List<MergeRequestDTO> listMergeRequest(
+            @ApiParam(value = "工程id", required = true)
+            @PathVariable Integer projectId,
+            @RequestParam("state") String state
+    );
 }

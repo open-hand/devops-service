@@ -19,7 +19,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_variable.groovy') {
             }
 
 
-
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
@@ -28,5 +27,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_variable.groovy') {
 
         }
 
+    }
+    changeSet(author: 'wanghao', id: '2023-02-15-updateDataType') {
+        modifyDataType(tableName: 'devops_ci_template_variable', columnName: 'variable_value', newDataType: 'TEXT')
     }
 }

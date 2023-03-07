@@ -12,6 +12,7 @@ public class PipelineConstants {
     public static final String DEVOPS_CI_MAVEN_REPOSITORY_TYPE = "devops.ci.maven.repository.type";
 
     public static final String DEVOPS_UPDATE_CI_JOB_RECORD = "devops.update.ci.job.record";
+    public static final String DEVOPS_CI_JOB_RECORD_QUERY = "devops.ci.job.record.query";
     public static final String DEVOPS_CREATE_OR_UPDATE_GITLAB_CI = "devops.create.or.update.gitlab.ci";
 
     public static final String DEVOPS_SAVE_PIPELINE_BRANCH_REL = "devops.save.pipeline.branch.rel";
@@ -23,6 +24,8 @@ public class PipelineConstants {
     private PipelineConstants() {
 
     }
+
+    public static final Integer GITLAB_ADMIN_ID = 1;
 
     public static final Long DEFAULT_CI_CD_PIPELINE_RECORD_ID = 0L;
 

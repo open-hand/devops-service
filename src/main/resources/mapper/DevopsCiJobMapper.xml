@@ -2,12 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiJobMapper">
 
-    <select id="listOldDataByType" resultType="io.choerodon.devops.infra.dto.DevopsCiJobDTO">
-        select *
-        from devops_ci_job dcj
-        where dcj.old_type = #{type}
-          and dcj.type is null
-    </select>
     <select id="listCustomByPipelineId" resultType="io.choerodon.devops.api.vo.DevopsCiJobVO">
         select dcj.*, dcs.name as stage_name
         from devops_ci_job dcj
@@ -25,4 +19,75 @@
         #{id,jdbcType=BIGINT}
         </foreach>
     </update>
+
+    <select id="doesApiTestSuiteRelatedWithPipeline" resultType="java.lang.Boolean">
+        SELECT COUNT(*) > 0
+        FROM devops_ci_job dcj
+                 JOIN devops_cicd_pipeline dcp ON dcp.id = dcj.ci_pipeline_id
+                 JOIN devops_ci_api_test_info dcati ON dcati.id = dcj.config_id
+        WHERE dcati.api_test_suite_id = #{suiteId}
+    </select>
+    <select id="listApiTestTaskReferencePipelineInfo"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.id as job_id,dcj.name as job_name,
+        dcati.api_test_task_id as task_id,
+        dcp.`name` AS pipeline_name
+        from devops_ci_job dcj
+        left join devops_ci_api_test_info dcati ON dcj.config_id = dcati.id
+        LEFT JOIN devops_ci_stage dcs ON dcj.ci_stage_id = dcs.id
+        LEFT JOIN devops_cicd_pipeline dcp ON dcs.ci_pipeline_id = dcp.id
+        WHERE dcj.type = 'api_test' AND dcati.api_test_task_id in
+        <foreach collection="taskIds" item="taskId" open="(" separator="," close=")" index="i">
+            #{taskId}
+        </foreach>
+    </select>
+    <select id="queryPipelineReferenceEnvApp"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
+        from devops_ci_deploy_deploy_cfg dcddc
+                 inner join devops_ci_job dcj on dcj.config_id = dcddc.id
+                 inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
+                 inner join devops_cicd_pipeline dcp on dcs.ci_pipeline_id = dcp.id
+        where dcddc.app_id = #{appId}
+        limit 1;
+    </select>
+    <select id="queryChartPipelineReference"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
+        from devops_ci_chart_deploy_cfg dccdc
+                 inner join devops_ci_job dcj on dcj.config_id = dccdc.id
+                 inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
+                 inner join devops_cicd_pipeline dcp on dcs.ci_pipeline_id = dcp.id
+        where dccdc.app_id = #{appId}
+        limit 1;
+    </select>
+
+    <select id="queryPipelineReferenceHostApp" resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.name as job_name, dcs.name as stage_name, dcp.name as pipeline_name
+        from devops_ci_host_deploy_info dchdi
+                 inner join devops_ci_job dcj on dcj.config_id = dchdi.id
+                 inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
+                 inner join devops_cicd_pipeline dcp on dcs.ci_pipeline_id = dcp.id
+        where dchdi.app_id = #{appId}
+        limit 1;
+    </select>
+    <select id="queryDeployValuePipelineReference"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dcj.name as job_name,
+               dcs.name as stage_name,
+               dcp.name as pipeline_name,
+               "ci"     as type
+        from devops_ci_chart_deploy_cfg dccdc
+                 inner join devops_ci_job dcj on dcj.config_id = dccdc.id
+                 inner join devops_ci_stage dcs on dcj.ci_stage_id = dcs.id
+                 inner join devops_cicd_pipeline dcp on dcs.ci_pipeline_id = dcp.id
+        where dccdc.value_id = #{valueId}
+        limit 1;
+    </select>
 </mapper>

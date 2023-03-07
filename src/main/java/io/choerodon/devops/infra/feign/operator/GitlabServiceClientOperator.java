@@ -1043,15 +1043,19 @@ public class GitlabServiceClientOperator {
         }
     }
 
+    public List<MergeRequestDTO> listMergeRequest(Integer gitlabProjectId, String state) {
+        try {
+            return gitlabServiceClient.listMergeRequest(gitlabProjectId, state);
+        } catch (Exception e) {
+            throw new CommonException(e);
+        }
+    }
+
     public List<BranchDTO> listExternalBranch(Integer gitlabProjectId, AppExternalConfigDTO appExternalConfigDTO) {
         try {
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
 
-            return gitlabServiceClient.listBranch(gitlabProjectId,
-                    null,
-                    gitlabRepositoryInfo.getGitlabUrl(),
-                    appExternalConfigDTO.getAuthType(),
-                    appExternalConfigDTO.getAccessToken(),
+            return gitlabServiceClient.listBranch(gitlabProjectId, null, gitlabRepositoryInfo.getGitlabUrl(), appExternalConfigDTO.getAuthType(), appExternalConfigDTO.getAccessToken(),
                     appExternalConfigDTO.getUsername(),
                     appExternalConfigDTO.getPassword()).getBody();
         } catch (Exception e) {
@@ -1598,24 +1602,35 @@ public class GitlabServiceClientOperator {
         }
     }
 
-    public JobDTO playJob(int gitlabProjectId, int jobId, int gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
+    public JobDTO playJob(Integer gitlabProjectId, Integer jobId, Integer gitlabUserId, AppExternalConfigDTO appExternalConfigDTO) {
         if (appExternalConfigDTO == null) {
-            return gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
+            ResponseEntity<JobDTO> jobDTOResponseEntity = gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
                     null,
                     null,
                     null,
                     null,
-                    null).getBody();
+                    null);
+            if (jobDTOResponseEntity.getBody() == null) {
+                throw new CommonException("devops.play.job.failed");
+            }
+            return jobDTOResponseEntity.getBody();
         } else {
             GitlabRepositoryInfo gitlabRepositoryInfo = GitUtil.calaulateRepositoryInfo(appExternalConfigDTO.getRepositoryUrl());
-
-            return gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
+            ResponseEntity<JobDTO> jobDTOResponseEntity = gitlabServiceClient.playJob(gitlabProjectId, jobId, gitlabUserId,
                     gitlabRepositoryInfo.getGitlabUrl(),
                     appExternalConfigDTO.getAuthType(),
                     appExternalConfigDTO.getAccessToken(),
                     appExternalConfigDTO.getUsername(),
-                    appExternalConfigDTO.getPassword()).getBody();
+                    appExternalConfigDTO.getPassword());
+            if (jobDTOResponseEntity.getBody() == null) {
+                throw new CommonException("devops.play.job.failed");
+            }
+            return jobDTOResponseEntity.getBody();
         }
+    }
+
+    public JobDTO queryJob(int gitlabProjectId, int jobId) {
+        return gitlabServiceClient.queryJob(gitlabProjectId, jobId).getBody();
     }
 
     public BranchDTO getBranch(int gitlabProjectId, String ref) {

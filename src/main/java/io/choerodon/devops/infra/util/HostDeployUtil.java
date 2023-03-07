@@ -59,8 +59,12 @@ public class HostDeployUtil {
         return result;
     }
 
-    public static String getWorkingDir(Long instanceId) {
-        return "/var/choerodon/" + instanceId;
+    public static String getWorkingDir(Long instanceId, String appCode, String version) {
+        if ("1".equals(version)) {
+            return "/var/choerodon/" + instanceId;
+        } else {
+            return "/var/choerodon/" + appCode;
+        }
     }
 
 

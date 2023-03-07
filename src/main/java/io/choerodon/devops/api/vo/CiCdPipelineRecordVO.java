@@ -60,7 +60,7 @@ public class CiCdPipelineRecordVO extends BaseDomain {
     @ApiModelProperty("关联流水线信息")
     private CiCdPipelineVO ciCdPipelineVO;
     @ApiModelProperty("ci和cd阶段记录的集合")
-    private List<StageRecordVO> stageRecordVOS;
+    private List<DevopsCiStageRecordVO> stageRecordVOS;
     @ApiModelProperty("待审核状态时需要的一些数据")
     private DevopsCdPipelineDeatilVO devopsCdPipelineDeatilVO;
 
@@ -195,11 +195,11 @@ public class CiCdPipelineRecordVO extends BaseDomain {
         this.ciStatus = ciStatus;
     }
 
-    public List<StageRecordVO> getStageRecordVOS() {
+    public List<DevopsCiStageRecordVO> getStageRecordVOS() {
         return stageRecordVOS;
     }
 
-    public void setStageRecordVOS(List<StageRecordVO> stageRecordVOS) {
+    public void setStageRecordVOS(List<DevopsCiStageRecordVO> stageRecordVOS) {
         this.stageRecordVOS = stageRecordVOS;
     }
 

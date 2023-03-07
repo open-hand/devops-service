@@ -41,6 +41,7 @@ public class AgentDownloadLogSocketHandler extends AbstractSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         LOGGER.info("log transfer completed");
+        super.afterConnectionClosed(session, status);
         agentExecAndLogSocketHandler.afterConnectionClosed(session, status);
     }
 }

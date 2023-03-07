@@ -29,4 +29,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_template_stage.groovy') {
         addUniqueConstraint(tableName: 'devops_ci_template_stage', constraintName: 'uk_name_pipeline_template_id', columnNames: 'name,pipeline_template_id')
 
     }
+
+    changeSet(author: 'wx', id: '2022-12-1-add-column-visibility') {
+        addColumn(tableName: 'devops_ci_template_stage') {
+            column(name: 'visibility', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: '可见性，1:可见，0:不可见', afterColumn: 'sequence') {
+                constraints(nullable: false)
+            }
+        }
+    }
 }

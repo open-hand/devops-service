@@ -13,6 +13,26 @@ public enum CiJobTypeEnum {
      */
     NORMAL("normal"),
     /**
+     * 人工卡点类型
+     */
+    AUDIT("audit"),
+    /**
+     * chart部署类型
+     */
+    CHART_DEPLOY("chart_deploy"),
+    /**
+     * 部署组部署类型
+     */
+    DEPLOYMENT_DEPLOY("deployment_deploy"),
+    /**
+     * API test
+     */
+    API_TEST("api_test"),
+    /**
+     * 主机部署
+     */
+    HOST_DEPLOY("host_deploy"),
+    /**
      * 脚本任务类型
      */
     CUSTOM("custom");

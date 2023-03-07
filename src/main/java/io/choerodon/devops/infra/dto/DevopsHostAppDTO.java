@@ -51,9 +51,19 @@ public class DevopsHostAppDTO extends AuditDomain {
     private String runCommand;
     @ApiModelProperty(value = "当前生效的配置id,为docker_compose部署类型时才需要")
     private Long effectValueId;
-
+    @ApiModelProperty(value = "应用版本号，该字段添加时间之前生成的应用版本号为1，之后的版本号为2")
+    private String version;
 
     public DevopsHostAppDTO() {
+
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public DevopsHostAppDTO(Long hostId, String code) {

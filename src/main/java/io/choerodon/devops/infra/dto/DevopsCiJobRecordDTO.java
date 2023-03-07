@@ -54,13 +54,45 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
     private Date finishedDate;
     @ApiModelProperty("job执行时间")
     private Long durationSeconds;
+    //    @Deprecated
+//    @ApiModelProperty("详细信息")
+//    private String metadata;
+    //    /**
+//     * maven Setting Id
+//     */
+//    private Long mavenSettingId;
+    @ApiModelProperty("部署操作commandId")
+    private Long commandId;
 
-    @ApiModelProperty("详细信息")
-    private String metadata;
-    /**
-     * maven Setting Id
-     */
-    private Long mavenSettingId;
+    @ApiModelProperty("配置id")
+    private Long configId;
+
+    @ApiModelProperty("api测试记录id")
+    private Long apiTestTaskRecordId;
+
+    public Long getApiTestTaskRecordId() {
+        return apiTestTaskRecordId;
+    }
+
+    public void setApiTestTaskRecordId(Long apiTestTaskRecordId) {
+        this.apiTestTaskRecordId = apiTestTaskRecordId;
+    }
+
+    public Long getConfigId() {
+        return configId;
+    }
+
+    public void setConfigId(Long configId) {
+        this.configId = configId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
 
     public String getGroupType() {
         return groupType;
@@ -78,13 +110,13 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
         this.appServiceId = appServiceId;
     }
 
-    public Long getMavenSettingId() {
-        return mavenSettingId;
-    }
-
-    public void setMavenSettingId(Long mavenSettingId) {
-        this.mavenSettingId = mavenSettingId;
-    }
+//    public Long getMavenSettingId() {
+//        return mavenSettingId;
+//    }
+//
+//    public void setMavenSettingId(Long mavenSettingId) {
+//        this.mavenSettingId = mavenSettingId;
+//    }
 
     public Long getId() {
         return id;
@@ -182,11 +214,11 @@ public class DevopsCiJobRecordDTO extends AuditDomain {
         this.gitlabProjectId = gitlabProjectId;
     }
 
-    public String getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(String metadata) {
-        this.metadata = metadata;
-    }
+//    public String getMetadata() {
+//        return metadata;
+//    }
+//
+//    public void setMetadata(String metadata) {
+//        this.metadata = metadata;
+//    }
 }

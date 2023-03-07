@@ -229,7 +229,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<RepositoryFileDTO> getExternalFile(Integer projectId, String commit, String filePath, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
+        throw new CommonException("devops.file.get");
     }
 
 
@@ -374,7 +374,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<CommitDTO>> listExternalCommits(Integer projectId, Integer page, Integer size, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
+        throw new CommonException("devops.commit.list");
     }
 
     @Override
@@ -469,7 +469,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<String> getAdminToken() {
-        return null;
+        throw new CommonException("devops.admin.token.get");
     }
 
     @Override
@@ -504,22 +504,27 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<Pipeline> createPipeline(Integer projectId, Integer userId, String ref, String gitlabUrl, String authType, String accessToken, String username, String password, Map<String, String> variables) {
-        return null;
+        throw new CommonException("devops.pipeline.create");
     }
 
     @Override
     public ResponseEntity<String> queryTrace(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
+        throw new CommonException("devops.job.trace.get");
     }
 
     @Override
     public ResponseEntity<JobDTO> retryJob(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
+        throw new CommonException("devops.gitlab.job.retry");
     }
 
     @Override
     public ResponseEntity<JobDTO> playJob(Integer projectId, Integer jobId, Integer userId, String gitlabUrl, String authType, String accessToken, String username, String password) {
-        return null;
+        throw new CommonException("devops.gitlab.job.play");
+    }
+
+    @Override
+    public ResponseEntity<JobDTO> queryJob(Integer projectId, Integer jobId) {
+        throw new CommonException("devops.gitlab.job.query");
     }
 
     @Override
@@ -671,5 +676,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<ProjectHookDTO> updateWebHook(Integer projectId, Integer userId, Integer hookId, ProjectHookDTO projectHookDTO) {
         throw new CommonException("devops.updateWebHook");
+    }
+
+    @Override
+    public List<MergeRequestDTO> listMergeRequest(Integer projectId, String state) {
+        throw new CommonException("devops.open.mergereuqest.list");
     }
 }

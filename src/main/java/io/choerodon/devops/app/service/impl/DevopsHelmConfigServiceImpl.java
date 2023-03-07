@@ -280,7 +280,7 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         DevopsHelmConfigDTO devopsHelmConfigDTO = devopsHelmConfigMapper.selectByPrimaryKey(helmConfigId);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         if (devopsHelmConfigDTO.getRepoPrivate()) {
             String credentials = devopsHelmConfigDTO.getUsername() + ":"
                     + devopsHelmConfigDTO.getPassword();
@@ -288,8 +288,16 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         }
 
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        String helmRepoUrl = devopsHelmConfigDTO.getUrl();
-        helmRepoUrl = helmRepoUrl.endsWith("/") ? helmRepoUrl.substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : helmRepoUrl;
+
+        String helmRepoUrl;
+        if (ResourceLevel.PROJECT.value().equals(devopsHelmConfigDTO.getResourceType())) {
+            helmRepoUrl = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl().substring(0, devopsHelmConfigDTO.getUrl().length() - 1) : devopsHelmConfigDTO.getUrl();
+        } else {
+            ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+            Tenant organization = baseServiceClientOperator.queryOrganizationById(projectDTO.getOrganizationId());
+
+            helmRepoUrl = devopsHelmConfigDTO.getUrl().endsWith("/") ? devopsHelmConfigDTO.getUrl() + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/" : devopsHelmConfigDTO.getUrl() + "/" + organization.getTenantNum() + "/" + projectDTO.getDevopsComponentCode() + "/";
+        }
         ResponseEntity<String> exchange = restTemplate.exchange(helmRepoUrl + "/index.yaml", HttpMethod.GET, requestEntity, String.class);
 
         if (!HttpStatus.OK.equals(exchange.getStatusCode())) {
@@ -303,10 +311,8 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
     public List<DevopsHelmConfigVO> listHelmConfigOnApp(Long projectId, Long appServiceId) {
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOS = new ArrayList<>();
 
+        Long effectiveRepoId;
         // 查询项目层设置helm仓库
-        DevopsHelmConfigDTO helmConfigSearchDTOOnProject = new DevopsHelmConfigDTO();
-        helmConfigSearchDTOOnProject.setResourceId(projectId);
-        helmConfigSearchDTOOnProject.setResourceType(ResourceLevel.PROJECT.value());
         List<DevopsHelmConfigDTO> devopsHelmConfigDTOListOnProject = devopsHelmConfigMapper.listHelmConfigWithIdAndName(projectId, ResourceLevel.PROJECT.value());
         devopsHelmConfigDTOS.addAll(devopsHelmConfigDTOListOnProject);
         DevopsHelmConfigDTO defaultDevopsHelmConfigDTOOnProject = null;
@@ -331,21 +337,15 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         ImmutableProjectInfoVO immutableProjectInfoVO = baseServiceClientOperator.queryImmutableProjectInfo(projectId);
         Long tenantId = immutableProjectInfoVO.getTenantId();
         String projCode = immutableProjectInfoVO.getProjCode();
-        DevopsHelmConfigDTO helmConfigSearchDTOOnOrganization = new DevopsHelmConfigDTO();
-        helmConfigSearchDTOOnOrganization.setResourceId(tenantId);
-        helmConfigSearchDTOOnOrganization.setResourceType(ResourceLevel.ORGANIZATION.value());
-        helmConfigSearchDTOOnOrganization.setRepoDefault(true);
         DevopsHelmConfigDTO devopsHelmConfigDTOtOnOrganization = devopsHelmConfigMapper.selectOneWithIdAndName(tenantId, ResourceLevel.ORGANIZATION.value(), true);
+        DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = null;
         if (devopsHelmConfigDTOtOnOrganization != null) {
             Tenant tenant = baseServiceClientOperator.queryOrganizationById(tenantId);
             devopsHelmConfigDTOtOnOrganization.setName(tenant.getTenantNum() + "-" + projCode);
             devopsHelmConfigDTOS.add(0, devopsHelmConfigDTOtOnOrganization);
         } else {
             // 如果组织层的仓库为空，查询平台默认
-            DevopsHelmConfigDTO helmConfigSearchDTOOnSite = new DevopsHelmConfigDTO();
-            helmConfigSearchDTOOnSite.setResourceType(ResourceLevel.SITE.value());
-            helmConfigSearchDTOOnSite.setRepoDefault(true);
-            DevopsHelmConfigDTO devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOneWithIdAndName(0L, ResourceLevel.SITE.value(), true);
+            devopsHelmConfigDTOOnSite = devopsHelmConfigMapper.selectOneWithIdAndName(0L, ResourceLevel.SITE.value(), true);
             if (devopsHelmConfigDTOOnSite == null) {
                 throw new CommonException("devops.helm.config.site.exist");
             }
@@ -357,16 +357,35 @@ public class DevopsHelmConfigServiceImpl implements DevopsHelmConfigService {
         if (defaultDevopsHelmConfigDTOOnProject != null) {
             devopsHelmConfigDTOS.add(0, defaultDevopsHelmConfigDTOOnProject);
         }
-
+        DevopsHelmConfigDTO devopsHelmConfigDTORelatedWithAppService = null;
         if (appServiceId != null) {
-            DevopsHelmConfigDTO devopsHelmConfigDTORelatedWithAppService = devopsHelmConfigMapper.selectWithIdAndNameByAppServiceId(appServiceId);
-            List<Long> helmConfigIds = devopsHelmConfigDTOS.stream().map(DevopsHelmConfigDTO::getId).collect(Collectors.toList());
-            if (devopsHelmConfigDTORelatedWithAppService != null && !helmConfigIds.contains(devopsHelmConfigDTORelatedWithAppService.getId())) {
-                devopsHelmConfigDTOS.add(0, devopsHelmConfigDTORelatedWithAppService);
-            }
+            devopsHelmConfigDTORelatedWithAppService = devopsHelmConfigMapper.selectWithIdAndNameByAppServiceId(appServiceId);
         }
 
-        return ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+//            List<Long> helmConfigIds = devopsHelmConfigDTOS.stream().map(DevopsHelmConfigDTO::getId).collect(Collectors.toList());
+//            if (devopsHelmConfigDTORelatedWithAppService != null && !helmConfigIds.contains(devopsHelmConfigDTORelatedWithAppService.getId())) {
+//                devopsHelmConfigDTOS.add(0, devopsHelmConfigDTORelatedWithAppService);
+//            }
+        if (devopsHelmConfigDTORelatedWithAppService != null) {
+            effectiveRepoId = devopsHelmConfigDTORelatedWithAppService.getId();
+        } else if (defaultDevopsHelmConfigDTOOnProject != null) {
+            effectiveRepoId = defaultDevopsHelmConfigDTOOnProject.getId();
+        } else if (devopsHelmConfigDTOtOnOrganization != null) {
+            effectiveRepoId = devopsHelmConfigDTOtOnOrganization.getId();
+        } else if (devopsHelmConfigDTOOnSite != null) {
+            effectiveRepoId = devopsHelmConfigDTOOnSite.getId();
+        } else {
+            effectiveRepoId = null;
+        }
+
+        List<DevopsHelmConfigVO> devopsHelmConfigVOS = ConvertUtils.convertList(devopsHelmConfigDTOS, DevopsHelmConfigVO.class);
+        devopsHelmConfigVOS.forEach(v -> {
+            if (v.getId().equals(effectiveRepoId)) {
+                v.setRepoEffective(true);
+            }
+        });
+
+        return devopsHelmConfigVOS;
     }
 
     @Override

@@ -12,6 +12,7 @@ import io.choerodon.devops.api.vo.PipelineFrequencyVO;
 import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.api.vo.pipeline.ExecuteTimeVO;
 import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
+import io.choerodon.devops.infra.dto.DevopsCdStageDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineFunctionDTO;
 import io.choerodon.devops.infra.dto.DevopsPipelineBranchRelDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -43,7 +44,7 @@ public interface DevopsCiPipelineService {
     /**
      * 查询流水线详情（包含阶段和job信息）
      */
-    CiCdPipelineVO query(Long projectId, Long pipelineId);
+    CiCdPipelineVO query(Long projectId, Long pipelineId, Boolean deleteCdInfo);
 
     /**
      * 根据应用服务id查询流水线
@@ -54,7 +55,7 @@ public interface DevopsCiPipelineService {
     CiCdPipelineDTO queryByAppSvcId(Long appServiceId);
 
     /**
-     * 查询项目下流水线列表（包含5条执行记录）
+     * 查询项目下流水线列表
      */
     Page<CiCdPipelineVO> listByProjectIdAndAppName(Long projectId, String searchParam, PageRequest pageRequest, Boolean enableFlag, String status);
 
@@ -62,6 +63,8 @@ public interface DevopsCiPipelineService {
      * 查询流水线信息
      */
     CiCdPipelineVO queryById(Long ciPipelineId);
+
+    CiCdPipelineDTO baseQueryById(Long id);
 
     /**
      * 停用流水线
@@ -114,7 +117,23 @@ public interface DevopsCiPipelineService {
 
     List<PipelineInstanceReferenceVO> listTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
 
+    List<PipelineInstanceReferenceVO> listChartEnvReferencePipelineInfo(Long projectId, Long envId);
+
+    List<PipelineInstanceReferenceVO> listDeployEnvReferencePipelineInfo(Long projectId, Long envId);
+
     List<DevopsCiPipelineFunctionDTO> listFunctionsByDevopsPipelineId(Long projectId, Long pipelineId, Boolean includeDefault);
 
     List<String> listPipelineNameReferenceByConfigId(Long projectId, Long configId);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
+
+    /**
+     * 迁移cicd数据使用，后期可删除
+     *
+     * @param pipelineId
+     * @param cdStageDTOS
+     */
+    void migrationPipelineData(Long pipelineId, List<DevopsCdStageDTO> cdStageDTOS);
+
+    String queryGitlabCiYamlById(Long pipelineId);
 }

@@ -22,12 +22,12 @@ import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.api.vo.application.ApplicationInstanceInfoVO;
 import io.choerodon.devops.api.vo.kubernetes.InstanceValueVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
-import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsDeployRecordService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.infra.config.SwaggerApiConfig;
 import io.choerodon.devops.infra.enums.AppSourceType;
 import io.choerodon.devops.infra.enums.CommandType;
+import io.choerodon.devops.infra.enums.DeployType;
 import io.choerodon.devops.infra.enums.ResourceType;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
 import io.choerodon.devops.infra.util.ConvertUtils;
@@ -53,8 +53,8 @@ public class AppServiceInstanceController {
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private DevopsDeployRecordService devopsDeployRecordService;
-    @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private AppServiceInstanceValidator appServiceInstanceValidator;
 
@@ -476,7 +476,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "部署信息", required = true)
             @RequestBody @Valid AppServiceDeployVO appServiceDeployVO) {
         appServiceDeployVO.setType("create");
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, false));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, appServiceDeployVO, DeployType.MANUAL));
     }
 
     /**
@@ -497,7 +497,7 @@ public class AppServiceInstanceController {
             @ApiParam(value = "更新信息", required = true)
             @RequestBody @Valid AppServiceDeployUpdateVO appServiceDeployUpdateVO) {
         appServiceDeployUpdateVO.setType("update");
-        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), false));
+        return ResponseEntity.ok(appServiceInstanceService.createOrUpdate(projectId, ConvertUtils.convertObject(appServiceDeployUpdateVO, AppServiceDeployVO.class), DeployType.MANUAL));
     }
 
     /**
@@ -650,7 +650,7 @@ public class AppServiceInstanceController {
             @Encrypt
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "instance_id") Long instanceId) {
-        appServiceInstanceService.restartInstance(projectId, instanceId, false, true);
+        appServiceInstanceService.restartInstance(projectId, instanceId, DeployType.MANUAL, true);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -908,17 +908,17 @@ public class AppServiceInstanceController {
         return new ResponseEntity<>(appServiceInstanceService.batchDeployment(projectId, appServiceDeployVOs), HttpStatus.OK);
     }
 
-    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
-    @Permission(level = ResourceLevel.ORGANIZATION)
-    @GetMapping("/{instance_id}/pipeline_reference")
-    public ResponseEntity<PipelineInstanceReferenceVO> queryPipelineReference(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @Encrypt
-            @ApiParam(value = "实例ID", required = true)
-            @PathVariable(value = "instance_id") Long instanceId) {
-        return ResponseEntity.ok().body(devopsCdPipelineService.queryPipelineReference(projectId, instanceId));
-    }
+//    @ApiOperation("查询引用了实例作为替换对象的流水线信息")
+//    @Permission(level = ResourceLevel.ORGANIZATION)
+//    @GetMapping("/{instance_id}/pipeline_reference")
+//    public ResponseEntity<List<PipelineInstanceReferenceVO>> queryPipelineReference(
+//            @ApiParam(value = "项目ID", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @Encrypt
+//            @ApiParam(value = "实例ID", required = true)
+//            @PathVariable(value = "instance_id") Long instanceId) {
+//        return ResponseEntity.ok().body(appServiceInstanceService.queryInstancePipelineReference(projectId, instanceId));
+//    }
 
     @ApiOperation("查询服务下在环境下的实例列表")
     @Permission(level = ResourceLevel.ORGANIZATION)

@@ -29,6 +29,7 @@ public class DevOpsAppServicePayload {
 //    private List<DevopsUserPermissionVO> devopsUserPermissionVOS;
 
     private List<MemberDTO> memberDTOS;
+
     private Boolean openAppService;
 
     public List<MemberDTO> getMemberDTOS() {
@@ -39,7 +40,7 @@ public class DevOpsAppServicePayload {
         this.memberDTOS = memberDTOS;
     }
 
-    //    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
+//    public List<DevopsUserPermissionVO> getDevopsUserPermissionVOS() {
 //        return devopsUserPermissionVOS;
 //    }
 //

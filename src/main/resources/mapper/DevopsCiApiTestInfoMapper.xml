@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCiApiTestInfoMapper">
+  <select id="selectById" resultType="io.choerodon.devops.infra.dto.DevopsCiApiTestInfoDTO">
+    SELECT dcati.id,
+           dcati.task_type,
+           dcati.api_test_task_id,
+           dcati.api_test_suite_id,
+           dcati.api_test_config_id,
+           dcati.enable_warning_setting,
+           dcati.perform_threshold,
+           dcati.notify_user_ids,
+           dcati.send_email,
+           dcati.send_site_message,
+           dcati.block_after_job,
+           dcati.ci_pipeline_id,
+           dcp.project_id
+    FROM devops_ci_api_test_info dcati
+           JOIN devops_cicd_pipeline dcp ON dcp.id = dcati.ci_pipeline_id
+    WHERE dcati.id = #{id}
+  </select>
+</mapper>

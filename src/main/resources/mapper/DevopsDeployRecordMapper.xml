@@ -2,219 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsDeployRecordMapper">
-    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
-		SELECT
-		any_value(t.id) AS id,
-		any_value(t.project_id) AS project_id,
-		any_value(t.deploy_type) AS deploy_type,
-		any_value(t.deploy_id) AS deploy_id,
-		any_value(t.deploy_time) AS deploy_time,
-		any_value(t.deployStatus) AS deployStatus,
-		any_value(t.deployCreatedBy) AS deployCreatedBy,
-		any_value(t.pipelineName) AS pipelineName,
-		any_value(t.pipelineTriggerType) AS pipelineTriggerType,
-		any_value(t.pipelineId) AS pipelineId,
-		any_value(t.instanceId) AS instanceId,
-		any_value(t.envId) AS envId,
-		any_value(t.env) AS env,
-		any_value(t.appServiceId) AS appServiceId
-	    from (
-		SELECT
-		    ddr.id,
-	        ddr.project_id,
-		    ddr.deploy_type,
-		    ddr.deploy_id,
-		    ddr.deploy_time,
-		    dc.`status` deployStatus,
-		    dc.created_by deployCreatedBy,
-		    NULL pipelineName,
-		    NULL pipelineTriggerType,
-		    NULL pipelineId,
-		    dasi.id instanceId,
-		    dasi.env_id envId,
-		    de.name as env,
-		    dasi.app_service_id appServiceId
-		FROM
-			devops_deploy_record ddr
-			LEFT JOIN devops_env_command dc ON ddr.deploy_id = dc.id
-		    LEFT JOIN devops_app_service_instance dasi ON dc.object_id = dasi.id
-		    LEFT JOIN devops_env de on de.id = dasi.env_id
-		WHERE
-		    ddr.project_id=#{projectId}
-		    and
-			ddr.deploy_type = 'manual'
-		<if test='searchParam != null'>
-			<choose>
-				<when test="searchParam.deployType == null and searchParam.deployStatus == 'running'">
-					AND	(dc.`status` ='running' OR dc.`status` ='operating')
-				</when>
-				<otherwise>
-					<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
-						AND
-						ddr.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
-					</if>
-					<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
-						AND
-						dc.`status` =#{searchParam.deployStatus}
-					</if>
-				</otherwise>
-			</choose>
-			<if test='searchParam.env != null'>
-				AND
-				dasi.env_id =#{searchParam.env}
-			</if>
-			<if test='searchParam.deployId != null'>
-				AND
-				ddr.deploy_id =#{searchParam.deployId}
-			</if>
-		</if>
-		<if test='params != null and params.size > 0'>
-			AND
-			<foreach collection="params" item="param" open="(" separator=" OR " close=")">
-				(ddr.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR dc.`status` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				)
-			</foreach>
-		</if>
-		UNION
-		SELECT
-		    ddr.id,
-	     	ddr.project_id,
-		    ddr.deploy_type,
-		    ddr.deploy_id,
-	    	ddr.deploy_time,
-		    dpc.`status` deployStatus,
-	    	dpc.created_by deployCreatedBy,
-	     	dpc.pipeline_name pipelineName,
-		    dpc.trigger_type pipelineTriggerType,
-		    dpc.pipeline_id pipelineId,
-		    NULL instanceId,
-		    dpasd.env_id envId,
-		    de.name as env,
-		    NULL appServiceId
-		FROM
-			devops_deploy_record ddr
-			LEFT JOIN devops_pipeline_record dpc ON ddr.deploy_id = dpc.id
-		    LEFT JOIN  devops_pipeline dp ON dp.id=dpc.pipeline_id
-		    LEFT JOIN  devops_pipeline_stage dps ON  dps.pipeline_id=dpc.pipeline_id
-		    LEFT JOIN  devops_pipeline_task  dpt ON   dpt.stage_id =dps.id
-		    LEFT JOIN  devops_pipeline_app_service_deploy dpasd ON dpasd.id=dpt.app_service_deploy_id
-		    LEFT JOIN  devops_env de on dpasd.env_id = de.id
-		WHERE
-			ddr.project_id = #{projectId}
-		and
-			ddr.deploy_type = 'auto'
-		<if test='searchParam != null'>
-			<choose>
-				<when test="searchParam.deployType == null and searchParam.deployStatus == 'running'">
-					AND	(dpc.`status` ='running' OR dpc.`status` ='operating')
-				</when>
-				<otherwise>
-					<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
-						AND
-						ddr.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
-					</if>
-					<if test='searchParam.deployStatus != null and searchParam.deployStatus.length > 0'>
-						AND
-						dpc.`status` =#{searchParam.deployStatus}
-					</if>
-				</otherwise>
-			</choose>
-
-			<if test='searchParam.pipelineName != null and searchParam.pipelineName.length > 0'>
-				AND
-				dpc.pipeline_name LIKE CONCAT(CONCAT('%', #{searchParam.pipelineName, jdbcType=VARCHAR}),'%')
-			</if>
-			<if test='searchParam.env != null'>
-				AND
-				dpasd.env_id =#{searchParam.env}
-			</if>
-			<if test='searchParam.deployId != null'>
-				AND
-				ddr.deploy_id =#{searchParam.deployId}
-			</if>
-			<if test='searchParam.pipelineId != null'>
-				AND
-				dpc.pipeline_id =#{searchParam.pipelineId}
-			</if>
-		</if>
-		<if test='params != null and params.size > 0'>
-			AND
-			<foreach collection="params" item="param" open="(" separator=" OR " close=")">
-				(ddr.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR dpc.`status` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR dpc.pipeline_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-				)
-			</foreach>
-		</if>
-        <if test="searchParam == null or searchParam.deployStatus == null or searchParam.deployStatus.length == 0">
-			UNION ALL
-			SELECT batch.id,
-			batch.project_id,
-			batch.deploy_type,
-			batch.id AS deploy_id,
-			batch.deploy_time,
-			NULL AS deployStatus,
-			batch.created_by AS deployCreatedBy,
-			NULL AS pipelineName,
-			NULL AS pipelineTriggerType,
-			NULL AS pipelineId,
-			NULL AS instanceId,
-			batch.env AS envId,
-			NULL AS env,
-			NULL AS appServiceId
-			FROM devops_deploy_record batch
-			WHERE batch.project_id = #{projectId,jdbcType=BIGINT}
-			AND batch.deploy_type = 'batch'
-			<if test='searchParam != null'>
-				<if test='searchParam.deployType != null and searchParam.deployType.length > 0'>
-					AND
-					batch.deploy_type LIKE CONCAT(CONCAT('%', #{searchParam.deployType, jdbcType=VARCHAR}),'%')
-				</if>
-				<if test='searchParam.env != null'>
-					AND
-					batch.env =#{searchParam.env}
-				</if>
-				<if test='searchParam.deployId != null'>
-					AND
-					batch.deploy_id = #{searchParam.deployId}
-				</if>
-			</if>
-			<if test='params != null and params.size > 0'>
-				AND
-				<foreach collection="params" item="param" open="(" separator=" OR " close=")">
-					(batch.deploy_type LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-					OR batch.env LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-					)
-				</foreach>
-			</if>
-		</if>
-			) t
-			where t.project_id=#{projectId}
-		    <if test="searchParam.pipelineId != null">
-				and t.pipelineId is not null
-			</if>
-		    GROUP BY t.id
-			ORDER BY t.id desc
-    </select>
-    <select id="selectByProjectIdAndDate" resultType="io.choerodon.devops.infra.dto.DevopsDeployRecordDTO">
-		SELECT *
-		FROM devops_deploy_record ddr
-		<where>
-			<if test="projectId">
-				ddr.project_id = #{projectId}
-			</if>
-			<if test="startTime">
-				AND ddr.deploy_time >= CONCAT('','${startTime}',' 00:00:00')
-			</if>
-			<if test="endTime">
-				AND ddr.deploy_time <![CDATA[<=]]> CONCAT('','${endTime}',' 23:59:59')
-			</if>
-		</where>
-	</select>
-
 
     <delete id="deleteRelatedRecordOfInstance">
         DELETE
@@ -224,18 +11,6 @@
         WHERE command.object = 'instance'
         AND command.object_id = #{instanceId,jdbcType=BIGINT})
 	</delete>
-
-	<insert id="batchInsertSelective">
-        INSERT INTO devops_deploy_record(project_id, env, deploy_id, deploy_type, deploy_time)
-        VALUES
-        <foreach collection="records" item="record" separator=",">
-            (#{record.projectId,jdbcType=BIGINT},
-            #{record.env,jdbcType=VARCHAR},
-            #{record.deployId,jdbcType=BIGINT},
-            #{record.deployType,jdbcType=VARCHAR},
-            #{record.deployTime})
-        </foreach>
-	</insert>
 
 	<select id="queryByBatchDeployRecordId" resultType="io.choerodon.devops.api.vo.AppServiceInstanceForRecordVO">
 		SELECT  ddri.instance_id      AS instance_id,
@@ -252,13 +27,6 @@
 		LEFT JOIN devops_env de ON ddri.env_id = de.id
 		WHERE ddri.deploy_record_id = #{recordId,jdbcType=BIGINT}
 	</select>
-
-    <select id="queryRecordIdByEnvIdAndDeployType" resultType="java.lang.Long">
-        SELECT ddr.id
-        FROM devops_deploy_record ddr
-        WHERE ddr.env = #{envId,jdbcType=VARCHAR}
-        AND ddr.deploy_type = #{deployType,jdbcType=VARCHAR}
-    </select>
     <select id="listByParams" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT
 			ddr.id AS id,
@@ -302,31 +70,35 @@
 			<if test="deployObjectVersion != null">
 				and ddr.deploy_object_version LIKE CONCAT(CONCAT('%', #{deployObjectVersion, jdbcType=VARCHAR}),'%')
 			</if>
+			<if test="createdBy != null">
+				and ddr.created_by = #{createdBy}
+			</if>
 		</where>
 
 	</select>
 	<select id="queryEnvDeployRecordByCommandId"
 			resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT
-		ddr.id AS id,
-		ddr.deploy_type,
-		denc.status AS command_status,
-		denc.object_id AS instance_id,
-		ddr.app_id,
-		ddr.app_name,
-		ddr.app_code,
-		ddr.deploy_mode,
-		ddr.deploy_payload_id,
-		ddr.deploy_payload_name,
-		ddr.deploy_result,
-		ddr.deploy_object_type,
-		ddr.deploy_object_name,
-		ddr.deploy_object_version,
-		ddr.deploy_time,
-		ddr.created_by
+			ddr.id AS id,
+			ddr.deploy_type,
+			denc.status AS command_status,
+			denc.object_id AS instance_id,
+			ddr.app_id,
+			ddr.app_name,
+			ddr.app_code,
+			ddr.deploy_mode,
+			ddr.deploy_payload_id,
+			ddr.deploy_payload_name,
+			ddr.deploy_result,
+			ddr.deploy_object_type,
+			ddr.deploy_object_name,
+			ddr.deploy_object_version,
+			ddr.deploy_time,
+			ddr.created_by
 		FROM devops_deploy_record ddr
-		LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
-		WHERE ddr.deploy_id = #{commandId} and ddr.deploy_mode = 'env' and ddr.deploy_type = 'auto'
+				 LEFT JOIN devops_env_command denc ON ddr.deploy_id = denc.id
+		WHERE ddr.deploy_id = #{commandId}
+		  and ddr.deploy_mode = 'env'
 	</select>
 	<select id="queryHostDeployRecordByCommandId" resultType="io.choerodon.devops.api.vo.DeployRecordVO">
 		SELECT

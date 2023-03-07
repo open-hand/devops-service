@@ -17,8 +17,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.infra.dto.*;
+import io.choerodon.devops.infra.dto.AppServiceDTO;
+import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
+import io.choerodon.devops.infra.dto.DevopsEnvironmentDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
@@ -49,8 +52,14 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     private PermissionHelper permissionHelper;
     @Autowired
     private AppServiceService appServiceService;
+    //    @Autowired
+//    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
     @Autowired
-    private DevopsCdEnvDeployInfoService devopsCdEnvDeployInfoService;
+    private DevopsCiJobService devopsCiJobService;
+
+    @Autowired
+    @Lazy
+    private PipelineService pipelineService;
 
     /**
      * 前端传入的排序字段和Mapper文件中的字段名的映射
@@ -123,7 +132,7 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     @Override
     public DevopsDeployValueVO query(Long projectId, Long valueId) {
         DevopsDeployValueVO devopsDeployValueVO = ConvertUtils.convertObject(devopsDeployValueMapper.queryById(valueId), DevopsDeployValueVO.class);
-        devopsDeployValueVO.setIndex(checkDelete(projectId, valueId));
+        devopsDeployValueVO.setIndex(CollectionUtils.isEmpty(checkDelete(projectId, valueId)));
         return devopsDeployValueVO;
     }
 
@@ -163,16 +172,19 @@ public class DevopsDeployValueServiceImpl implements DevopsDeployValueService {
     }
 
     @Override
-    public Boolean checkDelete(Long projectId, Long valueId) {
+    public List<PipelineInstanceReferenceVO> checkDelete(Long projectId, Long valueId) {
         DevopsDeployValueDTO devopsDeployValueDTO = devopsDeployValueMapper.selectByPrimaryKey(valueId);
-        permissionHelper.checkEnvBelongToProject(projectId, devopsDeployValueDTO.getEnvId());
-
-        List<DevopsCdEnvDeployInfoDTO> devopsCdEnvDeployInfoDTOS = devopsCdEnvDeployInfoService.queryCurrentByValueId(valueId);
-        if (devopsCdEnvDeployInfoDTOS == null || devopsCdEnvDeployInfoDTOS.isEmpty()) {
-            List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
-            return CollectionUtils.isEmpty(appServiceInstanceDTOS);
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
+        PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryDeployValuePipelineReference(projectId, valueId);
+        if (pipelineInstanceReferenceVO != null) {
+            pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
         }
-        return false;
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listDeployValuePipelineReference(projectId, valueId);
+        if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
+            pipelineInstanceReferenceVOList.addAll(pipelineInstanceReferenceVOList1);
+        }
+//        List<AppServiceInstanceDTO> appServiceInstanceDTOS = appServiceInstanceService.baseListByValueId(valueId);
+        return pipelineInstanceReferenceVOList;
     }
 
     @Override

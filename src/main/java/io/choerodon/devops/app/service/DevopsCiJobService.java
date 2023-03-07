@@ -1,11 +1,9 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Set;
 
-import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.api.vo.*;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 
 /**
@@ -116,4 +114,20 @@ public interface DevopsCiJobService {
     List<DevopsCiJobDTO> listAll();
 
     String queryMavenSettings(Long projectId, String token, Long id);
+
+    Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId);
+
+    DevopsCiJobDTO selectByPrimaryKey(Long id);
+
+    DevopsCiJobDTO queryByCiPipelineIdAndName(Long ciPipelineId, String name);
+
+    List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId);
+
+    PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId);
+
+    PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId);
+
+    PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId);
 }

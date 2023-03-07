@@ -11,9 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.devops.api.vo.host.CommandResultVO;
-import io.choerodon.devops.app.service.DevopsCdPipelineService;
 import io.choerodon.devops.app.service.DevopsHostCommandService;
-import io.choerodon.devops.infra.dto.DevopsHostCommandDTO;
 import io.choerodon.devops.infra.enums.host.HostMsgEventEnum;
 import io.choerodon.devops.infra.util.JsonHelper;
 
@@ -33,8 +31,8 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
     @Autowired
     private CommandResultHandler commandResultHandler;
 
-    @Autowired
-    private DevopsCdPipelineService devopsCdPipelineService;
+//    @Autowired
+//    private DevopsCdPipelineService devopsCdPipelineService;
 
     @Override
     @Transactional
@@ -46,13 +44,13 @@ public class SyncOperatingCommandStatusHandler implements HostMsgHandler {
         if (!CollectionUtils.isEmpty(missCommands)) {
             devopsHostCommandService.batchUpdateTimeoutCommand(missCommands);
             // 更新流水线的状态
-            List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByIds(missCommands);
-            devopsHostCommandDTOS.forEach(devopsHostCommandDTO ->
-            {
-                if (devopsHostCommandDTO.getCdJobRecordId() != null) {
-                    devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
-                }
-            });
+//            List<DevopsHostCommandDTO> devopsHostCommandDTOS = devopsHostCommandService.listByIds(missCommands);
+//            devopsHostCommandDTOS.forEach(devopsHostCommandDTO ->
+//            {
+//                if (devopsHostCommandDTO.getCdJobRecordId() != null) {
+//                    devopsCdPipelineService.hostDeployStatusUpdate(devopsHostCommandDTO.getId(), devopsHostCommandDTO.getCdJobRecordId(), false, "timeout");
+//                }
+//            });
         }
         // 2. 同步devops丢失的命令
         List<CommandResultVO> unSyncCommands = commandResultVOS.stream().filter(v -> Boolean.FALSE.equals(v.getNotExist())).collect(Collectors.toList());

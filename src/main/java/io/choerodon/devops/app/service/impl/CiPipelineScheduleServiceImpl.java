@@ -19,7 +19,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.PipelineSchedule;
 import io.choerodon.devops.infra.dto.gitlab.Variable;
-import io.choerodon.devops.infra.enums.CiPipelineScheduleTriggerTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.CiPipelineScheduleMapper;
 import io.choerodon.devops.infra.util.*;
@@ -35,11 +34,6 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
 
     private static final String DEVOPS_SAVE_PIPELINE_SCHEDULE_FAILED = "devops.save.pipeline.schedule.failed";
     private static final String DEVOPS_CI_PIPELINE_SCHEDULE_NOT_FOUND = "devops.ci.pipeline.schedule.not.found";
-    private static final String DEVOPS_TRIGGER_TYPE_INVALID = "devops.trigger.type.invalid";
-    private static final String DEVOPS_START_HOUR_OF_DAY_IS_NULL = "devops.start.hour.of.day.is.null";
-    private static final String DEVOPS_END_HOUR_OF_DAY_IS_NULL = "devops.end.hour.of.day.is.null";
-    private static final String DEVOPS_PERIOD_IS_NULL = "devops.period.is.null";
-    private static final String DEVOPS_EXECUTE_TIME_IS_NULL = "devops.executeTime.is.null";
 
     @Autowired
     private CiPipelineScheduleMapper ciPipelineScheduleMapper;
@@ -58,13 +52,13 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     @Override
     @Transactional
     public CiPipelineScheduleDTO create(CiPipelineScheduleVO ciPipelineScheduleVO) {
-        validate(ciPipelineScheduleVO);
+        ScheduleUtil.validate(ciPipelineScheduleVO);
 
         Long appServiceId = ciPipelineScheduleVO.getAppServiceId();
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
 
-        String cron = calculateCron(ciPipelineScheduleVO);
+        String cron = ScheduleUtil.calculateGitlabCiCron(ciPipelineScheduleVO);
 
         PipelineSchedule pipelineSchedule = new PipelineSchedule();
         pipelineSchedule.setCron(cron);
@@ -139,9 +133,14 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
             appExternalConfigDTO = appExternalConfigService.baseQueryWithPassword(appServiceDTO.getExternalConfigId());
         }
 
-        List<PipelineSchedule> pipelineSchedules = gitlabServiceClientOperator.listPipelineSchedules(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
-                null,
-                appExternalConfigDTO);
+        List<PipelineSchedule> pipelineSchedules = null;
+        try {
+            pipelineSchedules = gitlabServiceClientOperator.listPipelineSchedules(TypeUtil.objToInt(appServiceDTO.getGitlabProjectId()),
+                    null,
+                    appExternalConfigDTO);
+        } catch (Exception e) {
+            pipelineSchedules = new ArrayList<>();
+        }
 
         Map<Integer, PipelineSchedule> pipelineScheduleMap = pipelineSchedules.stream().collect(Collectors.toMap(PipelineSchedule::getId, Function.identity()));
         ciPipelineScheduleVOS.forEach(v -> {
@@ -240,7 +239,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
     @Override
     @Transactional
     public void update(Long id, CiPipelineScheduleVO ciPipelineScheduleVO) {
-        validate(ciPipelineScheduleVO);
+        ScheduleUtil.validate(ciPipelineScheduleVO);
 
         CiPipelineScheduleDTO ciPipelineScheduleDTO = ciPipelineScheduleMapper.selectByPrimaryKey(id);
         if (ciPipelineScheduleDTO == null) {
@@ -251,7 +250,7 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
         AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceId);
         int gitlabProjectId = TypeUtil.objToInt(appServiceDTO.getGitlabProjectId());
 
-        String cron = calculateCron(ciPipelineScheduleVO);
+        String cron = ScheduleUtil.calculateGitlabCiCron(ciPipelineScheduleVO);
 
 
         PipelineSchedule pipelineSchedules = null;
@@ -382,56 +381,6 @@ public class CiPipelineScheduleServiceImpl implements CiPipelineScheduleService 
                 ciScheduleVariableDTO.setPipelineScheduleId(TypeUtil.objToLong(pipelineSchedules.getId()));
                 ciScheduleVariableService.baseCreate(ciScheduleVariableDTO);
             }
-        }
-    }
-
-    /**
-     * 计算cron表达式
-     * @param ciPipelineScheduleVO
-     * @return
-     */
-    private String calculateCron(CiPipelineScheduleVO ciPipelineScheduleVO) {
-        String cronTemplate = "%s %s * * %s";
-        String minute = "";
-        String hour = "";
-        if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(ciPipelineScheduleVO.getTriggerType())) {
-            if (ciPipelineScheduleVO.getPeriod() >= 60) {
-                minute = "0";
-                hour = ciPipelineScheduleVO.getStartHourOfDay() + "-" + ciPipelineScheduleVO.getEndHourOfDay() + "/" + (ciPipelineScheduleVO.getPeriod() / 60);
-            } else {
-                minute = "0-59/" + ciPipelineScheduleVO.getPeriod();
-                hour = ciPipelineScheduleVO.getStartHourOfDay() + "-" + ciPipelineScheduleVO.getEndHourOfDay();
-            }
-        } else if (CiPipelineScheduleTriggerTypeEnum.SINGLE.value().equals(ciPipelineScheduleVO.getTriggerType())) {
-            String[] split = ciPipelineScheduleVO.getExecuteTime().split(":");
-            minute = split[1];
-            hour = split[0];
-        } else {
-            throw new CommonException(DEVOPS_TRIGGER_TYPE_INVALID);
-        }
-
-
-        String week = ciPipelineScheduleVO.getWeekNumber();
-        return String.format(cronTemplate, minute, hour, week);
-    }
-
-    private void validate(CiPipelineScheduleVO ciPipelineScheduleVO) {
-        if (CiPipelineScheduleTriggerTypeEnum.PERIOD.value().equals(ciPipelineScheduleVO.getTriggerType())) {
-            if (ciPipelineScheduleVO.getStartHourOfDay() == null) {
-                throw new CommonException(DEVOPS_START_HOUR_OF_DAY_IS_NULL);
-            }
-            if (ciPipelineScheduleVO.getEndHourOfDay() == null) {
-                throw new CommonException(DEVOPS_END_HOUR_OF_DAY_IS_NULL);
-            }
-            if (ciPipelineScheduleVO.getPeriod() == null) {
-                throw new CommonException(DEVOPS_PERIOD_IS_NULL);
-            }
-        } else if (CiPipelineScheduleTriggerTypeEnum.SINGLE.value().equals(ciPipelineScheduleVO.getTriggerType())) {
-            if (ciPipelineScheduleVO.getExecuteTime() == null) {
-                throw new CommonException(DEVOPS_EXECUTE_TIME_IS_NULL);
-            }
-        } else {
-            throw new CommonException(DEVOPS_TRIGGER_TYPE_INVALID);
         }
     }
 }

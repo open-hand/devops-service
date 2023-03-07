@@ -15,7 +15,7 @@ DevOps Service integrated several open source tools to automate the process of `
 - `Application service version management`: Manage the versions released during the `Continuous Integration` process of the services, which can be deployed directly in the `Kubernetes` cluster
 - `Code management & version control`: Manage the code of the application service with version control
 - `Branch management`: Able to operate the git branches of the application service
-- `Code Quality Analysis`：data of code quality are collected during `CI`, `SonarQube` is integrated.
+- `Code Quality Analysis`：data of code qualityGateResult are collected during `CI`, `SonarQube` is integrated.
 - `Continuous Integration Overview`: Glance at the `Continuous Integration` process
 - `Deployment Management`: Deploy the versions from `CI` by `GitOps`
 - `Continuous Deployment Pipeline Management`: Achieve the `Continuous Deployment` by workflow
@@ -24,7 +24,7 @@ DevOps Service integrated several open source tools to automate the process of `
 
 ## Requirements
 - [JAVA](https://www.java.com/en/): `DevOps Service` is based on java8
-- [GitLab](https://about.gitlab.com/): `GitLab` is used as code repository. At the same time, `Continuous Integration` based on `GitLab Runner` is used to complete code compilation, unit test execution, code quality analysis, docker image generation, helm chart packaging, service version releasing and other automated processes
+- [GitLab](https://about.gitlab.com/): `GitLab` is used as code repository. At the same time, `Continuous Integration` based on `GitLab Runner` is used to complete code compilation, unit test execution, code qualityGateResult analysis, docker image generation, helm chart packaging, service version releasing and other automated processes
 - [Harbor](https://vmware.github.io/harbor/cn/): Enterprise Docker registry service for hosting the docker images for the service versions
 - [Kubernetes](https://kubernetes.io/): Container orchestration management tool for deploying the helm chart packages corresponding to the service versions
 - [ChartMuseum](https://chartmuseum.com/): Helm Chart Repository server., which is used to store the helm chart package corresponding to the service versions
@@ -111,21 +111,21 @@ DevOps Service integrated several open source tools to automate the process of `
   hzero:
     service:
       platform:
-        name: choerodon-platform
+        name: zknow-platform
       oauth:
-        name: choerodon-oauth
+        name: zknow-oauth
       iam:
-        name: choerodon-iam
+        name: zknow-iam
       file:
-        name: choerodon-file
+        name: zknow-file
       message:
-        name: choerodon-message
+        name: zknow-message
       admin:
-        name: choerodon-admin
+        name: zknow-admin
       swagger:
-        name: choerodon-swagger
+        name: zknow-swagger
       gateway:
-        name: choerodon-gateway
+        name: zknow-gateway
       monitor:
         name: choerodon-monitor
     websocket:

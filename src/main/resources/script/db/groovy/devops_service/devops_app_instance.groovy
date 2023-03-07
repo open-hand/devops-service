@@ -96,4 +96,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             }
         }
     }
+
+    changeSet(id: '2022-11-17-add-column',author: 'lihao'){
+        addColumn(tableName:'devops_app_service_instance' ){
+            column(name: 'replicas_strategy',type: 'VARCHAR(16)',remarks: '副本数生效策略 values/deployment',afterColumn: 'source')
+        }
+    }
 }

@@ -7,10 +7,12 @@
         select dcts.*, dctjsr.ci_template_job_id, dctjsr.sequence
         from devops_ci_template_job_step_rel dctjsr
         join devops_ci_template_step dcts on dctjsr.ci_template_step_id = dcts.id
-        where dctjsr.ci_template_job_id in
+        where
+        dctjsr.ci_template_job_id in
         <foreach collection="jobIds" item="jobId" open="(" separator="," close=")">
             #{jobId}
         </foreach>
+        AND dcts.visibility=1
     </select>
     <select id="listStepsByTemplateJobId" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
         select dcts.*, dctjsr.sequence
@@ -20,6 +22,7 @@
         where (dctj.source_type = 'site' and dctj.source_id = 0)
            or (dctj.source_type = 'organization' and dctj.source_id = #{organizationId})
             and dctjsr.ci_template_job_id = #{templateJobId}
+        AND dcts.visibility=1
     </select>
     <select id="listStepsByOrganizationIdId" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
         select dcts.*
@@ -27,6 +30,7 @@
         where (dcts.source_type = 'site' and dcts.source_id = 0)
            or (dcts.source_type = 'organization' and dcts.source_id = #{organizationId})
            or (dcts.source_type = 'project' and dcts.source_id = #{projectId})
+           AND dcts.visibility=1
     </select>
 </mapper>
 

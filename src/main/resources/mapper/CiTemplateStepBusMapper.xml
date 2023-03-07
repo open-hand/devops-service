@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="io.choerodon.devops.infra.mapper.CiTemplateStepBusMapper">
+    <select id="queryTemplateStepByParams" resultType="io.choerodon.devops.api.vo.template.CiTemplateStepVO">
+        SELECT
+        dcts.*,
+        dctsc.NAME AS category_name
+        FROM
+        devops_ci_template_step dcts
+        JOIN devops_ci_template_step_category dctsc ON dcts.category_id = dctsc.id
+
+        WHERE 1=1
+        AND dcts.visibility=1
+        <choose>
+            <when test="sourceType == 'organization'">
+                and (dcts.source_id = 0 OR dcts.source_id = #{sourceId})
+            </when>
+            <when test="sourceType == 'site'">
+                and (dcts.source_id = 0 OR dcts.source_id = #{sourceId})
+            </when>
+            <otherwise>
+                AND (dcts.source_id = 0 OR dcts.source_id= #{organizationId} OR dcts.source_id=#{sourceId} )
+            </otherwise>
+        </choose>
+
+
+        <if test="name != null and name != ''">
+            AND dcts.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="categoryName != null and categoryName != ''">
+            AND dctsc.name LIKE CONCAT(CONCAT('%', #{categoryName, jdbcType=VARCHAR}), '%')
+        </if>
+        <if test="categoryId != null and categoryId != ''">
+            AND dctsc.id = #{categoryId,jdbcType=BIGINT}
+        </if>
+        <if test="builtIn != null and builtIn == true">
+            <choose>
+                <when test="sourceType == 'project' or sourceType == 'organization'">
+                    AND dcts.built_in = 1
+                    OR (dcts.built_in = 0 AND dcts.source_type = 'site')
+                </when>
+                <otherwise>
+                    AND dcts.built_in = 1
+                </otherwise>
+            </choose>
+        </if>
+        <if test="builtIn != null and builtIn == false">
+            <choose>
+                <when test="sourceType == 'project' or sourceType == 'organization'">
+                    AND dcts.built_in = 0 AND dcts.source_type != 'site'
+                </when>
+                <otherwise>
+                    AND dcts.built_in = 0
+                </otherwise>
+            </choose>
+        </if>
+
+        <if test="params != null and params != ''">
+            AND dcts.name LIKE CONCAT(CONCAT('%', #{params, jdbcType=VARCHAR}), '%')
+        </if>
+        ORDER BY
+        field( dcts.source_type, 'project', 'organization', 'site' ) ASC,
+        dcts.id desc,
+        field( dcts.built_in, '0', '1' ) ASC
+    </select>
+
+    <select id="queryStepTemplateByJobIdAndSourceId" resultType="io.choerodon.devops.infra.dto.CiTemplateStepDTO">
+        SELECT
+        dctc.*
+        FROM
+        devops_ci_template_step dctc
+        JOIN devops_ci_template_job_step_rel dctjsr ON dctc.id = dctjsr.ci_template_step_id
+        WHERE
+        dctjsr.ci_template_job_id = #{templateJobId,jdbcType=BIGINT}
+        And dctc.source_id=#{sourceId,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryStepTemplateByJobId" resultType="io.choerodon.devops.infra.dto.CiTemplateStepDTO">
+        SELECT
+        dctc.*
+        FROM
+        devops_ci_template_step dctc
+        JOIN devops_ci_template_job_step_rel dctjsr ON dctc.id = dctjsr.ci_template_step_id
+        WHERE
+        dctjsr.ci_template_job_id = #{templateJobId,jdbcType=BIGINT}
+    </select>
+
+
+    <delete id="deleteByIds">
+        <if test="stepIds != null and stepIds.size() != 0">
+            DELETE FROM devops_ci_template_step
+            where id IN
+            <foreach collection="stepIds" item="stepId" index="index"
+                     open="(" close=")" separator=",">
+                #{stepId}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="selectByParams" resultType="io.choerodon.devops.infra.dto.CiTemplateStepDTO">
+        SELECT
+        dcts.*
+        FROM
+        devops_ci_template_step dcts
+        WHERE 1=1
+        AND dcts.visibility=1
+        <choose>
+            <when test="sourceType == 'organization'">
+                and (dcts.source_id = 0 OR dcts.source_id = #{sourceId})
+            </when>
+            <when test="sourceType == 'site'">
+                and (dcts.source_id = 0 OR dcts.source_id = #{sourceId})
+            </when>
+            <otherwise>
+                <if test="organizationId != null">
+                    AND (dcts.source_id = 0 OR dcts.source_id= #{organizationId} OR dcts.source_id=#{sourceId} )
+                </if>
+            </otherwise>
+        </choose>
+
+        <if test="name != null and name != ''">
+            AND dcts.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}), '%')
+        </if>
+    </select>
+
+    <select id="checkTemplateStepName" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_ci_template_step dcts
+        WHERE dcts.name = #{name}
+        AND dcts.source_id = #{sourceId}
+        <if test="templateStepId != null">
+            AND dcts.id != #{templateStepId}
+        </if>
+        LIMIT 1
+    </select>
+
+    <sql id="sqlparam">
+        <if test="searchVO != null">
+            <if test="searchVO.searchParam != null">
+                <if test="searchVO.searchParam.name != null and searchVO.searchParam.name != ''">
+                    AND dcts.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.name, jdbcType=VARCHAR}), '%')
+                </if>
+                <if test="searchVO.searchParam.categoryName != null">
+                    AND dctsc.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.categoryName, jdbcType=VARCHAR}), '%')
+                </if>
+                <if test="searchVO.searchParam.builtIn != null and searchVO.searchParam.builtIn == true">
+                    AND dcts.built_in = 1
+                </if>
+                <if test="searchVO.searchParam.builtIn != null and searchVO.searchParam.builtIn == false">
+                    AND dcts.built_in = 0
+                </if>
+
+                <if test="searchVO.searchParam.params != null and searchVO.searchParam.params != ''">
+                    AND dcts.name LIKE CONCAT(CONCAT('%', #{searchVO.searchParam.params, jdbcType=VARCHAR}), '%')
+                </if>
+            </if>
+        </if>
+    </sql>
+</mapper>

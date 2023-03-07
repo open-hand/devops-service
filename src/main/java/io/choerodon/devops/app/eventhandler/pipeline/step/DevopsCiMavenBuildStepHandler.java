@@ -36,6 +36,7 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
     @Autowired
     private CiTemplateMavenBuildService ciTemplateMavenBuildService;
 
+
     @Override
     @Transactional
     public void saveConfig(Long stepId, DevopsCiStepVO devopsCiStepVO) {
@@ -53,7 +54,25 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId()));
+        CiTemplateMavenBuildDTO templateMavenBuildDTO = ciTemplateMavenBuildService.baseQueryById(ciTemplateStepVO.getId());
+        if (templateMavenBuildDTO != null) {
+            ciTemplateStepVO.setMavenBuildConfig(ciTemplateMavenBuildService.dtoToVo(templateMavenBuildDTO));
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        CiTemplateMavenBuildDTO mavenBuildConfig = ciTemplateStepVO.getMavenBuildConfig();
+        if (mavenBuildConfig != null) {
+            ciTemplateMavenBuildService.baseCreate(ciTemplateStepVO.getId(), mavenBuildConfig);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateMavenBuildService.deleteByTemplateStepId(ciTemplateStepVO.getId());
     }
 
     @Override
@@ -144,8 +163,6 @@ public class DevopsCiMavenBuildStepHandler extends AbstractDevopsCiStepHandler {
 //        mavenRepoVO.setPassword(nexusMavenRepoDTO.getNeUserPassword());
 //        return mavenRepoVO;
 //    }
-
-
 
 
 //    private static String buildSettings(List<MavenRepoVO> mavenRepoList) {

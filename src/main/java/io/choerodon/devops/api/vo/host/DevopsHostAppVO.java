@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.dto.DockerComposeValueDTO;
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
 import io.choerodon.devops.infra.dto.repo.JarPullInfoDTO;
 import io.choerodon.devops.infra.enums.deploy.OperationTypeEnum;
+import io.choerodon.devops.infra.util.Base64Util;
 
 /**
  * 〈功能简述〉
@@ -78,6 +79,14 @@ public class DevopsHostAppVO {
     private String hostStatus;
     @ApiModelProperty(value = "当前生效的配置id,为docker_compose部署类型时才需要")
     private Long effectValueId;
+
+    public void decodeCommand() {
+        this.preCommand = Base64Util.decodeBuffer(this.preCommand);
+        this.runCommand = Base64Util.decodeBuffer(this.runCommand);
+        this.postCommand = Base64Util.decodeBuffer(this.postCommand);
+        this.healthProb = Base64Util.decodeBuffer(this.healthProb);
+        this.killCommand = Base64Util.decodeBuffer(this.killCommand);
+    }
 
     private DevopsDockerInstanceVO devopsDockerInstanceVO;
 

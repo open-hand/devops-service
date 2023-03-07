@@ -1,19 +1,6 @@
 package io.choerodon.devops.app.eventhandler.pipeline.step;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
-
 import io.choerodon.devops.api.vo.DevopsCiMavenPublishConfigVO;
 import io.choerodon.devops.api.vo.DevopsCiStepVO;
 import io.choerodon.devops.api.vo.MavenRepoVO;
@@ -32,6 +19,19 @@ import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.feign.operator.RdupmClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.*;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 〈功能简述〉
@@ -73,7 +73,36 @@ public class DevopsCiMavenPublishStepHandler extends AbstractDevopsCiStepHandler
 
     @Override
     public void fillTemplateStepConfigInfo(CiTemplateStepVO ciTemplateStepVO) {
-        ciTemplateStepVO.setMavenPublishConfig(ciTemplateMavenPublishService.queryByStepId(ciTemplateStepVO.getId()));
+        CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.queryByStepId(ciTemplateStepVO.getId());
+        if (ciTemplateMavenPublishDTO != null) {
+            if (!ObjectUtils.isEmpty(ciTemplateMavenPublishDTO.getNexusMavenRepoIdStr())) {
+                ciTemplateMavenPublishDTO.setNexusMavenRepoIds(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getNexusMavenRepoIdStr(), new TypeReference<Set<Long>>() {
+                }));
+            }
+            if (!ObjectUtils.isEmpty(ciTemplateMavenPublishDTO.getTargetRepoStr())) {
+                ciTemplateMavenPublishDTO.setTargetRepo(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getTargetRepoStr(), MavenRepoVO.class));
+            }
+
+            if (!ObjectUtils.isEmpty(ciTemplateMavenPublishDTO.getRepoStr())) {
+                ciTemplateMavenPublishDTO.setRepos(JsonHelper.unmarshalByJackson(ciTemplateMavenPublishDTO.getRepoStr(), new TypeReference<List<MavenRepoVO>>() {
+                }));
+            }
+            ciTemplateStepVO.setMavenPublishConfig(ciTemplateMavenPublishDTO);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void saveTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        if (ciTemplateStepVO.getMavenPublishConfig() != null) {
+            CiTemplateMavenPublishDTO ciTemplateMavenPublishDTO = ciTemplateMavenPublishService.voToDto(ciTemplateStepVO.getMavenPublishConfig());
+            ciTemplateMavenPublishService.baseCreate(ciTemplateStepVO.getId(), ciTemplateMavenPublishDTO);
+        }
+    }
+
+    @Override
+    public void deleteTemplateStepConfig(CiTemplateStepVO ciTemplateStepVO) {
+        ciTemplateMavenPublishService.deleteByTemplateId(ciTemplateStepVO.getId());
     }
 
     @Override

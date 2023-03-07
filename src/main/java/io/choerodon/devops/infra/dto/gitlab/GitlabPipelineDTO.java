@@ -4,15 +4,13 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.choerodon.devops.infra.enums.PipelineStatus;
-
 /**
  * Created by Zenger on 2018/1/10.
  */
 public class GitlabPipelineDTO {
 
     private Integer id;
-    private PipelineStatus status;
+    private String status;
     private String ref;
     private String sha;
     private String beforeSha;
@@ -31,6 +29,16 @@ public class GitlabPipelineDTO {
     private Date committedAt;
     private String coverage;
     private Integer duration;
+
+    private String webUrl;
+
+    public String getWebUrl() {
+        return webUrl;
+    }
+
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
+    }
 
     public String getCreatedAt() {
         return createdAt;
@@ -64,11 +72,11 @@ public class GitlabPipelineDTO {
         this.id = id;
     }
 
-    public PipelineStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(PipelineStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

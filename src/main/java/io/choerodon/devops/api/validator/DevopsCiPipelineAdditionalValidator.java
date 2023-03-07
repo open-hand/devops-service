@@ -56,7 +56,7 @@ public class DevopsCiPipelineAdditionalValidator {
      * @param ciCdPipelineVO 流水线数据
      */
     public static void additionalCheckPipeline(CiCdPipelineVO ciCdPipelineVO) {
-        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS()) && CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+        if (CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCiStageVOS())) {
             throw new CommonException(ERROR_STAGES_EMPTY);
         }
 
@@ -82,23 +82,23 @@ public class DevopsCiPipelineAdditionalValidator {
 
                     });
                 });
-        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
-            ciCdPipelineVO.getDevopsCdStageVOS()
-                    .stream()
-                    .forEach(stage -> {
-                        if (CollectionUtils.isEmpty(stage.getJobList())) {
-                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
-                        }
-
-                        // 校验stage名称唯一
-                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
-
-                        stage.getJobList().forEach(job -> {
-                            validateTriggerRefRegex(job);
-                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
-                        });
-                    });
-        }
+//        if (!CollectionUtils.isEmpty(ciCdPipelineVO.getDevopsCdStageVOS())) {
+//            ciCdPipelineVO.getDevopsCdStageVOS()
+//                    .stream()
+//                    .forEach(stage -> {
+//                        if (CollectionUtils.isEmpty(stage.getJobList())) {
+//                            throw new CommonException(ERROR_CD_JOB_IS_EMPTY, stage.getName());
+//                        }
+//
+//                        // 校验stage名称唯一
+//                        validateStageNameUniqueInPipeline(stage.getName(), stageNames);
+//
+//                        stage.getJobList().forEach(job -> {
+//                            validateTriggerRefRegex(job);
+//                            validateJobNameUniqueInPipeline(job.getName(), jobNames);
+//                        });
+//                    });
+//        }
 
     }
 
@@ -106,7 +106,7 @@ public class DevopsCiPipelineAdditionalValidator {
         if (CiJobTypeEnum.NORMAL.value().equals(job.getType())) {
             List<DevopsCiStepVO> devopsCiStepVOList = job.getDevopsCiStepVOList();
             if (CollectionUtils.isEmpty(devopsCiStepVOList)) {
-                throw new CommonException("devops.job.step.is.empty");
+                throw new CommonException("devops.job.step.is.empty", job.getName());
             }
         }
     }

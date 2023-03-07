@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
@@ -9,13 +16,6 @@ import io.kubernetes.client.models.V1beta1IngressBackend;
 import io.kubernetes.client.openapi.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
@@ -50,7 +50,7 @@ public class HandlerV1Beta1IngressRelationsServiceImpl implements HandlerObjectF
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceDTO> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-        if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+        if (devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId())) {
             List<String> beforeIngress = beforeSync.stream()
                     .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                     .map(devopsEnvFileResourceE -> {

@@ -1,11 +1,12 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.vo.DevopsDeployValueVO;
+import io.choerodon.devops.api.vo.PipelineInstanceReferenceVO;
 import io.choerodon.devops.infra.dto.DevopsDeployValueDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -82,14 +83,8 @@ public interface DevopsDeployValueService {
      */
     List<DevopsDeployValueVO> listByEnvAndApp(Long projectId, Long appServiceId, Long envId, String name);
 
-    /**
-     * 检测能否删除
-     *
-     * @param projectId 项目id
-     * @param valueId   配置id
-     * @return true 如果能删除
-     */
-    Boolean checkDelete(Long projectId, Long valueId);
+
+    List<PipelineInstanceReferenceVO> checkDelete(Long projectId, Long valueId);
 
     Page<DevopsDeployValueDTO> basePageByOptionsWithOwner(Long projectId, Long appServiceId, Long envId, Long userId, PageRequest pageable, String params);
 

@@ -213,13 +213,19 @@ public interface SendNotificationService {
 
     void sendWhenSecret(DevopsSecretDTO devopsSecretDTO, String code);
 
-    void sendPipelineAuditMassage(String type, List<Long> auditUser, Long pipelineRecordId, String stageName, Long stageId,Long detailsUserId);
+    void sendCiPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> auditUser, Long pipelineRecordId, String stageName, Long detailsUserId, Long projectId);
 
-    void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
+    void sendPipelineAuditResultMassage(String type, Long ciPipelineId, List<Long> auditUser, Long pipelineRecordId, String stageName, Long detailsUserId, Long projectId);
+
+//    void sendCdPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
 
     void sendCiPipelineNotice(Long pipelineRecordId, String type, Long userId, String email, HashMap<String, String> params);
 
-    void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
+//    void sendCdPipelineNotice(Long pipelineRecordId, String type, List<Receiver> receivers, @Nullable Map<String, String> params);
+
+    void sendCiPipelineAuditMessage(Long ciPipelineId, Long ciPipelineRecordId, String stage, List<Long> userIds);
+
+    void sendPipelineAuditMessage(Long pipelineId, Long pipelineRecordId, String stage, List<Long> userIds);
 
     /**
      * 实例状态变更发送webhook josn

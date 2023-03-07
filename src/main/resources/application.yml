@@ -55,6 +55,7 @@ services:
     sshUrl: "gitlab.example.com" # 用于ssh操作的gitlab地址
     projectLimit: 100 # gitlab用户可以创建的项目的数量限制
     internalsshUrl: ${SERVICES_GITLAB_INTERNALSSHURL:} # 用于ssh操作的gitlab地址
+    resetPasswordUrl: ${GITLAB_RESET_PASSWORD_URL:} # 重置gitlab密码的链接
   helm:
     url: "helm.example.com" # 存放helm chart包的仓库地址
     userName: # Helm chart 仓库 的用户名, 选填(与密码要配对)
@@ -68,26 +69,28 @@ services:
     username: admin
     password: password
     analysis-user-token: ${SERVICES_SONARQUBE_ANALYSIS_USER_TOKEN:} # 流水线执行代码扫描的用户token.需要Analysis和Create权限
+  test:
+    runner-image: ${TEST_RUNNER_IMAGE:example.com/choerodon-test-runner:1.0.0}
 hzero:
   service:
     platform:
-      name: choerodon-platform
+      name: zknow-platform
     oauth:
-      name: choerodon-oauth
+      name: zknow-oauth
     iam:
-      name: choerodon-iam
+      name: zknow-iam
     file:
-      name: choerodon-file
+      name: zknow-file
     message:
-      name: choerodon-message
+      name: zknow-message
     admin:
-      name: choerodon-admin
+      name: zknow-admin
     swagger:
-      name: choerodon-swagger
+      name: zknow-swagger
     gateway:
-      name: choerodon-gateway
+      name: zknow-gateway
     monitor:
-      name: choerodon-monitor
+      name: zknow-monitor
   websocket:
     # 用于连接websocket的路径
     websocket: /websocket
@@ -96,10 +99,10 @@ hzero:
     # 后端长连通信密钥
     secretKey: devops_ws
     # oauth服务用于查询用户信息的接口
-    oauth-url: ${OAUTH_USER_URL:http://choerodon-oauth/oauth/api/user}
+    oauth-url: ${OAUTH_USER_URL:http://zknow-oauth/oauth/api/user}
 choerodon:
   saga:
-    service: choerodon-asgard
+    service: zknow-asgard
     consumer:
       core-thread-num: 20
       max-thread-num: 20 # 消费线程数
@@ -198,8 +201,14 @@ devops:
     binary-download-url: ${C7N_AGENT_BINARY_URL:http://examplle.minio.com/agent/c7n-agent-1.0.0}
     # agent版本
     agent-version: ${C7N_AGENT_VERSION:1.0.0}
+    # 如果agent升级失败次数达到阈值，是否退出
+    agent-exit-if-upgrade-failed-time-exceed-max-count: ${C7N_AGENT_EXIT_IF_UPGRADE_FAILED_TIME_EXCEED_MAX_COUNT:true}
+    # agent升级次数失败阈值
+    max-agent-upgrade-failed-time: ${C7N_AGENT_MAX_UPGRADE_FAILED_TIME:3}
   # 流水线生成Gitlab Ci文件中默认的runner 镜像地址
   ci:
+    # 主机部署超时时间，单位是分钟
+    host-deploy-timeout: ${CI_HOST_DEPLOY_TIMEOUT:10}
     # ci流水线中构建镜像的方式，可选值:kaniko、docker
     image-build-type: ${CI_IMAGE_BUILD_TYPE:kaniko}
     default:
@@ -237,6 +246,12 @@ devops:
   batch:
     deployment:
       maxSize: 20
+  pipeline:
+    task:
+      timeoutDuration: ${DEVOPS_PIPELINE_TASK_TIMEOUT_DURATION:600000} # 持续集成流水线任务执行超时时间
+      executor:
+        corePoolSize: ${DEVOPS_PIPELINE_TASK_EXECUTOR_COREPOOLSIZE:5} # 持续集成流水线任务执行核心线程数
+        maxPoolSize: ${DEVOPS_PIPELINE_TASK_EXECUTOR_MAXPOOLSIZE:20} # 持续集成流水线任务执行最大线程数
   #下载jar的代理地址
   proxy:
     # 过滤器拦截的uri前缀
@@ -264,3 +279,8 @@ DesEncrypt:
 sonar:
   fix:
     image: ${SONAR_FIX_IMAGE:registry.cn-shanghai.aliyuncs.com/c7n/sonar-scanner:4.6-jdk-11.0.11_9}
+nexus:
+  default:
+    url: ${NEXUS_DEFAULT_URL:http://example.com}
+  proxy:
+    url: ${NEXUS_PROXY_URL:http://example.com}

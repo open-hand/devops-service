@@ -331,9 +331,13 @@ public class SagaTaskCodeConstants {
     public static final String DEVOPS_HZERO_DEPLOY_FAILED = "devops-hzero-deploy-failed";
 
     /**
-     * 修复流水线api测试数据
+     * 创建流水线定时执行任务
      */
-    public static final String DEVOPS_REPAIR_API_TEST_TASK_FROM_CD = "devops-repair-api-test-task-from-cd";
+    public static final String DEVOPS_CREATE_PIPELINE_TIME_TASK = "devops-create-pipeline-time-task";
+
+    public static final String DEVOPS_APP_VERSION_TRIGGER_PIPELINE = "devops-app-version-trigger-pipeline";
+
+    public static final String DEVOPS_PIPELINE_JOB_FINISH = "devops-pipeline-job-finish";
 
     private SagaTaskCodeConstants() {
     }

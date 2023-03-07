@@ -312,14 +312,14 @@ public class SagaTopicCodeConstants {
     public static final String DEVOPS_TRANSFER_APP_SERVICE = "devops-transfer-app-service";
 
     /**
-     * iam添加项目类型
+     * 创建流水线定时执行任务
      */
-//    public static final String ADD_PROJECT_CATEGORY = "iam-add-project-category";
+    public static final String DEVOPS_CREATE_PIPELINE_TIME_TASK = "devops-create-pipeline-time-task";
 
-    /**
-     * 修复流水线api测试数据
-     */
-    public static final String REPAIR_API_TEST_TASK_FROM_CD = "repair-api-test-task-from-cd";
+    public static final String DEVOPS_APP_VERSION_TRIGGER_PIPELINE = "devops-app-version-trigger-pipeline";
+
+    public static final String DEVOPS_PIPELINE_JOB_FINISH = "devops-pipeline-job-finish";
+
 
     private SagaTopicCodeConstants() {
     }

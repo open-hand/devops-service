@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
-import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.*;
@@ -35,10 +34,8 @@ import io.choerodon.devops.infra.dto.maven.Settings;
 import io.choerodon.devops.infra.dto.repo.C7nNexusRepoDTO;
 import io.choerodon.devops.infra.enums.DevopsCiStepTypeEnum;
 import io.choerodon.devops.infra.exception.DevopsCiInvalidException;
-import io.choerodon.devops.infra.feign.NexusClient;
 import io.choerodon.devops.infra.feign.RdupmClient;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
-import io.choerodon.devops.infra.handler.RetrofitHandler;
 import io.choerodon.devops.infra.mapper.CiPipelineMavenMapper;
 import io.choerodon.devops.infra.mapper.DevopsCiMavenSettingsMapper;
 import io.choerodon.devops.infra.util.*;
@@ -98,6 +95,7 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createOrUpdateJarInfo(Long nexusRepoId, Long mvnSettingsId, Long sequence, Long gitlabPipelineId, String jobName, String token, MultipartFile file, String mavenRepoUrl, String username, String password, String version) {
         ExceptionUtil.wrapExWithCiEx(() -> {
             AppServiceDTO appServiceDTO = appServiceService.baseQueryByToken(Objects.requireNonNull(token));
@@ -311,28 +309,11 @@ public class CiPipelineMavenServiceImpl implements CiPipelineMavenService {
         if (Objects.isNull(nexusUrl) || Objects.isNull(repositoryName)) {
             return ciPipelineMavenDTO.getVersion();
         }
-        try {
-            // 这个用scalar客户端是为了返回Callable<String>，另外一个方法的client用的Gson解析响应值，会导致响应解析出错
-            // 另外这里不用nexus的list API是因为这个API返回的是乱序的
-            //metadata文件下载地址:io/choerodon/demo-test05/0.1.0-SNAPSHOT/maven-metadata.xml
-            NexusClient nexusClient2 = RetrofitHandler.getScalarNexusClient(nexusUrl, userName, password);
-            Response<String> metadataXml = nexusClient2.componentMetadata(repositoryName, ciPipelineMavenDTO.getGroupId().replaceAll("\\.", BaseConstants.Symbol.SLASH) + BaseConstants.Symbol.SLASH + ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion()).execute();
-            // 如果请求返回404，maven-metadata.xml不存在，说明没有多个版本
-            if (metadataXml.code() == HttpStatus.NOT_FOUND.value()) {
-                return ciPipelineMavenDTO.getVersion();
-            }
-            if (metadataXml.code() == HttpStatus.UNAUTHORIZED.value()) {
-                throw new CommonException(DEVOPS_PULL_USER_AUTH_FAIL);
-            }
-            String parsedVersion = MavenSnapshotLatestVersionParser.parseVersion(metadataXml.body());
-            return parsedVersion == null ? ciPipelineMavenDTO.getVersion() : parsedVersion;
-        } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Ex occurred when parse JarSnapshotTimestamp for {}:{}:{}", ciPipelineMavenDTO.getGroupId(), ciPipelineMavenDTO.getArtifactId(), ciPipelineMavenDTO.getVersion());
-                logger.debug("The ex is:", ex);
-            }
-            return ciPipelineMavenDTO.getVersion();
-        }
+        // repository/{repositoryName}
+        String mavenRepoUrl = appendWithSlash(nexusUrl, "repository");
+        mavenRepoUrl = appendWithSlash(mavenRepoUrl, repositoryName);
+
+        return getCustomJarSnapshotTimestamp(mavenRepoUrl, userName, password, ciPipelineMavenDTO);
     }
 
     public String getCustomJarSnapshotTimestamp(String mavenRepoUrl, String userName, String password, CiPipelineMavenDTO ciPipelineMavenDTO) {

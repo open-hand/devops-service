@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -20,10 +21,8 @@ import org.springframework.util.CollectionUtils;
 import retrofit2.Response;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.DevopsCiJobLogVO;
-import io.choerodon.devops.api.vo.DevopsCiJobVO;
-import io.choerodon.devops.api.vo.SonarInfoVO;
-import io.choerodon.devops.api.vo.SonarQubeConfigVO;
+import io.choerodon.devops.api.vo.*;
+import io.choerodon.devops.app.eventhandler.pipeline.job.JobOperator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.infra.dto.*;
 import io.choerodon.devops.infra.dto.gitlab.JobDTO;
@@ -80,6 +79,9 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
     private CheckGitlabAccessLevelService checkGitlabAccessLevelService;
     private DevopsCiJobRecordMapper devopsCiJobRecordMapper;
 
+    @Autowired
+    private JobOperator jobOperator;
+
 
     public DevopsCiJobServiceImpl(DevopsCiJobMapper devopsCiJobMapper,
                                   GitlabServiceClientOperator gitlabServiceClientOperator,
@@ -88,7 +90,8 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                                   DevopsCiCdPipelineMapper devopsCiCdPipelineMapper,
                                   DevopsCiMavenSettingsMapper devopsCiMavenSettingsMapper,
                                   @Lazy DevopsCiPipelineService devopsCiPipelineService,
-                                  DevopsCiJobRecordService devopsCiJobRecordService,
+                                  @Lazy
+                                          DevopsCiJobRecordService devopsCiJobRecordService,
                                   AppServiceMapper appServiceMapper,
                                   CheckGitlabAccessLevelService checkGitlabAccessLevelService,
                                   DevopsCiPipelineRecordMapper devopsCiPipelineRecordMapper,
@@ -251,7 +254,7 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
                 appExternalConfigDTO);
         // 保存job记录
         try {
-            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId(),appServiceDTO.getId());
+            devopsCiJobRecordService.create(devopsCiPipelineRecordDTO.getId(), gitlabProjectId, jobDTO, userAttrDTO.getIamUserId(), appServiceDTO.getId());
         } catch (Exception e) {
             LOGGER.info("update job Records failed， jobid {}.", jobId);
         }
@@ -369,6 +372,51 @@ public class DevopsCiJobServiceImpl implements DevopsCiJobService {
             throw new DevopsCiInvalidException(DEVOPS_CI_MAVEN_SETTINGS_NOT_FOUND);
         }
         return devopsCiMavenSettingsDTO.getMavenSettings();
+    }
+
+    @Override
+    public Boolean doesApiTestSuiteRelatedWithPipeline(Long projectId, Long suiteId) {
+        return devopsCiJobMapper.doesApiTestSuiteRelatedWithPipeline(projectId, suiteId);
+    }
+
+    @Override
+    public DevopsCiJobDTO selectByPrimaryKey(Long id) {
+        return devopsCiJobMapper.selectByPrimaryKey(id);
+    }
+
+    @Override
+    public DevopsCiJobDTO queryByCiPipelineIdAndName(Long ciPipelineId, String name) {
+
+        DevopsCiJobDTO devopsCiJobDTO = new DevopsCiJobDTO();
+        devopsCiJobDTO.setCiPipelineId(ciPipelineId);
+        devopsCiJobDTO.setName(name);
+        return devopsCiJobMapper.selectOne(devopsCiJobDTO);
+
+    }
+
+    @Override
+    public List<PipelineInstanceReferenceVO> listApiTestTaskReferencePipelineInfo(Long projectId, Set<Long> taskIds) {
+        return devopsCiJobMapper.listApiTestTaskReferencePipelineInfo(projectId, taskIds);
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceEnvApp(Long projectId, Long appId) {
+        return devopsCiJobMapper.queryPipelineReferenceEnvApp(projectId, appId);
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryChartPipelineReference(Long projectId, Long appId) {
+        return devopsCiJobMapper.queryChartPipelineReference(projectId, appId);
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryDeployValuePipelineReference(Long projectId, Long valueId) {
+        return devopsCiJobMapper.queryDeployValuePipelineReference(projectId, valueId);
+    }
+
+    @Override
+    public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
+        return devopsCiJobMapper.queryPipelineReferenceHostApp(appId);
     }
 
     private SonarInfoVO getCiSonar(Long appServiceId) {

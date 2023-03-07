@@ -15,6 +15,7 @@ import io.choerodon.devops.api.vo.CountVO;
 import io.choerodon.devops.api.vo.MergeRequestVO;
 import io.choerodon.devops.api.vo.iam.ImmutableProjectInfoVO;
 import io.choerodon.devops.app.service.AppServiceInstanceService;
+import io.choerodon.devops.app.service.DevopsCiPipelineRecordService;
 import io.choerodon.devops.app.service.DevopsMergeRequestService;
 import io.choerodon.devops.app.service.DevopsProjectOverview;
 import io.choerodon.devops.infra.dto.*;
@@ -23,7 +24,10 @@ import io.choerodon.devops.infra.dto.iam.ProjectDTO;
 import io.choerodon.devops.infra.feign.operator.AgileServiceClientOperator;
 import io.choerodon.devops.infra.feign.operator.BaseServiceClientOperator;
 import io.choerodon.devops.infra.handler.ClusterConnectionHandler;
-import io.choerodon.devops.infra.mapper.*;
+import io.choerodon.devops.infra.mapper.AppServiceMapper;
+import io.choerodon.devops.infra.mapper.DevopsCiCdPipelineMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -60,9 +64,11 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
 
     @Autowired
     private DevopsCiCdPipelineMapper devopsCiCdPipelineMapper;
-
     @Autowired
-    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
+    private DevopsCiPipelineRecordService devopsCiPipelineRecordService;
+
+//    @Autowired
+//    private DevopsPipelineRecordRelMapper devopsPipelineRecordRelMapper;
 
     @Override
     public Map<String, Long> getEnvStatusCount(Long projectId) {
@@ -196,16 +202,16 @@ public class DevopsProjectOverviewImpl implements DevopsProjectOverview {
             return new CountVO();
         }
         //查询流水线在这个冲刺中的部署次数
-        List<DevopsPipelineRecordRelDTO> devopsPipelineRecordRelDTOS = new ArrayList<>();
+        List<DevopsCiPipelineRecordDTO> devopsPipelineRecordRelDTOS = new ArrayList<>();
         ciCdPipelineDTOS.forEach(ciCdPipelineDTO ->
                 //当前冲刺下流水线的触发次数
-                devopsPipelineRecordRelDTOS.addAll(devopsPipelineRecordRelMapper.selectBySprint(ciCdPipelineDTO.getId(),
+                devopsPipelineRecordRelDTOS.addAll(devopsCiPipelineRecordService.listByPipelineId(ciCdPipelineDTO.getId(),
                         new java.sql.Date(sprintDTO.getStartDate().getTime()),
                         new java.sql.Date(sprintDTO.getEndDate().getTime()))));
         if (CollectionUtils.isEmpty(devopsPipelineRecordRelDTOS)) {
             return new CountVO();
         }
-        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsPipelineRecordRelDTO::getCreationDate)
+        Map<String, Long> dateCount = devopsPipelineRecordRelDTOS.stream().map(DevopsCiPipelineRecordDTO::getCreationDate)
                 .map(date -> {
                     LocalDateTime localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
                     return dateTimeFormatter.format(localDateTime);

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineAuditRecordMapper">
+
+    <select id="queryByJobRecordIdForUpdate" resultType="io.choerodon.devops.infra.dto.PipelineAuditRecordDTO">
+        select *
+        from devops_pipeline_audit_record dpar
+        where dpar.job_record_id = #{jobRecordId}
+            for
+        update
+    </select>
+    <select id="listApprovalInfoByProjectIdsAndUserId" resultType="io.choerodon.devops.api.vo.ApprovalVO">
+        select
+        dp.project_id,
+        dp.id as cd_pipeline_id,
+        dp.name as pipeline_name,
+        dpr.id as cd_pipeline_record_id,
+        dpjr.id as task_record_id,
+        dpsr.name as stage_name
+        from devops_pipeline_audit_record dpar
+        inner join devops_pipeline_audit_user_record dpaur on (dpar.id = dpaur.audit_record_id and dpaur.user_id =
+        #{userId} and dpaur.status = 'not_audit')
+        inner join devops_pipeline_job_record dpjr on dpar.job_record_id = dpjr.id
+        inner join devops_pipeline_stage_record dpsr on dpsr.id = dpjr.stage_record_id
+        inner join devops_pipeline_record dpr on dpr.id = dpsr.pipeline_record_id
+        inner join devops_pipeline dp on dp.id = dpr.pipeline_id
+        <where>
+            dp.project_id in
+            <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </where>
+        order by dpjr.id desc
+    </select>
+</mapper>

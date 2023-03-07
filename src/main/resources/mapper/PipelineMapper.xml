@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
+
+    <select id="pagingByProjectIdAndOptions" resultType="io.choerodon.devops.api.vo.PipelineHomeVO">
+        select dp.id,
+        dp.project_id,
+        dp.name,
+        dp.effect_version_id,
+        dp.token,
+        dp.is_enable as enable,
+        dp.is_app_version_trigger_enable as app_version_trigger_enable,
+        dp.object_version_number,
+        dp.created_by,
+        dp.creation_date,
+        dp.last_updated_by,
+        dp.last_update_date,
+        dpr.id as latest_pipeline_record_id,
+        dpr.status,
+        dpr.started_date,
+        dpr.finished_date,
+        dpr.trigger_type,
+        dpr.app_service_version_id,
+        dpr.created_by as latest_pipeline_trigger_id
+        from devops_pipeline dp
+        left join devops_pipeline_record dpr on dpr.id = (select max(id) from devops_pipeline_record where pipeline_id =
+        dp.id)
+        <where>
+            dp.project_id = #{projectId}
+            <if test="param != null">
+                and dp.name like CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            </if>
+            <if test="enable!=null">
+                and dp.is_enable = #{enable}
+            </if>
+            <if test="triggerType!=null">
+                and dpr.trigger_type = #{triggerType}
+            </if>
+            <if test="status!=null">
+                and dpr.status = #{status}
+            </if>
+        </where>
+        order by dp.id desc
+    </select>
+    <select id="checkName" resultType="java.lang.Boolean">
+        select count(1) = 0
+        from devops_pipeline dp
+        <where>
+            dp.project_id = #{projectId} and dp.name = #{name}
+            <if test="id != null">
+                and dp.id != #{id}
+            </if>
+        </where>
+    </select>
+    <select id="listAppAssociatedPipeline" resultType="java.lang.Long">
+        select dp.id
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dpcdc.app_service_id = #{appServiceId}
+          and dp.is_app_version_trigger_enable = 1
+    </select>
+    <select id="listDeployValuePipelineReference"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dpj.name as job_name,
+               dp.name  as pipeline_name,
+               dps.name as stage_name,
+               "cd"     as type
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline_stage dps on dps.id = dpj.stage_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.value_id = #{valueId}
+    </select>
+    <select id="countAppServicePipelineReference" resultType="java.lang.Integer">
+        select count(1)
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.app_service_id = #{appServiceId}
+    </select>
+    <select id="listAppPipelineReference"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dpj.name as job_name,
+               dp.name  as pipeline_name,
+               dps.name as stage_name,
+               "cd"     as type
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline_stage dps on dps.id = dpj.stage_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.app_id = #{appId}
+    </select>
+    <select id="listChartEnvReferencePipelineInfo"
+            resultType="io.choerodon.devops.api.vo.PipelineInstanceReferenceVO">
+        select dpj.name as job_name, dp.name as pipeline_name
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 inner join devops_pipeline_job dpj on dpcdc.id = dpj.config_id
+                 inner join devops_pipeline dp on dp.effect_version_id = dpj.version_id
+        where dp.project_id = #{projectId}
+          and dpcdc.env_id = #{envId}
+    </select>
+</mapper>

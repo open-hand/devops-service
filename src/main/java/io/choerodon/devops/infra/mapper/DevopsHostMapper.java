@@ -3,10 +3,10 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Set;
 
-import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.api.vo.DevopsHostVO;
+import io.choerodon.devops.infra.dto.CiCdPipelineDTO;
 import io.choerodon.devops.infra.dto.DevopsHostDTO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -20,12 +20,10 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      *
      * @param projectId   项目id
      * @param searchParam 查询参数
-     * @param hostStatus  主机状态
      * @return 主机列表
      */
     List<DevopsHostVO> listByOptions(@Param("projectId") Long projectId,
-                                     @Param("searchParam") String searchParam,
-                                     @Param("hostStatus") String hostStatus);
+                                     @Param("searchParam") String searchParam);
 
     List<DevopsHostDTO> listByProjectIdAndIds(@Param("projectId") Long projectId,
                                               @Param("hostIds") Set<Long> hostIds);
@@ -38,7 +36,9 @@ public interface DevopsHostMapper extends BaseMapper<DevopsHostDTO> {
      */
     List<DevopsHostDTO> listByProject(@Param("projectIds") List<Long> projectIds);
 
-    List<DevopsHostVO> listMemberHostByOptions(@Param("projectId") Long projectId, @Param("searchParam") String searchParam, @Param("hostStatus") String hostStatus, @Param("userId") Long userId);
+    List<DevopsHostVO> listMemberHostByOptions(@Param("projectId") Long projectId,
+                                               @Param("searchParam") String searchParam,
+                                               @Param("userId") Long userId);
 
     List<CiCdPipelineDTO> selectPipelineByHostId(@Param("hostId") Long hostId);
 

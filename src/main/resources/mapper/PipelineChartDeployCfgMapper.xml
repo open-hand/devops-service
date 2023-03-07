@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineChartDeployCfgMapper">
+
+    <select id="queryVoByConfigId" resultType="io.choerodon.devops.api.vo.cd.PipelineChartDeployCfgVO">
+        select dpcdc.*,
+               das.name as app_service_name,
+               de.name  as env_name
+        from devops_pipeline_chart_deploy_cfg dpcdc
+                 left join devops_app_service das on dpcdc.app_service_id = das.id
+                 left join devops_env de on dpcdc.env_id = de.id
+        where dpcdc.id = #{configId}
+    </select>
+</mapper>

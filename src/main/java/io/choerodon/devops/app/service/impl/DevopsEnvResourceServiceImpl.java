@@ -171,7 +171,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             case INGRESS:
                 if (devopsEnvResourceDTO.getInstanceId() != null) {
                     DevopsEnvironmentDTO devopsEnvironmentDTO = devopsEnvironmentService.baseQueryById(envId);
-                    if (devopsIngressService.operateForOldTypeIngress(devopsEnvironmentDTO.getClusterId())) {
+                    if (devopsIngressService.operateForOldTypeIngressJudgeByClusterVersion(devopsEnvironmentDTO.getClusterId())) {
                         V1beta1Ingress v1beta1Ingress = json.deserialize(
                                 devopsEnvResourceDetailDTO.getMessage(),
                                 V1beta1Ingress.class);
@@ -238,7 +238,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
             IamUserDTO iamUser = null;
             if (iamUserDTO.isPresent()) {
                 iamUser = iamUserDTO.get();
-                instanceEventVO.setLoginName(iamUser.getLdap() ? iamUser.getLoginName() : iamUser.getEmail());
+                instanceEventVO.setLoginName(Boolean.TRUE.equals(iamUser.getLdap()) ? iamUser.getLoginName() : iamUser.getEmail());
                 instanceEventVO.setRealName(iamUser.getRealName());
             }
             instanceEventVO.setCommandId(devopsEnvCommandDTO.getId());
@@ -567,7 +567,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByEnvIdAndKindAndName(Long envId, String kind, String name) {
         Assert.notNull(envId, ResourceCheckConstant.DEVOPS_ENV_ID_IS_NULL);
         Assert.notNull(kind, ResourceCheckConstant.DEVOPS_KIND_NAME_IS_NULL);
@@ -588,6 +588,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
         DevopsEnvResourceDTO devopsEnvResourceDTO = baseQueryOptions(instanceId, null, null, kind, name);
         cascadeDeleteByObject(devopsEnvResourceDTO);
@@ -610,12 +611,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public String getResourceDetailByEnvIdAndKindAndName(Long envId, String name, ResourceType resourceType) {
-        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, name, resourceType.getType());
+        return devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, resourceType.getType(), name);
     }
 
     @Override
     public Object queryDetailsByKindAndName(Long envId, String kind, String name) {
-        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        String message = devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, kind, name);
         if (StringUtils.isEmpty(message)) {
             return null;
         }
@@ -634,7 +635,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     @Override
     public String queryDetailsYamlByKindAndName(Long envId, String kind, String name) {
-        String message = devopsEnvResourceMapper.queryDetailsByKindAndName(envId, kind, name);
+        String message = devopsEnvResourceMapper.getResourceDetailByEnvIdAndKindAndName(envId, kind, name);
         try {
             return JsonYamlConversionUtil.json2yaml(message);
         } catch (IOException e) {

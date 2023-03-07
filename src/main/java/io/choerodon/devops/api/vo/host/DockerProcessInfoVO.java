@@ -2,6 +2,7 @@ package io.choerodon.devops.api.vo.host;
 
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.hzero.starter.keyencrypt.core.Encrypt;
 
 import io.choerodon.devops.infra.dto.iam.IamUserDTO;
@@ -24,6 +25,26 @@ public class DockerProcessInfoVO {
     private String ports;
     private IamUserDTO deployer;
     private Date deployDate;
+    @ApiModelProperty("应用code")
+    private String appCode;
+    @ApiModelProperty("应用版本")
+    private String version;
+
+    public String getAppCode() {
+        return appCode;
+    }
+
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getContainerName() {
         return containerName;

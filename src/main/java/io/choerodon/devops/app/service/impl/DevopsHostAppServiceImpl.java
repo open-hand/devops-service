@@ -85,6 +85,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private static final String CONNECTED = "connected";
     private static final String DISCONNECTED = "disconnected";
 
+    private static final String APP_FILE_SAVE_PATH_ON_HOST_TEMPLATE = "%s%s";
+
     @Lazy
     @Autowired
     private DevopsHostAdditionalCheckValidator devopsHostAdditionalCheckValidator;
@@ -116,19 +118,21 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     private DevopsHostAppInstanceService devopsHostAppInstanceService;
     @Autowired
     private DevopsMiddlewareService devopsMiddlewareService;
-    @Autowired
-    @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
+    //    @Autowired
+//    @Lazy
+//    private DevopsCdPipelineService devopsCdPipelineService;
     @Autowired
     private DevopsDockerInstanceMapper devopsDockerInstanceMapper;
     @Autowired
-    private DevopsCdHostDeployInfoService devopsCdHostDeployInfoService;
+    private DevopsCiHostDeployInfoService devopsCiHostDeployInfoService;
     @Autowired
     private HostConnectionHandler hostConnectionHandler;
     @Autowired
     private DockerComposeValueService dockerComposeValueService;
     @Autowired
     private DevopsDockerInstanceService devopsDockerInstanceService;
+    @Autowired
+    private DevopsCiJobService devopsCiJobService;
 
     @Override
     @Transactional
@@ -145,9 +149,9 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             jarDeployVO.setAppId(devopsHostAppDTO.getId());
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             DevopsHostAppInstanceDTO devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
-            if (!devopsHostAppInstanceDTO.getPreCommand().equals(jarDeployVO.getPreCommand()) ||
-                    !devopsHostAppInstanceDTO.getRunCommand().equals(jarDeployVO.getRunCommand()) ||
-                    !devopsHostAppInstanceDTO.getPostCommand().equals(jarDeployVO.getPostCommand()) ||
+            if (!devopsHostAppInstanceDTO.getPreCommand().equals(Base64Util.getBase64EncodedString(jarDeployVO.getPreCommand())) ||
+                    !devopsHostAppInstanceDTO.getRunCommand().equals(Base64Util.getBase64EncodedString(jarDeployVO.getRunCommand())) ||
+                    !devopsHostAppInstanceDTO.getPostCommand().equals(Base64Util.getBase64EncodedString(jarDeployVO.getPostCommand())) ||
                     !devopsHostAppInstanceDTO.getSourceConfig().equals(calculateSourceConfig(jarDeployVO))) {
                 // 执行操作前，先判断kill命令是否存在，不存在停止执行
                 if (!HostDeployUtil.checkKillCommandExist(jarDeployVO.getKillCommand())) {
@@ -160,14 +164,16 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else {
                 // 更新删除命令
                 if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), jarDeployVO.getKillCommand())) {
-                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), jarDeployVO.getKillCommand());
+                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), Base64Util.getBase64EncodedString(jarDeployVO.getKillCommand()));
                 }
                 // 更新健康探针
                 if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), jarDeployVO.getHealthProb())) {
-                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), jarDeployVO.getHealthProb());
+                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), Base64Util.getBase64EncodedString(jarDeployVO.getHealthProb()));
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    instanceDeployOptions.setVersion(devopsHostAppInstanceDTO.getVersion());
+                    instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
                     HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
                     hostAgentMsgVO.setHostId(String.valueOf(hostId));
                     hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
@@ -181,7 +187,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
-            devopsCdHostDeployInfoService.updateJarDeployInfoFromAppCenter(jarDeployVO);
+            devopsCiHostDeployInfoService.updateJarDeployInfoFromAppCenter(jarDeployVO);
         }
     }
 
@@ -340,6 +346,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 devopsHostAppVO.setArtifactId(devopsHostAppInstanceDTO.getArtifactId());
                 devopsHostAppVO.setVersion(devopsHostAppInstanceDTO.getVersion());
                 devopsHostAppVO.setReady(devopsHostAppInstanceDTO.getReady());
+                devopsHostAppVO.decodeCommand();
             }
 
         }
@@ -387,33 +394,33 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
     }
 
     @Override
-    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long appId, String name, String code) {
-        checkNameUniqueAndThrow(projectId, appId, name);
+    public void checkNameAndCodeUniqueAndThrow(Long projectId, Long hostId, Long appId, String name, String code) {
+        checkNameUniqueAndThrow(projectId, hostId, appId, name);
 
-        checkCodeUniqueAndThrow(projectId, appId, name);
+        checkCodeUniqueAndThrow(projectId, hostId, appId, name);
 
     }
 
-    public void checkCodeUniqueAndThrow(Long projectId, Long appId, String code) {
-        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, code))) {
+    public void checkCodeUniqueAndThrow(Long projectId, Long hostId, Long appId, String code) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, hostId, appId, code))) {
             throw new CommonException("devops.host.app.code.exist");
         }
     }
 
-    public void checkNameUniqueAndThrow(Long projectId, Long appId, String name) {
-        if (Boolean.FALSE.equals(checkNameUnique(projectId, appId, name))) {
+    public void checkNameUniqueAndThrow(Long projectId, Long hostId, Long appId, String name) {
+        if (Boolean.FALSE.equals(checkNameUnique(projectId, hostId, appId, name))) {
             throw new CommonException("devops.host.app.name.exist");
         }
     }
 
     @Override
-    public Boolean checkCodeUnique(Long projectId, Long appId, String code) {
-        return devopsHostAppMapper.checkCodeUnique(projectId, appId, code);
+    public Boolean checkCodeUnique(Long projectId, Long hostId, Long appId, String code) {
+        return devopsHostAppMapper.checkCodeUnique(projectId, hostId, appId, code);
     }
 
     @Override
-    public Boolean checkNameUnique(Long projectId, Long appId, String name) {
-        return devopsHostAppMapper.checkNameUnique(projectId, appId, name);
+    public Boolean checkNameUnique(Long projectId, Long hostId, Long appId, String name) {
+        return devopsHostAppMapper.checkNameUnique(projectId, hostId, appId, name);
     }
 
     @Override
@@ -456,6 +463,8 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(appId));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+            instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
             LOGGER.info("Delete docker-compose app msg is {}", JsonHelper.marshalByJackson(hostAgentMsgVO));
 
@@ -476,7 +485,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             devopsHostCommandDTO.setInstanceId(dockerInstanceDTO.getId());
             devopsHostCommandDTO.setStatus(HostCommandStatusEnum.OPERATING.value());
             devopsHostCommandService.baseCreate(devopsHostCommandDTO);
-            sendHostDockerAgentMsg(hostId, dockerInstanceDTO, devopsHostCommandDTO);
+            sendHostDockerAgentMsg(hostId, devopsHostAppDTO, dockerInstanceDTO, devopsHostCommandDTO);
         } else {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(appId);
 
@@ -499,22 +508,27 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             hostAgentMsgVO.setType(HostCommandEnum.OPERATE_INSTANCE.value());
             hostAgentMsgVO.setCommandId(String.valueOf(devopsHostCommandDTO.getId()));
 
+            Map<String, String> params = getRuntimeParams(projectId, devopsHostAppDTO, devopsHostAppInstanceDTO);
             InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
             instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
-            instanceDeployOptions.setKillCommand(Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand()));
+            instanceDeployOptions.setKillCommand(HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(devopsHostAppInstanceDTO.getKillCommand())));
             instanceDeployOptions.setOperation(MiscConstants.DELETE_TYPE);
+            instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+            instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
             hostAgentMsgVO.setPayload(JsonHelper.marshalByJackson(instanceDeployOptions));
 
             webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, DevopsHostConstants.GROUP + hostId, JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
     }
 
-    private void sendHostDockerAgentMsg(Long hostId, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
+    private void sendHostDockerAgentMsg(Long hostId, DevopsHostAppDTO devopsHostAppDTO, DevopsDockerInstanceDTO dockerInstanceDTO, DevopsHostCommandDTO devopsHostCommandDTO) {
         HostAgentMsgVO hostAgentMsgVO = getHostAgentMsgVO(hostId, devopsHostCommandDTO);
 
         DockerProcessInfoVO dockerProcessInfoVO = new DockerProcessInfoVO();
         dockerProcessInfoVO.setContainerId(dockerInstanceDTO.getContainerId());
         dockerProcessInfoVO.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
+        dockerProcessInfoVO.setVersion(devopsHostAppDTO.getVersion());
+        dockerProcessInfoVO.setAppCode(devopsHostAppDTO.getCode());
 
         InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
         instanceDeployOptions.setInstanceId(String.valueOf(dockerInstanceDTO.getId()));
@@ -566,15 +580,17 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             } else {
                 // 更新删除命令
                 if (!Objects.equals(devopsHostAppInstanceDTO.getKillCommand(), customDeployVO.getKillCommand())) {
-                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), customDeployVO.getKillCommand());
+                    devopsHostAppInstanceService.updateKillCommand(devopsHostAppInstanceDTO.getId(), Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()));
                 }
                 // 更新健康探针
                 if (!Objects.equals(devopsHostAppInstanceDTO.getHealthProb(), customDeployVO.getHealthProb())) {
                     devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
-                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), customDeployVO.getHealthProb());
+                    devopsHostAppInstanceService.updateHealthProb(devopsHostAppInstanceDTO.getId(), Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
                     // 发送指令给agent
                     InstanceDeployOptions instanceDeployOptions = new InstanceDeployOptions();
                     instanceDeployOptions.setInstanceId(String.valueOf(devopsHostAppInstanceDTO.getId()));
+                    instanceDeployOptions.setVersion(devopsHostAppDTO.getVersion());
+                    instanceDeployOptions.setAppCode(devopsHostAppDTO.getCode());
                     HostAgentMsgVO hostAgentMsgVO = new HostAgentMsgVO();
                     hostAgentMsgVO.setHostId(String.valueOf(hostId));
                     hostAgentMsgVO.setType(HostCommandEnum.UPDATE_PROB_COMMAND.value());
@@ -589,13 +605,13 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                             JsonHelper.marshalByJackson(hostAgentMsgVO));
                 }
             }
-            devopsCdHostDeployInfoService.updateCustomDeployInfoFromAppCenter(customDeployVO);
+            devopsCiHostDeployInfoService.updateCustomDeployInfoFromAppCenter(customDeployVO);
         }
     }
 
     @Override
     public PipelineInstanceReferenceVO queryPipelineReferenceHostApp(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceHostApp(projectId, appId);
+        return devopsCiJobService.queryPipelineReferenceHostApp(projectId, appId);
     }
 
     private void compoundDevopsHostAppVO(DevopsHostAppVO devopsHostAppVO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
@@ -637,29 +653,29 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     customDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
                     customDeployVO.getSourceType(),
                     AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null,
-                    customDeployVO.getPreCommand(),
-                    customDeployVO.getRunCommand(),
-                    customDeployVO.getPostCommand(),
-                    customDeployVO.getKillCommand(),
-                    customDeployVO.getHealthProb());
+                    Base64Util.getBase64EncodedString(customDeployVO.getPreCommand()),
+                    Base64Util.getBase64EncodedString(customDeployVO.getRunCommand()),
+                    Base64Util.getBase64EncodedString(customDeployVO.getPostCommand()),
+                    Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()),
+                    Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
 
             devopsHostAppInstanceService.baseCreate(devopsHostAppInstanceDTO);
         } else {
             devopsHostAppDTO.setName(customDeployVO.getAppName());
             MapperUtil.resultJudgedUpdateByPrimaryKey(devopsHostAppMapper, devopsHostAppDTO, DevopsHostConstants.ERROR_UPDATE_JAVA_INSTANCE_FAILED);
 
-            devopsHostAppInstanceDTO.setPreCommand(customDeployVO.getPreCommand());
-            devopsHostAppInstanceDTO.setRunCommand(customDeployVO.getRunCommand());
-            devopsHostAppInstanceDTO.setPostCommand(customDeployVO.getPostCommand());
-            devopsHostAppInstanceDTO.setKillCommand(customDeployVO.getKillCommand());
-            devopsHostAppInstanceDTO.setHealthProb(customDeployVO.getHealthProb());
+            devopsHostAppInstanceDTO.setPreCommand(Base64Util.getBase64EncodedString(customDeployVO.getPreCommand()));
+            devopsHostAppInstanceDTO.setRunCommand(Base64Util.getBase64EncodedString(customDeployVO.getRunCommand()));
+            devopsHostAppInstanceDTO.setPostCommand(Base64Util.getBase64EncodedString(customDeployVO.getPostCommand()));
+            devopsHostAppInstanceDTO.setKillCommand(Base64Util.getBase64EncodedString(customDeployVO.getKillCommand()));
+            devopsHostAppInstanceDTO.setHealthProb(Base64Util.getBase64EncodedString(customDeployVO.getHealthProb()));
             devopsHostAppInstanceDTO.setSourceType(customDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(AppSourceType.UPLOAD.getValue().equals(customDeployVO.getSourceType()) ? JsonHelper.marshalByJackson(customDeployVO.getFileInfoVO()) : null);
             devopsHostAppInstanceService.baseUpdate(devopsHostAppInstanceDTO);
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
         if (customDeployVO.getFileInfoVO().getFileName() == null) {
             customDeployVO.getFileInfoVO().setFileName("");
         }
@@ -681,12 +697,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 customDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                ObjectUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(customDeployVO.getPreCommand())),
-                ObjectUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(customDeployVO.getRunCommand())),
-                ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(customDeployVO.getPostCommand())),
-                ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(customDeployVO.getKillCommand())),
-                ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(customDeployVO.getHealthProb())),
-                customDeployVO.getOperation());
+                ObjectUtils.isEmpty(customDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getPreCommand()),
+                ObjectUtils.isEmpty(customDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getRunCommand()),
+                ObjectUtils.isEmpty(customDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getPostCommand()),
+                ObjectUtils.isEmpty(customDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getKillCommand()),
+                ObjectUtils.isEmpty(customDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, customDeployVO.getHealthProb()),
+                customDeployVO.getOperation(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -817,11 +835,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     jarDeployVO.getAppCode() + "-" + GenerateUUID.generateRandomString(),
                     jarDeployVO.getSourceType(),
                     calculateSourceConfig(jarDeployVO),
-                    jarDeployVO.getPreCommand(),
-                    jarDeployVO.getRunCommand(),
-                    jarDeployVO.getPostCommand(),
-                    jarDeployVO.getKillCommand(),
-                    jarDeployVO.getHealthProb());
+                    Base64Util.getBase64EncodedString(jarDeployVO.getPreCommand()),
+                    Base64Util.getBase64EncodedString(jarDeployVO.getRunCommand()),
+                    Base64Util.getBase64EncodedString(jarDeployVO.getPostCommand()),
+                    Base64Util.getBase64EncodedString(jarDeployVO.getKillCommand()),
+                    Base64Util.getBase64EncodedString(jarDeployVO.getHealthProb()));
             devopsHostAppInstanceDTO.setGroupId(groupId);
             devopsHostAppInstanceDTO.setArtifactId(artifactId);
             devopsHostAppInstanceDTO.setVersion(version);
@@ -834,11 +852,11 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             List<DevopsHostAppInstanceDTO> devopsHostAppInstanceDTOS = devopsHostAppInstanceService.listByAppId(devopsHostAppDTO.getId());
             devopsHostAppInstanceDTO = devopsHostAppInstanceDTOS.get(0);
 
-            devopsHostAppInstanceDTO.setPreCommand(jarDeployVO.getPreCommand());
-            devopsHostAppInstanceDTO.setRunCommand(jarDeployVO.getRunCommand());
-            devopsHostAppInstanceDTO.setPostCommand(jarDeployVO.getPostCommand());
-            devopsHostAppInstanceDTO.setKillCommand(jarDeployVO.getKillCommand());
-            devopsHostAppInstanceDTO.setHealthProb(jarDeployVO.getHealthProb());
+            devopsHostAppInstanceDTO.setPreCommand(Base64Util.getBase64EncodedString(jarDeployVO.getPreCommand()));
+            devopsHostAppInstanceDTO.setRunCommand(Base64Util.getBase64EncodedString(jarDeployVO.getRunCommand()));
+            devopsHostAppInstanceDTO.setPostCommand(Base64Util.getBase64EncodedString(jarDeployVO.getPostCommand()));
+            devopsHostAppInstanceDTO.setKillCommand(Base64Util.getBase64EncodedString(jarDeployVO.getKillCommand()));
+            devopsHostAppInstanceDTO.setHealthProb(Base64Util.getBase64EncodedString(jarDeployVO.getHealthProb()));
             devopsHostAppInstanceDTO.setSourceType(jarDeployVO.getSourceType());
             devopsHostAppInstanceDTO.setSourceConfig(calculateSourceConfig(jarDeployVO));
             devopsHostAppInstanceDTO.setVersion(version);
@@ -846,13 +864,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         }
 
         Map<String, String> params = new HashMap<>();
-        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId());
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
         params.put("{{ WORK_DIR }}", workDir);
         String downloadCommand;
         String appFile;
         String appFileName;
         if (AppSourceType.UPLOAD.getValue().equals(jarDeployVO.getSourceType())) {
             appFileName = jarDeployVO.getFileInfoVO().getFileName();
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(null,
                     null,
@@ -862,6 +881,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
             String downloadUrl = jarDeployVO.getJarPullInfoDTO().getDownloadUrl();
 
             appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(jarDeployVO.getJarPullInfoDTO().getPullUserId(),
                     jarDeployVO.getJarPullInfoDTO().getPullUserPassword(),
@@ -869,6 +889,7 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                     appFile);
         } else {
             appFileName = nexusComponentDTOList.get(0).getName();
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
             appFile = workDir + SLASH + appFileName;
             downloadCommand = HostDeployUtil.getDownloadCommand(mavenRepoDTOList.get(0).getNePullUserId(),
                     mavenRepoDTOList.get(0).getNePullUserPassword(),
@@ -882,12 +903,14 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
                 jarDeployVO.getAppCode(),
                 String.valueOf(devopsHostAppInstanceDTO.getId()),
                 downloadCommand,
-                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPreCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getRunCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getPostCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getKillCommand())),
-                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, Base64Util.decodeBuffer(jarDeployVO.getHealthProb())),
-                jarDeployVO.getOperation());
+                ObjectUtils.isEmpty(jarDeployVO.getPreCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getPreCommand()),
+                ObjectUtils.isEmpty(jarDeployVO.getRunCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getRunCommand()),
+                ObjectUtils.isEmpty(jarDeployVO.getPostCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getPostCommand()),
+                ObjectUtils.isEmpty(jarDeployVO.getKillCommand()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getKillCommand()),
+                ObjectUtils.isEmpty(jarDeployVO.getHealthProb()) ? "" : HostDeployUtil.getCommand(params, jarDeployVO.getHealthProb()),
+                jarDeployVO.getOperation(),
+                devopsHostAppDTO.getCode(),
+                devopsHostAppDTO.getVersion());
 
         DevopsHostCommandDTO devopsHostCommandDTO = new DevopsHostCommandDTO();
         devopsHostCommandDTO.setCommandType(HostCommandEnum.OPERATE_INSTANCE.value());
@@ -924,8 +947,61 @@ public class DevopsHostAppServiceImpl implements DevopsHostAppService {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info(">>>>>>>>>>>>>>>>>>>>>> deploy jar instance msg is {} <<<<<<<<<<<<<<<<<<<<<<<<", JsonHelper.marshalByJackson(hostAgentMsgVO));
         }
-        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId,
-                String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()),
-                JsonHelper.marshalByJackson(hostAgentMsgVO));
+        webSocketHelper.sendByGroup(DevopsHostConstants.GROUP + hostId, String.format(DevopsHostConstants.NORMAL_INSTANCE, hostId, devopsHostAppInstanceDTO.getId()), JsonHelper.marshalByJackson(hostAgentMsgVO));
+    }
+
+    private Map<String, String> getRuntimeParams(Long projectId, DevopsHostAppDTO devopsHostAppDTO, DevopsHostAppInstanceDTO devopsHostAppInstanceDTO) {
+        Map<String, String> params = new HashMap<>();
+        String workDir = HostDeployUtil.getWorkingDir(devopsHostAppInstanceDTO.getId(), devopsHostAppDTO.getCode(), devopsHostAppDTO.getVersion());
+        String appFileName;
+
+
+        if (ObjectUtils.isEmpty(devopsHostAppInstanceDTO.getSourceType())) {
+            appFileName = devopsHostAppInstanceDTO.getCode();
+        } else {
+            AppSourceType appSourceType = AppSourceType.find(devopsHostAppInstanceDTO.getSourceType());
+            switch (appSourceType) {
+                case CURRENT_PROJECT:
+                    ProdJarInfoVO prodJarInfoVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), ProdJarInfoVO.class);
+                    Long nexusRepoId = prodJarInfoVO.getRepositoryId();
+                    // 从制品库获取仓库信息
+                    // 获取并记录信息
+                    List<C7nNexusComponentDTO> nexusComponentDTOList = new ArrayList<>();
+                    ProjectDTO projectDTO = baseServiceClientOperator.queryIamProjectBasicInfoById(projectId);
+                    String groupId = prodJarInfoVO.getGroupId();
+                    String artifactId = prodJarInfoVO.getArtifactId();
+                    String jarVersion = prodJarInfoVO.getVersion();
+                    nexusComponentDTOList = rdupmClientOperator.listMavenComponents(projectDTO.getOrganizationId(), projectId, nexusRepoId, groupId, artifactId, jarVersion);
+                    if (CollectionUtils.isEmpty(nexusComponentDTOList)) {
+                        appFileName = devopsHostAppInstanceDTO.getCode();
+                    } else {
+                        appFileName = nexusComponentDTOList.get(0).getName();
+                    }
+                    break;
+                case CUSTOM_JAR:
+                    JarPullInfoDTO jarPullInfoDTO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), JarPullInfoDTO.class);
+                    String downloadUrl = jarPullInfoDTO.getDownloadUrl();
+                    appFileName = downloadUrl.substring(downloadUrl.lastIndexOf("/") + 1);
+                    break;
+                case UPLOAD:
+                    FileInfoVO fileInfoVO = JsonHelper.unmarshalByJackson(devopsHostAppInstanceDTO.getSourceConfig(), FileInfoVO.class);
+                    appFileName = fileInfoVO.getFileName();
+                    break;
+                default:
+                    appFileName = devopsHostAppInstanceDTO.getCode();
+            }
+        }
+
+        if (devopsHostAppDTO.getRdupmType().equals("jar")) {
+            appFileName = appFileName.endsWith(".jar") ? appFileName : appFileName + ".jar";
+        }
+
+        String appFile = workDir + SLASH + appFileName;
+
+        params.put("{{ WORK_DIR }}", workDir);
+        params.put("{{ APP_FILE_NAME }}", appFileName);
+        params.put("{{ APP_FILE }}", appFile);
+
+        return params;
     }
 }

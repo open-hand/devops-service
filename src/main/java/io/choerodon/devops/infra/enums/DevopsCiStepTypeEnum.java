@@ -81,6 +81,11 @@ public enum DevopsCiStepTypeEnum {
     CUSTOM("custom"),
 
     /**
+     * 人工卡点任务
+     */
+    AUDIT("audit"),
+
+    /**
      * 发布应用服务版本
      */
     PUBLISH_APP_VERSION("publish_app_version");

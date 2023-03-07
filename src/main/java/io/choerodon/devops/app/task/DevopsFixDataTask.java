@@ -4,6 +4,7 @@ import static io.choerodon.devops.app.service.impl.DevopsCheckLogServiceImpl.*;
 
 import java.util.Map;
 
+import com.yqcloud.core.oauth.ZKnowDetailsHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,10 @@ public class DevopsFixDataTask {
     private DevopsCheckLogService devopsCheckLogService;
 
 
-    @JobTask(maxRetryCount = 3, code = FIX_APP_CENTER_DATA, description = "修复应用中心数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON,
+            maxRetryCount = 3,
+            code = FIX_APP_CENTER_DATA,
+            description = "修复应用中心数据")
     @TimedTask(name = FIX_APP_CENTER_DATA, description = "修复应用中心数据", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixAppCenterData(Map<String, Object> map) {
@@ -43,7 +47,7 @@ public class DevopsFixDataTask {
      *
      * @param map
      */
-    @JobTask(maxRetryCount = 3, code = FIX_PIPELINE_DATA, description = "修复流水线数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_PIPELINE_DATA, description = "修复流水线数据")
     @TimedTask(name = FIX_PIPELINE_DATA, description = "修复流水线数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixPipelineData(Map<String, Object> map) {
         try {
@@ -58,7 +62,7 @@ public class DevopsFixDataTask {
      *
      * @param map
      */
-    @JobTask(maxRetryCount = 3, code = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据")
     @TimedTask(name = FIX_HELM_REPO_DATA, description = "迁移helm仓库数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixHelmRepoData(Map<String, Object> map) {
         try {
@@ -68,7 +72,7 @@ public class DevopsFixDataTask {
         }
     }
 
-    @JobTask(maxRetryCount = 3, code = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据")
     @TimedTask(name = FIX_HELM_VERSION_DATA, description = "迁移应用服务版本中chart版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixHelmVersionData(Map<String, Object> map) {
         try {
@@ -79,7 +83,7 @@ public class DevopsFixDataTask {
     }
 
 
-    @JobTask(maxRetryCount = 3, code = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据")
     @TimedTask(name = FIX_HELM_IMAGE_VERSION_OF_NULL_DATA, description = "迁移遗漏的应用版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixRemainHelmVersionData(Map<String, Object> map) {
         try {
@@ -94,7 +98,7 @@ public class DevopsFixDataTask {
      *
      * @param map
      */
-    @JobTask(maxRetryCount = 3, code = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据")
     @TimedTask(name = FIX_IMAGE_VERSION_DATA, description = "迁移应用服务版本中镜像版本数据", repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {})
     public void fixImageVersionData(Map<String, Object> map) {
         try {
@@ -109,7 +113,7 @@ public class DevopsFixDataTask {
      *
      * @param map
      */
-    @JobTask(maxRetryCount = 3, code = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA, description = "删除资源详情脏数据")
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA, description = "删除资源详情脏数据")
 //    @TimedTask(name = DELETE_DEVOPS_ENV_RESOURCE_DETAIL_DATA,
 //            description = "删除资源详情脏数据",
 //            params = {},
@@ -122,5 +126,25 @@ public class DevopsFixDataTask {
             logger.error("devops.fix.data", e);
         }
     }
+
+    /**
+     * cicd融合迁移cd数据
+     *
+     * @param map
+     */
+    @JobTask(productSource = ZKnowDetailsHelper.VALUE_CHOERODON, maxRetryCount = 3, code = MIGRATION_CD_PIPELINE_DATE, description = "cicd融合迁移cd数据")
+    @TimedTask(name = MIGRATION_CD_PIPELINE_DATE,
+            description = "cicd融合迁移cd数据",
+            repeatInterval = 1,
+            repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS,
+            params = {})
+    public void migrationCdPipelineDate(Map<String, Object> map) {
+        try {
+            devopsCheckLogService.checkLog(MIGRATION_CD_PIPELINE_DATE);
+        } catch (Exception e) {
+            logger.error("devops.fix.data", e);
+        }
+    }
+
 
 }

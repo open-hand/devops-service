@@ -44,6 +44,10 @@ function export_commit_tag() {
    then
        return
    fi
+   # 没有git目录也不处理
+   if [ ! -d ".git" ]; then
+       return
+   fi
 
     # 获取commit时间
     C7N_COMMIT_TIMESTAMP=$(git log -1 --date=format-local:%Y%m%d%H%M%S --pretty=format:"%cd")
@@ -151,11 +155,11 @@ function kaniko_build() {
   if [ -z $KUBERNETES_SERVICE_HOST ];then
       ssh -o StrictHostKeyChecking=no root@kaniko DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
-      --tarPath ${PWD}/${PROJECT_NAME}.tar
+      --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   else
       ssh -o StrictHostKeyChecking=no root@127.0.0.1 DOCKER_CONFIG=${DOCKER_CONFIG} /kaniko/kaniko $1  --no-push \
       -c $PWD/$2 -f $PWD/$3 -d ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG} \
-      --tarPath ${PWD}/${PROJECT_NAME}.tar
+      --tarPath ${PWD}/${PROJECT_NAME}.tar --force
   fi
 }
 
@@ -183,6 +187,7 @@ function clean_cache() {
 
 ################################ 上传生成的chart包到猪齿鱼平台的devops-service ##################################
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
+# $1 helm 仓库id
 function chart_build() {
   # 8位sha值
   export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,1,8)}')
@@ -224,6 +229,8 @@ function chart_build() {
     -F "gitlabPipelineId=${CI_PIPELINE_ID}" \
     -F "jobName=${CI_JOB_NAME}" \
     -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
+    -F "helm_repo_id=$1" \
+    -F "gitlab_user_id=${GITLAB_USER_ID}" \
     "${CHOERODON_URL}/devops/ci" \
     -o "${CI_COMMIT_SHA}-ci.response" \
     -w %{http_code})
@@ -270,22 +277,6 @@ function publish_app_version() {
 
 }
 #################################### 下载settings文件 ####################################
-# 临时保留一个版本，后期可删除 v2.2
-# $1 fileName   下载settings文件后保存为的文件名称
-# $2 project_id 项目id
-# $3 ciJobId    猪齿鱼的CI的JOB纪录的id
-# $4 sequence   猪齿鱼的CI流水线的步骤的序列号
-function downloadSettingsFile() {
-  rm -rf "$1"
-  http_status_code=$(curl -o "$1" -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/projects/$2/ci_jobs/maven_settings?job_id=$3&sequence=$4&token=${Token}")
-
-  if [ "$http_status_code" != "200" ]; then
-    echo "failed to downloadSettingsFile: $1"
-    cat "settings.xml"
-    exit 1
-  fi
-}
-#################################### 下载settings文件 ####################################
 # $1 projectId
 # $2 devops_ci_maven_settings.id
 function downloadSettingsFileByUId() {
@@ -298,16 +289,6 @@ function downloadSettingsFileByUId() {
     exit 1
   fi
 }
-#################################### 触发cd流水线 ####################################
-function triggerCdPipeline() {
-  http_status_code=$(curl -X POST -o -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/v1/cd_pipeline/trigger_cd_pipeline?token=${Token}&commit=${CI_COMMIT_SHA}&ref=${CI_COMMIT_REF_NAME}&gitlab_user_id=${GITLAB_USER_ID}&gitlab_pipeline_id=${CI_PIPELINE_ID}")
-
-  if [ "$http_status_code" != "204" ]; then
-    echo "failed to triggerCdPipeline"
-    exit 1
-  fi
-}
-
 
 ############################### 存储镜像元数据, 用于CD阶段主机部署-镜像部署 ################################
 # 无参数
@@ -397,34 +378,6 @@ function saveJarInfo() {
     fi
   fi
 }
-
-############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
-# $1 maven制品库id
-# $2 mvn_settings_id    mvn_settings_id
-# $3 sequence   猪齿鱼的CI流水线的步骤的序列号
-function saveJarInfo() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "nexus_repo_id=$1" \
-    -F "mvn_settings_id=$2" \
-    -F "sequence=$3" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "version=${CI_COMMIT_TAG}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_info" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
-  # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
-  fi
-}
 ############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
 # $1 ciJobId    猪齿鱼的CI的JOB纪录的id
 # $2 sequence   猪齿鱼的CI流水线的步骤的序列号
@@ -490,34 +443,27 @@ function saveCustomJarInfo() {
     fi
   fi
 }
-############################### 存储jar包元数据, 用于CD阶段主机部署-jar包部署 ################################
-# $1 mvn_settings_id   mvn_settings_id
-# $2 sequence   猪齿鱼的CI流水线的步骤的序列号
-# $3 maven_repo_url   目标仓库地址
-# $4 username   目标仓库用户名
-# $5 password   目标仓库用户密码
-function saveCustomJarInfo() {
-  result_upload_to_devops=$(curl -X POST \
-    -H 'Expect:' \
-    -F "token=${Token}" \
-    -F "mvn_settings_id=$1" \
-    -F "sequence=$2" \
-    -F "maven_repo_url=$3" \
-    -F "username=$4" \
-    -F "password=$5" \
-    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
-    -F "job_name=${CI_JOB_NAME}" \
-    -F "file=@pom.xml" \
-    "${CHOERODON_URL}/devops/ci/save_jar_info" \
-    -o "${CI_COMMIT_SHA}-ci.response" \
-    -w %{http_code})
-  # 判断本次上传到devops是否出错
-  response_upload_to_devops=$(cat "${CI_COMMIT_SHA}-ci.response")
-  rm "${CI_COMMIT_SHA}-ci.response"
-  if [ "$result_upload_to_devops" != "200" ]; then
-    echo "$response_upload_to_devops"
-    echo "upload to devops error"
-    exit 1
+
+############################### 检查sonar扫描的信息，并根据质量门设置，判断是否终止job ################################
+function checkSonarQualityGateScanResult(){
+  if [ "$1" == "true " ]; then
+    response_code=$(curl -X GET \
+        -F "token=${Token}" \
+        -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+        "${CHOERODON_URL}/devops/ci/get_sonar_quality_gate_result" \
+        -o "sonarQualityGateScanResult.json" \
+        -w %{http_code})
+
+    if [ "${response_code}" != 200 ]; then
+         cat sonarQualityGateScanResult.json
+         exit 1
+    fi
+
+    scan_result=$(cat sonarQualityGateScanResult.json)
+    if [ "${scan_result}" != true ]; then
+        echo "The sonar quality gate doesn't pass"
+        exit 1
+    fi
   fi
 }
 
@@ -673,7 +619,7 @@ function rewrite_image_info() {
     cat rewrite_image_info.json
     echo "Query repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       cat rewrite_image_info.json
@@ -700,7 +646,7 @@ function rewrite_image_info_for_chart() {
   then
     echo "Query chart repo info failed,skip rewrite image info"
   else
-    is_failed=$(jq -r .faild rewrite_image_info.json)
+    is_failed=$(jq -r .failed rewrite_image_info.json)
     if [ "${is_failed}" == "true" ];
     then
       echo "Query chart repo info failed,skip rewrite image info"
@@ -712,4 +658,169 @@ function rewrite_image_info_for_chart() {
     fi
   fi
 
+}
+## chart部署
+## $1 部署配置id
+function chart_deploy() {
+  app_deploy "${1}" chart_deploy
+}
+
+## chart部署
+## $1 部署配置id
+function deployment_deploy() {
+  app_deploy "${1}" deployment_deploy
+}
+## $1 部署配置id
+## $2 指令类型
+function app_deploy() {
+  http_status_code=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "gitlab_job_id=${CI_JOB_ID}" \
+    -F "config_id=$1" \
+    -F "command_type=$2" \
+    "${CHOERODON_URL}/devops/ci/exec_command" \
+    -o "result.json" \
+    -s \
+    -w %{http_code})
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Deploy failed."
+    exit 1
+  else
+    is_failed=$(jq -r .failed result.json)
+    message=$(jq -r .message result.json)
+    # 打印后台返回的日志
+    if [ -n "${message}" ]; then
+        echo "${message}"
+    fi
+    # 判断是否成功
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Deploy failed"
+      exit 1
+    fi
+  fi
+}
+
+# 部署主机应用
+## $1 部署配置id
+## $2 指令类型
+function host_deploy(){
+    http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/exec_command?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&gitlab_job_id=${CI_JOB_ID}&config_id=$1&command_type=$2")
+    if [ "$http_status_code" != "200" ];
+    then
+      echo "Deploy failed."
+      exit 1
+    else
+      is_failed=$(jq -r .failed result.json)
+      message=$(jq -r .message result.json)
+      command_id=$(jq -r .content.commandId result.json)
+      # 打印后台返回的日志
+      if [ -n "${message}" ]; then
+          echo "${message}"
+      fi
+
+      # 判断是否成功
+      if [ "${is_failed}" == "true" ];then
+        echo "Deploy failed"
+        exit 1
+      else
+        host_deploy_status_check ${command_id}
+      fi
+    fi
+}
+
+# 检查主机应用部署命令执行结果
+function host_deploy_status_check() {
+    while :
+    do
+      echo "等待agent执行部署命令..."
+      sleep 5s
+      http_status_code=$(curl -o result.json -X POST -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/host_command_status?token=${Token}&gitlab_pipeline_id=${CI_PIPELINE_ID}&command_id=$1")
+      if [ "$http_status_code" != "200" ];
+      then
+        echo "Failed to check deploy status.HttpStatusCode is ${http_status_code}.Response is:\n"
+        cat result.json
+        exit 1
+      else
+        is_failed=$(jq -r .failed result.json)
+        status=$(jq -r .content.status result.json)
+        error_msg=$(jq -r .content.errorMsg result.json)
+        if [ "${is_failed}" == "true" ];then
+          echo "部署失败"
+          echo "$error_msg"
+          exit 1
+        else
+          if [ "${status}" == "success" ]; then
+              echo "部署成功"
+              echo "$error_msg"
+              exit 0
+          fi
+        fi
+      fi
+    done
+}
+
+## 执行人工审核任务
+function process_audit() {
+   http_status_code=$(curl -X POST \
+    -H 'Expect:' \
+    -F "token=${Token}" \
+    -F "gitlab_pipeline_id=${CI_PIPELINE_ID}" \
+    -F "job_name=${CI_JOB_NAME}" \
+    "${CHOERODON_URL}/devops/ci/audit_status" \
+    -o "result.json" \
+    -s \
+    -w %{http_code})
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "audit failed."
+    exit 1
+  else
+    if [ "$(jq -r .countersigned result.json)" == "true" ];
+      then
+        echo "审核模式为：会签"
+      else
+        echo "审核模式为：或签"
+    fi
+    echo "审核通过人员：$(jq -r '.passedUserNameList | join(",")' result.json)"
+    echo "审核拒绝人员：$(jq -r '.refusedUserNameList | join(",")' result.json)"
+    echo "未审核人员：$(jq -r '.notAuditUserNameList | join(",")' result.json)"
+    if [ "$(jq -r .success result.json)" == "true" ];
+    then
+        echo "审核结果：通过"
+    else
+        echo "审核结果：终止"
+        exit 1
+    fi
+  fi
+}
+
+function execute_api_test(){
+  # apiTestInfoConfigId,这里的configId是测试任务关联的任务配置id
+ java -jar /choerodon/app.jar
+}
+
+# $1 npm repo id
+function export_npm_push_variable() {
+echo "Query npm repo info"
+  http_status_code=$(curl -o npm_repo_info.json -s -m 10 --connect-timeout 10 -w %{http_code} "${CHOERODON_URL}/devops/ci/npm_repo_info?token=${Token}&repo_id=$1")
+  echo "Query npm repo info status code is :"  $http_status_code
+  if [ "$http_status_code" != "200" ];
+  then
+    echo "Query npm repo info failed,skip export npm push variable"
+  else
+    is_failed=$(jq -r .failed npm_repo_info.json)
+    if [ "${is_failed}" == "true" ];
+    then
+      echo "Query npm repo info failed,skip export npm push variable"
+    else
+      export NPM_REGISTRY=$(jq -r .registry npm_repo_info.json)
+      export NPM_USERNAME=$(jq -r .username npm_repo_info.json)
+      export NPM_PASSWORD=$(jq -r .password npm_repo_info.json)
+      export NPM_EMAIL=$(jq -r .email npm_repo_info.json)
+    fi
+  fi
 }

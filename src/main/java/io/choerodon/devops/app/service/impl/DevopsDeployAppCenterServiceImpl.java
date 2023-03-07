@@ -91,12 +91,13 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     @Autowired
     private PermissionHelper permissionHelper;
     @Autowired
-    @Lazy
-    private DevopsCdPipelineService devopsCdPipelineService;
-    @Autowired
     private AppExceptionRecordService appExceptionRecordService;
     @Autowired
+    private DevopsCiJobService devopsCiJobService;
+    @Autowired
     private DevopsEnvResourceDetailService devopsEnvResourceDetailService;
+    @Autowired
+    private PipelineService pipelineService;
 
     @Override
     public Boolean checkNameUnique(Long envId, String rdupmType, Long objectId, String name) {
@@ -207,6 +208,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
             BeanUtils.copyProperties(appServiceInstanceInfoDTO, detailVO, "id");
             detailVO.setLastUpdateDate(appServiceInstanceInfoDTO.getLastUpdateDate());
             detailVO.setUpdater(baseServiceClientOperator.queryUserByUserId(appServiceInstanceInfoDTO.getLastUpdatedBy() == 0L ? centerEnvDTO.getLastUpdatedBy() : appServiceInstanceInfoDTO.getLastUpdatedBy()));
+            detailVO.setCheckValuesPolicy(appServiceInstanceInfoDTO.getCheckValuesPolicy());
             if (centerEnvDTO.getChartSource().equals(AppSourceType.NORMAL.getValue()) ||
                     centerEnvDTO.getChartSource().equals(AppSourceType.SHARE.getValue())) {
                 AppServiceDTO appServiceDTO = appServiceService.baseQuery(appServiceInstanceInfoDTO.getAppServiceId());
@@ -300,6 +302,10 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         List<Long> upgradeClusterList = clusterConnectionHandler.getUpdatedClusterList();
         detailVO.setEnvActive(environmentDTO.getActive());
         detailVO.setEnvConnected(upgradeClusterList.contains(environmentDTO.getClusterId()));
+
+        detailVO.setAppCode(detailVO.getCode());
+        detailVO.setAppName(detailVO.getName());
+        detailVO.setAppId(detailVO.getId());
 
         detailVO.setCreator(baseServiceClientOperator.queryUserByUserId(centerEnvDTO.getCreatedBy()));
         detailVO.setChartSource(centerEnvDTO.getChartSource());
@@ -466,8 +472,27 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
     }
 
     @Override
-    public PipelineInstanceReferenceVO queryPipelineReference(Long projectId, Long appId) {
-        return devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, appId);
+    public List<PipelineInstanceReferenceVO> queryPipelineReference(Long projectId, Long appId) {
+        DevopsDeployAppCenterEnvDTO devopsDeployAppCenterEnvDTO = selectByPrimaryKey(appId);
+        List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList = new ArrayList<>();
+        if (RdupmTypeEnum.DEPLOYMENT.value().equals(devopsDeployAppCenterEnvDTO.getRdupmType())) {
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryPipelineReferenceEnvApp(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
+        } else {
+            PipelineInstanceReferenceVO pipelineInstanceReferenceVO = devopsCiJobService.queryChartPipelineReference(projectId, appId);
+            if (pipelineInstanceReferenceVO != null) {
+                pipelineInstanceReferenceVOList.add(pipelineInstanceReferenceVO);
+            }
+            List<PipelineInstanceReferenceVO> pipelineInstanceReferenceVOList1 = pipelineService.listAppPipelineReference(projectId, appId);
+            if (!CollectionUtils.isEmpty(pipelineInstanceReferenceVOList1)) {
+                pipelineInstanceReferenceVOList.addAll(pipelineInstanceReferenceVOList1);
+            }
+        }
+
+        return pipelineInstanceReferenceVOList;
+
     }
 
     @Override
@@ -476,7 +501,7 @@ public class DevopsDeployAppCenterServiceImpl implements DevopsDeployAppCenterSe
         if (devopsDeployAppCenterEnvDTO == null) {
             return;
         }
-        if (devopsCdPipelineService.queryPipelineReferenceEnvApp(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
+        if (devopsCiJobService.queryChartPipelineReference(projectId, devopsDeployAppCenterEnvDTO.getId()) != null) {
             throw new CommonException(ResourceCheckConstant.DEVOPS_APP_INSTANCE_IS_ASSOCIATED_WITH_PIPELINE);
         }
     }

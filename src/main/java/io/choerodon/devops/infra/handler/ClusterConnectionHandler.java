@@ -111,31 +111,34 @@ public class ClusterConnectionHandler {
         //生成环境git仓库ssh地址
         String url = GitUtil.getGitlabSshUrl(pattern, gitUtil.getSshUrl(), organizationDTO.getTenantNum(),
                 projectDTO.getDevopsComponentCode(), envCode, EnvironmentType.forValue(envType), clusterCode);
-
-        File file = new File(path);
-        if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url, envRsa);
-        } else {
-            String localPath = String.format("%s%s", path, "/.git");
-            // 如果文件夾存在并且文件夹不为空,去拉取新的配置
-            // 反之克隆远程的仓库的文件
-            if (file.isDirectory() && file.listFiles().length > 0) {
-                try {
-                    gitUtil.pullBySsh(localPath, envRsa);
-                } catch (Exception e) {
-                    // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
-                    if (e instanceof CheckoutConflictException) {
-                        // 删除本地gitops文件，然后重新clone
-                        FileUtil.deleteDirectory(file);
-                        gitUtil.cloneBySsh(path, url, envRsa);
-                    } else {
-                        throw new CommonException("devops.git.pull", e);
-                    }
-                }
-            } else {
+        // 相同目录下，git并发拉取会有问题，所以对目录加锁
+        synchronized (path.intern()) {
+            File file = new File(path);
+            if (!file.exists()) {
                 gitUtil.cloneBySsh(path, url, envRsa);
+            } else {
+                String localPath = String.format("%s%s", path, "/.git");
+                // 如果文件夾存在并且文件夹不为空,去拉取新的配置
+                // 反之克隆远程的仓库的文件
+                if (file.isDirectory() && file.listFiles().length > 0) {
+                    try {
+                        gitUtil.pullBySsh(localPath, envRsa);
+                    } catch (Exception e) {
+                        // 有时本地文件和远端gitops库文件冲突可能导致pull 代码库失败，所以添加以下补偿逻辑
+                        if (e instanceof CheckoutConflictException) {
+                            // 删除本地gitops文件，然后重新clone
+                            FileUtil.deleteDirectory(file);
+                            gitUtil.cloneBySsh(path, url, envRsa);
+                        } else {
+                            throw new CommonException("devops.git.pull", e);
+                        }
+                    }
+                } else {
+                    gitUtil.cloneBySsh(path, url, envRsa);
+                }
             }
         }
+
         return path;
     }
 
