@@ -770,16 +770,23 @@ public class DevopsCiPipelineServiceImpl implements DevopsCiPipelineService {
                 return new Page<>();
             }
         }
+        String sortStr = getSortStr(pageRequest);
+        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, sortStr));
+    }
+
+    private String getSortStr(PageRequest pageRequest) {
         String sortStr;
         Sort sort = pageRequest.getSort();
         if (sort == null) {
             sortStr = " ORDER BY dcp.id DESC";
         } else if (sort.getOrderFor("status") != null) {
             sortStr = " ORDER BY latest_execute_status1 asc, dcpr.creation_date DESC";
-        } else {
+        } else if (sort.getOrderFor("creationDate") != null) {
             sortStr = " ORDER BY dcpr.creation_date DESC";
+        } else {
+            sortStr = " ORDER BY dcp.id DESC";
         }
-        return PageHelper.doPage(pageRequest, () -> ciCdPipelineMapper.queryByProjectIdAndName(projectId, appServiceIds, searchParam, enableFlag, status, sortStr));
+        return sortStr;
     }
 
     /**
