@@ -17,7 +17,8 @@
     dcptc.triggered_pipeline_gitlab_project_id,
     dcptc.pipeline_trigger_id
     FROM devops_ci_pipeline_trigger_config dcptc
-    WHERE dcptc.job_id IN
+    JOIN devops_ci_job dcj ON dcj.config_id = dcptc.id AND dcj.type = 'pipeline_trigger'
+    WHERE dcj.id IN
     <foreach collection="jobIds" separator="," open="(" close=")" item="jobId">
       #{jobId}
     </foreach>
@@ -35,7 +36,7 @@
           resultType="io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO">
     SELECT *
     FROM devops_ci_pipeline_trigger_config dcptc
-    LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.job_id = dcptc.job_id
+    LEFT JOIN devops_ci_pipeline_trigger_config_variable dcptcv ON dcptcv.pipeline_trigger_config_id = dcptc.id
     WHERE dcptc.id = #{configId}
   </select>
 </mapper>

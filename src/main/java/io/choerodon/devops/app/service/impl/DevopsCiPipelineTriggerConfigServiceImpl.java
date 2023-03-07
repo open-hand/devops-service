@@ -12,6 +12,7 @@ import org.springframework.util.CollectionUtils;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
+import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
 import io.choerodon.devops.infra.mapper.DevopsCiPipelineTriggerConfigMapper;
@@ -24,10 +25,13 @@ public class DevopsCiPipelineTriggerConfigServiceImpl implements DevopsCiPipelin
     public static final String PIPELINE_TRIGGER_NAME_TEMPLATE = "choerodon-pipeline-trigger-for:%s";
 
     @Autowired
-    DevopsCiPipelineTriggerConfigMapper devopsCiPipelineTriggerConfigMapper;
+    private DevopsCiPipelineTriggerConfigMapper devopsCiPipelineTriggerConfigMapper;
 
     @Autowired
-    GitlabServiceClientOperator gitlabServiceClientOperator;
+    private GitlabServiceClientOperator gitlabServiceClientOperator;
+
+    @Autowired
+    private DevopsCiPipelineTriggerConfigVariableService ciPipelineTriggerConfigVariableService;
 
     @Override
     public DevopsCiPipelineTriggerConfigDTO baseCreate(DevopsCiPipelineTriggerConfigDTO devopsCiPipelineTriggerConfigDTO) {
@@ -54,6 +58,10 @@ public class DevopsCiPipelineTriggerConfigServiceImpl implements DevopsCiPipelin
                 logger.info(ignored.getMessage());
             }
         });
-        devopsCiPipelineTriggerConfigMapper.deleteByIds(devopsCiPipelineTriggerConfigDTOList.stream().map(DevopsCiPipelineTriggerConfigDTO::getId).collect(Collectors.toList()));
+
+        List<Long> configIds = devopsCiPipelineTriggerConfigDTOList.stream().map(DevopsCiPipelineTriggerConfigDTO::getId).collect(Collectors.toList());
+
+        devopsCiPipelineTriggerConfigMapper.deleteByIds(configIds);
+        ciPipelineTriggerConfigVariableService.deleteByPipelineTriggerConfigIds(configIds);
     }
 }

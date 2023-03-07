@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -66,7 +67,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
         AppServiceDTO targetAppServiceDTO = appServiceService.queryByPipelineId(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineId());
         devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineGitlabProjectId(targetAppServiceDTO.getGitlabProjectId().longValue());
         devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineProjectId(targetAppServiceDTO.getProjectId());
-        devopsCiPipelineTriggerConfigDTO.setJobId(ciPipelineId);
+        devopsCiPipelineTriggerConfigDTO.setPipelineId(ciPipelineId);
 
         String pipelineTriggerName = String.format(PIPELINE_TRIGGER_NAME_TEMPLATE, currentAppServiceDTO.getCode());
 
@@ -84,14 +85,17 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
             devopsCiPipelineTriggerConfigDTO.setPipelineTriggerId(createdPipelineTrigger.getId().longValue());
         }
 
-        // 保存变量
-        devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO().getDevopsCiPipelineVariables().forEach(devopsCiPipelineVariableDTO -> {
-            devopsCiPipelineVariableDTO.setId(null);
-            devopsCiPipelineVariableDTO.setDevopsPipelineId(ciPipelineId);
-            devopsCiPipelineTriggerConfigVariableService.baseCreate(devopsCiPipelineVariableDTO);
-        });
-
         devopsCiPipelineTriggerService.baseCreate(devopsCiPipelineTriggerConfigDTO);
+
+        // 保存变量
+        if (!ObjectUtils.isEmpty(devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO().getDevopsCiPipelineVariables())) {
+            devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO().getDevopsCiPipelineVariables().forEach(devopsCiPipelineVariableDTO -> {
+                devopsCiPipelineVariableDTO.setId(null);
+                devopsCiPipelineVariableDTO.setPipelineTriggerConfigId(devopsCiPipelineTriggerConfigDTO.getId());
+                devopsCiPipelineTriggerConfigVariableService.baseCreate(devopsCiPipelineVariableDTO);
+            });
+        }
+
         return devopsCiPipelineTriggerConfigDTO.getId();
     }
 
