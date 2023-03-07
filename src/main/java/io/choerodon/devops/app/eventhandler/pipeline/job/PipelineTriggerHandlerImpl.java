@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.eventhandler.pipeline.job;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfigServiceImpl.PIPELINE_TRIGGER_NAME_TEMPLATE;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.choerodon.devops.app.service.impl.DevopsCiPipelineTriggerConfigServiceImpl.PIPELINE_TRIGGER_NAME_TEMPLATE;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
@@ -14,6 +14,7 @@ import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
+import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
@@ -37,6 +38,8 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     private DevopsCiPipelineTriggerConfigService devopsCiPipelineTriggerService;
     @Autowired
     private GitlabServiceClientOperator gitlabServiceClientOperator;
+    @Autowired
+    private DevopsCiPipelineTriggerConfigVariableService devopsCiPipelineTriggerConfigVariableService;
 
     @Override
     public CiJobTypeEnum getType() {
@@ -63,7 +66,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
         AppServiceDTO targetAppServiceDTO = appServiceService.queryByPipelineId(devopsCiPipelineTriggerConfigDTO.getTriggeredPipelineId());
         devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineGitlabProjectId(targetAppServiceDTO.getGitlabProjectId().longValue());
         devopsCiPipelineTriggerConfigDTO.setTriggeredPipelineProjectId(targetAppServiceDTO.getProjectId());
-        devopsCiPipelineTriggerConfigDTO.setPipelineId(ciPipelineId);
+        devopsCiPipelineTriggerConfigDTO.setJobId(ciPipelineId);
 
         String pipelineTriggerName = String.format(PIPELINE_TRIGGER_NAME_TEMPLATE, currentAppServiceDTO.getCode());
 
@@ -80,6 +83,13 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
             devopsCiPipelineTriggerConfigDTO.setToken(createdPipelineTrigger.getToken());
             devopsCiPipelineTriggerConfigDTO.setPipelineTriggerId(createdPipelineTrigger.getId().longValue());
         }
+
+        // 保存变量
+        devopsCiJobVO.getDevopsCiPipelineTriggerConfigVO().getDevopsCiPipelineVariables().forEach(devopsCiPipelineVariableDTO -> {
+            devopsCiPipelineVariableDTO.setId(null);
+            devopsCiPipelineVariableDTO.setDevopsPipelineId(ciPipelineId);
+            devopsCiPipelineTriggerConfigVariableService.baseCreate(devopsCiPipelineVariableDTO);
+        });
 
         devopsCiPipelineTriggerService.baseCreate(devopsCiPipelineTriggerConfigDTO);
         return devopsCiPipelineTriggerConfigDTO.getId();
