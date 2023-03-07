@@ -1,7 +1,7 @@
 package script.db.groovy.devops_service
 
 databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_trigger_config_variable.groovy') {
-    changeSet(author: 'wanghao', id: '2021-11-29-create-table') {
+    changeSet(author: 'lihao', id: '2023-03-07-create-table') {
         createTable(tableName: "devops_ci_pipeline_trigger_config_variable", remarks: '流水线配置的CI变量') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
@@ -25,9 +25,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_trigger_config_variab
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
 
         }
-        addUniqueConstraint(tableName: 'devops_ci_pipeline_variable',
-                constraintName: 'uk_key_value', columnNames: 'devops_pipeline_id,variable_key')
-        createIndex(tableName: 'devops_ci_pipeline_variable', indexName: 'idx_pipeline_id') {
+        addUniqueConstraint(tableName: 'devops_ci_pipeline_trigger_config_variable',
+                constraintName: 'uk_key_value', columnNames: 'job_id,variable_key')
+        createIndex(tableName: 'devops_ci_pipeline_trigger_config_variable', indexName: 'idx_pipeline_id') {
             column(name: 'job_id')
         }
     }
