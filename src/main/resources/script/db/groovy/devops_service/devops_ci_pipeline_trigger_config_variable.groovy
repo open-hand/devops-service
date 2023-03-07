@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_trigger_config_variab
                 constraints(primaryKey: true)
             }
 
-            column(name: 'job_id', type: 'BIGINT UNSIGNED', remarks: '流水线id') {
+            column(name: 'pipeline_trigger_config_id', type: 'BIGINT UNSIGNED', remarks: '流水线触发配置id') {
                 constraints(nullable: false)
             }
 
