@@ -16,6 +16,7 @@ import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
+import io.choerodon.devops.app.service.DevopsCiTemplatePipelineTriggerConfigService;
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
@@ -41,6 +42,9 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
     private GitlabServiceClientOperator gitlabServiceClientOperator;
     @Autowired
     private DevopsCiPipelineTriggerConfigVariableService devopsCiPipelineTriggerConfigVariableService;
+
+    @Autowired
+    private DevopsCiTemplatePipelineTriggerConfigService devopsCiTemplatePipelineTriggerConfigService;
 
     @Override
     public CiJobTypeEnum getType() {
@@ -107,7 +111,7 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerService.queryConfigVoById(devopsCiJobVO.getConfigId()));
+        devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(ConvertUtils.convertObject(devopsCiTemplatePipelineTriggerConfigService.queryConfigVoById(devopsCiJobVO.getConfigId()), DevopsCiPipelineTriggerConfigVO.class));
     }
 
     @Override
