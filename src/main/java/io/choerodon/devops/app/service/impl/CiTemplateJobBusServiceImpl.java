@@ -273,10 +273,10 @@ public class CiTemplateJobBusServiceImpl implements CiTemplateJobBusService {
     private void extracted(String sourceType, Long templateJobId, DeleteCheckResultVO deleteCheckResultVO) {
         Boolean existRecord = ciTemplateJobBusMapper.existRecord(sourceType, templateJobId);
         if (Boolean.TRUE.equals(existRecord)) {
-            deleteCheckResultVO.setResult(true);
+            deleteCheckResultVO.setResult(false);
             deleteCheckResultVO.setSourceType(sourceType);
         } else {
-            deleteCheckResultVO.setResult(false);
+            deleteCheckResultVO.setResult(true);
             deleteCheckResultVO.setSourceType(sourceType);
         }
     }
