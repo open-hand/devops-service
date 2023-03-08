@@ -170,6 +170,16 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         return progressiveText.text();
     }
 
+    @Override
+    public List<JenkinsStageVO> listStage(Long projectId, Long serverId, String folder, String name, Integer buildId) {
+        JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
+        Workflow workflow = jenkinsClient.api().jobsApi().workflow(folder, name, buildId);
+        if (workflow == null) {
+            return new ArrayList<>();
+        }
+        return workflow.stages().stream().map(stage -> new JenkinsStageVO(stage.id(), stage.name(), stage.status(), stage.startTimeMillis(), stage.durationMillis())).collect(Collectors.toList());
+    }
+
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
 
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);

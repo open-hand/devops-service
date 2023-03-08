@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
+import io.choerodon.devops.api.vo.jenkins.JenkinsStageVO;
 import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.swagger.annotation.Permission;
@@ -112,7 +113,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核通过")
-    @GetMapping("/{name}/build/{build_id}/audit_pass")
+    @PutMapping("/{name}/build/{build_id}/audit_pass")
     public ResponseEntity<Void> auditPass(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -128,7 +129,7 @@ public class JenkinsJobController {
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核拒绝")
-    @GetMapping("/{name}/build/{build_id}/audit_refuse")
+    @PutMapping("/{name}/build/{build_id}/audit_refuse")
     public ResponseEntity<Void> auditRefuse(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -168,6 +169,20 @@ public class JenkinsJobController {
             @RequestParam(value = "server_id") Long serverId,
             @RequestParam(value = "folder") String folder) {
         return ResponseEntity.ok(jenkinsJobService.queryLog(projectId, serverId, folder, name, buildId));
+    }
+
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看流水线阶段列表")
+    @GetMapping("/{name}/build/{build_id}/log")
+    public ResponseEntity<List<JenkinsStageVO>> listStage(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.listStage(projectId, serverId, folder, name, buildId));
     }
 
 }

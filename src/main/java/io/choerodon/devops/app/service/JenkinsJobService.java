@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
 import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
+import io.choerodon.devops.api.vo.jenkins.JenkinsStageVO;
 import io.choerodon.devops.api.vo.jenkins.PropertyVO;
 
 /**
@@ -37,4 +38,6 @@ public interface JenkinsJobService {
     JenkinsBuildInfo queryBuildInfo(Long projectId, Long serverId, String folder, String name, Integer buildId);
 
     String queryLog(Long projectId, Long serverId, String folder, String name, Integer buildId);
+
+    List<JenkinsStageVO> listStage(Long projectId, Long serverId, String folder, String name, Integer buildId);
 }
