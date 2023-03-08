@@ -13,6 +13,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.vo.DevopsCiJobVO;
 import io.choerodon.devops.api.vo.pipeline.DevopsCiPipelineTriggerConfigVO;
+import io.choerodon.devops.api.vo.pipeline.DevopsCiTemplatePipelineTriggerConfigVO;
 import io.choerodon.devops.app.service.AppServiceService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigService;
 import io.choerodon.devops.app.service.DevopsCiPipelineTriggerConfigVariableService;
@@ -20,6 +21,7 @@ import io.choerodon.devops.app.service.DevopsCiTemplatePipelineTriggerConfigServ
 import io.choerodon.devops.infra.dto.AppServiceDTO;
 import io.choerodon.devops.infra.dto.DevopsCiJobDTO;
 import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigDTO;
+import io.choerodon.devops.infra.dto.DevopsCiPipelineTriggerConfigVariableDTO;
 import io.choerodon.devops.infra.dto.gitlab.PipelineTrigger;
 import io.choerodon.devops.infra.enums.CiJobTypeEnum;
 import io.choerodon.devops.infra.feign.operator.GitlabServiceClientOperator;
@@ -111,7 +113,12 @@ public class PipelineTriggerHandlerImpl extends AbstractJobHandler {
 
     @Override
     public void fillJobTemplateConfigInfo(DevopsCiJobVO devopsCiJobVO) {
-        devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(ConvertUtils.convertObject(devopsCiTemplatePipelineTriggerConfigService.queryConfigVoById(devopsCiJobVO.getConfigId()), DevopsCiPipelineTriggerConfigVO.class));
+        DevopsCiTemplatePipelineTriggerConfigVO devopsCiTemplatePipelineTriggerConfigVO = devopsCiTemplatePipelineTriggerConfigService.queryConfigVoById(devopsCiJobVO.getConfigId());
+        if (devopsCiTemplatePipelineTriggerConfigVO != null) {
+            DevopsCiPipelineTriggerConfigVO devopsCiPipelineTriggerConfigVO = ConvertUtils.convertObject(devopsCiTemplatePipelineTriggerConfigVO, DevopsCiPipelineTriggerConfigVO.class);
+            devopsCiPipelineTriggerConfigVO.setDevopsCiPipelineVariables(ConvertUtils.convertList(devopsCiTemplatePipelineTriggerConfigVO.getDevopsCiPipelineVariables(), DevopsCiPipelineTriggerConfigVariableDTO.class));
+            devopsCiJobVO.setDevopsCiPipelineTriggerConfigVO(devopsCiPipelineTriggerConfigVO);
+        }
     }
 
     @Override
