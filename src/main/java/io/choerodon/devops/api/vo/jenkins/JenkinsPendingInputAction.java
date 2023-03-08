@@ -13,7 +13,17 @@ public class JenkinsPendingInputAction {
     private String id;
     private String proceedText;
     private String message;
+
+    private List<PropertyVO> propertyList;
     private List<JenkinsInputParameterDef> inputs;
+
+    public List<PropertyVO> getPropertyList() {
+        return propertyList;
+    }
+
+    public void setPropertyList(List<PropertyVO> propertyList) {
+        this.propertyList = propertyList;
+    }
 
     public String getId() {
         return id;

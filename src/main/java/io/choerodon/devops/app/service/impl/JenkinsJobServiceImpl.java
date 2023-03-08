@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.cdancy.jenkins.rest.JenkinsClient;
 import com.cdancy.jenkins.rest.domain.common.IntegerResponse;
@@ -18,9 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.vo.jenkins.JenkinsBuildInfo;
-import io.choerodon.devops.api.vo.jenkins.JenkinsJobVO;
-import io.choerodon.devops.api.vo.jenkins.PropertyVO;
+import io.choerodon.devops.api.vo.jenkins.*;
 import io.choerodon.devops.app.DevopsJenkinsServerService;
 import io.choerodon.devops.app.service.JenkinsJobService;
 import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
@@ -95,7 +94,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
         JobInfo jobInfo = jenkinsClient.api().jobsApi().jobInfo(folder, name);
         List<PropertyVO> propertyList = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(jobInfo.property()) && !CollectionUtils.isEmpty(jobInfo.property().get(0).parameterDefinitions())) {
+        if (!CollectionUtils.isEmpty(jobInfo.property())) {
             for (ParametersDefinitionProperty parametersDefinitionProperty : jobInfo.property()) {
                 if ("hudson.model.ParametersDefinitionProperty".equals(parametersDefinitionProperty.clazz())) {
                     for (ParameterDefinition parameterDefinition : parametersDefinitionProperty.parameterDefinitions()) {
@@ -113,8 +112,24 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     public List<JenkinsBuildInfo> listBuildHistory(Long projectId, Long serverId, String folder, String name) {
         JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
         Response response = clientByServerId.api().c7nJobsApi().buildHistory(folder, name);
-        return CustomResponseUtil.parse(response, new TypeReference<List<JenkinsBuildInfo>>() {
+
+        List<JenkinsBuildInfo> jenkinsBuildInfoList = CustomResponseUtil.parse(response, new TypeReference<List<JenkinsBuildInfo>>() {
         });
+        if (CollectionUtils.isEmpty(jenkinsBuildInfoList)) {
+            return new ArrayList<>();
+        }
+
+        for (JenkinsBuildInfo jenkinsBuildInfo : jenkinsBuildInfoList) {
+            JenkinsPendingInputAction nextPendingInputAction = jenkinsBuildInfo.getNextPendingInputAction();
+            if (nextPendingInputAction != null && !CollectionUtils.isEmpty(nextPendingInputAction.getInputs())) {
+                List<JenkinsInputParameterDef> inputs = nextPendingInputAction.getInputs();
+                nextPendingInputAction.setPropertyList(inputs.stream().map(i -> new PropertyVO(i.getName(),
+                                i.getDefinition().get("defaultVal") == null ? "" : i.getDefinition().get("defaultVal").toString()))
+                        .collect(Collectors.toList()));
+            }
+
+        }
+        return jenkinsBuildInfoList;
     }
 
     @Override
