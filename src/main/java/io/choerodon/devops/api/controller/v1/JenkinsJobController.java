@@ -156,4 +156,18 @@ public class JenkinsJobController {
         return ResponseEntity.ok(jenkinsJobService.queryBuildInfo(projectId, serverId, folder, name, buildId));
     }
 
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "查看完整执行日志")
+    @GetMapping("/{name}/build/{build_id}/log")
+    public ResponseEntity<String> queryLog(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        return ResponseEntity.ok(jenkinsJobService.queryLog(projectId, serverId, folder, name, buildId));
+    }
+
 }

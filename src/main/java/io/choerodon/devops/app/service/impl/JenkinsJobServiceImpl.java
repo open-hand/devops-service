@@ -163,6 +163,13 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
         return CustomResponseUtil.parse(response, JenkinsBuildInfo.class);
     }
 
+    @Override
+    public String queryLog(Long projectId, Long serverId, String folder, String name, Integer buildId) {
+        JenkinsClient clientByServerId = jenkinsClientUtil.getClientByServerId(serverId);
+        ProgressiveText progressiveText = clientByServerId.api().jobsApi().progressiveText(folder, name, buildId, 0);
+        return progressiveText.text();
+    }
+
     private void listFolderJobs(JenkinsClient jenkinsClient, Long serverId, String serverName, String folder, List<JenkinsJobVO> jenkinsJobVOList) {
 
         JobList jobList = jenkinsClient.api().jobsApi().jobList(folder);

@@ -35,4 +35,6 @@ public interface JenkinsJobService {
     void auditRefuse(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId);
 
     JenkinsBuildInfo queryBuildInfo(Long projectId, Long serverId, String folder, String name, Integer buildId);
+
+    String queryLog(Long projectId, Long serverId, String folder, String name, Integer buildId);
 }
