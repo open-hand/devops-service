@@ -67,6 +67,16 @@ public interface C7nJobsApi {
                        @PathParam("name") String jobName,
                        @PathParam("number") int buildNumber);
 
+    @Named("jobs:restart")
+    @Path("{optionalFolderPath}job/{name}/{number}/choerodon/restart")
+    @Fallback(CustomFallback.class)
+    @ResponseParser(CustomResponseParser.class)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @POST
+    Response restart(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
+                     @PathParam("name") String jobName,
+                     @PathParam("number") int buildNumber);
+
 
     @Named("jobs:inputSubmit")
     @Path("{optionalFolderPath}job/{name}/{number}/wfapi/inputSubmit")

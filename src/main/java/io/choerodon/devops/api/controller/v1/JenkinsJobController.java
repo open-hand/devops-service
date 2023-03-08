@@ -106,20 +106,20 @@ public class JenkinsJobController {
         return ResponseEntity.noContent().build();
     }
 
-//    @Permission(level = ResourceLevel.ORGANIZATION)
-//    @ApiOperation(value = "重新执行")
-//    @GetMapping("/{name}/build/{build_id}/retry")
-//    public ResponseEntity<Void> retryBuild(
-//            @ApiParam(value = "项目Id", required = true)
-//            @PathVariable(value = "project_id") Long projectId,
-//            @PathVariable String name,
-//            @PathVariable(value = "build_id") Integer buildId,
-//            @Encrypt
-//            @RequestParam(value = "server_id") Long serverId,
-//            @RequestParam(value = "folder") String folder) {
-//        jenkinsJobService.retryBuild(projectId, serverId, folder, name, buildId);
-//        return ResponseEntity.noContent().build();
-//    }
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "重新执行")
+    @GetMapping("/{name}/build/{build_id}/retry")
+    public ResponseEntity<Void> retryBuild(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @PathVariable String name,
+            @PathVariable(value = "build_id") Integer buildId,
+            @Encrypt
+            @RequestParam(value = "server_id") Long serverId,
+            @RequestParam(value = "folder") String folder) {
+        jenkinsJobService.retryBuild(projectId, serverId, folder, name, buildId);
+        return ResponseEntity.noContent().build();
+    }
 
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "审核通过")

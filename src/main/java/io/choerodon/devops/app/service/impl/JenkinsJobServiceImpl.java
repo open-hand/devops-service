@@ -143,7 +143,7 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public void retryBuild(Long projectId, Long serverId, String folder, String name, Integer buildId) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
-        jenkinsClient.api().jobsApi().stop(folder, name, buildId);
+        jenkinsClient.api().c7nJobsApi().restart(folder, name, buildId);
     }
 
     @Override
