@@ -12,6 +12,7 @@ import com.cdancy.jenkins.rest.domain.common.Response;
 import com.cdancy.jenkins.rest.domain.job.*;
 import com.cdancy.jenkins.rest.parsers.CustomResponseUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import io.choerodon.devops.infra.dto.DevopsJenkinsServerDTO;
 import io.choerodon.devops.infra.enums.DevopsJenkinsServerStatusEnum;
 import io.choerodon.devops.infra.enums.jenkins.JenkinsJobTypeEnum;
 import io.choerodon.devops.infra.util.JenkinsClientUtil;
+import io.choerodon.devops.infra.util.JsonHelper;
 
 /**
  * 〈功能简述〉
@@ -147,19 +149,18 @@ public class JenkinsJobServiceImpl implements JenkinsJobService {
     @Override
     public void auditPass(Long projectId, Long serverId, String folder, String name, Integer buildId, String inputId, List<PropertyVO> properties) {
         JenkinsClient jenkinsClient = jenkinsClientUtil.getClientByServerId(serverId);
-//        if (CollectionUtils.isEmpty(properties)) {
-//            jenkinsClient.api().jobsApi().build(folder, name);
-//        } else {
-//            Map<String, List<String>> paramMap = new HashMap<>();
-//            properties.forEach(property -> {
-//                List<String> valueList = new ArrayList<>();
-//                valueList.add(property.getValue());
-//                paramMap.put(property.getKey(), valueList);
-//            });
-//            jenkinsClient.api().jobsApi().buildWithParameters(folder, name, paramMap);
-//        }
 
-        jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId);
+        if (!CollectionUtils.isEmpty(properties)) {
+            Map<String, List<ParamVO>> paramMap = new HashMap<>();
+            List<ParamVO> paramVOS = properties.stream().map(propertyVO -> new ParamVO(propertyVO.getKey(), propertyVO.getValue())).collect(Collectors.toList());
+            paramMap.put("parameter", paramVOS);
+            Map<String, List<String>> json = new HashMap<>();
+            json.put("json", Lists.newArrayList(JsonHelper.marshalByJackson(paramMap)));
+            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, json);
+        } else {
+            jenkinsClient.api().c7nJobsApi().inputSubmit(folder, name, buildId, inputId, null);
+        }
+
     }
 
     @Override

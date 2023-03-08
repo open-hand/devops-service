@@ -17,10 +17,13 @@
 
 package com.cdancy.jenkins.rest.features;
 
+import java.util.List;
+import java.util.Map;
 import javax.inject.Named;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import com.cdancy.jenkins.rest.binders.BindMapToForm;
 import com.cdancy.jenkins.rest.domain.common.RequestStatus;
 import com.cdancy.jenkins.rest.domain.common.Response;
 import com.cdancy.jenkins.rest.domain.job.C7nBuildInfo;
@@ -30,10 +33,7 @@ import com.cdancy.jenkins.rest.parsers.CustomResponseParser;
 import com.cdancy.jenkins.rest.parsers.OptionalFolderPathParser;
 import com.cdancy.jenkins.rest.parsers.RequestStatusParser;
 import org.jclouds.javax.annotation.Nullable;
-import org.jclouds.rest.annotations.Fallback;
-import org.jclouds.rest.annotations.ParamParser;
-import org.jclouds.rest.annotations.RequestFilters;
-import org.jclouds.rest.annotations.ResponseParser;
+import org.jclouds.rest.annotations.*;
 
 @RequestFilters(JenkinsAuthenticationFilter.class)
 @Path("/")
@@ -77,7 +77,8 @@ public interface C7nJobsApi {
     RequestStatus inputSubmit(@Nullable @PathParam("optionalFolderPath") @ParamParser(OptionalFolderPathParser.class) String optionalFolderPath,
                               @PathParam("name") String jobName,
                               @PathParam("number") int buildNumber,
-                              @QueryParam("inputId") String inputId);
+                              @QueryParam("inputId") String inputId,
+                              @Nullable @BinderParam(BindMapToForm.class) Map<String, List<String>> properties);
 
     @Named("jobs:abortInput")
     @Path("{optionalFolderPath}job/{name}/{number}/input/{inputId}/abort")
