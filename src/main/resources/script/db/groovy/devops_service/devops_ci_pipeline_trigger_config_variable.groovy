@@ -26,7 +26,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ci_pipeline_trigger_config_variab
 
         }
         addUniqueConstraint(tableName: 'devops_ci_pipeline_trigger_config_variable',
-                constraintName: 'uk_key_value', columnNames: 'job_id,variable_key')
+                constraintName: 'uk_key_value', columnNames: 'pipeline_trigger_config_id,variable_key')
         createIndex(tableName: 'devops_ci_pipeline_trigger_config_variable', indexName: 'idx_pipeline_id') {
             column(name: 'pipeline_trigger_config_id')
         }
